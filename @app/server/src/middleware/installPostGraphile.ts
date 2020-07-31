@@ -1,6 +1,5 @@
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import PgPubsub from "@graphile/pg-pubsub";
-import GraphilePro from "@graphile/pro"; // Requires license key
 import { Express, Request, Response } from "express";
 import { NodePlugin } from "graphile-build";
 import { resolve } from "path";
@@ -61,9 +60,6 @@ const isDev = process.env.NODE_ENV === "development";
 const pluginHook = makePluginHook([
   // Add the pub/sub realtime provider
   PgPubsub,
-
-  // If we have a Graphile Pro license, then enable the plugin
-  ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
 ]);
 
 interface IPostGraphileOptionsOptions {
@@ -267,17 +263,6 @@ export function getPostGraphileOptions({
         },
       };
     },
-
-    // Pro plugin options (requires process.env.GRAPHILE_LICENSE)
-    defaultPaginationCap:
-      parseInt(process.env.GRAPHQL_PAGINATION_CAP || "", 10) || 50,
-    graphqlDepthLimit:
-      parseInt(process.env.GRAPHQL_DEPTH_LIMIT || "", 10) || 12,
-    graphqlCostLimit:
-      parseInt(process.env.GRAPHQL_COST_LIMIT || "", 10) || 30000,
-    exposeGraphQLCost:
-      (parseInt(process.env.HIDE_QUERY_COST || "", 10) || 0) < 1,
-    // readReplicaPgPool ...,
   };
   return options;
 }
