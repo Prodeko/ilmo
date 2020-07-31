@@ -1,8 +1,8 @@
 {
-  "name": "My_Project_Here",
+  "name": "ilmokilke",
   "version": "3.0.1",
   "private": true,
-  "description": "Description of project here",
+  "description": "Prodekon ilmokilke",
   "scripts": {
     "setup": "yarn && node ./scripts/setup.js",
     "start": "node ./scripts/start.js",
