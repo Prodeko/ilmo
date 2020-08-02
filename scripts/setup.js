@@ -21,15 +21,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function updateDotenv(add, answers) {
   add(
-    "GRAPHILE_LICENSE",
-    null,
-    `\
-# If you're supporting PostGraphile's development via Patreon or Graphile
-# Store, add your license key from https://store.graphile.com here so you can
-# use the Pro plugin - thanks so much!`
-  );
-
-  add(
     "NODE_ENV",
     "development",
     `\

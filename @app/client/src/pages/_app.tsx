@@ -2,10 +2,9 @@ import "antd/dist/antd.less";
 import "nprogress/nprogress.css";
 import "../styles.less";
 
-import { ApolloProvider } from "@apollo/react-hooks";
+import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
 import { notification } from "antd";
-import { ApolloClient } from "apollo-client";
 import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
@@ -42,6 +41,7 @@ if (typeof window !== "undefined") {
   Router.events.on("routeChangeComplete", () => {
     NProgress.done();
   });
+
   Router.events.on("routeChangeError", (err: Error | string) => {
     NProgress.done();
     if (err["cancelled"]) {
@@ -58,7 +58,7 @@ if (typeof window !== "undefined") {
   });
 }
 
-class MyApp extends App<{ apollo: ApolloClient<any> }> {
+class Ilmo extends App<{ apollo: ApolloClient<any> }> {
   static async getInitialProps({ Component, ctx }: any) {
     let pageProps = {};
 
@@ -80,4 +80,4 @@ class MyApp extends App<{ apollo: ApolloClient<any> }> {
   }
 }
 
-export default withApollo(MyApp);
+export default withApollo(Ilmo);

@@ -319,7 +319,6 @@ for example:
 
 ```sh
 docker run --rm -it --init -p 5678:5678 \
-  -e GRAPHILE_LICENSE="$GRAPHILE_LICENSE" \
   -e SECRET="$SECRET" \
   -e JWT_SECRET="$JWT_SECRET" \
   -e DATABASE_VISITOR="$DATABASE_VISITOR" \

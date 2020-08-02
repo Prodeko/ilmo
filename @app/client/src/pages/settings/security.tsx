@@ -1,3 +1,4 @@
+import { ApolloError } from "@apollo/client";
 import {
   ErrorAlert,
   P,
@@ -18,8 +19,6 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
-import { useForm } from "antd/lib/form/util";
-import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import Link from "next/link";
 import { Store } from "rc-field-form/lib/interface";
@@ -32,7 +31,7 @@ const Settings_Security: NextPage = () => {
 
   const query = useSharedQuery();
 
-  const [form] = useForm();
+  const [form] = Form.useForm();
   const [changePassword] = useChangePasswordMutation();
   const [success, setSuccess] = useState(false);
 
