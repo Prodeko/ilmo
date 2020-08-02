@@ -14,21 +14,35 @@ function fixFilePaths(connectionString) {
   );
 }
 
-process.env.DATABASE_URL = process.env.DATABASE_URL
-  ? fixFilePaths(process.env.DATABASE_URL)
-  : `postgres://${process.env.DATABASE_OWNER}:${process.env.DATABASE_OWNER_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`;
-process.env.AUTH_DATABASE_URL = process.env.AUTH_DATABASE_URL
-  ? fixFilePaths(process.env.AUTH_DATABASE_URL)
-  : `postgres://${process.env.DATABASE_AUTHENTICATOR}:${process.env.DATABASE_AUTHENTICATOR_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`;
-process.env.SHADOW_DATABASE_URL = process.env.SHADOW_DATABASE_URL
-  ? fixFilePaths(process.env.SHADOW_DATABASE_URL)
-  : `postgres://${process.env.DATABASE_OWNER}:${process.env.DATABASE_OWNER_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}_shadow`;
-process.env.SHADOW_AUTH_DATABASE_URL = process.env.SHADOW_AUTH_DATABASE_URL
-  ? fixFilePaths(process.env.SHADOW_AUTH_DATABASE_URL)
-  : `postgres://${process.env.DATABASE_AUTHENTICATOR}:${process.env.DATABASE_AUTHENTICATOR_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}_shadow`;
+const {
+  AUTH_DATABASE_URL,
+  DATABASE_AUTHENTICATOR,
+  DATABASE_AUTHENTICATOR_PASSWORD,
+  DATABASE_HOST,
+  DATABASE_NAME,
+  ROOT_URL,
+  DATABASE_URL,
+  DATABASE_OWNER,
+  DATABASE_OWNER_PASSWORD,
+  SHADOW_AUTH_DATABASE_URL,
+  SHADOW_DATABASE_URL,
+} = process.env;
+
+process.env.DATABASE_URL = DATABASE_URL
+  ? fixFilePaths(DATABASE_URL)
+  : `postgres://${DATABASE_OWNER}:${DATABASE_OWNER_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`;
+process.env.AUTH_DATABASE_URL = AUTH_DATABASE_URL
+  ? fixFilePaths(AUTH_DATABASE_URL)
+  : `postgres://${DATABASE_AUTHENTICATOR}:${DATABASE_AUTHENTICATOR_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`;
+process.env.SHADOW_DATABASE_URL = SHADOW_DATABASE_URL
+  ? fixFilePaths(SHADOW_DATABASE_URL)
+  : `postgres://${DATABASE_OWNER}:${DATABASE_OWNER_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}_shadow`;
+process.env.SHADOW_AUTH_DATABASE_URL = SHADOW_AUTH_DATABASE_URL
+  ? fixFilePaths(SHADOW_AUTH_DATABASE_URL)
+  : `postgres://${DATABASE_AUTHENTICATOR}:${DATABASE_AUTHENTICATOR_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}_shadow`;
 
 // Always overwrite test database URL
-process.env.TEST_DATABASE_URL = `postgres://${process.env.DATABASE_OWNER}:${process.env.DATABASE_OWNER_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}_test`;
+process.env.TEST_DATABASE_URL = `postgres://${DATABASE_OWNER}:${DATABASE_OWNER_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}_test`;
 
 // https://docs.cypress.io/guides/guides/environment-variables.html#Option-3-CYPRESS
-process.env.CYPRESS_ROOT_URL = process.env.ROOT_URL;
+process.env.CYPRESS_ROOT_URL = ROOT_URL;
