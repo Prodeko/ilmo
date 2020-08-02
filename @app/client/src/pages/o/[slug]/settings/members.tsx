@@ -105,7 +105,7 @@ const OrganizationSettingsPageInner: FC<OrganizationSettingsPageInnerProps> = (
 
   const [inviteToOrganization] = useInviteToOrganizationMutation();
   const [inviteInProgress, setInviteInProgress] = useState(false);
-  const [form] = Form.useForm();
+  const [form] = Form.Form.useForm();
   const handleInviteSubmit = useCallback(
     async (values: Store) => {
       if (inviteInProgress) {

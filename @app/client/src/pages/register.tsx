@@ -1,5 +1,5 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { useApolloClient } from "@apollo/react-hooks";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import {
   AuthRestrict,
   PasswordStrength,
@@ -17,8 +17,6 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Form, Input, Tooltip } from "antd";
-import { useForm } from "antd/lib/form/util";
-import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import Router from "next/router";
 import { Store } from "rc-field-form/lib/interface";
@@ -50,7 +48,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
   const [register] = useRegisterMutation({});
   const client = useApolloClient();
   const [confirmDirty, setConfirmDirty] = useState(false);
-  const [form] = useForm();
+  const [form] = Form.useForm();
 
   const handleSubmit = useCallback(
     async (values: Store) => {

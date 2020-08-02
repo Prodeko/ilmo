@@ -13,7 +13,6 @@ import {
 } from "@app/graphql";
 import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib";
 import { Alert, Button, Form, Input, message, PageHeader } from "antd";
-import { useForm } from "antd/lib/form/util";
 import { NextPage } from "next";
 import Router, { useRouter } from "next/router";
 import { Store } from "rc-field-form/lib/interface";
@@ -52,7 +51,7 @@ const OrganizationSettingsPageInner: FC<OrganizationSettingsPageInnerProps> = (
   const { name, slug } = organization;
   const router = useRouter();
 
-  const [form] = useForm();
+  const [form] = Form.useForm();
   const [updateOrganization] = useUpdateOrganizationMutation();
   const [error, setError] = useState<Error | null>(null);
   const handleSubmit = useCallback(
