@@ -1,0 +1,21 @@
+fragment CreatedEvent on Event {
+  id
+  name
+  ownerOrganization {
+    id
+    name
+  }
+}
+
+mutation CreateEvent($name: String!, $desc: String!, $org_id: UUID!) {
+  createEvent(
+    input: {
+      event: { name: $name, description: $desc, ownerOrganizationId: $org_id }
+    }
+  ) {
+    event {
+      id
+      ...CreatedEvent
+    }
+  }
+}
