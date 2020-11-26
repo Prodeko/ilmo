@@ -232,6 +232,16 @@ export function SharedLayout({
                         </a>
                       </Link>
                     </Menu.Item>
+                    {data.currentUser?.organizationMemberships?.nodes.length >
+                    0 ? (
+                      <Menu.Item>
+                        <Link href="/create-event">
+                          <a data-cy="layout-link-create-event">Create event</a>
+                        </Link>
+                      </Menu.Item>
+                    ) : (
+                      ""
+                    )}
                     <Menu.Item>
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">

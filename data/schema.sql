@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.7 (Ubuntu 11.7-2.pgdg18.04+1)
--- Dumped by pg_dump version 11.7 (Ubuntu 11.7-2.pgdg18.04+1)
+-- Dumped from database version 11.8 (Debian 11.8-1.pgdg90+1)
+-- Dumped by pg_dump version 11.8 (Debian 11.8-1.pgdg90+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1850,6 +1850,54 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 
 
 --
+-- Name: events; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.events (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    name text,
+    description text,
+    owner_organization_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.events IS 'Main table for events.';
+
+
+--
+-- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
+
+
+--
+-- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
+
+
+--
+-- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizing organization.';
+
+
+--
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1970,6 +2018,14 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: organization_invitations organization_invitations_organization_id_email_key; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2078,6 +2134,13 @@ ALTER TABLE ONLY app_public.users
 --
 
 CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
+
+
+--
+-- Name: events_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (owner_organization_id);
 
 
 --
@@ -2260,6 +2323,14 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: events events_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
 -- Name: organization_invitations organization_invitations_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2352,10 +2423,34 @@ CREATE POLICY delete_own ON app_public.user_emails FOR DELETE USING ((user_id = 
 
 
 --
+-- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: events manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: events manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (events.owner_organization_id = organization_memberships.organization_id)))));
 
 
 --
@@ -2375,6 +2470,13 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: events select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.events FOR SELECT USING (true);
+
 
 --
 -- Name: users select_all; Type: POLICY; Schema: app_public; Owner: -
@@ -2854,6 +2956,34 @@ GRANT ALL ON FUNCTION app_public.users_has_password(u app_public.users) TO graph
 
 REVOKE ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) TO graphile_starter_visitor;
+
+
+--
+-- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.events TO graphile_starter_visitor;
+
+
+--
+-- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO graphile_starter_visitor;
+
+
+--
+-- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO graphile_starter_visitor;
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO graphile_starter_visitor;
 
 
 --
