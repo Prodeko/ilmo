@@ -1,11 +1,21 @@
 import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
 import {
-  CreatedEventFragment,
-  useCreateEventMutation,
-  useEventCategoriesQuery,
+  CreatedEventCategoryFragment,
+  useCreateEventCategoryMutation,
+  useSharedQuery,
 } from "@app/graphql";
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib";
-import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Col,
+  Form,
+  Input,
+  PageHeader,
+  Row,
+  Select,
+} from "antd";
 import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
@@ -13,57 +23,57 @@ import React, { useCallback, useState } from "react";
 
 const { Option } = Select;
 
-const CreateEventPage: NextPage = () => {
+const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useEventCategoriesQuery();
+  const query = useSharedQuery();
   const [form] = Form.useForm();
 
   const code = getCodeFromError(formError);
-  const [event, setEvent] = useState<null | CreatedEventFragment>(null);
-  const [createEvent] = useCreateEventMutation();
+  const [
+    eventCategory,
+    setEventCategory,
+  ] = useState<null | CreatedEventCategoryFragment>(null);
+  const [createEventCategory] = useCreateEventCategoryMutation();
   const handleSubmit = useCallback(
     async (values: Store) => {
       setFormError(null);
       try {
-        const { name, description, organization, category } = values;
-        const { data } = await createEvent({
+        const { name, description, organization, is_public } = values;
+        const { data } = await createEventCategory({
           variables: {
             name,
             desc: description,
             org_id: organization,
-            cat_id: category,
+            is_public,
           },
         });
         setFormError(null);
-        setEvent(data?.createEvent?.event || null);
+        setEventCategory(data?.createEventCategory?.eventCategory || null);
       } catch (e) {
         setFormError(e);
       }
     },
-    [createEvent]
+    [createEventCategory]
   );
 
-  if (event) {
-    console.log("wtf");
-    return <Redirect layout href="/" />;
-  }
-
-  if (
-    query.called &&
-    !query.loading &&
-    (!query.data?.currentUser?.organizationMemberships.nodes.length ||
-      query.data?.currentUser?.organizationMemberships.nodes.length <= 0)
-  ) {
+  if (eventCategory) {
     return <Redirect layout href="/" />;
   }
 
   console.log(query);
 
+  if (
+    !query.data?.currentUser?.organizationMemberships.nodes.length ||
+    query.data?.currentUser?.organizationMemberships.nodes.length <= 0
+  ) {
+    return <Redirect layout href="/" />;
+  }
+
   return (
     <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>
       <Row>
         <Col flex={1}>
-          <PageHeader title="Create Event" />
+          <PageHeader title="Create Event Category" />
           <div>
             <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
               <Form.Item
@@ -72,13 +82,14 @@ const CreateEventPage: NextPage = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please choose an organizer for the event",
+                    message:
+                      "Please choose a host organization for the event category",
                   },
                 ]}
               >
                 <Select
-                  placeholder="Please select an organizer for the event"
-                  data-cy="createevent-select-organization-id"
+                  placeholder="Please select a host organization for the event category"
+                  data-cy="createeventcategory-select-organization-id"
                 >
                   {query.data?.currentUser?.organizationMemberships.nodes.map(
                     (a) => (
@@ -93,55 +104,51 @@ const CreateEventPage: NextPage = () => {
                 </Select>
               </Form.Item>
               <Form.Item
-                label="Category"
-                name="category"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please choose an category for the event",
-                  },
-                ]}
-              >
-                <Select
-                  placeholder="Please select an organizer for the event"
-                  data-cy="createevent-select-category-id"
-                >
-                  {query.data?.eventCategories?.nodes.map((a) => (
-                    <Option value={a.id} key={a.id}>
-                      {a.isPublic ? "Public" : "Hidden"} {a.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
                 label="Name"
                 name="name"
                 rules={[
                   {
                     required: true,
-                    message: "Please choose a name for the event",
+                    message: "Please choose a name for the event category",
                   },
                 ]}
               >
-                <Input data-cy="createevent-input-name" />
+                <Input data-cy="createeventcategory-input-name" />
               </Form.Item>
               <Form.Item
-                label="Description"
+                label="Short description"
                 name="description"
                 rules={[
                   {
                     required: true,
-                    message: "Please tell something about the event",
+                    message: "Please tell something about the event category",
                   },
                 ]}
               >
-                <Input.TextArea data-cy="createevent-input-description" />
+                <Input.TextArea data-cy="createeventcategory-input-description" />
+              </Form.Item>
+              <Form.Item
+                name="is_public"
+                valuePropName="checked"
+                rules={[
+                  {
+                    required: true,
+                    message: "Is this category available for everyone?",
+                  },
+                ]}
+              >
+                <Checkbox
+                  data-cy="createeventcategory-checkbox-public"
+                  defaultChecked={true}
+                >
+                  Public
+                </Checkbox>
               </Form.Item>
               {formError ? (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     type="error"
-                    message={`Creating event failed`}
+                    message={`Creating event category failed`}
                     description={
                       <span>
                         extractError(formError).message
@@ -169,4 +176,4 @@ const CreateEventPage: NextPage = () => {
   );
 };
 
-export default CreateEventPage;
+export default CreateEventCategoryPage;

@@ -1,31 +1,32 @@
-fragment CreatedEvent on Event {
+fragment CreatedEventCategory on EventCategory {
   id
   name
+  isPublic
   ownerOrganization {
     id
     name
   }
 }
 
-mutation CreateEvent(
+mutation CreateEventCategory(
   $name: String!
   $desc: String!
   $org_id: UUID!
-  $cat_id: UUID!
+  $is_public: Boolean!
 ) {
-  createEvent(
+  createEventCategory(
     input: {
-      event: {
+      eventCategory: {
         name: $name
         description: $desc
         ownerOrganizationId: $org_id
-        categoryId: $cat_id
+        isPublic: $is_public
       }
     }
   ) {
-    event {
+    eventCategory {
       id
-      ...CreatedEvent
+      ...CreatedEventCategory
     }
   }
 }

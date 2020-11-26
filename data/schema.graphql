@@ -74,6 +74,44 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
+"""All input for the create `EventCategory` mutation."""
+input CreateEventCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `EventCategory` to be created by this mutation."""
+  eventCategory: EventCategoryInput!
+}
+
+"""The output of our create `EventCategory` mutation."""
+type CreateEventCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `EventCategory` that was created by this mutation."""
+  eventCategory: EventCategory
+
+  """An edge for our `EventCategory`. May be used by Relay 1."""
+  eventCategoryEdge(
+    """The method to use when ordering `EventCategory`."""
+    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventCategoriesEdge
+
+  """Reads a single `Organization` that is related to this `EventCategory`."""
+  ownerOrganization: Organization
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the create `Event` mutation."""
 input CreateEventInput {
   """
@@ -88,6 +126,9 @@ input CreateEventInput {
 
 """The output of our create `Event` mutation."""
 type CreateEventPayload {
+  """Reads a single `Organization` that is related to this `Event`."""
+  category: Organization
+
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -191,6 +232,45 @@ A point in time as described by the [ISO
 """
 scalar Datetime
 
+"""All input for the `deleteEventCategory` mutation."""
+input DeleteEventCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """Unique identifier for the event category."""
+  id: UUID!
+}
+
+"""The output of our delete `EventCategory` mutation."""
+type DeleteEventCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedEventCategoryNodeId: ID
+
+  """The `EventCategory` that was deleted by this mutation."""
+  eventCategory: EventCategory
+
+  """An edge for our `EventCategory`. May be used by Relay 1."""
+  eventCategoryEdge(
+    """The method to use when ordering `EventCategory`."""
+    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventCategoriesEdge
+
+  """Reads a single `Organization` that is related to this `EventCategory`."""
+  ownerOrganization: Organization
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `deleteEvent` mutation."""
 input DeleteEventInput {
   """
@@ -205,6 +285,9 @@ input DeleteEventInput {
 
 """The output of our delete `Event` mutation."""
 type DeleteEventPayload {
+  """Reads a single `Organization` that is related to this `Event`."""
+  category: Organization
+
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -324,6 +407,9 @@ type DeleteUserEmailPayload {
 
 """Main table for events."""
 type Event {
+  """Reads a single `Organization` that is related to this `Event`."""
+  category: Organization
+  categoryId: UUID!
   createdAt: Datetime!
 
   """Description of the event."""
@@ -342,10 +428,117 @@ type Event {
   ownerOrganizationId: UUID!
 }
 
+"""A connection to a list of `EventCategory` values."""
+type EventCategoriesConnection {
+  """
+  A list of edges which contains the `EventCategory` and cursor to aid in pagination.
+  """
+  edges: [EventCategoriesEdge!]!
+
+  """A list of `EventCategory` objects."""
+  nodes: [EventCategory!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `EventCategory` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `EventCategory` edge in the connection."""
+type EventCategoriesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `EventCategory` at the end of the edge."""
+  node: EventCategory!
+}
+
+"""Methods to use when ordering `EventCategory`."""
+enum EventCategoriesOrderBy {
+  ID_ASC
+  ID_DESC
+  NATURAL
+  OWNER_ORGANIZATION_ID_ASC
+  OWNER_ORGANIZATION_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""Table for event_categories."""
+type EventCategory {
+  createdAt: Datetime!
+
+  """Short description of the event category."""
+  description: String
+
+  """Unique identifier for the event category."""
+  id: UUID!
+
+  """Are events of this category available for everyone."""
+  isPublic: Boolean!
+
+  """Name of the event category."""
+  name: String
+
+  """Reads a single `Organization` that is related to this `EventCategory`."""
+  ownerOrganization: Organization
+
+  """Id of the hosting organization."""
+  ownerOrganizationId: UUID!
+}
+
+"""
+A condition to be used against `EventCategory` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input EventCategoryCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `ownerOrganizationId` field."""
+  ownerOrganizationId: UUID
+}
+
+"""An input for mutations affecting `EventCategory`"""
+input EventCategoryInput {
+  """Short description of the event category."""
+  description: String
+
+  """Are events of this category available for everyone."""
+  isPublic: Boolean
+
+  """Name of the event category."""
+  name: String
+
+  """Id of the hosting organization."""
+  ownerOrganizationId: UUID!
+}
+
+"""
+Represents an update to a `EventCategory`. Fields that are set will be updated.
+"""
+input EventCategoryPatch {
+  """Short description of the event category."""
+  description: String
+
+  """Are events of this category available for everyone."""
+  isPublic: Boolean
+
+  """Name of the event category."""
+  name: String
+
+  """Id of the hosting organization."""
+  ownerOrganizationId: UUID
+}
+
 """
 A condition to be used against `Event` object types. All fields are tested for equality and combined with a logical ‘and.’
 """
 input EventCondition {
+  """Checks for equality with the object’s `categoryId` field."""
+  categoryId: UUID
+
   """Checks for equality with the object’s `id` field."""
   id: UUID
 
@@ -355,6 +548,8 @@ input EventCondition {
 
 """An input for mutations affecting `Event`"""
 input EventInput {
+  categoryId: UUID!
+
   """Description of the event."""
   description: String
 
@@ -369,6 +564,8 @@ input EventInput {
 Represents an update to a `Event`. Fields that are set will be updated.
 """
 input EventPatch {
+  categoryId: UUID
+
   """Description of the event."""
   description: String
 
@@ -407,6 +604,8 @@ type EventsEdge {
 
 """Methods to use when ordering `Event`."""
 enum EventsOrderBy {
+  CATEGORY_ID_ASC
+  CATEGORY_ID_DESC
   ID_ASC
   ID_DESC
   NATURAL
@@ -553,6 +752,14 @@ type Mutation {
     input: CreateEventInput!
   ): CreateEventPayload
 
+  """Creates a single `EventCategory`."""
+  createEventCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateEventCategoryInput!
+  ): CreateEventCategoryPayload
+
   """
   An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' and 'billing contact' roles. You may invite other users and redistribute these roles.
   """
@@ -578,6 +785,14 @@ type Mutation {
     """
     input: DeleteEventInput!
   ): DeleteEventPayload
+
+  """Deletes a single `EventCategory` using a unique key."""
+  deleteEventCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteEventCategoryInput!
+  ): DeleteEventCategoryPayload
 
   """
   Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend.
@@ -726,6 +941,14 @@ type Mutation {
     input: UpdateEventInput!
   ): UpdateEventPayload
 
+  """Updates a single `EventCategory` using a unique key and a patch."""
+  updateEventCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateEventCategoryInput!
+  ): UpdateEventCategoryPayload
+
   """Updates a single `Organization` using a unique key and a patch."""
   updateOrganization(
     """
@@ -757,6 +980,64 @@ type Organization {
   createdAt: Datetime!
   currentUserIsBillingContact: Boolean
   currentUserIsOwner: Boolean
+
+  """Reads and enables pagination through a set of `EventCategory`."""
+  eventCategoriesByOwnerOrganizationId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventCategoryCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventCategory`."""
+    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventCategoriesConnection!
+
+  """Reads and enables pagination through a set of `Event`."""
+  eventsByCategoryId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Event`."""
+    orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventsConnection!
 
   """Reads and enables pagination through a set of `Event`."""
   eventsByOwnerOrganizationId(
@@ -976,6 +1257,36 @@ type Query {
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
+
+  """Reads and enables pagination through a set of `EventCategory`."""
+  eventCategories(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventCategoryCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventCategory`."""
+    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventCategoriesConnection
+  eventCategory(id: UUID!): EventCategory
 
   """Reads and enables pagination through a set of `Event`."""
   events(
@@ -1233,6 +1544,49 @@ type TransferOrganizationOwnershipPayload {
   query: Query
 }
 
+"""All input for the `updateEventCategory` mutation."""
+input UpdateEventCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """Unique identifier for the event category."""
+  id: UUID!
+
+  """
+  An object where the defined keys will be set on the `EventCategory` being updated.
+  """
+  patch: EventCategoryPatch!
+}
+
+"""The output of our update `EventCategory` mutation."""
+type UpdateEventCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `EventCategory` that was updated by this mutation."""
+  eventCategory: EventCategory
+
+  """An edge for our `EventCategory`. May be used by Relay 1."""
+  eventCategoryEdge(
+    """The method to use when ordering `EventCategory`."""
+    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventCategoriesEdge
+
+  """Reads a single `Organization` that is related to this `EventCategory`."""
+  ownerOrganization: Organization
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `updateEvent` mutation."""
 input UpdateEventInput {
   """
@@ -1252,6 +1606,9 @@ input UpdateEventInput {
 
 """The output of our update `Event` mutation."""
 type UpdateEventPayload {
+  """Reads a single `Organization` that is related to this `Event`."""
+  category: Organization
+
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.

@@ -1850,6 +1850,62 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 
 
 --
+-- Name: event_categories; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_categories (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    name text,
+    description text,
+    owner_organization_id uuid NOT NULL,
+    is_public boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE event_categories; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.event_categories IS 'Table for event_categories.';
+
+
+--
+-- Name: COLUMN event_categories.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.id IS 'Unique identifier for the event category.';
+
+
+--
+-- Name: COLUMN event_categories.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.name IS 'Name of the event category.';
+
+
+--
+-- Name: COLUMN event_categories.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.description IS 'Short description of the event category.';
+
+
+--
+-- Name: COLUMN event_categories.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.owner_organization_id IS 'Id of the hosting organization.';
+
+
+--
+-- Name: COLUMN event_categories.is_public; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.is_public IS 'Are events of this category available for everyone.';
+
+
+--
 -- Name: events; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1858,7 +1914,8 @@ CREATE TABLE app_public.events (
     name text,
     description text,
     owner_organization_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    category_id uuid NOT NULL
 );
 
 
@@ -2018,6 +2075,14 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: event_categories event_categories_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2134,6 +2199,20 @@ ALTER TABLE ONLY app_public.users
 --
 
 CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
+
+
+--
+-- Name: event_categories_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_categories_owner_organization_id_idx ON app_public.event_categories USING btree (owner_organization_id);
+
+
+--
+-- Name: events_category_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_id);
 
 
 --
@@ -2323,6 +2402,22 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: event_categories event_categories_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.organizations(id);
+
+
+--
 -- Name: events events_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2423,6 +2518,12 @@ CREATE POLICY delete_own ON app_public.user_emails FOR DELETE USING ((user_id = 
 
 
 --
+-- Name: event_categories; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -2436,12 +2537,30 @@ CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_
 
 
 --
+-- Name: event_categories manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.event_categories USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
 -- Name: events manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY manage_as_admin ON app_public.events USING ((EXISTS ( SELECT 1
    FROM app_public.users
   WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: event_categories manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.event_categories USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (event_categories.owner_organization_id = organization_memberships.organization_id)))));
 
 
 --
@@ -2470,6 +2589,13 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: event_categories select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.event_categories FOR SELECT USING (is_public);
+
 
 --
 -- Name: events select_all; Type: POLICY; Schema: app_public; Owner: -
@@ -2959,6 +3085,41 @@ GRANT ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) TO
 
 
 --
+-- Name: TABLE event_categories; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN event_categories.name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(name),UPDATE(name) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN event_categories.description; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(description),UPDATE(description) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN event_categories.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN event_categories.is_public; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_public),UPDATE(is_public) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
 -- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -2984,6 +3145,13 @@ GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo
 --
 
 GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --
