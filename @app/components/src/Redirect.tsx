@@ -1,4 +1,4 @@
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/react-hooks";
 import { Skeleton } from "antd";
 import Router from "next/router";
 import React, { useEffect } from "react";

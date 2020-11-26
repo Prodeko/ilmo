@@ -1,13 +1,10 @@
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from "@apollo/client";
-import { onError } from "@apollo/client/link/error";
-import { WebSocketLink } from "@apollo/client/link/ws";
-import { getDataFromTree } from "@apollo/client/react/ssr";
+import { getDataFromTree } from "@apollo/react-ssr";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { ApolloClient } from "apollo-client";
+import { ApolloLink, split } from "apollo-link";
+import { onError } from "apollo-link-error";
+import { HttpLink } from "apollo-link-http";
+import { WebSocketLink } from "apollo-link-ws";
 import { getOperationAST } from "graphql";
 import withApolloBase from "next-with-apollo";
 import { SubscriptionClient } from "subscriptions-transport-ws";
@@ -69,8 +66,6 @@ function makeClientSideLink(ROOT_URL: string) {
 }
 
 export const withApollo = withApolloBase(
-  // Ignore until next-with-apollo is updated...
-  // @ts-ignore
   ({ initialState, ctx }) => {
     const ROOT_URL = process.env.ROOT_URL;
     if (!ROOT_URL) {
@@ -104,7 +99,7 @@ export const withApollo = withApolloBase(
             ? "ROOT_QUERY"
             : o.id
             ? `${o.__typename}:${o.id}`
-            : undefined,
+            : null,
       }).restore(initialState || {}),
     });
 

@@ -1,4 +1,3 @@
-import { ApolloError } from "@apollo/client";
 import { ErrorAlert, Redirect, SettingsLayout } from "@app/components";
 import {
   ProfileSettingsForm_UserFragment,
@@ -12,6 +11,8 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
+import { useForm } from "antd/lib/form/Form";
+import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import React, { useCallback, useState } from "react";
@@ -44,6 +45,7 @@ export default Settings_Profile;
 /**
  * These are the values in our form
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FormValues {
   username: string;
   name: string;
@@ -60,7 +62,7 @@ function ProfileSettingsForm({
   error,
   setError,
 }: ProfileSettingsFormProps) {
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [updateUser] = useUpdateUserMutation();
   const [success, setSuccess] = useState(false);
 

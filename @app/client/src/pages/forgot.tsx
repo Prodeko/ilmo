@@ -1,9 +1,10 @@
 import { UserOutlined } from "@ant-design/icons";
-import { ApolloError } from "@apollo/client/errors";
 import { AuthRestrict, SharedLayout } from "@app/components";
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql";
 import { extractError, getCodeFromError } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
+import { useForm } from "antd/lib/form/Form";
+import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import Link from "next/link";
 import { Store } from "rc-field-form/lib/interface";
@@ -13,7 +14,7 @@ const ForgotPassword: NextPage = () => {
   const [error, setError] = useState<Error | ApolloError | null>(null);
   const query = useSharedQuery();
 
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [forgotPassword] = useForgotPasswordMutation();
   const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null);
 

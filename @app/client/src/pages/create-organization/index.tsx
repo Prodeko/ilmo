@@ -1,4 +1,3 @@
-import { ApolloError } from "@apollo/client";
 import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
 import {
   CreatedOrganizationFragment,
@@ -13,7 +12,9 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Col, Form, Input, PageHeader, Row, Spin } from "antd";
+import { useForm } from "antd/lib/form/Form";
 import Text from "antd/lib/typography/Text";
+import { ApolloError } from "apollo-client";
 import { debounce } from "lodash";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
@@ -23,7 +24,7 @@ import slugify from "slugify";
 const CreateOrganizationPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useSharedQuery();
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [slug, setSlug] = useState("");
   const [
     lookupOrganizationBySlug,

@@ -43,6 +43,8 @@ if (!process.env.ROOT_URL) {
         modifyVars: themeVariables, // make your antd custom effective
       },
       webpack(config, { webpack, dev, isServer }) {
+        if (dev) config.devtool = "cheap-module-source-map";
+
         const makeSafe = (externals) => {
           if (Array.isArray(externals)) {
             return externals.map((ext) => {
@@ -78,7 +80,7 @@ if (!process.env.ROOT_URL) {
               "process.env.ROOT_URL":
                 "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.ROOT_URL : process.env.ROOT_URL)",
               "process.env.T_AND_C_URL":
-                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.T_AND_C_URL : process.env.ROOT_URL)",
+                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.T_AND_C_URL : process.env.T_AND_C_URL)",
             }),
             new webpack.IgnorePlugin(
               // These modules are server-side only; we don't want webpack

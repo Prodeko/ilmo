@@ -2,9 +2,10 @@ import "antd/dist/antd.less";
 import "nprogress/nprogress.css";
 import "../styles.less";
 
-import { ApolloClient, ApolloProvider } from "@apollo/client";
+import { ApolloProvider } from "@apollo/react-hooks";
 import { withApollo } from "@app/lib";
 import { notification } from "antd";
+import { ApolloClient } from "apollo-client";
 import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
@@ -41,7 +42,6 @@ if (typeof window !== "undefined") {
   Router.events.on("routeChangeComplete", () => {
     NProgress.done();
   });
-
   Router.events.on("routeChangeError", (err: Error | string) => {
     NProgress.done();
     if (err["cancelled"]) {

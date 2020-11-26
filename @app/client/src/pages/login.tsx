@@ -1,5 +1,5 @@
 import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/react-hooks";
 import {
   AuthRestrict,
   ButtonLink,
@@ -17,6 +17,8 @@ import {
   resetWebsocketConnection,
 } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
+import { useForm } from "antd/lib/form/Form";
+import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import Link from "next/link";
 import Router from "next/router";
@@ -129,7 +131,7 @@ function LoginForm({
   error,
   setError,
 }: LoginFormProps) {
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [login] = useLoginMutation({});
   const client = useApolloClient();
 

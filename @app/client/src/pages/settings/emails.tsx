@@ -1,4 +1,3 @@
-import { ApolloError } from "@apollo/client";
 import {
   ErrorAlert,
   P,
@@ -21,6 +20,8 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd";
+import { useForm } from "antd/lib/form/Form";
+import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import React, { useCallback, useState } from "react";
@@ -197,6 +198,7 @@ const Settings_Emails: NextPage = () => {
 
 export default Settings_Emails;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FormValues {
   email: string;
 }
@@ -208,7 +210,7 @@ interface AddEmailFormProps {
 }
 
 function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [addEmail] = useAddEmailMutation();
   const handleSubmit = useCallback(
     async (values: Store) => {

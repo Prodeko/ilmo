@@ -70,7 +70,7 @@ export default (app: Express) => {
   });
 
   /**
-   * For security reasons we only enable sessions for requests within our
+   * For security reasons we only enable sessions for requests within the our
    * own website; external URLs that need to issue requests to us must use a
    * different authentication method such as bearer tokens.
    */
