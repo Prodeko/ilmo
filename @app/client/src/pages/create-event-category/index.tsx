@@ -4,7 +4,12 @@ import {
   useCreateEventCategoryMutation,
   useSharedQuery,
 } from "@app/graphql";
-import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib";
+import {
+  extractError,
+  formItemLayout,
+  getCodeFromError,
+  tailFormItemLayout,
+} from "@app/lib";
 import {
   Alert,
   Button,
@@ -44,7 +49,7 @@ const CreateEventCategoryPage: NextPage = () => {
             name,
             desc: description,
             org_id: organization,
-            is_public,
+            is_public: !!is_public,
           },
         });
         setFormError(null);
@@ -127,16 +132,7 @@ const CreateEventCategoryPage: NextPage = () => {
               >
                 <Input.TextArea data-cy="createeventcategory-input-description" />
               </Form.Item>
-              <Form.Item
-                name="is_public"
-                valuePropName="checked"
-                rules={[
-                  {
-                    required: true,
-                    message: "Is this category available for everyone?",
-                  },
-                ]}
-              >
+              <Form.Item name="is_public" valuePropName="checked">
                 <Checkbox
                   data-cy="createeventcategory-checkbox-public"
                   defaultChecked={true}
@@ -151,7 +147,7 @@ const CreateEventCategoryPage: NextPage = () => {
                     message={`Creating event category failed`}
                     description={
                       <span>
-                        extractError(formError).message
+                        {extractError(formError).message}
                         {code ? (
                           <span>
                             {" "}

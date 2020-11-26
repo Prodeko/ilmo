@@ -4,7 +4,12 @@ import {
   useCreateEventMutation,
   useEventCategoriesQuery,
 } from "@app/graphql";
-import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib";
+import {
+  extractError,
+  formItemLayout,
+  getCodeFromError,
+  tailFormItemLayout,
+} from "@app/lib";
 import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
 import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
@@ -23,8 +28,10 @@ const CreateEventPage: NextPage = () => {
   const [createEvent] = useCreateEventMutation();
   const handleSubmit = useCallback(
     async (values: Store) => {
+      console.log(values);
       setFormError(null);
       try {
+        console.log(values);
         const { name, description, organization, category } = values;
         const { data } = await createEvent({
           variables: {
@@ -144,7 +151,7 @@ const CreateEventPage: NextPage = () => {
                     message={`Creating event failed`}
                     description={
                       <span>
-                        extractError(formError).message
+                        {extractError(formError).message}
                         {code ? (
                           <span>
                             {" "}

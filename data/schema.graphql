@@ -126,8 +126,8 @@ input CreateEventInput {
 
 """The output of our create `Event` mutation."""
 type CreateEventPayload {
-  """Reads a single `Organization` that is related to this `Event`."""
-  category: Organization
+  """Reads a single `EventCategory` that is related to this `Event`."""
+  category: EventCategory
 
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -285,8 +285,8 @@ input DeleteEventInput {
 
 """The output of our delete `Event` mutation."""
 type DeleteEventPayload {
-  """Reads a single `Organization` that is related to this `Event`."""
-  category: Organization
+  """Reads a single `EventCategory` that is related to this `Event`."""
+  category: EventCategory
 
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -407,8 +407,8 @@ type DeleteUserEmailPayload {
 
 """Main table for events."""
 type Event {
-  """Reads a single `Organization` that is related to this `Event`."""
-  category: Organization
+  """Reads a single `EventCategory` that is related to this `Event`."""
+  category: EventCategory
   categoryId: UUID!
   createdAt: Datetime!
 
@@ -471,6 +471,35 @@ type EventCategory {
 
   """Short description of the event category."""
   description: String
+
+  """Reads and enables pagination through a set of `Event`."""
+  eventsByCategoryId(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Event`."""
+    orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventsConnection!
 
   """Unique identifier for the event category."""
   id: UUID!
@@ -1009,35 +1038,6 @@ type Organization {
     """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesConnection!
-
-  """Reads and enables pagination through a set of `Event`."""
-  eventsByCategoryId(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Event`."""
-    orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventsConnection!
 
   """Reads and enables pagination through a set of `Event`."""
   eventsByOwnerOrganizationId(
@@ -1606,8 +1606,8 @@ input UpdateEventInput {
 
 """The output of our update `Event` mutation."""
 type UpdateEventPayload {
-  """Reads a single `Organization` that is related to this `Event`."""
-  category: Organization
+  """Reads a single `EventCategory` that is related to this `Event`."""
+  category: EventCategory
 
   """
   The exact same `clientMutationId` that was provided in the mutation input,

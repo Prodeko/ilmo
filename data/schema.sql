@@ -2414,7 +2414,7 @@ ALTER TABLE ONLY app_public.event_categories
 --
 
 ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.organizations(id);
+    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.event_categories(id);
 
 
 --
