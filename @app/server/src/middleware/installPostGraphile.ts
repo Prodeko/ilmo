@@ -15,6 +15,7 @@ import {
 import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
 
 import { getHttpServer, getWebsocketMiddlewares } from "../app";
+import CustomEventListGetterPlugin from "../plugins/CustomEventListGetter";
 import OrdersPlugin from "../plugins/Orders";
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin";
@@ -162,6 +163,7 @@ export function getPostGraphileOptions({
      *   https://www.graphile.org/postgraphile/extending/
      */
     appendPlugins: [
+      CustomEventListGetterPlugin,
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
       RemoveQueryQueryPlugin,

@@ -1,8 +1,8 @@
-import { Button, Col, Divider, Row, Typography } from "antd";
+import { Button, Col, Divider, Row, Spin, Table, Typography } from "antd";
 import * as React from "react";
 const { Text, Title, Paragraph } = Typography;
 import { SharedLayout } from "@app/components";
-import { useSharedQuery } from "@app/graphql";
+import { useSharedQuery, usePublicEventsQuery } from "@app/graphql";
 import { NextPage } from "next";
 
 // Convenience helper
@@ -14,19 +14,47 @@ const Li = ({ children, ...props }: any) => (
 
 const Home: NextPage = () => {
   const query = useSharedQuery();
+  const events = usePublicEventsQuery();
+
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Category",
+      dataIndex: "categoryName",
+      key: "categoryName",
+    },
+    {
+      title: "Date",
+      dataIndex: "startTime",
+      key: "startTime",
+    },
+  ];
+
   return (
     <SharedLayout title="" query={query}>
       <Row justify="space-between" gutter={32}>
         <Col xs={24} sm={16}>
-          <Title data-cy="homepage-header">
-            Welcome to the PostGraphile starter
-          </Title>
+          <Title data-cy="homepage-header">Ilmokilke 3.0</Title>
           <Paragraph>
             This project can serve as a basis for your own project. We've added
             many features that most projects require, but you're free to remove
             them or replace them with whatever you need.
           </Paragraph>
 
+          <Title level={4}>Events</Title>
+          {events.loading ? (
+            <Spin size="large" />
+          ) : events.error ? (
+            <Paragraph>{events.error}</Paragraph>
+          ) : events.data?.publicEvents ? (
+            <Table columns={columns} dataSource={events.data.publicEvents} />
+          ) : (
+            ""
+          )}
           <Paragraph>
             <Text mark>
               Please read the next few sections before continuing.

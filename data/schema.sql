@@ -1915,7 +1915,8 @@ CREATE TABLE app_public.events (
     description text,
     owner_organization_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    category_id uuid NOT NULL
+    category_id uuid NOT NULL,
+    start_time timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -2220,6 +2221,13 @@ CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_i
 --
 
 CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (owner_organization_id);
+
+
+--
+-- Name: events_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_start_time_idx ON app_public.events USING btree (start_time);
 
 
 --
@@ -3152,6 +3160,13 @@ GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_p
 --
 
 GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(start_time),UPDATE(start_time) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

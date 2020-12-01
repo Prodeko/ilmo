@@ -1,0 +1,10 @@
+query PublicEvents {
+  publicEvents {
+    categoryName
+    id
+    name
+    ownerOrganizationName
+    startTime
+    isPublic
+  }
+}

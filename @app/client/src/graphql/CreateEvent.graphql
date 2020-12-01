@@ -12,6 +12,7 @@ mutation CreateEvent(
   $desc: String!
   $org_id: UUID!
   $cat_id: UUID!
+  $datetime: Datetime!
 ) {
   createEvent(
     input: {
@@ -20,6 +21,7 @@ mutation CreateEvent(
         description: $desc
         ownerOrganizationId: $org_id
         categoryId: $cat_id
+        startTime: $datetime
       }
     }
   ) {

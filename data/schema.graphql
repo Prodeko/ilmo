@@ -426,6 +426,7 @@ type Event {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID!
+  startTime: Datetime!
 }
 
 """A connection to a list of `EventCategory` values."""
@@ -573,6 +574,9 @@ input EventCondition {
 
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
+
+  """Checks for equality with the object’s `startTime` field."""
+  startTime: Datetime
 }
 
 """An input for mutations affecting `Event`"""
@@ -587,6 +591,7 @@ input EventInput {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID!
+  startTime: Datetime
 }
 
 """
@@ -603,6 +608,7 @@ input EventPatch {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID
+  startTime: Datetime
 }
 
 """A connection to a list of `Event` values."""
@@ -642,6 +648,8 @@ enum EventsOrderBy {
   OWNER_ORGANIZATION_ID_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
+  START_TIME_ASC
+  START_TIME_DESC
 }
 
 """All input for the `forgotPassword` mutation."""
@@ -1252,6 +1260,15 @@ type PageInfo {
   startCursor: Cursor
 }
 
+type PublicEventPayload {
+  categoryName: String!
+  id: UUID!
+  isPublic: Boolean!
+  name: String
+  ownerOrganizationName: String!
+  startTime: Datetime!
+}
+
 """The root query type which gives access points into the data universe."""
 type Query {
   """The currently logged in user (or null if not logged in)."""
@@ -1353,6 +1370,9 @@ type Query {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
+
+  """This gets public events"""
+  publicEvents: [PublicEventPayload!]
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userByUsername(username: String!): User

@@ -10,7 +10,17 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
-import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
+import {
+  Alert,
+  Button,
+  Col,
+  DatePicker,
+  Form,
+  Input,
+  PageHeader,
+  Row,
+  Select,
+} from "antd";
 import { ApolloError } from "apollo-client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
@@ -32,13 +42,14 @@ const CreateEventPage: NextPage = () => {
       setFormError(null);
       try {
         console.log(values);
-        const { name, description, organization, category } = values;
+        const { name, description, organization, category, datetime } = values;
         const { data } = await createEvent({
           variables: {
             name,
             desc: description,
             org_id: organization,
             cat_id: category,
+            datetime: datetime.toISOString(),
           },
         });
         setFormError(null);
@@ -51,7 +62,6 @@ const CreateEventPage: NextPage = () => {
   );
 
   if (event) {
-    console.log("wtf");
     return <Redirect layout href="/" />;
   }
 
@@ -143,6 +153,19 @@ const CreateEventPage: NextPage = () => {
                 ]}
               >
                 <Input.TextArea data-cy="createevent-input-description" />
+              </Form.Item>
+              <Form.Item
+                name="datetime"
+                label="Choose time"
+                rules={[
+                  {
+                    type: "object",
+                    required: true,
+                    message: "Please select time!",
+                  },
+                ]}
+              >
+                <DatePicker showTime format="YYYY-MM-DD HH:mm" />
               </Form.Item>
               {formError ? (
                 <Form.Item {...tailFormItemLayout}>
