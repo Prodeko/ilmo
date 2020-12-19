@@ -153,6 +153,44 @@ type CreateEventPayload {
   query: Query
 }
 
+"""All input for the create `EventQuestion` mutation."""
+input CreateEventQuestionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `EventQuestion` to be created by this mutation."""
+  eventQuestion: EventQuestionInput!
+}
+
+"""The output of our create `EventQuestion` mutation."""
+type CreateEventQuestionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """Reads a single `Event` that is related to this `EventQuestion`."""
+  event: Event
+
+  """The `EventQuestion` that was created by this mutation."""
+  eventQuestion: EventQuestion
+
+  """An edge for our `EventQuestion`. May be used by Relay 1."""
+  eventQuestionEdge(
+    """The method to use when ordering `EventQuestion`."""
+    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventQuestionsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `createOrganization` mutation."""
 input CreateOrganizationInput {
   """
@@ -313,6 +351,43 @@ type DeleteEventPayload {
   query: Query
 }
 
+"""All input for the `deleteEventQuestion` mutation."""
+input DeleteEventQuestionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our delete `EventQuestion` mutation."""
+type DeleteEventQuestionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedEventQuestionNodeId: ID
+
+  """Reads a single `Event` that is related to this `EventQuestion`."""
+  event: Event
+
+  """The `EventQuestion` that was deleted by this mutation."""
+  eventQuestion: EventQuestion
+
+  """An edge for our `EventQuestion`. May be used by Relay 1."""
+  eventQuestionEdge(
+    """The method to use when ordering `EventQuestion`."""
+    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventQuestionsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `deleteOrganization` mutation."""
 input DeleteOrganizationInput {
   """
@@ -415,6 +490,35 @@ type Event {
   """Description of the event."""
   description: String
 
+  """Reads and enables pagination through a set of `EventQuestion`."""
+  eventQuestions(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventQuestionCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventQuestion`."""
+    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventQuestionsConnection!
+
   """Unique identifier for the event."""
   id: UUID!
 
@@ -426,6 +530,64 @@ type Event {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID!
+
+  """Reads and enables pagination through a set of `Registration`."""
+  registrations(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: RegistrationCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Registration`."""
+    orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationsConnection!
+
+  """Reads and enables pagination through a set of `RegistrationToken`."""
+  registrationTokens(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: RegistrationTokenCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `RegistrationToken`."""
+    orderBy: [RegistrationTokensOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationTokensConnection!
   startTime: Datetime!
 }
 
@@ -611,6 +773,85 @@ input EventPatch {
   startTime: Datetime
 }
 
+type EventQuestion {
+  """Reads a single `Event` that is related to this `EventQuestion`."""
+  event: Event
+  eventId: UUID!
+  id: UUID!
+  isPublic: Boolean!
+  options: JSON
+  type: QuestionType!
+}
+
+"""
+A condition to be used against `EventQuestion` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input EventQuestionCondition {
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+}
+
+"""An input for mutations affecting `EventQuestion`"""
+input EventQuestionInput {
+  eventId: UUID!
+  id: UUID
+  isPublic: Boolean
+  options: JSON
+  type: QuestionType!
+}
+
+"""
+Represents an update to a `EventQuestion`. Fields that are set will be updated.
+"""
+input EventQuestionPatch {
+  eventId: UUID
+  id: UUID
+  isPublic: Boolean
+  options: JSON
+  type: QuestionType
+}
+
+"""A connection to a list of `EventQuestion` values."""
+type EventQuestionsConnection {
+  """
+  A list of edges which contains the `EventQuestion` and cursor to aid in pagination.
+  """
+  edges: [EventQuestionsEdge!]!
+
+  """A list of `EventQuestion` objects."""
+  nodes: [EventQuestion!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `EventQuestion` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `EventQuestion` edge in the connection."""
+type EventQuestionsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `EventQuestion` at the end of the edge."""
+  node: EventQuestion!
+}
+
+"""Methods to use when ordering `EventQuestion`."""
+enum EventQuestionsOrderBy {
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
 """A connection to a list of `Event` values."""
 type EventsConnection {
   """
@@ -701,6 +942,11 @@ type InviteToOrganizationPayload {
   """
   query: Query
 }
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 input LoginInput {
   password: String!
@@ -797,6 +1043,14 @@ type Mutation {
     input: CreateEventCategoryInput!
   ): CreateEventCategoryPayload
 
+  """Creates a single `EventQuestion`."""
+  createEventQuestion(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateEventQuestionInput!
+  ): CreateEventQuestionPayload
+
   """
   An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' and 'billing contact' roles. You may invite other users and redistribute these roles.
   """
@@ -830,6 +1084,14 @@ type Mutation {
     """
     input: DeleteEventCategoryInput!
   ): DeleteEventCategoryPayload
+
+  """Deletes a single `EventQuestion` using a unique key."""
+  deleteEventQuestion(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteEventQuestionInput!
+  ): DeleteEventQuestionPayload
 
   """
   Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend.
@@ -911,6 +1173,12 @@ type Mutation {
     """
     input: RegisterInput!
   ): RegisterPayload
+  registerToEvent(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: RegisterToEventInput!
+  ): RegisterToEventPayload
 
   """
   The owner of an `Organization` may remove an `OrganizationMember` with this mutation.
@@ -985,6 +1253,14 @@ type Mutation {
     """
     input: UpdateEventCategoryInput!
   ): UpdateEventCategoryPayload
+
+  """Updates a single `EventQuestion` using a unique key and a patch."""
+  updateEventQuestion(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateEventQuestionInput!
+  ): UpdateEventQuestionPayload
 
   """Updates a single `Organization` using a unique key and a patch."""
   updateOrganization(
@@ -1304,6 +1580,36 @@ type Query {
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesConnection
   eventCategory(id: UUID!): EventCategory
+  eventQuestion(id: UUID!): EventQuestion
+
+  """Reads and enables pagination through a set of `EventQuestion`."""
+  eventQuestions(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventQuestionCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventQuestion`."""
+    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventQuestionsConnection
 
   """Reads and enables pagination through a set of `Event`."""
   events(
@@ -1373,10 +1679,77 @@ type Query {
 
   """This gets public events"""
   publicEvents: [PublicEventPayload!]
+
+  """Reads and enables pagination through a set of `Registration`."""
+  registrations(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: RegistrationCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Registration`."""
+    orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationsConnection
+
+  """Rest of the registration token :D"""
+  registrationTokenById(id: UUID!): RegistrationToken
+
+  """Reads and enables pagination through a set of `RegistrationToken`."""
+  registrationTokens(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: RegistrationTokenCondition
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `RegistrationToken`."""
+    orderBy: [RegistrationTokensOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationTokensConnection
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userByUsername(username: String!): User
   userEmail(id: UUID!): UserEmail
+}
+
+enum QuestionType {
+  LONG_TEXT
+  OPTION
+  SHORT_TEXT
 }
 
 input RegisterInput {
@@ -1389,6 +1762,139 @@ input RegisterInput {
 
 type RegisterPayload {
   user: User!
+}
+
+"""All input for the `registerToEvent` mutation."""
+input RegisterToEventInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+}
+
+"""The output of our `registerToEvent` mutation."""
+type RegisterToEventPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  uuid: UUID
+}
+
+type Registration {
+  """Reads a single `Event` that is related to this `Registration`."""
+  event: Event
+  eventId: UUID!
+  firstname: String!
+  lastname: String!
+  questionsPublic: JSON
+  quota: String
+}
+
+"""
+A condition to be used against `Registration` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input RegistrationCondition {
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+}
+
+"""A connection to a list of `Registration` values."""
+type RegistrationsConnection {
+  """
+  A list of edges which contains the `Registration` and cursor to aid in pagination.
+  """
+  edges: [RegistrationsEdge!]!
+
+  """A list of `Registration` objects."""
+  nodes: [Registration!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Registration` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Registration` edge in the connection."""
+type RegistrationsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Registration` at the end of the edge."""
+  node: Registration!
+}
+
+"""Methods to use when ordering `Registration`."""
+enum RegistrationsOrderBy {
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+type RegistrationToken {
+  createdAt: Datetime!
+
+  """Reads a single `Event` that is related to this `RegistrationToken`."""
+  event: Event
+  eventId: UUID!
+}
+
+"""
+A condition to be used against `RegistrationToken` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input RegistrationTokenCondition {
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+}
+
+"""A connection to a list of `RegistrationToken` values."""
+type RegistrationTokensConnection {
+  """
+  A list of edges which contains the `RegistrationToken` and cursor to aid in pagination.
+  """
+  edges: [RegistrationTokensEdge!]!
+
+  """A list of `RegistrationToken` objects."""
+  nodes: [RegistrationToken!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `RegistrationToken` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `RegistrationToken` edge in the connection."""
+type RegistrationTokensEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `RegistrationToken` at the end of the edge."""
+  node: RegistrationToken!
+}
+
+"""Methods to use when ordering `RegistrationToken`."""
+enum RegistrationTokensOrderBy {
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
 """All input for the `removeFromOrganization` mutation."""
@@ -1646,6 +2152,47 @@ type UpdateEventPayload {
 
   """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
+"""All input for the `updateEventQuestion` mutation."""
+input UpdateEventQuestionInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+
+  """
+  An object where the defined keys will be set on the `EventQuestion` being updated.
+  """
+  patch: EventQuestionPatch!
+}
+
+"""The output of our update `EventQuestion` mutation."""
+type UpdateEventQuestionPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """Reads a single `Event` that is related to this `EventQuestion`."""
+  event: Event
+
+  """The `EventQuestion` that was updated by this mutation."""
+  eventQuestion: EventQuestion
+
+  """An edge for our `EventQuestion`. May be used by Relay 1."""
+  eventQuestionEdge(
+    """The method to use when ordering `EventQuestion`."""
+    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventQuestionsEdge
 
   """
   Our root query field type. Allows us to run any query from our mutation payload.

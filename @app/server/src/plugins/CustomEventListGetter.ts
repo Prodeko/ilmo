@@ -53,7 +53,11 @@ const CustomEventListGetterPlugin = makeExtendSchemaPlugin((build) => ({
             `
           );
 
-          console.log(rows);
+          const { rows: rows2 } = await pgClient.query(
+            "SELECT app_public.current_session_id()"
+          );
+
+          console.log(rows2);
 
           if (!rows) {
             const e = new Error("Fetching events failed");

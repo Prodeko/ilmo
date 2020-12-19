@@ -1,0 +1,3 @@
+query EventPage($id: UUID!) {
+  ...EventPage_Query
+}

@@ -21,6 +21,9 @@ const Home: NextPage = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      render: (name: string, event: { id: string }) => (
+        <a href={`/event/${event.id}`}>{name}</a>
+      ),
     },
     {
       title: "Category",
