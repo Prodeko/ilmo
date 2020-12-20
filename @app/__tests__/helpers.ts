@@ -106,7 +106,7 @@ export const createUsers = async function createUsers(
     const email = `${userLetter}${i || ""}@b.c`;
     const user: User = (
       await client.query(
-        `SELECT * FROM app_private.really_create_user(
+        `select * from app_private.really_create_user(
         username := $1,
         email := $2,
         email_is_verified := $3,
