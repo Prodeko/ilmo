@@ -1,10 +1,13 @@
-import { getDataFromTree } from "@apollo/react-ssr";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { ApolloClient } from "apollo-client";
-import { ApolloLink, split } from "apollo-link";
-import { onError } from "apollo-link-error";
-import { HttpLink } from "apollo-link-http";
-import { WebSocketLink } from "apollo-link-ws";
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { getDataFromTree } from "@apollo/client/react/ssr";
 import { getOperationAST } from "graphql";
 import withApolloBase from "next-with-apollo";
 import { SubscriptionClient } from "subscriptions-transport-ws";
@@ -99,7 +102,7 @@ export const withApollo = withApolloBase(
             ? "ROOT_QUERY"
             : o.id
             ? `${o.__typename}:${o.id}`
-            : null,
+            : undefined,
       }).restore(initialState || {}),
     });
 

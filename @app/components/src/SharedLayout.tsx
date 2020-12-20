@@ -1,6 +1,4 @@
 import { CrownOutlined, DownOutlined } from "@ant-design/icons";
-import { QueryResult } from "@apollo/react-common";
-import { useApolloClient } from "@apollo/react-hooks";
 import { companyName, projectName } from "@app/config";
 import {
   SharedLayout_QueryFragment,
@@ -9,7 +7,7 @@ import {
   useLogoutMutation,
 } from "@app/graphql";
 import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
-import { ApolloError } from "apollo-client";
+import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
 import Head from "next/head";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
@@ -105,6 +103,7 @@ export function SharedLayout({
   const currentUrl = router.asPath;
   const client = useApolloClient();
   const [logout] = useLogoutMutation();
+
   const handleLogout = useCallback(() => {
     const reset = async () => {
       Router.events.off("routeChangeComplete", reset);
@@ -120,6 +119,7 @@ export function SharedLayout({
     Router.events.on("routeChangeComplete", reset);
     Router.push("/");
   }, [client, logout]);
+
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
       props.error && !props.loading && !noHandleErrors ? (
@@ -133,6 +133,7 @@ export function SharedLayout({
       ) : (
         children
       );
+
     const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
     const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
     const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
@@ -160,6 +161,7 @@ export function SharedLayout({
 
     return noPad ? inner : <StandardWidth>{inner}</StandardWidth>;
   };
+
   const { data, loading, error } = query;
 
   return (

@@ -21,7 +21,7 @@ import {
   Row,
   Select,
 } from "antd";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import React, { useCallback, useState } from "react";

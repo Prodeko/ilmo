@@ -21,7 +21,7 @@ import {
   Row,
   Select,
 } from "antd";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import React, { useCallback, useState } from "react";
@@ -73,8 +73,6 @@ const CreateEventPage: NextPage = () => {
   ) {
     return <Redirect layout href="/" />;
   }
-
-  console.log(query);
 
   return (
     <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>

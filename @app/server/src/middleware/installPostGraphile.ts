@@ -93,7 +93,7 @@ export function getPostGraphileOptions({
     subscriptions: true,
     websocketMiddlewares,
 
-    // enableQueryBatching: On the client side, use something like apollo-link-batch-http to make use of this
+    // enableQueryBatching: On the client side, use something like @apollo/client/link/batch-http to make use of this
     enableQueryBatching: true,
 
     // dynamicJson: instead of inputting/outputting JSON as strings, input/output raw JSON objects
