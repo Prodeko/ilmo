@@ -63,6 +63,7 @@ const CreateOrganizationPage: NextPage = () => {
     setOrganization,
   ] = useState<null | CreatedOrganizationFragment>(null);
   const [createOrganization] = useCreateOrganizationMutation();
+
   const handleSubmit = useCallback(
     async (values: Store) => {
       setFormError(null);
@@ -85,6 +86,7 @@ const CreateOrganizationPage: NextPage = () => {
     },
     [createOrganization]
   );
+
   const handleValuesChange = useCallback((values: Store) => {
     if ("name" in values) {
       setSlug(

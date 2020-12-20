@@ -10,7 +10,7 @@ import {
 } from "@app/graphql";
 import { Col, Empty, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import React, { FC } from "react";
+import React from "react";
 
 const OrganizationPage: NextPage = () => {
   const slug = useOrganizationSlug();
@@ -36,7 +36,7 @@ interface OrganizationPageInnerProps {
   organization: OrganizationPage_OrganizationFragment;
 }
 
-const OrganizationPageInner: FC<OrganizationPageInnerProps> = (props) => {
+const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
   const { organization } = props;
 
   return (

@@ -17,7 +17,7 @@ import { Alert, Button, message, PageHeader, Popconfirm } from "antd";
 import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { FC, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 const OrganizationSettingsPage: NextPage = () => {
   const slug = useOrganizationSlug();
@@ -51,7 +51,7 @@ interface OrganizationSettingsPageInnerProps {
   organization: OrganizationPage_OrganizationFragment;
 }
 
-const OrganizationSettingsPageInner: FC<OrganizationSettingsPageInnerProps> = (
+const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps> = (
   props
 ) => {
   const { organization } = props;

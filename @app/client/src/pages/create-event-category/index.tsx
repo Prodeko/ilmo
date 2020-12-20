@@ -39,6 +39,7 @@ const CreateEventCategoryPage: NextPage = () => {
     setEventCategory,
   ] = useState<null | CreatedEventCategoryFragment>(null);
   const [createEventCategory] = useCreateEventCategoryMutation();
+
   const handleSubmit = useCallback(
     async (values: Store) => {
       setFormError(null);
@@ -65,11 +66,10 @@ const CreateEventCategoryPage: NextPage = () => {
     return <Redirect layout href="/" />;
   }
 
-  console.log(query);
-
+  const organizationMemberships = query.data?.currentUser?.organizationMemberships?.nodes
   if (
-    !query.data?.currentUser?.organizationMemberships.nodes.length ||
-    query.data?.currentUser?.organizationMemberships.nodes.length <= 0
+    organizationMemberships &&
+    organizationMemberships?.length <= 0
   ) {
     return <Redirect layout href="/" />;
   }
@@ -96,7 +96,7 @@ const CreateEventCategoryPage: NextPage = () => {
                   placeholder="Please select a host organization for the event category"
                   data-cy="createeventcategory-select-organization-id"
                 >
-                  {query.data?.currentUser?.organizationMemberships.nodes.map(
+                  {organizationMemberships?.map(
                     (a) => (
                       <Option
                         value={a.organization?.id}

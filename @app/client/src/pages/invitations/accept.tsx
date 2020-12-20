@@ -19,7 +19,7 @@ import { Button, Col, Result, Row, Skeleton } from "antd";
 import { NextPage } from "next";
 import Router, { NextRouter, useRouter } from "next/router";
 import * as qs from "querystring";
-import React, { FC } from "react";
+import React, { useState, useCallback } from "react";
 
 interface IProps {
   id: string | null;
@@ -38,6 +38,7 @@ const InvitationAccept: NextPage<IProps> = (props) => {
     (router && router.query ? `?${qs.stringify(router.query)}` : "");
   const { id: rawId, code } = props;
   const id = rawId || "";
+
   const query = useInvitationDetailQuery({
     variables: {
       id,
@@ -46,6 +47,7 @@ const InvitationAccept: NextPage<IProps> = (props) => {
     skip: !id,
     fetchPolicy: "network-only",
   });
+
   return (
     <SharedLayout
       title="Accept Invitation"
@@ -78,18 +80,18 @@ interface InvitationAcceptInnerProps extends IProps {
   query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>;
 }
 
-const InvitationAcceptInner: FC<InvitationAcceptInnerProps> = (props) => {
+const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   const { id, code, query } = props;
   const router = useRouter();
 
   const { data, loading, error } = query;
   const [acceptInvite] = useAcceptOrganizationInviteMutation();
 
-  const [status, setStatus] = React.useState(Status.PENDING);
-  const [acceptError, setAcceptError] = React.useState<Error | null>(null);
+  const [status, setStatus] = useState(Status.PENDING);
+  const [acceptError, setAcceptError] = useState<Error | null>(null);
 
   const organization = data?.organizationForInvitation;
-  const handleAccept = React.useCallback(() => {
+  const handleAccept = useCallback(() => {
     if (!organization) {
       return;
     }

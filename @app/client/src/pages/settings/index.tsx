@@ -21,6 +21,7 @@ const Settings_Profile: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useSettingsProfileQuery();
   const { data, loading, error } = query;
+
   return (
     <SettingsLayout href="/settings" query={query}>
       {data && data.currentUser ? (

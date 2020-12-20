@@ -37,6 +37,7 @@ function Email({
   const [deleteEmail] = useDeleteEmailMutation();
   const [resendEmailVerification] = useResendEmailVerificationMutation();
   const [makeEmailPrimary] = useMakeEmailPrimaryMutation();
+
   return (
     <List.Item
       data-cy={`settingsemails-emailitem-${email.email.replace(

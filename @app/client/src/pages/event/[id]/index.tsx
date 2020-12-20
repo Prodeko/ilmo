@@ -8,13 +8,13 @@ import {
 import { EventPage_EventFragment, useEventPageQuery } from "@app/graphql";
 import { Col, Empty, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import React, { FC } from "react";
+import React from "react";
 
 interface EventPageInnerProps {
   event: EventPage_EventFragment;
 }
 
-const EventPageInner: FC<EventPageInnerProps> = (props) => {
+const EventPageInner: React.FC<EventPageInnerProps> = (props) => {
   const { event } = props;
 
   return (

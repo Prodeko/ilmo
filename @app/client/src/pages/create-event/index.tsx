@@ -26,8 +26,6 @@ import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import React, { useCallback, useState } from "react";
 
-const { Option } = Select;
-
 const CreateEventPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useEventCategoriesQuery();
@@ -36,6 +34,7 @@ const CreateEventPage: NextPage = () => {
   const code = getCodeFromError(formError);
   const [event, setEvent] = useState<null | CreatedEventFragment>(null);
   const [createEvent] = useCreateEventMutation();
+
   const handleSubmit = useCallback(
     async (values: Store) => {
       console.log(values);
@@ -65,11 +64,12 @@ const CreateEventPage: NextPage = () => {
     return <Redirect layout href="/" />;
   }
 
+  const organizationMemberships = query.data?.currentUser?.organizationMemberships?.nodes
   if (
     query.called &&
     !query.loading &&
-    (!query.data?.currentUser?.organizationMemberships.nodes.length ||
-      query.data?.currentUser?.organizationMemberships.nodes.length <= 0)
+    organizationMemberships &&
+    organizationMemberships?.length <= 0
   ) {
     return <Redirect layout href="/" />;
   }
@@ -95,14 +95,14 @@ const CreateEventPage: NextPage = () => {
                   placeholder="Please select an organizer for the event"
                   data-cy="createevent-select-organization-id"
                 >
-                  {query.data?.currentUser?.organizationMemberships.nodes.map(
+                  {organizationMemberships?.map(
                     (a) => (
-                      <Option
+                      <Select.Option
                         value={a.organization?.id}
                         key={a.organization?.id}
                       >
                         {a.organization?.name}
-                      </Option>
+                      </Select.Option>
                     )
                   )}
                 </Select>
@@ -122,9 +122,9 @@ const CreateEventPage: NextPage = () => {
                   data-cy="createevent-select-category-id"
                 >
                   {query.data?.eventCategories?.nodes.map((a) => (
-                    <Option value={a.id} key={a.id}>
+                    <Select.Option value={a.id} key={a.id}>
                       {a.isPublic ? "Public" : "Hidden"} {a.name}
-                    </Option>
+                    </Select.Option>
                   ))}
                 </Select>
               </Form.Item>

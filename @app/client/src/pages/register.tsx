@@ -149,6 +149,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
   const setPasswordNotFocussed = useCallback(() => {
     setPasswordIsFocussed(false);
   }, [setPasswordIsFocussed]);
+
   const handleValuesChange = useCallback(
     (changedValues) => {
       setPasswordInfo(
@@ -347,6 +348,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
     </SharedLayout>
   );
 };
+
 Register.getInitialProps = async ({ query }) => ({
   next: typeof query.next === "string" ? query.next : null,
 });

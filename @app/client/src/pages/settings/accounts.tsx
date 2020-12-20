@@ -43,9 +43,11 @@ function UnlinkAccountButton({ id }: { id: string }) {
   const handleOpenModal = useCallback(() => {
     setModalOpen(true);
   }, [setModalOpen]);
+
   const handleCloseModal = useCallback(() => {
     setModalOpen(false);
   }, [setModalOpen]);
+
   const handleUnlink = useCallback(async () => {
     setModalOpen(false);
     setDeleting(true);

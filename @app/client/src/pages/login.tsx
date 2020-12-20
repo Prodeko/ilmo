@@ -44,6 +44,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const next: string = isSafe(rawNext) ? rawNext! : "/";
   const query = useSharedQuery();
+
   return (
     <SharedLayout
       title="Sign in"

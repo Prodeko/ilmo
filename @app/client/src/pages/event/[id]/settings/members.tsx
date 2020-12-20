@@ -32,7 +32,7 @@ import Text from "antd/lib/typography/Text";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, { FC, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 const OrganizationSettingsPage: NextPage = () => {
   const slug = useOrganizationSlug();
@@ -79,7 +79,7 @@ interface OrganizationSettingsPageInnerProps {
 // This needs to match the `first:` used in OrganizationMembers.graphql
 const RESULTS_PER_PAGE = 10;
 
-const OrganizationSettingsPageInner: FC<OrganizationSettingsPageInnerProps> = (
+const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps> = (
   props
 ) => {
   const { organization, currentUser, page, setPage } = props;
@@ -192,7 +192,7 @@ interface OrganizationMemberListItemProps {
   currentUser?: SharedLayout_UserFragment | null;
 }
 
-const OrganizationMemberListItem: FC<OrganizationMemberListItemProps> = (
+const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   props
 ) => {
   const { node, organization, currentUser } = props;

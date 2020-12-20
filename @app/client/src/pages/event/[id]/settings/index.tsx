@@ -17,7 +17,7 @@ import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Router, { useRouter } from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, { FC, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 const OrganizationSettingsPage: NextPage = () => {
   const slug = useOrganizationSlug();
@@ -45,7 +45,7 @@ interface OrganizationSettingsPageInnerProps {
   organization: OrganizationPage_OrganizationFragment;
 }
 
-const OrganizationSettingsPageInner: FC<OrganizationSettingsPageInnerProps> = (
+const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps> = (
   props
 ) => {
   const { organization } = props;
