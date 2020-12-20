@@ -1,14 +1,8 @@
-import {
-  ButtonLink,
-  SharedLayout,
-  useEventLoading,
-  useEventId,
-  P,
-} from "@app/components";
+import React from "react";
+import { P, SharedLayout, useEventId, useEventLoading } from "@app/components";
 import { EventPage_EventFragment, useEventPageQuery } from "@app/graphql";
 import { Col, Empty, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import React from "react";
 
 interface EventPageInnerProps {
   event: EventPage_EventFragment;
@@ -24,7 +18,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = (props) => {
           <PageHeader
             title={"Dashboard"}
             extra={
-              [<P>BILEET</P>]
+              [<P key="bileet">BILEET</P>]
               /*
               organization.currentUserIsBillingContact ||
               organization.currentUserIsOwner

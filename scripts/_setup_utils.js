@@ -9,6 +9,7 @@ const { safeRandomString } = require("./lib/random");
 
 // fixes runSync not throwing ENOENT on windows
 const platform = require("os").platform();
+
 const yarnCmd = platform === "win32" ? "yarn.cmd" : "yarn";
 
 const projectName = process.env.PROJECT_NAME;

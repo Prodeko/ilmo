@@ -1,9 +1,10 @@
+import * as qs from "querystring";
+
+import React from "react";
 import { Layout, Menu, Typography } from "antd";
 import { TextProps } from "antd/lib/typography/Text";
 import Link from "next/link";
 import { NextRouter, useRouter } from "next/router";
-import * as qs from "querystring";
-import React from "react";
 
 import { Redirect } from "./Redirect";
 import {

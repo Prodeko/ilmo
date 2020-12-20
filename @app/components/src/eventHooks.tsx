@@ -1,11 +1,11 @@
+import React from "react";
 import { QueryResult } from "@apollo/client";
 import { EventPage_QueryFragment } from "@app/graphql";
 import { Col, Row } from "antd";
 import { useRouter } from "next/router";
-import React, { ElementType } from "react";
 
-import { ErrorAlert, FourOhFour } from "./";
 import { SpinPadded } from "./SpinPadded";
+import { ErrorAlert, FourOhFour } from "./";
 
 export function useEventId() {
   const router = useRouter();

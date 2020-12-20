@@ -1,3 +1,5 @@
+import React, { useCallback, useState } from "react";
+import { ApolloError } from "@apollo/client";
 import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
 import {
   CreatedEventCategoryFragment,
@@ -21,10 +23,8 @@ import {
   Row,
   Select,
 } from "antd";
-import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const { Option } = Select;
 
@@ -66,11 +66,9 @@ const CreateEventCategoryPage: NextPage = () => {
     return <Redirect layout href="/" />;
   }
 
-  const organizationMemberships = query.data?.currentUser?.organizationMemberships?.nodes
-  if (
-    organizationMemberships &&
-    organizationMemberships?.length <= 0
-  ) {
+  const organizationMemberships =
+    query.data?.currentUser?.organizationMemberships?.nodes;
+  if (organizationMemberships && organizationMemberships?.length <= 0) {
     return <Redirect layout href="/" />;
   }
 
@@ -96,16 +94,11 @@ const CreateEventCategoryPage: NextPage = () => {
                   placeholder="Please select a host organization for the event category"
                   data-cy="createeventcategory-select-organization-id"
                 >
-                  {organizationMemberships?.map(
-                    (a) => (
-                      <Option
-                        value={a.organization?.id}
-                        key={a.organization?.id}
-                      >
-                        {a.organization?.name}
-                      </Option>
-                    )
-                  )}
+                  {organizationMemberships?.map((a) => (
+                    <Option value={a.organization?.id} key={a.organization?.id}>
+                      {a.organization?.name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
               <Form.Item

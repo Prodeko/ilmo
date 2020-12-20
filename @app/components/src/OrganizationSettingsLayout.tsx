@@ -1,8 +1,8 @@
+import React, { useMemo } from "react";
 import { OrganizationPage_OrganizationFragment } from "@app/graphql";
 import { Layout, Menu, Typography } from "antd";
 import { TextProps } from "antd/lib/typography/Text";
 import Link from "next/link";
-import React, { useMemo } from "react";
 
 import { contentMinHeight } from "./SharedLayout";
 import { StandardWidth } from "./StandardWidth";

@@ -1,6 +1,6 @@
+import React from "react";
 import { User } from "@app/graphql";
 import { Result } from "antd";
-import React from "react";
 
 import { ButtonLink } from "./ButtonLink";
 

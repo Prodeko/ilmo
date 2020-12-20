@@ -1,5 +1,6 @@
-import express, { Express } from "express";
 import { Server } from "http";
+
+import express, { Express } from "express";
 import { Middleware } from "postgraphile";
 
 import { cloudflareIps } from "./cloudflare";

@@ -1,4 +1,12 @@
+import React, {
+  FocusEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { QuestionCircleOutlined } from "@ant-design/icons";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import {
   AuthRestrict,
   PasswordStrength,
@@ -17,17 +25,9 @@ import {
 } from "@app/lib";
 import { Alert, Button, Form, Input, Tooltip } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { ApolloError, useApolloClient } from "@apollo/client";
 import { NextPage } from "next";
 import Router from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, {
-  FocusEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
 
 import { isSafe } from "./login";
 

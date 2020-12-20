@@ -1,4 +1,5 @@
 const { readFileSync } = require("fs");
+
 const schemaString = readFileSync(`${__dirname}/data/schema.graphql`, "utf8");
 
 module.exports = {
@@ -48,6 +49,7 @@ module.exports = {
     es6: true,
   },
   rules: {
+    "react/display-name": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
     "@typescript-eslint/no-unused-vars": [
@@ -97,36 +99,36 @@ module.exports = {
     "graphql/template-strings": [
       "error",
       {
-        env: "literal",
+        env: "apollo",
         schemaString,
         validators: [
-          "ExecutableDefinitions",
-          "FieldsOnCorrectType",
-          "FragmentsOnCompositeTypes",
-          "KnownArgumentNames",
-          "KnownDirectives", // disabled by default in relay
-          // 'KnownFragmentNames', // disabled by default in all envs
-          "KnownTypeNames",
-          "LoneAnonymousOperation",
-          "NoFragmentCycles",
-          "NoUndefinedVariables", //disabled by default in relay
-          // 'NoUnusedFragments' // disabled by default in all envs
-          // 'NoUnusedVariables' throws even when fragments use the variable
-          "OverlappingFieldsCanBeMerged",
-          "PossibleFragmentSpreads",
-          "ProvidedRequiredArguments", // disabled by default in relay
-          "ScalarLeafs", // disabled by default in relay
-          "SingleFieldSubscriptions",
-          "UniqueArgumentNames",
-          "UniqueDirectivesPerLocation",
-          "UniqueFragmentNames",
-          "UniqueInputFieldNames",
-          "UniqueOperationNames",
-          "UniqueVariableNames",
-          "ValuesOfCorrectType",
-          "VariablesAreInputTypes",
-          // "VariablesDefaultValueAllowed",
-          "VariablesInAllowedPosition",
+          "ExecutableDefinitionsRule",
+          "FieldsOnCorrectTypeRule",
+          "FragmentsOnCompositeTypesRule",
+          "KnownArgumentNamesRule",
+          "KnownDirectivesRule", // disabled by default in relay
+          // 'KnownFragmentNamesRule', // disabled by default in all envs
+          "KnownTypeNamesRule",
+          "LoneAnonymousOperationRule",
+          "NoFragmentCyclesRule",
+          "NoUndefinedVariablesRule", //disabled by default in relay
+          // 'NoUnusedFragmentsRule' // disabled by default in all envs
+          // 'NoUnusedVariablesRule' throws even when fragments use the variable
+          "OverlappingFieldsCanBeMergedRule",
+          "PossibleFragmentSpreadsRule",
+          "ProvidedRequiredArgumentsRule", // disabled by default in relay
+          "ScalarLeafsRule", // disabled by default in relay
+          "SingleFieldSubscriptionsRule",
+          "UniqueArgumentNamesRule",
+          "UniqueDirectivesPerLocationRule",
+          "UniqueFragmentNamesRule",
+          "UniqueInputFieldNamesRule",
+          "UniqueOperationNamesRule",
+          "UniqueVariableNamesRule",
+          "ValuesOfCorrectTypeRule",
+          "VariablesAreInputTypesRule",
+          // "VariablesDefaultValueAllowedRule",
+          "VariablesInAllowedPositionRule",
         ],
       },
     ],
@@ -153,9 +155,33 @@ module.exports = {
      * simple-import-sort seems to be the most stable import sorting currently,
      * disable others
      */
-    "simple-import-sort/sort": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        groups: [
+          // Node.js builtins. You could also generate this regex if you use a `.js` config.
+          // For example: `^(${require("module").builtinModules.join("|")})(/|$)`
+          [
+            "^(assert|buffer|child_process|cluster|console|constants|crypto|dgram|dns|domain|events|fs|http|https|module|net|os|path|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|tty|url|util|vm|zlib|freelist|v8|process|async_hooks|http2|perf_hooks)(/.*|$)",
+          ],
+          // Packages. `react` related packages come first.
+          ["^react", "^@?\\w"],
+          // Side effect imports.
+          ["^\\u0000"],
+          // Parent imports. Put `..` last.
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+          // Other relative imports. Put same-folder imports and `.` last.
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+          // Style imports.
+          ["^.+\\.s?css$"],
+        ],
+      },
+    ],
+    "simple-import-sort/exports": "error",
     "sort-imports": "off",
-    "import/order": "off",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
 
     "import/no-deprecated": "warn",
     "import/no-duplicates": "error",

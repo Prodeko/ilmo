@@ -1,9 +1,9 @@
+import React, { useEffect, useState } from "react";
 import { Col, Row, SharedLayout } from "@app/components";
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql";
 import { Alert } from "antd";
 import get from "lodash/get";
 import { NextPage } from "next";
-import React, { useEffect, useState } from "react";
 
 interface IProps {
   id: string | null;
@@ -15,9 +15,9 @@ const VerifyPage: NextPage<IProps> = (props) => {
     props.id || "",
     props.token || "",
   ]);
-  const [state, setState] = useState<
-    "PENDING" | "SUBMITTING" | "SUCCESS"
-  >(props.id && props.token ? "SUBMITTING" : "PENDING");
+  const [state, setState] = useState<"PENDING" | "SUBMITTING" | "SUCCESS">(
+    props.id && props.token ? "SUBMITTING" : "PENDING"
+  );
   const [error, setError] = useState<Error | null>(null);
   const [verifyEmail] = useVerifyEmailMutation();
 

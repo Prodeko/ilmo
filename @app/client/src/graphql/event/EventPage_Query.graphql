@@ -1,5 +1,6 @@
 fragment EventPage_Event on Event {
   category {
+    id
     description
     isPublic
     name
@@ -9,6 +10,7 @@ fragment EventPage_Event on Event {
   name
   startTime
   ownerOrganization {
+    id
     name
   }
 }

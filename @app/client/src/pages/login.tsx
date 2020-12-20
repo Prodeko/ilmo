@@ -1,4 +1,6 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import {
   AuthRestrict,
   ButtonLink,
@@ -17,12 +19,10 @@ import {
 } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { ApolloError, useApolloClient } from "@apollo/client";
 import { NextPage } from "next";
 import Link from "next/link";
 import Router from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 
 function hasErrors(fieldsError: Object) {
   return Object.keys(fieldsError).some((field) => fieldsError[field]);

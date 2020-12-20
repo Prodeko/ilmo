@@ -1,9 +1,10 @@
-import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
+import { resolve } from "path";
+
 import PgPubsub from "@graphile/pg-pubsub";
 import GraphilePro from "@graphile/pro"; // Requires license key
+import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Express, Request, Response } from "express";
 import { NodePlugin } from "graphile-build";
-import { resolve } from "path";
 import { Pool, PoolClient } from "pg";
 import {
   enhanceHttpServerWithSubscriptions,
@@ -22,6 +23,7 @@ import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlu
 import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin";
 import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin";
 import handleErrors from "../utils/handleErrors";
+
 import { getAuthPgPool, getRootPgPool } from "./installDatabasePools";
 
 export interface OurGraphQLContext {

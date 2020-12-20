@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from "react";
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Col, Popover, Progress, Row } from "antd";
-import React, { useEffect, useState } from "react";
 
 export interface PasswordStrengthProps {
   passwordStrength: number;

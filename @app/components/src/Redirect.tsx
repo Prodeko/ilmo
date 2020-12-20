@@ -1,7 +1,7 @@
+import React, { useEffect } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Skeleton } from "antd";
 import Router from "next/router";
-import React, { useEffect } from "react";
 
 import { SharedLayout } from "./SharedLayout";
 import { StandardWidth } from "./StandardWidth";

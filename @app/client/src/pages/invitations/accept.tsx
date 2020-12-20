@@ -1,3 +1,6 @@
+import * as qs from "querystring";
+
+import React, { useCallback, useState } from "react";
 import { QueryResult } from "@apollo/client";
 import {
   AuthRestrict,
@@ -18,8 +21,6 @@ import { getCodeFromError } from "@app/lib";
 import { Button, Col, Result, Row, Skeleton } from "antd";
 import { NextPage } from "next";
 import Router, { NextRouter, useRouter } from "next/router";
-import * as qs from "querystring";
-import React, { useState, useCallback } from "react";
 
 interface IProps {
   id: string | null;

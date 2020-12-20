@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import { GithubFilled } from "@ant-design/icons";
 import {
   ErrorAlert,
@@ -14,7 +15,6 @@ import {
 } from "@app/graphql";
 import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd";
 import { NextPage } from "next";
-import React, { useCallback, useState } from "react";
 
 const AUTH_NAME_LOOKUP = {
   github: "GitHub",

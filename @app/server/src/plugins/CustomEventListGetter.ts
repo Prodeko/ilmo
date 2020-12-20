@@ -3,7 +3,7 @@ import { gql, makeExtendSchemaPlugin } from "graphile-utils";
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors";
 
-const CustomEventListGetterPlugin = makeExtendSchemaPlugin((build) => ({
+const CustomEventListGetterPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
     type PublicEventPayload {
       id: UUID!
@@ -16,7 +16,7 @@ const CustomEventListGetterPlugin = makeExtendSchemaPlugin((build) => ({
 
     extend type Query {
       """
-      This gets public events
+      Get public events
       """
       publicEvents: [PublicEventPayload!]
     }
@@ -25,54 +25,48 @@ const CustomEventListGetterPlugin = makeExtendSchemaPlugin((build) => ({
     Query: {
       async publicEvents(
         _query,
-        args,
+        _args,
         context: OurGraphQLContext,
-        resolveInfo
+        _resolveInfo
       ) {
-        const { selectGraphQLResultFromTable } = resolveInfo.graphile;
         const { pgClient } = context;
+
         try {
           // Call our login function to find out if the username/password combination exists
           const { rows } = await pgClient.query(
             `
-            SELECT
-              events.id as id,
-              events.name as name,
-              events.start_time as start_time,
-              cats.name as category_name,
-              org.name as owner_organization_name,
-              is_public
-            FROM (
-            (
-              SELECT *
-              FROM app_public.events
-              WHERE start_time > NOW()
-              ORDER BY start_time ASC
-            ) AS events INNER JOIN app_public.event_categories AS cats ON events.category_id = cats.id)
-			      INNER JOIN app_public.organizations AS org ON events.owner_organization_id = org.id
+              select
+                event.id as id,
+                event.name as name,
+                event.start_time as "startTime",
+                category.name as "categoryName",
+                category.is_public as "isPublic",
+                org.name as "ownerOrganizationName"
+              from (
+              (
+                select *
+                from app_public.events
+                where start_time > now()
+                order by start_time asc
+              ) as event inner join app_public.event_categories as category on event.category_id = category.id)
+              inner join app_public.organizations as org on event.owner_organization_id = org.id
             `
           );
 
           const { rows: rows2 } = await pgClient.query(
-            "SELECT app_public.current_session_id()"
+            "select app_public.current_session_id()"
           );
 
-          console.log(rows2);
+          console.log(rows2, rows);
 
           if (!rows) {
+            console.log("here");
             const e = new Error("Fetching events failed");
-            e["code"] = "FEEE";
+            e["code"] = "NTFND";
             throw e;
           }
 
-          return rows.map((a) => ({
-            id: a.id,
-            name: a.name,
-            isPublic: a.is_public,
-            categoryName: a.category_name,
-            startTime: a.start_time,
-            ownerOrganizationName: a.owner_organization_name,
-          }));
+          return rows;
         } catch (e) {
           const { code } = e;
           const safeErrorCodes = [...Object.keys(ERROR_MESSAGE_OVERRIDES)];

@@ -1,3 +1,5 @@
+import React, { useCallback, useState } from "react";
+import { ApolloError } from "@apollo/client";
 import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
 import {
   CreatedEventFragment,
@@ -21,10 +23,8 @@ import {
   Row,
   Select,
 } from "antd";
-import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const CreateEventPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
@@ -64,7 +64,8 @@ const CreateEventPage: NextPage = () => {
     return <Redirect layout href="/" />;
   }
 
-  const organizationMemberships = query.data?.currentUser?.organizationMemberships?.nodes
+  const organizationMemberships =
+    query.data?.currentUser?.organizationMemberships?.nodes;
   if (
     query.called &&
     !query.loading &&
@@ -95,16 +96,14 @@ const CreateEventPage: NextPage = () => {
                   placeholder="Please select an organizer for the event"
                   data-cy="createevent-select-organization-id"
                 >
-                  {organizationMemberships?.map(
-                    (a) => (
-                      <Select.Option
-                        value={a.organization?.id}
-                        key={a.organization?.id}
-                      >
-                        {a.organization?.name}
-                      </Select.Option>
-                    )
-                  )}
+                  {organizationMemberships?.map((a) => (
+                    <Select.Option
+                      value={a.organization?.id}
+                      key={a.organization?.id}
+                    >
+                      {a.organization?.name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
               <Form.Item

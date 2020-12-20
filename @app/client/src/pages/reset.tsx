@@ -1,3 +1,4 @@
+import React, { FocusEvent, useCallback, useState } from "react";
 import {
   AuthRestrict,
   Col,
@@ -12,7 +13,6 @@ import { useForm } from "antd/lib/form/Form";
 import get from "lodash/get";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
-import React, { FocusEvent, useCallback, useState } from "react";
 
 interface IProps {
   userId: string | null;

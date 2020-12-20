@@ -3,7 +3,7 @@ import passport from "passport";
 
 import { getRootPgPool } from "./installDatabasePools";
 
-declare module 'express-session' {
+declare module "express-session" {
   interface SessionData {
     returnTo: string;
   }

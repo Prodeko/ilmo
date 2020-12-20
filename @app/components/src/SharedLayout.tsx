@@ -1,4 +1,7 @@
+import * as React from "react";
+import { useCallback } from "react";
 import { CrownOutlined, DownOutlined } from "@ant-design/icons";
+import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
 import { companyName, projectName } from "@app/config";
 import {
   SharedLayout_QueryFragment,
@@ -7,15 +10,12 @@ import {
   useLogoutMutation,
 } from "@app/graphql";
 import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
-import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
 import Head from "next/head";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
-import * as React from "react";
-import { useCallback } from "react";
 
-import { ErrorAlert, H3, StandardWidth, Warn } from ".";
 import { Redirect } from "./Redirect";
+import { ErrorAlert, H3, StandardWidth, Warn } from ".";
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -29,7 +29,7 @@ const { Text } = Typography;
  */
 const _babelHackRow = Row;
 const _babelHackCol = Col;
-export { _babelHackRow as Row, _babelHackCol as Col, Link };
+export { _babelHackCol as Col, Link, _babelHackRow as Row };
 
 export const contentMinHeight = "calc(100vh - 64px - 70px)";
 

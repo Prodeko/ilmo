@@ -1,3 +1,4 @@
+import React from "react";
 import {
   ButtonLink,
   SharedLayout,
@@ -10,7 +11,6 @@ import {
 } from "@app/graphql";
 import { Col, Empty, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import React from "react";
 
 const OrganizationPage: NextPage = () => {
   const slug = useOrganizationSlug();

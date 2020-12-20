@@ -1,7 +1,9 @@
 export * from "./ButtonLink";
 export * from "./ErrorAlert";
 export * from "./ErrorOccurred";
+export * from "./eventHooks";
 export * from "./FourOhFour";
+export * from "./organizationHooks";
 export * from "./OrganizationSettingsLayout";
 export * from "./PasswordStrength";
 export * from "./Redirect";
@@ -12,5 +14,3 @@ export * from "./SpinPadded";
 export * from "./StandardWidth";
 export * from "./Text";
 export * from "./Warn";
-export * from "./eventHooks";
-export * from "./organizationHooks";

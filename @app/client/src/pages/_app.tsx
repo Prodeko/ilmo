@@ -1,14 +1,15 @@
-import "antd/dist/antd.less";
-import "nprogress/nprogress.css";
-import "../styles.less";
-
+import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
 import { notification } from "antd";
 import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
-import * as React from "react";
+
+import "antd/dist/antd.less";
+import "../styles.less";
+
+import "nprogress/nprogress.css";
 
 declare global {
   interface Window {

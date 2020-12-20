@@ -9,6 +9,7 @@ import {
 import { GraphQLResolveInfo } from "graphql";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
+
 type GraphileHelpers = any;
 type AugmentedGraphQLFieldResolver<
   TSource,

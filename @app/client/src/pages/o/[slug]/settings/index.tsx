@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import {
   AuthRestrict,
   OrganizationSettingsLayout,
@@ -17,7 +18,6 @@ import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Router, { useRouter } from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const OrganizationSettingsPage: NextPage = () => {
   const slug = useOrganizationSlug();

@@ -1,3 +1,5 @@
+import React, { useCallback, useState } from "react";
+import { ApolloError } from "@apollo/client";
 import {
   ErrorAlert,
   P,
@@ -19,11 +21,9 @@ import {
 } from "@app/lib";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import { ApolloError } from "@apollo/client";
 import { NextPage } from "next";
 import Link from "next/link";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const Settings_Security: NextPage = () => {
   const [error, setError] = useState<Error | ApolloError | null>(null);

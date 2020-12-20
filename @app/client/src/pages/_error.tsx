@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   ErrorOccurred,
   FourOhFour,
@@ -9,7 +10,6 @@ import { useSharedQuery } from "@app/graphql";
 import { Alert, Col, Row } from "antd";
 import { NextPage } from "next";
 import Link from "next/link";
-import * as React from "react";
 
 const isDev = process.env.NODE_ENV !== "production";
 
