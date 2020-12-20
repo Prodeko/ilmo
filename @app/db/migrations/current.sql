@@ -1,4 +1,3 @@
--- Enter migration here
 drop policy if exists select_all on app_public.organizations;
 create policy select_all on app_public.organizations for select using (true);
 

@@ -484,6 +484,8 @@ type DeleteUserEmailPayload {
 type Event {
   """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
+
+  """Id of the event category."""
   categoryId: UUID!
   createdAt: Datetime!
 
@@ -588,6 +590,8 @@ type Event {
     """The method to use when ordering `RegistrationToken`."""
     orderBy: [RegistrationTokensOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationTokensConnection!
+
+  """Starting time of the event."""
   startTime: Datetime!
 }
 
@@ -743,6 +747,7 @@ input EventCondition {
 
 """An input for mutations affecting `Event`"""
 input EventInput {
+  """Id of the event category."""
   categoryId: UUID!
 
   """Description of the event."""
@@ -753,6 +758,8 @@ input EventInput {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID!
+
+  """Starting time of the event."""
   startTime: Datetime
 }
 
@@ -760,6 +767,7 @@ input EventInput {
 Represents an update to a `Event`. Fields that are set will be updated.
 """
 input EventPatch {
+  """Id of the event category."""
   categoryId: UUID
 
   """Description of the event."""
@@ -770,6 +778,8 @@ input EventPatch {
 
   """Id of the organizing organization."""
   ownerOrganizationId: UUID
+
+  """Starting time of the event."""
   startTime: Datetime
 }
 
@@ -1677,7 +1687,7 @@ type Query {
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
 
-  """This gets public events"""
+  """Get public events"""
   publicEvents: [PublicEventPayload!]
 
   """Reads and enables pagination through a set of `Registration`."""
