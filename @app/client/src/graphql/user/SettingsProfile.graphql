@@ -1,5 +1,3 @@
-#import "./ProfileSettingsForm_User.graphql"
-
 query SettingsProfile {
   ...SharedLayout_Query
   currentUser {
