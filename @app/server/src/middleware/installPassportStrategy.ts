@@ -3,6 +3,12 @@ import passport from "passport";
 
 import { getRootPgPool } from "./installDatabasePools";
 
+declare module 'express-session' {
+  interface SessionData {
+    returnTo: string;
+  }
+}
+
 interface DbSession {
   uuid: string;
   user_id: string;
