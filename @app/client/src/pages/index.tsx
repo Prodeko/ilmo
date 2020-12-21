@@ -55,7 +55,11 @@ const Home: NextPage = () => {
           ) : events.error ? (
             <Paragraph>{events.error}</Paragraph>
           ) : events.data?.publicEvents ? (
-            <Table columns={columns} dataSource={events.data.publicEvents} />
+            <Table
+              columns={columns}
+              dataSource={events.data.publicEvents}
+              rowKey={(obj) => obj.id}
+            />
           ) : (
             ""
           )}
