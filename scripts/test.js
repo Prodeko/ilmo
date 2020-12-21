@@ -81,7 +81,7 @@ function main() {
   execSync("yarn db watch --once --shadow", opts);
 
   if (watchMode) {
-    // We're in watch mode, so keep watching the `current.yml` file
+    // We're in watch mode, so keep watching the `current.sql` file
     concurrently(
       [
         {

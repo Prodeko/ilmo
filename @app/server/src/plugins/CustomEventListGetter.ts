@@ -57,10 +57,7 @@ const CustomEventListGetterPlugin = makeExtendSchemaPlugin(() => ({
             "select app_public.current_session_id()"
           );
 
-          console.log(rows2, rows);
-
           if (!rows) {
-            console.log("here");
             const e = new Error("Fetching events failed");
             e["code"] = "NTFND";
             throw e;
