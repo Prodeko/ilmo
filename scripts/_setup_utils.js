@@ -135,6 +135,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Set to 1 only if you're on Node v12 of higher; enables advanced optimisations:`
   );
 
+  add(
+    "LD_TABLE_PATTERN",
+    "app_public.*",
+    `\
+# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds.`
+  );
+
   if (projectName) {
     add(
       "COMPOSE_PROJECT_NAME",
