@@ -4,22 +4,21 @@ create policy select_all on app_public.organizations for select using (true);
 drop table if exists app_public.registeration_tokens cascade;
 drop table if exists app_public.registration_tokens cascade;
 drop function if exists app_public.register_to_event;
-drop function if exists app_public.registeration_token_by_id();
-drop function if exists app_public.registeration_token_by_id(id uuid);
-drop function if exists app_public.registration_token_by_id();
 drop function if exists app_public.registration_token_by_id(id uuid);
+
+--------------------------------------------------------------------------------
 
 create table app_public.registration_tokens (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
-  created_at timestamptz not null default NOW()
+  created_at timestamptz not null default now()
 );
 alter table app_public.registration_tokens enable row level security;
 
+create index on app_public.registration_tokens(event_id);
+
 create policy select_all on app_public.registration_tokens for select using (true);
 grant select(event_id, created_at) on app_public.registration_tokens to :DATABASE_VISITOR;
-
-create index on app_public.registration_tokens(event_id);
 
 create function app_public.register_to_event(event_id uuid) returns uuid as $$
 declare
@@ -34,7 +33,7 @@ create function app_public.registration_token_by_id (id uuid) returns app_public
   select registration_tokens.* from app_public.registration_tokens where id = registration_tokens.id;
 $$ language sql security definer stable set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.registration_token_by_id(id uuid) is
-  E'Rest of the registration token :D';
+  E'Rest of the registration token';
 
 drop table if exists app_public.registration_questions_public;
 drop table if exists app_private.registration_questions_private;
@@ -48,6 +47,8 @@ drop function if exists app_public.confirm_registration (
   lastname text,
   quota text
 );
+
+--------------------------------------------------------------------------------
 
 create table app_public.registrations (
   id uuid primary key,
