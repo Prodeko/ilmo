@@ -2,6 +2,7 @@ import { resolve } from "path";
 
 import PgPubsub from "@graphile/pg-pubsub";
 import GraphilePro from "@graphile/pro"; // Requires license key
+import PgSubscriptionsLds from "@graphile/subscriptions-lds";
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Express, Request, Response } from "express";
 import { NodePlugin } from "graphile-build";
@@ -44,7 +45,7 @@ type UUID = string;
 
 const isTest = process.env.NODE_ENV === "test";
 
-function uuidOrNull(input: string | number | null): UUID | null {
+function uuidOrNull(input: string | number | null | undefined): UUID | null {
   if (!input) return null;
   const str = String(input);
   if (
@@ -94,6 +95,9 @@ export function getPostGraphileOptions({
     // @graphile/pg-pubsub
     subscriptions: true,
     websocketMiddlewares,
+    // Support for Postgraphilelive queries
+    // @graphile/subscriptions-lds
+    live: true,
 
     // enableQueryBatching: On the client side, use something like @apollo/client/link/batch-http to make use of this
     enableQueryBatching: true,
@@ -184,6 +188,7 @@ export function getPostGraphileOptions({
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
+      PgSubscriptionsLds,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,
@@ -222,7 +227,7 @@ export function getPostGraphileOptions({
      * whether or not you're using JWTs.
      */
     async pgSettings(req) {
-      const sessionId = req.user && uuidOrNull(req.user.session_id);
+      const sessionId = uuidOrNull(req.user?.session_id);
       if (sessionId) {
         // Update the last_active timestamp (but only do it at most once every 15 seconds to avoid too much churn).
         await rootPgPool.query(
@@ -254,7 +259,7 @@ export function getPostGraphileOptions({
     ): Promise<Partial<OurGraphQLContext>> {
       return {
         // The current session id
-        sessionId: req.user && uuidOrNull(req.user.session_id),
+        sessionId: uuidOrNull(req.user?.session_id),
 
         // Needed so passport can write to the database
         rootPgPool,
