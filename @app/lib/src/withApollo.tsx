@@ -95,6 +95,7 @@ export const withApollo = withApolloBase(
         : makeClientSideLink(ROOT_URL);
 
     const client = new ApolloClient({
+      ssrMode: isServer,
       link: ApolloLink.from([onErrorLink, mainLink]),
       cache: new InMemoryCache({
         dataIdFromObject: (o) =>
