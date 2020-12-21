@@ -12,22 +12,22 @@
   },
   "dependencies": {
     "@app/config": "0.0.0",
-    "@types/html-to-text": "^5.1.2",
-    "@types/lodash": "^4.14.161",
+    "@types/html-to-text": "^6.0.0",
+    "@types/lodash": "^4.14.165",
     "@types/mjml": "^4.0.4",
     "@types/nodemailer": "^6.4.0",
-    "aws-sdk": "^2.668.0",
-    "chalk": "^4.0.0",
+    "aws-sdk": "^2.815.0",
+    "chalk": "^4.1.0",
     "graphile-worker": "^0.8.1",
-    "html-to-text": "^5.0.0",
-    "lodash": "^4.17.15",
-    "mjml": "^4.6.2",
-    "nodemailer": "^6.4.6",
-    "tslib": "^2.0.1"
+    "html-to-text": "^6.0.0",
+    "lodash": "^4.17.20",
+    "mjml": "^4.7.1",
+    "nodemailer": "^6.4.17",
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "cross-env": "^7.0.2",
-    "jest": "^25.5.4",
+    "cross-env": "^7.0.3",
+    "jest": "^26.6.3",
     "mkdirp": "^1.0.4"
   }
 }
