@@ -13,7 +13,6 @@ export default function installHelmet(app: Express) {
               defaultSrc: ["'self'"],
               scriptSrc: ["'self'", "prodeko.org", "google.com"],
               objectSrc: ["'none'"],
-              upgradeInsecureRequests: [],
             },
           },
     })
