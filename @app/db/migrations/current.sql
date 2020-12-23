@@ -50,6 +50,13 @@ begin
     values (event_id)
   returning
     * into v_token;
+  
+  -- Schedule token deletion
+  perform graphile_worker.add_job(
+    'registration__delete_registration_token',
+    json_build_object('token', v_token.token)
+  );
+
   return v_token;
 end;
 $$
