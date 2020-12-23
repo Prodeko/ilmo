@@ -43,8 +43,6 @@ if (!process.env.ROOT_URL) {
         modifyVars: themeVariables, // make your antd custom effective
       },
       webpack(config, { webpack, dev, isServer }) {
-        if (dev) config.devtool = "cheap-module-source-map";
-
         const makeSafe = (externals) => {
           if (Array.isArray(externals)) {
             return externals.map((ext) => {
