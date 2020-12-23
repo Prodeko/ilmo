@@ -6,6 +6,7 @@ const isDev = process.env.NODE_ENV === "development";
 export default function installHelmet(app: Express) {
   app.use(
     helmet({
+      referrerPolicy: { policy: "same-origin" },
       contentSecurityPolicy: isDev
         ? false
         : {

@@ -1,5 +1,12 @@
 # Graphile Starter
 
+## Requirements
+
+- yarn
+- Node v14
+- Postgresql 11
+- (wal2json)
+
 ## Take it for a spin!
 
 We're running the starter at:
