@@ -49,6 +49,40 @@ type ChangePasswordPayload {
   success: Boolean
 }
 
+"""All input for the `claimRegistrationToken` mutation."""
+input ClaimRegistrationTokenInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+}
+
+"""The output of our `claimRegistrationToken` mutation."""
+type ClaimRegistrationTokenPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """Reads a single `Event` that is related to this `RegistrationToken`."""
+  event: Event
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  registrationToken: RegistrationToken
+
+  """An edge for our `RegistrationToken`. May be used by Relay 1."""
+  registrationTokenEdge(
+    """The method to use when ordering `RegistrationToken`."""
+    orderBy: [RegistrationTokensOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationTokensEdge
+}
+
 """All input for the `confirmAccountDeletion` mutation."""
 input ConfirmAccountDeletionInput {
   """
@@ -492,6 +526,9 @@ type Event {
   """Description of the event."""
   description: String
 
+  """Ending time of the event."""
+  endTime: Datetime!
+
   """Reads and enables pagination through a set of `EventQuestion`."""
   eventQuestions(
     """Read all values in the set after (below) this cursor."""
@@ -593,6 +630,7 @@ type Event {
 
   """Starting time of the event."""
   startTime: Datetime!
+  updatedAt: Datetime!
 }
 
 """A connection to a list of `EventCategory` values."""
@@ -682,6 +720,7 @@ type EventCategory {
 
   """Id of the hosting organization."""
   ownerOrganizationId: UUID!
+  updatedAt: Datetime!
 }
 
 """
@@ -753,6 +792,9 @@ input EventInput {
   """Description of the event."""
   description: String
 
+  """Ending time of the event."""
+  endTime: Datetime
+
   """Name of the event."""
   name: String
 
@@ -772,6 +814,9 @@ input EventPatch {
 
   """Description of the event."""
   description: String
+
+  """Ending time of the event."""
+  endTime: Datetime
 
   """Name of the event."""
   name: String
@@ -1026,6 +1071,16 @@ type Mutation {
     """
     input: ChangePasswordInput!
   ): ChangePasswordPayload
+
+  """
+  Generates a registration token that must be provided as part of the registration information. The token is used to prevent F5-wars.
+  """
+  claimRegistrationToken(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: ClaimRegistrationTokenInput!
+  ): ClaimRegistrationTokenPayload
 
   """
   If you're certain you want to delete your account, use `requestAccountDeletion` to request an account deletion token, and then supply the token through this mutation to complete account deletion.
@@ -1719,8 +1774,8 @@ type Query {
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
 
-  """Rest of the registration token"""
-  registrationTokenById(id: UUID!): RegistrationToken
+  """Get registration token by token."""
+  registrationTokenById(tokenId: UUID!): RegistrationToken
 
   """Reads and enables pagination through a set of `RegistrationToken`."""
   registrationTokens(
@@ -1853,12 +1908,19 @@ enum RegistrationsOrderBy {
   PRIMARY_KEY_DESC
 }
 
+"""
+Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.
+"""
 type RegistrationToken {
+  """Short description of the event category."""
   createdAt: Datetime!
 
   """Reads a single `Event` that is related to this `RegistrationToken`."""
   event: Event
+
+  """Unique identifier for the event."""
   eventId: UUID!
+  token: UUID!
 }
 
 """
@@ -2009,250 +2071,11 @@ type ResetPasswordPayload {
 }
 
 """
-The root subscription type: contains events and live queries you can subscribe to with the `subscription` operation.
-
-#### Live Queries
-
-Live query fields are differentiated by containing `(live)` at the end of their
-description, they are added for each field in the `Query` type. When you
-subscribe to a live query field, the selection set will be evaluated and sent to
-the client, and then most things\* that would cause the output of the selection
-set to change will trigger the selection set to be re-evaluated and the results
-to be re-sent to the client.
-
-_(\* Not everything: typically only changes to persisted data referenced by the query are detected, not computed fields.)_
-
-Live queries can be very expensive, so try and keep them small and focussed.
-
-#### Events
-
-Event fields will run their selection set when, and only when, the specified
-server-side event occurs. This makes them a lot more efficient than Live
-Queries, but it is still recommended that you keep payloads fairly small.
+The root subscription type: contains realtime events you can subscribe to with the `subscription` operation.
 """
 type Subscription {
-  """The currently logged in user (or null if not logged in). (live)"""
-  currentUser: User
-
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload
-
-  """ (live)"""
-  event(id: UUID!): Event
-
-  """Reads and enables pagination through a set of `EventCategory`. (live)"""
-  eventCategories(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventCategoryCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `EventCategory`."""
-    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventCategoriesConnection
-
-  """ (live)"""
-  eventCategory(id: UUID!): EventCategory
-
-  """ (live)"""
-  eventQuestion(id: UUID!): EventQuestion
-
-  """Reads and enables pagination through a set of `EventQuestion`. (live)"""
-  eventQuestions(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventQuestionCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `EventQuestion`."""
-    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventQuestionsConnection
-
-  """Reads and enables pagination through a set of `Event`. (live)"""
-  events(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Event`."""
-    orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventsConnection
-
-  """ (live)"""
-  organization(id: UUID!): Organization
-
-  """ (live)"""
-  organizationBySlug(slug: String!): Organization
-
-  """
-  Given an invitation UUID (and, if required, the code that was emailed to you), retrieves the `Organization` that you were invited to. (live)
-  """
-  organizationForInvitation(code: String, invitationId: UUID!): Organization
-
-  """ (live)"""
-  organizationMembership(id: UUID!): OrganizationMembership
-
-  """Reads and enables pagination through a set of `Organization`. (live)"""
-  organizations(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: OrganizationCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Organization`."""
-    orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): OrganizationsConnection
-
-  """Get public events (live)"""
-  publicEvents: [PublicEventPayload!]
-
-  """Reads and enables pagination through a set of `Registration`. (live)"""
-  registrations(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: RegistrationCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Registration`."""
-    orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): RegistrationsConnection
-
-  """Rest of the registration token (live)"""
-  registrationTokenById(id: UUID!): RegistrationToken
-
-  """
-  Reads and enables pagination through a set of `RegistrationToken`. (live)
-  """
-  registrationTokens(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: RegistrationTokenCondition
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `RegistrationToken`."""
-    orderBy: [RegistrationTokensOrderBy!] = [PRIMARY_KEY_ASC]
-  ): RegistrationTokensConnection
-
-  """ (live)"""
-  user(id: UUID!): User
-
-  """ (live)"""
-  userAuthentication(id: UUID!): UserAuthentication
-
-  """ (live)"""
-  userByUsername(username: String!): User
-
-  """ (live)"""
-  userEmail(id: UUID!): UserEmail
 }
 
 """All input for the `transferOrganizationBillingContact` mutation."""

@@ -80,6 +80,17 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: question_type; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.question_type AS ENUM (
+    'short-text',
+    'long-text',
+    'option'
+);
+
+
+--
 -- Name: assert_valid_password(text); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -1859,7 +1870,8 @@ CREATE TABLE app_public.event_categories (
     description text,
     owner_organization_id uuid NOT NULL,
     is_public boolean DEFAULT true NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1906,6 +1918,19 @@ COMMENT ON COLUMN app_public.event_categories.is_public IS 'Are events of this c
 
 
 --
+-- Name: event_questions; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_questions (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    is_public boolean DEFAULT false NOT NULL,
+    type app_public.question_type NOT NULL,
+    options json
+);
+
+
+--
 -- Name: events; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1914,9 +1939,11 @@ CREATE TABLE app_public.events (
     name text,
     description text,
     start_time timestamp without time zone DEFAULT now() NOT NULL,
+    end_time timestamp without time zone DEFAULT now() NOT NULL,
     owner_organization_id uuid NOT NULL,
     category_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1953,6 +1980,13 @@ COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
 --
 
 COMMENT ON COLUMN app_public.events.start_time IS 'Starting time of the event.';
+
+
+--
+-- Name: COLUMN events.end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
 
 
 --
@@ -2098,6 +2132,14 @@ ALTER TABLE ONLY app_public.event_categories
 
 
 --
+-- Name: event_questions event_questions_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2224,6 +2266,13 @@ CREATE INDEX event_categories_owner_organization_id_idx ON app_public.event_cate
 
 
 --
+-- Name: event_questions_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_questions_event_id_idx ON app_public.event_questions USING btree (event_id);
+
+
+--
 -- Name: events_category_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2284,6 +2333,20 @@ CREATE UNIQUE INDEX uniq_user_emails_verified_email ON app_public.user_emails US
 --
 
 CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications USING btree (user_id);
+
+
+--
+-- Name: event_categories _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+
+
+--
+-- Name: events _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
@@ -2432,6 +2495,14 @@ ALTER TABLE ONLY app_public.event_categories
 
 
 --
+-- Name: event_questions event_questions_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
 -- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2546,6 +2617,12 @@ CREATE POLICY delete_own ON app_public.user_emails FOR DELETE USING ((user_id = 
 ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: event_questions; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -2563,6 +2640,15 @@ CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_
 --
 
 CREATE POLICY manage_as_admin ON app_public.event_categories USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: event_questions manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.event_questions USING ((EXISTS ( SELECT 1
    FROM app_public.users
   WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
 
@@ -2586,12 +2672,47 @@ CREATE POLICY manage_own ON app_public.event_categories USING ((EXISTS ( SELECT 
 
 
 --
+-- Name: event_questions manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.event_questions USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
+           FROM app_public.events
+          WHERE (events.id = event_questions.event_id)))))));
+
+
+--
 -- Name: events manage_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY manage_own ON app_public.events USING ((EXISTS ( SELECT 1
    FROM app_public.organization_memberships
   WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (events.owner_organization_id = organization_memberships.organization_id)))));
+
+
+--
+-- Name: event_questions manage_own_category; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own_category ON app_public.event_questions USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
+           FROM app_public.event_categories
+          WHERE (event_categories.id = ( SELECT events.category_id
+                   FROM app_public.events
+                  WHERE (events.id = event_questions.event_id)))))))));
+
+
+--
+-- Name: events manage_own_category; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own_category ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
+           FROM app_public.event_categories
+          WHERE (event_categories.id = events.category_id)))))));
 
 
 --
@@ -2617,6 +2738,13 @@ ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 --
 
 CREATE POLICY select_all ON app_public.event_categories FOR SELECT USING (is_public);
+
+
+--
+-- Name: event_questions select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.event_questions FOR SELECT USING (true);
 
 
 --
@@ -3142,6 +3270,13 @@ GRANT INSERT(is_public),UPDATE(is_public) ON TABLE app_public.event_categories T
 
 
 --
+-- Name: TABLE event_questions; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.event_questions TO ilmo_visitor;
+
+
+--
 -- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3167,6 +3302,13 @@ GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo
 --
 
 GRANT INSERT(start_time),UPDATE(start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(end_time),UPDATE(end_time) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --
