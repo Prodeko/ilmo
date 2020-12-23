@@ -1,8 +1,10 @@
 import * as React from "react";
 import { SharedLayout } from "@app/components";
+import { NextPage } from "next";
 import { usePublicEventsQuery, useSharedQuery } from "@app/graphql";
 import { Button, Col, Divider, Row, Spin, Table, Typography } from "antd";
-import { NextPage } from "next";
+
+import useTranslation from "next-translate/useTranslation";
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -14,6 +16,7 @@ const Li = ({ children, ...props }: any) => (
 );
 
 const Home: NextPage = () => {
+  const { t, lang } = useTranslation("home");
   const query = useSharedQuery();
   const events = usePublicEventsQuery();
 
@@ -49,7 +52,7 @@ const Home: NextPage = () => {
             them or replace them with whatever you need.
           </Paragraph>
 
-          <Title level={4}>Events</Title>
+          <Title level={4}>{t("events.title")} </Title>
           {events.loading ? (
             <Spin size="large" />
           ) : events.error ? (

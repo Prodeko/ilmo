@@ -142,6 +142,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds.`
   );
 
+  add(
+    "NEXT_TRANSLATE_PATH",
+    "../client/src",
+    `\
+# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly`
+  );
+
   if (projectName) {
     add(
       "COMPOSE_PROJECT_NAME",

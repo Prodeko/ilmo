@@ -18,6 +18,7 @@ if (!process.env.ROOT_URL) {
     const withCss = require("@zeit/next-css");
     const withLess = require("@zeit/next-less");
     const lessToJS = require("less-vars-to-js");
+    const nextTranslate = require("next-translate");
     const fs = require("fs");
     const path = require("path");
     // Where your antd-custom.less file lives
@@ -33,7 +34,8 @@ if (!process.env.ROOT_URL) {
     }
     return compose(
       withCss,
-      withLess
+      withLess,
+      nextTranslate
     )({
       poweredByHeader: false,
       distDir: `../.next`,

@@ -12,7 +12,7 @@
     "isolatedModules": true
   },
   "exclude": ["node_modules"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "i18n.js"],
   "references": [
     { "path": "../../config" },
     { "path": "../../graphql" },
