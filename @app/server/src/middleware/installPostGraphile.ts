@@ -93,11 +93,11 @@ export function getPostGraphileOptions({
 
     // Add websocket support to the PostGraphile server; you still need to use a subscriptions plugin such as
     // @graphile/pg-pubsub
-    subscriptions: true,
+    websockets: ["v1"],
     websocketMiddlewares,
     // Support for Postgraphilelive queries
     // @graphile/subscriptions-lds
-    live: true,
+    live: false,
 
     // enableQueryBatching: On the client side, use something like @apollo/client/link/batch-http to make use of this
     enableQueryBatching: true,
@@ -188,7 +188,7 @@ export function getPostGraphileOptions({
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
-      PgSubscriptionsLds,
+      //PgSubscriptionsLds,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,
