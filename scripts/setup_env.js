@@ -35,7 +35,6 @@ runMain(async () => {
       default: "localhost",
       when: !("DATABASE_HOST" in config),
     },
-
     {
       type: "input",
       name: "ROOT_DATABASE_URL",
@@ -50,6 +49,14 @@ runMain(async () => {
           }/template1`
       ),
       when: !config.ROOT_DATABASE_URL,
+    },
+    {
+      type: "input",
+      name: "REDIS_URL",
+      message:
+        "What's the hostname of your redis server (include :port if it's not the default :6379)?",
+      default: "redis://127.0.0.1:6379",
+      when: !("REDIS_URL" in config),
     },
   ];
   const answers = await inquirer.prompt(questions);

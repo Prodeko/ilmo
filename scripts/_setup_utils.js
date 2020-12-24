@@ -149,6 +149,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly`
   );
 
+  add(
+    "REDIS_URL",
+    answers.REDIS_URL,
+    `\
+# Redis is used for session storage and as a rate limiting store.`
+  );
+
   if (projectName) {
     add(
       "COMPOSE_PROJECT_NAME",

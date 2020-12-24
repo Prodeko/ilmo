@@ -5,6 +5,7 @@
 - yarn
 - Node v14
 - Postgresql 11
+- Redis
 - (wal2json)
 
 ## Take it for a spin!

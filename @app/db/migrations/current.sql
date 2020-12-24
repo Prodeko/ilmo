@@ -233,10 +233,6 @@ create function app_public.claim_registration_token(
 declare
   v_token app_public.registration_tokens;
 begin
-  -- TODO: Rate limiting based on IP?
-  -- So that people can't spam this endpoint and pass the
-  -- tokens to their friends. Unlikely that someone would
-  -- do this but it is possible.
   insert into app_public.registration_tokens(event_id)
     values (event_id)
   returning

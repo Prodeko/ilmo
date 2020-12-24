@@ -18,6 +18,7 @@ import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
 
 import { getHttpServer, getWebsocketMiddlewares } from "../app";
 import CustomEventListGetterPlugin from "../plugins/CustomEventListGetter";
+import RateLimitPlugin from "../plugins/RateLimitPlugin";
 import OrdersPlugin from "../plugins/Orders";
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin";
@@ -30,6 +31,7 @@ import { getAuthPgPool, getRootPgPool } from "./installDatabasePools";
 export interface OurGraphQLContext {
   pgClient: PoolClient;
   sessionId: string | null;
+  ipAddress: string;
   rootPgPool: Pool;
   login(user: any): Promise<void>;
   logout(): Promise<void>;
@@ -170,6 +172,10 @@ export function getPostGraphileOptions({
      */
     appendPlugins: [
       CustomEventListGetterPlugin,
+
+      // Plugin for rate limiting resolvers
+      RateLimitPlugin,
+
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
       RemoveQueryQueryPlugin,
@@ -260,6 +266,9 @@ export function getPostGraphileOptions({
       return {
         // The current session id
         sessionId: uuidOrNull(req.user?.session_id),
+
+        // IP address from request
+        ipAddress: req.ip,
 
         // Needed so passport can write to the database
         rootPgPool,

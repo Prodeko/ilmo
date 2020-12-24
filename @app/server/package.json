@@ -38,6 +38,7 @@
     "graphile-build-pg": "^4.10.0",
     "graphile-utils": "^4.10.0",
     "graphile-worker": "^0.8.1",
+    "handy-redis": "^2.1.0",
     "helmet": "^4.2.0",
     "lodash": "^4.17.20",
     "morgan": "^1.10.0",
