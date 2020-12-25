@@ -1,9 +1,8 @@
 import * as React from "react";
 import { SharedLayout } from "@app/components";
-import { NextPage } from "next";
 import { usePublicEventsQuery, useSharedQuery } from "@app/graphql";
 import { Button, Col, Divider, Row, Spin, Table, Typography } from "antd";
-
+import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
 
 const { Text, Title, Paragraph } = Typography;

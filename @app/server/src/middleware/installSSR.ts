@@ -1,6 +1,6 @@
-// TODO: fix to 'import next' when next fixes the bug
 import { parse } from "url";
 
+// TODO: fix to 'import next' when next fixes the bug
 import { Express } from "express";
 import next from "next";
 
@@ -11,8 +11,6 @@ if (!process.env.NODE_ENV) {
 const isDev = process.env.NODE_ENV === "development";
 
 export default async function installSSR(app: Express) {
-  // @ts-ignore Next had a bad typing file, they claim `export default` but should have `export =`
-  // Ref: https://unpkg.com/next@9.0.3/dist/server/next.js
   const nextApp = next({
     dev: isDev,
     dir: `${__dirname}/../../../client/src`,
@@ -23,12 +21,13 @@ export default async function installSSR(app: Express) {
     await nextApp.prepare();
     return nextApp.getRequestHandler();
   })();
-  // Foo
+
   handlerPromise.catch((e) => {
     console.error("Error occurred starting Next.js; aborting process");
     console.error(e);
     process.exit(1);
   });
+
   app.get("*", async (req, res) => {
     const handler = await handlerPromise;
     const parsedUrl = parse(req.url, true);
