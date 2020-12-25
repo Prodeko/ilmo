@@ -1,12 +1,12 @@
 import {
   createUserAndLogIn,
-  deleteTestUsers,
+  deleteTestData,
   runGraphQLQuery,
   setup,
   teardown,
 } from "../helpers";
 
-beforeEach(deleteTestUsers);
+beforeEach(deleteTestData);
 beforeAll(setup);
 afterAll(teardown);
 

@@ -60,8 +60,26 @@ export const deleteTestUsers = () => {
   );
 };
 
+export const deleteTestEventData = () => {
+  // We're not using withRootDb because we don't want the transaction rolled back
+  const pool = poolFromUrl(TEST_DATABASE_URL);
+  return pool.query(
+    `
+    BEGIN;
+      delete from app_public.organizations;
+      delete from app_public.events;
+      delete from app_public.event_categories;
+      delete from app_public.event_questions;
+      delete from app_public.registration_tokens;
+      delete from app_public.registrations;
+    COMMIT;
+    `
+  );
+};
+
 export const deleteTestData = async () => {
   await deleteTestUsers();
+  await deleteTestEventData();
 };
 
 /* Quickly becomes root, does the thing, and then reverts back to previous role */
