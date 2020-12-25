@@ -1,13 +1,13 @@
 import { asRoot } from "../../../__tests__/helpers";
 import {
-  deleteTestUsers,
+  deleteTestData,
   runGraphQLQuery,
   sanitize,
   setup,
   teardown,
 } from "../helpers";
 
-beforeEach(deleteTestUsers);
+beforeEach(deleteTestData);
 beforeAll(setup);
 afterAll(teardown);
 

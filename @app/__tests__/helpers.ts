@@ -1,4 +1,15 @@
+import {
+  Event,
+  EventCategory,
+  Organization,
+  User as SchemaUser,
+} from "@app/graphql/index";
 import { Pool, PoolClient } from "pg";
+
+export type User = SchemaUser & {
+  _email: string;
+  _password: string;
+};
 
 const pools = {};
 
@@ -6,14 +17,6 @@ if (!process.env.TEST_DATABASE_URL) {
   throw new Error("Cannot run tests without a TEST_DATABASE_URL");
 }
 export const TEST_DATABASE_URL: string = process.env.TEST_DATABASE_URL;
-
-export type User = {
-  id: string;
-  username: string;
-  _password?: string;
-  _email?: string;
-};
-export type Organization = { id: string; name: string };
 
 // Make sure we release those pgPools so that our tests exit!
 afterAll(() => {
@@ -81,7 +84,13 @@ export const asRoot = async <T>(
   }
 };
 
+/**
+ * The utility functions below are used to prepopulate the database with objects
+ * that might be needed by other tests.
+ */
+
 /******************************************************************************/
+// Users
 
 // Enables multiple calls to `createUsers` within the same test to still have
 // deterministic results without conflicts.
@@ -132,6 +141,9 @@ export const createUsers = async function createUsers(
   return users;
 };
 
+/******************************************************************************/
+// Organizations
+
 export const createOrganizations = async function createOrganizations(
   client: PoolClient,
   count: number = 1
@@ -155,6 +167,7 @@ export const createOrganizations = async function createOrganizations(
 };
 
 /******************************************************************************/
+// Sessions
 
 export const createSession = async (
   client: PoolClient,
@@ -164,11 +177,78 @@ export const createSession = async (
     rows: [session],
   } = await client.query(
     `
-      insert into app_private.sessions (user_id)
+      insert into app_private.sessions(user_id)
       values ($1::uuid)
       returning *
     `,
     [userId]
   );
   return session;
+};
+
+/******************************************************************************/
+// Events
+
+export const createEventCategories = async function createEventCategories(
+  client: PoolClient,
+  count: number = 1,
+  organizationId: string
+) {
+  const categories: EventCategory[] = [];
+  for (let i = 0; i < count; i++) {
+    const name = `Category ${i}`;
+    const description = `Category description ${i}`;
+    const ownerOrganizationId = organizationId;
+    const isPublic = true;
+    const {
+      rows: [category],
+    } = await client.query(
+      `
+        insert into app_public.event_categories(name, description, owner_organization_id, is_public)
+        values ($1, $2, $3, $4)
+        returning *
+      `,
+      [name, description, ownerOrganizationId, isPublic]
+    );
+    categories.push(category);
+  }
+
+  return categories;
+};
+
+export const createEvents = async function createEvents(
+  client: PoolClient,
+  count: number = 1,
+  organizationId: string,
+  categoryId: string
+) {
+  const events: Event[] = [];
+  for (let i = 0; i < count; i++) {
+    const name = `Event ${i}`;
+    const description = `Event description ${i}`;
+    const startTime = new Date();
+    const endTime = new Date();
+    const ownerOrganizationId = organizationId;
+    const eventCategoryId = categoryId;
+    const {
+      rows: [event],
+    } = await client.query(
+      `
+        insert into app_public.events(name, description, start_time, end_time, owner_organization_id, category_id)
+        values ($1, $2, $3, $4, $5, $6)
+        returning *
+      `,
+      [
+        name,
+        description,
+        startTime,
+        endTime,
+        ownerOrganizationId,
+        eventCategoryId,
+      ]
+    );
+    events.push(event);
+  }
+
+  return events;
 };

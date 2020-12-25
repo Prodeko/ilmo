@@ -84,9 +84,15 @@ export const withAnonymousDb = <T>(fn: (client: PoolClient) => Promise<T>) =>
   });
 
 export const becomeRoot = (client: PoolClient) => client.query("reset role");
+
+// This function is used by @app/db and @app/server tests.
+// For the db tests, we want to switch users within the current transaction only.
+// For setting up test data in server tests, we want the setting to persist, so
+// forCurrentTransactionOnly is set to false in @app/server/__tests__/helpers.ts.
 export const becomeUser = async (
   client: PoolClient,
-  userOrUserId: User | string | null
+  userOrUserId: User | string | null,
+  forCurrentTransactionOnly: boolean = true
 ) => {
   await becomeRoot(client);
   const session = userOrUserId
@@ -96,9 +102,14 @@ export const becomeUser = async (
       )
     : null;
   await client.query(
-    `select set_config('role', $1::text, true), set_config('jwt.claims.session_id', $2::text, true)`,
-    [process.env.DATABASE_VISITOR, session ? session.uuid : ""]
+    `select set_config('role', $1::text, $3), set_config('jwt.claims.session_id', $2::text, $3)`,
+    [
+      process.env.DATABASE_VISITOR,
+      session ? session.uuid : "",
+      forCurrentTransactionOnly,
+    ]
   );
+  return session;
 };
 
 export const getSessions = async (client: PoolClient, userId: string) => {

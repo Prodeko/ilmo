@@ -8,10 +8,14 @@ import {
 } from "postgraphile";
 
 import {
+  createEventCategories,
+  createEvents,
+  createOrganizations,
   createSession,
   createUsers,
   poolFromUrl,
 } from "../../__tests__/helpers";
+import { becomeUser } from "../../db/__tests__/helpers";
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile";
 import handleErrors from "../src/utils/handleErrors";
 
@@ -23,9 +27,35 @@ export async function createUserAndLogIn() {
   const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
-    const [user] = await createUsers(pool, 1, true);
-    const session = await createSession(pool, user.id);
+    const [user] = await createUsers(client, 1, true);
+    const session = await createSession(client, user.id);
+
     return { user, session };
+  } finally {
+    client.release();
+  }
+}
+
+export async function createEventDataAndLogin() {
+  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+  const client = await pool.connect();
+  try {
+    const [user] = await createUsers(client, 1, true);
+    const session = await becomeUser(client, user.id, false);
+
+    const [organization] = await createOrganizations(client, 1);
+    const [eventCategory] = await createEventCategories(
+      client,
+      1,
+      organization.id
+    );
+    const [event] = await createEvents(
+      client,
+      1,
+      organization.id,
+      eventCategory.id
+    );
+    return { user, session, organization, eventCategory, event };
   } finally {
     client.release();
   }
@@ -38,6 +68,7 @@ let known: Record<
 beforeEach(() => {
   known = {};
 });
+
 /*
  * This function replaces values that are expected to change with static
  * placeholders so that our snapshot testing doesn't throw an error
@@ -69,7 +100,8 @@ export function sanitize(json: any): any {
         k === "uuid" ||
         (k.endsWith("Id") &&
           (typeof json[k] === "number" || typeof json[k] === "string")) ||
-        (k.endsWith("Uuid") && typeof k === "string")
+        (k.endsWith("Uuid") && typeof k === "string") ||
+        k === "token"
       ) {
         result[k] = mask(result[k], "id");
       } else if (
