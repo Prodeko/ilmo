@@ -1,9 +1,13 @@
 import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
-import { notification } from "antd";
+import { ConfigProvider,notification  } from "antd";
+import enUS from "antd/lib/locale/en_US";
+import fiFI from "antd/lib/locale/fi_FI";
 import App from "next/app";
 import Router from "next/router";
+import { I18n } from "next-translate";
+import withTranslation from "next-translate/withTranslation";
 import NProgress from "nprogress";
 
 import "antd/dist/antd.less";
@@ -58,7 +62,12 @@ if (typeof window !== "undefined") {
   });
 }
 
-class Ilmo extends App<{ apollo: ApolloClient<any> }> {
+interface Props {
+  apollo: ApolloClient<any>;
+  i18n: I18n;
+}
+
+class Ilmo extends App<Props> {
   static async getInitialProps({ Component, ctx }: any) {
     let pageProps = {};
 
@@ -70,14 +79,17 @@ class Ilmo extends App<{ apollo: ApolloClient<any> }> {
   }
 
   render() {
-    const { Component, pageProps, apollo } = this.props;
+    const { Component, pageProps, apollo, i18n } = this.props;
+    const locale = i18n.lang === "fi" ? fiFI : enUS;
 
     return (
       <ApolloProvider client={apollo}>
-        <Component {...pageProps} />
+        <ConfigProvider locale={locale}>
+          <Component {...pageProps} />
+        </ConfigProvider>
       </ApolloProvider>
     );
   }
 }
 
-export default withApollo(Ilmo);
+export default withApollo(withTranslation(Ilmo));
