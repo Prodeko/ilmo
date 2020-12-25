@@ -24,7 +24,6 @@ import {
   Select,
 } from "antd";
 import { NextPage } from "next";
-import { Store } from "rc-field-form/lib/interface";
 
 const CreateEventPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
@@ -36,19 +35,14 @@ const CreateEventPage: NextPage = () => {
   const [createEvent] = useCreateEventMutation();
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
-      console.log(values);
+    async (values) => {
       setFormError(null);
       try {
-        console.log(values);
-        const { name, description, organization, category, datetime } = values;
         const { data } = await createEvent({
           variables: {
-            name,
-            desc: description,
-            org_id: organization,
-            cat_id: category,
-            datetime: datetime.toISOString(),
+            ...values,
+            startTime: values.startTime.toISOString(),
+            endTime: values.endTime.toISOString(),
           },
         });
         setFormError(null);
@@ -84,7 +78,7 @@ const CreateEventPage: NextPage = () => {
             <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
               <Form.Item
                 label="Organization"
-                name="organization"
+                name="organizationId"
                 rules={[
                   {
                     required: true,
@@ -108,7 +102,7 @@ const CreateEventPage: NextPage = () => {
               </Form.Item>
               <Form.Item
                 label="Category"
-                name="category"
+                name="categoryId"
                 rules={[
                   {
                     required: true,
@@ -152,8 +146,21 @@ const CreateEventPage: NextPage = () => {
                 <Input.TextArea data-cy="createevent-input-description" />
               </Form.Item>
               <Form.Item
-                name="datetime"
-                label="Choose time"
+                name="startTime"
+                label="Choose start time"
+                rules={[
+                  {
+                    type: "object",
+                    required: true,
+                    message: "Please select time!",
+                  },
+                ]}
+              >
+                <DatePicker showTime format="YYYY-MM-DD HH:mm" />
+              </Form.Item>
+              <Form.Item
+                name="endTime"
+                label="Choose end time"
                 rules={[
                   {
                     type: "object",

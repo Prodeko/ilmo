@@ -4,7 +4,7 @@ interface RegistrationTokenDeletionPayload {
   /**
    * secret token
    */
-  token: string;
+  tokenId: string;
 }
 
 // 30 minutes
@@ -15,11 +15,8 @@ const task: Task = async (rawPayload, { withPgClient }) => {
 
   setTimeout(() => {
     withPgClient((client) =>
-      client.query<{
-        id: string;
-        created_at: Date;
-      }>("delete from app_public.registration_tokens where token = $1", [
-        payload.token,
+      client.query("delete from app_public.registration_tokens where id = $1", [
+        payload.tokenId,
       ])
     );
   }, TOKEN_EXPIRATION_TIMEOUT);

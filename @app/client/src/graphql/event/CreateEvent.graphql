@@ -9,19 +9,21 @@ fragment CreatedEvent on Event {
 
 mutation CreateEvent(
   $name: String!
-  $desc: String!
-  $org_id: UUID!
-  $cat_id: UUID!
-  $datetime: Datetime!
+  $description: String!
+  $organizationId: UUID!
+  $categoryId: UUID!
+  $startTime: Datetime!
+  $endTime: Datetime!
 ) {
   createEvent(
     input: {
       event: {
         name: $name
-        description: $desc
-        ownerOrganizationId: $org_id
-        categoryId: $cat_id
-        startTime: $datetime
+        description: $description
+        ownerOrganizationId: $organizationId
+        categoryId: $categoryId
+        startTime: $startTime
+        endTime: $endTime
       }
     }
   ) {

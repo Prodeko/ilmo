@@ -61,8 +61,8 @@ create table app_public.events(
   id uuid primary key default gen_random_uuid(),
   name text,
   description text,
-  start_time timestamp not null default now(),
-  end_time timestamp not null default now(),
+  start_time timestamptz not null,
+  end_time timestamptz not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   category_id uuid not null references app_public.event_categories,
   created_at timestamptz not null default now(),
@@ -210,7 +210,7 @@ create policy select_all on app_public.registration_tokens
   for select
     using (true);
 
-grant select (event_id, token, created_at) on app_public.registration_tokens to :DATABASE_VISITOR;
+grant select, insert, update, delete on app_public.registration_tokens to :DATABASE_VISITOR;
 
 create policy manage_as_admin on app_public.registration_tokens
   for all
@@ -241,7 +241,7 @@ begin
   -- Schedule token deletion
   perform graphile_worker.add_job(
     'registration__delete_registration_token',
-    json_build_object('token', v_token.token)
+    json_build_object('tokenId', v_token.id)
   );
 
   return v_token;
@@ -297,7 +297,7 @@ alter table app_public.registrations enable row level security;
 
 create index on app_public.registrations (event_id);
 
-grant select (event_id, firstname, lastname, quota, questions_public) on app_public.registrations to :DATABASE_VISITOR;
+grant select on app_public.registrations to :DATABASE_VISITOR;
 
 create policy manage_as_admin on app_public.registrations
   for all
