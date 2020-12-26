@@ -1,5 +1,7 @@
 import { Server } from "http";
 
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
 import express, { Express } from "express";
 import { Middleware } from "postgraphile";
 
@@ -7,7 +9,6 @@ import { cloudflareIps } from "./cloudflare";
 import * as middleware from "./middleware";
 import { makeShutdownActions, ShutdownAction } from "./shutdownActions";
 import { sanitizeEnv } from "./utils";
-
 // Server may not always be supplied, e.g. where mounting on a sub-route
 export function getHttpServer(app: Express): Server | void {
   return app.get("httpServer");
@@ -21,6 +22,23 @@ export function getWebsocketMiddlewares(
   app: Express
 ): Middleware<express.Request, express.Response>[] {
   return app.get("websocketMiddlewares");
+}
+
+function initSentry(app: Express) {
+  Sentry.init({
+    environment: process.env.NODE_ENV,
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // enable Express.js middleware tracing
+      new Tracing.Integrations.Express({ app }),
+    ],
+
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
+  });
 }
 
 export async function makeApp({
@@ -45,6 +63,7 @@ export async function makeApp({
    * Our Express server
    */
   const app = express();
+  initSentry(app);
 
   /*
    * In production, we may need to enable the 'trust proxy' setting so that the
@@ -100,6 +119,7 @@ export async function makeApp({
    * express middleware. These helpers may be asynchronous, but they should
    * operate very rapidly to enable quick as possible server startup.
    */
+  await middleware.installSentryRequestHandler(app);
   await middleware.installDatabasePools(app);
   await middleware.installWorkerUtils(app);
   await middleware.installHelmet(app);
@@ -119,6 +139,7 @@ export async function makeApp({
   /*
    * Error handling middleware
    */
+  await middleware.installSentryRequestHandler(app);
   await middleware.installErrorHandler(app);
 
   return app;

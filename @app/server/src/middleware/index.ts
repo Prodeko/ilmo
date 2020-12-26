@@ -7,6 +7,10 @@ import installLogging from "./installLogging";
 import installPassport from "./installPassport";
 import installPostGraphile from "./installPostGraphile";
 import installSameOrigin from "./installSameOrigin";
+import {
+  installSentryErrorHandler,
+  installSentryRequestHandler,
+} from "./installSentry";
 import installSession from "./installSession";
 import installSharedStatic from "./installSharedStatic";
 import installSSR from "./installSSR";
@@ -22,6 +26,8 @@ export {
   installPassport,
   installPostGraphile,
   installSameOrigin,
+  installSentryErrorHandler,
+  installSentryRequestHandler,
   installSession,
   installSharedStatic,
   installSSR,

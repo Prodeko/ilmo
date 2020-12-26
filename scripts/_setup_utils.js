@@ -139,7 +139,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "LD_TABLE_PATTERN",
     "app_public.*",
     `\
-# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds.`
+# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds`
   );
 
   add(
@@ -153,7 +153,14 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "REDIS_URL",
     answers.REDIS_URL,
     `\
-# Redis is used for session storage and as a rate limiting store.`
+# Redis is used for session storage and as a rate limiting store`
+  );
+
+  add(
+    "SENTRY_DSN",
+    "https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6",
+    `\
+# Specify Sentry error tracking Data Source Name`
   );
 
   if (projectName) {
