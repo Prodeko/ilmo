@@ -13,7 +13,9 @@ import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
 import Head from "next/head";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
+import useTranslation from "next-translate/useTranslation";
 
+import { LocaleSelect } from "./LocaleSelect";
 import { Redirect } from "./Redirect";
 import { ErrorAlert, H3, StandardWidth, Warn } from ".";
 
@@ -103,6 +105,7 @@ export function SharedLayout({
   const currentUrl = router.asPath;
   const client = useApolloClient();
   const [logout] = useLogoutMutation();
+  const { t } = useTranslation("common");
 
   const handleLogout = useCallback(() => {
     const reset = async () => {
@@ -183,7 +186,7 @@ export function SharedLayout({
               <a>{projectName}</a>
             </Link>
           </Col>
-          <Col span={12}>
+          <Col span={9}>
             <H3
               style={{
                 margin: 0,
@@ -202,9 +205,13 @@ export function SharedLayout({
               )}
             </H3>
           </Col>
-          <Col span={6} style={{ textAlign: "right" }}>
+          <Col span={7} style={{ textAlign: "right" }}>
+            <LocaleSelect />
+          </Col>
+          <Col span={2} style={{ textAlign: "right" }}>
             {data && data.currentUser ? (
               <Dropdown
+                trigger={["click"]}
                 overlay={
                   <Menu>
                     {data.currentUser.organizationMemberships.nodes.map(
@@ -232,7 +239,7 @@ export function SharedLayout({
                     <Menu.Item>
                       <Link href="/create-organization">
                         <a data-cy="layout-link-create-organization">
-                          Create organization
+                          {t("headerMenu.createOrganization")}
                         </a>
                       </Link>
                     </Menu.Item>
@@ -241,14 +248,14 @@ export function SharedLayout({
                           <Menu.Item key="create-event">
                             <Link href="/create-event">
                               <a data-cy="layout-link-create-event">
-                                Create event
+                                {t("headerMenu.createEvent")}
                               </a>
                             </Link>
                           </Menu.Item>,
                           <Menu.Item key="create-event-category">
                             <Link href="/create-event-category">
                               <a data-cy="layout-link-create-event-category">
-                                Create event category
+                                {t("headerMenu.createEventCategory")}
                               </a>
                             </Link>
                           </Menu.Item>,
@@ -258,13 +265,13 @@ export function SharedLayout({
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">
                           <Warn okay={data.currentUser.isVerified}>
-                            Settings
+                            {t("settings")}
                           </Warn>
                         </a>
                       </Link>
                     </Menu.Item>
                     <Menu.Item>
-                      <a onClick={handleLogout}>Logout</a>
+                      <a onClick={handleLogout}>{t("logout")}</a>
                     </Menu.Item>
                   </Menu>
                 }
@@ -286,7 +293,7 @@ export function SharedLayout({
               </Dropdown>
             ) : (
               <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
-                <a data-cy="header-login-button">Sign in</a>
+                <a data-cy="header-login-button">{t("signin")}</a>
               </Link>
             )}
           </Col>

@@ -1,5 +1,6 @@
 require("@app/config");
 const compose = require("lodash/flowRight");
+const { locales, defaultLocale } = require("./i18n.js");
 const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin");
 
 if (!process.env.ROOT_URL) {
@@ -43,6 +44,10 @@ if (!process.env.ROOT_URL) {
       lessLoaderOptions: {
         javascriptEnabled: true,
         modifyVars: themeVariables, // make your antd custom effective
+      },
+      i18n: {
+        locales,
+        defaultLocale,
       },
       webpack(config, { webpack, dev, isServer }) {
         const makeSafe = (externals) => {

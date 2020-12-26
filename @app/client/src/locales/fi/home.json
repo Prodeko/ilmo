@@ -1,5 +1,6 @@
 {
   "events": {
-    "title": "Tapahtumat"
+    "signupsOpenEvents": "Ilmoittautuminen auki",
+    "signupsClosedEvents": "Ilmoittautuminen sulkeutunut"
   }
 }

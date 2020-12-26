@@ -1,1 +1,11 @@
-{}
+{
+  "backhome": "Takaisin etusivulle",
+  "logout": "Kirjaudu ulos",
+  "signin": "Kirjaudu sisään",
+  "settings": "Asetukset",
+  "headerMenu": {
+    "createEvent": "Luo tapahtuma",
+    "createEventCategory": "Luo tapahtumakategoria",
+    "createOrganization": "Luo organisaatio"
+  }
+}

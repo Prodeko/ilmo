@@ -25,6 +25,8 @@ import {
 } from "antd";
 import { NextPage } from "next";
 
+const { RangePicker } = DatePicker;
+
 const CreateEventPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useEventCategoriesQuery();
@@ -41,8 +43,8 @@ const CreateEventPage: NextPage = () => {
         const { data } = await createEvent({
           variables: {
             ...values,
-            startTime: values.startTime.toISOString(),
-            endTime: values.endTime.toISOString(),
+            startTime: values["eventTime"][0].toISOString(),
+            endTime: values["eventTime"][1].toISOString(),
           },
         });
         setFormError(null);
@@ -146,30 +148,17 @@ const CreateEventPage: NextPage = () => {
                 <Input.TextArea data-cy="createevent-input-description" />
               </Form.Item>
               <Form.Item
-                name="startTime"
-                label="Choose start time"
+                name="eventTime"
+                label="Event time"
                 rules={[
                   {
-                    type: "object",
+                    type: "array",
                     required: true,
                     message: "Please select time!",
                   },
                 ]}
               >
-                <DatePicker showTime format="YYYY-MM-DD HH:mm" />
-              </Form.Item>
-              <Form.Item
-                name="endTime"
-                label="Choose end time"
-                rules={[
-                  {
-                    type: "object",
-                    required: true,
-                    message: "Please select time!",
-                  },
-                ]}
-              >
-                <DatePicker showTime format="YYYY-MM-DD HH:mm" />
+                <RangePicker showTime format="YYYY-MM-DD HH:mm" />
               </Form.Item>
               {formError ? (
                 <Form.Item {...tailFormItemLayout}>

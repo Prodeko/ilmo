@@ -1,1 +1,11 @@
-{}
+{
+  "backhome": "Takaisin etusivulle",
+  "logout": "Logout",
+  "signin": "Sign in",
+  "settings": "Settings",
+  "headerMenu": {
+    "createEvent": "Create event",
+    "createEventCategory": "Create event category",
+    "createOrganization": "Create organization"
+  }
+}

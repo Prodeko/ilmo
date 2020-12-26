@@ -10,6 +10,7 @@ import { useSharedQuery } from "@app/graphql";
 import { Alert, Col, Row } from "antd";
 import { NextPage } from "next";
 import Link from "next/link";
+import useTranslation from "next-translate/useTranslation";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -62,6 +63,7 @@ interface ErrorComponentSpec<TProps> {
 
 const getDisplayForError = (props: ErrorPageProps): ErrorComponentSpec<any> => {
   const { statusCode, pathname } = props;
+  const { t } = useTranslation("error");
 
   const authMatches = pathname ? pathname.match(/^\/auth\/([^/?#]+)/) : null;
   if (authMatches) {
@@ -78,12 +80,12 @@ const getDisplayForError = (props: ErrorPageProps): ErrorComponentSpec<any> => {
     case 404:
       return {
         Component: FourOhFour,
-        title: "Page Not Found",
+        title: t("pageNotFound"),
       };
     default:
       return {
         Component: ErrorOccurred,
-        title: "An Error Occurred",
+        title: t("errorOccurred"),
       };
   }
 };
