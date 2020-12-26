@@ -49,7 +49,7 @@ const Home: NextPage = () => {
       filters: organizations?.map((o) => ({ text: o.name, value: o.id })),
       render: (name: string) => (
         <Tag color={getColor(name)} key={name}>
-          {name.toUpperCase()}
+          {name?.toUpperCase()}
         </Tag>
       ),
     },
@@ -60,7 +60,7 @@ const Home: NextPage = () => {
       filters: eventCategories?.map((c) => ({ text: c.name, value: c.id })),
       render: (name: string) => (
         <Tag color={getColor(name)} key={name}>
-          {name.toUpperCase()}
+          {name?.toUpperCase()}
         </Tag>
       ),
     },

@@ -12,6 +12,7 @@ export function LocaleSelect() {
       {locales?.map((locale) => (
         <ReactCountryFlag
           key={locale}
+          data-cy={`localeselect-${locale}`}
           countryCode={locale === "en" ? "GB" : locale}
           aria-label={`${locale} flag`}
           style={{
