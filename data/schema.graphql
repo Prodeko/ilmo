@@ -23,6 +23,48 @@ type AcceptInvitationToOrganizationPayload {
   query: Query
 }
 
+"""
+A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’
+"""
+input BooleanFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: Boolean
+
+  """Equal to the specified value."""
+  equalTo: Boolean
+
+  """Greater than the specified value."""
+  greaterThan: Boolean
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: Boolean
+
+  """Included in the specified list."""
+  in: [Boolean!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: Boolean
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: Boolean
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: Boolean
+
+  """Not equal to the specified value."""
+  notEqualTo: Boolean
+
+  """Not included in the specified list."""
+  notIn: [Boolean!]
+}
+
 """All input for the `changePassword` mutation."""
 input ChangePasswordInput {
   """
@@ -342,6 +384,48 @@ A point in time as described by the [ISO
 """
 scalar Datetime
 
+"""
+A filter to be used against Datetime fields. All fields are combined with a logical ‘and.’
+"""
+input DatetimeFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: Datetime
+
+  """Equal to the specified value."""
+  equalTo: Datetime
+
+  """Greater than the specified value."""
+  greaterThan: Datetime
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: Datetime
+
+  """Included in the specified list."""
+  in: [Datetime!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: Datetime
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: Datetime
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: Datetime
+
+  """Not equal to the specified value."""
+  notEqualTo: Datetime
+
+  """Not included in the specified list."""
+  notIn: [Datetime!]
+}
+
 """All input for the `deleteEventCategory` mutation."""
 input DeleteEventCategoryInput {
   """
@@ -619,6 +703,11 @@ type Event {
     """
     condition: EventQuestionCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventQuestionFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -660,6 +749,11 @@ type Event {
     """
     condition: RegistrationCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: RegistrationFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -688,6 +782,11 @@ type Event {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: RegistrationTokenCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: RegistrationTokenFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -767,6 +866,11 @@ type EventCategory {
     """
     condition: EventCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -810,6 +914,26 @@ input EventCategoryCondition {
 
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
+}
+
+"""
+A filter to be used against `EventCategory` object types. All fields are combined with a logical ‘and.’
+"""
+input EventCategoryFilter {
+  """Checks for all expressions in this list."""
+  and: [EventCategoryFilter!]
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: EventCategoryFilter
+
+  """Checks for any expressions in this list."""
+  or: [EventCategoryFilter!]
+
+  """Filter by the object’s `ownerOrganizationId` field."""
+  ownerOrganizationId: UUIDFilter
 }
 
 """An input for mutations affecting `EventCategory`"""
@@ -859,6 +983,32 @@ input EventCondition {
 
   """Checks for equality with the object’s `startTime` field."""
   startTime: Datetime
+}
+
+"""
+A filter to be used against `Event` object types. All fields are combined with a logical ‘and.’
+"""
+input EventFilter {
+  """Checks for all expressions in this list."""
+  and: [EventFilter!]
+
+  """Filter by the object’s `categoryId` field."""
+  categoryId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: EventFilter
+
+  """Checks for any expressions in this list."""
+  or: [EventFilter!]
+
+  """Filter by the object’s `ownerOrganizationId` field."""
+  ownerOrganizationId: UUIDFilter
+
+  """Filter by the object’s `startTime` field."""
+  startTime: DatetimeFilter
 }
 
 """An input for mutations affecting `Event`"""
@@ -925,6 +1075,26 @@ input EventQuestionCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+}
+
+"""
+A filter to be used against `EventQuestion` object types. All fields are combined with a logical ‘and.’
+"""
+input EventQuestionFilter {
+  """Checks for all expressions in this list."""
+  and: [EventQuestionFilter!]
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: EventQuestionFilter
+
+  """Checks for any expressions in this list."""
+  or: [EventQuestionFilter!]
 }
 
 """An input for mutations affecting `EventQuestion`"""
@@ -1467,6 +1637,11 @@ type Organization {
     """
     condition: EventCategoryCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventCategoryFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1495,6 +1670,11 @@ type Organization {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: EventCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -1529,6 +1709,11 @@ type Organization {
     """
     condition: OrganizationMembershipCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: OrganizationMembershipFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1557,6 +1742,32 @@ input OrganizationCondition {
 
   """Checks for equality with the object’s `slug` field."""
   slug: String
+}
+
+"""
+A filter to be used against `Organization` object types. All fields are combined with a logical ‘and.’
+"""
+input OrganizationFilter {
+  """Checks for all expressions in this list."""
+  and: [OrganizationFilter!]
+
+  """Filter by the object’s `currentUserIsBillingContact` field."""
+  currentUserIsBillingContact: BooleanFilter
+
+  """Filter by the object’s `currentUserIsOwner` field."""
+  currentUserIsOwner: BooleanFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: OrganizationFilter
+
+  """Checks for any expressions in this list."""
+  or: [OrganizationFilter!]
+
+  """Filter by the object’s `slug` field."""
+  slug: StringFilter
 }
 
 type OrganizationMembership {
@@ -1591,6 +1802,29 @@ input OrganizationMembershipCondition {
 
   """Checks for equality with the object’s `userId` field."""
   userId: UUID
+}
+
+"""
+A filter to be used against `OrganizationMembership` object types. All fields are combined with a logical ‘and.’
+"""
+input OrganizationMembershipFilter {
+  """Checks for all expressions in this list."""
+  and: [OrganizationMembershipFilter!]
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: OrganizationMembershipFilter
+
+  """Checks for any expressions in this list."""
+  or: [OrganizationMembershipFilter!]
+
+  """Filter by the object’s `organizationId` field."""
+  organizationId: UUIDFilter
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
 }
 
 """A connection to a list of `OrganizationMembership` values."""
@@ -1696,15 +1930,6 @@ type PageInfo {
   startCursor: Cursor
 }
 
-type PublicEventPayload {
-  categoryName: String!
-  id: UUID!
-  isPublic: Boolean!
-  name: String
-  ownerOrganizationName: String!
-  startTime: Datetime!
-}
-
 """The root query type which gives access points into the data universe."""
 type Query {
   """The currently logged in user (or null if not logged in)."""
@@ -1723,6 +1948,11 @@ type Query {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: EventCategoryCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventCategoryFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -1755,6 +1985,11 @@ type Query {
     """
     condition: EventQuestionCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventQuestionFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1783,6 +2018,11 @@ type Query {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: EventCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -1821,6 +2061,11 @@ type Query {
     """
     condition: OrganizationCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: OrganizationFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1836,9 +2081,6 @@ type Query {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
-
-  """Get public events"""
-  publicEvents: [PublicEventPayload!]
   registration(id: UUID!): Registration
 
   """Reads and enables pagination through a set of `Registration`."""
@@ -1853,6 +2095,11 @@ type Query {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: RegistrationCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: RegistrationFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -1886,6 +2133,11 @@ type Query {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: RegistrationTokenCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: RegistrationTokenFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -1954,6 +2206,26 @@ input RegistrationCondition {
   id: UUID
 }
 
+"""
+A filter to be used against `Registration` object types. All fields are combined with a logical ‘and.’
+"""
+input RegistrationFilter {
+  """Checks for all expressions in this list."""
+  and: [RegistrationFilter!]
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: RegistrationFilter
+
+  """Checks for any expressions in this list."""
+  or: [RegistrationFilter!]
+}
+
 """A connection to a list of `Registration` values."""
 type RegistrationsConnection {
   """
@@ -2019,6 +2291,26 @@ input RegistrationTokenCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+}
+
+"""
+A filter to be used against `RegistrationToken` object types. All fields are combined with a logical ‘and.’
+"""
+input RegistrationTokenFilter {
+  """Checks for all expressions in this list."""
+  and: [RegistrationTokenFilter!]
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: RegistrationTokenFilter
+
+  """Checks for any expressions in this list."""
+  or: [RegistrationTokenFilter!]
 }
 
 """An input for mutations affecting `RegistrationToken`"""
@@ -2187,6 +2479,138 @@ type ResetPasswordPayload {
   """
   query: Query
   success: Boolean
+}
+
+"""
+A filter to be used against String fields. All fields are combined with a logical ‘and.’
+"""
+input StringFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: String
+
+  """
+  Not equal to the specified value, treating null like an ordinary value (case-insensitive).
+  """
+  distinctFromInsensitive: String
+
+  """Ends with the specified string (case-sensitive)."""
+  endsWith: String
+
+  """Ends with the specified string (case-insensitive)."""
+  endsWithInsensitive: String
+
+  """Equal to the specified value."""
+  equalTo: String
+
+  """Equal to the specified value (case-insensitive)."""
+  equalToInsensitive: String
+
+  """Greater than the specified value."""
+  greaterThan: String
+
+  """Greater than the specified value (case-insensitive)."""
+  greaterThanInsensitive: String
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: String
+
+  """Greater than or equal to the specified value (case-insensitive)."""
+  greaterThanOrEqualToInsensitive: String
+
+  """Included in the specified list."""
+  in: [String!]
+
+  """Contains the specified string (case-sensitive)."""
+  includes: String
+
+  """Contains the specified string (case-insensitive)."""
+  includesInsensitive: String
+
+  """Included in the specified list (case-insensitive)."""
+  inInsensitive: [String!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: String
+
+  """Less than the specified value (case-insensitive)."""
+  lessThanInsensitive: String
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: String
+
+  """Less than or equal to the specified value (case-insensitive)."""
+  lessThanOrEqualToInsensitive: String
+
+  """
+  Matches the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters.
+  """
+  like: String
+
+  """
+  Matches the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters.
+  """
+  likeInsensitive: String
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: String
+
+  """
+  Equal to the specified value, treating null like an ordinary value (case-insensitive).
+  """
+  notDistinctFromInsensitive: String
+
+  """Does not end with the specified string (case-sensitive)."""
+  notEndsWith: String
+
+  """Does not end with the specified string (case-insensitive)."""
+  notEndsWithInsensitive: String
+
+  """Not equal to the specified value."""
+  notEqualTo: String
+
+  """Not equal to the specified value (case-insensitive)."""
+  notEqualToInsensitive: String
+
+  """Not included in the specified list."""
+  notIn: [String!]
+
+  """Does not contain the specified string (case-sensitive)."""
+  notIncludes: String
+
+  """Does not contain the specified string (case-insensitive)."""
+  notIncludesInsensitive: String
+
+  """Not included in the specified list (case-insensitive)."""
+  notInInsensitive: [String!]
+
+  """
+  Does not match the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters.
+  """
+  notLike: String
+
+  """
+  Does not match the specified pattern (case-insensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters.
+  """
+  notLikeInsensitive: String
+
+  """Does not start with the specified string (case-sensitive)."""
+  notStartsWith: String
+
+  """Does not start with the specified string (case-insensitive)."""
+  notStartsWithInsensitive: String
+
+  """Starts with the specified string (case-sensitive)."""
+  startsWith: String
+
+  """Starts with the specified string (case-insensitive)."""
+  startsWithInsensitive: String
 }
 
 """
@@ -2544,6 +2968,11 @@ type User {
     """
     condition: OrganizationMembershipCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: OrganizationMembershipFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -2568,6 +2997,11 @@ type User {
     """
     condition: UserAuthenticationCondition
 
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserAuthenticationFilter
+
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -2590,6 +3024,11 @@ type User {
     A condition to be used in determining which values should be returned by the collection.
     """
     condition: UserEmailCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserEmailFilter
 
     """Only read the first `n` values of the set."""
     first: Int
@@ -2645,6 +3084,29 @@ input UserAuthenticationCondition {
   userId: UUID
 }
 
+"""
+A filter to be used against `UserAuthentication` object types. All fields are combined with a logical ‘and.’
+"""
+input UserAuthenticationFilter {
+  """Checks for all expressions in this list."""
+  and: [UserAuthenticationFilter!]
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: UserAuthenticationFilter
+
+  """Checks for any expressions in this list."""
+  or: [UserAuthenticationFilter!]
+
+  """Filter by the object’s `service` field."""
+  service: StringFilter
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
+}
+
 """Methods to use when ordering `UserAuthentication`."""
 enum UserAuthenticationsOrderBy {
   ID_ASC
@@ -2691,6 +3153,29 @@ input UserEmailCondition {
 
   """Checks for equality with the object’s `userId` field."""
   userId: UUID
+}
+
+"""
+A filter to be used against `UserEmail` object types. All fields are combined with a logical ‘and.’
+"""
+input UserEmailFilter {
+  """Checks for all expressions in this list."""
+  and: [UserEmailFilter!]
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `isPrimary` field."""
+  isPrimary: BooleanFilter
+
+  """Negates the expression."""
+  not: UserEmailFilter
+
+  """Checks for any expressions in this list."""
+  or: [UserEmailFilter!]
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
 }
 
 """An input for mutations affecting `UserEmail`"""
@@ -2779,6 +3264,48 @@ type UserSubscriptionPayload {
 A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122).
 """
 scalar UUID
+
+"""
+A filter to be used against UUID fields. All fields are combined with a logical ‘and.’
+"""
+input UUIDFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: UUID
+
+  """Equal to the specified value."""
+  equalTo: UUID
+
+  """Greater than the specified value."""
+  greaterThan: UUID
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: UUID
+
+  """Included in the specified list."""
+  in: [UUID!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: UUID
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: UUID
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: UUID
+
+  """Not equal to the specified value."""
+  notEqualTo: UUID
+
+  """Not included in the specified list."""
+  notIn: [UUID!]
+}
 
 """All input for the `verifyEmail` mutation."""
 input VerifyEmailInput {

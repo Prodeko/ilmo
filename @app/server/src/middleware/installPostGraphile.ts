@@ -18,7 +18,6 @@ import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
 import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter";
 
 import { getHttpServer, getWebsocketMiddlewares } from "../app";
-import CustomEventListGetterPlugin from "../plugins/CustomEventListGetter";
 import OrdersPlugin from "../plugins/Orders";
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin";
@@ -172,8 +171,6 @@ export function getPostGraphileOptions({
      *   https://www.graphile.org/postgraphile/extending/
      */
     appendPlugins: [
-      CustomEventListGetterPlugin,
-
       // Plugin for rate limiting resolvers
       RateLimitPlugin,
 

@@ -63,7 +63,7 @@ export async function makeApp({
    * Our Express server
    */
   const app = express();
-  initSentry(app);
+  //initSentry(app);
 
   /*
    * In production, we may need to enable the 'trust proxy' setting so that the

@@ -1,0 +1,39 @@
+fragment HomePage_Event on Event {
+  id
+  name
+  startTime
+  endTime
+  ownerOrganization {
+    name
+  }
+  category {
+    name
+    isPublic
+  }
+}
+
+fragment HomePage_Query on Query {
+  ...SharedLayout_Query
+  signupOpenEvents: events(
+    first: $first
+    offset: $offset
+    filter: { startTime: { greaterThanOrEqualTo: $now } }
+    orderBy: START_TIME_DESC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+    totalCount
+  }
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: { startTime: { lessThanOrEqualTo: $now } }
+    orderBy: START_TIME_DESC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+    totalCount
+  }
+}
