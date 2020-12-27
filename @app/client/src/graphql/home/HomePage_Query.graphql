@@ -9,6 +9,7 @@ fragment HomePage_Event on Event {
     name
   }
   category {
+    id
     name
   }
 }
@@ -22,6 +23,7 @@ fragment HomePage_Query on Query {
     orderBy: START_TIME_DESC
   ) {
     nodes {
+      id
       ...HomePage_Event
     }
     totalCount
@@ -33,6 +35,7 @@ fragment HomePage_Query on Query {
     orderBy: START_TIME_DESC
   ) {
     nodes {
+      id
       ...HomePage_Event
     }
     totalCount

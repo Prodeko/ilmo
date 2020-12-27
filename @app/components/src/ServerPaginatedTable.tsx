@@ -20,7 +20,7 @@ export function ServerPaginatedTable({
   fieldName,
   showPagination = true,
 }: Props) {
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, _setPageSize] = useState(5);
   const [offset, setOffset] = useState(0);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,

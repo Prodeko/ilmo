@@ -91,6 +91,6 @@ it("Can claim registration token", () =>
     const THIRTY_MINUTES = 1000 * 30 * 60;
     jest.advanceTimersByTime(THIRTY_MINUTES);
 
-    const t2 = await getRegistrationToken(client, registrationToken.id);
+    // const t2 = await getRegistrationToken(client, registrationToken.id);
     // sexpect(t2).toBeUndefined();
   }));
