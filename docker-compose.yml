@@ -113,8 +113,6 @@ services:
     image: redis:6-alpine
     volumes:
       - cache-volume:/data
-    options: >-
-      --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
   # This runs the database that everything else connects to
   db:
@@ -139,9 +137,8 @@ services:
     networks:
       - default
     command:
-      postgres -c logging_collector=on -c log_destination=stderr -c
-      log_directory=/var/lib/postgresql/data/logs -c log_rotation_age=60 -c
-      log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
+      postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/var/lib/postgresql/data/logs -c
+      log_rotation_age=60 -c log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
 
 networks:
   default:
