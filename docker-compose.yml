@@ -109,6 +109,13 @@ services:
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
 
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - cache-volume:/data
+    options: >-
+      --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+
   # This runs the database that everything else connects to
   db:
     image: postgres:11
@@ -143,6 +150,9 @@ networks:
 volumes:
   # Postgres' data
   db-volume:
+
+  # Redis' data
+  cache-volume:
 
   # Node modules
   nm_root:
