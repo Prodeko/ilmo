@@ -1,6 +1,42 @@
 {
-  "name": "Event",
+  "eventName": "Event",
   "organizer": "Organizer",
   "category": "Category",
-  "time": "Time"
+  "time": "Time",
+  "createEventCategory": {
+    "title": "Create event category",
+    "shortDescription": "Short description"
+  },
+  "errors": {
+    "eventCategoryCreationFailed": "Creating event category failed",
+    "eventCreationFailed": "Creating event failed",
+    "errorCode": "Error code"
+  },
+  "forms": {
+    "eventTime": "Event time",
+    "highlightEvent": "Highlighted event",
+    "placeholders": {
+      "event": {
+        "organizer": "Please select an organizer for the event",
+        "category": "Please select a category for the event"
+      },
+      "eventCategory": {
+        "organizer": "Please select an organizer for the event category"
+      }
+    },
+    "rules": {
+      "event": {
+        "provideOrganizer": "Please choose an organizer for the event",
+        "provideCategory": "Please choose a category for the event",
+        "provideName": "Please choose a name for the event",
+        "provideDescription": "Please provide a description of the event",
+        "provideEventTime": "Please select event time"
+      },
+      "eventCategory": {
+        "provideOrganizer": "Please choose a host organization for the category",
+        "provideName": "Please choose a name for the category",
+        "provideDescription": "Please choose a description for the category"
+      }
+    }
+  }
 }

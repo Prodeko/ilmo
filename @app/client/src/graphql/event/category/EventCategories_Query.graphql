@@ -2,7 +2,6 @@ fragment EventCategories_EventCategory on EventCategory {
   id
   name
   description
-  isPublic
 }
 
 fragment EventCategories_Query on Query {

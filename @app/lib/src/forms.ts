@@ -8,6 +8,7 @@ export const formItemLayout = {
     sm: { span: 18 },
   },
 };
+
 export const tailFormItemLayout = {
   wrapperCol: {
     xs: {

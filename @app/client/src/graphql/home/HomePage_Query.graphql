@@ -3,12 +3,13 @@ fragment HomePage_Event on Event {
   name
   startTime
   endTime
+  isHighlighted
   ownerOrganization {
+    id
     name
   }
   category {
     name
-    isPublic
   }
 }
 

@@ -5,7 +5,7 @@ import {
   useOrganizationsAndCategoriesQuery,
   useSharedQuery,
 } from "@app/graphql";
-import { Col, Row, Tag, Typography } from "antd";
+import { Col, Divider, Row, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
@@ -35,7 +35,7 @@ const Home: NextPage = () => {
 
   const columns = [
     {
-      title: t("events:name"),
+      title: t("events:eventName"),
       dataIndex: "name",
       key: "name",
       render: (name: string, event: { id: string }) => (
@@ -84,13 +84,16 @@ const Home: NextPage = () => {
             variables={{ now }}
             columns={columns}
             fieldName="signupOpenEvents"
+            showPagination={false}
           />
+          <Divider dashed />
           <Title level={4}>{t("events.signupsClosedEvents")}</Title>
           <ServerPaginatedTable
             queryDocument={HomePageDocument}
             variables={{ now }}
             columns={columns}
             fieldName="signupClosedEvents"
+            showPagination={true}
           />
         </Col>
       </Row>

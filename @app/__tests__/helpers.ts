@@ -217,16 +217,15 @@ export const createEventCategories = async function createEventCategories(
     const name = `Category ${i}`;
     const description = `Category description ${i}`;
     const ownerOrganizationId = organizationId;
-    const isPublic = true;
     const {
       rows: [category],
     } = await client.query(
       `
-        insert into app_public.event_categories(name, description, owner_organization_id, is_public)
-        values ($1, $2, $3, $4)
+        insert into app_public.event_categories(name, description, owner_organization_id)
+        values ($1, $2, $3)
         returning *
       `,
-      [name, description, ownerOrganizationId, isPublic]
+      [name, description, ownerOrganizationId]
     );
     categories.push(category);
   }

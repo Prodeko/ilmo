@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
-import { ConfigProvider,notification  } from "antd";
+import { ConfigProvider, notification } from "antd";
 import enUS from "antd/lib/locale/en_US";
 import fiFI from "antd/lib/locale/fi_FI";
 import App from "next/app";

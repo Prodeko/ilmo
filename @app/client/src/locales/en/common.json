@@ -1,6 +1,10 @@
 {
   "backhome": "Takaisin etusivulle",
+  "create": "Create",
+  "description": "Description",
+  "shortDescription": "Short description",
   "logout": "Logout",
+  "name": "Name",
   "signin": "Sign in",
   "settings": "Settings",
   "headerMenu": {

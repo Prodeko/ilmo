@@ -8,8 +8,9 @@ const { Paragraph } = Typography;
 interface Props {
   queryDocument: DocumentNode;
   variables: any;
-  columns: ColumnsType<{ id: string }>;
+  columns: ColumnsType<{ id: string; isHighlighted?: boolean }>;
   fieldName: string;
+  showPagination?: boolean;
 }
 
 export function ServerPaginatedTable({
@@ -17,6 +18,7 @@ export function ServerPaginatedTable({
   variables,
   columns,
   fieldName,
+  showPagination = true,
 }: Props) {
   const [pageSize, setPageSize] = useState(5);
   const [offset, setOffset] = useState(0);
@@ -36,18 +38,21 @@ export function ServerPaginatedTable({
       }),
   });
 
-  const handleTableChange = useCallback(async (pagination) => {
-    setPagination({ ...pagination });
-    const { current, pageSize } = pagination;
-    const newOffset = (current - 1) * pageSize;
+  const handleTableChange = useCallback(
+    async (pagination) => {
+      setPagination({ ...pagination });
+      const { current, pageSize } = pagination;
+      const newOffset = (current - 1) * pageSize;
 
-    await fetchMore({
-      variables: {
-        offset: newOffset,
-      },
-    });
-    setOffset(newOffset);
-  }, []);
+      await fetchMore({
+        variables: {
+          offset: newOffset,
+        },
+      });
+      setOffset(newOffset);
+    },
+    [fetchMore]
+  );
 
   return (
     <>
@@ -58,9 +63,12 @@ export function ServerPaginatedTable({
           loading={loading}
           columns={columns}
           dataSource={data[fieldName].nodes}
-          pagination={pagination}
+          pagination={showPagination && pagination}
           onChange={handleTableChange}
           rowKey={(obj) => obj.id}
+          rowClassName={(record, _index) =>
+            record?.isHighlighted ? "table-row-highlight" : ""
+          }
         />
       ) : (
         ""

@@ -1,26 +1,19 @@
 fragment CreatedEventCategory on EventCategory {
   id
   name
-  isPublic
   ownerOrganization {
     id
     name
   }
 }
 
-mutation CreateEventCategory(
-  $name: String!
-  $desc: String!
-  $org_id: UUID!
-  $is_public: Boolean!
-) {
+mutation CreateEventCategory($name: String!, $desc: String!, $org_id: UUID!) {
   createEventCategory(
     input: {
       eventCategory: {
         name: $name
         description: $desc
         ownerOrganizationId: $org_id
-        isPublic: $is_public
       }
     }
   ) {

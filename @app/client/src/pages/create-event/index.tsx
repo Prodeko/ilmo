@@ -22,12 +22,15 @@ import {
   PageHeader,
   Row,
   Select,
+  Switch,
 } from "antd";
 import { NextPage } from "next";
+import useTranslation from "next-translate/useTranslation";
 
 const { RangePicker } = DatePicker;
 
 const CreateEventPage: NextPage = () => {
+  const { t } = useTranslation("events");
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useEventCategoriesQuery();
   const [form] = Form.useForm();
@@ -79,17 +82,17 @@ const CreateEventPage: NextPage = () => {
           <div>
             <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
               <Form.Item
-                label="Organization"
                 name="organizationId"
+                label={t("organizer")}
                 rules={[
                   {
                     required: true,
-                    message: "Please choose an organizer for the event",
+                    message: t("forms.rules.event.provideOrganizer"),
                   },
                 ]}
               >
                 <Select
-                  placeholder="Please select an organizer for the event"
+                  placeholder={t("forms.placeholders.event.organizer")}
                   data-cy="createevent-select-organization-id"
                 >
                   {organizationMemberships?.map((a) => (
@@ -103,45 +106,45 @@ const CreateEventPage: NextPage = () => {
                 </Select>
               </Form.Item>
               <Form.Item
-                label="Category"
                 name="categoryId"
+                label={t("category")}
                 rules={[
                   {
                     required: true,
-                    message: "Please choose an category for the event",
+                    message: t("forms.rules.event.provideCategory"),
                   },
                 ]}
               >
                 <Select
-                  placeholder="Please select an organizer for the event"
+                  placeholder={t("forms.placeholders.event.category")}
                   data-cy="createevent-select-category-id"
                 >
                   {query.data?.eventCategories?.nodes.map((a) => (
                     <Select.Option value={a.id} key={a.id}>
-                      {a.isPublic ? "Public" : "Hidden"} {a.name}
+                      {a.name}
                     </Select.Option>
                   ))}
                 </Select>
               </Form.Item>
               <Form.Item
-                label="Name"
                 name="name"
+                label={t("common:name")}
                 rules={[
                   {
                     required: true,
-                    message: "Please choose a name for the event",
+                    message: t("forms.rules.event.provideName"),
                   },
                 ]}
               >
                 <Input data-cy="createevent-input-name" />
               </Form.Item>
               <Form.Item
-                label="Description"
                 name="description"
+                label={t("common:description")}
                 rules={[
                   {
                     required: true,
-                    message: "Please tell something about the event",
+                    message: t("forms.rules.event.provideDescription"),
                   },
                 ]}
               >
@@ -149,29 +152,36 @@ const CreateEventPage: NextPage = () => {
               </Form.Item>
               <Form.Item
                 name="eventTime"
-                label="Event time"
+                label={t("forms.eventTime")}
                 rules={[
                   {
                     type: "array",
                     required: true,
-                    message: "Please select time!",
+                    message: t("forms.rules.event.provideEventTime"),
                   },
                 ]}
               >
                 <RangePicker showTime format="YYYY-MM-DD HH:mm" />
               </Form.Item>
+              <Form.Item
+                name="isHighlighted"
+                label={t("forms.highlightEvent")}
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
               {formError ? (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     type="error"
-                    message={`Creating event failed`}
+                    message={t("errors.eventCreationFailed")}
                     description={
                       <span>
                         {extractError(formError).message}
                         {code ? (
                           <span>
                             {" "}
-                            (Error code: <code>ERR_{code}</code>)
+                            ({t("errors.errorCode")}: <code>ERR_{code}</code>)
                           </span>
                         ) : null}
                       </span>
@@ -181,7 +191,7 @@ const CreateEventPage: NextPage = () => {
               ) : null}
               <Form.Item {...tailFormItemLayout}>
                 <Button htmlType="submit" data-cy="createevent-button-create">
-                  Create
+                  {t("common:create")}
                 </Button>
               </Form.Item>
             </Form>

@@ -2,7 +2,6 @@ fragment EventPage_Event on Event {
   category {
     id
     description
-    isPublic
     name
   }
   description

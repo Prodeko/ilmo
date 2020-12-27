@@ -727,13 +727,16 @@ type Event {
   """Unique identifier for the event."""
   id: UUID!
 
+  """A highlighted event."""
+  isHighlighted: Boolean!
+
   """Name of the event."""
   name: String
 
   """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
-  """Id of the organizing organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID!
 
   """Reads and enables pagination through a set of `Registration`."""
@@ -846,7 +849,7 @@ enum EventCategoriesOrderBy {
   PRIMARY_KEY_DESC
 }
 
-"""Table for event_categories."""
+"""Table for event categories."""
 type EventCategory {
   createdAt: Datetime!
 
@@ -890,16 +893,13 @@ type EventCategory {
   """Unique identifier for the event category."""
   id: UUID!
 
-  """Are events of this category available for everyone."""
-  isPublic: Boolean!
-
   """Name of the event category."""
   name: String
 
   """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
 
-  """Id of the hosting organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID!
   updatedAt: Datetime!
 }
@@ -938,34 +938,40 @@ input EventCategoryFilter {
 
 """An input for mutations affecting `EventCategory`"""
 input EventCategoryInput {
+  createdAt: Datetime
+
   """Short description of the event category."""
   description: String
 
-  """Are events of this category available for everyone."""
-  isPublic: Boolean
+  """Unique identifier for the event category."""
+  id: UUID
 
   """Name of the event category."""
   name: String
 
-  """Id of the hosting organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID!
+  updatedAt: Datetime
 }
 
 """
 Represents an update to a `EventCategory`. Fields that are set will be updated.
 """
 input EventCategoryPatch {
+  createdAt: Datetime
+
   """Short description of the event category."""
   description: String
 
-  """Are events of this category available for everyone."""
-  isPublic: Boolean
+  """Unique identifier for the event category."""
+  id: UUID
 
   """Name of the event category."""
   name: String
 
-  """Id of the hosting organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID
+  updatedAt: Datetime
 }
 
 """
@@ -1015,6 +1021,7 @@ input EventFilter {
 input EventInput {
   """Id of the event category."""
   categoryId: UUID!
+  createdAt: Datetime
 
   """Description of the event."""
   description: String
@@ -1022,14 +1029,21 @@ input EventInput {
   """Ending time of the event."""
   endTime: Datetime!
 
+  """Unique identifier for the event."""
+  id: UUID
+
+  """A highlighted event."""
+  isHighlighted: Boolean
+
   """Name of the event."""
   name: String
 
-  """Id of the organizing organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID!
 
   """Starting time of the event."""
   startTime: Datetime!
+  updatedAt: Datetime
 }
 
 """
@@ -1038,6 +1052,7 @@ Represents an update to a `Event`. Fields that are set will be updated.
 input EventPatch {
   """Id of the event category."""
   categoryId: UUID
+  createdAt: Datetime
 
   """Description of the event."""
   description: String
@@ -1045,24 +1060,33 @@ input EventPatch {
   """Ending time of the event."""
   endTime: Datetime
 
+  """Unique identifier for the event."""
+  id: UUID
+
+  """A highlighted event."""
+  isHighlighted: Boolean
+
   """Name of the event."""
   name: String
 
-  """Id of the organizing organization."""
+  """Id of the organizer."""
   ownerOrganizationId: UUID
 
   """Starting time of the event."""
   startTime: Datetime
+  updatedAt: Datetime
 }
 
 type EventQuestion {
+  createdAt: Datetime!
+
   """Reads a single `Event` that is related to this `EventQuestion`."""
   event: Event
   eventId: UUID!
   id: UUID!
-  isPublic: Boolean!
   options: JSON
   type: QuestionType!
+  updatedAt: Datetime!
 }
 
 """
@@ -1099,22 +1123,24 @@ input EventQuestionFilter {
 
 """An input for mutations affecting `EventQuestion`"""
 input EventQuestionInput {
+  createdAt: Datetime
   eventId: UUID!
   id: UUID
-  isPublic: Boolean
   options: JSON
   type: QuestionType!
+  updatedAt: Datetime
 }
 
 """
 Represents an update to a `EventQuestion`. Fields that are set will be updated.
 """
 input EventQuestionPatch {
+  createdAt: Datetime
   eventId: UUID
   id: UUID
-  isPublic: Boolean
   options: JSON
   type: QuestionType
+  updatedAt: Datetime
 }
 
 """A connection to a list of `EventQuestion` values."""
@@ -2267,7 +2293,7 @@ enum RegistrationsOrderBy {
 Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.
 """
 type RegistrationToken {
-  """Short description of the event category."""
+  """Timestamp of when the token was created."""
   createdAt: Datetime!
 
   """Reads a single `Event` that is related to this `RegistrationToken`."""
@@ -2315,7 +2341,7 @@ input RegistrationTokenFilter {
 
 """An input for mutations affecting `RegistrationToken`"""
 input RegistrationTokenInput {
-  """Short description of the event category."""
+  """Timestamp of when the token was created."""
   createdAt: Datetime
 
   """Unique identifier for the event."""
@@ -2330,7 +2356,7 @@ input RegistrationTokenInput {
 Represents an update to a `RegistrationToken`. Fields that are set will be updated.
 """
 input RegistrationTokenPatch {
-  """Short description of the event category."""
+  """Timestamp of when the token was created."""
   createdAt: Datetime
 
   """Unique identifier for the event."""

@@ -12,6 +12,7 @@ mutation CreateEvent(
   $description: String!
   $organizationId: UUID!
   $categoryId: UUID!
+  $isHighlighted: Boolean
   $startTime: Datetime!
   $endTime: Datetime!
 ) {
@@ -22,6 +23,7 @@ mutation CreateEvent(
         description: $description
         ownerOrganizationId: $organizationId
         categoryId: $categoryId
+        isHighlighted: $isHighlighted
         startTime: $startTime
         endTime: $endTime
       }

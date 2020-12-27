@@ -15,9 +15,11 @@ export interface RedirectProps {
 
 export function Redirect({ href, as, layout }: RedirectProps) {
   const client = useApolloClient();
+
   useEffect(() => {
     Router.push(href, as);
   }, [as, href]);
+
   if (layout) {
     return (
       <SharedLayout

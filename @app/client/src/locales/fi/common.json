@@ -1,6 +1,10 @@
 {
   "backhome": "Takaisin etusivulle",
+  "create": "Luo",
+  "description": "Kuvaus",
+  "shortDescription": "Lyhyt kuvaus",
   "logout": "Kirjaudu ulos",
+  "name": "Nimi",
   "signin": "Kirjaudu sisään",
   "settings": "Asetukset",
   "headerMenu": {

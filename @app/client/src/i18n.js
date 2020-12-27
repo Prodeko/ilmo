@@ -5,6 +5,8 @@ module.exports = {
     "*": ["common"],
     "/404": ["error"],
     "/": ["home", "events"],
+    "/create-event-category": ["events"],
+    "/create-event": ["events"],
   },
   loadLocaleFrom: (lang, ns) =>
     import(`./locales/${lang}/${ns}.json`).then((m) => m.default),
