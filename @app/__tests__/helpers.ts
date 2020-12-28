@@ -52,7 +52,7 @@ export const deleteTestUsers = () => {
       or username = 'testuser'
       or id in
         (
-          select user_id from app_public.user_emails where email like 'testuser%@example.com'
+          select user_id from app_public.user_emails where email like 'test.user%@example.com'
         union
           select user_id from app_public.user_authentications where service = 'facebook' and identifier = '123456%'
         )

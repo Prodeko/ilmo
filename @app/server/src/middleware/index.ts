@@ -6,6 +6,7 @@ import installHelmet from "./installHelmet";
 import installLogging from "./installLogging";
 import installPassport from "./installPassport";
 import installPostGraphile from "./installPostGraphile";
+import installRedis from "./installRedis";
 import installSameOrigin from "./installSameOrigin";
 import {
   installSentryErrorHandler,
@@ -25,6 +26,7 @@ export {
   installLogging,
   installPassport,
   installPostGraphile,
+  installRedis,
   installSameOrigin,
   installSentryErrorHandler,
   installSentryRequestHandler,

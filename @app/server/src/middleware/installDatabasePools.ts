@@ -6,6 +6,7 @@ import { getShutdownActions } from "../app";
 export function getRootPgPool(app: Express): Pool {
   return app.get("rootPgPool");
 }
+
 export function getAuthPgPool(app: Express): Pool {
   return app.get("authPgPool");
 }

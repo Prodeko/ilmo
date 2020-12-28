@@ -6,6 +6,7 @@ import GraphilePro from "@graphile/pro"; // Requires license key
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Express, Request, Response } from "express";
 import { NodePlugin } from "graphile-build";
+import { WrappedNodeRedisClient } from "handy-redis";
 import { Pool, PoolClient } from "pg";
 import {
   enhanceHttpServerWithSubscriptions,
@@ -27,12 +28,14 @@ import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin";
 import handleErrors from "../utils/handleErrors";
 
 import { getAuthPgPool, getRootPgPool } from "./installDatabasePools";
+import { getRedisClient } from "./installRedis";
 
 export interface OurGraphQLContext {
   pgClient: PoolClient;
   sessionId: string | null;
   ipAddress: string;
   rootPgPool: Pool;
+  redisClient: WrappedNodeRedisClient;
   login(user: any): Promise<void>;
   logout(): Promise<void>;
 }
@@ -75,11 +78,13 @@ const pluginHook = makePluginHook([
 interface IPostGraphileOptionsOptions {
   websocketMiddlewares?: Middleware<Request, Response>[];
   rootPgPool: Pool;
+  redisClient: WrappedNodeRedisClient;
 }
 
 export function getPostGraphileOptions({
   websocketMiddlewares,
   rootPgPool,
+  redisClient,
 }: IPostGraphileOptionsOptions) {
   const options: PostGraphileOptions<Request, Response> = {
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
@@ -271,6 +276,9 @@ export function getPostGraphileOptions({
         // IP address from request
         ipAddress: req.ip,
 
+        // Needed by RateLimitPlugin
+        redisClient,
+
         // Needed so passport can write to the database
         rootPgPool,
 
@@ -303,19 +311,21 @@ export function getPostGraphileOptions({
 
 export default function installPostGraphile(app: Express) {
   const websocketMiddlewares = getWebsocketMiddlewares(app);
+
   const authPgPool = getAuthPgPool(app);
   const rootPgPool = getRootPgPool(app);
+  const redisClient = getRedisClient(app);
+
   const middleware = postgraphile<Request, Response>(
     authPgPool,
     "app_public",
     getPostGraphileOptions({
       websocketMiddlewares,
       rootPgPool,
+      redisClient,
     })
   );
-
   app.set("postgraphileMiddleware", middleware);
-
   app.use(middleware);
 
   const httpServer = getHttpServer(app);

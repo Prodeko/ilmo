@@ -121,6 +121,7 @@ export async function makeApp({
    */
   await middleware.installSentryRequestHandler(app);
   await middleware.installDatabasePools(app);
+  await middleware.installRedis(app);
   await middleware.installWorkerUtils(app);
   await middleware.installHelmet(app);
   await middleware.installSameOrigin(app);

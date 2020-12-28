@@ -55,7 +55,6 @@ jobs:
           yarn --frozen-lockfile
           CONFIRM_DROP=1 yarn setup
           yarn build
-          printenv
           yarn lint
           yarn test --ci
           yarn depcheck

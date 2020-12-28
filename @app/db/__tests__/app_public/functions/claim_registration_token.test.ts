@@ -1,13 +1,11 @@
 import { PoolClient } from "pg";
 
 import {
+  asRoot,
+  assertJobComplete,
   createEventCategories,
   createEvents,
   createOrganizations,
-} from "../../../../__tests__/helpers";
-import {
-  asRoot,
-  assertJobComplete,
   getJobs,
   runJobs,
   withUserDb,

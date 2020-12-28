@@ -1,5 +1,5 @@
-import { asRoot } from "../../../__tests__/helpers";
 import {
+  asRoot,
   createEventDataAndLogin,
   deleteTestData,
   runGraphQLQuery,

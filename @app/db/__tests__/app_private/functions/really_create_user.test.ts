@@ -35,7 +35,7 @@ test("can register user with a password", () =>
     const user = await reallyCreateUser(
       client,
       "testuser",
-      "testuser@example.com",
+      "test.user@example.com",
       "Test One",
       "http://example.com",
       "SuperSecurePassword1"
@@ -60,7 +60,7 @@ test("cannot register with a weak password", () =>
     const promise = reallyCreateUser(
       client,
       "testuser",
-      "testuser@example.com",
+      "test.user@example.com",
       "Test One",
       "http://example.com",
       "WEAK"
@@ -77,7 +77,7 @@ test("can register user with just a username and email", () =>
     const user = await reallyCreateUser(
       client,
       "testuser",
-      "testuser@example.com",
+      "test.user@example.com",
       null,
       null,
       null

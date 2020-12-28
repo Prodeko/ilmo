@@ -1,6 +1,5 @@
 import { makeWrapResolversPlugin } from "graphile-utils";
 import { GraphQLResolveInfo } from "graphql";
-import { createNodeRedisClient } from "handy-redis";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
 
@@ -9,8 +8,6 @@ if (!process.env.NODE_ENV) {
 }
 
 const isDev = process.env.NODE_ENV === "development";
-
-const client = createNodeRedisClient({ url: process.env.REDIS_URL });
 
 type AugmentedGraphQLFieldResolver<
   TSource,
@@ -42,19 +39,19 @@ function rateLimitResolver(
     resolve,
     _source,
     { input: { eventId } },
-    { ipAddress },
+    { ipAddress, redisClient },
     { fieldName }
   ) => {
     // By default rate limiting is disabled in dev mode.
     // To work on rate limiting, invert the following if statement.
     if (!isDev) {
       const key = constructRateLimitKey(fieldName, eventId, ipAddress);
-      const current = await client.incr(key);
+      const current = await redisClient.incr(key);
 
       if (current > limit) {
         throw new Error("Too many requests.");
       } else {
-        await client.expire(key, RATE_LIMIT_TIMEOUT);
+        await redisClient.expire(key, RATE_LIMIT_TIMEOUT);
       }
     }
     return await resolve();

@@ -222,7 +222,7 @@ async function runCommand(
     });
     return null;
   } else if (command === "getEmailSecrets") {
-    const { email = "testuser@example.com" } = payload;
+    const { email = "test.user@example.com" } = payload;
     const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email);
     return userEmailSecrets;
   } else {
