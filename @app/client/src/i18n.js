@@ -2,7 +2,7 @@ module.exports = {
   locales: ["fi", "en"],
   defaultLocale: "fi",
   pages: {
-    "*": ["common"],
+    "*": ["common", "error"],
     "/404": ["error"],
     "/": ["home", "events"],
     "/create-event-category": ["events"],

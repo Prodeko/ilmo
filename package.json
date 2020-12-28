@@ -80,8 +80,7 @@
   },
   "resolutions": {
     "graphql": "15.x",
-    "pg-connection-string": "2.x",
-    "fsevents": "2.2.1"
+    "pg-connection-string": "2.x"
   },
   "workspaces": {
     "packages": [
