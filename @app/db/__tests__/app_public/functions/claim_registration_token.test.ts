@@ -86,9 +86,9 @@ it("Can claim registration token", () =>
     // TODO: Figure out how to test this properly. Need to most likely
     // do some changes to registration_delete_registration_token.
     // and await the db call or something...
-    const THIRTY_MINUTES = 1000 * 30 * 60;
-    jest.advanceTimersByTime(THIRTY_MINUTES);
+    // const THIRTY_MINUTES = 1000 * 30 * 60;
+    // jest.advanceTimersByTime(THIRTY_MINUTES);
 
     // const t2 = await getRegistrationToken(client, registrationToken.id);
-    // sexpect(t2).toBeUndefined();
+    // expect(t2).toBeUndefined();
   }));
