@@ -38,6 +38,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -64,6 +65,9 @@ jobs:
         with:
           wait-on: http://localhost:5678
           working-directory: "@app/e2e"
+          cache-key: "node-v${{ matrix.node }}-on-${{ runner.os }}-hash-${{ hashFiles('yarn.lock') }}"
+        env:
+          DEBUG: "cypress:*"
 
       - uses: actions/upload-artifact@v2
         if: failure()
