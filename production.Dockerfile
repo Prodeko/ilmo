@@ -81,7 +81,7 @@ ARG NODE_ENV
 ARG ROOT_URL
 ARG TARGET
 
-LABEL description="My PostGraphile-powered $TARGET"
+LABEL description="Prodeko ilmo $TARGET"
 
 # You might want to disable GRAPHILE_TURBO if you have issues
 ENV GRAPHILE_TURBO=1 TARGET=$TARGET PORT=$PORT
