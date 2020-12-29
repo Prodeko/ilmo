@@ -24,7 +24,7 @@ COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 
 # Finally run the build script
-RUN yarn run build
+RUN NEXT_TRANSLATE_PATH=../client/src yarn run build
 
 ################################################################################
 # Build stage 2 - COPY the relevant things (multiple steps)
