@@ -40,7 +40,7 @@ if (!process.env.ROOT_URL) {
     )({
       poweredByHeader: false,
       distDir: `../.next`,
-      trailingSlash: true,
+      trailingSlash: false,
       lessLoaderOptions: {
         javascriptEnabled: true,
         modifyVars: themeVariables, // make your antd custom effective

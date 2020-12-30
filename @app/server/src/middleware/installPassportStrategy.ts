@@ -3,9 +3,12 @@ import passport from "passport";
 
 import { getRootPgPool } from "./installDatabasePools";
 
+/*
+ * Add returnTo property using [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
+ */
 declare module "express-session" {
   interface SessionData {
-    returnTo: string;
+    returnTo?: string;
   }
 }
 
