@@ -1,6 +1,5 @@
 import { parse } from "url";
 
-// TODO: fix to 'import next' when next fixes the bug
 import { Express } from "express";
 import next from "next";
 

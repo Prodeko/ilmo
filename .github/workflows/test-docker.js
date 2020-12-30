@@ -27,8 +27,10 @@ async function main() {
     } catch (e) {
       attempts++;
       if (attempts <= 30) {
-        console.log(`Server is not ready yet: ${e.message}`);
-        execSync("docker logs ilmo-server", { stdio: "inherit" });
+        try {
+          console.log(`Server is not ready yet: ${e.message}`);
+          execSync("docker logs ilmo-server", { stdio: "inherit" });
+        } catch (e) {}
       } else {
         console.log(`Server never came up, aborting :(`);
         process.exit(1);
@@ -44,7 +46,6 @@ async function main() {
   }
 
   // TODO: make this test depend on the worker running
-
   console.log("Docker tests passed.");
 }
 

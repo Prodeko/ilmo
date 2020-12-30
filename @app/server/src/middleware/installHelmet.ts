@@ -15,7 +15,6 @@ export default function installHelmet(app: Express) {
         : {
             directives: {
               ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-              defaultSrc: ["'self'"],
               scriptSrc: ["'self'", "prodeko.org"],
             },
           },
