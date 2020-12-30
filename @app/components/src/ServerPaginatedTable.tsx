@@ -1,9 +1,8 @@
 import React, { useCallback, useState } from "react";
 import { DocumentNode, useQuery } from "@apollo/client";
-import { Table, Typography } from "antd";
+import { Table } from "antd";
 import { ColumnsType, TablePaginationConfig } from "antd/lib/table";
-
-const { Paragraph } = Typography;
+import { ErrorAlert } from "./ErrorAlert";
 
 interface Props {
   queryDocument: DocumentNode;
@@ -54,25 +53,19 @@ export function ServerPaginatedTable({
     [fetchMore]
   );
 
-  return (
-    <>
-      {error ? (
-        <Paragraph>{error}</Paragraph>
-      ) : data && data[fieldName].nodes ? (
-        <Table
-          loading={loading}
-          columns={columns}
-          dataSource={data[fieldName].nodes}
-          pagination={showPagination && pagination}
-          onChange={handleTableChange}
-          rowKey={(obj) => obj.id}
-          rowClassName={(record, _index) =>
-            record?.isHighlighted ? "table-row-highlight" : ""
-          }
-        />
-      ) : (
-        ""
-      )}
-    </>
+  return error ? (
+    <ErrorAlert error={error} />
+  ) : (
+    <Table
+      loading={loading}
+      columns={columns}
+      dataSource={data?.[fieldName].nodes}
+      pagination={showPagination && pagination}
+      onChange={handleTableChange}
+      rowKey={(obj) => obj.id}
+      rowClassName={(record, _index) =>
+        record?.isHighlighted ? "table-row-highlight" : ""
+      }
+    />
   );
 }
