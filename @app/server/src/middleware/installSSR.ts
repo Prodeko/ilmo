@@ -17,6 +17,7 @@ export default async function installSSR(app: Express) {
     quiet: !isDev,
     // Don't specify 'conf' key
   });
+
   const handlerPromise = (async () => {
     await nextApp.prepare();
     return nextApp.getRequestHandler();
