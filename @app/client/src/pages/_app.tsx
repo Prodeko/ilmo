@@ -6,8 +6,6 @@ import enUS from "antd/lib/locale/en_US";
 import fiFI from "antd/lib/locale/fi_FI";
 import App from "next/app";
 import Router from "next/router";
-import { I18n } from "next-translate";
-import withTranslation from "next-translate/withTranslation";
 import NProgress from "nprogress";
 
 import "antd/dist/antd.less";
@@ -64,12 +62,12 @@ if (typeof window !== "undefined") {
 
 interface Props {
   apollo: ApolloClient<any>;
-  i18n: I18n;
+  locale: string;
 }
 
 class Ilmo extends App<Props> {
-  static async getInitialProps({ Component, ctx }: any) {
-    let pageProps = {};
+  static async getInitialProps({ Component, ctx, router }: any) {
+    let pageProps = { locale: router.locale };
 
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
@@ -79,12 +77,11 @@ class Ilmo extends App<Props> {
   }
 
   render() {
-    const { Component, pageProps, apollo, i18n } = this.props;
-    const locale = i18n.lang === "fi" ? fiFI : enUS;
+    const { Component, pageProps, apollo, locale } = this.props;
 
     return (
       <ApolloProvider client={apollo}>
-        <ConfigProvider locale={locale}>
+        <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
           <Component {...pageProps} />
         </ConfigProvider>
       </ApolloProvider>
@@ -92,4 +89,4 @@ class Ilmo extends App<Props> {
   }
 }
 
-export default withApollo(withTranslation(Ilmo));
+export default withApollo(Ilmo);

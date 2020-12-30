@@ -20,9 +20,9 @@ import {
 import { getCodeFromError } from "@app/lib";
 import { Button, Col, Result, Row, Skeleton } from "antd";
 import { NextPage } from "next";
-import Router, { NextRouter, useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 
-interface IProps {
+interface Props {
   id: string | null;
   code: string | null;
 }
@@ -32,8 +32,8 @@ enum Status {
   ACCEPTING = "ACCEPTING",
 }
 
-const InvitationAccept: NextPage<IProps> = (props) => {
-  const router: NextRouter | null = useRouter();
+const InvitationAccept: NextPage<Props> = (props) => {
+  const router = useRouter();
   const fullHref =
     router.pathname +
     (router && router.query ? `?${qs.stringify(router.query)}` : "");
@@ -76,7 +76,7 @@ const InvitationAccept: NextPage<IProps> = (props) => {
   );
 };
 
-interface InvitationAcceptInnerProps extends IProps {
+interface InvitationAcceptInnerProps extends Props {
   currentUser?: SharedLayout_UserFragment | null;
   query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>;
 }

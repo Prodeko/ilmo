@@ -14,7 +14,7 @@ import get from "lodash/get";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 
-interface IProps {
+interface Props {
   userId: string | null;
   token: string | null;
 }
@@ -25,10 +25,7 @@ enum State {
   SUCCESS = "SUCCESS",
 }
 
-const ResetPage: NextPage<IProps> = ({
-  userId: rawUserId,
-  token: rawToken,
-}) => {
+const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
   const [form] = useForm();
   const query = useSharedQuery();
   const [error, setError] = useState<Error | null>(null);

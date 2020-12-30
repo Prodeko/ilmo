@@ -5,12 +5,12 @@ import { Alert } from "antd";
 import get from "lodash/get";
 import { NextPage } from "next";
 
-interface IProps {
+interface Props {
   id: string | null;
   token: string | null;
 }
 
-const VerifyPage: NextPage<IProps> = (props) => {
+const VerifyPage: NextPage<Props> = (props) => {
   const [[id, token], setIdAndToken] = useState<[string, string]>([
     props.id || "",
     props.token || "",
