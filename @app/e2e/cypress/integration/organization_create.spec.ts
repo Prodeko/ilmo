@@ -9,7 +9,7 @@ context("Create organizations", () => {
     cy.login({ next: "/", verified: true });
 
     // Action
-    cy.getCy("layout-dropdown-user").trigger("mouseover");
+    cy.getCy("layout-dropdown-user").click();
     cy.getCy("layout-link-create-organization").click();
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
     cy.getCy("createorganization-input-name").type("Test Organization");
@@ -33,7 +33,7 @@ context("Create organizations", () => {
     });
 
     // Action
-    cy.getCy("layout-dropdown-user").trigger("mouseover");
+    cy.getCy("layout-dropdown-user").click();
     cy.getCy("layout-link-create-organization").click();
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
     cy.getCy("createorganization-input-name").type("Test Organization");

@@ -42,7 +42,7 @@ test("Register", async () => {
       username: "testuser",
       password: "SECURE_PASSWORD",
       name: "Test User",
-      email: "test.user@example.org",
+      email: "testuser@example.org",
     },
 
     // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)

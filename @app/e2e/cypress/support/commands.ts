@@ -85,7 +85,7 @@ function serverCommand(
 
 /**
  * Gets the secrets for the specified email, allowing Cypress to perform email
- * validation. If unspecified, email defaults to `test.user@example.com`.
+ * validation. If unspecified, email defaults to `testuser@example.com`.
  */
 function serverCommand(
   command: "getEmailSecrets",

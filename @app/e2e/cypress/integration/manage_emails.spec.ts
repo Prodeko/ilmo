@@ -8,7 +8,7 @@ context("Manage emails", () => {
     cy.login({ next: "/", verified: true });
 
     // Action
-    cy.getCy("layout-dropdown-user").trigger("mouseover");
+    cy.getCy("layout-dropdown-user").click();
     cy.getCy("layout-link-settings").click();
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/settings");
     cy.getCy("settingslayout-link-emails").click();
@@ -21,7 +21,7 @@ context("Manage emails", () => {
     const email = "newemail@example.com";
     // Setup
     cy.login({ next: "/settings/emails", verified: true });
-    cy.contains("test.user@example.com").should("exist");
+    cy.contains("testuser@example.com").should("exist");
     cy.contains("(unverified)").should("not.exist");
 
     // Action: add email

@@ -9,7 +9,7 @@ context("LocaleSelect", () => {
     cy.getCy("localeselect-en").click();
 
     // Assertions
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/en/");
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/en");
     cy.getCy("localeselect-fi").should("exist");
     cy.getCy("localeselect-en").should("exist");
   });
