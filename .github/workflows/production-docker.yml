@@ -72,6 +72,11 @@ jobs:
           docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name
           ilmo-worker ilmo-worker
 
+      - name: Debug docker
+        run: |
+          docker ps
+          docker logs ilmo-server
+
       - name: "Test docker"
         run: node .github/workflows/test-docker.js
 
