@@ -65,8 +65,6 @@ jobs:
         with:
           wait-on: http://localhost:5678
           working-directory: "@app/e2e"
-        env:
-          DEBUG: "cypress:*"
 
       - uses: actions/upload-artifact@v2
         if: failure()

@@ -4,7 +4,11 @@ on: [pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest'
+
+    strategy:
+      matrix:
+        node-version: [14.x]
 
     services:
       redis:
@@ -27,8 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # TODO: we should be able to get rid of Node here
 
+      # TODO: we should be able to get rid of Node here
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -71,11 +75,6 @@ jobs:
         run:
           docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name
           ilmo-worker ilmo-worker
-
-      - name: Debug docker
-        run: |
-          docker ps
-          docker logs ilmo-server
 
       - name: "Test docker"
         run: node .github/workflows/test-docker.js
