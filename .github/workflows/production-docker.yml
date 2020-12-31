@@ -65,16 +65,40 @@ jobs:
 
       - name: "Start docker server"
         run:
-          docker run --rm -d --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1
-          --name ilmo-server ilmo-server
+          docker run --rm --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name
+          ilmo-server ilmo-server
 
       - name: "Start docker worker"
         run:
-          docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name
-          ilmo-worker ilmo-worker
+          docker run --rm --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name ilmo-worker
+          ilmo-worker
 
       - name: "Test docker"
         run: node .github/workflows/test-docker.js
 
       - name: "Tear down docker"
         run: docker kill ilmo-server ilmo-worker
+
+      - name: Docker login to ACR
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Tag and push images to ACR
+        run: |
+          docker image tag ilmo-server ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
+          docker image tag ilmo-worker ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
+
+      - name: Upload release to Sentry
+        uses: getsentry/action-release@v1.1.5
+        env:
+          SENTRY_URL: https://sentry.prodeko.org/
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: prodeko
+          SENTRY_PROJECT: ilmo
+        with:
+          environment: production
