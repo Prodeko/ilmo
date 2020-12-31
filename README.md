@@ -1,5 +1,13 @@
 # Graphile Starter
 
+## Requirements
+
+- yarn
+- Node v14
+- Postgresql 11
+- Redis
+- (wal2json)
+
 ## Take it for a spin!
 
 We're running the starter at:
@@ -15,6 +23,40 @@ addresses you control.
 Starter to Heroku and entirely wipe the database, so your data may not persist.
 If you wish to delete your data before this time you can do so via the delete
 account feature baked into the starter.
+
+## NOT FOR BEGINNERS
+
+We do not advise that you build your own projects on top of this project until
+you're comfortable with the various tools it uses
+([Node.js](https://nodejs.org/en/docs/),
+[Express](https://expressjs.com/en/api.html),
+[PostgreSQL](https://www.postgresql.org/docs/current/index.html),
+[GraphQL](https://graphql.org/learn/),
+[PostGraphile](https://www.graphile.org/postgraphile/introduction/),
+[Graphile Worker](https://github.com/graphile/worker),
+[Graphile Migrate](https://github.com/graphile/migrate),
+[TypeScript](https://www.typescriptlang.org/docs/),
+[React](https://reactjs.org/docs/getting-started.html),
+[Apollo Client for React](https://www.apollographql.com/docs/react/),
+[GraphQL Code Generator](https://github.com/dotansimha/graphql-code-generator),
+[ESLint](https://eslint.org/),
+[Prettier](https://prettier.io/docs/en/index.html), [Jest](https://jestjs.io/),
+[Cypress](https://www.cypress.io/), etc).
+
+This is an **advanced** project with deeply integrated tooling across the full
+stack. The project is called "Starter" because it helps you to start new
+projects with all these technologies, tools and techniques already in place. If
+you're not already familiar with these things then you'll probably find the
+project overwhelming, it is not intended to be your first experience of any of
+these tools.
+
+If you're just getting started with PostGraphile, before you dive into this
+project make sure you check out the
+[PostGraphile required knowledge](https://www.graphile.org/postgraphile/required-knowledge/)
+and especially the
+[schema design tutorial](https://www.graphile.org/postgraphile/postgresql-schema-design/).
+This repository takes a slightly different approach to schema design than the
+aforementioned tutorial, but it's still an incredibly valuable resource.
 
 ## Purpose
 
@@ -36,14 +78,6 @@ productivity. You might use it:
 However you use it, the project can be deployed to many platforms, and can be
 scaled to larger audiences both horizontally and vertically with very few
 changes.
-
-**Not intended for beginners**: this project combines a lot of technologies
-together to produce a highly productive development environment, and includes a
-pre-built database schema for an advanced account system. If you're not already
-familiar with a lot of these technologies, or haven't built a database-driven
-project before, you may find that there's too many things to get your head
-around at once. For beginners, we recommend you start with the
-[PostGraphile schema design tutorial](https://www.graphile.org/postgraphile/postgresql-schema-design/).
 
 Please note that this software is not "complete," free of software defects, or
 free of security issues — it is not a "finished" solution, but rather the seed
@@ -77,8 +111,9 @@ And please give some love to our featured sponsors 🤩:
 
 <table><tr>
 <td align="center"><a href="http://chads.website"><img src="https://graphile.org/images/sponsors/chadf.png" width="90" height="90" alt="Chad Furman" /><br />Chad Furman</a> *</td>
-<td align="center"><a href="https://storyscript.io/?utm_source=postgraphile"><img src="https://graphile.org/images/sponsors/storyscript.png" width="90" height="90" alt="Storyscript" /><br />Storyscript</a> *</td>
-<td align="center"><a href="https://postlight.com/?utm_source=graphile"><img src="https://graphile.org/images/sponsors/postlight.png" width="90" height="90" alt="Postlight" /><br />Postlight</a> *</td>
+<td align="center"><a href="https://storyscript.com/?utm_source=postgraphile"><img src="https://graphile.org/images/sponsors/storyscript.png" width="90" height="90" alt="Storyscript" /><br />Storyscript</a> *</td>
+<td align="center"><a href="https://surge.io/"><img src="https://graphile.org/images/sponsors/surge.png" width="90" height="90" alt="Surge.io" /><br />Surge.io</a> *</td>
+<td align="center"><a href="https://postlight.com/?utm_source=graphile"><img src="https://graphile.org/images/sponsors/postlight.jpg" width="90" height="90" alt="Postlight" /><br />Postlight</a> *</td>
 </tr></table>
 
 <em>\* Sponsors the entire Graphile suite</em>
@@ -153,6 +188,10 @@ this list:
   Next.js for Vue users
 - [Create React App variant](https://github.com/alexk111/graphile-starter-cra) -
   replaces Next.js for apps without Server Side Rendering
+
+**VARIANTS ARE NOT OFFICIALLY SUPPORTED** and may become out of date or
+unmaintained over time. If you have issues with variants, please submit issues
+or PRs to the projects in question, not to this project.
 
 ## Prerequisites
 
@@ -319,6 +358,7 @@ for example:
 
 ```sh
 docker run --rm -it --init -p 5678:5678 \
+  -e GRAPHILE_LICENSE="$GRAPHILE_LICENSE" \
   -e SECRET="$SECRET" \
   -e JWT_SECRET="$JWT_SECRET" \
   -e DATABASE_VISITOR="$DATABASE_VISITOR" \
@@ -337,6 +377,10 @@ currently have environment validation (PRs welcome!).
 Use `yarn run build` to generate a production build of the project
 
 ## Deploying to Heroku
+
+Prerequisites:
+
+- Install the Heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
 
 If you are using `graphile-migrate` make sure that you have executed
 `graphile-migrate commit` to commit all your database changes, since we only run
@@ -360,10 +404,10 @@ automate the setup process. This script does the following:
 - Adds the Heroku app as a git remote named 'Heroku'
 - Pushes the 'master' branch to Heroku to perform your initial build
 
-Copy `heroku-setup.template` to `heroku-setup`, then edit it and customize the
-settings at the top. We also recommend reading through the script and
-customizing it as you see fit - particularly if you are using additional
-extensions that need installing.
+Create a copy of `heroku-setup.template` and rename the copy to `heroku-setup`,
+then edit it and customize the settings at the top. We also recommend reading
+through the script and customizing it as you see fit - particularly if you are
+using additional extensions that need installing.
 
 Now run the script:
 
@@ -446,6 +490,15 @@ drop role dbname_visitor;
 drop role dbname_authenticator;
 drop role dbname;
 ```
+
+## Custom packages
+
+When running `yarn setup`, this command will also invoke `lerna run setup`. This
+allows you to add custom setup hooks necessary for your individual packages.
+
+Add a line like the following to your `scripts` section in your `package.json`:
+
+`"setup": "npm i -g some-package"`
 
 ## MIT License
 

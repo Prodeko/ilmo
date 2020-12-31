@@ -9,6 +9,7 @@ import {
 import { GraphQLResolveInfo } from "graphql";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
+
 type GraphileHelpers = any;
 type AugmentedGraphQLFieldResolver<
   TSource,
@@ -98,7 +99,6 @@ interface TgGraphQLSubscriptionPayload {
  * which has the 'id' equal to the 'subject' from the PG NOTIFY event payload
  * (see `tg__graphql_subscription()` trigger function in the database).
  */
-
 function recordByIdFromTable(
   build: Build,
   sqlTable: SQL

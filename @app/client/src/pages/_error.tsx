@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   ErrorOccurred,
   FourOhFour,
@@ -9,7 +10,8 @@ import { useSharedQuery } from "@app/graphql";
 import { Alert, Col, Row } from "antd";
 import { NextPage } from "next";
 import Link from "next/link";
-import * as React from "react";
+import { Translate } from "next-translate";
+import useTranslation from "next-translate/useTranslation";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -60,8 +62,14 @@ interface ErrorComponentSpec<TProps> {
   props?: TProps;
 }
 
-const getDisplayForError = (props: ErrorPageProps): ErrorComponentSpec<any> => {
-  const { statusCode, pathname } = props;
+interface GetDisplayErrorProps extends ErrorPageProps {
+  t: Translate;
+}
+
+const getDisplayForError = (
+  props: GetDisplayErrorProps
+): ErrorComponentSpec<any> => {
+  const { statusCode, pathname, t } = props;
 
   const authMatches = pathname ? pathname.match(/^\/auth\/([^/?#]+)/) : null;
   if (authMatches) {
@@ -78,19 +86,24 @@ const getDisplayForError = (props: ErrorPageProps): ErrorComponentSpec<any> => {
     case 404:
       return {
         Component: FourOhFour,
-        title: "Page Not Found",
+        title: t("pageNotFound"),
       };
     default:
       return {
         Component: ErrorOccurred,
-        title: "An Error Occurred",
+        title: t("errorOccurred"),
       };
   }
 };
 
 const ErrorPage: NextPage<ErrorPageProps> = (props) => {
-  const { Component, title, props: componentProps } = getDisplayForError(props);
+  const { t } = useTranslation("error");
+  const { Component, title, props: componentProps } = getDisplayForError({
+    ...props,
+    t,
+  });
   const query = useSharedQuery();
+
   return (
     <SharedLayout title={title} query={query}>
       <Row>

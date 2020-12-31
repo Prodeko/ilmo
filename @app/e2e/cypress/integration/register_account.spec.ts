@@ -37,7 +37,7 @@ context("RegisterAccount", () => {
       // Action
       cy.getCy("registerpage-input-name").type("Test User");
       cy.getCy("registerpage-input-username").type("testuser");
-      cy.getCy("registerpage-input-email").type("test.user@example.com");
+      cy.getCy("registerpage-input-email").type("testuser@example.com");
       cy.getCy("registerpage-input-password").type("Really Good Password");
       cy.getCy("registerpage-input-password2").type("Really Good Password");
       cy.getCy("registerpage-submit-button").click();
@@ -55,7 +55,7 @@ context("RegisterAccount", () => {
       // Action
       cy.getCy("registerpage-input-name").type("Test User");
       cy.getCy("registerpage-input-username").type("testuser");
-      cy.getCy("registerpage-input-email").type("test.user@example.com");
+      cy.getCy("registerpage-input-email").type("testuser@example.com");
       cy.getCy("registerpage-input-password").type("Really Good Password");
       cy.getCy("registerpage-input-password2").type("Really Good Password");
       cy.getCy("registerpage-submit-button").click();

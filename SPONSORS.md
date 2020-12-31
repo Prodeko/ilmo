@@ -8,6 +8,7 @@ Graphile ecosystem. Find out
 
 - Chad Furman
 - Storyscript
+- Surge.io
 - Postlight
 
 ## Leaders
@@ -18,15 +19,15 @@ Graphile ecosystem. Find out
 - James Allain
 - Jack Dinker
 - Nigel Taylor
-- Qwick
 - DocIQ
 - Principia Mentis
+- Qwick
 - Partners in School Innovation
-- OpenLaw NZ
 - Sterblue
 - HR-ON
 - Ian Stewart
-- Janakan Arulkumarasan
+- Dovetail
+- Jacob Gillespie
 
 ## Supporters
 
@@ -34,17 +35,25 @@ Graphile ecosystem. Find out
 - Sam Levin
 - stlbucket
 - Matt Bretl
+- purge
 - Chris Watland
-- Mark Lipscombe
 - James Rascoe
+- Mark Lipscombe
+- Michel Pelletier
 - Mark Rapoza
 - innovation.rocks
 - Daniel Woelfel
-- cybere
 - Philipp Litzenberger
+- apoland
 - Bjørn Michelsen
 - CJ
 - Ben Botwin
 - Cameron Ellis
 - Mansoor Razzaq
+- rcy
 - Borut Jures
+- themrhead
+- Keith Layne
+- Olli Selamaa
+- qoby
+- Paul Melnikow

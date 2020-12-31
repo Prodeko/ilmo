@@ -1,0 +1,42 @@
+{
+  "eventName": "Tapahtuma",
+  "organizer": "Järjestäjä",
+  "category": "Kategoria",
+  "time": "Aika",
+  "createEventCategory": {
+    "title": "Luo tapahtumakategoria",
+    "shortDescription": "Lyhyt kuvaus"
+  },
+  "errors": {
+    "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
+    "eventCreationFailed": "Tapahtuman luonti epäonnistui",
+    "errorCode": "Virhekoodi"
+  },
+  "forms": {
+    "eventTime": "Tapahtuman ajankohta",
+    "highlightEvent": "Korostettu tapahtuma",
+    "placeholders": {
+      "event": {
+        "organizer": "Valitse tapahtuman järjestäjä",
+        "category": "Valitse tapahtuman kategoria"
+      },
+      "eventCategory": {
+        "organizer": "Valitse kategorian järjestäjä"
+      }
+    },
+    "rules": {
+      "event": {
+        "provideOrganizer": "Valitse järjestäjä tapahtumalle",
+        "provideCategory": "Valitse tapahtuman kategoria",
+        "provideName": "Anna tapahtuman nimi",
+        "provideDescription": "Anna tapahtuman kuvaus",
+        "provideEventTime": "Aseta tapahtuman ajankohta"
+      },
+      "eventCategory": {
+        "provideOrganizer": "Valitse järjestäjä kategorialle",
+        "provideName": "Anna kategorian nimi",
+        "provideDescription": "Anna kategorian kuvaus"
+      }
+    }
+  }
+}

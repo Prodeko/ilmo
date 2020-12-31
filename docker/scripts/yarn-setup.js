@@ -3,6 +3,7 @@ const { basename, dirname, resolve } = require("path");
 const platform = require("os").platform();
 const { safeRandomString } = require("../../scripts/lib/random");
 const fs = require("fs");
+
 const fsp = fs.promises;
 
 const DOCKER_DOTENV_PATH = `${__dirname}/../.env`;
@@ -45,6 +46,18 @@ POSTGRES_PASSWORD=${password}
 # relevant password.
 DATABASE_HOST=db
 ROOT_DATABASE_URL=postgres://postgres:${password}@db/postgres
+
+# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds
+LD_TABLE_PATTERN=app_public.*
+
+# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly
+NEXT_TRANSLATE_PATH=../client/src
+
+# Redis is used for session storage and as a rate limiting store
+REDIS_URL=redis://redis:6379
+
+# Specify Sentry error tracking Data Source Name
+SENTRY_DSN=https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6
 `;
     await fsp.writeFile(DOCKER_DOTENV_PATH, data);
   }
@@ -60,6 +73,7 @@ ROOT_DATABASE_URL=postgres://postgres:${password}@db/postgres
 
   runSync(yarnCmd, ["down"]);
   runSync(yarnCmd, ["db:up"]);
+  runSync(yarnCmd, ["redis:up"]);
 
   // Fix permissions
   runSync(yarnCmd, [
@@ -73,7 +87,15 @@ ROOT_DATABASE_URL=postgres://postgres:${password}@db/postgres
   ]);
 
   // Run setup as normal
-  runSync(yarnCmd, ["compose", "run", "server", "yarn", "setup", projectName]);
+  runSync(yarnCmd, [
+    "compose",
+    "run",
+    "-e",
+    `PROJECT_NAME=${projectName}`,
+    "server",
+    "yarn",
+    "setup",
+  ]);
 }
 
 main().catch((e) => {

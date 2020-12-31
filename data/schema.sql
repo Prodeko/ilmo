@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.7 (Ubuntu 11.7-2.pgdg18.04+1)
--- Dumped by pg_dump version 11.7 (Ubuntu 11.7-2.pgdg18.04+1)
+-- Dumped from database version 11.10
+-- Dumped by pg_dump version 11.10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -77,6 +77,17 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
+-- Name: question_type; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.question_type AS ENUM (
+    'short-text',
+    'long-text',
+    'option'
+);
 
 
 --
@@ -730,6 +741,80 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 
 
 --
+-- Name: registration_tokens; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.registration_tokens (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    token uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE registration_tokens; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.registration_tokens IS 'Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.';
+
+
+--
+-- Name: COLUMN registration_tokens.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_tokens.id IS 'Unique identifier for the registration token.';
+
+
+--
+-- Name: COLUMN registration_tokens.event_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_tokens.event_id IS 'Unique identifier for the event.';
+
+
+--
+-- Name: COLUMN registration_tokens.created_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_tokens.created_at IS 'Timestamp of when the token was created.';
+
+
+--
+-- Name: claim_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.claim_registration_token(event_id uuid) RETURNS app_public.registration_tokens
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_token app_public.registration_tokens;
+begin
+  insert into app_public.registration_tokens(event_id)
+    values (event_id)
+  returning
+    * into v_token;
+  
+  -- Schedule token deletion
+  perform graphile_worker.add_job(
+    'registration__delete_registration_token',
+    json_build_object('tokenId', v_token.id)
+  );
+
+  return v_token;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION claim_registration_token(event_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.claim_registration_token(event_id uuid) IS 'Generates a registration token that must be provided as part of the registration information. The token is used to prevent F5-wars.';
+
+
+--
 -- Name: confirm_account_deletion(text); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1232,6 +1317,35 @@ CREATE FUNCTION app_public.organizations_current_user_is_owner(org app_public.or
     and is_owner is true
   )
 $$;
+
+
+--
+-- Name: registration_token_by_id(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registration_token_by_id(token_id uuid) RETURNS app_public.registration_tokens
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_token app_public.registration_tokens;
+begin
+  select
+    * into v_token
+  from
+    app_public.registration_tokens
+  where
+    token = token_id;
+  return v_token;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION registration_token_by_id(token_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registration_token_by_id(token_id uuid) IS 'Get registration token by token.';
 
 
 --
@@ -1850,6 +1964,150 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 
 
 --
+-- Name: event_categories; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_categories (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    name text,
+    description text,
+    owner_organization_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE event_categories; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.event_categories IS 'Table for event categories.';
+
+
+--
+-- Name: COLUMN event_categories.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.id IS 'Unique identifier for the event category.';
+
+
+--
+-- Name: COLUMN event_categories.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.name IS 'Name of the event category.';
+
+
+--
+-- Name: COLUMN event_categories.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.description IS 'Short description of the event category.';
+
+
+--
+-- Name: COLUMN event_categories.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.owner_organization_id IS 'Id of the organizer.';
+
+
+--
+-- Name: event_questions; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_questions (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    type app_public.question_type NOT NULL,
+    options json,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: events; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.events (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    name text,
+    description text,
+    start_time timestamp with time zone NOT NULL,
+    end_time timestamp with time zone NOT NULL,
+    is_highlighted boolean DEFAULT false NOT NULL,
+    owner_organization_id uuid NOT NULL,
+    category_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.events IS 'Main table for events.';
+
+
+--
+-- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
+
+
+--
+-- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
+
+
+--
+-- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
+
+
+--
+-- Name: COLUMN events.start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.start_time IS 'Starting time of the event.';
+
+
+--
+-- Name: COLUMN events.end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
+
+
+--
+-- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
+
+
+--
+-- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
+
+
+--
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1875,6 +2133,24 @@ CREATE TABLE app_public.organization_memberships (
     is_owner boolean DEFAULT false NOT NULL,
     is_billing_contact boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: registrations; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.registrations (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    firstname text NOT NULL,
+    lastname text NOT NULL,
+    email public.citext NOT NULL,
+    quota text,
+    questions_public json,
+    questions_private json,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1970,6 +2246,30 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: event_categories event_categories_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event_questions event_questions_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: organization_invitations organization_invitations_organization_id_email_key; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2023,6 +2323,22 @@ ALTER TABLE ONLY app_public.organizations
 
 ALTER TABLE ONLY app_public.organizations
     ADD CONSTRAINT organizations_slug_key UNIQUE (slug);
+
+
+--
+-- Name: registration_tokens registration_tokens_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_tokens
+    ADD CONSTRAINT registration_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: registrations registrations_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registrations
+    ADD CONSTRAINT registrations_pkey PRIMARY KEY (id);
 
 
 --
@@ -2081,6 +2397,41 @@ CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
 
 
 --
+-- Name: event_categories_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_categories_owner_organization_id_idx ON app_public.event_categories USING btree (owner_organization_id);
+
+
+--
+-- Name: event_questions_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_questions_event_id_idx ON app_public.event_questions USING btree (event_id);
+
+
+--
+-- Name: events_category_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_id);
+
+
+--
+-- Name: events_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (owner_organization_id);
+
+
+--
+-- Name: events_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_start_time_idx ON app_public.events USING btree (start_time);
+
+
+--
 -- Name: idx_user_emails_primary; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2102,6 +2453,20 @@ CREATE INDEX organization_memberships_user_id_idx ON app_public.organization_mem
 
 
 --
+-- Name: registration_tokens_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX registration_tokens_event_id_idx ON app_public.registration_tokens USING btree (event_id);
+
+
+--
+-- Name: registrations_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX registrations_event_id_idx ON app_public.registrations USING btree (event_id);
+
+
+--
 -- Name: uniq_user_emails_primary_email; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2120,6 +2485,34 @@ CREATE UNIQUE INDEX uniq_user_emails_verified_email ON app_public.user_emails US
 --
 
 CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications USING btree (user_id);
+
+
+--
+-- Name: event_categories _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+
+
+--
+-- Name: event_questions _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+
+
+--
+-- Name: events _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+
+
+--
+-- Name: registrations _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
@@ -2260,6 +2653,38 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: event_categories event_categories_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: event_questions event_questions_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.event_categories(id);
+
+
+--
+-- Name: events events_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
 -- Name: organization_invitations organization_invitations_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2289,6 +2714,22 @@ ALTER TABLE ONLY app_public.organization_memberships
 
 ALTER TABLE ONLY app_public.organization_memberships
     ADD CONSTRAINT organization_memberships_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: registration_tokens registration_tokens_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_tokens
+    ADD CONSTRAINT registration_tokens_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: registrations registrations_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registrations
+    ADD CONSTRAINT registrations_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
 
 
 --
@@ -2352,10 +2793,126 @@ CREATE POLICY delete_own ON app_public.user_emails FOR DELETE USING ((user_id = 
 
 
 --
+-- Name: event_categories; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: event_questions; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: event_categories manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.event_categories USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: event_questions manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.event_questions USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: events manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: registration_tokens manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.registration_tokens USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: registrations manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_as_admin ON app_public.registrations USING ((EXISTS ( SELECT 1
+   FROM app_public.users
+  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+
+
+--
+-- Name: event_categories manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.event_categories USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (event_categories.owner_organization_id = organization_memberships.organization_id)))));
+
+
+--
+-- Name: event_questions manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.event_questions USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
+           FROM app_public.events
+          WHERE (events.id = event_questions.event_id)))))));
+
+
+--
+-- Name: events manage_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (events.owner_organization_id = organization_memberships.organization_id)))));
+
+
+--
+-- Name: event_questions manage_own_category; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own_category ON app_public.event_questions USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
+           FROM app_public.event_categories
+          WHERE (event_categories.id = ( SELECT events.category_id
+                   FROM app_public.events
+                  WHERE (events.id = event_questions.event_id)))))))));
+
+
+--
+-- Name: events manage_own_category; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_own_category ON app_public.events USING ((EXISTS ( SELECT 1
+   FROM app_public.organization_memberships
+  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
+           FROM app_public.event_categories
+          WHERE (event_categories.id = events.category_id)))))));
 
 
 --
@@ -2375,6 +2932,39 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registration_tokens; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.registration_tokens ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registrations; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.registrations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: event_questions select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.event_questions FOR SELECT USING (true);
+
+
+--
+-- Name: events select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.events FOR SELECT USING (true);
+
+
+--
+-- Name: registration_tokens select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.registration_tokens FOR SELECT USING (true);
+
 
 --
 -- Name: users select_all; Type: POLICY; Schema: app_public; Owner: -
@@ -2463,14 +3053,14 @@ ALTER TABLE app_public.users ENABLE ROW LEVEL SECURITY;
 -- Name: SCHEMA app_hidden; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA app_hidden TO graphile_starter_visitor;
+GRANT USAGE ON SCHEMA app_hidden TO ilmo_visitor;
 
 
 --
 -- Name: SCHEMA app_public; Type: ACL; Schema: -; Owner: -
 --
 
-GRANT USAGE ON SCHEMA app_public TO graphile_starter_visitor;
+GRANT USAGE ON SCHEMA app_public TO ilmo_visitor;
 
 
 --
@@ -2479,8 +3069,8 @@ GRANT USAGE ON SCHEMA app_public TO graphile_starter_visitor;
 
 REVOKE ALL ON SCHEMA public FROM postgres;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO graphile_starter;
-GRANT USAGE ON SCHEMA public TO graphile_starter_visitor;
+GRANT ALL ON SCHEMA public TO ilmo;
+GRANT USAGE ON SCHEMA public TO ilmo_visitor;
 
 
 --
@@ -2494,28 +3084,28 @@ REVOKE ALL ON FUNCTION app_private.assert_valid_password(new_password text) FROM
 -- Name: TABLE users; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT ON TABLE app_public.users TO graphile_starter_visitor;
+GRANT SELECT ON TABLE app_public.users TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN users.username; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT UPDATE(username) ON TABLE app_public.users TO graphile_starter_visitor;
+GRANT UPDATE(username) ON TABLE app_public.users TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN users.name; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT UPDATE(name) ON TABLE app_public.users TO graphile_starter_visitor;
+GRANT UPDATE(name) ON TABLE app_public.users TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN users.avatar_url; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT UPDATE(avatar_url) ON TABLE app_public.users TO graphile_starter_visitor;
+GRANT UPDATE(avatar_url) ON TABLE app_public.users TO ilmo_visitor;
 
 
 --
@@ -2586,7 +3176,7 @@ REVOKE ALL ON FUNCTION app_private.tg_user_secrets__insert_with_user() FROM PUBL
 --
 
 REVOKE ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id uuid, code text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id uuid, code text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id uuid, code text) TO ilmo_visitor;
 
 
 --
@@ -2594,7 +3184,22 @@ GRANT ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id
 --
 
 REVOKE ALL ON FUNCTION app_public.change_password(old_password text, new_password text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password text) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE registration_tokens; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.registration_tokens TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION claim_registration_token(event_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2602,28 +3207,28 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 --
 
 REVOKE ALL ON FUNCTION app_public.confirm_account_deletion(token text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.confirm_account_deletion(token text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.confirm_account_deletion(token text) TO ilmo_visitor;
 
 
 --
 -- Name: TABLE organizations; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT ON TABLE app_public.organizations TO graphile_starter_visitor;
+GRANT SELECT ON TABLE app_public.organizations TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN organizations.slug; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT UPDATE(slug) ON TABLE app_public.organizations TO graphile_starter_visitor;
+GRANT UPDATE(slug) ON TABLE app_public.organizations TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN organizations.name; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT UPDATE(name) ON TABLE app_public.organizations TO graphile_starter_visitor;
+GRANT UPDATE(name) ON TABLE app_public.organizations TO ilmo_visitor;
 
 
 --
@@ -2631,7 +3236,7 @@ GRANT UPDATE(name) ON TABLE app_public.organizations TO graphile_starter_visitor
 --
 
 REVOKE ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) TO ilmo_visitor;
 
 
 --
@@ -2639,7 +3244,7 @@ GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name te
 --
 
 REVOKE ALL ON FUNCTION app_public.current_session_id() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.current_session_id() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.current_session_id() TO ilmo_visitor;
 
 
 --
@@ -2647,7 +3252,7 @@ GRANT ALL ON FUNCTION app_public.current_session_id() TO graphile_starter_visito
 --
 
 REVOKE ALL ON FUNCTION app_public."current_user"() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public."current_user"() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public."current_user"() TO ilmo_visitor;
 
 
 --
@@ -2655,7 +3260,7 @@ GRANT ALL ON FUNCTION app_public."current_user"() TO graphile_starter_visitor;
 --
 
 REVOKE ALL ON FUNCTION app_public.current_user_id() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.current_user_id() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.current_user_id() TO ilmo_visitor;
 
 
 --
@@ -2663,7 +3268,7 @@ GRANT ALL ON FUNCTION app_public.current_user_id() TO graphile_starter_visitor;
 --
 
 REVOKE ALL ON FUNCTION app_public.current_user_invited_organization_ids() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.current_user_invited_organization_ids() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.current_user_invited_organization_ids() TO ilmo_visitor;
 
 
 --
@@ -2671,7 +3276,7 @@ GRANT ALL ON FUNCTION app_public.current_user_invited_organization_ids() TO grap
 --
 
 REVOKE ALL ON FUNCTION app_public.current_user_member_organization_ids() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO ilmo_visitor;
 
 
 --
@@ -2679,7 +3284,7 @@ GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO graph
 --
 
 REVOKE ALL ON FUNCTION app_public.delete_organization(organization_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2687,7 +3292,7 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO gr
 --
 
 REVOKE ALL ON FUNCTION app_public.forgot_password(email public.citext) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.forgot_password(email public.citext) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.forgot_password(email public.citext) TO ilmo_visitor;
 
 
 --
@@ -2695,7 +3300,7 @@ GRANT ALL ON FUNCTION app_public.forgot_password(email public.citext) TO graphil
 --
 
 REVOKE ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) TO ilmo_visitor;
 
 
 --
@@ -2703,21 +3308,21 @@ GRANT ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, us
 --
 
 REVOKE ALL ON FUNCTION app_public.logout() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.logout() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.logout() TO ilmo_visitor;
 
 
 --
 -- Name: TABLE user_emails; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT,DELETE ON TABLE app_public.user_emails TO graphile_starter_visitor;
+GRANT SELECT,DELETE ON TABLE app_public.user_emails TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN user_emails.email; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(email) ON TABLE app_public.user_emails TO graphile_starter_visitor;
+GRANT INSERT(email) ON TABLE app_public.user_emails TO ilmo_visitor;
 
 
 --
@@ -2725,7 +3330,7 @@ GRANT INSERT(email) ON TABLE app_public.user_emails TO graphile_starter_visitor;
 --
 
 REVOKE ALL ON FUNCTION app_public.make_email_primary(email_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.make_email_primary(email_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.make_email_primary(email_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2733,7 +3338,7 @@ GRANT ALL ON FUNCTION app_public.make_email_primary(email_id uuid) TO graphile_s
 --
 
 REVOKE ALL ON FUNCTION app_public.organization_for_invitation(invitation_id uuid, code text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.organization_for_invitation(invitation_id uuid, code text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.organization_for_invitation(invitation_id uuid, code text) TO ilmo_visitor;
 
 
 --
@@ -2741,7 +3346,7 @@ GRANT ALL ON FUNCTION app_public.organization_for_invitation(invitation_id uuid,
 --
 
 REVOKE ALL ON FUNCTION app_public.organizations_current_user_is_billing_contact(org app_public.organizations) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.organizations_current_user_is_billing_contact(org app_public.organizations) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.organizations_current_user_is_billing_contact(org app_public.organizations) TO ilmo_visitor;
 
 
 --
@@ -2749,7 +3354,15 @@ GRANT ALL ON FUNCTION app_public.organizations_current_user_is_billing_contact(o
 --
 
 REVOKE ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_public.organizations) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_public.organizations) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_public.organizations) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registration_token_by_id(token_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registration_token_by_id(token_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registration_token_by_id(token_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2757,7 +3370,7 @@ GRANT ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_pub
 --
 
 REVOKE ALL ON FUNCTION app_public.remove_from_organization(organization_id uuid, user_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.remove_from_organization(organization_id uuid, user_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.remove_from_organization(organization_id uuid, user_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2765,7 +3378,7 @@ GRANT ALL ON FUNCTION app_public.remove_from_organization(organization_id uuid, 
 --
 
 REVOKE ALL ON FUNCTION app_public.request_account_deletion() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.request_account_deletion() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.request_account_deletion() TO ilmo_visitor;
 
 
 --
@@ -2773,7 +3386,7 @@ GRANT ALL ON FUNCTION app_public.request_account_deletion() TO graphile_starter_
 --
 
 REVOKE ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2781,7 +3394,7 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 --
 
 REVOKE ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) TO ilmo_visitor;
 
 
 --
@@ -2789,7 +3402,7 @@ GRANT ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, 
 --
 
 REVOKE ALL ON FUNCTION app_public.tg__graphql_subscription() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.tg__graphql_subscription() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.tg__graphql_subscription() TO ilmo_visitor;
 
 
 --
@@ -2797,7 +3410,7 @@ GRANT ALL ON FUNCTION app_public.tg__graphql_subscription() TO graphile_starter_
 --
 
 REVOKE ALL ON FUNCTION app_public.tg_user_emails__forbid_if_verified() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.tg_user_emails__forbid_if_verified() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.tg_user_emails__forbid_if_verified() TO ilmo_visitor;
 
 
 --
@@ -2805,7 +3418,7 @@ GRANT ALL ON FUNCTION app_public.tg_user_emails__forbid_if_verified() TO graphil
 --
 
 REVOKE ALL ON FUNCTION app_public.tg_user_emails__prevent_delete_last_email() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.tg_user_emails__prevent_delete_last_email() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.tg_user_emails__prevent_delete_last_email() TO ilmo_visitor;
 
 
 --
@@ -2813,7 +3426,7 @@ GRANT ALL ON FUNCTION app_public.tg_user_emails__prevent_delete_last_email() TO 
 --
 
 REVOKE ALL ON FUNCTION app_public.tg_user_emails__verify_account_on_verified() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.tg_user_emails__verify_account_on_verified() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.tg_user_emails__verify_account_on_verified() TO ilmo_visitor;
 
 
 --
@@ -2821,7 +3434,7 @@ GRANT ALL ON FUNCTION app_public.tg_user_emails__verify_account_on_verified() TO
 --
 
 REVOKE ALL ON FUNCTION app_public.tg_users__deletion_organization_checks_and_actions() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.tg_users__deletion_organization_checks_and_actions() TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.tg_users__deletion_organization_checks_and_actions() TO ilmo_visitor;
 
 
 --
@@ -2829,7 +3442,7 @@ GRANT ALL ON FUNCTION app_public.tg_users__deletion_organization_checks_and_acti
 --
 
 REVOKE ALL ON FUNCTION app_public.transfer_organization_billing_contact(organization_id uuid, user_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.transfer_organization_billing_contact(organization_id uuid, user_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.transfer_organization_billing_contact(organization_id uuid, user_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2837,7 +3450,7 @@ GRANT ALL ON FUNCTION app_public.transfer_organization_billing_contact(organizat
 --
 
 REVOKE ALL ON FUNCTION app_public.transfer_organization_ownership(organization_id uuid, user_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.transfer_organization_ownership(organization_id uuid, user_id uuid) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.transfer_organization_ownership(organization_id uuid, user_id uuid) TO ilmo_visitor;
 
 
 --
@@ -2845,7 +3458,7 @@ GRANT ALL ON FUNCTION app_public.transfer_organization_ownership(organization_id
 --
 
 REVOKE ALL ON FUNCTION app_public.users_has_password(u app_public.users) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.users_has_password(u app_public.users) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.users_has_password(u app_public.users) TO ilmo_visitor;
 
 
 --
@@ -2853,79 +3466,107 @@ GRANT ALL ON FUNCTION app_public.users_has_password(u app_public.users) TO graph
 --
 
 REVOKE ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) TO graphile_starter_visitor;
+GRANT ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE event_categories; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: TABLE event_questions; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.event_questions TO ilmo_visitor;
+
+
+--
+-- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.events TO ilmo_visitor;
 
 
 --
 -- Name: TABLE organization_memberships; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT ON TABLE app_public.organization_memberships TO graphile_starter_visitor;
+GRANT SELECT ON TABLE app_public.organization_memberships TO ilmo_visitor;
+
+
+--
+-- Name: TABLE registrations; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.registrations TO ilmo_visitor;
 
 
 --
 -- Name: TABLE user_authentications; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT,DELETE ON TABLE app_public.user_authentications TO graphile_starter_visitor;
+GRANT SELECT,DELETE ON TABLE app_public.user_authentications TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: app_hidden; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_hidden REVOKE ALL ON SEQUENCES  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_hidden GRANT SELECT,USAGE ON SEQUENCES  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_hidden REVOKE ALL ON SEQUENCES  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_hidden GRANT SELECT,USAGE ON SEQUENCES  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: app_hidden; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_hidden REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_hidden REVOKE ALL ON FUNCTIONS  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_hidden GRANT ALL ON FUNCTIONS  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_hidden REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_hidden REVOKE ALL ON FUNCTIONS  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_hidden GRANT ALL ON FUNCTIONS  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: app_public; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_public REVOKE ALL ON SEQUENCES  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_public GRANT SELECT,USAGE ON SEQUENCES  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_public REVOKE ALL ON SEQUENCES  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_public GRANT SELECT,USAGE ON SEQUENCES  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: app_public; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_public REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_public REVOKE ALL ON FUNCTIONS  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA app_public GRANT ALL ON FUNCTIONS  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_public REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_public REVOKE ALL ON FUNCTIONS  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA app_public GRANT ALL ON FUNCTIONS  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA public REVOKE ALL ON SEQUENCES  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA public GRANT SELECT,USAGE ON SEQUENCES  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA public REVOKE ALL ON SEQUENCES  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA public GRANT SELECT,USAGE ON SEQUENCES  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: public; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA public REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA public REVOKE ALL ON FUNCTIONS  FROM graphile_starter;
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter IN SCHEMA public GRANT ALL ON FUNCTIONS  TO graphile_starter_visitor;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA public REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA public REVOKE ALL ON FUNCTIONS  FROM ilmo;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo IN SCHEMA public GRANT ALL ON FUNCTIONS  TO ilmo_visitor;
 
 
 --
 -- Name: DEFAULT PRIVILEGES FOR FUNCTIONS; Type: DEFAULT ACL; Schema: -; Owner: -
 --
 
-ALTER DEFAULT PRIVILEGES FOR ROLE graphile_starter REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE ilmo REVOKE ALL ON FUNCTIONS  FROM PUBLIC;
 
 
 --

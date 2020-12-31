@@ -1,0 +1,25 @@
+fragment CreatedEventCategory on EventCategory {
+  id
+  name
+  ownerOrganization {
+    id
+    name
+  }
+}
+
+mutation CreateEventCategory($name: String!, $desc: String!, $org_id: UUID!) {
+  createEventCategory(
+    input: {
+      eventCategory: {
+        name: $name
+        description: $desc
+        ownerOrganizationId: $org_id
+      }
+    }
+  ) {
+    eventCategory {
+      id
+      ...CreatedEventCategory
+    }
+  }
+}

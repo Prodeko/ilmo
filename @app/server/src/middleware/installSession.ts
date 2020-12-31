@@ -5,6 +5,7 @@ import session from "express-session";
 import * as redis from "redis";
 
 import { getWebsocketMiddlewares } from "../app";
+
 import { getRootPgPool } from "./installDatabasePools";
 
 const RedisStore = ConnectRedis(session);

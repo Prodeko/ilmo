@@ -6,7 +6,12 @@ import installHelmet from "./installHelmet";
 import installLogging from "./installLogging";
 import installPassport from "./installPassport";
 import installPostGraphile from "./installPostGraphile";
+import installRedis from "./installRedis";
 import installSameOrigin from "./installSameOrigin";
+import {
+  installSentryErrorHandler,
+  installSentryRequestHandler,
+} from "./installSentry";
 import installSession from "./installSession";
 import installSharedStatic from "./installSharedStatic";
 import installSSR from "./installSSR";
@@ -14,16 +19,19 @@ import installWorkerUtils from "./installWorkerUtils";
 
 export {
   installCSRFProtection,
-  installDatabasePools,
-  installWorkerUtils,
-  installSession,
-  installPassport,
-  installLogging,
-  installSharedStatic,
-  installPostGraphile,
-  installSameOrigin,
-  installSSR,
-  installErrorHandler,
   installCypressServerCommand,
+  installDatabasePools,
+  installErrorHandler,
   installHelmet,
+  installLogging,
+  installPassport,
+  installPostGraphile,
+  installRedis,
+  installSameOrigin,
+  installSentryErrorHandler,
+  installSentryRequestHandler,
+  installSession,
+  installSharedStatic,
+  installSSR,
+  installWorkerUtils,
 };

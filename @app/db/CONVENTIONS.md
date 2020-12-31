@@ -19,7 +19,7 @@ GraphQL users use and is where we grant most of the permissions.
 - trigger names should be prefixed with `_NNN_` where NNN is a three digit
   number that defines the priority of the trigger (use _500_ if unsure)
 - prefer lowercase over UPPERCASE, except for the `NEW`, `OLD` and `TG_OP`
-  keywords.
+  keywords. (This is Benjie's personal preference.)
 
 ### Security
 

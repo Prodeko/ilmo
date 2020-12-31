@@ -1,3 +1,4 @@
+import React, { FocusEvent, useCallback, useState } from "react";
 import {
   AuthRestrict,
   Col,
@@ -8,12 +9,12 @@ import {
 import { useResetPasswordMutation, useSharedQuery } from "@app/graphql";
 import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
+import { useForm } from "antd/lib/form/Form";
 import get from "lodash/get";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
-import React, { FocusEvent, useCallback, useState } from "react";
 
-interface IProps {
+interface Props {
   userId: string | null;
   token: string | null;
 }
@@ -24,23 +25,17 @@ enum State {
   SUCCESS = "SUCCESS",
 }
 
-const ResetPage: NextPage<IProps> = ({
-  userId: rawUserId,
-  token: rawToken,
-}) => {
+const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
+  const [form] = useForm();
+  const query = useSharedQuery();
   const [error, setError] = useState<Error | null>(null);
   const [passwordStrength, setPasswordStrength] = useState<number>(0);
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
   const [state, setState] = useState<State>(State.PENDING);
-  const query = useSharedQuery();
-  const [form] = Form.useForm();
-
   const [[userId, token], setIdAndToken] = useState<[string, string]>([
     rawUserId || "",
     rawToken || "",
   ]);
-
-  const [resetPassword] = useResetPasswordMutation();
 
   const clearError = useCallback(() => {
     setError(null);
@@ -55,16 +50,6 @@ const ResetPage: NextPage<IProps> = ({
   }, [setPasswordIsFocussed]);
 
   const [confirmDirty, setConfirmDirty] = useState(false);
-
-  const compareToFirstPassword = useCallback(
-    async (_rule: any, value: any) => {
-      if (value && value !== form.getFieldValue("password")) {
-        throw "Make sure your passphrase is the same in both passphrase boxes.";
-      }
-    },
-    [form]
-  );
-
   const handleConfirmBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -73,6 +58,7 @@ const ResetPage: NextPage<IProps> = ({
     [confirmDirty]
   );
 
+  const [resetPassword] = useResetPasswordMutation();
   const handleSubmit = useCallback(
     (values: Store) => {
       setState(State.SUBMITTING);
@@ -105,6 +91,7 @@ const ResetPage: NextPage<IProps> = ({
     },
     [resetPassword, token, userId]
   );
+
   const [passwordIsDirty, setPasswordIsDirty] = useState(false);
   const handleValuesChange = useCallback(
     (changedValues) => {
@@ -113,6 +100,24 @@ const ResetPage: NextPage<IProps> = ({
         changedValues
       );
       setPasswordIsDirty(form.isFieldTouched("password"));
+      if (changedValues.confirm) {
+        if (form.isFieldTouched("password")) {
+          form.validateFields(["password"]);
+        }
+      } else if (changedValues.password) {
+        if (form.isFieldTouched("confirm")) {
+          form.validateFields(["confirm"]);
+        }
+      }
+    },
+    [form]
+  );
+
+  const compareToFirstPassword = useCallback(
+    async (_rule: any, value: any) => {
+      if (value && value !== form.getFieldValue("password")) {
+        throw "Make sure your passphrase is the same in both passphrase boxes.";
+      }
     },
     [form]
   );

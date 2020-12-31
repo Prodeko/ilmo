@@ -1,0 +1,23 @@
+fragment EventPage_Event on Event {
+  category {
+    id
+    description
+    name
+  }
+  description
+  id
+  name
+  startTime
+  ownerOrganization {
+    id
+    name
+  }
+}
+
+fragment EventPage_Query on Query {
+  ...SharedLayout_Query
+  event(id: $id) {
+    id
+    ...EventPage_Event
+  }
+}

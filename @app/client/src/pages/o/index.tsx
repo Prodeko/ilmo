@@ -1,12 +1,7 @@
+import React from "react";
+import { Redirect } from "@app/components";
 import { NextPage } from "next";
-import Router from "next/router";
-import React, { useEffect } from "react";
 
-const O: NextPage = () => {
-  useEffect(() => {
-    Router.replace("/");
-  }, []);
-  return <div>Redirecting...</div>;
-};
+const O: NextPage = () => <Redirect layout href={"/"} />;
 
 export default O;

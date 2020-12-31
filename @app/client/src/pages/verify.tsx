@@ -1,25 +1,26 @@
+import React, { useEffect, useState } from "react";
 import { Col, Row, SharedLayout } from "@app/components";
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql";
 import { Alert } from "antd";
 import get from "lodash/get";
 import { NextPage } from "next";
-import React, { useEffect } from "react";
 
-interface IProps {
+interface Props {
   id: string | null;
   token: string | null;
 }
 
-const VerifyPage: NextPage<IProps> = (props) => {
-  const [[id, token], setIdAndToken] = React.useState<[string, string]>([
+const VerifyPage: NextPage<Props> = (props) => {
+  const [[id, token], setIdAndToken] = useState<[string, string]>([
     props.id || "",
     props.token || "",
   ]);
-  const [state, setState] = React.useState<
-    "PENDING" | "SUBMITTING" | "SUCCESS"
-  >(props.id && props.token ? "SUBMITTING" : "PENDING");
-  const [error, setError] = React.useState<Error | null>(null);
+  const [state, setState] = useState<"PENDING" | "SUBMITTING" | "SUCCESS">(
+    props.id && props.token ? "SUBMITTING" : "PENDING"
+  );
+  const [error, setError] = useState<Error | null>(null);
   const [verifyEmail] = useVerifyEmailMutation();
+
   useEffect(() => {
     if (state === "SUBMITTING") {
       setError(null);
@@ -43,6 +44,7 @@ const VerifyPage: NextPage<IProps> = (props) => {
         });
     }
   }, [id, token, state, props, verifyEmail]);
+
   function form() {
     return (
       <form onSubmit={() => setState("SUBMITTING")}>
@@ -57,7 +59,9 @@ const VerifyPage: NextPage<IProps> = (props) => {
       </form>
     );
   }
+
   const query = useSharedQuery();
+
   return (
     <SharedLayout title="Verify Email Address" query={query}>
       <Row>

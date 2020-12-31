@@ -69,8 +69,6 @@ function makeClientSideLink(ROOT_URL: string) {
 }
 
 export const withApollo = withApolloBase(
-  // Ignore until next-with-apollo is updated...
-  // @ts-ignore
   ({ initialState, ctx }) => {
     const ROOT_URL = process.env.ROOT_URL;
     if (!ROOT_URL) {
@@ -97,6 +95,7 @@ export const withApollo = withApolloBase(
         : makeClientSideLink(ROOT_URL);
 
     const client = new ApolloClient({
+      ssrMode: isServer,
       link: ApolloLink.from([onErrorLink, mainLink]),
       cache: new InMemoryCache({
         dataIdFromObject: (o) =>

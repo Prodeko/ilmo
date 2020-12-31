@@ -1,5 +1,6 @@
 require("@app/config");
 const compose = require("lodash/flowRight");
+const { locales, defaultLocale } = require("./i18n.js");
 const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin");
 
 if (!process.env.ROOT_URL) {
@@ -18,6 +19,7 @@ if (!process.env.ROOT_URL) {
     const withCss = require("@zeit/next-css");
     const withLess = require("@zeit/next-less");
     const lessToJS = require("less-vars-to-js");
+    const nextTranslate = require("next-translate");
     const fs = require("fs");
     const path = require("path");
     // Where your antd-custom.less file lives
@@ -33,14 +35,19 @@ if (!process.env.ROOT_URL) {
     }
     return compose(
       withCss,
-      withLess
+      withLess,
+      nextTranslate
     )({
       poweredByHeader: false,
       distDir: `../.next`,
-      exportTrailingSlash: true,
+      trailingSlash: false,
       lessLoaderOptions: {
         javascriptEnabled: true,
         modifyVars: themeVariables, // make your antd custom effective
+      },
+      i18n: {
+        locales,
+        defaultLocale,
       },
       webpack(config, { webpack, dev, isServer }) {
         const makeSafe = (externals) => {
@@ -78,7 +85,7 @@ if (!process.env.ROOT_URL) {
               "process.env.ROOT_URL":
                 "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.ROOT_URL : process.env.ROOT_URL)",
               "process.env.T_AND_C_URL":
-                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.T_AND_C_URL : process.env.ROOT_URL)",
+                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.T_AND_C_URL : process.env.T_AND_C_URL)",
             }),
             new webpack.IgnorePlugin(
               // These modules are server-side only; we don't want webpack

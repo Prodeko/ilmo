@@ -7,7 +7,7 @@ ARG TARGET="server"
 ################################################################################
 # Build stage 1 - `yarn build`
 
-FROM node:12-alpine as builder
+FROM node:14-alpine as builder
 # Import our shared args
 ARG NODE_ENV
 ARG ROOT_URL
@@ -24,12 +24,12 @@ COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 
 # Finally run the build script
-RUN yarn run build
+RUN NEXT_TRANSLATE_PATH=../client/src yarn run build
 
 ################################################################################
 # Build stage 2 - COPY the relevant things (multiple steps)
 
-FROM node:12-alpine as clean
+FROM node:14-alpine as clean
 # Import our shared args
 ARG NODE_ENV
 ARG ROOT_URL
@@ -45,6 +45,8 @@ COPY --from=builder /app/@app/components/dist/ /app/@app/components/dist/
 COPY --from=builder /app/@app/client/package.json /app/@app/client/package.json
 COPY --from=builder /app/@app/client/assets/ /app/@app/client/assets/
 COPY --from=builder /app/@app/client/src/next.config.js /app/@app/client/src/next.config.js
+COPY --from=builder /app/@app/client/src/i18n.js /app/@app/client/src/i18n.js
+COPY --from=builder /app/@app/client/src/pages /app/@app/client/src/pages
 COPY --from=builder /app/@app/client/.next /app/@app/client/.next
 COPY --from=builder /app/@app/server/package.json /app/@app/server/
 COPY --from=builder /app/@app/server/postgraphile.tags.jsonc /app/@app/server/
@@ -65,7 +67,7 @@ RUN rm -Rf /app/node_modules /app/@app/*/node_modules
 ################################################################################
 # Build stage FINAL - COPY everything, once, and then do a clean `yarn install`
 
-FROM node:12-alpine
+FROM node:14-alpine
 
 EXPOSE $PORT
 WORKDIR /app/
@@ -81,12 +83,12 @@ ARG NODE_ENV
 ARG ROOT_URL
 ARG TARGET
 
-LABEL description="My PostGraphile-powered $TARGET"
+LABEL description="Prodeko ilmo $TARGET"
 
 # You might want to disable GRAPHILE_TURBO if you have issues
 ENV GRAPHILE_TURBO=1 TARGET=$TARGET PORT=$PORT
 ENV DATABASE_HOST="pg"
-ENV DATABASE_NAME="ilmokilke"
+ENV DATABASE_NAME="ilmo"
 ENV DATABASE_OWNER="${DATABASE_NAME}"
 ENV DATABASE_VISITOR="${DATABASE_NAME}_visitor"
 ENV DATABASE_AUTHENTICATOR="${DATABASE_NAME}_authenticator"

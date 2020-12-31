@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { ErrorAlert, P, SettingsLayout } from "@app/components";
 import {
@@ -9,7 +10,6 @@ import { getCodeFromError } from "@app/lib";
 import { Alert, Button, Modal, PageHeader, Typography } from "antd";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useState } from "react";
 
 const { Text } = Typography;
 
@@ -25,6 +25,7 @@ const Settings_Accounts: NextPage = () => {
   const [doingIt, setDoingIt] = useState(false);
   const openModal = useCallback(() => setConfirmOpen(true), []);
   const closeModal = useCallback(() => setConfirmOpen(false), []);
+
   const [requestAccountDeletion] = useRequestAccountDeletionMutation();
   const doIt = useCallback(() => {
     setError(null);
@@ -52,6 +53,7 @@ const Settings_Accounts: NextPage = () => {
       setConfirmOpen(false);
     })();
   }, [requestAccountDeletion]);
+
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [confirmAccountDeletion] = useConfirmAccountDeletionMutation();
@@ -72,7 +74,9 @@ const Settings_Accounts: NextPage = () => {
       setDeleting(false);
     })();
   }, [confirmAccountDeletion, deleting, token]);
+
   const query = useSharedQuery();
+
   return (
     <SettingsLayout href="/settings/delete" query={query}>
       <PageHeader title="Delete account" />

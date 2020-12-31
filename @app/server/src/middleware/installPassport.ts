@@ -4,6 +4,7 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 
 import { getWebsocketMiddlewares } from "../app";
+
 import installPassportStrategy from "./installPassportStrategy";
 
 interface DbSession {

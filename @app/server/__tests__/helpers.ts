@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { ExecutionResult, graphql, GraphQLSchema } from "graphql";
+import { createNodeRedisClient, WrappedNodeRedisClient } from "handy-redis";
 import { Pool, PoolClient } from "pg";
 import {
   createPostGraphileSchema,
@@ -8,6 +9,9 @@ import {
 } from "postgraphile";
 
 import {
+  createEventCategories,
+  createEvents,
+  createOrganizations,
   createSession,
   createUsers,
   poolFromUrl,
@@ -23,21 +27,65 @@ export async function createUserAndLogIn() {
   const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
-    const [user] = await createUsers(pool, 1, true);
-    const session = await createSession(pool, user.id);
+    const [user] = await createUsers(client, 1, true);
+    const session = await createSession(client, user.id);
+
     return { user, session };
   } finally {
-    client.release();
+    await client.release();
   }
 }
+
+export async function createEventDataAndLogin() {
+  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+  const client = await pool.connect();
+  try {
+    // Have to begin a transaction here, since we set the third parameter
+    // of set_config to 'true' below
+    client.query("BEGIN");
+    const [user] = await createUsers(client, 1, true);
+    const session = await createSession(client, user.id);
+
+    await becomeUser(client, session.uuid);
+
+    const [organization] = await createOrganizations(client, 1);
+    const [eventCategory] = await createEventCategories(
+      client,
+      1,
+      organization.id
+    );
+    const [event] = await createEvents(
+      client,
+      1,
+      organization.id,
+      eventCategory.id
+    );
+    client.query("COMMIT");
+    return { user, session, organization, eventCategory, event };
+  } finally {
+    await client.release();
+  }
+}
+
+export const becomeUser = async (
+  client: PoolClient,
+  sessionId: string | null
+) => {
+  await client.query(
+    `select set_config('role', $1::text, true), set_config('jwt.claims.session_id', $2::text, true)`,
+    [process.env.DATABASE_VISITOR, sessionId]
+  );
+};
 
 let known: Record<
   string,
   { counter: number; values: Map<unknown, string> }
 > = {};
+
 beforeEach(() => {
   known = {};
 });
+
 /*
  * This function replaces values that are expected to change with static
  * placeholders so that our snapshot testing doesn't throw an error
@@ -69,7 +117,8 @@ export function sanitize(json: any): any {
         k === "uuid" ||
         (k.endsWith("Id") &&
           (typeof json[k] === "number" || typeof json[k] === "string")) ||
-        (k.endsWith("Uuid") && typeof k === "string")
+        (k.endsWith("Uuid") && typeof k === "string") ||
+        k === "token"
       ) {
         result[k] = mask(result[k], "id");
       } else if (
@@ -99,6 +148,7 @@ export function sanitize(json: any): any {
 // Contains the PostGraphile schema and rootPgPool
 interface ICtx {
   rootPgPool: Pool;
+  redisClient: WrappedNodeRedisClient;
   options: PostGraphileOptions<Request, Response>;
   schema: GraphQLSchema;
 }
@@ -108,8 +158,9 @@ export const setup = async () => {
   const rootPgPool = new Pool({
     connectionString: process.env.TEST_DATABASE_URL,
   });
+  const redisClient = createNodeRedisClient({ url: process.env.REDIS_URL });
 
-  const options = getPostGraphileOptions({ rootPgPool });
+  const options = getPostGraphileOptions({ rootPgPool, redisClient });
   const schema = await createPostGraphileSchema(
     rootPgPool,
     "app_public",
@@ -119,6 +170,7 @@ export const setup = async () => {
   // Store the context
   ctx = {
     rootPgPool,
+    redisClient,
     options,
     schema,
   };
@@ -129,9 +181,10 @@ export const teardown = async () => {
     if (!ctx) {
       return null;
     }
-    const { rootPgPool } = ctx;
+    const { rootPgPool, redisClient } = ctx;
     ctx = null;
     rootPgPool.end();
+    redisClient.quit();
     return null;
   } catch (e) {
     console.error(e);

@@ -1,0 +1,37 @@
+fragment CreatedEvent on Event {
+  id
+  name
+  ownerOrganization {
+    id
+    name
+  }
+}
+
+mutation CreateEvent(
+  $name: String!
+  $description: String!
+  $organizationId: UUID!
+  $categoryId: UUID!
+  $isHighlighted: Boolean
+  $startTime: Datetime!
+  $endTime: Datetime!
+) {
+  createEvent(
+    input: {
+      event: {
+        name: $name
+        description: $description
+        ownerOrganizationId: $organizationId
+        categoryId: $categoryId
+        isHighlighted: $isHighlighted
+        startTime: $startTime
+        endTime: $endTime
+      }
+    }
+  ) {
+    event {
+      id
+      ...CreatedEvent
+    }
+  }
+}

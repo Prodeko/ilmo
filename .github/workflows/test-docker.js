@@ -28,7 +28,7 @@ async function main() {
       attempts++;
       if (attempts <= 30) {
         console.log(`Server is not ready yet: ${e.message}`);
-        execSync("docker logs gs-server", { stdio: "inherit" });
+        execSync("docker logs ilmo-server", { stdio: "inherit" });
       } else {
         console.log(`Server never came up, aborting :(`);
         process.exit(1);
@@ -39,12 +39,11 @@ async function main() {
   const text = await response.text();
 
   // Check for known text on homepage
-  if (!text.includes("https://graphile.org/postgraphile")) {
+  if (!text.includes("Prodeko")) {
     throw new Error("Failed to confirm server works.");
   }
 
   // TODO: make this test depend on the worker running
-
   console.log("Docker tests passed.");
 }
 

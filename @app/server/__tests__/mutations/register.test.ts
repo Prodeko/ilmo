@@ -1,13 +1,13 @@
 import { asRoot } from "../../../__tests__/helpers";
 import {
-  deleteTestUsers,
+  deleteTestData,
   runGraphQLQuery,
   sanitize,
   setup,
   teardown,
 } from "../helpers";
 
-beforeEach(deleteTestUsers);
+beforeEach(deleteTestData);
 beforeAll(setup);
 afterAll(teardown);
 
@@ -42,7 +42,7 @@ test("Register", async () => {
       username: "testuser",
       password: "SECURE_PASSWORD",
       name: "Test User",
-      email: "test.user@example.org",
+      email: "testuser@example.org",
     },
 
     // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)

@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
 import { ApolloError, useApolloClient } from "@apollo/client";
 import {
@@ -17,11 +18,11 @@ import {
   resetWebsocketConnection,
 } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
+import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Link from "next/link";
 import Router from "next/router";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 
 function hasErrors(fieldsError: Object) {
   return Object.keys(fieldsError).some((field) => fieldsError[field]);
@@ -43,6 +44,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const next: string = isSafe(rawNext) ? rawNext! : "/";
   const query = useSharedQuery();
+
   return (
     <SharedLayout
       title="Sign in"
@@ -129,7 +131,7 @@ function LoginForm({
   error,
   setError,
 }: LoginFormProps) {
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [login] = useLoginMutation({});
   const client = useApolloClient();
 

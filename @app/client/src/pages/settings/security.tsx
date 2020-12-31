@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import {
   ErrorAlert,
@@ -19,10 +20,10 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
+import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Link from "next/link";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const Settings_Security: NextPage = () => {
   const [error, setError] = useState<Error | ApolloError | null>(null);
@@ -31,7 +32,7 @@ const Settings_Security: NextPage = () => {
 
   const query = useSharedQuery();
 
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [changePassword] = useChangePasswordMutation();
   const [success, setSuccess] = useState(false);
 
@@ -86,6 +87,7 @@ const Settings_Security: NextPage = () => {
   const userEmail = u && u.userEmails.nodes[0];
   const email = userEmail ? userEmail.email : null;
   const [resetInProgress, setResetInProgress] = useState(false);
+
   const [resetError, setResetError] = useState(null);
   const handleResetPassword = useCallback(() => {
     if (!email) return;
@@ -106,9 +108,11 @@ const Settings_Security: NextPage = () => {
   const setPasswordFocussed = useCallback(() => {
     setPasswordIsFocussed(true);
   }, [setPasswordIsFocussed]);
+
   const setPasswordNotFocussed = useCallback(() => {
     setPasswordIsFocussed(false);
   }, [setPasswordIsFocussed]);
+
   const [passwordIsDirty, setPasswordIsDirty] = useState(false);
   const handleValuesChange = useCallback(
     (changedValues) => {

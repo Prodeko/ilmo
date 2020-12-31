@@ -1,0 +1,15 @@
+{
+  "backhome": "Takaisin etusivulle",
+  "create": "Luo",
+  "description": "Kuvaus",
+  "shortDescription": "Lyhyt kuvaus",
+  "logout": "Kirjaudu ulos",
+  "name": "Nimi",
+  "signin": "Kirjaudu sisään",
+  "settings": "Asetukset",
+  "headerMenu": {
+    "createEvent": "Luo tapahtuma",
+    "createEventCategory": "Luo tapahtumakategoria",
+    "createOrganization": "Luo organisaatio"
+  }
+}

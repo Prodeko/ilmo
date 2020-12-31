@@ -1,3 +1,4 @@
+import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { ErrorAlert, Redirect, SettingsLayout } from "@app/components";
 import {
@@ -12,14 +13,15 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
+import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
-import React, { useCallback, useState } from "react";
 
 const Settings_Profile: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useSettingsProfileQuery();
   const { data, loading, error } = query;
+
   return (
     <SettingsLayout href="/settings" query={query}>
       {data && data.currentUser ? (
@@ -44,6 +46,7 @@ export default Settings_Profile;
 /**
  * These are the values in our form
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface FormValues {
   username: string;
   name: string;
@@ -60,7 +63,7 @@ function ProfileSettingsForm({
   error,
   setError,
 }: ProfileSettingsFormProps) {
-  const [form] = Form.useForm();
+  const [form] = useForm();
   const [updateUser] = useUpdateUserMutation();
   const [success, setSuccess] = useState(false);
 

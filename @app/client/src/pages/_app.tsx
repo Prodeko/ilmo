@@ -1,14 +1,17 @@
-import "antd/dist/antd.less";
-import "nprogress/nprogress.css";
-import "../styles.less";
-
+import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
-import { notification } from "antd";
+import { ConfigProvider, notification } from "antd";
+import enUS from "antd/lib/locale/en_US";
+import fiFI from "antd/lib/locale/fi_FI";
 import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
-import * as React from "react";
+
+import "antd/dist/antd.less";
+import "../styles.less";
+
+import "nprogress/nprogress.css";
 
 declare global {
   interface Window {
@@ -41,7 +44,6 @@ if (typeof window !== "undefined") {
   Router.events.on("routeChangeComplete", () => {
     NProgress.done();
   });
-
   Router.events.on("routeChangeError", (err: Error | string) => {
     NProgress.done();
     if (err["cancelled"]) {
@@ -58,9 +60,14 @@ if (typeof window !== "undefined") {
   });
 }
 
-class Ilmo extends App<{ apollo: ApolloClient<any> }> {
-  static async getInitialProps({ Component, ctx }: any) {
-    let pageProps = {};
+interface Props {
+  apollo: ApolloClient<any>;
+  locale: string;
+}
+
+class Ilmo extends App<Props> {
+  static async getInitialProps({ Component, ctx, router }: any) {
+    let pageProps = { locale: router.locale };
 
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
@@ -70,11 +77,13 @@ class Ilmo extends App<{ apollo: ApolloClient<any> }> {
   }
 
   render() {
-    const { Component, pageProps, apollo } = this.props;
+    const { Component, pageProps, apollo, locale } = this.props;
 
     return (
       <ApolloProvider client={apollo}>
-        <Component {...pageProps} />
+        <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
+          <Component {...pageProps} />
+        </ConfigProvider>
       </ApolloProvider>
     );
   }

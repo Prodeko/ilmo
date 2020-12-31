@@ -1,4 +1,5 @@
 import { writeFileSync } from "fs";
+
 import { lexicographicSortSchema, printSchema } from "graphql";
 import { Pool } from "pg";
 import { createPostGraphileSchema } from "postgraphile";

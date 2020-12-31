@@ -1,0 +1,15 @@
+fragment EventCategories_EventCategory on EventCategory {
+  id
+  name
+  description
+}
+
+fragment EventCategories_Query on Query {
+  ...SharedLayout_Query
+  eventCategories {
+    nodes {
+      id
+      ...EventCategories_EventCategory
+    }
+  }
+}

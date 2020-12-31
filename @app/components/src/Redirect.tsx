@@ -1,7 +1,7 @@
+import React, { useEffect } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Skeleton } from "antd";
 import Router from "next/router";
-import React, { useEffect } from "react";
 
 import { SharedLayout } from "./SharedLayout";
 import { StandardWidth } from "./StandardWidth";
@@ -15,9 +15,11 @@ export interface RedirectProps {
 
 export function Redirect({ href, as, layout }: RedirectProps) {
   const client = useApolloClient();
+
   useEffect(() => {
     Router.push(href, as);
   }, [as, href]);
+
   if (layout) {
     return (
       <SharedLayout

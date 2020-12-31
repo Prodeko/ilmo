@@ -1,0 +1,15 @@
+{
+  "backhome": "Takaisin etusivulle",
+  "create": "Create",
+  "description": "Description",
+  "shortDescription": "Short description",
+  "logout": "Logout",
+  "name": "Name",
+  "signin": "Sign in",
+  "settings": "Settings",
+  "headerMenu": {
+    "createEvent": "Create event",
+    "createEventCategory": "Create event category",
+    "createOrganization": "Create organization"
+  }
+}

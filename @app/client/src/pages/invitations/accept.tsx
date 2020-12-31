@@ -1,3 +1,6 @@
+import * as qs from "querystring";
+
+import React, { useCallback, useState } from "react";
 import { QueryResult } from "@apollo/client";
 import {
   AuthRestrict,
@@ -17,11 +20,9 @@ import {
 import { getCodeFromError } from "@app/lib";
 import { Button, Col, Result, Row, Skeleton } from "antd";
 import { NextPage } from "next";
-import Router, { NextRouter, useRouter } from "next/router";
-import * as qs from "querystring";
-import React, { FC } from "react";
+import Router, { useRouter } from "next/router";
 
-interface IProps {
+interface Props {
   id: string | null;
   code: string | null;
 }
@@ -31,13 +32,14 @@ enum Status {
   ACCEPTING = "ACCEPTING",
 }
 
-const InvitationAccept: NextPage<IProps> = (props) => {
-  const router: NextRouter | null = useRouter();
+const InvitationAccept: NextPage<Props> = (props) => {
+  const router = useRouter();
   const fullHref =
     router.pathname +
     (router && router.query ? `?${qs.stringify(router.query)}` : "");
   const { id: rawId, code } = props;
   const id = rawId || "";
+
   const query = useInvitationDetailQuery({
     variables: {
       id,
@@ -46,6 +48,7 @@ const InvitationAccept: NextPage<IProps> = (props) => {
     skip: !id,
     fetchPolicy: "network-only",
   });
+
   return (
     <SharedLayout
       title="Accept Invitation"
@@ -73,23 +76,23 @@ const InvitationAccept: NextPage<IProps> = (props) => {
   );
 };
 
-interface InvitationAcceptInnerProps extends IProps {
+interface InvitationAcceptInnerProps extends Props {
   currentUser?: SharedLayout_UserFragment | null;
   query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>;
 }
 
-const InvitationAcceptInner: FC<InvitationAcceptInnerProps> = (props) => {
+const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   const { id, code, query } = props;
   const router = useRouter();
 
   const { data, loading, error } = query;
   const [acceptInvite] = useAcceptOrganizationInviteMutation();
 
-  const [status, setStatus] = React.useState(Status.PENDING);
-  const [acceptError, setAcceptError] = React.useState<Error | null>(null);
+  const [status, setStatus] = useState(Status.PENDING);
+  const [acceptError, setAcceptError] = useState<Error | null>(null);
 
   const organization = data?.organizationForInvitation;
-  const handleAccept = React.useCallback(() => {
+  const handleAccept = useCallback(() => {
     if (!organization) {
       return;
     }
