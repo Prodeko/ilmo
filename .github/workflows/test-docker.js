@@ -27,10 +27,8 @@ async function main() {
     } catch (e) {
       attempts++;
       if (attempts <= 30) {
-        try {
-          console.log(`Server is not ready yet: ${e.message}`);
-          execSync("docker logs ilmo-server", { stdio: "inherit" });
-        } catch (e) {}
+        console.log(`Server is not ready yet: ${e.message}`);
+        execSync("docker logs ilmo-server", { stdio: "inherit" });
       } else {
         console.log(`Server never came up, aborting :(`);
         process.exit(1);

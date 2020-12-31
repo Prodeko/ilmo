@@ -65,13 +65,13 @@ jobs:
 
       - name: "Start docker server"
         run:
-          docker run --rm --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name
-          ilmo-server ilmo-server
+          docker run --rm -d --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
+          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-server ilmo-server
 
       - name: "Start docker worker"
         run:
-          docker run --rm --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 --name ilmo-worker
-          ilmo-worker
+          docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
+          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-worker ilmo-worker
 
       - name: "Test docker"
         run: node .github/workflows/test-docker.js
