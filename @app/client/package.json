@@ -28,7 +28,7 @@
     "lodash": "^4.17.20",
     "net": "^1.0.2",
     "next": "^10.0.4",
-    "next-translate": "^1.0.2-canary.1 ",
+    "next-translate": "^1.0.1 ",
     "nprogress": "^0.2.0",
     "rc-field-form": "~1.17.3",
     "react": "^16.14.0",

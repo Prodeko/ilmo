@@ -11203,15 +11203,10 @@ next-tick@~1.0.0:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
-next-translate@^1.0.1:
+next-translate@^1.0.1, "next-translate@^1.0.1 ":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/next-translate/-/next-translate-1.0.1.tgz#fd8f5976efb542030563d81d5f605bc019729028"
   integrity sha512-yCzYSi906IhSzJetVD7pJOKBfceQxYvSA+NUK1YPWhi/VJWFqbp90WAz85uX77eW4nreTeDijQfcAcFG16fjqg==
-
-"next-translate@^1.0.2-canary.1 ":
-  version "1.0.2-canary.1"
-  resolved "https://registry.yarnpkg.com/next-translate/-/next-translate-1.0.2-canary.1.tgz#d515ba68d3e9aa821209c0695000862e51b86912"
-  integrity sha512-Vk5gfzDkh2oZWmXw4NCku8YyTKSr4ouI/HBJvC0tgVx2myU2z2zj4UiaZRfQGOCDYvELVx+9S9Na070CabiMVw==
 
 next-with-apollo@^5.1.0:
   version "5.1.0"
