@@ -12,24 +12,23 @@ jobs:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          - 6379:6379
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: "6.x"
+
       - name: Use Node.js 14
         uses: actions/setup-node@v1
         with:
           node-version: "14"
-      - name: Install PostgreSQL 12
+
+      - name: Install PostgreSQL 12 and Redis
         run: |
           choco install postgresql12 --force --params '/Password:postgres'
+
       - name: yarn, lint, build and test
         run: |
           $env:PATH += ";C:\Program Files\PostgreSQL\12\bin"
