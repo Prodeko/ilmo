@@ -137,7 +137,6 @@ it("Can accept an invitation", () =>
     );
     expect(membership).toBeTruthy();
     expect(membership.is_owner).toEqual(false);
-    expect(membership.is_billing_contact).toEqual(false);
   }));
 
 it("Can accept an invitation that was sent to an email address", () =>
@@ -184,5 +183,4 @@ it("Can accept an invitation that was sent to an email address", () =>
     );
     expect(membership).toBeTruthy();
     expect(membership.is_owner).toEqual(false);
-    expect(membership.is_billing_contact).toEqual(false);
   }));

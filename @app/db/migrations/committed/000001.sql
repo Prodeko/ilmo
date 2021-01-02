@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:e6bd89aa12b755d5cbf4ffea0d60e949107e9e05
+--! Hash: sha1:afba2330b80572860eda54f9ab12e039ddfc0936
 
 drop schema if exists app_public cascade;
 
@@ -1228,11 +1228,9 @@ create trigger _500_gql_update
 ------                           ORGANIZATIONS                            ------
 --------------------------------------------------------------------------------
 
-drop function if exists app_public.transfer_organization_billing_contact(uuid, uuid);
 drop function if exists app_public.transfer_organization_ownership(uuid, uuid);
 drop function if exists app_public.delete_organization(uuid);
 drop function if exists app_public.remove_from_organization(uuid, uuid);
-drop function if exists app_public.organizations_current_user_is_billing_contact(app_public.organizations);
 drop function if exists app_public.organizations_current_user_is_owner(app_public.organizations);
 drop function if exists app_public.accept_invitation_to_organization(uuid, text) cascade;
 drop function if exists app_public.get_organization_for_invitation(uuid, text) cascade;
@@ -1265,7 +1263,6 @@ create table app_public.organization_memberships (
   organization_id uuid not null references app_public.organizations on delete cascade,
   user_id uuid not null references app_public.users on delete cascade,
   is_owner boolean not null default false,
-  is_billing_contact boolean not null default false,
   created_at timestamptz not null default now(),
   unique (organization_id, user_id)
 );
@@ -1322,8 +1319,8 @@ declare
   v_org app_public.organizations;
 begin
   insert into app_public.organizations (slug, name) values (slug, name) returning * into v_org;
-  insert into app_public.organization_memberships (organization_id, user_id, is_owner, is_billing_contact)
-    values(v_org.id, app_public.current_user_id(), true, true);
+  insert into app_public.organization_memberships (organization_id, user_id, is_owner)
+    values(v_org.id, app_public.current_user_id(), true);
   return v_org;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
@@ -1446,18 +1443,6 @@ create function app_public.organizations_current_user_is_owner(
   )
 $$ language sql stable;
 
-create function app_public.organizations_current_user_is_billing_contact(
-  org app_public.organizations
-) returns boolean as $$
-  select exists(
-    select 1
-    from app_public.organization_memberships
-    where organization_id = org.id
-    and user_id = app_public.current_user_id()
-    and is_billing_contact is true
-  )
-$$ language sql stable;
-
 create policy update_owner on app_public.organizations for update using (exists(
   select 1
   from app_public.organization_memberships
@@ -1495,17 +1480,6 @@ begin
     return;
   end if;
 
-  if v_my_membership.is_billing_contact then
-    update app_public.organization_memberships
-      set is_billing_contact = false
-      where id = v_my_membership.id
-      returning * into v_my_membership;
-    update app_public.organization_memberships
-      set is_billing_contact = true
-      where organization_memberships.organization_id = remove_from_organization.organization_id
-      and organization_memberships.is_owner;
-  end if;
-
   delete from app_public.organization_memberships
     where organization_memberships.organization_id = remove_from_organization.organization_id
     and organization_memberships.user_id = remove_from_organization.user_id;
@@ -1526,17 +1500,6 @@ begin
   ) then
     raise exception 'You cannot delete your account until you are not the owner of any organizations.' using errcode = 'OWNER';
   end if;
-
-  -- Reassign billing contact status back to the organization owner
-  update app_public.organization_memberships
-    set is_billing_contact = true
-    where is_owner = true
-    and organization_id in (
-      select organization_id
-      from app_public.organization_memberships my_memberships
-      where my_memberships.user_id = app_public.current_user_id()
-      and is_billing_contact is true
-    );
 
   return old;
 end;
@@ -1583,36 +1546,6 @@ begin
         set is_owner = false
         where organization_memberships.organization_id = transfer_organization_ownership.organization_id
         and organization_memberships.user_id = app_public.current_user_id();
-
-      select * into v_org from app_public.organizations where id = organization_id;
-      return v_org;
-    end if;
-  end if;
-  return null;
-end;
-$$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
-
-create function app_public.transfer_organization_billing_contact(organization_id uuid, user_id uuid) returns app_public.organizations as $$
-declare
- v_org app_public.organizations;
-begin
-  if exists(
-    select 1
-    from app_public.organization_memberships
-    where organization_memberships.user_id = app_public.current_user_id()
-    and organization_memberships.organization_id = transfer_organization_billing_contact.organization_id
-    and is_owner is true
-  ) then
-    update app_public.organization_memberships
-      set is_billing_contact = true
-      where organization_memberships.organization_id = transfer_organization_billing_contact.organization_id
-      and organization_memberships.user_id = transfer_organization_billing_contact.user_id;
-    if found then
-      update app_public.organization_memberships
-        set is_billing_contact = false
-        where organization_memberships.organization_id = transfer_organization_billing_contact.organization_id
-        and organization_memberships.user_id <> transfer_organization_billing_contact.user_id
-        and is_billing_contact = true;
 
       select * into v_org from app_public.organizations where id = organization_id;
       return v_org;

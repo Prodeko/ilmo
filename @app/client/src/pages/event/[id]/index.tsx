@@ -17,24 +17,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = (props) => {
         <div>
           <PageHeader
             title={"Dashboard"}
-            extra={
-              [<P key="bileet">BILEET</P>]
-              /*
-              organization.currentUserIsBillingContact ||
-              organization.currentUserIsOwner
-                ? [
-                    <ButtonLink
-                      key="settings"
-                      href={`/o/[slug]/settings`}
-                      as={`/o/${organization.slug}/settings`}
-                      type="primary"
-                      data-cy="organizationpage-button-settings"
-                    >
-                      Settings
-                    </ButtonLink>,
-                  ]
-                : null*/
-            }
+            extra={[<P key="bileet">BILEET</P>]}
           />
 
           <Empty description={<span>{event.description}</span>} />
