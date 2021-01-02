@@ -29,7 +29,6 @@ const OrganizationSettingsPage: NextPage = () => {
     <SharedLayout
       title={organization?.name ?? slug}
       titleHref={`/o/[slug]`}
-      titleHrefAs={`/o/${slug}`}
       noPad
       query={query}
       forbidWhen={AuthRestrict.LOGGED_OUT}

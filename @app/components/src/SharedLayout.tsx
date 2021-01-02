@@ -66,7 +66,6 @@ export interface SharedLayoutProps {
 
   title: string;
   titleHref?: string;
-  titleHrefAs?: string;
   children:
     | React.ReactNode
     | ((props: SharedLayoutChildProps) => React.ReactNode);
@@ -94,7 +93,6 @@ function CurrentUserUpdatedSubscription() {
 export function SharedLayout({
   title,
   titleHref,
-  titleHrefAs,
   noPad = false,
   noHandleErrors = false,
   query,
@@ -197,7 +195,7 @@ export function SharedLayout({
               data-cy="layout-header-title"
             >
               {titleHref ? (
-                <Link href={titleHref} as={titleHrefAs}>
+                <Link href={titleHref}>
                   <a data-cy="layout-header-titlelink">{title}</a>
                 </Link>
               ) : (
