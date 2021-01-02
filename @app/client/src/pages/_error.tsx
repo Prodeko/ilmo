@@ -6,10 +6,8 @@ import { NextPage } from "next";
 import { Translate } from "next-translate";
 import useTranslation from "next-translate/useTranslation";
 
-const isDev = process.env.NODE_ENV !== "production";
 interface ErrorPageProps {
   statusCode: number | null;
-  pathname: string | null;
 }
 
 interface ErrorComponentSpec<TProps> {
@@ -25,7 +23,7 @@ interface GetDisplayErrorProps extends ErrorPageProps {
 const getDisplayForError = (
   props: GetDisplayErrorProps
 ): ErrorComponentSpec<any> => {
-  const { statusCode, pathname, t } = props;
+  const { statusCode, t } = props;
 
   switch (statusCode) {
     case 404:
@@ -60,8 +58,7 @@ const ErrorPage: NextPage<ErrorPageProps> = (props) => {
   );
 };
 
-ErrorPage.getInitialProps = async ({ res, err, asPath }) => ({
-  pathname: asPath || null,
+ErrorPage.getInitialProps = async ({ res, err }) => ({
   statusCode: res ? res.statusCode : err ? err["statusCode"] || null : null,
 });
 
