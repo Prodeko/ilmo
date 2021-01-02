@@ -70,7 +70,6 @@ it("cannot delete account if organization owner", () =>
       "select app_public.confirm_account_deletion($1) as deleted",
       [token]
     );
-    console.log(token);
     expect(promise).rejects.toMatchObject({
       code: "OWNER",
     });

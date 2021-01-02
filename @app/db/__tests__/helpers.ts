@@ -9,8 +9,8 @@ import {
   deleteTestData,
   poolFromUrl,
   TEST_DATABASE_URL,
-  User,
 } from "../../__tests__/helpers";
+import { User } from "../../__tests__/data";
 
 /*
  * We need to inform jest that these files depend on changes to the database,

@@ -10,7 +10,9 @@
     "uncommit": "yarn gm uncommit",
     "reset": "yarn gm reset",
     "dump": "yarn gm migrate && yarn gm reset --shadow --erase && yarn gm migrate --shadow --forceActions",
-    "test": "cross-env NODE_ENV=test npx --no-install -n \"-r @app/config/env\" jest"
+    "test": "cross-env NODE_ENV=test npx --no-install -n \"-r @app/config/env\" jest",
+    "create-fake-data": "ts-node -r @app/config/env scripts/create-fake-data.ts",
+    "clean-fake-data": "ts-node -r @app/config/env scripts/clean-fake-data.ts"
   },
   "dependencies": {
     "graphile-migrate": "^1.0.2"
