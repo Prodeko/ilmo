@@ -3,7 +3,6 @@ fragment OrganizationPage_Organization on Organization {
   name
   slug
   currentUserIsOwner
-  currentUserIsBillingContact
 }
 
 fragment OrganizationPage_Query on Query {

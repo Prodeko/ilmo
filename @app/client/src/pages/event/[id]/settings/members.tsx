@@ -14,7 +14,6 @@ import {
   useInviteToOrganizationMutation,
   useOrganizationMembersQuery,
   useRemoveFromOrganizationMutation,
-  useTransferOrganizationBillingContactMutation,
   useTransferOrganizationOwnershipMutation,
 } from "@app/graphql";
 import { formItemLayout, tailFormItemLayout } from "@app/lib";
@@ -137,10 +136,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
     [form, inviteInProgress, inviteToOrganization, organization.id]
   );
 
-  if (
-    !organization.currentUserIsBillingContact &&
-    !organization.currentUserIsOwner
-  ) {
+  if (!organization.currentUserIsOwner) {
     return <Redirect as={`/o/${organization.slug}`} href="/o/[slug]" />;
   }
 
@@ -227,29 +223,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
     }
   }, [node.user, organization.id, transferOwnership]);
 
-  const [transferBilling] = useTransferOrganizationBillingContactMutation();
-  const handleBillingTransfer = useCallback(async () => {
-    try {
-      await transferBilling({
-        variables: {
-          organizationId: organization.id,
-          userId: node.user?.id ?? 0,
-        },
-        refetchQueries: ["OrganizationMembers"],
-      });
-    } catch (e) {
-      message.error(
-        "Error occurred when transferring billing contact: " + e.message
-      );
-    }
-  }, [node.user, organization.id, transferBilling]);
-
-  const roles = [
-    node.isOwner ? "owner" : null,
-    node.isBillingContact ? "billing contact" : null,
-  ]
-    .filter(Boolean)
-    .join(" and ");
+  const roles = [node.isOwner ? "owner" : null].filter(Boolean).join(" and ");
   return (
     <List.Item
       actions={[
@@ -273,17 +247,6 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
             key="transfer"
           >
             <a>Make owner</a>
-          </Popconfirm>
-        ) : null,
-        organization.currentUserIsOwner && !node.isBillingContact ? (
-          <Popconfirm
-            title={`Are you sure you want to make ${node.user?.name} the billing contact for ${organization.name}?`}
-            onConfirm={handleBillingTransfer}
-            okText="Yes"
-            cancelText="No"
-            key="billingTransfer"
-          >
-            <a>Make billing contact</a>
           </Popconfirm>
         ) : null,
       ].filter(Boolean)}

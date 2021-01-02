@@ -79,10 +79,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
     [organization.id, organization.slug, updateOrganization]
   );
 
-  if (
-    !organization.currentUserIsBillingContact &&
-    !organization.currentUserIsOwner
-  ) {
+  if (!organization.currentUserIsOwner) {
     return <Redirect as={`/o/${organization.slug}`} href="/o/[slug]" />;
   }
 

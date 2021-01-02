@@ -2,7 +2,6 @@ fragment OrganizationMembers_Membership on OrganizationMembership {
   id
   createdAt
   isOwner
-  isBillingContact
   user {
     id
     username

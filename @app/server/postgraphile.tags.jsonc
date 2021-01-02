@@ -85,31 +85,6 @@
             }
           }
         }
-      },
-      "app_public.user_authentications": {
-        "tags": {
-          "omit": "all",
-          "simpleCollections": "only"
-        },
-        "attribute": {
-          "details": {
-            "tags": {
-              "omit": true
-            }
-          }
-        },
-        "constraint": {
-          "uniq_user_authentications": {
-            "tags": {
-              "omit": true
-            }
-          },
-          "user_authentications_pkey": {
-            "tags": {
-              "omit": "all"
-            }
-          }
-        }
       }
     },
     "procedure": {
@@ -171,7 +146,7 @@
         }
       },
       "app_public.create_organization": {
-        "description": "An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' and 'billing contact' roles. You may invite other users and redistribute these roles."
+        "description": "An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' role. You may invite other users and redistribute roles."
       },
       "app_public.organization_for_invitation": {
         "description": "Given an invitation UUID (and, if required, the code that was emailed to you), retrieves the `Organization` that you were invited to."
@@ -181,9 +156,6 @@
       },
       "app_public.accept_invitation_to_organization": {
         "description": "If someone invited you by your email address then you must include the code that was emailed to you, otherwise you may accept the invitation directly using the UUID. If successful, you will be a member of the organization."
-      },
-      "app_public.transfer_organization_billing_contact": {
-        "description": "The owner of an `Organization` may use this mutation to make any organization member the billing contact."
       },
       "app_public.transfer_organization_ownership": {
         "description": "The owner of an `Organization` may use this mutation to transfer ownership to a different organization member. Take care, if you assign ownership to someone who cannot or will not access their account then you may need to contact support to have ownership reassigned."

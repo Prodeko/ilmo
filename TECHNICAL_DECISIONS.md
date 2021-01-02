@@ -10,7 +10,6 @@
 - [Cypress e2e tests](#cypress-e2e-tests)
 - [Next.js](#nextjs)
 - [AntD](#antd)
-- [OAuth](#oauth)
 - [Detailed list of all technologies](#detailed-list-of-all-technologies)
 
 ## Overview
@@ -90,15 +89,6 @@ including the client URL.
 The component library we're using is AntD ([docs](https://ant.design/)); we've
 demonstrated how to use the form validation components on the login/register
 pages so you can see how to handle errors from the server.
-
-## OAuth
-
-If you set `GITHUB_KEY` and `GITHUB_SECRET` in your `.env` file then you can
-also use GitHub's OAuth social authentication; you can add similar logic to the
-GitHub logic (in `@app/server/src/middleware/installPassport.ts`) to enable
-other social login providers such as Twitter, Facebook, Google, etc. For more
-information, see the
-[passport.js documentation](http://www.passportjs.org/docs/).
 
 # Detailed list of technologies
 

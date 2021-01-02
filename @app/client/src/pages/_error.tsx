@@ -1,59 +1,13 @@
 import * as React from "react";
-import {
-  ErrorOccurred,
-  FourOhFour,
-  H2,
-  P,
-  SharedLayout,
-} from "@app/components";
+import { ErrorOccurred, FourOhFour, SharedLayout } from "@app/components";
 import { useSharedQuery } from "@app/graphql";
-import { Alert, Col, Row } from "antd";
+import { Col, Row } from "antd";
 import { NextPage } from "next";
-import Link from "next/link";
 import { Translate } from "next-translate";
 import useTranslation from "next-translate/useTranslation";
 
-const isDev = process.env.NODE_ENV !== "production";
-
-interface SocialAuthErrorProps {
-  provider: string;
-}
-
-function SocialAuthError({ provider }: SocialAuthErrorProps) {
-  return (
-    <div>
-      <H2>This application is not configured for that auth provider</H2>
-      <P>
-        Please try and{" "}
-        <Link href="/login">
-          <a>login with another method</a>
-        </Link>
-        .
-      </P>
-      {isDev && (
-        <Alert
-          type="info"
-          message="Development Only Error"
-          description={
-            <div>
-              You seem to be trying to log in with the '<code>{provider}</code>'
-              OAuth provider. You should check that{" "}
-              <code>{`${provider}_key`.toUpperCase()}</code> and any other
-              required variables are set in your environment (e.g.{" "}
-              <code>.env</code> file). If they are, check the provider is
-              configured in{" "}
-              <code>@app/server/src/middleware/installPassport.ts</code>
-            </div>
-          }
-        />
-      )}
-    </div>
-  );
-}
-
 interface ErrorPageProps {
   statusCode: number | null;
-  pathname: string | null;
 }
 
 interface ErrorComponentSpec<TProps> {
@@ -69,18 +23,7 @@ interface GetDisplayErrorProps extends ErrorPageProps {
 const getDisplayForError = (
   props: GetDisplayErrorProps
 ): ErrorComponentSpec<any> => {
-  const { statusCode, pathname, t } = props;
-
-  const authMatches = pathname ? pathname.match(/^\/auth\/([^/?#]+)/) : null;
-  if (authMatches) {
-    return {
-      Component: SocialAuthError,
-      title: "Application not configured for this auth provider",
-      props: {
-        provider: decodeURIComponent(authMatches[1]),
-      },
-    };
-  }
+  const { statusCode, t } = props;
 
   switch (statusCode) {
     case 404:
@@ -115,8 +58,7 @@ const ErrorPage: NextPage<ErrorPageProps> = (props) => {
   );
 };
 
-ErrorPage.getInitialProps = async ({ res, err, asPath }) => ({
-  pathname: asPath || null,
+ErrorPage.getInitialProps = async ({ res, err }) => ({
   statusCode: res ? res.statusCode : err ? err["statusCode"] || null : null,
 });
 

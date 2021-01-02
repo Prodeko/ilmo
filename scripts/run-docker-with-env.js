@@ -10,8 +10,6 @@ const {
   DATABASE_VISITOR,
   SECRET,
   JWT_SECRET,
-  GITHUB_KEY,
-  GITHUB_SECRET,
   DATABASE_NAME,
   GRAPHILE_LICENSE,
 } = process.env;
@@ -40,8 +38,5 @@ runSync("docker", [
   "-e",
   `AUTH_DATABASE_URL=${AUTH_DATABASE_URL}`,
   "-e",
-  `GITHUB_KEY=${GITHUB_KEY}`,
-  "-e",
-  `GITHUB_SECRET=${GITHUB_SECRET}`,
   process.argv[2],
 ]);

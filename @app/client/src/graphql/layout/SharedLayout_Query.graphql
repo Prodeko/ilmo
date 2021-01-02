@@ -16,7 +16,6 @@ fragment SharedLayout_User on User {
     nodes {
       id
       isOwner
-      isBillingContact
       organization {
         id
         name

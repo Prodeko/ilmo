@@ -63,7 +63,7 @@ export default (app: Express) => {
     cookie: {
       maxAge: MAXIMUM_SESSION_DURATION_IN_MILLISECONDS,
       httpOnly: true, // default
-      sameSite: "lax", // Cannot be 'strict' otherwise OAuth won't work.
+      sameSite: "strict",
       secure: "auto", // May need to app.set('trust proxy') for this to work.
     },
     store,

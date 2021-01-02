@@ -50,13 +50,8 @@ export const deleteTestUsers = () => {
       delete from app_public.users
       where username like 'testuser%'
       or username = 'testuser'
-      or id in
-        (
-          select user_id from app_public.user_emails where email like 'testuser%@example.com'
-        union
-          select user_id from app_public.user_authentications where service = 'facebook' and identifier = '123456%'
-        )
-      `
+      or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com')
+    `
   );
 };
 

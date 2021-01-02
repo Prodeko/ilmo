@@ -46,7 +46,6 @@ const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
           <PageHeader
             title={"Dashboard"}
             extra={
-              organization.currentUserIsBillingContact ||
               organization.currentUserIsOwner
                 ? [
                     <ButtonLink
