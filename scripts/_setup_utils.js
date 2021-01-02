@@ -97,30 +97,8 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "ROOT_URL",
     "http://localhost:5678",
     `\
-# This is needed any time we use absolute URLs, e.g. for OAuth callback URLs
+# This is needed any time we use absolute URLs
 # IMPORTANT: must NOT end with a slash`
-  );
-
-  add(
-    "GITHUB_KEY",
-    null,
-    `\
-# To enable login with GitHub, create a GitHub application by visiting
-# https://github.com/settings/applications/new and then enter the Client
-# ID/Secret below
-#
-#   Name: PostGraphile Starter (Dev)
-#   Homepage URL: http://localhost:5678
-#   Authorization callback URL: http://localhost:5678/auth/github/callback
-#
-# Client ID:`
-  );
-
-  add(
-    "GITHUB_SECRET",
-    null,
-    `\
-# Client Secret:`
   );
 
   const nodeVersion = parseInt(

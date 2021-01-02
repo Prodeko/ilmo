@@ -9,7 +9,6 @@ import {
   Row,
   SharedLayout,
   SharedLayoutChildProps,
-  SocialLoginOptions,
 } from "@app/components";
 import { useLoginMutation, useSharedQuery } from "@app/graphql";
 import {
@@ -81,11 +80,6 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                     >
                       Sign in with E-mail or Username
                     </Button>
-                  </Col>
-                </Row>
-                <Row style={{ marginBottom: 8 }}>
-                  <Col span={24}>
-                    <SocialLoginOptions next={next} />
                   </Col>
                 </Row>
                 <Row justify="center">

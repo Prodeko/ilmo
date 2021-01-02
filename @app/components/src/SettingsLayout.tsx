@@ -41,10 +41,6 @@ const pages = {
     title: "Passphrase",
     cy: "settingslayout-link-password",
   }),
-  "/settings/accounts": page({
-    title: "Linked Accounts",
-    cy: "settingslayout-link-accounts",
-  }),
   "/settings/emails": page({
     title: "Emails",
     warnIfUnverified: true,

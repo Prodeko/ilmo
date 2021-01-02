@@ -162,8 +162,8 @@ use; not to mention deep integration with VSCode should you use that editor:
 plugin recommendations, pre-configured settings, ESLint and Prettier integration
 and debugging profiles
 
-**Batteries included**: full user system and OAuth, AntD design framework, Jest
-and [Cypress end-to-end](/TECHNICAL_DECISIONS.md#cypress-e2e-tests) testing,
+**Batteries included**: full user system, AntD design framework, Jest and
+[Cypress end-to-end](/TECHNICAL_DECISIONS.md#cypress-e2e-tests) testing,
 security, email templating and transport, pre-configured linting and code
 formatting, deployment instructions, and more
 
@@ -364,8 +364,6 @@ docker run --rm -it --init -p 5678:5678 \
   -e DATABASE_VISITOR="$DATABASE_VISITOR" \
   -e DATABASE_URL="$DATABASE_URL" \
   -e AUTH_DATABASE_URL="$AUTH_DATABASE_URL" \
-  -e GITHUB_KEY="$GITHUB_KEY" \
-  -e GITHUB_SECRET="$GITHUB_SECRET" \
   docker-image-id-here
 ```
 
@@ -464,15 +462,6 @@ When you register an account on the server you should receive a verification
 email containing a clickable link. When you click the link your email will be
 verified and thanks to GraphQL subscriptions the previous tab should be updated
 to reflect that your account is now verified.
-
-You can also configure your application for social login. This works the same as
-in development except the callback URL will be different, something like
-`https://MY_HEROKU_APP_NAME.herokuapp.com/auth/github/callback`. Set the GitHub
-OAuth secrets on your Heroku app to trigger a restart and enable social login:
-
-```
-heroku config:set GITHUB_KEY="..." GITHUB_SECRET="..." -a $APP_NAME
-```
 
 ## Cleanup
 

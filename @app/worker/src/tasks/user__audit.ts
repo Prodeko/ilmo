@@ -5,16 +5,6 @@ import { SendEmailPayload } from "./send_email";
 
 /* For tracking account actions */
 
-/*
-type AccountAction =
-  | "linked_account" //
-  | "unlinked_account" //
-  | "changed_password" //
-  | "reset_password" //
-  | "added_email" //
-  | "removed_email"; //
- */
-
 type UserAuditPayload =
   | {
       type: "added_email";
@@ -36,28 +26,6 @@ type UserAuditPayload =
       extra1: string;
 
       /** email */
-      extra2: string;
-    }
-  | {
-      type: "linked_account";
-      user_id: string;
-      current_user_id: string;
-
-      /** service */
-      extra1: string;
-
-      /** identifier */
-      extra2: string;
-    }
-  | {
-      type: "unlinked_account";
-      user_id: string;
-      current_user_id: string;
-
-      /** service */
-      extra1: string;
-
-      /** identifier */
       extra2: string;
     }
   | {
@@ -84,16 +52,6 @@ const task: Task = async (rawPayload, { addJob, withPgClient, job }) => {
     case "removed_email": {
       subject = `You removed an email from your account`;
       actionDescription = `You removed the email '${payload.extra2}' from your account.`;
-      break;
-    }
-    case "linked_account": {
-      subject = `You linked a third-party OAuth provider to your account`;
-      actionDescription = `You linked a third-party OAuth provider ('${payload.extra1}') to your account.`;
-      break;
-    }
-    case "unlinked_account": {
-      subject = `You removed a link between your account and a third-party OAuth provider`;
-      actionDescription = `You removed a link between your account and a third-party OAuth provider ('${payload.extra1}').`;
       break;
     }
     case "reset_password": {
