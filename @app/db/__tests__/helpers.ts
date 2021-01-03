@@ -2,6 +2,7 @@ import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker";
 import { mapValues } from "lodash";
 import { PoolClient } from "pg";
 
+import { User } from "../../__tests__/data";
 import {
   asRoot,
   createSession,
@@ -10,7 +11,6 @@ import {
   poolFromUrl,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers";
-import { User } from "../../__tests__/data";
 
 /*
  * We need to inform jest that these files depend on changes to the database,

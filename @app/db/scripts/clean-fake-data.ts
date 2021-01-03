@@ -14,12 +14,13 @@ async function cleanData(client: PoolClient) {
     or username = 'testuser'
     or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com');
 
-    delete from app_public.organizations;
+    delete from app_public.registrations;
+    delete from app_public.quotas;
+    delete from app_public.registration_tokens;
     delete from app_public.events;
     delete from app_public.event_categories;
     delete from app_public.event_questions;
-    delete from app_public.registration_tokens;
-    delete from app_public.registrations;
+    delete from app_public.organizations;
   COMMIT;
   `
   );

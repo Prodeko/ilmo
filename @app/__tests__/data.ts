@@ -2,10 +2,14 @@ import {
   Event,
   EventCategory,
   Organization,
+  Quota,
+  Registration,
   User as SchemaUser,
 } from "@app/graphql/index";
-import { PoolClient } from "pg";
+import dayjs from "dayjs";
 import * as faker from "faker";
+import { PoolClient } from "pg";
+import slugify from "slugify";
 
 export type User = SchemaUser & {
   _email: string;
@@ -149,22 +153,29 @@ export const createEvents = async function createEvents(
 ) {
   const events: Event[] = [];
   for (let i = 0; i < count; i++) {
-    const name = `Event ${i}`;
+    const name = faker.lorem.words();
     const description = faker.lorem.paragraphs();
     const startTime = faker.date.soon();
     const endTime = faker.date.soon();
     const ownerOrganizationId = organizationId;
     const eventCategoryId = categoryId;
+
+    const daySlug = dayjs(startTime).format("YYYY-M-D");
+    const slug = slugify(`${daySlug}-${name}`, {
+      lower: true,
+    });
+
     const {
       rows: [event],
     } = await client.query(
       `
-        insert into app_public.events(name, description, start_time, end_time, owner_organization_id, category_id)
-        values ($1, $2, $3, $4, $5, $6)
+        insert into app_public.events(name, slug, description, start_time, end_time, owner_organization_id, category_id)
+        values ($1, $2, $3, $4, $5, $6, $7)
         returning *
       `,
       [
         name,
+        slug,
         description,
         startTime,
         endTime,
@@ -176,4 +187,65 @@ export const createEvents = async function createEvents(
   }
 
   return events;
+};
+
+/******************************************************************************/
+// Quotas
+
+export const createQuotas = async function createQuotas(
+  client: PoolClient,
+  count: number = 1,
+  eventId: string
+) {
+  const quotas: Quota[] = [];
+  for (let i = 0; i < count; i++) {
+    const title = faker.git.branch();
+    const size = faker.random.number({
+      min: 1,
+      max: 50,
+    });
+    const {
+      rows: [quota],
+    } = await client.query(
+      `
+        insert into app_public.quotas(title, size, event_id)
+        values ($1, $2, $3)
+        returning *
+      `,
+      [title, size, eventId]
+    );
+    quotas.push(quota);
+  }
+
+  return quotas;
+};
+
+/******************************************************************************/
+// Quotas
+
+export const createRegistrations = async function createRegistrations(
+  client: PoolClient,
+  count: number = 1,
+  eventId: string,
+  quotaId: string
+) {
+  const registrations: Registration[] = [];
+  for (let i = 0; i < count; i++) {
+    const firstName = faker.name.firstName();
+    const lastName = faker.name.lastName();
+    const email = faker.internet.email();
+    const {
+      rows: [registration],
+    } = await client.query(
+      `
+        insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
+        values ($1, $2, $3, $4, $5)
+        returning *
+      `,
+      [eventId, quotaId, firstName, lastName, email]
+    );
+    registrations.push(registration);
+  }
+
+  return registrations;
 };

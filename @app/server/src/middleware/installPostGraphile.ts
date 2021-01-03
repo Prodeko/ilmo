@@ -75,10 +75,12 @@ const pluginHook = makePluginHook([
   ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
 ]);
 
+// redisClient is set as an optional property here since it is not needed
+// in @app/server/scripts/schema-export.ts. For normal server startup it is required.
 interface IPostGraphileOptionsOptions {
   websocketMiddlewares?: Middleware<Request, Response>[];
   rootPgPool: Pool;
-  redisClient: WrappedNodeRedisClient;
+  redisClient?: WrappedNodeRedisClient;
 }
 
 export function getPostGraphileOptions({

@@ -2,14 +2,15 @@ import React, { useCallback, useState } from "react";
 import { DocumentNode, useQuery } from "@apollo/client";
 import { Table } from "antd";
 import { ColumnsType, TablePaginationConfig } from "antd/lib/table";
+import { get } from "lodash";
 
 import { ErrorAlert } from "./ErrorAlert";
 
 interface Props {
   queryDocument: DocumentNode;
-  variables: any;
-  columns: ColumnsType<{ id: string; isHighlighted?: boolean }>;
-  fieldName: string;
+  variables?: any;
+  columns: ColumnsType<any>;
+  dataField: string;
   showPagination?: boolean;
 }
 
@@ -17,7 +18,7 @@ export function ServerPaginatedTable({
   queryDocument,
   variables,
   columns,
-  fieldName,
+  dataField,
   showPagination = true,
 }: Props) {
   const [pageSize, _setPageSize] = useState(5);
@@ -34,7 +35,7 @@ export function ServerPaginatedTable({
     onCompleted: () =>
       setPagination({
         ...pagination,
-        total: data?.[fieldName]?.totalCount,
+        total: get(data, dataField)?.totalCount,
       }),
   });
 
@@ -60,7 +61,7 @@ export function ServerPaginatedTable({
     <Table
       loading={loading}
       columns={columns}
-      dataSource={data?.[fieldName].nodes}
+      dataSource={get(data, dataField)?.nodes || []}
       pagination={showPagination && pagination}
       onChange={handleTableChange}
       rowKey={(obj) => obj.id}

@@ -7,10 +7,10 @@ import { useRouter } from "next/router";
 import { SpinPadded } from "./SpinPadded";
 import { ErrorAlert, FourOhFour } from "./";
 
-export function useEventId() {
+export function useEventSlug() {
   const router = useRouter();
-  const { id: rawId } = router.query;
-  return String(rawId);
+  const { slug: rawSlug } = router.query;
+  return String(rawSlug);
 }
 
 export function useEventLoading(
@@ -22,7 +22,7 @@ export function useEventLoading(
   const { data, loading, error } = query;
 
   let child: JSX.Element | null = null;
-  const event = data?.event;
+  const event = data?.eventBySlug;
   if (event) {
   } else if (loading) {
     child = <SpinPadded />;

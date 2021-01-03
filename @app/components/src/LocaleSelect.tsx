@@ -4,8 +4,7 @@ import ReactCountryFlag from "react-country-flag";
 import { useRouter } from "next/router";
 
 export function LocaleSelect() {
-  const router = useRouter();
-  const { locales, route, pathname } = router;
+  const { locales, push, pathname, query, asPath } = useRouter();
 
   return (
     <>
@@ -20,7 +19,7 @@ export function LocaleSelect() {
             lineHeight: "2rem",
             marginRight: "12px",
           }}
-          onClick={() => router.push(route, pathname, { locale: locale })}
+          onClick={() => push({ pathname, query }, asPath, { locale })}
         />
       ))}
     </>

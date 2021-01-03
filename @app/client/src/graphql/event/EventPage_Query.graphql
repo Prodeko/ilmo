@@ -1,22 +1,46 @@
 fragment EventPage_Event on Event {
+  id
+  name
+  slug
+  startTime
+  endTime
+  description
   category {
     id
     description
     name
   }
-  description
-  id
-  name
-  startTime
   ownerOrganization {
     id
     name
+  }
+  quotas {
+    nodes {
+      id
+      title
+      size
+      registrations {
+        totalCount
+      }
+    }
+  }
+  registrations(orderBy: CREATED_AT_DESC) {
+    totalCount
+    nodes {
+      id
+      firstName
+      lastName
+      createdAt
+      quota {
+        title
+      }
+    }
   }
 }
 
 fragment EventPage_Query on Query {
   ...SharedLayout_Query
-  event(id: $id) {
+  eventBySlug(slug: $slug) {
     id
     ...EventPage_Event
   }

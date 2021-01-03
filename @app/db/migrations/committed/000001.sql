@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:1c1fbf7d809ea445901b244668a852d1b583cd71
+--! Hash: sha1:52e510fd28c98d3459ed9963dc25ad72aeb980b4
 
 drop schema if exists app_public cascade;
 
@@ -1066,11 +1066,8 @@ create function app_public.current_user_invited_organization_ids() returns setof
     where user_id = app_public.current_user_id();
 $$ language sql stable security definer set search_path = pg_catalog, public, pg_temp;
 
-create policy select_member on app_public.organizations
-  for select using (id in (select app_public.current_user_member_organization_ids()));
-
-create policy select_invited on app_public.organizations
-  for select using (id in (select app_public.current_user_invited_organization_ids()));
+create policy select_all on app_public.organizations
+  for select using (true);
 
 create policy select_member on app_public.organization_memberships
   for select using (organization_id in (select app_public.current_user_member_organization_ids()));

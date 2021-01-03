@@ -7,6 +7,8 @@ module.exports = {
     "/": ["home", "events"],
     "/create-event-category": ["events"],
     "/create-event": ["events"],
+    "/event/[slug]": ["register"],
+    "/register/e/[eventId]/q/[quotaId]": ["register"],
   },
   loadLocaleFrom: (lang, ns) =>
     import(`./locales/${lang}/${ns}.json`).then((m) => m.default),

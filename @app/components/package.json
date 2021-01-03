@@ -7,10 +7,12 @@
     "test": "cross-env NODE_ENV=test npx --no-install -n \"-r @app/config/env\" jest"
   },
   "dependencies": {
+    "@ant-design/colors": "^5.0.1",
     "@ant-design/icons": "^4.3.0",
     "@apollo/client": "^3.3.6",
     "@app/graphql": "0.0.0",
     "antd": "^4.9.4",
+    "lodash": "^4.17.20",
     "next": "^10.0.4",
     "next-translate": "^1.0.1",
     "react": "^16.14.0",

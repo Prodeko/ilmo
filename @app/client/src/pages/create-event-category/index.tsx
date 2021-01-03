@@ -126,7 +126,7 @@ const CreateEventCategoryPage: NextPage = () => {
                         {code ? (
                           <span>
                             {" "}
-                            ({t("errors.errorCode")}: <code>ERR_{code}</code>)
+                            ({t("error.errorCode")}: <code>ERR_{code}</code>)
                           </span>
                         ) : null}
                       </span>

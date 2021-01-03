@@ -1,0 +1,31 @@
+fragment CreatedRegistration on Registration {
+  id
+  firstName
+  lastName
+  email
+}
+
+mutation CreateRegistration(
+  $eventId: UUID!
+  $quotaId: UUID!
+  $firstName: String!
+  $lastName: String!
+  $email: String!
+) {
+  createRegistration(
+    input: {
+      registration: {
+        eventId: $eventId
+        quotaId: $quotaId
+        firstName: $firstName
+        lastName: $lastName
+        email: $email
+      }
+    }
+  ) {
+    registration {
+      id
+      ...CreatedRegistration
+    }
+  }
+}

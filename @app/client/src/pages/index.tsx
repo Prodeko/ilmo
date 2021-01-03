@@ -1,6 +1,7 @@
 import React from "react";
 import { ServerPaginatedTable, SharedLayout } from "@app/components";
 import {
+  Event,
   HomePageDocument,
   useOrganizationsAndCategoriesQuery,
   useSharedQuery,
@@ -8,6 +9,7 @@ import {
 import { Col, Divider, Row, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
+import Link from "next/link";
 import useTranslation from "next-translate/useTranslation";
 
 const { Title } = Typography;
@@ -38,8 +40,18 @@ const Home: NextPage = () => {
       title: t("events:eventName"),
       dataIndex: "name",
       key: "name",
-      render: (name: string, event: { id: string }) => (
-        <a href={`/event/${event.id}`}>{name}</a>
+      render: (name: string, event: Event) => (
+        <Link
+          href={{
+            pathname: "/event/[slug]",
+            query: {
+              slug: event.slug,
+            },
+          }}
+          as={`/event/${event.slug}`}
+        >
+          <a>{name}</a>
+        </Link>
       ),
     },
     {
@@ -68,6 +80,7 @@ const Home: NextPage = () => {
       title: t("events:time"),
       dataIndex: "startTime",
       key: "startTime",
+      render: (startTime: string) => dayjs(startTime).format("l LTS"),
     },
   ];
 
@@ -83,7 +96,7 @@ const Home: NextPage = () => {
             queryDocument={HomePageDocument}
             variables={{ now }}
             columns={columns}
-            fieldName="signupOpenEvents"
+            dataField="signupOpenEvents"
             showPagination={false}
           />
           <Divider dashed />
@@ -92,7 +105,7 @@ const Home: NextPage = () => {
             queryDocument={HomePageDocument}
             variables={{ now }}
             columns={columns}
-            fieldName="signupClosedEvents"
+            dataField="signupClosedEvents"
             showPagination={true}
           />
         </Col>

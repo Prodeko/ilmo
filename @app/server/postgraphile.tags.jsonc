@@ -85,6 +85,11 @@
             }
           }
         }
+      },
+      "app_public.registration_tokens": {
+        "tags": {
+          "omit": "all"
+        }
       }
     },
     "procedure": {

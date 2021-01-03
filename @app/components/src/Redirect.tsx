@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useApolloClient } from "@apollo/client";
 import { Skeleton } from "antd";
 import Router from "next/router";
+import useTranslation from "next-translate/useTranslation";
 
 import { SharedLayout } from "./SharedLayout";
 import { StandardWidth } from "./StandardWidth";
@@ -15,6 +16,7 @@ export interface RedirectProps {
 
 export function Redirect({ href, as, layout }: RedirectProps) {
   const client = useApolloClient();
+  const { t } = useTranslation("Common");
 
   useEffect(() => {
     Router.push(href, as);
@@ -23,7 +25,7 @@ export function Redirect({ href, as, layout }: RedirectProps) {
   if (layout) {
     return (
       <SharedLayout
-        title="Redirecting..."
+        title={t("redirect")}
         query={{
           loading: true,
           data: undefined,
