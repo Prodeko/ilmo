@@ -22,6 +22,7 @@ const OrganizationPage: NextPage = () => {
     <SharedLayout
       title={`${organization?.name ?? slug}`}
       titleHref={`/o/[slug]`}
+      titleHrefAs={`/o/${slug}`}
       query={query}
     >
       {organizationLoadingElement || (
