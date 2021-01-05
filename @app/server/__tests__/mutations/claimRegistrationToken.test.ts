@@ -55,7 +55,7 @@ test("ClaimRegistrationToken", async () => {
           "token": "[id-2]",
         }
       `);
-      const tokenId = registrationToken.token;
+      const token = registrationToken.token;
 
       // If you need to, you can query the DB within the context of this
       // function - e.g. to check that your mutation made the changes you'd
@@ -63,7 +63,7 @@ test("ClaimRegistrationToken", async () => {
       const { rows } = await asRoot(pgClient, () =>
         pgClient.query(
           `SELECT * FROM app_public.registration_tokens WHERE token = $1`,
-          [tokenId]
+          [token]
         )
       );
       if (rows.length !== 1) {

@@ -44,7 +44,7 @@ function rateLimitResolver(
   ) => {
     // By default rate limiting is disabled in dev mode.
     // To work on rate limiting, invert the following if statement.
-    if (!isDev) {
+    if (isDev) {
       const key = constructRateLimitKey(fieldName, eventId, ipAddress);
       const current = await redisClient.incr(key);
 

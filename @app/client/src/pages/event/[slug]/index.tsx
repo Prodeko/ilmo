@@ -15,8 +15,8 @@ import { Button, Card, Col, PageHeader, Row, Tag } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import Link from "next/link";
-import useTranslation from "next-translate/useTranslation";
 import { useRouter } from "next/router";
+import useTranslation from "next-translate/useTranslation";
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();

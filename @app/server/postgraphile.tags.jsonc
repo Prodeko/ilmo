@@ -90,6 +90,11 @@
         "tags": {
           "omit": "all"
         }
+      },
+      "app_public.registrations": {
+        "tags": {
+          "omit": "create"
+        }
       }
     },
     "procedure": {

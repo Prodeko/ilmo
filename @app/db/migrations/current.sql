@@ -229,11 +229,11 @@ create trigger _100_timestamps
 
 drop table if exists app_public.registration_tokens cascade;
 drop function if exists app_public.claim_registration_token;
-drop function if exists app_public.registration_token_by_id(id uuid);
+drop function if exists app_public.get_registration_token(token uuid);
+drop function if exists app_public.delete_registration_token(token uuid);
 
 create table app_public.registration_tokens(
-  id uuid primary key default gen_random_uuid(),
-  token uuid not null default gen_random_uuid(),
+  token uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
   created_at timestamptz not null default now()
 );
@@ -241,8 +241,6 @@ alter table app_public.registration_tokens enable row level security;
 
 comment on table app_public.registration_tokens is
   E'Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.';
-comment on column app_public.registration_tokens.id is
-  E'Unique identifier for the registration token.';
 comment on column app_public.registration_tokens.event_id is
   E'Unique identifier for the event.';
 comment on column app_public.registration_tokens.created_at is
@@ -275,7 +273,7 @@ begin
   -- Schedule token deletion
   perform graphile_worker.add_job(
     'registration__delete_registration_token',
-    json_build_object('tokenId', v_token.id)
+    json_build_object('token', v_token.token)
   );
 
   return v_token;
@@ -287,8 +285,8 @@ security definer volatile set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.claim_registration_token(event_id uuid) is
   E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
 
-create function app_public.registration_token_by_id(
-  token_id uuid
+create function app_public.get_registration_token(
+  token uuid
 )
   returns app_public.registration_tokens
   as $$
@@ -300,15 +298,39 @@ begin
   from
     app_public.registration_tokens
   where
-    token = token_id;
+    registration_tokens.token = get_registration_token.token;
   return v_token;
 end;
 $$
 language plpgsql
 security definer stable set search_path to pg_catalog, public, pg_temp;
 
-comment on function app_public.registration_token_by_id(id uuid) is
-  E'Get registration token by token.';
+comment on function app_public.get_registration_token(token uuid) is
+  E'Get registration token by token id.';
+
+-- The function below is used by registration__delete_registration_token
+-- worker task to bypass RLS policies on app_public.registration_tokens table.
+-- This is achieved by setting SECURITY DEFINER to make this a 'sudo' function.
+create function app_public.delete_registration_token(
+  token uuid
+)
+returns bigint
+as $$
+  with deleted as (
+    -- Delete timed out token
+    delete from app_public.registration_tokens
+    where registration_tokens.token = delete_registration_token.token
+    returning *
+  )
+
+  -- Return number of deleted rows
+  select count(*) from deleted;
+$$
+language sql
+security definer volatile set search_path to pg_catalog, public, pg_temp;
+
+comment on function app_public.delete_registration_token(token uuid) is
+  E'Delete registration token by token id. Used by worker task to bypass RLS policies.';
 
 /**********/
 -- Quotas
@@ -371,6 +393,7 @@ create trigger _100_timestamps
 -- Registrations
 
 drop table if exists app_public.registrations cascade;
+drop function if exists app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext);
 
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
@@ -426,3 +449,46 @@ create policy manage_as_admin on app_public.registrations
 create trigger _100_timestamps
   before insert or update on app_public.registrations for each row
   execute procedure app_private.tg__timestamps();
+
+create function app_public.create_registration(
+  token uuid,
+  "eventId" uuid,
+  "quotaId" uuid,
+  "firstName" text,
+  "lastName" text,
+  email citext
+)
+  returns app_public.registrations
+  as $$
+declare
+  v_registration app_public.registrations;
+begin
+  -- If the provided token does not exist, prevent event registration
+  if not exists(
+    select 1 from app_public.registration_tokens
+      where registration_tokens.token = create_registration.token
+  ) then
+    raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
+  end if;
+
+  insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
+    values ("eventId", "quotaId", "firstName", "lastName", "email")
+  returning
+    * into v_registration;
+
+  -- Delete the used token
+  delete from app_public.registration_tokens
+    where registration_tokens.token = create_registration.token;
+
+  -- TODO: How to get IP address here?
+  --perform graphile_worker.add_job(
+  --  'registration_complete__delete_rate_limit_key',
+  --  json_build_object('token', v_token.token)
+  --);
+
+  return v_registration;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+
+comment on function app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
+  E'Register to an event. Checks that a valid registration token was suplied.';

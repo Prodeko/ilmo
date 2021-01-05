@@ -1,6 +1,6 @@
-query RegistrationTokenById($tokenId: UUID!) {
-  registrationTokenById(tokenId: $tokenId) {
-    id
+query GetRegistrationToken($token: UUID!) {
+  getRegistrationToken(token: $token) {
+    token
     eventId
   }
 }

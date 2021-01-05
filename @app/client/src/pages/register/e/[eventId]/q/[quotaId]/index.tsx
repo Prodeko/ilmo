@@ -47,7 +47,7 @@ const EventRegistrationPage: NextPage = () => {
 
   useEffect(() => {
     // Store registration token when claimRegistrationTokenMutation finishes
-    const token = tokenData?.claimRegistrationToken?.registrationToken;
+    const token = tokenData?.claimRegistrationToken?.registrationToken?.token;
     if (token) {
       setRegistrationToken(token);
     }
@@ -95,7 +95,6 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
     async (values) => {
       setFormError(null);
       try {
-        // TODO: Use token for validation
         // TODO: Remove rate limit key from redis on successful registration
         const { data } = await createRegistration({
           variables: {

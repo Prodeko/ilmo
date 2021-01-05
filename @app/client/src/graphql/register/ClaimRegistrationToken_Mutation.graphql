@@ -1,7 +1,7 @@
 mutation ClaimRegistrationToken($eventId: UUID!) {
   claimRegistrationToken(input: { eventId: $eventId }) {
     registrationToken {
-      id
+      token
       eventId
     }
   }

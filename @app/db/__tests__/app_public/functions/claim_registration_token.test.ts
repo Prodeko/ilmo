@@ -25,9 +25,10 @@ async function getRegistrationToken(client: PoolClient, token: string) {
   const {
     rows: [row],
   } = await asRoot(client, () =>
-    client.query("select * from app_public.registration_tokens where id = $1", [
-      token,
-    ])
+    client.query(
+      "select * from app_public.registration_tokens where token = $1",
+      [token]
+    )
   );
   return row;
 }
@@ -72,7 +73,7 @@ it("Can claim registration token", () =>
     expect(jobs).toHaveLength(1);
     const [job] = jobs;
     expect(job.payload).toMatchObject({
-      tokenId: registrationToken.id,
+      token: registrationToken.token,
     });
 
     // Assert that the job can run correctly
@@ -80,15 +81,21 @@ it("Can claim registration token", () =>
     await runJobs(client);
     await assertJobComplete(client, job);
 
-    const t1 = await getRegistrationToken(client, registrationToken.id);
+    const t1 = await getRegistrationToken(client, registrationToken.token);
     expect(t1).toBeTruthy();
 
     // TODO: Figure out how to test this properly. Need to most likely
-    // do some changes to registration_delete_registration_token.
+    // do some changes to registration__delete_registration_token.
     // and await the db call or something...
-    // const THIRTY_MINUTES = 1000 * 30 * 60;
-    // jest.advanceTimersByTime(THIRTY_MINUTES);
+    const THIRTY_MINUTES = 1000 * 30 * 60;
 
-    // const t2 = await getRegistrationToken(client, registrationToken.id);
-    // expect(t2).toBeUndefined();
+    // Token should still be in the database 1ms before expiration
+    jest.advanceTimersByTime(THIRTY_MINUTES - 1);
+    const t2 = await getRegistrationToken(client, registrationToken.token);
+    expect(t2).toBeTruthy();
+
+    // Token should be deleted from db at expiration
+    jest.advanceTimersByTime(1);
+    const t3 = await getRegistrationToken(client, registrationToken.token);
+    expect(t3).toBeUndefined();
   }));

@@ -11,16 +11,16 @@ mutation CreateRegistration(
   $firstName: String!
   $lastName: String!
   $email: String!
+  $token: UUID!
 ) {
   createRegistration(
     input: {
-      registration: {
-        eventId: $eventId
-        quotaId: $quotaId
-        firstName: $firstName
-        lastName: $lastName
-        email: $email
-      }
+      eventId: $eventId
+      quotaId: $quotaId
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      token: $token
     }
   ) {
     registration {

@@ -24,6 +24,13 @@ type AcceptInvitationToOrganizationPayload {
 }
 
 """
+A signed eight-byte integer. The upper big integer values are greater than the
+max value for a JavaScript number. Therefore all big integers will be output as
+strings and not numbers.
+"""
+scalar BigInt
+
+"""
 A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’
 """
 input BooleanFilter {
@@ -331,19 +338,22 @@ type CreateQuotaPayload {
   ): QuotasEdge
 }
 
-"""All input for the create `Registration` mutation."""
+"""All input for the `createRegistration` mutation."""
 input CreateRegistrationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-
-  """The `Registration` to be created by this mutation."""
-  registration: RegistrationInput!
+  email: String!
+  eventId: UUID!
+  firstName: String!
+  lastName: String!
+  quotaId: UUID!
+  token: UUID!
 }
 
-"""The output of our create `Registration` mutation."""
+"""The output of our `createRegistration` mutation."""
 type CreateRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -361,8 +371,6 @@ type CreateRegistrationPayload {
 
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
-
-  """The `Registration` that was created by this mutation."""
   registration: Registration
 
   """An edge for our `Registration`. May be used by Relay 1."""
@@ -680,6 +688,32 @@ type DeleteRegistrationPayload {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsEdge
+}
+
+"""All input for the `deleteRegistrationToken` mutation."""
+input DeleteRegistrationTokenInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  token: UUID!
+}
+
+"""The output of our `deleteRegistrationToken` mutation."""
+type DeleteRegistrationTokenPayload {
+  bigInt: BigInt
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """All input for the `deleteUserEmail` mutation."""
@@ -1450,7 +1484,9 @@ type Mutation {
     input: CreateQuotaInput!
   ): CreateQuotaPayload
 
-  """Creates a single `Registration`."""
+  """
+  Register to an event. Checks that a valid registration token was suplied.
+  """
   createRegistration(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1515,6 +1551,16 @@ type Mutation {
     """
     input: DeleteRegistrationInput!
   ): DeleteRegistrationPayload
+
+  """
+  Delete registration token by token id. Used by worker task to bypass RLS policies.
+  """
+  deleteRegistrationToken(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteRegistrationTokenInput!
+  ): DeleteRegistrationTokenPayload
 
   """Deletes a single `UserEmail` using a unique key."""
   deleteUserEmail(
@@ -2110,6 +2156,9 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
+
+  """Get registration token by token id."""
+  getRegistrationToken(token: UUID!): RegistrationToken
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 
@@ -2222,9 +2271,6 @@ type Query {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
-
-  """Get registration token by token."""
-  registrationTokenById(tokenId: UUID!): RegistrationToken
   user(id: UUID!): User
   userByUsername(username: String!): User
   userEmail(id: UUID!): UserEmail
@@ -2475,24 +2521,6 @@ input RegistrationFilter {
   quotaId: UUIDFilter
 }
 
-"""An input for mutations affecting `Registration`"""
-input RegistrationInput {
-  """Email address of the person registering to an event."""
-  email: String!
-
-  """Identifier of a related event."""
-  eventId: UUID!
-
-  """First name of the person registering to an event."""
-  firstName: String!
-
-  """Last name of the person registering to an event."""
-  lastName: String!
-
-  """Identifier of a related quota."""
-  quotaId: UUID!
-}
-
 """
 Represents an update to a `Registration`. Fields that are set will be updated.
 """
@@ -2566,9 +2594,6 @@ type RegistrationToken {
 
   """Unique identifier for the event."""
   eventId: UUID!
-
-  """Unique identifier for the registration token."""
-  id: UUID!
   token: UUID!
 }
 
