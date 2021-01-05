@@ -12,11 +12,11 @@
     "next": "^10.0.4",
     "next-with-apollo": "^5.1.0",
     "rc-field-form": "^1.17.3",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
     "subscriptions-transport-ws": "^0.9.18",
     "tslib": "^2.0.3",
-    "ws": "^7.4.1",
+    "ws": "^7.4.2",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
