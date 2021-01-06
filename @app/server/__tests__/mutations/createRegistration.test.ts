@@ -1,15 +1,16 @@
 import { createNodeRedisClient } from "handy-redis";
+
 import {
   asRoot,
+  assertJobComplete,
   createEventDataAndLogin,
   deleteTestData,
+  getJobs,
   runGraphQLQuery,
+  runJobs,
   sanitize,
   setup,
   teardown,
-  assertJobComplete,
-  getJobs,
-  runJobs,
 } from "../helpers";
 
 beforeEach(deleteTestData);

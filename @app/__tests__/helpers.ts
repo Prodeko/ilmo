@@ -1,5 +1,5 @@
-import { Pool, PoolClient } from "pg";
 import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker";
+import { Pool, PoolClient } from "pg";
 
 export {
   createEventCategories,

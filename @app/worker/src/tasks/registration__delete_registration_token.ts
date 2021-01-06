@@ -10,7 +10,7 @@ interface Payload {
 // 30 minutes
 const TOKEN_EXPIRATION_TIMEOUT = 1000 * 30 * 60;
 
-const task: Task = async (inPayload, { withPgClient, logger }) => {
+const task: Task = async (inPayload, { withPgClient }) => {
   const payload: Payload = inPayload as any;
 
   setTimeout(() => {

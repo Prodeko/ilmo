@@ -1,5 +1,4 @@
 import { makeWrapResolversPlugin } from "graphile-utils";
-import { quickAddJob } from "graphile-worker";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
 
