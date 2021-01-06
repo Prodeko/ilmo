@@ -5,8 +5,8 @@ Object {
   "data": Object {
     "claimRegistrationToken": Object {
       "registrationToken": Object {
-        "eventId": "[id-1]",
-        "token": "[id-2]",
+        "eventId": "[id-2]",
+        "token": "[id-1]",
       },
     },
   },

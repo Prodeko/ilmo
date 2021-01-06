@@ -1,8 +1,8 @@
 import { Task } from "graphile-worker";
 
-interface RegistrationTokenDeletionPayload {
+interface Payload {
   /**
-   * secret token
+   * Secret token used for event registration
    */
   token: string;
 }
@@ -10,20 +10,21 @@ interface RegistrationTokenDeletionPayload {
 // 30 minutes
 const TOKEN_EXPIRATION_TIMEOUT = 1000 * 30 * 60;
 
-const task: Task = async (rawPayload, { withPgClient }) => {
-  const payload: RegistrationTokenDeletionPayload = rawPayload as any;
+const task: Task = async (inPayload, { withPgClient, logger }) => {
+  const payload: Payload = inPayload as any;
 
   setTimeout(() => {
     try {
       withPgClient(async (client) => {
         const {
-          rows: [numberOfRowsDeleted],
+          rows: [row],
         } = await client.query(
           "select * from app_public.delete_registration_token($1::uuid)",
           [payload.token]
         );
+        const numberOfRowsDeleted = row.delete_registration_token;
 
-        if (numberOfRowsDeleted !== 1) {
+        if (numberOfRowsDeleted !== "1") {
           throw new Error(
             `Worker task registration__delete_registration_token deleted unexpected number of rows: ${numberOfRowsDeleted}, token: ${payload.token}`
           );

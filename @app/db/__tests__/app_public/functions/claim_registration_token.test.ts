@@ -33,7 +33,7 @@ async function getRegistrationToken(client: PoolClient, token: string) {
   return row;
 }
 
-it("Can claim registration token", () =>
+it("Can claim registration token and token expires", () =>
   withUserDb(async (client, _user) => {
     // "modern" can be removed in Jest 27, it is opt-in in version 26
     jest.useFakeTimers("modern");
@@ -77,17 +77,15 @@ it("Can claim registration token", () =>
     });
 
     // Assert that the job can run correctly
-    // Run thes job
+    // Run the job
     await runJobs(client);
     await assertJobComplete(client, job);
 
+    const THIRTY_MINUTES = 1000 * 30 * 60;
+
+    // Token should exist in the database after creating it
     const t1 = await getRegistrationToken(client, registrationToken.token);
     expect(t1).toBeTruthy();
-
-    // TODO: Figure out how to test this properly. Need to most likely
-    // do some changes to registration__delete_registration_token.
-    // and await the db call or something...
-    const THIRTY_MINUTES = 1000 * 30 * 60;
 
     // Token should still be in the database 1ms before expiration
     jest.advanceTimersByTime(THIRTY_MINUTES - 1);

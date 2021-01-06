@@ -1,9 +1,13 @@
 import { Pool, PoolClient } from "pg";
+import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker";
 
 export {
   createEventCategories,
   createEvents,
   createOrganizations,
+  createQuotas,
+  createRegistrations,
+  createRegistrationTokens,
   createSession,
   createUsers,
 } from "./data";
@@ -60,12 +64,16 @@ export const deleteTestEventData = () => {
   return pool.query(
     `
     BEGIN;
-      delete from app_public.organizations;
+      delete from app_public.registration_tokens;
+      delete from app_public.registrations;
+      delete from app_public.quotas;
       delete from app_public.events;
       delete from app_public.event_categories;
       delete from app_public.event_questions;
-      delete from app_public.registration_tokens;
-      delete from app_public.registrations;
+      delete from app_public.organizations;
+
+      -- Delete graphile worker jobs
+      delete from graphile_worker.jobs;
     COMMIT;
     `
   );
@@ -94,4 +102,49 @@ export const asRoot = async <T>(
       // Transaction was probably aborted, don't clobber the error
     }
   }
+};
+
+/******************************************************************************/
+// Job helpers
+
+export const clearJobs = async (client: PoolClient) => {
+  await asRoot(client, () => client.query("delete from graphile_worker.jobs"));
+};
+
+export const getJobs = async (
+  client: PoolClient,
+  taskIdentifier: string | null = null
+) => {
+  const { rows } = await asRoot(client, () =>
+    client.query(
+      "select * from graphile_worker.jobs where $1::text is null or task_identifier = $1::text order by id asc",
+      [taskIdentifier]
+    )
+  );
+  return rows;
+};
+
+export const runJobs = async (client: PoolClient) => {
+  return asRoot(client, async (client) => {
+    const sharedOptions: SharedOptions = {};
+    const taskList = await getTasks(
+      sharedOptions,
+      `${__dirname}/../worker/dist/tasks`
+    );
+    await runTaskListOnce(sharedOptions, taskList.tasks, client);
+  });
+};
+
+export const assertJobComplete = async (
+  client: PoolClient,
+  job: { id: string }
+) => {
+  return asRoot(client, async (client) => {
+    const {
+      rows: [row],
+    } = await client.query("select * from graphile_worker.jobs where id = $1", [
+      job.id,
+    ]);
+    expect(row).toBeFalsy();
+  });
 };

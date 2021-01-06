@@ -1,6 +1,0 @@
-query GetRegistrationToken($token: UUID!) {
-  getRegistrationToken(token: $token) {
-    token
-    eventId
-  }
-}

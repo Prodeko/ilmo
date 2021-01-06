@@ -4,6 +4,7 @@ import {
   Organization,
   Quota,
   Registration,
+  RegistrationToken,
   User as SchemaUser,
 } from "@app/graphql/index";
 import dayjs from "dayjs";
@@ -128,7 +129,6 @@ export const createEventCategories = async function createEventCategories(
   for (let i = 0; i < count; i++) {
     const name = `Category ${i}`;
     const description = faker.lorem.paragraph();
-    const ownerOrganizationId = organizationId;
     const {
       rows: [category],
     } = await client.query(
@@ -137,7 +137,7 @@ export const createEventCategories = async function createEventCategories(
         values ($1, $2, $3)
         returning *
       `,
-      [name, description, ownerOrganizationId]
+      [name, description, organizationId]
     );
     categories.push(category);
   }
@@ -157,7 +157,6 @@ export const createEvents = async function createEvents(
     const description = faker.lorem.paragraphs();
     const startTime = faker.date.soon();
     const endTime = faker.date.soon();
-    const ownerOrganizationId = organizationId;
     const eventCategoryId = categoryId;
 
     const daySlug = dayjs(startTime).format("YYYY-M-D");
@@ -179,7 +178,7 @@ export const createEvents = async function createEvents(
         description,
         startTime,
         endTime,
-        ownerOrganizationId,
+        organizationId,
         eventCategoryId,
       ]
     );
@@ -208,11 +207,11 @@ export const createQuotas = async function createQuotas(
       rows: [quota],
     } = await client.query(
       `
-        insert into app_public.quotas(title, size, event_id)
+        insert into app_public.quotas(event_id, title, size)
         values ($1, $2, $3)
         returning *
       `,
-      [title, size, eventId]
+      [eventId, title, size]
     );
     quotas.push(quota);
   }
@@ -221,7 +220,33 @@ export const createQuotas = async function createQuotas(
 };
 
 /******************************************************************************/
-// Quotas
+// Registration tokens
+
+export const createRegistrationTokens = async function createRegistrationTokens(
+  client: PoolClient,
+  count: number = 1,
+  eventId: string
+) {
+  const registrationTokens: RegistrationToken[] = [];
+  for (let i = 0; i < count; i++) {
+    const {
+      rows: [token],
+    } = await client.query(
+      `
+        insert into app_public.registration_tokens(event_id)
+        values ($1)
+        returning *
+      `,
+      [eventId]
+    );
+    registrationTokens.push(token);
+  }
+
+  return registrationTokens;
+};
+
+/******************************************************************************/
+// Registrations
 
 export const createRegistrations = async function createRegistrations(
   client: PoolClient,

@@ -89,6 +89,7 @@ it("Can invite user to organization", () =>
     // Run the job
     await runJobs(client);
     await assertJobComplete(client, job);
+
     // Check that the email was sent
     const emails = getEmails();
     expect(emails).toHaveLength(1);

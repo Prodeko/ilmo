@@ -7,8 +7,6 @@ if (!process.env.NODE_ENV) {
   throw new Error("No NODE_ENV envvar! Try `export NODE_ENV=development`");
 }
 
-const isDev = process.env.NODE_ENV === "development";
-
 type AugmentedGraphQLFieldResolver<
   TSource,
   TContext,
@@ -42,17 +40,13 @@ function rateLimitResolver(
     { ipAddress, redisClient },
     { fieldName }
   ) => {
-    // By default rate limiting is disabled in dev mode.
-    // To work on rate limiting, invert the following if statement.
-    if (isDev) {
-      const key = constructRateLimitKey(fieldName, eventId, ipAddress);
-      const current = await redisClient.incr(key);
+    const key = constructRateLimitKey(fieldName, eventId, ipAddress);
+    const current = await redisClient.incr(key);
 
-      if (current > limit) {
-        throw new Error("Too many requests.");
-      } else {
-        await redisClient.expire(key, RATE_LIMIT_TIMEOUT);
-      }
+    if (current > limit) {
+      throw new Error("Too many requests.");
+    } else {
+      await redisClient.expire(key, RATE_LIMIT_TIMEOUT);
     }
     return await resolve();
   };

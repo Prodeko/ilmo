@@ -229,12 +229,11 @@ create trigger _100_timestamps
 
 drop table if exists app_public.registration_tokens cascade;
 drop function if exists app_public.claim_registration_token;
-drop function if exists app_public.get_registration_token(token uuid);
 drop function if exists app_public.delete_registration_token(token uuid);
 
 create table app_public.registration_tokens(
   token uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete cascade,
+  event_id uuid not null references app_public.events(id) on delete no action,
   created_at timestamptz not null default now()
 );
 alter table app_public.registration_tokens enable row level security;
@@ -284,29 +283,6 @@ security definer volatile set search_path to pg_catalog, public, pg_temp;
 
 comment on function app_public.claim_registration_token(event_id uuid) is
   E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
-
-create function app_public.get_registration_token(
-  token uuid
-)
-  returns app_public.registration_tokens
-  as $$
-declare
-  v_token app_public.registration_tokens;
-begin
-  select
-    * into v_token
-  from
-    app_public.registration_tokens
-  where
-    registration_tokens.token = get_registration_token.token;
-  return v_token;
-end;
-$$
-language plpgsql
-security definer stable set search_path to pg_catalog, public, pg_temp;
-
-comment on function app_public.get_registration_token(token uuid) is
-  E'Get registration token by token id.';
 
 -- The function below is used by registration__delete_registration_token
 -- worker task to bypass RLS policies on app_public.registration_tokens table.
@@ -374,8 +350,20 @@ grant
 on app_public.quotas to :DATABASE_VISITOR;
 
 create policy select_all on app_public.quotas
-  for all
+  for select
     using (true);
+
+create policy manage_own on app_public.quotas
+  for all
+  using (exists (select 1
+  from
+    app_public.organization_memberships
+  where
+    user_id = app_public.current_user_id() and organization_id = (select owner_organization_id
+    from
+      app_public.events
+    where
+      events.id = quotas.event_id)));
 
 create policy manage_as_admin on app_public.quotas
   for all
@@ -428,14 +416,14 @@ comment on column app_public.registrations.email is
 create index on app_public.registrations(event_id);
 
 grant
-  select,
+  select (id, event_id, quota_id, first_name, last_name, created_at),
   insert (event_id, quota_id, first_name, last_name, email),
   update (event_id, quota_id, first_name, last_name, email),
   delete
 on app_public.registrations to :DATABASE_VISITOR;
 
 create policy select_all on app_public.registrations
-  for all
+  for select
     using (true);
 
 create policy manage_as_admin on app_public.registrations
@@ -479,12 +467,6 @@ begin
   -- Delete the used token
   delete from app_public.registration_tokens
     where registration_tokens.token = create_registration.token;
-
-  -- TODO: How to get IP address here?
-  --perform graphile_worker.add_job(
-  --  'registration_complete__delete_rate_limit_key',
-  --  json_build_object('token', v_token.token)
-  --);
 
   return v_registration;
 end;

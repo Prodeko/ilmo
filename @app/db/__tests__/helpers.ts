@@ -1,4 +1,3 @@
-import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker";
 import { mapValues } from "lodash";
 import { PoolClient } from "pg";
 
@@ -54,7 +53,6 @@ const withDbFromUrl = async <T>(url: string, fn: ClientCallback<T>) => {
     await fn(client);
   } catch (e) {
     // Error logging can be helpful:
-    console.log(e);
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
       console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"));
     }
@@ -174,51 +172,6 @@ export const deepSnapshotSafe = (obj: { [key: string]: unknown }): any => {
     );
   }
   return obj;
-};
-/******************************************************************************/
-
-export const clearJobs = async (client: PoolClient) => {
-  await asRoot(client, () => client.query("delete from graphile_worker.jobs"));
-};
-
-export const getJobs = async (
-  client: PoolClient,
-  taskIdentifier: string | null = null
-) => {
-  const { rows } = await asRoot(client, () =>
-    client.query(
-      "select * from graphile_worker.jobs where $1::text is null or task_identifier = $1::text order by id asc",
-      [taskIdentifier]
-    )
-  );
-  return rows;
-};
-
-/******************************************************************************/
-
-export const runJobs = async (client: PoolClient) => {
-  return asRoot(client, async (client) => {
-    const sharedOptions: SharedOptions = {};
-    const taskList = await getTasks(
-      sharedOptions,
-      `${__dirname}/../../worker/dist/tasks`
-    );
-    await runTaskListOnce(sharedOptions, taskList.tasks, client);
-  });
-};
-
-export const assertJobComplete = async (
-  client: PoolClient,
-  job: { id: string }
-) => {
-  return asRoot(client, async (client) => {
-    const {
-      rows: [row],
-    } = await client.query("select * from graphile_worker.jobs where id = $1", [
-      job.id,
-    ]);
-    expect(row).toBeFalsy();
-  });
 };
 
 export const clearEmails = () => {

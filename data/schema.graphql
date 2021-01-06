@@ -24,13 +24,6 @@ type AcceptInvitationToOrganizationPayload {
 }
 
 """
-A signed eight-byte integer. The upper big integer values are greater than the
-max value for a JavaScript number. Therefore all big integers will be output as
-strings and not numbers.
-"""
-scalar BigInt
-
-"""
 A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’
 """
 input BooleanFilter {
@@ -646,74 +639,6 @@ type DeleteQuotaPayload {
     """The method to use when ordering `Quota`."""
     orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
   ): QuotasEdge
-}
-
-"""All input for the `deleteRegistration` mutation."""
-input DeleteRegistrationInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """Unique identifier for the registration."""
-  id: UUID!
-}
-
-"""The output of our delete `Registration` mutation."""
-type DeleteRegistrationPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  deletedRegistrationNodeId: ID
-
-  """Reads a single `Event` that is related to this `Registration`."""
-  event: Event
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """Reads a single `Quota` that is related to this `Registration`."""
-  quota: Quota
-
-  """The `Registration` that was deleted by this mutation."""
-  registration: Registration
-
-  """An edge for our `Registration`. May be used by Relay 1."""
-  registrationEdge(
-    """The method to use when ordering `Registration`."""
-    orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): RegistrationsEdge
-}
-
-"""All input for the `deleteRegistrationToken` mutation."""
-input DeleteRegistrationTokenInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  token: UUID!
-}
-
-"""The output of our `deleteRegistrationToken` mutation."""
-type DeleteRegistrationTokenPayload {
-  bigInt: BigInt
-
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
 }
 
 """All input for the `deleteUserEmail` mutation."""
@@ -1544,24 +1469,6 @@ type Mutation {
     input: DeleteQuotaInput!
   ): DeleteQuotaPayload
 
-  """Deletes a single `Registration` using a unique key."""
-  deleteRegistration(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteRegistrationInput!
-  ): DeleteRegistrationPayload
-
-  """
-  Delete registration token by token id. Used by worker task to bypass RLS policies.
-  """
-  deleteRegistrationToken(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteRegistrationTokenInput!
-  ): DeleteRegistrationTokenPayload
-
   """Deletes a single `UserEmail` using a unique key."""
   deleteUserEmail(
     """
@@ -2156,9 +2063,6 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
-
-  """Get registration token by token id."""
-  getRegistrationToken(token: UUID!): RegistrationToken
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 
@@ -2451,9 +2355,6 @@ type RegisterPayload {
 type Registration {
   createdAt: Datetime!
 
-  """Email address of the person registering to an event."""
-  email: String!
-
   """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
@@ -2474,7 +2375,6 @@ type Registration {
 
   """Identifier of a related quota."""
   quotaId: UUID!
-  updatedAt: Datetime!
 }
 
 """

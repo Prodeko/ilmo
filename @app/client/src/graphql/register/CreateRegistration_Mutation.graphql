@@ -2,7 +2,6 @@ fragment CreatedRegistration on Registration {
   id
   firstName
   lastName
-  email
 }
 
 mutation CreateRegistration(

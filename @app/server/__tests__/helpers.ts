@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { makeWorkerUtils, WorkerUtils } from "graphile-worker";
 import { ExecutionResult, graphql, GraphQLSchema } from "graphql";
 import { createNodeRedisClient, WrappedNodeRedisClient } from "handy-redis";
 import { Pool, PoolClient } from "pg";
@@ -12,6 +13,8 @@ import {
   createEventCategories,
   createEvents,
   createOrganizations,
+  createQuotas,
+  createRegistrationTokens,
   createSession,
   createUsers,
   poolFromUrl,
@@ -60,8 +63,26 @@ export async function createEventDataAndLogin() {
       organization.id,
       eventCategory.id
     );
+    const [quota] = await createQuotas(client, 1, event.id);
+
+    // Become root to bypass RLS policy on app_public.registration_tokens
+    client.query("reset role");
+    const [registrationToken] = await createRegistrationTokens(
+      client,
+      1,
+      event.id
+    );
+
     client.query("COMMIT");
-    return { user, session, organization, eventCategory, event };
+    return {
+      user,
+      session,
+      organization,
+      eventCategory,
+      event,
+      quota,
+      registrationToken,
+    };
   } finally {
     await client.release();
   }
@@ -149,6 +170,7 @@ export function sanitize(json: any): any {
 interface ICtx {
   rootPgPool: Pool;
   redisClient: WrappedNodeRedisClient;
+  workerUtils: WorkerUtils;
   options: PostGraphileOptions<Request, Response>;
   schema: GraphQLSchema;
 }
@@ -159,7 +181,9 @@ export const setup = async () => {
     connectionString: process.env.TEST_DATABASE_URL,
   });
   const redisClient = createNodeRedisClient({ url: process.env.REDIS_URL });
-
+  const workerUtils = await makeWorkerUtils({
+    connectionString: process.env.TEST_DATABASE_URL,
+  });
   const options = getPostGraphileOptions({ rootPgPool, redisClient });
   const schema = await createPostGraphileSchema(
     rootPgPool,
@@ -171,6 +195,7 @@ export const setup = async () => {
   ctx = {
     rootPgPool,
     redisClient,
+    workerUtils,
     options,
     schema,
   };
@@ -181,9 +206,12 @@ export const teardown = async () => {
     if (!ctx) {
       return null;
     }
-    const { rootPgPool, redisClient } = ctx;
+    const { rootPgPool, redisClient, workerUtils } = ctx;
     ctx = null;
-    rootPgPool.end();
+    await rootPgPool.end();
+    await workerUtils.release();
+    // Flush redis after testa have run
+    await redisClient.flushdb();
     redisClient.quit();
     return null;
   } catch (e) {
@@ -198,12 +226,17 @@ export const runGraphQLQuery = async function runGraphQLQuery(
   reqOptions: { [key: string]: any } | null, // Any additional items to set on `req` (e.g. `{user: {id: 17}}`)
   checker: (
     result: ExecutionResult,
-    context: { pgClient: PoolClient }
+    context: {
+      pgClient: PoolClient;
+      redisClient: WrappedNodeRedisClient;
+      req: Request;
+    }
   ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {} // Place test assertions in this function
 ) {
   if (!ctx) throw new Error("No ctx!");
   const { schema, rootPgPool, options } = ctx;
   const req = new MockReq({
+    ip: "127.1.1.1",
     url: options.graphqlRoute || "/graphql",
     method: "POST",
     headers: {
@@ -252,6 +285,7 @@ export const runGraphQLQuery = async function runGraphQLQuery(
           {
             ...context,
             ...additionalContext,
+            workerUtils: ctx.workerUtils,
             __TESTING: true,
           },
           variables
@@ -287,9 +321,12 @@ export const runGraphQLQuery = async function runGraphQLQuery(
         // This is were we call the `checker` so you can do your assertions.
         // Also note that we pass the `replacementPgClient` so that you can
         // query the data in the database from within the transaction before it
-        // gets rolled back.
+        // gets rolled back. RedisClient is also passed to run assertions against
+        // redis.
         checkResult = await checker(result, {
           pgClient,
+          redisClient: ctx.redisClient,
+          req,
         });
 
         // You don't have to keep this, I just like knowing when things change!
