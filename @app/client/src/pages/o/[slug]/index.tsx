@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  AuthRestrict,
   ButtonLink,
   SharedLayout,
   useOrganizationLoading,
@@ -23,6 +24,7 @@ const OrganizationPage: NextPage = () => {
       title={`${organization?.name ?? slug}`}
       titleHref={`/o/[slug]`}
       titleHrefAs={`/o/${slug}`}
+      forbidWhen={AuthRestrict.LOGGED_OUT}
       query={query}
     >
       {organizationLoadingElement || (

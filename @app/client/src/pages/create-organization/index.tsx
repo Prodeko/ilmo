@@ -178,10 +178,6 @@ const CreateOrganizationPage: NextPage = () => {
               ) : null}
               <Form.Item {...tailFormItemLayout}>
                 <Button
-                  disabled={
-                    !slugCheckIsValid ||
-                    !!existingOrganizationData?.organizationBySlug
-                  }
                   htmlType="submit"
                   data-cy="createorganization-button-create"
                 >
