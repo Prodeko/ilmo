@@ -180,11 +180,17 @@ export const setup = async () => {
   const rootPgPool = new Pool({
     connectionString: process.env.TEST_DATABASE_URL,
   });
-  const redisClient = createNodeRedisClient({ url: process.env.REDIS_URL });
+  const redisClient = createNodeRedisClient({
+    url: process.env.TEST_REDIS_URL,
+  });
   const workerUtils = await makeWorkerUtils({
     connectionString: process.env.TEST_DATABASE_URL,
   });
-  const options = getPostGraphileOptions({ rootPgPool, redisClient });
+  const options = getPostGraphileOptions({
+    rootPgPool,
+    redisClient,
+    workerUtils,
+  });
   const schema = await createPostGraphileSchema(
     rootPgPool,
     "app_public",
@@ -208,8 +214,8 @@ export const teardown = async () => {
     }
     const { rootPgPool, redisClient, workerUtils } = ctx;
     ctx = null;
-    await rootPgPool.end();
-    await workerUtils.release();
+    rootPgPool.end();
+    workerUtils.release();
     // Flush redis after testa have run
     await redisClient.flushdb();
     redisClient.quit();
@@ -278,6 +284,7 @@ export const runGraphQLQuery = async function runGraphQLQuery(
         const additionalContext = additionalGraphQLContextFromRequest
           ? await additionalGraphQLContextFromRequest(req, res)
           : null;
+        const { redisClient } = additionalContext;
         const result = await graphql(
           schema,
           query,
@@ -285,7 +292,6 @@ export const runGraphQLQuery = async function runGraphQLQuery(
           {
             ...context,
             ...additionalContext,
-            workerUtils: ctx.workerUtils,
             __TESTING: true,
           },
           variables
@@ -325,7 +331,7 @@ export const runGraphQLQuery = async function runGraphQLQuery(
         // redis.
         checkResult = await checker(result, {
           pgClient,
-          redisClient: ctx.redisClient,
+          redisClient,
           req,
         });
 

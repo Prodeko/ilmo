@@ -6,7 +6,7 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
   Mutation: {
     createRegistration: {
       async resolve(
-        resolve,
+        resolve: any,
         _user,
         args,
         context: OurGraphQLContext,
@@ -19,7 +19,6 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
         await pgClient.query("SAVEPOINT registration_wrapper");
         try {
           // Run the original resolver
-          // @ts-ignore
           const result = await resolve();
 
           const workerUtils = context.workerUtils;

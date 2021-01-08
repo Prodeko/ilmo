@@ -19,6 +19,7 @@
     "aws-sdk": "^2.822.0",
     "chalk": "^4.1.0",
     "graphile-worker": "^0.8.1",
+    "handy-redis": "^2.2.1",
     "html-to-text": "^6.0.0",
     "lodash": "^4.17.20",
     "mjml": "^4.8.1",
