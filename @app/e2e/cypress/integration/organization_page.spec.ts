@@ -23,7 +23,7 @@ context("Organization page", () => {
     cy.getCy("organizationpage-button-settings").should("exist");
   });
 
-  it("renders 404 for logged out user", () => {
+  it("renders login page for logged out user", () => {
     // Setup
     cy.login({
       next: "/o/test-organization",
@@ -37,7 +37,7 @@ context("Organization page", () => {
 
     // Assertions
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/o/test-organization");
-    cy.getCy("fourohfour-div").should("exist");
+    cy.getCy("loginpage-button-withusername").should("exist");
   });
 
   it("renders without settings link for non-owner member", () => {

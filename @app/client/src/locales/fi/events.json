@@ -3,14 +3,15 @@
   "organizer": "Järjestäjä",
   "category": "Kategoria",
   "time": "Aika",
+  "createEvent": {
+    "title": "Luo tapahtuma"
+  },
   "createEventCategory": {
-    "title": "Luo tapahtumakategoria",
-    "shortDescription": "Lyhyt kuvaus"
+    "title": "Luo tapahtumakategoria"
   },
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
-    "eventCreationFailed": "Tapahtuman luonti epäonnistui",
-    "errorCode": "Virhekoodi"
+    "eventCreationFailed": "Tapahtuman luonti epäonnistui"
   },
   "forms": {
     "eventTime": "Tapahtuman ajankohta",

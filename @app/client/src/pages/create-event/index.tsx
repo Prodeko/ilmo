@@ -24,8 +24,10 @@ import {
   Select,
   Switch,
 } from "antd";
+import dayjs from "dayjs";
 import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
+import slugify from "slugify";
 
 const { RangePicker } = DatePicker;
 
@@ -43,11 +45,20 @@ const CreateEventPage: NextPage = () => {
     async (values) => {
       setFormError(null);
       try {
+        const startTime = values["eventTime"][0].toISOString();
+        const endTime = values["eventTime"][1].toISOString();
+
+        const daySlug = dayjs(startTime).format("YYYY-M-D");
+        const slug = slugify(`${daySlug}-${values.name}`, {
+          lower: true,
+        });
+
         const { data } = await createEvent({
           variables: {
             ...values,
-            startTime: values["eventTime"][0].toISOString(),
-            endTime: values["eventTime"][1].toISOString(),
+            slug,
+            startTime,
+            endTime,
           },
         });
         setFormError(null);
@@ -78,7 +89,7 @@ const CreateEventPage: NextPage = () => {
     <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>
       <Row>
         <Col flex={1}>
-          <PageHeader title="Create Event" />
+          <PageHeader title={t("createEvent.title")} />
           <div>
             <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
               <Form.Item
@@ -181,7 +192,7 @@ const CreateEventPage: NextPage = () => {
                         {code ? (
                           <span>
                             {" "}
-                            ({t("errors.errorCode")}: <code>ERR_{code}</code>)
+                            ({t("error:errorCode")}: <code>ERR_{code}</code>)
                           </span>
                         ) : null}
                       </span>

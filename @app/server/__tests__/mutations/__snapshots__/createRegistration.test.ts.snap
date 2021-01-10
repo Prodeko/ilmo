@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CreateRegistration 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": Object {
+      "registration": Object {
+        "firstName": "Testname",
+        "id": "[id-1]",
+        "lastName": "Testlastname",
+      },
+    },
+  },
+}
+`;

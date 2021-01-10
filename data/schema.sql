@@ -208,7 +208,7 @@ CREATE TABLE app_public.users (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
-    CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([a-zA-Z0-9][_]?)+$'::public.citext)))
+    CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
 );
 
 
@@ -1988,6 +1988,13 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: organizations select_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_all ON app_public.organizations FOR SELECT USING (true);
+
+
+--
 -- Name: users select_all; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -2002,24 +2009,10 @@ CREATE POLICY select_invited ON app_public.organization_memberships FOR SELECT U
 
 
 --
--- Name: organizations select_invited; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_invited ON app_public.organizations FOR SELECT USING ((id IN ( SELECT app_public.current_user_invited_organization_ids() AS current_user_invited_organization_ids)));
-
-
---
 -- Name: organization_memberships select_member; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY select_member ON app_public.organization_memberships FOR SELECT USING ((organization_id IN ( SELECT app_public.current_user_member_organization_ids() AS current_user_member_organization_ids)));
-
-
---
--- Name: organizations select_member; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_member ON app_public.organizations FOR SELECT USING ((id IN ( SELECT app_public.current_user_member_organization_ids() AS current_user_member_organization_ids)));
 
 
 --

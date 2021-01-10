@@ -1,0 +1,8 @@
+mutation ClaimRegistrationToken($eventId: UUID!) {
+  claimRegistrationToken(input: { eventId: $eventId }) {
+    registrationToken {
+      token
+      eventId
+    }
+  }
+}

@@ -3,14 +3,15 @@
   "organizer": "Organizer",
   "category": "Category",
   "time": "Time",
+  "createEvent": {
+    "title": "Luo tapahtuma"
+  },
   "createEventCategory": {
-    "title": "Create event category",
-    "shortDescription": "Short description"
+    "title": "Create event category"
   },
   "errors": {
     "eventCategoryCreationFailed": "Creating event category failed",
-    "eventCreationFailed": "Creating event failed",
-    "errorCode": "Error code"
+    "eventCreationFailed": "Creating event failed"
   },
   "forms": {
     "eventTime": "Event time",

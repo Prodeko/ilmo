@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:1c1fbf7d809ea445901b244668a852d1b583cd71
+--! Hash: sha1:e3167612a90a3c7c3769d7bb9a9ed98d5a659dca
 
 drop schema if exists app_public cascade;
 
@@ -173,7 +173,7 @@ comment on function app_public.current_user_id() is
 
 create table app_public.users (
   id uuid primary key default gen_random_uuid(),
-  username citext not null unique check(length(username) >= 2 and length(username) <= 24 and username ~ '^[a-zA-Z]([a-zA-Z0-9][_]?)+$'),
+  username citext not null unique check(length(username) >= 2 and length(username) <= 24 and username ~ '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'),
   name text,
   avatar_url text check(avatar_url ~ '^https?://[^/]+'),
   is_admin boolean not null default false,
@@ -1066,11 +1066,8 @@ create function app_public.current_user_invited_organization_ids() returns setof
     where user_id = app_public.current_user_id();
 $$ language sql stable security definer set search_path = pg_catalog, public, pg_temp;
 
-create policy select_member on app_public.organizations
-  for select using (id in (select app_public.current_user_member_organization_ids()));
-
-create policy select_invited on app_public.organizations
-  for select using (id in (select app_public.current_user_invited_organization_ids()));
+create policy select_all on app_public.organizations
+  for select using (true);
 
 create policy select_member on app_public.organization_memberships
   for select using (organization_id in (select app_public.current_user_member_organization_ids()));

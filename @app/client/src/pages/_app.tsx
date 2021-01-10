@@ -4,6 +4,7 @@ import { withApollo } from "@app/lib";
 import { ConfigProvider, notification } from "antd";
 import enUS from "antd/lib/locale/en_US";
 import fiFI from "antd/lib/locale/fi_FI";
+import dayjs from "dayjs";
 import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
@@ -68,6 +69,9 @@ interface Props {
 class Ilmo extends App<Props> {
   static async getInitialProps({ Component, ctx, router }: any) {
     let pageProps = { locale: router.locale };
+
+    // TODO: Not sure if this is the best place for this..
+    dayjs.locale(router.locale);
 
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);

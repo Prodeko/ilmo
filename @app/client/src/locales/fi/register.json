@@ -1,0 +1,22 @@
+{
+  "createdAt": "Aika",
+  "title": "Ilmoittaudu tapahtumaan:",
+  "sidebar": {
+    "title": "Kiintiöt"
+  },
+  "errors": {
+    "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui"
+  },
+  "forms": {
+    "firstName": "Etunimi",
+    "lastName": "Sukunimi",
+    "email": "Sähköposti",
+    "quota": "Kiintiö",
+    "rules": {
+      "provideFirstName": "Anna etunimi",
+      "provideLastName": "Anna sukunimi",
+      "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
+      "emailValid": "Tarkista sähköpostiosoite"
+    }
+  }
+}

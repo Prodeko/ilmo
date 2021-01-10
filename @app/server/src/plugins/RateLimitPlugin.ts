@@ -7,8 +7,6 @@ if (!process.env.NODE_ENV) {
   throw new Error("No NODE_ENV envvar! Try `export NODE_ENV=development`");
 }
 
-const isDev = process.env.NODE_ENV === "development";
-
 type AugmentedGraphQLFieldResolver<
   TSource,
   TContext,
@@ -31,6 +29,13 @@ function constructRateLimitKey(
 ) {
   return `rate-limit:${fieldName}:${id}:${ipAddress}`;
 }
+class RateLimitException extends Error {
+  code: string;
+  constructor(message: string) {
+    super(message);
+    this.code = "RLIMIT";
+  }
+}
 
 function rateLimitResolver(
   limit: number
@@ -42,25 +47,33 @@ function rateLimitResolver(
     { ipAddress, redisClient },
     { fieldName }
   ) => {
-    // By default rate limiting is disabled in dev mode.
-    // To work on rate limiting, invert the following if statement.
-    if (!isDev) {
-      const key = constructRateLimitKey(fieldName, eventId, ipAddress);
-      const current = await redisClient.incr(key);
+    try {
+      // First run the resolver, if it throws an error we don't want
+      // to set a rate limit key to redis
+      const result = await resolve();
 
-      if (current > limit) {
-        throw new Error("Too many requests.");
-      } else {
+      const key = constructRateLimitKey(fieldName, eventId, ipAddress);
+      const current = Number(await redisClient.get(key));
+
+      if (current >= limit) {
+        throw new RateLimitException("Too many requests.");
+      }
+
+      if (current < limit) {
+        await redisClient.incr(key);
         await redisClient.expire(key, RATE_LIMIT_TIMEOUT);
       }
+
+      return result;
+    } catch (e) {
+      throw e;
     }
-    return await resolve();
   };
 }
 
 const RateLimitPlugin = makeWrapResolversPlugin({
   Mutation: {
-    claimRegistrationToken: rateLimitResolver(1),
+    claimRegistrationToken: rateLimitResolver(3),
     // If more resolvers need rate limiting in the future
     // they can be added here.
   },

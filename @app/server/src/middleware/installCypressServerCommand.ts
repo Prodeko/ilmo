@@ -1,6 +1,9 @@
 import { urlencoded } from "body-parser";
+import dayjs from "dayjs";
 import { Express, Request, RequestHandler, Response } from "express";
-import { Pool } from "pg";
+import * as faker from "faker";
+import { Pool, PoolClient } from "pg";
+import slugify from "slugify";
 
 import { getRootPgPool } from "./installDatabasePools";
 
@@ -107,10 +110,27 @@ async function runCommand(
       "delete from app_public.organizations where slug like 'test%'"
     );
     return { success: true };
+  } else if (command === "clearTestEventData") {
+    await rootPgPool.query(
+      `
+      delete from app_public.registration_tokens;
+      delete from app_public.registrations;
+      delete from app_public.quotas;
+      delete from app_public.events;
+      delete from app_public.event_categories;
+      delete from app_public.event_questions;
+      delete from app_public.organizations;
+
+      -- Delete graphile worker jobs
+      delete from graphile_worker.jobs;
+      `
+    );
+    return { success: true };
   } else if (command === "createUser") {
     if (!payload) {
       throw new Error("Payload required");
     }
+
     const {
       username = "testuser",
       email = `${username}@example.com`,
@@ -119,9 +139,11 @@ async function runCommand(
       avatarUrl = null,
       password = "TestUserPassword",
     } = payload;
+
     if (!username.startsWith("testuser")) {
       throw new Error("Test user usernames may only start with 'testuser'");
     }
+
     const user = await reallyCreateUser(rootPgPool, {
       username,
       email,
@@ -134,6 +156,7 @@ async function runCommand(
     let verificationToken: string | null = null;
     const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email);
     const userEmailId: string = userEmailSecrets.user_email_id;
+
     if (!verified) {
       verificationToken = userEmailSecrets.verification_token;
     }
@@ -171,19 +194,13 @@ async function runCommand(
     const client = await rootPgPool.connect();
     try {
       await client.query("begin");
-      async function setSession(sess: any) {
-        await client.query(
-          "select set_config('jwt.claims.session_id', $1, true)",
-          [sess.uuid]
-        );
-      }
       try {
-        await setSession(session);
+        await setSession(client, session);
         await Promise.all(
           orgs.map(
             async ([name, slug, owner = true]: [string, string, boolean?]) => {
               if (!owner) {
-                await setSession(otherSession);
+                await setSession(client, otherSession);
               }
               const {
                 rows: [organization],
@@ -196,7 +213,7 @@ async function runCommand(
                   "select app_public.invite_to_organization($1::uuid, $2::citext, null::citext)",
                   [organization.id, user.username]
                 );
-                await setSession(session);
+                await setSession(client, session);
                 await client.query(
                   `select app_public.accept_invitation_to_organization(organization_invitations.id)
                    from app_public.organization_invitations
@@ -220,7 +237,24 @@ async function runCommand(
         res.redirect(next || "/");
       }, 500);
     });
+
     return null;
+  } else if (command === "createTestEventData") {
+    const {
+      user,
+      organization,
+      eventCategory,
+      event,
+      quota,
+    } = await createEventData(rootPgPool);
+
+    return {
+      user,
+      organization,
+      eventCategory,
+      event,
+      quota,
+    };
   } else if (command === "getEmailSecrets") {
     const { email = "test.user@example.com" } = payload;
     const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email);
@@ -228,6 +262,12 @@ async function runCommand(
   } else {
     throw new Error(`Command '${command}' not understood.`);
   }
+}
+
+async function setSession(client: PoolClient, sess: any) {
+  await client.query("select set_config('jwt.claims.session_id', $1, true)", [
+    sess.uuid,
+  ]);
 }
 
 async function reallyCreateUser(
@@ -263,6 +303,203 @@ async function reallyCreateUser(
   );
   return user;
 }
+
+async function createEventData(rootPgPool: Pool) {
+  const client = await rootPgPool.connect();
+  try {
+    await client.query("begin");
+
+    const user = await reallyCreateUser(rootPgPool, {
+      username: "testuser",
+      email: "testuser@example.com",
+      name: "testuser",
+      verified: true,
+      password: "DOESNT MATTER",
+    });
+    const session = await createSession(rootPgPool, user.id);
+
+    await setSession(client, session);
+
+    const [organization] = await createOrganizations(client, 1);
+    const [eventCategory] = await createEventCategories(
+      client,
+      1,
+      organization.id
+    );
+    const [event] = await createEvents(
+      client,
+      1,
+      organization.id,
+      eventCategory.id
+    );
+    const [quota] = await createQuotas(client, 1, event.id);
+
+    await client.query("commit");
+    return {
+      user,
+      organization,
+      eventCategory,
+      event,
+      quota,
+    };
+  } finally {
+    await client.release();
+  }
+}
+
+export const createOrganizations = async function createOrganizations(
+  client: PoolClient,
+  count: number = 1
+) {
+  const organizations = [];
+  for (let i = 0; i < count; i++) {
+    const slug = `organization-${i}`;
+    const name = `Organization ${i}`;
+    const {
+      rows: [organization],
+    } = await client.query(
+      `
+        select * from app_public.create_organization($1, $2)
+      `,
+      [slug, name]
+    );
+    organizations.push(organization);
+  }
+
+  return organizations;
+};
+
+/******************************************************************************/
+// Events
+
+export const createEventCategories = async function createEventCategories(
+  client: PoolClient,
+  count: number = 1,
+  organizationId: string
+) {
+  const categories = [];
+  for (let i = 0; i < count; i++) {
+    const name = `Category ${i}`;
+    const description = faker.lorem.paragraph();
+    const {
+      rows: [category],
+    } = await client.query(
+      `
+        insert into app_public.event_categories(name, description, owner_organization_id)
+        values ($1, $2, $3)
+        returning *
+      `,
+      [name, description, organizationId]
+    );
+    categories.push(category);
+  }
+
+  return categories;
+};
+
+export const createEvents = async function createEvents(
+  client: PoolClient,
+  count: number = 1,
+  organizationId: string,
+  categoryId: string
+) {
+  const events = [];
+  for (let i = 0; i < count; i++) {
+    const name = faker.lorem.words();
+    const description = faker.lorem.paragraphs();
+    const startTime = faker.date.soon();
+    const endTime = faker.date.soon();
+    const eventCategoryId = categoryId;
+
+    const daySlug = dayjs(startTime).format("YYYY-M-D");
+    const slug = slugify(`${daySlug}-${name}`, {
+      lower: true,
+    });
+
+    const {
+      rows: [event],
+    } = await client.query(
+      `
+        insert into app_public.events(name, slug, description, start_time, end_time, owner_organization_id, category_id)
+        values ($1, $2, $3, $4, $5, $6, $7)
+        returning *
+      `,
+      [
+        name,
+        slug,
+        description,
+        startTime,
+        endTime,
+        organizationId,
+        eventCategoryId,
+      ]
+    );
+    events.push(event);
+  }
+
+  return events;
+};
+
+/******************************************************************************/
+// Quotas
+
+export const createQuotas = async function createQuotas(
+  client: PoolClient,
+  count: number = 1,
+  eventId: string
+) {
+  const quotas = [];
+  for (let i = 0; i < count; i++) {
+    const title = faker.git.branch();
+    const size = faker.random.number({
+      min: 1,
+      max: 50,
+    });
+    const {
+      rows: [quota],
+    } = await client.query(
+      `
+        insert into app_public.quotas(event_id, title, size)
+        values ($1, $2, $3)
+        returning *
+      `,
+      [eventId, title, size]
+    );
+    quotas.push(quota);
+  }
+
+  return quotas;
+};
+
+/******************************************************************************/
+// Registrations
+
+export const createRegistrations = async function createRegistrations(
+  client: PoolClient,
+  count: number = 1,
+  eventId: string,
+  quotaId: string
+) {
+  const registrations = [];
+  for (let i = 0; i < count; i++) {
+    const firstName = faker.name.firstName();
+    const lastName = faker.name.lastName();
+    const email = faker.internet.email();
+    const {
+      rows: [registration],
+    } = await client.query(
+      `
+        insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
+        values ($1, $2, $3, $4, $5)
+        returning *
+      `,
+      [eventId, quotaId, firstName, lastName, email]
+    );
+    registrations.push(registration);
+  }
+
+  return registrations;
+};
 
 async function createSession(rootPgPool: Pool, userId: string) {
   const {

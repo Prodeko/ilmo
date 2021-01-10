@@ -6,6 +6,7 @@ import _PgSubscriptionsLds from "@graphile/subscriptions-lds";
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Express, Request, Response } from "express";
 import { NodePlugin } from "graphile-build";
+import { WorkerUtils } from "graphile-worker";
 import { WrappedNodeRedisClient } from "handy-redis";
 import { Pool, PoolClient } from "pg";
 import {
@@ -19,6 +20,7 @@ import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
 import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter";
 
 import { getHttpServer, getWebsocketMiddlewares } from "../app";
+import EventRegistrationPlugin from "../plugins/EventRegistrationPlugin";
 import OrdersPlugin from "../plugins/Orders";
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin";
@@ -29,6 +31,7 @@ import handleErrors from "../utils/handleErrors";
 
 import { getAuthPgPool, getRootPgPool } from "./installDatabasePools";
 import { getRedisClient } from "./installRedis";
+import { getWorkerUtils } from "./installWorkerUtils";
 
 export interface OurGraphQLContext {
   pgClient: PoolClient;
@@ -36,6 +39,7 @@ export interface OurGraphQLContext {
   ipAddress: string;
   rootPgPool: Pool;
   redisClient: WrappedNodeRedisClient;
+  workerUtils: WorkerUtils;
   login(user: any): Promise<void>;
   logout(): Promise<void>;
 }
@@ -75,16 +79,21 @@ const pluginHook = makePluginHook([
   ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
 ]);
 
+// redisClient is set as an optional property here since it is not needed
+// in @app/server/scripts/schema-export.ts. For normal server startup it is required.
+// Same with workerUtils.
 interface IPostGraphileOptionsOptions {
   websocketMiddlewares?: Middleware<Request, Response>[];
   rootPgPool: Pool;
-  redisClient: WrappedNodeRedisClient;
+  redisClient?: WrappedNodeRedisClient;
+  workerUtils?: WorkerUtils;
 }
 
 export function getPostGraphileOptions({
   websocketMiddlewares,
   rootPgPool,
   redisClient,
+  workerUtils,
 }: IPostGraphileOptionsOptions) {
   const options: PostGraphileOptions<Request, Response> = {
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
@@ -178,6 +187,9 @@ export function getPostGraphileOptions({
     appendPlugins: [
       // Plugin for rate limiting resolvers
       RateLimitPlugin,
+
+      // Wrap createRegistration mutation
+      EventRegistrationPlugin,
 
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
@@ -279,6 +291,10 @@ export function getPostGraphileOptions({
         // Needed by RateLimitPlugin
         redisClient,
 
+        // Pass workerUtils to GraphQLContext so we can
+        // run worker jobs from plugins
+        workerUtils,
+
         // Needed so passport can write to the database
         rootPgPool,
 
@@ -315,6 +331,7 @@ export default function installPostGraphile(app: Express) {
   const authPgPool = getAuthPgPool(app);
   const rootPgPool = getRootPgPool(app);
   const redisClient = getRedisClient(app);
+  const workerUtils = getWorkerUtils(app);
 
   const middleware = postgraphile<Request, Response>(
     authPgPool,
@@ -323,6 +340,7 @@ export default function installPostGraphile(app: Express) {
       websocketMiddlewares,
       rootPgPool,
       redisClient,
+      workerUtils,
     })
   );
   app.set("postgraphileMiddleware", middleware);

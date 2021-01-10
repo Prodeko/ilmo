@@ -1,5 +1,6 @@
 {
   "backHome": "Takaisin etusivulle",
   "pageNotFound": "Sivua ei löytynyt",
-  "errorOccurred": "Tapahtui virhe"
+  "errorOccurred": "Tapahtui virhe",
+  "errorCode": "Virhekoodi"
 }

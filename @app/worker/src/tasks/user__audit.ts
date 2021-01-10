@@ -39,8 +39,8 @@ type UserAuditPayload =
       current_user_id: string;
     };
 
-const task: Task = async (rawPayload, { addJob, withPgClient, job }) => {
-  const payload: UserAuditPayload = rawPayload as any;
+const task: Task = async (inPayload, { addJob, withPgClient, job }) => {
+  const payload: UserAuditPayload = inPayload as any;
   let subject: string;
   let actionDescription: string;
   switch (payload.type) {

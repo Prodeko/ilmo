@@ -7,6 +7,7 @@ export * from "./LocaleSelect";
 export * from "./organizationHooks";
 export * from "./OrganizationSettingsLayout";
 export * from "./PasswordStrength";
+export * from "./ProgressBar";
 export * from "./Redirect";
 export * from "./ServerPaginatedTable";
 export * from "./SettingsLayout";

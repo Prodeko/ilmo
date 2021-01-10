@@ -1,0 +1,22 @@
+{
+  "createdAt": "Time",
+  "title": "Register to event:",
+  "sidebar": {
+    "title": "Quotas"
+  },
+  "errors": {
+    "registrationFailed": "Registering to the event failed"
+  },
+  "forms": {
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "E-mail",
+    "quota": "Quota",
+    "rules": {
+      "provideFirstName": "Please enter your first name",
+      "provideLastName": "Please enter your last name",
+      "emailEmpty": "Please input your E-mail.",
+      "emailValid": "The input is not valid E-mail."
+    }
+  }
+}
