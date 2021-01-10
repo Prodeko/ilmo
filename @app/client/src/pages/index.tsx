@@ -93,6 +93,7 @@ const Home: NextPage = () => {
           <Title data-cy="homepage-header">Ilmokilke 3.0</Title>
           <Title level={4}>{t("events.signupsOpenEvents")}</Title>
           <ServerPaginatedTable
+            data-cy="homepage-signup-open-events"
             queryDocument={HomePageDocument}
             variables={{ now }}
             columns={columns}
@@ -102,6 +103,7 @@ const Home: NextPage = () => {
           <Divider dashed />
           <Title level={4}>{t("events.signupsClosedEvents")}</Title>
           <ServerPaginatedTable
+            data-cy="homepage-signup-closed-events"
             queryDocument={HomePageDocument}
             variables={{ now }}
             columns={columns}

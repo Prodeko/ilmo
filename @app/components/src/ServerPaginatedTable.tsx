@@ -20,6 +20,7 @@ export function ServerPaginatedTable({
   columns,
   dataField,
   showPagination = true,
+  ...props
 }: Props) {
   const [pageSize, _setPageSize] = useState(5);
   const [offset, setOffset] = useState(0);
@@ -68,6 +69,7 @@ export function ServerPaginatedTable({
       rowClassName={(record, _index) =>
         record?.isHighlighted ? "table-row-highlight" : ""
       }
+      {...props}
     />
   );
 }

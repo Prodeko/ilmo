@@ -247,14 +247,6 @@ comment on column app_public.registration_tokens.created_at is
 
 create index on app_public.registration_tokens(event_id);
 
-create policy manage_as_admin on app_public.registration_tokens
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
-
 -- Schedule graphile worker task for token timeout
 create function app_public.claim_registration_token(
   event_id uuid
@@ -278,7 +270,7 @@ begin
   return v_token;
 end;
 $$
-language plpgsql
+language plpgsql strict
 security definer volatile set search_path to pg_catalog, public, pg_temp;
 
 comment on function app_public.claim_registration_token(event_id uuid) is

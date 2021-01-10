@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ApolloError } from "@apollo/client";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import { Redirect, SharedLayout } from "@app/components";
 import {
   CreatedRegistrationFragment,
@@ -14,6 +14,7 @@ import {
   extractError,
   formItemLayout,
   getCodeFromError,
+  resetWebsocketConnection,
   tailFormItemLayout,
 } from "@app/lib";
 import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd";
@@ -23,6 +24,7 @@ import useTranslation from "next-translate/useTranslation";
 
 const EventRegistrationPage: NextPage = () => {
   const router = useRouter();
+  const [error, setError] = useState<Error | ApolloError | null>(null);
   const { eventId, quotaId } = router.query;
 
   const [registrationToken, setRegistrationToken] = useState<
@@ -31,7 +33,10 @@ const EventRegistrationPage: NextPage = () => {
   const query = useEventRegistrationPageQuery({
     variables: { eventId, quotaId },
   });
-  const [claimToken, { data: tokenData }] = useClaimRegistrationTokenMutation();
+  const [
+    claimRegistratioToken,
+    { data: tokenData },
+  ] = useClaimRegistrationTokenMutation();
   const loading = query.loading;
   const event = query?.data?.event;
   const quota = query?.data?.quota;
@@ -39,11 +44,18 @@ const EventRegistrationPage: NextPage = () => {
   useEffect(() => {
     // Claim registration token on mount if related
     // event and quota exist
-    const { data, loading, error } = query;
-    if (!loading && !error && data?.event && data?.quota) {
-      claimToken({ variables: { eventId } });
-    }
-  }, [claimToken, eventId, query]);
+    const claimToken = async () => {
+      const { data, loading, error } = query;
+      if (!loading && !error && data?.event && data?.quota) {
+        try {
+          await claimRegistratioToken({ variables: { eventId } });
+        } catch (e) {
+          setError(e);
+        }
+      }
+    };
+    claimToken();
+  }, []);
 
   useEffect(() => {
     // Store registration token when claimRegistrationTokenMutation finishes
@@ -64,6 +76,8 @@ const EventRegistrationPage: NextPage = () => {
         event={event!}
         quota={quota!}
         token={registrationToken}
+        error={error}
+        setError={setError}
       />
     </SharedLayout>
   );
@@ -73,18 +87,21 @@ interface EventRegistrationPageInnerProps {
   event: EventRegistrationPage_EventFragment;
   quota: EventRegistrationPage_QuotaFragment;
   token: RegistrationToken;
+  error: Error | ApolloError | null;
+  setError: (error: Error | ApolloError | null) => void;
 }
 
 const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
   event,
   quota,
   token,
+  error,
+  setError,
 }) => {
   const { t } = useTranslation("register");
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
+  const client = useApolloClient();
   const [form] = Form.useForm();
 
-  const code = getCodeFromError(formError);
   const [
     registration,
     setRegistration,
@@ -93,7 +110,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
 
   const handleSubmit = useCallback(
     async (values) => {
-      setFormError(null);
+      setError(null);
       try {
         // TODO: Remove rate limit key from redis on successful registration
         const { data } = await createRegistration({
@@ -104,19 +121,23 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
             quotaId: quota.id,
           },
         });
-        setFormError(null);
+        // Success: refetch
+        resetWebsocketConnection();
+        client.resetStore();
         setRegistration(data?.createRegistration?.registration || null);
       } catch (e) {
-        setFormError(e);
+        setError(e);
       }
     },
-    [createRegistration, event, quota, token]
+    [client, createRegistration, event, quota, setError, token]
   );
 
   // If registration was completed successfully redirect to event page
   if (registration) {
     return <Redirect href="/event/[slug]" as={`/event/${event.slug}`} />;
   }
+
+  const code = getCodeFromError(error);
 
   return (
     <Row>
@@ -166,16 +187,17 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
                 },
               ]}
             >
-              <Input data-cy="registerpage-input-email" />
+              <Input data-cy="createregistration-input-email" />
             </Form.Item>
-            {formError ? (
+            {error ? (
               <Form.Item {...tailFormItemLayout}>
                 <Alert
+                  data-cy="createregistration-error-alert"
                   type="error"
                   message={t("errors.registrationFailed")}
                   description={
                     <span>
-                      {extractError(formError).message}
+                      {extractError(error).message}
                       {code ? (
                         <span>
                           {" "}
@@ -189,10 +211,11 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
             ) : null}
             <Form.Item {...tailFormItemLayout}>
               <Button
-                type="primary"
-                loading={!!token ? false : true}
-                htmlType="submit"
                 data-cy="createregistration-button-create"
+                type="primary"
+                loading={!!token || error ? false : true}
+                disabled={error ? true : false}
+                htmlType="submit"
               >
                 {t("common:create")}
               </Button>

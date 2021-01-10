@@ -44,7 +44,7 @@ export async function createEventDataAndLogin() {
   const client = await pool.connect();
   try {
     // Have to begin a transaction here, since we set the third parameter
-    // of set_config to 'true' below
+    // of set_config to 'true' in becomeUser below
     client.query("BEGIN");
     const [user] = await createUsers(client, 1, true);
     const session = await createSession(client, user.id);

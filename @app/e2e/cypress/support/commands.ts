@@ -55,6 +55,25 @@ function serverCommand(
 }>;
 
 /**
+ * Deletes all event data generated for e2e tests.
+ */
+function serverCommand(
+  command: "clearTestEventData"
+): Chainable<{
+  success: true;
+}>;
+
+/**
+ * Generate event data for e2e tests.
+ */
+function serverCommand(
+  command: "createTestEventData",
+  payload: {}
+): Chainable<{
+  success: true;
+}>;
+
+/**
  * Creates a verified or unverified user, bypassing all safety checks.
  * Redirects to `next`.
  *

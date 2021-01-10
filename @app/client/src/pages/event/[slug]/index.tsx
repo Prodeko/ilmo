@@ -85,8 +85,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           <Row>
             <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
               {event.description}
-
               <ServerPaginatedTable
+                data-cy="eventpage-signups-table"
                 queryDocument={EventPageDocument}
                 variables={{ slug }}
                 columns={columns}
@@ -96,11 +96,12 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             </Col>
             <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>
               <Card
+                data-cy="eventpage-quotas-card"
                 title={t("sidebar.title")}
                 bordered
                 style={{ width: "100%" }}
               >
-                {event.quotas.nodes.map((q) => {
+                {event.quotas.nodes.map((q, i) => {
                   const { size, registrations } = q;
                   const percentageFilled = Math.round(
                     (registrations.totalCount / size) * 100
@@ -115,6 +116,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                         }}
                       >
                         <Button
+                          data-cy={`eventpage-quotas-link-${i}`}
                           target="a"
                           disabled={registrations.totalCount >= size}
                           block
