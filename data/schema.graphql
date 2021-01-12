@@ -1180,6 +1180,11 @@ enum EventQuestionsOrderBy {
   PRIMARY_KEY_DESC
 }
 
+type EventRegistrationsSubscriptionPayload {
+  event: String
+  registrations(after: Datetime!): [Registration]
+}
+
 """A connection to a list of `Event` values."""
 type EventsConnection {
   """
@@ -2736,6 +2741,11 @@ The root subscription type: contains realtime events you can subscribe to with t
 type Subscription {
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload
+
+  """
+  Triggered when new event registrations are created. Each event has its own subscription topic.
+  """
+  eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload
 }
 
 """All input for the `transferOrganizationOwnership` mutation."""

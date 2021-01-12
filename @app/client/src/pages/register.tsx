@@ -19,7 +19,6 @@ import {
   formItemLayout,
   getCodeFromError,
   getExceptionFromError,
-  resetWebsocketConnection,
   setPasswordInfo,
   tailFormItemLayout,
 } from "@app/lib";
@@ -63,7 +62,6 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
           },
         });
         // Success: refetch
-        resetWebsocketConnection();
         client.resetStore();
         Router.push(next);
       } catch (e) {

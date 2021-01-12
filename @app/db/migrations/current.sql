@@ -387,6 +387,15 @@ create table app_public.registrations(
 );
 alter table app_public.registrations enable row level security;
 
+create trigger _500_gql_insert
+  after insert on app_public.registrations
+  for each row
+  execute procedure app_public.tg__graphql_subscription(
+    'registrationAdded', -- the "event" string, useful for the client to know what happened
+    'graphql:eventRegistrations:$1', -- the "topic" the event will be published to, as a template
+    'event_id' -- If specified, `$1` above will be replaced with NEW.id or OLD.id from the trigger.
+  );
+
 create index on app_public.registrations(event_id);
 create index on app_public.registrations(quota_id);
 create index on app_public.registrations(created_at);

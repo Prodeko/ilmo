@@ -1,6 +1,9 @@
 {
   "createdAt": "Aika",
   "title": "Ilmoittaudu tapahtumaan:",
+  "eventSignupComplete": "Ilmoittautuminen tallennettu",
+  "recentlyRegisteredHeader": "Äsketäin rekisteröityneet:",
+  "recentlyRegisteredListItem": "ilmoittautui juuri kiintiöön",
   "sidebar": {
     "title": "Kiintiöt"
   },

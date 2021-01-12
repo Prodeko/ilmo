@@ -64,7 +64,6 @@ context("RegisterAccount", () => {
 
       // Assertions
       cy.contains("account with this username").should("exist");
-      cy.getCy("header-login-button").should("exist"); // Should be logged in
       cy.getCy("header-login-button").should("not.exist"); // No login button on register page
     });
   });

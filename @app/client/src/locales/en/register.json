@@ -1,6 +1,9 @@
 {
   "createdAt": "Time",
   "title": "Register to event:",
+  "eventSignupComplete": "Event signup saved",
+  "recentlyRegisteredHeader": "Recently registered:",
+  "recentlyRegisteredListItem": "recently registered to the quota",
   "sidebar": {
     "title": "Quotas"
   },

@@ -11,11 +11,7 @@ import {
   SharedLayoutChildProps,
 } from "@app/components";
 import { useLoginMutation, useSharedQuery } from "@app/graphql";
-import {
-  extractError,
-  getCodeFromError,
-  resetWebsocketConnection,
-} from "@app/lib";
+import { extractError, getCodeFromError } from "@app/lib";
 import { Alert, Button, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -141,7 +137,6 @@ function LoginForm({
           },
         });
         // Success: refetch
-        resetWebsocketConnection();
         client.resetStore();
         Router.push(onSuccessRedirectTo);
       } catch (e) {

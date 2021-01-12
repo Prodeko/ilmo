@@ -1,5 +1,4 @@
-import { Build } from "graphile-build";
-import { QueryBuilder, SQL } from "graphile-build-pg";
+import { QueryBuilder, SQL, SQLGen } from "graphile-build-pg";
 import {
   embed /*, AugmentedGraphQLFieldResolver */,
   gql,
@@ -51,6 +50,23 @@ const currentUserTopicFromContext = async (
   throw new Error("You're not logged in");
 };
 
+const eventRegistrationsTopicFromContext = async (
+  args: { eventId: string },
+  context: { [key: string]: any },
+  _resolveInfo: GraphQLResolveInfo
+) => {
+  const {
+    rows: [event],
+  } = await context.pgClient.query(
+    "select id from app_public.events where id = $1",
+    [args.eventId]
+  );
+  if (event) {
+    return `graphql:eventRegistrations:${event.id}`;
+  }
+  throw new Error("Invalid event ID.");
+};
+
 /*
  * This plugin adds a number of custom subscriptions to our schema. By making
  * sure our subscriptions are tightly focussed we can ensure that our schema
@@ -73,16 +89,46 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
         event: String # Part of the NOTIFY payload
       }
 
+      type EventRegistrationsSubscriptionPayload {
+        registrations(after: Datetime!): [Registration]
+        event: String
+      }
+
       extend type Subscription {
         """Triggered when the logged in user's record is updated in some way."""
         currentUserUpdated: UserSubscriptionPayload @pgSubscription(topic: ${embed(
           currentUserTopicFromContext
         )})
+
+        """Triggered when new event registrations are created. Each event has its own subscription topic."""
+        eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload @pgSubscription(topic: ${embed(
+          eventRegistrationsTopicFromContext
+        )})
       }
     `,
     resolvers: {
       UserSubscriptionPayload: {
-        user: recordByIdFromTable(build, sql.fragment`app_public.users`),
+        user: getByQueryFromTable(
+          sql.fragment`app_public.users`,
+          ({ tableAlias, event }) =>
+            sql.fragment`${tableAlias}.id = ${sql.value(event.subject)}`
+        ),
+      },
+      EventRegistrationsSubscriptionPayload: {
+        registrations: getByQueryFromTable(
+          // Table to select subscription results from
+          sql.fragment`app_public.registrations`,
+
+          // Query that returns the subscription data
+          ({ tableAlias, event, args }) =>
+            sql.fragment`${tableAlias}.event_id = ${sql.value(
+              event.subject
+            )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`,
+
+          // Whether to return a single record or a list.
+          // If true, return list.
+          true
+        ),
       },
     },
   };
@@ -94,31 +140,37 @@ interface TgGraphQLSubscriptionPayload {
   subject: string | null;
 }
 
+interface SqlWhereArgs {
+  tableAlias: SQL;
+  event: TgGraphQLSubscriptionPayload;
+  args: any;
+}
+
 /*
- * This function handles the boilerplate of fetching a record from the database
- * which has the 'id' equal to the 'subject' from the PG NOTIFY event payload
- * (see `tg__graphql_subscription()` trigger function in the database).
+ * This function handles the boilerplate of fetching a record / records from the
+ * database which has the 'id' equal to the 'subject' from the PG NOTIFY event
+ * payload (see `tg__graphql_subscription()` trigger function in the database).
  */
-function recordByIdFromTable(
-  build: Build,
-  sqlTable: SQL
+function getByQueryFromTable(
+  sqlTable: SQL,
+  sqlWhere: (args: SqlWhereArgs) => SQLGen,
+  returnList: boolean = false
 ): AugmentedGraphQLFieldResolver<TgGraphQLSubscriptionPayload, any> {
-  const { pgSql: sql } = build;
   return async (
     event: TgGraphQLSubscriptionPayload,
-    _args: {},
+    args: any,
     _context: OurGraphQLContext,
     { graphile: { selectGraphQLResultFromTable } }
   ) => {
     const rows = await selectGraphQLResultFromTable(
       sqlTable,
       (tableAlias: SQL, sqlBuilder: QueryBuilder) => {
-        sqlBuilder.where(
-          sql.fragment`${tableAlias}.id = ${sql.value(event.subject)}`
-        );
+        const where = sqlWhere({ tableAlias, event, args });
+        sqlBuilder.where(where);
       }
     );
-    return rows[0];
+
+    return returnList ? rows : rows[0];
   };
 }
 

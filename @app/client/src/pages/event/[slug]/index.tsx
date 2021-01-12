@@ -70,70 +70,66 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   ];
 
   return (
-    <Row>
-      <Col flex={1}>
-        <div>
-          <PageHeader
-            title={"Dashboard"}
-            onBack={() => router.push("/")}
-            extra={[
-              <Tag color="red" key={event.category?.id}>
-                {event.category?.name}
-              </Tag>,
-            ]}
+    <>
+      <PageHeader
+        title={"Dashboard"}
+        onBack={() => router.push("/")}
+        extra={[
+          <Tag color="red" key={event.category?.id}>
+            {event.category?.name}
+          </Tag>,
+        ]}
+      />
+      <Row>
+        <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
+          {event.description}
+          <ServerPaginatedTable
+            data-cy="eventpage-signups-table"
+            queryDocument={EventPageDocument}
+            variables={{ slug }}
+            columns={columns}
+            dataField="eventBySlug.registrations"
+            showPagination={false}
           />
-          <Row>
-            <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
-              {event.description}
-              <ServerPaginatedTable
-                data-cy="eventpage-signups-table"
-                queryDocument={EventPageDocument}
-                variables={{ slug }}
-                columns={columns}
-                dataField="eventBySlug.registrations"
-                showPagination={false}
-              />
-            </Col>
-            <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>
-              <Card
-                data-cy="eventpage-quotas-card"
-                title={t("sidebar.title")}
-                bordered
-                style={{ width: "100%" }}
-              >
-                {event.quotas.nodes.map((q, i) => {
-                  const { size, registrations } = q;
-                  const percentageFilled = Math.round(
-                    (registrations.totalCount / size) * 100
-                  );
+        </Col>
+        <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>
+          <Card
+            data-cy="eventpage-quotas-card"
+            title={t("sidebar.title")}
+            style={{ marginLeft: "1rem", width: "100%" }}
+            bordered
+          >
+            {event.quotas.nodes.map((q, i) => {
+              const { size, registrations } = q;
+              const percentageFilled = Math.round(
+                (registrations.totalCount / size) * 100
+              );
 
-                  return (
-                    <div key={q.id} style={{ paddingBottom: 12 }}>
-                      <Link
-                        href={{
-                          pathname: "/register/e/[eventId]/q/[quotaId]",
-                          query: { eventId: event.id, quotaId: q.id },
-                        }}
-                      >
-                        <Button
-                          data-cy={`eventpage-quotas-link-${i}`}
-                          target="a"
-                          disabled={registrations.totalCount >= size}
-                          block
-                        >
-                          {q.title}
-                        </Button>
-                      </Link>
-                      <ProgressBar completed={percentageFilled} />
-                    </div>
-                  );
-                })}
-              </Card>
-            </Col>
-          </Row>
-        </div>
-      </Col>
-    </Row>
+              return (
+                <div key={q.id} style={{ paddingBottom: 12 }}>
+                  <Link
+                    href={{
+                      pathname: "/register/e/[eventId]/q/[quotaId]",
+                      query: { eventId: event.id, quotaId: q.id },
+                    }}
+                  >
+                    <Button
+                      data-cy={`eventpage-quotas-link-${i}`}
+                      target="a"
+                      disabled={registrations.totalCount >= size}
+                      block
+                    >
+                      {q.title}
+                    </Button>
+                  </Link>
+                  <ProgressBar completed={percentageFilled} />
+                </div>
+              );
+            })}
+          </Card>
+        </Col>
+      </Row>
+    </>
   );
 };
 
