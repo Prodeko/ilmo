@@ -107,6 +107,10 @@ export function SharedLayout({
   const [logout] = useLogoutMutation();
   const { t } = useTranslation("common");
 
+  const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
+  const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
+  const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
+
   const handleLogout = useCallback(() => {
     const reset = async () => {
       Router.events.off("routeChangeComplete", reset);
@@ -137,9 +141,6 @@ export function SharedLayout({
         children
       );
 
-    const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
-    const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
-    const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
     if (
       data &&
       data.currentUser &&
@@ -291,7 +292,7 @@ export function SharedLayout({
                   </Warn>
                 </span>
               </Dropdown>
-            ) : (
+            ) : forbidsLoggedIn ? null : (
               <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
                 <a data-cy="header-login-button">{t("signin")}</a>
               </Link>
