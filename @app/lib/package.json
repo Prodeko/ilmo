@@ -7,8 +7,9 @@
     "test": "cross-env NODE_ENV=test npx --no-install -n \"-r @app/config/env\" jest"
   },
   "dependencies": {
-    "@apollo/client": "^3.3.6",
+    "@apollo/client": "^3.4.0-beta.4",
     "graphql": "^15.4.0",
+    "graphql-ws": "^3.2.0",
     "next": "^10.0.4",
     "next-with-apollo": "^5.1.0",
     "rc-field-form": "^1.17.3",

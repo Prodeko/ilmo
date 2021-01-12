@@ -75,22 +75,6 @@ export interface SharedLayoutProps {
   forbidWhen?: AuthRestrict;
 }
 
-/* The Apollo `useSubscription` hook doesn't currently allow skipping the
- * subscription; we only want it when the user is logged in, so we conditionally
- * call this stub component.
- */
-function CurrentUserUpdatedSubscription() {
-  /*
-   * This will set up a GraphQL subscription monitoring for changes to the
-   * current user. Interestingly we don't need to actually _do_ anything - no
-   * rendering or similar - because the payload of this mutation will
-   * automatically update Apollo's cache which will cause the data to be
-   * re-rendered wherever appropriate.
-   */
-  useCurrentUserUpdatedSubscription();
-  return null;
-}
-
 export function SharedLayout({
   title,
   titleHref,
@@ -168,9 +152,21 @@ export function SharedLayout({
 
   const { data, loading, error } = query;
 
+  /*
+   * This will set up a GraphQL subscription monitoring for changes to the
+   * current user. Interestingly we don't need to actually _do_ anything - no
+   * rendering or similar - because the payload of this mutation will
+   * automatically update Apollo's cache which will cause the data to be
+   * re-rendered wherever appropriate.
+   */
+  useCurrentUserUpdatedSubscription({
+    // Skip checking for changes to the current user if
+    // current user does not exist
+    skip: !data?.currentUser,
+  });
+
   return (
     <Layout>
-      {data && data.currentUser ? <CurrentUserUpdatedSubscription /> : null}
       <Header
         style={{
           boxShadow: "0 2px 8px #f0f1f2",
