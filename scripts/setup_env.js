@@ -20,7 +20,7 @@ runMain(async () => {
       type: "input",
       name: "DATABASE_NAME",
       message: "What would you like to call your database?",
-      default: "graphile_starter",
+      default: "ilmo",
       validate: (name) =>
         /^[a-z][a-z0-9_]+$/.test(name)
           ? true
