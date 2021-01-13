@@ -2360,6 +2360,9 @@ type RegisterPayload {
 type Registration {
   createdAt: Datetime!
 
+  """Email address of the person registering to an event."""
+  email: String!
+
   """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
@@ -2380,6 +2383,7 @@ type Registration {
 
   """Identifier of a related quota."""
   quotaId: UUID!
+  updatedAt: Datetime!
 }
 
 """
