@@ -140,7 +140,6 @@ export async function makeApp({
   /*
    * Error handling middleware
    */
-  await middleware.installSentryRequestHandler(app);
   await middleware.installErrorHandler(app);
 
   return app;

@@ -1,0 +1,14 @@
+subscription EventRegistrations($eventId: UUID!, $after: Datetime!) {
+  eventRegistrations(eventId: $eventId) {
+    registrations(after: $after) {
+      id
+      firstName
+      lastName
+      quota {
+        id
+        title
+      }
+      createdAt
+    }
+  }
+}

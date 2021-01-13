@@ -30,33 +30,6 @@ context("Events page", () => {
     );
   });
 
-  it("Can register to an event", () => {
-    // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
-
-    cy.get("@createEventDataResult").then(({ event, quota }: any) => {
-      // Action
-      cy.visit(`${Cypress.env("ROOT_URL")}/event/${event.slug}`);
-      cy.getCy("eventpage-quotas-link-0").click();
-      cy.url().should(
-        "equal",
-        `${Cypress.env("ROOT_URL")}/register/e/${event.id}/q/${quota.id}`
-      );
-      cy.getCy("createregistration-input-firstname").type("Test");
-      cy.getCy("createregistration-input-lastname").type("Testersson");
-      cy.getCy("createregistration-input-email").type(
-        "test.testersson@example.com"
-      );
-      cy.getCy("createregistration-button-create").click();
-
-      // Assertions
-      cy.getCy("eventpage-signups-table").should("exist");
-      cy.getCy("eventpage-signups-table").contains("Test");
-      cy.getCy("eventpage-signups-table").contains("Testersson");
-      cy.getCy("eventpage-signups-table").contains(quota.title);
-    });
-  });
-
   it("Can register to an event multiple times on the same machine", () => {
     // Setup
     cy.serverCommand("createTestEventData", {}).as("createEventDataResult");

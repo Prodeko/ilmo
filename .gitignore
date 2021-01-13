@@ -1,4 +1,5 @@
 .env
+.env.production
 .next
 node_modules
 dist

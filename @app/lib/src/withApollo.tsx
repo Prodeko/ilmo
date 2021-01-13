@@ -6,22 +6,12 @@ import {
   split,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { WebSocketLink } from "@apollo/client/link/ws";
 import { getDataFromTree } from "@apollo/client/react/ssr";
 import { getOperationAST } from "graphql";
 import withApolloBase from "next-with-apollo";
-import { SubscriptionClient } from "subscriptions-transport-ws";
-import ws from "ws";
 
 import { GraphileApolloLink } from "./GraphileApolloLink";
-
-let wsClient: SubscriptionClient | null = null;
-
-export function resetWebsocketConnection(): void {
-  if (wsClient) {
-    wsClient.close(false, false);
-  }
-}
+import { WebSocketLink } from "./WebsocketApolloLink";
 
 function makeServerSideLink(req: any, res: any) {
   return new GraphileApolloLink({
@@ -45,14 +35,9 @@ function makeClientSideLink(ROOT_URL: string) {
       "CSRF-Token": CSRF_TOKEN,
     },
   });
-  wsClient = new SubscriptionClient(
-    `${ROOT_URL.replace(/^http/, "ws")}/graphql`,
-    {
-      reconnect: true,
-    },
-    typeof WebSocket !== "undefined" ? WebSocket : ws
-  );
-  const wsLink = new WebSocketLink(wsClient);
+  const wsLink = new WebSocketLink({
+    url: `${ROOT_URL.replace(/^http/, "ws")}/graphql`,
+  });
 
   // Using the ability to split links, you can send data to each link
   // depending on what kind of operation is being sent.
@@ -97,14 +82,7 @@ export const withApollo = withApolloBase(
     const client = new ApolloClient({
       ssrMode: isServer,
       link: ApolloLink.from([onErrorLink, mainLink]),
-      cache: new InMemoryCache({
-        dataIdFromObject: (o) =>
-          o.__typename === "Query"
-            ? "ROOT_QUERY"
-            : o.id
-            ? `${o.__typename}:${o.id}`
-            : undefined,
-      }).restore(initialState || {}),
+      cache: new InMemoryCache({}).restore(initialState || {}),
     });
 
     return client;

@@ -16,6 +16,34 @@ if (process.env.NODE_ENV !== "development") {
   process.exit(0);
 }
 
+async function createUser(client: PoolClient, username: string) {
+  const {
+    rows: [existingUser],
+  } = await client.query<User>(
+    `select * from app_public.users where username = $1`,
+    [username]
+  );
+
+  if (existingUser) {
+    return existingUser;
+  }
+
+  const {
+    rows: [user],
+  } = await client.query(
+    `SELECT * FROM app_private.really_create_user(
+        username := $1,
+        email := $2,
+        email_is_verified := $3,
+        name := $4,
+        avatar_url := $5,
+        password := $6
+      )`,
+    [username, `${username}@prodeko.org`, true, username, null, "kananugetti"]
+  );
+  return user;
+}
+
 async function generateData(client: PoolClient) {
   const username = process.argv[2];
   if (!username) {
@@ -26,19 +54,9 @@ async function generateData(client: PoolClient) {
   // Become root
   client.query("reset role");
 
-  // Create user and session
-  const {
-    rows: [user],
-  } = await client.query<User>(
-    `select * from app_public.users where username = $1`,
-    [username]
-  );
-  if (!user) {
-    throw Error(
-      `User not found. Please check that username = ${username} exists`
-    );
-  }
+  const user = await createUser(client, username);
   const session = await createSession(client, user.id);
+
   await client.query(
     `select set_config('role', $1::text, true), set_config('jwt.claims.session_id', $2::text, true)`,
     [process.env.DATABASE_VISITOR, session.uuid]

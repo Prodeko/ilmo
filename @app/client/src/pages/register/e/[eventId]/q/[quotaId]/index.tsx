@@ -1,23 +1,33 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ApolloError, useApolloClient } from "@apollo/client";
 import { Redirect, SharedLayout } from "@app/components";
 import {
   CreatedRegistrationFragment,
   EventRegistrationPage_EventFragment,
   EventRegistrationPage_QuotaFragment,
+  Registration,
   RegistrationToken,
   useClaimRegistrationTokenMutation,
   useCreateRegistrationMutation,
   useEventRegistrationPageQuery,
+  useEventRegistrationsSubscription,
 } from "@app/graphql";
 import {
   extractError,
   formItemLayout,
   getCodeFromError,
-  resetWebsocketConnection,
   tailFormItemLayout,
 } from "@app/lib";
-import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd";
+import {
+  Alert,
+  Button,
+  Form,
+  Input,
+  List,
+  message,
+  PageHeader,
+  Typography,
+} from "antd";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
@@ -55,7 +65,7 @@ const EventRegistrationPage: NextPage = () => {
       }
     };
     claimToken();
-  }, []);
+  }, [query, claimRegistratioToken, eventId]);
 
   useEffect(() => {
     // Store registration token when claimRegistrationTokenMutation finishes
@@ -101,18 +111,31 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
   const { t } = useTranslation("register");
   const client = useApolloClient();
   const [form] = Form.useForm();
-
   const [
     registration,
     setRegistration,
   ] = useState<null | CreatedRegistrationFragment>(null);
   const [createRegistration] = useCreateRegistrationMutation();
 
+  // Subscribe to registrations created after this timestamp
+  const after = useMemo(() => new Date().toISOString(), []);
+  const [recentRegistrations, setRecentRegistrations] = useState<
+    Registration[] | null | undefined
+  >(undefined);
+  useEventRegistrationsSubscription({
+    variables: { eventId: event?.id, after },
+    skip: !event?.id,
+    onSubscriptionData: ({ subscriptionData }) =>
+      setRecentRegistrations(
+        subscriptionData?.data?.eventRegistrations
+          ?.registrations as Registration[]
+      ),
+  });
+
   const handleSubmit = useCallback(
     async (values) => {
       setError(null);
       try {
-        // TODO: Remove rate limit key from redis on successful registration
         const { data } = await createRegistration({
           variables: {
             ...values,
@@ -122,14 +145,14 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           },
         });
         // Success: refetch
-        resetWebsocketConnection();
         client.resetStore();
         setRegistration(data?.createRegistration?.registration || null);
+        message.success(t("eventSignupComplete"));
       } catch (e) {
         setError(e);
       }
     },
-    [client, createRegistration, event, quota, setError, token]
+    [client, createRegistration, event, quota, setError, token, t]
   );
 
   // If registration was completed successfully redirect to event page
@@ -140,90 +163,101 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
   const code = getCodeFromError(error);
 
   return (
-    <Row>
-      <Col flex={1}>
-        <PageHeader
-          title={`${t("title")} ${event?.name || "loading..."} - ${
-            quota?.title || "loading..."
-          }`}
-        />
-        <div>
-          <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
-            <Form.Item
-              name="firstName"
-              label={t("forms.firstName")}
-              rules={[
-                {
-                  required: true,
-                  message: t("forms.rules.provideFirstName"),
-                },
-              ]}
-            >
-              <Input data-cy="createregistration-input-firstname" />
-            </Form.Item>
-            <Form.Item
-              name="lastName"
-              label={t("forms.lastName")}
-              rules={[
-                {
-                  required: true,
-                  message: t("forms.rules.provideLastName"),
-                },
-              ]}
-            >
-              <Input data-cy="createregistration-input-lastname" />
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label={t("forms.email")}
-              rules={[
-                {
-                  type: "email",
-                  message: t("forms.rules.emailValid"),
-                },
-                {
-                  required: true,
-                  message: t("forms.rules.emailEmpty"),
-                },
-              ]}
-            >
-              <Input data-cy="createregistration-input-email" />
-            </Form.Item>
-            {error ? (
-              <Form.Item {...tailFormItemLayout}>
-                <Alert
-                  data-cy="createregistration-error-alert"
-                  type="error"
-                  message={t("errors.registrationFailed")}
-                  description={
+    <>
+      <PageHeader
+        title={`${t("title")} ${event?.name || "loading..."} - ${
+          quota?.title || "loading..."
+        }`}
+      />
+      <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
+        <Form.Item
+          name="firstName"
+          label={t("forms.firstName")}
+          rules={[
+            {
+              required: true,
+              message: t("forms.rules.provideFirstName"),
+            },
+          ]}
+        >
+          <Input data-cy="createregistration-input-firstname" />
+        </Form.Item>
+        <Form.Item
+          name="lastName"
+          label={t("forms.lastName")}
+          rules={[
+            {
+              required: true,
+              message: t("forms.rules.provideLastName"),
+            },
+          ]}
+        >
+          <Input data-cy="createregistration-input-lastname" />
+        </Form.Item>
+        <Form.Item
+          name="email"
+          label={t("forms.email")}
+          rules={[
+            {
+              type: "email",
+              message: t("forms.rules.emailValid"),
+            },
+            {
+              required: true,
+              message: t("forms.rules.emailEmpty"),
+            },
+          ]}
+        >
+          <Input data-cy="createregistration-input-email" />
+        </Form.Item>
+        {error ? (
+          <Form.Item {...tailFormItemLayout}>
+            <Alert
+              data-cy="createregistration-error-alert"
+              type="error"
+              message={t("errors.registrationFailed")}
+              description={
+                <span>
+                  {extractError(error).message}
+                  {code ? (
                     <span>
-                      {extractError(error).message}
-                      {code ? (
-                        <span>
-                          {" "}
-                          ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                        </span>
-                      ) : null}
+                      {" "}
+                      ({t("error:errorCode")}: <code>ERR_{code}</code>)
                     </span>
-                  }
-                />
-              </Form.Item>
-            ) : null}
-            <Form.Item {...tailFormItemLayout}>
-              <Button
-                data-cy="createregistration-button-create"
-                type="primary"
-                loading={!!token || error ? false : true}
-                disabled={error ? true : false}
-                htmlType="submit"
-              >
-                {t("common:create")}
-              </Button>
-            </Form.Item>
-          </Form>
-        </div>
-      </Col>
-    </Row>
+                  ) : null}
+                </span>
+              }
+            />
+          </Form.Item>
+        ) : null}
+        <Form.Item {...tailFormItemLayout}>
+          <Button
+            data-cy="createregistration-button-create"
+            type="primary"
+            loading={!!token || error ? false : true}
+            disabled={error ? true : false}
+            htmlType="submit"
+          >
+            {t("common:create")}
+          </Button>
+        </Form.Item>
+      </Form>
+      {recentRegistrations ? (
+        <List
+          header={<div>{t("recentlyRegisteredHeader")}</div>}
+          bordered
+          dataSource={recentRegistrations}
+          renderItem={(item) => (
+            <List.Item>
+              <Typography.Text>
+                {item?.firstName} {item?.lastName}{" "}
+                {t("recentlyRegisteredListItem")} {item?.quota?.title}
+              </Typography.Text>
+            </List.Item>
+          )}
+        />
+      ) : null}
+    </>
   );
 };
 

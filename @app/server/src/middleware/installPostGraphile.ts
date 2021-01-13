@@ -109,6 +109,7 @@ export function getPostGraphileOptions({
 
     // Add websocket support to the PostGraphile server; you still need to use a subscriptions plugin such as
     // @graphile/pg-pubsub
+    subscriptions: true,
     websockets: ["v1"],
     websocketMiddlewares,
     // Support for Postgraphilelive queries
