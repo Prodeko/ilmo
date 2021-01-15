@@ -3,6 +3,7 @@
   "organizer": "Organizer",
   "category": "Category",
   "time": "Time",
+  "eventNotFound": "Event not found",
   "createEvent": {
     "title": "Luo tapahtuma"
   },

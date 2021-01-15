@@ -127,8 +127,11 @@ export const createEventCategories = async function createEventCategories(
 ) {
   const categories: EventCategory[] = [];
   for (let i = 0; i < count; i++) {
-    const name = `Category ${i}`;
-    const description = faker.lorem.paragraph();
+    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
+    const description = {
+      fi: faker.lorem.paragraph(),
+      en: faker.lorem.paragraph(),
+    };
     const {
       rows: [category],
     } = await client.query(
@@ -153,14 +156,20 @@ export const createEvents = async function createEvents(
 ) {
   const events: Event[] = [];
   for (let i = 0; i < count; i++) {
-    const name = faker.lorem.words();
-    const description = faker.lorem.paragraphs();
+    const name = {
+      fi: `Tapahtuma ${faker.lorem.word()} ${i}`,
+      en: `Event ${faker.lorem.words()} ${i}`,
+    };
+    const description = {
+      fi: faker.lorem.paragraph(),
+      en: faker.lorem.paragraph(),
+    };
     const startTime = faker.date.soon();
     const endTime = faker.date.soon();
     const eventCategoryId = categoryId;
 
     const daySlug = dayjs(startTime).format("YYYY-M-D");
-    const slug = slugify(`${daySlug}-${name}`, {
+    const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     });
 
@@ -198,7 +207,7 @@ export const createQuotas = async function createQuotas(
 ) {
   const quotas: Quota[] = [];
   for (let i = 0; i < count; i++) {
-    const title = faker.git.branch();
+    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
     const size = faker.random.number({
       min: 1,
       max: 50,

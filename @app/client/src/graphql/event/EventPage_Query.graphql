@@ -28,8 +28,7 @@ fragment EventPage_Event on Event {
     totalCount
     nodes {
       id
-      firstName
-      lastName
+      fullName
       createdAt
       quota {
         id

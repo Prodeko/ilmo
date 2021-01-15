@@ -3,6 +3,7 @@
   "organizer": "Järjestäjä",
   "category": "Kategoria",
   "time": "Aika",
+  "eventNotFound": "Tapahtumaa ei löytynyt",
   "createEvent": {
     "title": "Luo tapahtuma"
   },

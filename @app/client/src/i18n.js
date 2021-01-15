@@ -7,7 +7,7 @@ module.exports = {
     "/": ["home", "events"],
     "/create-event-category": ["events"],
     "/create-event": ["events"],
-    "/event/[slug]": ["register"],
+    "/event/[slug]": ["register", "events"],
     "/register/e/[eventId]/q/[quotaId]": ["register"],
   },
   loadLocaleFrom: (lang, ns) =>
