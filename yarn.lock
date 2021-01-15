@@ -2844,15 +2844,6 @@
     "@types/connect" "*"
     "@types/node" "*"
 
-"@types/connect-pg-simple@^4.2.2":
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/@types/connect-pg-simple/-/connect-pg-simple-4.2.2.tgz#50465f6a992c13a0bc338a012de765379b173a2a"
-  integrity sha512-SjSE46X12sdg3hPpoj4vLKSm/s3O5SkSs+VROqxAv1laOr9tgCH6oM8gy/ysCQ/8Pwkh0VLgqNLfAlHCS/+ftg==
-  dependencies:
-    "@types/express" "*"
-    "@types/express-session" "*"
-    "@types/pg" "*"
-
 "@types/connect-redis@^0.0.16":
   version "0.0.16"
   resolved "https://registry.yarnpkg.com/@types/connect-redis/-/connect-redis-0.0.16.tgz#fd98a26ffbe6ac3037baa4aecc940951b9f78cdc"
@@ -3117,7 +3108,7 @@
   resolved "https://registry.yarnpkg.com/@types/pg-types/-/pg-types-1.11.5.tgz#1eebbe62b6772fcc75c18957a90f933d155e005b"
   integrity sha512-L8ogeT6vDzT1vxlW3KITTCt+BVXXVkLXfZ/XNm6UqbcJgxf+KPO7yjWx7dQQE8RW07KopL10x2gNMs41+IkMGQ==
 
-"@types/pg@*", "@types/pg@>=6 <8", "@types/pg@^7.14.1", "@types/pg@^7.14.3", "@types/pg@^7.14.4", "@types/pg@^7.14.7", "@types/pg@^7.4.10", "@types/pg@^7.4.14":
+"@types/pg@>=6 <8", "@types/pg@^7.14.1", "@types/pg@^7.14.3", "@types/pg@^7.14.7", "@types/pg@^7.4.10", "@types/pg@^7.4.14":
   version "7.14.7"
   resolved "https://registry.yarnpkg.com/@types/pg/-/pg-7.14.7.tgz#b25532a424f58e70432ac31c77507dfb7b9349a8"
   integrity sha512-ZnMOUidTP6Lwsb0bxHL6PVIL1lVC2CYNQWlA79kQ6nn0rK1/ynvkyN1wsR9pVZaP4WcCNioKT/2aU5UuLIQy2w==
@@ -5414,14 +5405,6 @@ configstore@^5.0.1:
     unique-string "^2.0.0"
     write-file-atomic "^3.0.0"
     xdg-basedir "^4.0.0"
-
-connect-pg-simple@^6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/connect-pg-simple/-/connect-pg-simple-6.2.1.tgz#21c3e7ff6223030afff230621eac53eaae3b1797"
-  integrity sha512-bwDp/gKyRtyz0V5Vxy3SATSxItWBK/wDhaacncC79+q1B1VB8SQ49AlVaQCM+XxmIO29cWX4cvsFj65mD2qrzA==
-  dependencies:
-    "@types/pg" "^7.14.4"
-    pg "^8.2.1"
 
 connect-redis@^5.0.0:
   version "5.0.0"
@@ -12369,7 +12352,7 @@ pg-types@^2.1.0:
     postgres-date "~1.0.4"
     postgres-interval "^1.1.0"
 
-"pg@>=6.1.0 <9", "pg@>=6.5 <9", pg@^8.2.1, pg@^8.5.1:
+"pg@>=6.1.0 <9", "pg@>=6.5 <9", pg@^8.5.1:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/pg/-/pg-8.5.1.tgz#34dcb15f6db4a29c702bf5031ef2e1e25a06a120"
   integrity sha512-9wm3yX9lCfjvA98ybCyw2pADUivyNWT/yIP4ZcDVpMN0og70BUWYEGXPCTAQdGTAqnytfRADb7NERrY1qxhIqw==
