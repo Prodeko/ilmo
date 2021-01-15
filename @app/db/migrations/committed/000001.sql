@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:4d0f9185757cef2cc76f96ed85b9bd569c394888
+--! Hash: sha1:49d922742f07345c142ebfbf0e212a74af7a7002
 
 --! split: 0001-reset.sql
 /*
@@ -230,25 +230,22 @@ $$ language plpgsql volatile;
 comment on function app_public.tg__graphql_subscription() is
   E'This function enables the creation of simple focussed GraphQL subscriptions using database triggers. Read more here: https://www.graphile.org/postgraphile/subscriptions/#custom-subscriptions';
 
---! split: 0040-pg-sessions-table.sql
+--! split: 0040-common-functions.sql
 /*
- * This table is used (only) by `connect-pg-simple` (see `installSession.ts`)
- * to track cookie session information at the webserver (`express`) level if
- * you don't have a redis server. If you're using redis everywhere (including
- * development) then you don't need this table.
- *
- * Do not confuse this with the `app_private.sessions` table.
+ * These functions are commonly used across many tables.
  */
 
-create table app_private.connect_pg_simple_sessions (
-  sid varchar not null,
-	sess json not null,
-	expire timestamp not null
-);
-alter table app_private.connect_pg_simple_sessions
-  enable row level security;
-alter table app_private.connect_pg_simple_sessions
-  add constraint session_pkey primary key (sid) not deferrable initially immediate;
+-- Used as a check constraint to verify that a column contains
+-- the required languages. We store language dependent columns as jsonb.
+-- Example:
+--   constraint _cnstr_check_name_language check(check_language(name))
+create function app_public.check_language(_column jsonb)
+returns boolean
+as $$
+  -- These are the languages that our app supports
+  select _column ?& array['fi', 'en'];
+$$
+language sql stable;
 
 --! split: 1000-sessions.sql
 /*
@@ -265,22 +262,20 @@ alter table app_private.connect_pg_simple_sessions
  *
  * The primary key is a cryptographically secure random uuid; the value of this
  * primary key should be secret, and only shared with the user themself. We
- * currently wrap this session in a webserver-level session (either using
- * redis, or using `connect-pg-simple` which uses the
- * `connect_pg_simple_sessions` table which we defined previously) so that we
+ * currently wrap this session in a webserver-level session using redis so that we
  * don't even send the raw session id to the end user, but you might want to
  * consider exposing it for things such as mobile apps or command line
  * utilities that may not want to implement cookies to maintain a cookie
  * session.
  */
-
 create table app_private.sessions (
-  uuid uuid not null default gen_random_uuid() primary key,
+  uuid uuid not null default gen_random_uuid () primary key,
   user_id uuid not null,
   -- You could add access restriction columns here if you want, e.g. for OAuth scopes.
   created_at timestamptz not null default now(),
   last_active timestamptz not null default now()
 );
+
 alter table app_private.sessions enable row level security;
 
 -- To allow us to efficiently see what sessions are open for a particular user.
@@ -1611,7 +1606,6 @@ create table app_public.organization_memberships (
   created_at timestamptz not null default now(),
   unique (organization_id, user_id)
 );
-
 alter table app_public.organization_memberships enable row level security;
 
 create index on app_public.organization_memberships (user_id);
@@ -1747,11 +1741,7 @@ create function app_public.current_user_invited_organization_ids() returns setof
     where user_id = app_public.current_user_id();
 $$ language sql stable security definer set search_path = pg_catalog, public, pg_temp;
 
-create policy select_member on app_public.organizations
-  for select using (id in (select app_public.current_user_member_organization_ids()));
-
-create policy select_invited on app_public.organizations
-  for select using (id in (select app_public.current_user_invited_organization_ids()));
+create policy select_all on app_public.organizations for select using (true);
 
 create policy select_member on app_public.organization_memberships
   for select using (organization_id in (select app_public.current_user_member_organization_ids()));
