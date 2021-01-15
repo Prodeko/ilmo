@@ -90,7 +90,7 @@ comment on column app_public.events.owner_organization_id is
 comment on column app_public.events.category_id is
   E'Id of the event category.';
 
-create index on app_public.events using btree(start_time);
+create index on app_public.events(start_time);
 create index on app_public.events(owner_organization_id);
 create index on app_public.events(category_id);
 
@@ -219,8 +219,8 @@ create trigger _100_timestamps
 -- Registration tokens
 
 drop table if exists app_public.registration_tokens cascade;
-drop function if exists app_public.claim_registration_token;
-drop function if exists app_public.delete_registration_token(token uuid);
+drop function if exists app_public.claim_registration_token(uuid);
+drop function if exists app_public.delete_registration_token(uuid);
 
 create table app_public.registration_tokens(
   token uuid primary key default gen_random_uuid(),
@@ -366,7 +366,7 @@ create trigger _100_timestamps
 -- Registrations
 
 drop table if exists app_public.registrations cascade;
-drop function if exists app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext);
+drop function if exists app_public.create_registration(uuid, uuid, text, text, citext);
 
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),

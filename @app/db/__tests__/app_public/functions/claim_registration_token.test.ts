@@ -33,7 +33,7 @@ async function getRegistrationToken(client: PoolClient, token: string) {
   return row;
 }
 
-it("Can claim registration token and token expires", () =>
+it("can claim registration token and token expires", () =>
   withUserDb(async (client, _user) => {
     // "modern" can be removed in Jest 27, it is opt-in in version 26
     jest.useFakeTimers("modern");
