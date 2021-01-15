@@ -11,7 +11,7 @@ interface FourOhFourProps {
 
 export function FourOhFour(props: FourOhFourProps) {
   const { currentUser } = props;
-  const { t } = useTranslation("error");
+  const { t } = useTranslation();
   return (
     <div data-cy="fourohfour-div">
       <Result
@@ -22,7 +22,7 @@ export function FourOhFour(props: FourOhFourProps) {
         }`}
         extra={
           <ButtonLink type="primary" href="/">
-            {t("backHome")}
+            {t("common:backHome")}
           </ButtonLink>
         }
       />

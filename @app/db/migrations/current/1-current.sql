@@ -1,6 +1,3 @@
---! Previous: sha1:e3167612a90a3c7c3769d7bb9a9ed98d5a659dca
---! Hash: sha1:2bdab8975d13548b0e4f4c9eefabdcdca25e9e00
-
 /**********/
 -- Event categories
 
@@ -8,11 +5,14 @@ drop table if exists app_public.event_categories cascade;
 
 create table app_public.event_categories(
   id uuid primary key default gen_random_uuid(),
-  name text,
-  description text,
+  name jsonb not null,
+  description jsonb not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+
+  constraint _cnstr_check_name_language check(check_language(name))
+  constraint _cnstr_check_description_language check(check_language(description))
 );
 alter table app_public.event_categories enable row level security;
 
@@ -37,24 +37,10 @@ grant
 on app_public.event_categories to :DATABASE_VISITOR;
 
 create policy select_all on app_public.event_categories
-  for select
-    using (true);
+  for select using (true);
 
-create policy manage_own on app_public.event_categories
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and owner_organization_id = organization_id));
-
-create policy manage_as_admin on app_public.event_categories
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
+create policy manage_member on app_public.event_categories
+  for all using (owner_organization_id in (select app_public.current_user_member_organization_ids()));
 
 create trigger _100_timestamps
   before insert or update on app_public.event_categories for each row
@@ -67,9 +53,9 @@ drop table if exists app_public.events cascade;
 
 create table app_public.events(
   id uuid primary key default gen_random_uuid(),
-  name text,
   slug citext not null unique,
-  description text,
+  name jsonb not null,
+  description jsonb not null,
   start_time timestamptz not null,
   end_time timestamptz not null,
   is_highlighted boolean not null default false,
@@ -77,6 +63,9 @@ create table app_public.events(
   category_id uuid not null references app_public.event_categories on delete no action,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+
+  constraint _cnstr_check_name_language check(check_language(name))
+  constraint _cnstr_check_description_language check(check_language(description))
 );
 alter table app_public.events enable row level security;
 
@@ -117,8 +106,7 @@ grant
 on app_public.events to :DATABASE_VISITOR;
 
 create policy select_all on app_public.events
-  for select
-    using (true);
+  for select using (true);
 
 create policy manage_own on app_public.events
   for all
@@ -311,13 +299,15 @@ drop table if exists app_public.quotas cascade;
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete no action,
-  title text not null,
+  title jsonb not null,
   size smallint not null check (size > 0),
   -- TODO: Implement questions
   questions_public json,
   questions_private json,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  
+  constraint _cnstr_check_name_language check(check_language(title))
 );
 alter table app_public.quotas enable row level security;
 
@@ -416,7 +406,7 @@ comment on column app_public.registrations.first_name is
 comment on column app_public.registrations.last_name is
   E'Last name of the person registering to an event.';
 comment on column app_public.registrations.email is
-  E'Email address of the person registering to an event.';
+  E'@omit\nEmail address of the person registering to an event.';
 create index on app_public.registrations(event_id);
 
 grant
@@ -441,6 +431,11 @@ create policy manage_as_admin on app_public.registrations
 create trigger _100_timestamps
   before insert or update on app_public.registrations for each row
   execute procedure app_private.tg__timestamps();
+
+create function app_public.registrations_full_name(registration app_public.registrations) returns text as $$
+  select registration.first_name || ' ' || registration.last_name
+$$ language sql stable;
+grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
 
 create function app_public.create_registration(
   token uuid,

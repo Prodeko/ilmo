@@ -8,7 +8,4 @@ make your server more efficient.
 
 ## Sessions
 
-By default, sessions are stored into your PostgreSQL database by
-`connect-pg-simple`, but this increases the load on your database. To reduce
-database load, you should set the `REDIS_URL` environment variable to store
-sessions to redis instead. Read more in `installSession.ts`.
+Sessions are stored in Redis. Read more in `installSession.ts`.

@@ -23,9 +23,9 @@ context("Events page", () => {
         cy.getCy("eventpage-signups-table").should("exist");
         cy.getCy("eventpage-quotas-card").should("exist");
 
-        cy.contains(event.name).should("exist");
-        cy.contains(eventCategory.name).should("exist");
-        cy.contains(quota.title).should("exist");
+        cy.contains(event.name["fi"]).should("exist");
+        cy.contains(eventCategory.name["fi"]).should("exist");
+        cy.contains(quota.title["fi"]).should("exist");
       }
     );
   });
@@ -66,7 +66,7 @@ context("Events page", () => {
       cy.getCy("createregistration-button-create").click();
 
       // Assertions
-      cy.getCy("eventpage-signups-table").contains(quota.title);
+      cy.getCy("eventpage-signups-table").contains(quota.title["fi"]);
 
       cy.getCy("eventpage-signups-table").should("exist");
       cy.getCy("eventpage-signups-table").contains("Test");

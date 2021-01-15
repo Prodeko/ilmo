@@ -14,7 +14,7 @@ export async function resetPassword(
   const {
     rows: [row],
   } = await client.query(
-    'select app_public.reset_password($1, $2, $3) as "bool"',
+    'select app_private.reset_password($1, $2, $3) as "bool"',
     [userId, resetToken, newPassword]
   );
   return row ? row.bool : null;

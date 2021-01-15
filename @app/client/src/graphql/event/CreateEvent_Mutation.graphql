@@ -8,9 +8,9 @@ fragment CreatedEvent on Event {
 }
 
 mutation CreateEvent(
-  $name: String!
   $slug: String!
-  $description: String!
+  $name: JSON!
+  $description: JSON!
   $organizationId: UUID!
   $categoryId: UUID!
   $isHighlighted: Boolean
@@ -20,8 +20,8 @@ mutation CreateEvent(
   createEvent(
     input: {
       event: {
-        name: $name
         slug: $slug
+        name: $name
         description: $description
         ownerOrganizationId: $organizationId
         categoryId: $categoryId

@@ -108,7 +108,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
   error,
   setError,
 }) => {
-  const { t } = useTranslation("register");
+  const { t, lang } = useTranslation("register");
   const client = useApolloClient();
   const [form] = Form.useForm();
   const [
@@ -165,8 +165,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
   return (
     <>
       <PageHeader
-        title={`${t("title")} ${event?.name || "loading..."} - ${
-          quota?.title || "loading..."
+        title={`${t("title")} ${event?.name[lang] || "loading..."} - ${
+          quota?.title[lang] || "loading..."
         }`}
       />
       <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
@@ -250,8 +250,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           renderItem={(item) => (
             <List.Item>
               <Typography.Text>
-                {item?.firstName} {item?.lastName}{" "}
-                {t("recentlyRegisteredListItem")} {item?.quota?.title}
+                {item?.fullName} {t("recentlyRegisteredListItem")}{" "}
+                {item?.quota?.title[lang]}
               </Typography.Text>
             </List.Item>
           )}

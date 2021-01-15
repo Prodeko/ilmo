@@ -26,7 +26,7 @@ const getColor = (org: string) => {
 };
 
 const Home: NextPage = () => {
-  const { t } = useTranslation("home");
+  const { t, lang } = useTranslation("home");
   const query = useSharedQuery();
   const { data } = useOrganizationsAndCategoriesQuery();
   // TODO: use eventCategories and organizations to
@@ -38,7 +38,7 @@ const Home: NextPage = () => {
   const columns = [
     {
       title: t("events:eventName"),
-      dataIndex: "name",
+      dataIndex: ["name", lang],
       key: "name",
       render: (name: string, event: Event) => (
         <Link
@@ -67,9 +67,12 @@ const Home: NextPage = () => {
     },
     {
       title: t("events:category"),
-      dataIndex: ["category", "name"],
+      dataIndex: ["category", "name", lang],
       key: "categoryName",
-      filters: eventCategories?.map((c) => ({ text: c.name, value: c.id })),
+      filters: eventCategories?.map((c) => ({
+        text: c?.name[lang],
+        value: c.id,
+      })),
       render: (name: string) => (
         <Tag color={getColor(name)} key={name}>
           {name?.toUpperCase()}

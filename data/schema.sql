@@ -80,17 +80,6 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- Name: question_type; Type: TYPE; Schema: app_public; Owner: -
---
-
-CREATE TYPE app_public.question_type AS ENUM (
-    'short-text',
-    'long-text',
-    'option'
-);
-
-
---
 -- Name: assert_valid_password(text); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -111,6 +100,174 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: users; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.users (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    username public.citext NOT NULL,
+    name text,
+    avatar_url text,
+    is_admin boolean DEFAULT false NOT NULL,
+    is_verified boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
+    CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
+);
+
+
+--
+-- Name: TABLE users; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.users IS 'A user who can log in to the application.';
+
+
+--
+-- Name: COLUMN users.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.id IS 'Unique identifier for the user.';
+
+
+--
+-- Name: COLUMN users.username; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.username IS 'Public-facing username (or ''handle'') of the user.';
+
+
+--
+-- Name: COLUMN users.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.name IS 'Public-facing name (or pseudonym) of the user.';
+
+
+--
+-- Name: COLUMN users.avatar_url; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.avatar_url IS 'Optional avatar URL.';
+
+
+--
+-- Name: COLUMN users.is_admin; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.is_admin IS 'If true, the user has elevated privileges.';
+
+
+--
+-- Name: link_or_register_user(uuid, character varying, character varying, json, json); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.link_or_register_user(f_user_id uuid, f_service character varying, f_identifier character varying, f_profile json, f_auth_details json) RETURNS app_public.users
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_matched_user_id uuid;
+  v_matched_authentication_id uuid;
+  v_email citext;
+  v_name text;
+  v_avatar_url text;
+  v_user app_public.users;
+  v_user_email app_public.user_emails;
+begin
+  -- See if a user account already matches these details
+  select id, user_id
+    into v_matched_authentication_id, v_matched_user_id
+    from app_public.user_authentications
+    where service = f_service
+    and identifier = f_identifier
+    limit 1;
+
+  if v_matched_user_id is not null and f_user_id is not null and v_matched_user_id <> f_user_id then
+    raise exception 'A different user already has this account linked.' using errcode = 'TAKEN';
+  end if;
+
+  v_email = f_profile ->> 'email';
+  v_name := f_profile ->> 'name';
+  v_avatar_url := f_profile ->> 'avatar_url';
+
+  if v_matched_authentication_id is null then
+    if f_user_id is not null then
+      -- Link new account to logged in user account
+      insert into app_public.user_authentications (user_id, service, identifier, details) values
+        (f_user_id, f_service, f_identifier, f_profile) returning id, user_id into v_matched_authentication_id, v_matched_user_id;
+      insert into app_private.user_authentication_secrets (user_authentication_id, details) values
+        (v_matched_authentication_id, f_auth_details);
+      perform graphile_worker.add_job(
+        'user__audit',
+        json_build_object(
+          'type', 'linked_account',
+          'user_id', f_user_id,
+          'extra1', f_service,
+          'extra2', f_identifier,
+          'current_user_id', app_public.current_user_id()
+        ));
+    elsif v_email is not null then
+      -- See if the email is registered
+      select * into v_user_email from app_public.user_emails where email = v_email and is_verified is true;
+      if v_user_email is not null then
+        -- User exists!
+        insert into app_public.user_authentications (user_id, service, identifier, details) values
+          (v_user_email.user_id, f_service, f_identifier, f_profile) returning id, user_id into v_matched_authentication_id, v_matched_user_id;
+        insert into app_private.user_authentication_secrets (user_authentication_id, details) values
+          (v_matched_authentication_id, f_auth_details);
+        perform graphile_worker.add_job(
+          'user__audit',
+          json_build_object(
+            'type', 'linked_account',
+            'user_id', f_user_id,
+            'extra1', f_service,
+            'extra2', f_identifier,
+            'current_user_id', app_public.current_user_id()
+          ));
+      end if;
+    end if;
+  end if;
+  if v_matched_user_id is null and f_user_id is null and v_matched_authentication_id is null then
+    -- Create and return a new user account
+    return app_private.register_user(f_service, f_identifier, f_profile, f_auth_details, true);
+  else
+    if v_matched_authentication_id is not null then
+      update app_public.user_authentications
+        set details = f_profile
+        where id = v_matched_authentication_id;
+      update app_private.user_authentication_secrets
+        set details = f_auth_details
+        where user_authentication_id = v_matched_authentication_id;
+      update app_public.users
+        set
+          name = coalesce(users.name, v_name),
+          avatar_url = coalesce(users.avatar_url, v_avatar_url)
+        where id = v_matched_user_id
+        returning  * into v_user;
+      return v_user;
+    else
+      -- v_matched_authentication_id is null
+      -- -> v_matched_user_id is null (they're paired)
+      -- -> f_user_id is not null (because the if clause above)
+      -- -> v_matched_authentication_id is not null (because of the separate if block above creating a user_authentications)
+      -- -> contradiction.
+      raise exception 'This should not occur';
+    end if;
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION link_or_register_user(f_user_id uuid, f_service character varying, f_identifier character varying, f_profile json, f_auth_details json); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.link_or_register_user(f_user_id uuid, f_service character varying, f_identifier character varying, f_profile json, f_auth_details json) IS 'If you''re logged in, this will link an additional OAuth login to your account if necessary. If you''re logged out it may find if an account already exists (based on OAuth details or email address) and return that, or create a new user account if necessary.';
+
+
+--
 -- Name: sessions; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -127,8 +284,7 @@ CREATE TABLE app_private.sessions (
 --
 
 CREATE FUNCTION app_private.login(username public.citext, password text) RETURNS app_private.sessions
-    LANGUAGE plpgsql STRICT SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    LANGUAGE plpgsql STRICT
     AS $$
 declare
   v_user app_public.users;
@@ -206,66 +362,6 @@ COMMENT ON FUNCTION app_private.login(username public.citext, password text) IS 
 
 
 --
--- Name: users; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.users (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    username public.citext NOT NULL,
-    name text,
-    avatar_url text,
-    is_admin boolean DEFAULT false NOT NULL,
-    is_verified boolean DEFAULT false NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
-    CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
-);
-
-
---
--- Name: TABLE users; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.users IS 'A user who can log in to the application.';
-
-
---
--- Name: COLUMN users.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.users.id IS 'Unique identifier for the user.';
-
-
---
--- Name: COLUMN users.username; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.users.username IS 'Public-facing username (or ''handle'') of the user.';
-
-
---
--- Name: COLUMN users.name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.users.name IS 'Public-facing name (or pseudonym) of the user.';
-
-
---
--- Name: COLUMN users.avatar_url; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.users.avatar_url IS 'Optional avatar URL.';
-
-
---
--- Name: COLUMN users.is_admin; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.users.is_admin IS 'If true, the user has elevated privileges.';
-
-
---
 -- Name: really_create_user(public.citext, text, boolean, text, text, text); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -313,6 +409,154 @@ $$;
 --
 
 COMMENT ON FUNCTION app_private.really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text) IS 'Creates a user account. All arguments are optional, it trusts the calling method to perform sanitisation.';
+
+
+--
+-- Name: register_user(character varying, character varying, json, json, boolean); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean DEFAULT false) RETURNS app_public.users
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user app_public.users;
+  v_email citext;
+  v_name text;
+  v_username citext;
+  v_avatar_url text;
+  v_user_authentication_id uuid;
+begin
+  -- Extract data from the user’s OAuth profile data.
+  v_email := f_profile ->> 'email';
+  v_name := f_profile ->> 'name';
+  v_username := f_profile ->> 'username';
+  v_avatar_url := f_profile ->> 'avatar_url';
+
+  -- Sanitise the username, and make it unique if necessary.
+  if v_username is null then
+    v_username = coalesce(v_name, 'user');
+  end if;
+  v_username = regexp_replace(v_username, '^[^a-z]+', '', 'gi');
+  v_username = regexp_replace(v_username, '[^a-z0-9]+', '_', 'gi');
+  if v_username is null or length(v_username) < 3 then
+    v_username = 'user';
+  end if;
+  select (
+    case
+    when i = 0 then v_username
+    else v_username || i::text
+    end
+  ) into v_username from generate_series(0, 1000) i
+  where not exists(
+    select 1
+    from app_public.users
+    where users.username = (
+      case
+      when i = 0 then v_username
+      else v_username || i::text
+      end
+    )
+  )
+  limit 1;
+
+  -- Create the user account
+  v_user = app_private.really_create_user(
+    username => v_username,
+    email => v_email,
+    email_is_verified => f_email_is_verified,
+    name => v_name,
+    avatar_url => v_avatar_url
+  );
+
+  -- Insert the user’s private account data (e.g. OAuth tokens)
+  insert into app_public.user_authentications (user_id, service, identifier, details) values
+    (v_user.id, f_service, f_identifier, f_profile) returning id into v_user_authentication_id;
+  insert into app_private.user_authentication_secrets (user_authentication_id, details) values
+    (v_user_authentication_id, f_auth_details);
+
+  return v_user;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean) IS 'Used to register a user from information gleaned from OAuth. Primarily used by link_or_register_user';
+
+
+--
+-- Name: reset_password(uuid, text, text); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.reset_password(user_id uuid, reset_token text, new_password text) RETURNS boolean
+    LANGUAGE plpgsql STRICT
+    AS $$
+declare
+  v_user app_public.users;
+  v_user_secret app_private.user_secrets;
+  v_token_max_duration interval = interval '3 days';
+begin
+  select users.* into v_user
+  from app_public.users
+  where id = user_id;
+
+  if not (v_user is null) then
+    -- Load their secrets
+    select * into v_user_secret from app_private.user_secrets
+    where user_secrets.user_id = v_user.id;
+
+    -- Have there been too many reset attempts?
+    if (
+      v_user_secret.first_failed_reset_password_attempt is not null
+    and
+      v_user_secret.first_failed_reset_password_attempt > NOW() - v_token_max_duration
+    and
+      v_user_secret.failed_reset_password_attempts >= 20
+    ) then
+      raise exception 'Password reset locked - too many reset attempts' using errcode = 'LOCKD';
+    end if;
+
+    -- Not too many reset attempts, let's check the token
+    if v_user_secret.reset_password_token = reset_token then
+      -- Excellent - they're legit
+      perform app_private.assert_valid_password(new_password);
+      -- Let's reset the password as requested
+      update app_private.user_secrets
+      set
+        password_hash = crypt(new_password, gen_salt('bf')),
+        failed_password_attempts = 0,
+        first_failed_password_attempt = null,
+        reset_password_token = null,
+        reset_password_token_generated = null,
+        failed_reset_password_attempts = 0,
+        first_failed_reset_password_attempt = null
+      where user_secrets.user_id = v_user.id;
+      perform graphile_worker.add_job(
+        'user__audit',
+        json_build_object(
+          'type', 'reset_password',
+          'user_id', v_user.id,
+          'current_user_id', app_public.current_user_id()
+        ));
+      return true;
+    else
+      -- Wrong token, bump all the attempt tracking figures
+      update app_private.user_secrets
+      set
+        failed_reset_password_attempts = (case when first_failed_reset_password_attempt is null or first_failed_reset_password_attempt < now() - v_token_max_duration then 1 else failed_reset_password_attempts + 1 end),
+        first_failed_reset_password_attempt = (case when first_failed_reset_password_attempt is null or first_failed_reset_password_attempt < now() - v_token_max_duration then now() else first_failed_reset_password_attempt end)
+      where user_secrets.user_id = v_user.id;
+      return null;
+    end if;
+  else
+    -- No user with that id was found
+    return null;
+  end if;
+end;
+$$;
 
 
 --
@@ -557,69 +801,15 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 
 
 --
--- Name: registration_tokens; Type: TABLE; Schema: app_public; Owner: -
+-- Name: check_language(jsonb); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE TABLE app_public.registration_tokens (
-    token uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: TABLE registration_tokens; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.registration_tokens IS 'Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.';
-
-
---
--- Name: COLUMN registration_tokens.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registration_tokens.event_id IS 'Unique identifier for the event.';
-
-
---
--- Name: COLUMN registration_tokens.created_at; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registration_tokens.created_at IS 'Timestamp of when the token was created.';
-
-
---
--- Name: claim_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.claim_registration_token(event_id uuid) RETURNS app_public.registration_tokens
-    LANGUAGE plpgsql STRICT SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
+    LANGUAGE sql STABLE
     AS $$
-declare
-  v_token app_public.registration_tokens;
-begin
-  insert into app_public.registration_tokens(event_id)
-    values (event_id)
-  returning
-    * into v_token;
-
-  -- Schedule token deletion
-  perform graphile_worker.add_job(
-    'registration__delete_registration_token',
-    json_build_object('token', v_token.token)
-  );
-
-  return v_token;
-end;
+  -- These are the languages that our app supports
+  select _column ?& array['fi', 'en'];
 $$;
-
-
---
--- Name: FUNCTION claim_registration_token(event_id uuid); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.claim_registration_token(event_id uuid) IS 'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
 
 
 --
@@ -695,118 +885,15 @@ CREATE FUNCTION app_public.create_organization(slug public.citext, name text) RE
 declare
   v_org app_public.organizations;
 begin
+  if app_public.current_user_id() is null then
+    raise exception 'You must log in to create an organization' using errcode = 'LOGIN';
+  end if;
   insert into app_public.organizations (slug, name) values (slug, name) returning * into v_org;
   insert into app_public.organization_memberships (organization_id, user_id, is_owner)
     values(v_org.id, app_public.current_user_id(), true);
   return v_org;
 end;
 $$;
-
-
---
--- Name: registrations; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.registrations (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    quota_id uuid NOT NULL,
-    first_name text NOT NULL,
-    last_name text NOT NULL,
-    email public.citext NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT registrations_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext))
-);
-
-
---
--- Name: TABLE registrations; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.registrations IS 'Main table for registrations.';
-
-
---
--- Name: COLUMN registrations.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.id IS 'Unique identifier for the registration.';
-
-
---
--- Name: COLUMN registrations.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.event_id IS 'Identifier of a related event.';
-
-
---
--- Name: COLUMN registrations.quota_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.quota_id IS 'Identifier of a related quota.';
-
-
---
--- Name: COLUMN registrations.first_name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.first_name IS 'First name of the person registering to an event.';
-
-
---
--- Name: COLUMN registrations.last_name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person registering to an event.';
-
-
---
--- Name: COLUMN registrations.email; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.email IS 'Email address of the person registering to an event.';
-
-
---
--- Name: create_registration(uuid, uuid, uuid, text, text, public.citext); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) RETURNS app_public.registrations
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  v_registration app_public.registrations;
-begin
-  -- If the provided token does not exist, prevent event registration
-  if not exists(
-    select 1 from app_public.registration_tokens
-      where registration_tokens.token = create_registration.token
-  ) then
-    raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
-  end if;
-
-  insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
-    values ("eventId", "quotaId", "firstName", "lastName", "email")
-  returning
-    * into v_registration;
-
-  -- Delete the used token
-  delete from app_public.registration_tokens
-    where registration_tokens.token = create_registration.token;
-
-  return v_registration;
-end;
-$$;
-
-
---
--- Name: FUNCTION create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) IS 'Register to an event. Checks that a valid registration token was suplied.';
 
 
 --
@@ -910,33 +997,6 @@ begin
   end if;
 end;
 $$;
-
-
---
--- Name: delete_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.delete_registration_token(token uuid) RETURNS bigint
-    LANGUAGE sql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-  with deleted as (
-    -- Delete timed out token
-    delete from app_public.registration_tokens
-    where registration_tokens.token = delete_registration_token.token
-    returning *
-  )
-
-  -- Return number of deleted rows
-  select count(*) from deleted;
-$$;
-
-
---
--- Name: FUNCTION delete_registration_token(token uuid); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.delete_registration_token(token uuid) IS 'Delete registration token by token id. Used by worker task to bypass RLS policies.';
 
 
 --
@@ -1374,86 +1434,6 @@ COMMENT ON FUNCTION app_public.resend_email_verification_code(email_id uuid) IS 
 
 
 --
--- Name: reset_password(uuid, text, text); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) RETURNS boolean
-    LANGUAGE plpgsql STRICT SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  v_user app_public.users;
-  v_user_secret app_private.user_secrets;
-  v_token_max_duration interval = interval '3 days';
-begin
-  select users.* into v_user
-  from app_public.users
-  where id = user_id;
-
-  if not (v_user is null) then
-    -- Load their secrets
-    select * into v_user_secret from app_private.user_secrets
-    where user_secrets.user_id = v_user.id;
-
-    -- Have there been too many reset attempts?
-    if (
-      v_user_secret.first_failed_reset_password_attempt is not null
-    and
-      v_user_secret.first_failed_reset_password_attempt > NOW() - v_token_max_duration
-    and
-      v_user_secret.failed_reset_password_attempts >= 20
-    ) then
-      raise exception 'Password reset locked - too many reset attempts' using errcode = 'LOCKD';
-    end if;
-
-    -- Not too many reset attempts, let's check the token
-    if v_user_secret.reset_password_token = reset_token then
-      -- Excellent - they're legit
-      perform app_private.assert_valid_password(new_password);
-      -- Let's reset the password as requested
-      update app_private.user_secrets
-      set
-        password_hash = crypt(new_password, gen_salt('bf')),
-        failed_password_attempts = 0,
-        first_failed_password_attempt = null,
-        reset_password_token = null,
-        reset_password_token_generated = null,
-        failed_reset_password_attempts = 0,
-        first_failed_reset_password_attempt = null
-      where user_secrets.user_id = v_user.id;
-      perform graphile_worker.add_job(
-        'user__audit',
-        json_build_object(
-          'type', 'reset_password',
-          'user_id', v_user.id,
-          'current_user_id', app_public.current_user_id()
-        ));
-      return true;
-    else
-      -- Wrong token, bump all the attempt tracking figures
-      update app_private.user_secrets
-      set
-        failed_reset_password_attempts = (case when first_failed_reset_password_attempt is null or first_failed_reset_password_attempt < now() - v_token_max_duration then 1 else failed_reset_password_attempts + 1 end),
-        first_failed_reset_password_attempt = (case when first_failed_reset_password_attempt is null or first_failed_reset_password_attempt < now() - v_token_max_duration then now() else first_failed_reset_password_attempt end)
-      where user_secrets.user_id = v_user.id;
-      return null;
-    end if;
-  else
-    -- No user with that id was found
-    return null;
-  end if;
-end;
-$$;
-
-
---
--- Name: FUNCTION reset_password(user_id uuid, reset_token text, new_password text); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) IS 'After triggering forgotPassword, you''ll be sent a reset token. Combine this with your user ID and a new password to reset your password.';
-
-
---
 -- Name: tg__graphql_subscription(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1495,7 +1475,8 @@ begin
       v_last_topic = v_topic;
       perform pg_notify(v_topic, json_build_object(
         'event', v_event,
-        'subject', v_sub
+        'subject', v_sub,
+        'id', v_record.id
       )::text);
     end if;
   end loop;
@@ -1694,17 +1675,6 @@ COMMENT ON FUNCTION app_public.verify_email(user_email_id uuid, token text) IS '
 
 
 --
--- Name: connect_pg_simple_sessions; Type: TABLE; Schema: app_private; Owner: -
---
-
-CREATE TABLE app_private.connect_pg_simple_sessions (
-    sid character varying NOT NULL,
-    sess json NOT NULL,
-    expire timestamp without time zone NOT NULL
-);
-
-
---
 -- Name: unregistered_email_password_resets; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -1734,6 +1704,16 @@ COMMENT ON COLUMN app_private.unregistered_email_password_resets.attempts IS 'We
 --
 
 COMMENT ON COLUMN app_private.unregistered_email_password_resets.latest_attempt IS 'We store the time the last password reset was sent to this email to prevent the email getting flooded.';
+
+
+--
+-- Name: user_authentication_secrets; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.user_authentication_secrets (
+    user_authentication_id uuid NOT NULL,
+    details jsonb DEFAULT '{}'::jsonb NOT NULL
+);
 
 
 --
@@ -1789,158 +1769,6 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 
 
 --
--- Name: event_categories; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.event_categories (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    name text,
-    description text,
-    owner_organization_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: TABLE event_categories; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.event_categories IS 'Table for event categories.';
-
-
---
--- Name: COLUMN event_categories.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.event_categories.id IS 'Unique identifier for the event category.';
-
-
---
--- Name: COLUMN event_categories.name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.event_categories.name IS 'Name of the event category.';
-
-
---
--- Name: COLUMN event_categories.description; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.event_categories.description IS 'Short description of the event category.';
-
-
---
--- Name: COLUMN event_categories.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.event_categories.owner_organization_id IS 'Identifier of the organizer.';
-
-
---
--- Name: event_questions; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.event_questions (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    type app_public.question_type NOT NULL,
-    options json,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: events; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.events (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    name text,
-    slug public.citext NOT NULL,
-    description text,
-    start_time timestamp with time zone NOT NULL,
-    end_time timestamp with time zone NOT NULL,
-    is_highlighted boolean DEFAULT false NOT NULL,
-    owner_organization_id uuid NOT NULL,
-    category_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.events IS 'Main table for events.';
-
-
---
--- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
-
-
---
--- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
-
-
---
--- Name: COLUMN events.slug; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.slug IS 'Slug for the event.';
-
-
---
--- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
-
-
---
--- Name: COLUMN events.start_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.start_time IS 'Starting time of the event.';
-
-
---
--- Name: COLUMN events.end_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
-
-
---
--- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
-
-
---
--- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
-
-
---
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1969,70 +1797,46 @@ CREATE TABLE app_public.organization_memberships (
 
 
 --
--- Name: quotas; Type: TABLE; Schema: app_public; Owner: -
+-- Name: user_authentications; Type: TABLE; Schema: app_public; Owner: -
 --
 
-CREATE TABLE app_public.quotas (
+CREATE TABLE app_public.user_authentications (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    title text NOT NULL,
-    size smallint NOT NULL,
-    questions_public json,
-    questions_private json,
+    user_id uuid NOT NULL,
+    service text NOT NULL,
+    identifier text NOT NULL,
+    details jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT quotas_size_check CHECK ((size > 0))
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- Name: TABLE quotas; Type: COMMENT; Schema: app_public; Owner: -
+-- Name: TABLE user_authentications; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON TABLE app_public.quotas IS 'Main table for registration quotas.';
-
-
---
--- Name: COLUMN quotas.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.event_id IS 'Identifier of the event that this quota is for.';
+COMMENT ON TABLE app_public.user_authentications IS 'Contains information about the login providers this user has used, so that they may disconnect them should they wish.';
 
 
 --
--- Name: COLUMN quotas.title; Type: COMMENT; Schema: app_public; Owner: -
+-- Name: COLUMN user_authentications.service; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.quotas.title IS 'Title for the quota.';
-
-
---
--- Name: COLUMN quotas.size; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
+COMMENT ON COLUMN app_public.user_authentications.service IS 'The login service used, e.g. `twitter` or `github`.';
 
 
 --
--- Name: COLUMN quotas.questions_public; Type: COMMENT; Schema: app_public; Owner: -
+-- Name: COLUMN user_authentications.identifier; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.quotas.questions_public IS 'Public questions related to the quota.';
-
-
---
--- Name: COLUMN quotas.questions_private; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.questions_private IS 'Private questions related to the quota.';
+COMMENT ON COLUMN app_public.user_authentications.identifier IS 'A unique identifier for the user within the login service.';
 
 
 --
--- Name: connect_pg_simple_sessions session_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+-- Name: COLUMN user_authentications.details; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-ALTER TABLE ONLY app_private.connect_pg_simple_sessions
-    ADD CONSTRAINT session_pkey PRIMARY KEY (sid);
+COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile details extracted from this login method';
 
 
 --
@@ -2052,6 +1856,14 @@ ALTER TABLE ONLY app_private.unregistered_email_password_resets
 
 
 --
+-- Name: user_authentication_secrets user_authentication_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.user_authentication_secrets
+    ADD CONSTRAINT user_authentication_secrets_pkey PRIMARY KEY (user_authentication_id);
+
+
+--
 -- Name: user_email_secrets user_email_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -2065,38 +1877,6 @@ ALTER TABLE ONLY app_private.user_email_secrets
 
 ALTER TABLE ONLY app_private.user_secrets
     ADD CONSTRAINT user_secrets_pkey PRIMARY KEY (user_id);
-
-
---
--- Name: event_categories event_categories_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.event_categories
-    ADD CONSTRAINT event_categories_pkey PRIMARY KEY (id);
-
-
---
--- Name: event_questions event_questions_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.event_questions
-    ADD CONSTRAINT event_questions_pkey PRIMARY KEY (id);
-
-
---
--- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
-
-
---
--- Name: events events_slug_key; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_slug_key UNIQUE (slug);
 
 
 --
@@ -2156,27 +1936,19 @@ ALTER TABLE ONLY app_public.organizations
 
 
 --
--- Name: quotas quotas_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+-- Name: user_authentications uniq_user_authentications; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
-ALTER TABLE ONLY app_public.quotas
-    ADD CONSTRAINT quotas_pkey PRIMARY KEY (id);
-
-
---
--- Name: registration_tokens registration_tokens_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registration_tokens
-    ADD CONSTRAINT registration_tokens_pkey PRIMARY KEY (token);
+ALTER TABLE ONLY app_public.user_authentications
+    ADD CONSTRAINT uniq_user_authentications UNIQUE (service, identifier);
 
 
 --
--- Name: registrations registrations_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+-- Name: user_authentications user_authentications_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
-ALTER TABLE ONLY app_public.registrations
-    ADD CONSTRAINT registrations_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY app_public.user_authentications
+    ADD CONSTRAINT user_authentications_pkey PRIMARY KEY (id);
 
 
 --
@@ -2219,45 +1991,17 @@ CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
 
 
 --
--- Name: event_categories_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX event_categories_owner_organization_id_idx ON app_public.event_categories USING btree (owner_organization_id);
-
-
---
--- Name: event_questions_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX event_questions_event_id_idx ON app_public.event_questions USING btree (event_id);
-
-
---
--- Name: events_category_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_id);
-
-
---
--- Name: events_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (owner_organization_id);
-
-
---
--- Name: events_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX events_start_time_idx ON app_public.events USING btree (start_time);
-
-
---
 -- Name: idx_user_emails_primary; Type: INDEX; Schema: app_public; Owner: -
 --
 
 CREATE INDEX idx_user_emails_primary ON app_public.user_emails USING btree (is_primary, user_id);
+
+
+--
+-- Name: idx_user_emails_user; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX idx_user_emails_user ON app_public.user_emails USING btree (user_id);
 
 
 --
@@ -2275,55 +2019,6 @@ CREATE INDEX organization_memberships_user_id_idx ON app_public.organization_mem
 
 
 --
--- Name: quotas_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX quotas_event_id_idx ON app_public.quotas USING btree (event_id);
-
-
---
--- Name: quotas_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX quotas_id_idx ON app_public.quotas USING btree (id);
-
-
---
--- Name: registration_tokens_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registration_tokens_event_id_idx ON app_public.registration_tokens USING btree (event_id);
-
-
---
--- Name: registrations_created_at_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registrations_created_at_idx ON app_public.registrations USING btree (created_at);
-
-
---
--- Name: registrations_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registrations_event_id_idx ON app_public.registrations USING btree (event_id);
-
-
---
--- Name: registrations_event_id_idx1; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registrations_event_id_idx1 ON app_public.registrations USING btree (event_id);
-
-
---
--- Name: registrations_quota_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registrations_quota_id_idx ON app_public.registrations USING btree (quota_id);
-
-
---
 -- Name: uniq_user_emails_primary_email; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2338,38 +2033,17 @@ CREATE UNIQUE INDEX uniq_user_emails_verified_email ON app_public.user_emails US
 
 
 --
--- Name: event_categories _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: user_authentications_user_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
-
-
---
--- Name: event_questions _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications USING btree (user_id);
 
 
 --
--- Name: events _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: user_authentications _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
-
-
---
--- Name: quotas _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
-
-
---
--- Name: registrations _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.user_authentications FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
@@ -2401,6 +2075,13 @@ CREATE TRIGGER _500_audit_added AFTER INSERT ON app_public.user_emails FOR EACH 
 
 
 --
+-- Name: user_authentications _500_audit_removed; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_authentications FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_audit_job('unlinked_account', 'user_id', 'service', 'identifier');
+
+
+--
 -- Name: user_emails _500_audit_removed; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
@@ -2412,13 +2093,6 @@ CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_emails FOR EAC
 --
 
 CREATE TRIGGER _500_deletion_organization_checks_and_actions BEFORE DELETE ON app_public.users FOR EACH ROW WHEN ((app_public.current_user_id() IS NOT NULL)) EXECUTE PROCEDURE app_public.tg_users__deletion_organization_checks_and_actions();
-
-
---
--- Name: registrations _500_gql_insert; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _500_gql_insert AFTER INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_public.tg__graphql_subscription('registrationAdded', 'graphql:eventRegistrations:$1', 'event_id');
 
 
 --
@@ -2479,6 +2153,14 @@ ALTER TABLE ONLY app_private.sessions
 
 
 --
+-- Name: user_authentication_secrets user_authentication_secrets_user_authentication_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.user_authentication_secrets
+    ADD CONSTRAINT user_authentication_secrets_user_authentication_id_fkey FOREIGN KEY (user_authentication_id) REFERENCES app_public.user_authentications(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_email_secrets user_email_secrets_user_email_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -2492,38 +2174,6 @@ ALTER TABLE ONLY app_private.user_email_secrets
 
 ALTER TABLE ONLY app_private.user_secrets
     ADD CONSTRAINT user_secrets_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: event_categories event_categories_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.event_categories
-    ADD CONSTRAINT event_categories_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
-
-
---
--- Name: event_questions event_questions_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.event_questions
-    ADD CONSTRAINT event_questions_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
-
-
---
--- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.event_categories(id);
-
-
---
--- Name: events events_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
 
 
 --
@@ -2559,35 +2209,11 @@ ALTER TABLE ONLY app_public.organization_memberships
 
 
 --
--- Name: quotas quotas_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+-- Name: user_authentications user_authentications_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
-ALTER TABLE ONLY app_public.quotas
-    ADD CONSTRAINT quotas_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
-
-
---
--- Name: registration_tokens registration_tokens_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registration_tokens
-    ADD CONSTRAINT registration_tokens_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
-
-
---
--- Name: registrations registrations_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registrations
-    ADD CONSTRAINT registrations_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
-
-
---
--- Name: registrations registrations_quota_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registrations
-    ADD CONSTRAINT registrations_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id);
+ALTER TABLE ONLY app_public.user_authentications
+    ADD CONSTRAINT user_authentications_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -2599,16 +2225,16 @@ ALTER TABLE ONLY app_public.user_emails
 
 
 --
--- Name: connect_pg_simple_sessions; Type: ROW SECURITY; Schema: app_private; Owner: -
---
-
-ALTER TABLE app_private.connect_pg_simple_sessions ENABLE ROW LEVEL SECURITY;
-
---
 -- Name: sessions; Type: ROW SECURITY; Schema: app_private; Owner: -
 --
 
 ALTER TABLE app_private.sessions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_authentication_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
+--
+
+ALTER TABLE app_private.user_authentication_secrets ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: user_email_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
@@ -2623,6 +2249,13 @@ ALTER TABLE app_private.user_email_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_private.user_secrets ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: user_authentications delete_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY delete_own ON app_public.user_authentications FOR DELETE USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: user_emails delete_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -2630,137 +2263,10 @@ CREATE POLICY delete_own ON app_public.user_emails FOR DELETE USING ((user_id = 
 
 
 --
--- Name: event_categories; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
-
---
--- Name: event_questions; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
-
---
--- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
-
---
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_id = app_public.current_user_id()));
-
-
---
--- Name: event_categories manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.event_categories USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: event_questions manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: events manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.events USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: quotas manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.quotas USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: registrations manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.registrations USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: event_categories manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.event_categories USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (event_categories.owner_organization_id = organization_memberships.organization_id)))));
-
-
---
--- Name: event_questions manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
-           FROM app_public.events
-          WHERE (events.id = event_questions.event_id)))))));
-
-
---
--- Name: events manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.events USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (events.owner_organization_id = organization_memberships.organization_id)))));
-
-
---
--- Name: quotas manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.quotas USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
-           FROM app_public.events
-          WHERE (events.id = quotas.event_id)))))));
-
-
---
--- Name: event_questions manage_own_category; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own_category ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
-           FROM app_public.event_categories
-          WHERE (event_categories.id = ( SELECT events.category_id
-                   FROM app_public.events
-                  WHERE (events.id = event_questions.event_id)))))))));
-
-
---
--- Name: events manage_own_category; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own_category ON app_public.events USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
-           FROM app_public.event_categories
-          WHERE (event_categories.id = events.category_id)))))));
 
 
 --
@@ -2782,63 +2288,10 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: quotas; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.quotas ENABLE ROW LEVEL SECURITY;
-
---
--- Name: registration_tokens; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.registration_tokens ENABLE ROW LEVEL SECURITY;
-
---
--- Name: registrations; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.registrations ENABLE ROW LEVEL SECURITY;
-
---
--- Name: event_categories select_all; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_all ON app_public.event_categories FOR SELECT USING (true);
-
-
---
--- Name: event_questions select_all; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_all ON app_public.event_questions FOR SELECT USING (true);
-
-
---
--- Name: events select_all; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_all ON app_public.events FOR SELECT USING (true);
-
-
---
 -- Name: organizations select_all; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY select_all ON app_public.organizations FOR SELECT USING (true);
-
-
---
--- Name: quotas select_all; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_all ON app_public.quotas FOR SELECT USING (true);
-
-
---
--- Name: registrations select_all; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY select_all ON app_public.registrations FOR SELECT USING (true);
 
 
 --
@@ -2863,6 +2316,13 @@ CREATE POLICY select_member ON app_public.organization_memberships FOR SELECT US
 
 
 --
+-- Name: user_authentications select_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_own ON app_public.user_authentications FOR SELECT USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: user_emails select_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -2884,6 +2344,12 @@ CREATE POLICY update_owner ON app_public.organizations FOR UPDATE USING ((EXISTS
 
 CREATE POLICY update_self ON app_public.users FOR UPDATE USING ((id = app_public.current_user_id()));
 
+
+--
+-- Name: user_authentications; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.user_authentications ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: user_emails; Type: ROW SECURITY; Schema: app_public; Owner: -
@@ -2929,13 +2395,6 @@ REVOKE ALL ON FUNCTION app_private.assert_valid_password(new_password text) FROM
 
 
 --
--- Name: FUNCTION login(username public.citext, password text); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.login(username public.citext, password text) FROM PUBLIC;
-
-
---
 -- Name: TABLE users; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -2964,10 +2423,38 @@ GRANT UPDATE(avatar_url) ON TABLE app_public.users TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION link_or_register_user(f_user_id uuid, f_service character varying, f_identifier character varying, f_profile json, f_auth_details json); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.link_or_register_user(f_user_id uuid, f_service character varying, f_identifier character varying, f_profile json, f_auth_details json) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION login(username public.citext, password text); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.login(username public.citext, password text) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text); Type: ACL; Schema: app_private; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_private.really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION reset_password(user_id uuid, reset_token text, new_password text); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.reset_password(user_id uuid, reset_token text, new_password text) FROM PUBLIC;
 
 
 --
@@ -3022,11 +2509,11 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 
 --
--- Name: FUNCTION claim_registration_token(event_id uuid); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION check_language(_column jsonb); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.check_language(_column jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
 
 
 --
@@ -3064,56 +2551,6 @@ GRANT UPDATE(name) ON TABLE app_public.organizations TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) TO ilmo_visitor;
-
-
---
--- Name: TABLE registrations; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.event_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_id),UPDATE(event_id) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.quota_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(quota_id),UPDATE(quota_id) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.first_name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(first_name),UPDATE(first_name) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.last_name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(last_name),UPDATE(last_name) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.email; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(email),UPDATE(email) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: FUNCTION create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) TO ilmo_visitor;
 
 
 --
@@ -3162,14 +2599,6 @@ GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO ilmo_
 
 REVOKE ALL ON FUNCTION app_public.delete_organization(organization_id uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO ilmo_visitor;
-
-
---
--- Name: FUNCTION delete_registration_token(token uuid); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.delete_registration_token(token uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.delete_registration_token(token uuid) TO ilmo_visitor;
 
 
 --
@@ -3259,14 +2688,6 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 
 
 --
--- Name: FUNCTION reset_password(user_id uuid, reset_token text, new_password text); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.reset_password(user_id uuid, reset_token text, new_password text) TO ilmo_visitor;
-
-
---
 -- Name: FUNCTION tg__graphql_subscription(); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3331,125 +2752,6 @@ GRANT ALL ON FUNCTION app_public.verify_email(user_email_id uuid, token text) TO
 
 
 --
--- Name: TABLE event_categories; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.event_categories TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_categories.name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(name),UPDATE(name) ON TABLE app_public.event_categories TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_categories.description; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(description),UPDATE(description) ON TABLE app_public.event_categories TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_categories.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.event_categories TO ilmo_visitor;
-
-
---
--- Name: TABLE event_questions; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.event_questions TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_questions.event_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_id),UPDATE(event_id) ON TABLE app_public.event_questions TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_questions.type; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(type),UPDATE(type) ON TABLE app_public.event_questions TO ilmo_visitor;
-
-
---
--- Name: COLUMN event_questions.options; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(options),UPDATE(options) ON TABLE app_public.event_questions TO ilmo_visitor;
-
-
---
--- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.slug; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(slug),UPDATE(slug) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.start_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(start_time),UPDATE(start_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.end_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(end_time),UPDATE(end_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.is_highlighted; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
 -- Name: TABLE organization_memberships; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3457,31 +2759,10 @@ GRANT SELECT ON TABLE app_public.organization_memberships TO ilmo_visitor;
 
 
 --
--- Name: TABLE quotas; Type: ACL; Schema: app_public; Owner: -
+-- Name: TABLE user_authentications; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT SELECT,DELETE ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.event_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_id),UPDATE(event_id) ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.title; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(title),UPDATE(title) ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.size; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(size),UPDATE(size) ON TABLE app_public.quotas TO ilmo_visitor;
+GRANT SELECT,DELETE ON TABLE app_public.user_authentications TO ilmo_visitor;
 
 
 --

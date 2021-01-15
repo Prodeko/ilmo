@@ -20,13 +20,14 @@ import useTranslation from "next-translate/useTranslation";
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
+  const { t, lang } = useTranslation("events");
   const query = useEventPageQuery({ variables: { slug } });
   const eventLoadingElement = useEventLoading(query);
   const event = query?.data?.eventBySlug;
 
   return (
     <SharedLayout
-      title={query.loading ? "" : `${event?.name ?? "Event not found :("}`}
+      title={query.loading ? "" : `${event?.name[lang] ?? t("eventNotFound")}`}
       titleHref="/event/[slug]"
       titleHrefAs={`/event/${event?.slug}`}
       query={query}
@@ -42,23 +43,18 @@ interface EventPageInnerProps {
 
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter();
-  const { t } = useTranslation("register");
+  const { t, lang } = useTranslation("register");
   const slug = useEventSlug();
 
   const columns = [
     {
-      title: t("forms.firstName"),
-      dataIndex: "firstName",
-      key: "firstName",
-    },
-    {
-      title: t("forms.lastName"),
-      dataIndex: "lastName",
-      key: "lastName",
+      title: t("common:name"),
+      dataIndex: "fullName",
+      key: "fullName",
     },
     {
       title: t("forms.quota"),
-      dataIndex: ["quota", "title"],
+      dataIndex: ["quota", "title", lang],
       key: "quota",
     },
     {
@@ -72,17 +68,17 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   return (
     <>
       <PageHeader
-        title={"Dashboard"}
+        title={t("common:backHome")}
         onBack={() => router.push("/")}
         extra={[
           <Tag color="red" key={event.category?.id}>
-            {event.category?.name}
+            {event.category?.name[lang]}
           </Tag>,
         ]}
       />
       <Row>
         <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
-          {event.description}
+          {event.description[lang]}
           <ServerPaginatedTable
             data-cy="eventpage-signups-table"
             queryDocument={EventPageDocument}
@@ -119,7 +115,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                       disabled={registrations.totalCount >= size}
                       block
                     >
-                      {q.title}
+                      {q.title[lang]}
                     </Button>
                   </Link>
                   <ProgressBar completed={percentageFilled} />

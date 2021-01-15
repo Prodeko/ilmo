@@ -641,6 +641,43 @@ type DeleteQuotaPayload {
   ): QuotasEdge
 }
 
+"""All input for the `deleteUserAuthentication` mutation."""
+input DeleteUserAuthenticationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our delete `UserAuthentication` mutation."""
+type DeleteUserAuthenticationPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedUserAuthenticationNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `User` that is related to this `UserAuthentication`."""
+  user: User
+
+  """The `UserAuthentication` that was deleted by this mutation."""
+  userAuthentication: UserAuthentication
+
+  """An edge for our `UserAuthentication`. May be used by Relay 1."""
+  userAuthenticationEdge(
+    """The method to use when ordering `UserAuthentication`."""
+    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): UserAuthenticationsEdge
+}
+
 """All input for the `deleteUserEmail` mutation."""
 input DeleteUserEmailInput {
   """
@@ -688,7 +725,7 @@ type Event {
   createdAt: Datetime!
 
   """Description of the event."""
-  description: String
+  description: JSON!
 
   """Ending time of the event."""
   endTime: Datetime!
@@ -734,7 +771,7 @@ type Event {
   isHighlighted: Boolean!
 
   """Name of the event."""
-  name: String
+  name: JSON!
 
   """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
@@ -860,7 +897,7 @@ type EventCategory {
   createdAt: Datetime!
 
   """Short description of the event category."""
-  description: String
+  description: JSON!
 
   """Reads and enables pagination through a set of `Event`."""
   eventsByCategoryId(
@@ -900,7 +937,7 @@ type EventCategory {
   id: UUID!
 
   """Name of the event category."""
-  name: String
+  name: JSON!
 
   """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
@@ -945,10 +982,10 @@ input EventCategoryFilter {
 """An input for mutations affecting `EventCategory`"""
 input EventCategoryInput {
   """Short description of the event category."""
-  description: String
+  description: JSON!
 
   """Name of the event category."""
-  name: String
+  name: JSON!
 
   """Identifier of the organizer."""
   ownerOrganizationId: UUID!
@@ -959,10 +996,10 @@ Represents an update to a `EventCategory`. Fields that are set will be updated.
 """
 input EventCategoryPatch {
   """Short description of the event category."""
-  description: String
+  description: JSON
 
   """Name of the event category."""
-  name: String
+  name: JSON
 
   """Identifier of the organizer."""
   ownerOrganizationId: UUID
@@ -1024,7 +1061,7 @@ input EventInput {
   createdAt: Datetime
 
   """Description of the event."""
-  description: String
+  description: JSON!
 
   """Ending time of the event."""
   endTime: Datetime!
@@ -1036,7 +1073,7 @@ input EventInput {
   isHighlighted: Boolean
 
   """Name of the event."""
-  name: String
+  name: JSON!
 
   """Id of the organizer."""
   ownerOrganizationId: UUID!
@@ -1058,7 +1095,7 @@ input EventPatch {
   createdAt: Datetime
 
   """Description of the event."""
-  description: String
+  description: JSON
 
   """Ending time of the event."""
   endTime: Datetime
@@ -1070,7 +1107,7 @@ input EventPatch {
   isHighlighted: Boolean
 
   """Name of the event."""
-  name: String
+  name: JSON
 
   """Id of the organizer."""
   ownerOrganizationId: UUID
@@ -1473,6 +1510,14 @@ type Mutation {
     """
     input: DeleteQuotaInput!
   ): DeleteQuotaPayload
+
+  """Deletes a single `UserAuthentication` using a unique key."""
+  deleteUserAuthentication(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteUserAuthenticationInput!
+  ): DeleteUserAuthenticationPayload
 
   """Deletes a single `UserEmail` using a unique key."""
   deleteUserEmail(
@@ -1960,6 +2005,8 @@ type PageInfo {
 
 """The root query type which gives access points into the data universe."""
 type Query {
+  checkLanguage(_column: JSON!): Boolean
+
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
@@ -2181,6 +2228,42 @@ type Query {
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
   user(id: UUID!): User
+  userAuthentication(id: UUID!): UserAuthentication
+  userAuthenticationByServiceAndIdentifier(identifier: String!, service: String!): UserAuthentication
+
+  """Reads and enables pagination through a set of `UserAuthentication`."""
+  userAuthentications(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: UserAuthenticationCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserAuthenticationFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `UserAuthentication`."""
+    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): UserAuthenticationsConnection
   userByUsername(username: String!): User
   userEmail(id: UUID!): UserEmail
 }
@@ -2246,7 +2329,7 @@ type Quota {
   size: Int!
 
   """Title for the quota."""
-  title: String!
+  title: JSON!
   updatedAt: Datetime!
 }
 
@@ -2290,7 +2373,7 @@ input QuotaInput {
   size: Int!
 
   """Title for the quota."""
-  title: String!
+  title: JSON!
 }
 
 """
@@ -2304,7 +2387,7 @@ input QuotaPatch {
   size: Int
 
   """Title for the quota."""
-  title: String
+  title: JSON
 }
 
 """A connection to a list of `Quota` values."""
@@ -2360,9 +2443,6 @@ type RegisterPayload {
 type Registration {
   createdAt: Datetime!
 
-  """Email address of the person registering to an event."""
-  email: String!
-
   """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
@@ -2371,6 +2451,7 @@ type Registration {
 
   """First name of the person registering to an event."""
   firstName: String!
+  fullName: String
 
   """Unique identifier for the registration."""
   id: UUID!
@@ -2417,6 +2498,9 @@ input RegistrationFilter {
   """Filter by the object’s `eventId` field."""
   eventId: UUIDFilter
 
+  """Filter by the object’s `fullName` field."""
+  fullName: StringFilter
+
   """Filter by the object’s `id` field."""
   id: UUIDFilter
 
@@ -2434,9 +2518,6 @@ input RegistrationFilter {
 Represents an update to a `Registration`. Fields that are set will be updated.
 """
 input RegistrationPatch {
-  """Email address of the person registering to an event."""
-  email: String
-
   """Identifier of a related event."""
   eventId: UUID
 
@@ -3133,6 +3214,40 @@ type User {
   ): OrganizationMembershipsConnection!
   updatedAt: Datetime!
 
+  """Reads and enables pagination through a set of `UserAuthentication`."""
+  userAuthentications(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: UserAuthenticationCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserAuthenticationFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `UserAuthentication`."""
+    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): UserAuthenticationsConnection!
+
   """Reads and enables pagination through a set of `UserEmail`."""
   userEmails(
     """Read all values in the set after (below) this cursor."""
@@ -3169,6 +3284,107 @@ type User {
 
   """Public-facing username (or 'handle') of the user."""
   username: String!
+}
+
+"""
+Contains information about the login providers this user has used, so that they may disconnect them should they wish.
+"""
+type UserAuthentication {
+  createdAt: Datetime!
+
+  """Additional profile details extracted from this login method"""
+  details: JSON!
+  id: UUID!
+
+  """A unique identifier for the user within the login service."""
+  identifier: String!
+
+  """The login service used, e.g. `twitter` or `github`."""
+  service: String!
+  updatedAt: Datetime!
+
+  """Reads a single `User` that is related to this `UserAuthentication`."""
+  user: User
+  userId: UUID!
+}
+
+"""
+A condition to be used against `UserAuthentication` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input UserAuthenticationCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `service` field."""
+  service: String
+
+  """Checks for equality with the object’s `userId` field."""
+  userId: UUID
+}
+
+"""
+A filter to be used against `UserAuthentication` object types. All fields are combined with a logical ‘and.’
+"""
+input UserAuthenticationFilter {
+  """Checks for all expressions in this list."""
+  and: [UserAuthenticationFilter!]
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: UserAuthenticationFilter
+
+  """Checks for any expressions in this list."""
+  or: [UserAuthenticationFilter!]
+
+  """Filter by the object’s `service` field."""
+  service: StringFilter
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
+}
+
+"""A connection to a list of `UserAuthentication` values."""
+type UserAuthenticationsConnection {
+  """
+  A list of edges which contains the `UserAuthentication` and cursor to aid in pagination.
+  """
+  edges: [UserAuthenticationsEdge!]!
+
+  """A list of `UserAuthentication` objects."""
+  nodes: [UserAuthentication!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `UserAuthentication` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `UserAuthentication` edge in the connection."""
+type UserAuthenticationsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `UserAuthentication` at the end of the edge."""
+  node: UserAuthentication!
+}
+
+"""Methods to use when ordering `UserAuthentication`."""
+enum UserAuthenticationsOrderBy {
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  SERVICE_ASC
+  SERVICE_DESC
+  USER_ID_ASC
+  USER_ID_DESC
 }
 
 """Information about a user's email address."""
