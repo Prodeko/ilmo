@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ProgressBar,
-  ServerPaginatedTable,
   SharedLayout,
+  SimpleTable,
   useEventLoading,
   useEventSlug,
 } from "@app/components";
 import {
   EventPage_EventFragment,
-  EventPageDocument,
+  Registration,
   useEventPageQuery,
+  useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { Button, Card, Col, PageHeader, Row, Tag } from "antd";
 import dayjs from "dayjs";
@@ -44,7 +45,19 @@ interface EventPageInnerProps {
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter();
   const { t, lang } = useTranslation("register");
-  const slug = useEventSlug();
+
+  const [registrations, setRegistrations] = useState<
+    Registration[] | null | undefined
+  >(event.registrations.nodes as Registration[]);
+  useEventRegistrationsSubscription({
+    variables: { eventId: event?.id, after: event.createdAt },
+    skip: !event?.id,
+    onSubscriptionData: ({ subscriptionData }) =>
+      setRegistrations(
+        subscriptionData?.data?.eventRegistrations
+          ?.registrations as Registration[]
+      ),
+  });
 
   const columns = [
     {
@@ -79,13 +92,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       <Row>
         <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
           {event.description[lang]}
-          <ServerPaginatedTable
+          <SimpleTable
             data-cy="eventpage-signups-table"
-            queryDocument={EventPageDocument}
-            variables={{ slug }}
+            data={registrations}
             columns={columns}
-            dataField="eventBySlug.registrations"
-            showPagination={false}
           />
         </Col>
         <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>

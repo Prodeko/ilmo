@@ -5,6 +5,7 @@ fragment EventPage_Event on Event {
   startTime
   endTime
   description
+  createdAt
   category {
     id
     description

@@ -1,4 +1,4 @@
-import { QueryBuilder, SQL, SQLGen } from "graphile-build-pg";
+import { QueryBuilder, SQL } from "graphile-build-pg";
 import {
   embed /*, AugmentedGraphQLFieldResolver */,
   gql,
@@ -120,11 +120,14 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
           sql.fragment`app_public.registrations`,
 
           // Query that returns the subscription data
-          ({ tableAlias, event, args }) =>
-            sql.fragment`${tableAlias}.event_id = ${sql.value(
+          ({ sqlBuilder, tableAlias, event, args }) => {
+            const where = sql.fragment`${tableAlias}.event_id = ${sql.value(
               event.subject
-            )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`,
-
+            )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`;
+            const orderBy = sql.fragment`created_at`;
+            sqlBuilder.where(where);
+            sqlBuilder.orderBy(() => orderBy, false);
+          },
           // Whether to return a single record or a list.
           // If true, return list.
           true
@@ -140,7 +143,8 @@ interface TgGraphQLSubscriptionPayload {
   subject: string | null;
 }
 
-interface SqlWhereArgs {
+interface ConstructQueryArgs {
+  sqlBuilder: QueryBuilder;
   tableAlias: SQL;
   event: TgGraphQLSubscriptionPayload;
   args: any;
@@ -153,7 +157,7 @@ interface SqlWhereArgs {
  */
 function getByQueryFromTable(
   sqlTable: SQL,
-  sqlWhere: (args: SqlWhereArgs) => SQLGen,
+  constructQuery: (args: ConstructQueryArgs) => void,
   returnList: boolean = false
 ): AugmentedGraphQLFieldResolver<TgGraphQLSubscriptionPayload, any> {
   return async (
@@ -165,8 +169,7 @@ function getByQueryFromTable(
     const rows = await selectGraphQLResultFromTable(
       sqlTable,
       (tableAlias: SQL, sqlBuilder: QueryBuilder) => {
-        const where = sqlWhere({ tableAlias, event, args });
-        sqlBuilder.where(where);
+        constructQuery({ sqlBuilder, tableAlias, event, args });
       }
     );
 
