@@ -15,6 +15,7 @@ import {
   useDeleteOrganizationMutation,
   useOrganizationPageQuery,
 } from "@app/graphql";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, message, PageHeader, Popconfirm } from "antd";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -70,6 +71,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
       router.push("/");
     } catch (e) {
       setError(e);
+      Sentry.captureException(e);
       return;
     }
   }, [deleteOrganization, organization.id, organization.name, router]);

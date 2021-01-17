@@ -18,6 +18,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import {
   Alert,
   Button,
@@ -61,6 +62,7 @@ const EventRegistrationPage: NextPage = () => {
           await claimRegistratioToken({ variables: { eventId } });
         } catch (e) {
           setError(e);
+          Sentry.captureException(e);
         }
       }
     };
@@ -150,6 +152,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
         message.success(t("eventSignupComplete"));
       } catch (e) {
         setError(e);
+        Sentry.captureException(e);
       }
     },
     [client, createRegistration, event, quota, setError, token, t]

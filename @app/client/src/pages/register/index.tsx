@@ -22,13 +22,14 @@ import {
   setPasswordInfo,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input, Tooltip } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Router from "next/router";
 import { Store } from "rc-field-form/lib/interface";
 
-import { isSafe } from "./login";
+import { isSafe } from "../login";
 
 interface RegisterProps {
   next: string | null;
@@ -110,6 +111,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
           ]);
         } else {
           setError(e);
+          Sentry.captureException(e);
         }
       }
     },

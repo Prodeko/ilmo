@@ -1,10 +1,14 @@
 import { Express } from "express";
 import helmet from "helmet";
 
-const isDevOrTest =
-  process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+const { NODE_ENV } = process.env;
+const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
+const sentryReportUri = `https://sentry.prodeko.org/api/6/security/?sentry_key=711cf89fb3524b359f171aa9e07b3b3d&sentry_environment=${NODE_ENV}`;
 
 const commonPolicies = {
+  expectCt: {
+    reportUri: sentryReportUri,
+  },
   contentSecurityPolicy: {
     // Default directives taken from:
     // https://github.com/helmetjs/helmet/blob/main/middlewares/content-security-policy/index.ts
@@ -13,15 +17,17 @@ const commonPolicies = {
     // "upgrade-insecure-requests" does not work with dev.
     directives: {
       "default-src": ["'self'"],
+      "connect-src": ["'self'", "sentry.prodeko.org"],
       "base-uri": ["'self'"],
       "block-all-mixed-content": [],
       "font-src": ["'self'", "https:", "data:"],
       "frame-ancestors": ["'self'"],
       "img-src": ["'self'", "data:"],
       "object-src": ["'none'"],
-      "script-src": ["'self'"],
+      "script-src": ["'self'", "'unsafe-inline'"],
       "script-src-attr": ["'none'"],
       "style-src": ["'self'", "https:", "'unsafe-inline'"],
+      "report-uri": [sentryReportUri],
     },
   },
   // Postgraphile v4.11.0 had some changes related to

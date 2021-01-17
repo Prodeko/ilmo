@@ -21,6 +21,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -215,6 +216,7 @@ function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
         onComplete();
       } catch (e) {
         setError(e);
+        Sentry.captureException(e);
       }
     },
     [addEmail, onComplete, setError]

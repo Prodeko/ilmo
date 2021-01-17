@@ -12,6 +12,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -97,6 +98,7 @@ function ProfileSettingsForm({
           ]);
         } else {
           setError(e);
+          Sentry.captureException(e);
         }
       }
     },

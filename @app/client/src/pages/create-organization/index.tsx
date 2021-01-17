@@ -13,6 +13,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Col, Form, Input, PageHeader, Row, Spin } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import Text from "antd/lib/typography/Text";
@@ -82,6 +83,7 @@ const CreateOrganizationPage: NextPage = () => {
         setOrganization(data?.createOrganization?.organization || null);
       } catch (e) {
         setFormError(e);
+        Sentry.captureException(e);
       }
     },
     [createOrganization]

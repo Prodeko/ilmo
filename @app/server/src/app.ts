@@ -9,6 +9,7 @@ import { cloudflareIps } from "./cloudflare";
 import * as middleware from "./middleware";
 import { makeShutdownActions, ShutdownAction } from "./shutdownActions";
 import { sanitizeEnv } from "./utils";
+
 // Server may not always be supplied, e.g. where mounting on a sub-route
 export function getHttpServer(app: Express): Server | void {
   return app.get("httpServer");
@@ -33,6 +34,8 @@ function initSentry(app: Express) {
       new Sentry.Integrations.Http({ tracing: true }),
       // enable Express.js middleware tracing
       new Tracing.Integrations.Express({ app }),
+      // enable database query tracing
+      new Tracing.Integrations.Postgres(),
     ],
 
     // We recommend adjusting this value in production, or using tracesSampler

@@ -1,6 +1,9 @@
 import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
+import * as Sentry from "@sentry/react";
+import SentryRRWeb from "@sentry/rrweb";
+import { Integrations as TracingIntegrations } from "@sentry/tracing";
 import { ConfigProvider, notification } from "antd";
 import enUS from "antd/lib/locale/en_US";
 import fiFI from "antd/lib/locale/fi_FI";
@@ -19,6 +22,7 @@ declare global {
     __GRAPHILE_APP__: {
       ROOT_URL?: string;
       T_AND_C_URL?: string;
+      SENTRY_DSN?: string;
     };
   }
 }
@@ -33,15 +37,28 @@ if (typeof window !== "undefined") {
     throw new Error("Cannot read from __NEXT_DATA__ element");
   }
   const data = JSON.parse(nextDataEl.textContent);
+  const { ROOT_URL, T_AND_C_URL, SENTRY_DSN } = data.query;
   window.__GRAPHILE_APP__ = {
-    ROOT_URL: data.query.ROOT_URL,
-    T_AND_C_URL: data.query.T_AND_C_URL,
+    ROOT_URL,
+    T_AND_C_URL,
+    SENTRY_DSN,
   };
+
+  if (SENTRY_DSN) {
+    Sentry.init({
+      environment: process.env.NODE_ENV,
+      dsn: SENTRY_DSN,
+      integrations: [
+        new TracingIntegrations.BrowserTracing(),
+        new SentryRRWeb(),
+      ],
+      tracesSampleRate: 1,
+    });
+  }
 
   Router.events.on("routeChangeStart", () => {
     NProgress.start();
   });
-
   Router.events.on("routeChangeComplete", () => {
     NProgress.done();
   });
@@ -84,13 +101,15 @@ class Ilmo extends App<Props> {
     const { Component, pageProps, apollo, locale } = this.props;
 
     return (
-      <ApolloProvider client={apollo}>
-        <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
-          <Component {...pageProps} />
-        </ConfigProvider>
-      </ApolloProvider>
+      <Sentry.ErrorBoundary fallback={"An error has occurred"}>
+        <ApolloProvider client={apollo}>
+          <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
+            <Component {...pageProps} />
+          </ConfigProvider>
+        </ApolloProvider>
+      </Sentry.ErrorBoundary>
     );
   }
 }
 
-export default withApollo(Ilmo);
+export default Sentry.withProfiler(withApollo(Ilmo));

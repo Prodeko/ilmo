@@ -13,6 +13,7 @@ import {
   useUpdateOrganizationMutation,
 } from "@app/graphql";
 import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input, message, PageHeader } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -74,6 +75,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
         }
       } catch (e) {
         setError(e);
+        Sentry.captureException(e);
       }
     },
     [organization.id, organization.slug, updateOrganization]

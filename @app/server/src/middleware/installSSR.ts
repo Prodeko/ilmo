@@ -39,6 +39,7 @@ export default async function installSSR(app: Express) {
         // See 'next.config.js':
         ROOT_URL: process.env.ROOT_URL || "http://localhost:5678",
         T_AND_C_URL: process.env.T_AND_C_URL,
+        SENTRY_DSN: process.env.SENTRY_DSN,
       },
     });
   });

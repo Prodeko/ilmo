@@ -12,6 +12,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
 import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
@@ -48,6 +49,7 @@ const CreateEventCategoryPage: NextPage = () => {
         setEventCategory(data?.createEventCategory?.eventCategory || null);
       } catch (e) {
         setFormError(e);
+        Sentry.captureException(e);
       }
     },
     [createEventCategory]

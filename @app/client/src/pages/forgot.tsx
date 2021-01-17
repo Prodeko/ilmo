@@ -4,6 +4,7 @@ import { ApolloError } from "@apollo/client";
 import { AuthRestrict, SharedLayout } from "@app/components";
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql";
 import { extractError, getCodeFromError } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -33,6 +34,7 @@ const ForgotPassword: NextPage = () => {
           setSuccessfulEmail(email);
         } catch (e) {
           setError(e);
+          Sentry.captureException(e);
         }
       })();
     },

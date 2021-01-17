@@ -19,6 +19,7 @@ import {
   setPasswordInfo,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input, PageHeader } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -71,6 +72,7 @@ const Settings_Security: NextPage = () => {
           ]);
         } else {
           setError(e);
+          Sentry.captureException(e);
         }
       }
     },
@@ -99,6 +101,7 @@ const Settings_Security: NextPage = () => {
         await forgotPassword({ variables: { email } });
       } catch (e) {
         setResetError(resetError);
+        Sentry.captureException(e);
       }
       setResetInProgress(false);
     })();
