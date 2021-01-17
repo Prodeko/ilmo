@@ -12,6 +12,7 @@ import {
 } from "@app/components";
 import { useLoginMutation, useSharedQuery } from "@app/graphql";
 import { extractError, getCodeFromError } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
@@ -81,15 +82,14 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                 <Row justify="center">
                   <Col flex={1}>
                     <ButtonLink
+                      data-cy="loginpage-button-register"
                       icon={<UserAddOutlined />}
                       size="large"
                       block
                       type="default"
                       href={`/register?next=${encodeURIComponent(next)}`}
                     >
-                      <a data-cy="loginpage-button-register">
-                        Create an account
-                      </a>
+                      Create an account
                     </ButtonLink>
                   </Col>
                 </Row>
@@ -152,6 +152,7 @@ function LoginForm({
           setSubmitDisabled(true);
         } else {
           setError(e);
+          Sentry.captureException(e);
         }
       }
     },
@@ -209,7 +210,6 @@ function LoginForm({
           <a>Forgotten passphrase?</a>
         </Link>
       </Form.Item>
-
       {error ? (
         <Form.Item>
           <Alert

@@ -17,6 +17,7 @@ import {
   useTransferOrganizationOwnershipMutation,
 } from "@app/graphql";
 import { formItemLayout, tailFormItemLayout } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import {
   Button,
   Card,
@@ -129,6 +130,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
           "Could not invite to organization: " +
             e.message.replace(/^GraphQL Error:/i, "")
         );
+        Sentry.captureException(e);
       } finally {
         setInviteInProgress(false);
       }
@@ -205,6 +207,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
       });
     } catch (e) {
       message.error("Error occurred when removing member: " + e.message);
+      Sentry.captureException(e);
     }
   }, [node.user, organization.id, removeMember]);
 
@@ -220,6 +223,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
       });
     } catch (e) {
       message.error("Error occurred when transferring ownership: " + e.message);
+      Sentry.captureException(e);
     }
   }, [node.user, organization.id, transferOwnership]);
 

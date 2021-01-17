@@ -4,13 +4,14 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -b",
-    "test": "cross-env NODE_ENV=test npx --no-install -n \"-r @app/config/env\" jest"
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
   },
   "dependencies": {
     "@ant-design/colors": "^5.0.1",
     "@ant-design/icons": "^4.3.0",
     "@apollo/client": "^3.4.0-beta.4",
     "@app/graphql": "0.0.0",
+    "@sentry/react": "^5.30.0",
     "antd": "^4.10.0",
     "lodash": "^4.17.20",
     "next": "^10.0.5",

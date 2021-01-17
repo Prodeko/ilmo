@@ -12,6 +12,7 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib";
+import * as Sentry from "@sentry/react";
 import {
   Alert,
   Button,
@@ -65,6 +66,7 @@ const CreateEventPage: NextPage = () => {
         setEvent(data?.createEvent?.event || null);
       } catch (e) {
         setFormError(e);
+        Sentry.captureException(e);
       }
     },
     [createEvent]
