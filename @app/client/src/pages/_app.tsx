@@ -2,7 +2,6 @@ import * as React from "react";
 import { ApolloClient, ApolloProvider } from "@apollo/client";
 import { withApollo } from "@app/lib";
 import * as Sentry from "@sentry/react";
-import SentryRRWeb from "@sentry/rrweb";
 import { Integrations as TracingIntegrations } from "@sentry/tracing";
 import { ConfigProvider, notification } from "antd";
 import enUS from "antd/lib/locale/en_US";
@@ -48,10 +47,7 @@ if (typeof window !== "undefined") {
     Sentry.init({
       environment: process.env.NODE_ENV,
       dsn: SENTRY_DSN,
-      integrations: [
-        new TracingIntegrations.BrowserTracing(),
-        new SentryRRWeb(),
-      ],
+      integrations: [new TracingIntegrations.BrowserTracing()],
       tracesSampleRate: 1,
     });
   }
