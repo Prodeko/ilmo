@@ -307,7 +307,7 @@ create table app_public.quotas(
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   
-  constraint _cnstr_check_name_language check(check_language(title))
+  constraint _cnstr_check_title_language check(check_language(title))
 );
 alter table app_public.quotas enable row level security;
 

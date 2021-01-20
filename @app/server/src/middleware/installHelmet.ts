@@ -17,14 +17,14 @@ const commonPolicies = {
     // "upgrade-insecure-requests" does not work with dev.
     directives: {
       "default-src": ["'self'"],
-      "connect-src": ["'self'", "sentry.prodeko.org"],
+      "connect-src": ["'self'", "https://sentry.prodeko.org"],
       "base-uri": ["'self'"],
       "block-all-mixed-content": [],
       "font-src": ["'self'", "https:", "data:"],
       "frame-ancestors": ["'self'"],
       "img-src": ["'self'", "data:"],
       "object-src": ["'none'"],
-      "script-src": ["'self'", "'unsafe-inline'"],
+      "script-src": ["'self'", "'unsafe-inline'", "https://sentry.prodeko.org"],
       "script-src-attr": ["'none'"],
       "style-src": ["'self'", "https:", "'unsafe-inline'"],
       "report-uri": [sentryReportUri],
@@ -46,8 +46,11 @@ export default function installHelmet(app: Express) {
                 ...commonPolicies.contentSecurityPolicy.directives,
                 // Dev needs 'unsafe-eval' due to
                 // https://github.com/vercel/next.js/issues/14221
-                "script-src": ["'self'", "'unsafe-eval'"],
-                "connect-src": ["'self'"],
+                "script-src": [
+                  "'self'",
+                  "'unsafe-eval'",
+                  "https://sentry.prodeko.org",
+                ],
               },
             },
           }
