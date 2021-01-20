@@ -23,7 +23,9 @@
         "category": "Valitse tapahtuman kategoria"
       },
       "eventCategory": {
-        "organizer": "Valitse kategorian järjestäjä"
+        "organizer": "Valitse kategorian järjestäjä",
+        "inFinnish": "Suomeksi",
+        "inEnglish": "Englanniksi"
       }
     },
     "rules": {

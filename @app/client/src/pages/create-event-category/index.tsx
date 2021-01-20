@@ -93,29 +93,87 @@ const CreateEventCategoryPage: NextPage = () => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item
-                name="name"
-                label={t("common:name")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.eventCategory.provideName"),
-                  },
-                ]}
-              >
-                <Input data-cy="createeventcategory-input-name" />
+              <Form.Item label={t("common:name")}>
+                <Input.Group compact>
+                  <Form.Item
+                    name={["name", "fi"]}
+                    noStyle
+                    rules={[
+                      {
+                        required: true,
+                        message: t("forms.rules.eventCategory.provideName"),
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder={t(
+                        "forms.placeholders.eventCategory.inFinnish"
+                      )}
+                      data-cy="createeventcategory-input-name-fi"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={["name", "en"]}
+                    noStyle
+                    rules={[
+                      {
+                        required: true,
+                        message: t("forms.rules.eventCategory.provideName"),
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder={t(
+                        "forms.placeholders.eventCategory.inEnglish"
+                      )}
+                      style={{ marginTop: 5 }}
+                      data-cy="createeventcategory-input-name-en"
+                    />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
-              <Form.Item
-                name="description"
-                label={t("common:shortDescription")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.eventCategory.provideDescription"),
-                  },
-                ]}
-              >
-                <Input.TextArea data-cy="createeventcategory-input-description" />
+              <Form.Item label={t("common:shortDescription")}>
+                <Input.Group compact>
+                  <Form.Item
+                    name={["description", "fi"]}
+                    noStyle
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "forms.rules.eventCategory.provideDescription"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      placeholder={t(
+                        "forms.placeholders.eventCategory.inFinnish"
+                      )}
+                      data-cy="createeventcategory-input-description-fi"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={["description", "en"]}
+                    noStyle
+                    rules={[
+                      {
+                        required: true,
+                        message: t(
+                          "forms.rules.eventCategory.provideDescription"
+                        ),
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      placeholder={t(
+                        "forms.placeholders.eventCategory.inEnglish"
+                      )}
+                      style={{ marginTop: 5 }}
+                      data-cy="createeventcategory-input-description-en"
+                    />
+                  </Form.Item>
+                </Input.Group>
               </Form.Item>
               {formError ? (
                 <Form.Item {...tailFormItemLayout}>

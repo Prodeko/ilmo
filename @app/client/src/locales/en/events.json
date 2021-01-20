@@ -23,7 +23,9 @@
         "category": "Please select a category for the event"
       },
       "eventCategory": {
-        "organizer": "Please select an organizer for the event category"
+        "organizer": "Please select an organizer for the event category",
+        "inFinnish": "In Finnish",
+        "inEnglish": "In English"
       }
     },
     "rules": {
