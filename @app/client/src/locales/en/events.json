@@ -1,9 +1,10 @@
 {
-  "eventName": "Event",
-  "organizer": "Organizer",
   "category": "Category",
-  "time": "Time",
+  "eventName": "Event",
   "eventNotFound": "Event not found",
+  "languages": "Languages",
+  "organizer": "Organizer",
+  "time": "Time",
   "createEvent": {
     "title": "Luo tapahtuma"
   },
@@ -23,12 +24,14 @@
         "category": "Please select a category for the event"
       },
       "eventCategory": {
-        "organizer": "Please select an organizer for the event category",
-        "inFinnish": "In Finnish",
-        "inEnglish": "In English"
+        "en": "In English",
+        "fi": "In Finnish",
+        "languages": "Please select languages",
+        "organizer": "Please select an organizer for the event category"
       }
     },
     "rules": {
+      "provideLanguage": "Please select languages",
       "event": {
         "provideOrganizer": "Please choose an organizer for the event",
         "provideCategory": "Please choose a category for the event",

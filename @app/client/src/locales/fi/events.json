@@ -1,9 +1,10 @@
 {
-  "eventName": "Tapahtuma",
-  "organizer": "Järjestäjä",
   "category": "Kategoria",
-  "time": "Aika",
+  "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
+  "languages": "Kielet",
+  "organizer": "Järjestäjä",
+  "time": "Aika",
   "createEvent": {
     "title": "Luo tapahtuma"
   },
@@ -23,12 +24,14 @@
         "category": "Valitse tapahtuman kategoria"
       },
       "eventCategory": {
-        "organizer": "Valitse kategorian järjestäjä",
-        "inFinnish": "Suomeksi",
-        "inEnglish": "Englanniksi"
+        "en": "Englanniksi",
+        "fi": "Suomeksi",
+        "languages": "Valitse kielet",
+        "organizer": "Valitse kategorian järjestäjä"
       }
     },
     "rules": {
+      "provideLanguage": "Valitse kielet",
       "event": {
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",
         "provideCategory": "Valitse tapahtuman kategoria",

@@ -808,7 +808,7 @@ CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
     LANGUAGE sql STABLE
     AS $$
   -- These are the languages that our app supports
-  select _column ?& array['fi', 'en'];
+  select _column ?| array['fi', 'en'];
 $$;
 
 

@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:49d922742f07345c142ebfbf0e212a74af7a7002
+--! Hash: sha1:7c4439e1ceced1304de1c66fcee2f3c7f64f7373
 
 --! split: 0001-reset.sql
 /*
@@ -243,7 +243,7 @@ create function app_public.check_language(_column jsonb)
 returns boolean
 as $$
   -- These are the languages that our app supports
-  select _column ?& array['fi', 'en'];
+  select _column ?| array['fi', 'en'];
 $$
 language sql stable;
 
