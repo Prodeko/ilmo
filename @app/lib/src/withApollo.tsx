@@ -7,6 +7,7 @@ import {
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { getDataFromTree } from "@apollo/client/react/ssr";
+import { SentryLink } from "apollo-link-sentry";
 import { getOperationAST } from "graphql";
 import withApolloBase from "next-with-apollo";
 
@@ -78,10 +79,17 @@ export const withApollo = withApolloBase(
       isServer && req && res
         ? makeServerSideLink(req, res)
         : makeClientSideLink(ROOT_URL);
+    const sentryLink = new SentryLink({
+      breadcrumb: {
+        includeQuery: true,
+        includeVariables: true,
+        includeError: true,
+      },
+    });
 
     const client = new ApolloClient({
       ssrMode: isServer,
-      link: ApolloLink.from([onErrorLink, mainLink]),
+      link: ApolloLink.from([onErrorLink, sentryLink, mainLink]),
       cache: new InMemoryCache({}).restore(initialState || {}),
     });
 
