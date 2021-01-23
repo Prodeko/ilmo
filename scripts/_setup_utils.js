@@ -53,6 +53,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add("DATABASE_NAME");
   add("DATABASE_OWNER", answers.DATABASE_NAME);
+  add("AZURE_DB_OWNER", answers.DATABASE_NAME);
   add("DATABASE_OWNER_PASSWORD", safeRandomString(30));
 
   add(

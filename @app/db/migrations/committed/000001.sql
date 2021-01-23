@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:7c4439e1ceced1304de1c66fcee2f3c7f64f7373
+--! Hash: sha1:f7698dc9fbabceff5c566e3775f6cc33412c5a04
 
 --! split: 0001-reset.sql
 /*
@@ -33,7 +33,9 @@ alter default privileges revoke all on functions from public;
 
 -- Of course we want our database owner to be able to do anything inside the
 -- database, so we grant access to the `public` schema:
-grant all on schema public to :DATABASE_OWNER;
+-- Use AZURE_DB_OWNER env variable as the public schema owner as a workaround
+-- to https://github.com/graphile/migrate/issues/75.
+grant all on schema public to :AZURE_DB_OWNER;
 
 --! split: 0020-schemas.sql
 /*

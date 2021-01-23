@@ -42,7 +42,8 @@
    */
   "placeholders": {
     ":DATABASE_AUTHENTICATOR": "!ENV",
-    ":DATABASE_VISITOR": "!ENV"
+    ":DATABASE_VISITOR": "!ENV",
+    ":AZURE_DB_OWNER": "!ENV"
   },
 
   /*
