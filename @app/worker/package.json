@@ -6,7 +6,7 @@
     "gw": "cd dist && cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" graphile-worker",
     "build": "tsc -b",
     "start": "yarn gw",
-    "dev": "cd dist && cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env --inspect=9757\" graphile-worker --watch",
+    "dev": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --inspect=9757\" yarn gw --watch",
     "install-db-schema": "mkdirp dist && yarn gw --schema-only",
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
   },
@@ -16,7 +16,6 @@
     "@types/lodash": "^4.14.168",
     "@types/mjml": "^4.7.0",
     "@types/nodemailer": "^6.4.0",
-    "aws-sdk": "^2.828.0",
     "chalk": "^4.1.0",
     "cross-env": "^7.0.3",
     "graphile-worker": "^0.8.1",
