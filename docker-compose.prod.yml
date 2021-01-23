@@ -7,7 +7,6 @@ services:
     env_file:
       - .env.production
     depends_on:
-      - db
       - redis
 
   worker:
@@ -16,7 +15,6 @@ services:
     env_file:
       - .env.production
     depends_on:
-      - db
       - redis
       - server
 
