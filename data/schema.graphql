@@ -1058,16 +1058,12 @@ input EventFilter {
 input EventInput {
   """Id of the event category."""
   categoryId: UUID!
-  createdAt: Datetime
 
   """Description of the event."""
   description: JSON!
 
   """Ending time of the event."""
   endTime: Datetime!
-
-  """Unique identifier for the event."""
-  id: UUID
 
   """A highlighted event."""
   isHighlighted: Boolean
@@ -1083,7 +1079,6 @@ input EventInput {
 
   """Starting time of the event."""
   startTime: Datetime!
-  updatedAt: Datetime
 }
 
 """
@@ -1092,16 +1087,12 @@ Represents an update to a `Event`. Fields that are set will be updated.
 input EventPatch {
   """Id of the event category."""
   categoryId: UUID
-  createdAt: Datetime
 
   """Description of the event."""
   description: JSON
 
   """Ending time of the event."""
   endTime: Datetime
-
-  """Unique identifier for the event."""
-  id: UUID
 
   """A highlighted event."""
   isHighlighted: Boolean
@@ -1117,7 +1108,6 @@ input EventPatch {
 
   """Starting time of the event."""
   startTime: Datetime
-  updatedAt: Datetime
 }
 
 type EventQuestion {
