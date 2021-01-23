@@ -93,6 +93,9 @@ jobs:
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
 
+      - name: Deploy project
+        uses: ./.github/workflows/deploy
+
       - name: Upload release to Sentry
         uses: getsentry/action-release@v1
         env:
