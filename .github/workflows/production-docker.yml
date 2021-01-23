@@ -1,10 +1,5 @@
 name: production.Dockerfile CI
 
-on:
-  push:
-    branches:
-      - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,12 +11,14 @@ jobs:
     services:
       redis:
         image: redis
+        container_name: ilmo_redis
         options: >-
           --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
       postgres:
         image: postgres:11
+        container_name: ilmo_db
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -58,23 +55,23 @@ jobs:
 
       - name: "Run docker server build"
         run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg
+          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
           TARGET="server" --tag ilmo-server .
 
       - name: "Run docker worker build"
         run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg
+          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
           TARGET="worker" --tag ilmo-worker .
 
       - name: "Start docker server"
         run:
-          docker run --rm -d --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
-          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-server ilmo-server
+          docker run --rm -d --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=ilmo_db -e
+          REDIS_URL=redis://ilmo_redis:6379 --name ilmo-server ilmo-server
 
       - name: "Start docker worker"
         run:
-          docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
-          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-worker ilmo-worker
+          docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=ilmo_db -e
+          REDIS_URL=redis://ilmo_redis:6379 --name ilmo-worker ilmo-worker
 
       - name: "Test docker"
         run: node .github/workflows/test-docker.js
