@@ -2,6 +2,7 @@ version: "3.8"
 services:
   server:
     image: ilmo-server
+    container_name: ilmo_server
     entrypoint: yarn server start
     env_file:
       - .env.production
@@ -11,6 +12,7 @@ services:
 
   worker:
     image: ilmo-worker
+    container_name: ilmo_worker
     env_file:
       - .env.production
     depends_on:
@@ -20,29 +22,14 @@ services:
 
   redis:
     image: redis:6-alpine
+    container_name: ilmo_redis
     volumes:
-      - cache-prod-volume:/data
+      - ilmo-redis:/data
 
-  db:
-    image: postgres:11
-    env_file:
-      - .env.production
-    working_dir: /
-    volumes:
-      - db-prod-volume:/var/lib/postgresql/data
-      - ./docker/scripts/production:/docker-entrypoint-initdb.d/
-      - ./data:/data
-    restart: unless-stopped
-    command:
-      postgres -c logging_collector=on -c log_destination=stderr -c
-      log_directory=/var/lib/postgresql/data/logs -c log_rotation_age=60 -c
-      log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
-
-# networks:
-#   default:
-#     external:
-#       name: prodeko-docker-net
+networks:
+  default:
+    external:
+      name: prodeko-docker-net
 
 volumes:
-  db-prod-volume:
-  cache-prod-volume:
+  ilmo-redis:
