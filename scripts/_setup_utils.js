@@ -110,7 +110,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "GRAPHILE_TURBO",
     nodeVersion >= 12 ? "1" : "",
     `\
-# Set to 1 only if you're on Node v12 of higher; enables advanced optimisations`
+# Set to 1 only if you're on Node v14 of higher; enables advanced optimisations`
   );
 
   add(
