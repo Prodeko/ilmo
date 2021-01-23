@@ -126,6 +126,7 @@ const CreateEventCategoryPage: NextPage = () => {
                 <Input.Group compact>
                   {languages.map((l, i) => (
                     <Form.Item
+                      key={l}
                       name={["name", l]}
                       noStyle
                       rules={[
@@ -148,6 +149,7 @@ const CreateEventCategoryPage: NextPage = () => {
                 <Input.Group compact>
                   {languages.map((l, i) => (
                     <Form.Item
+                      key={l}
                       name={["description", l]}
                       noStyle
                       rules={[

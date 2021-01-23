@@ -1,9 +1,6 @@
 name: production.Dockerfile CI
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   build:
@@ -58,12 +55,12 @@ jobs:
 
       - name: "Run docker server build"
         run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg
+          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
           TARGET="server" --tag ilmo-server .
 
       - name: "Run docker worker build"
         run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg
+          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
           TARGET="worker" --tag ilmo-worker .
 
       - name: "Start docker server"
@@ -95,6 +92,9 @@ jobs:
           docker image tag ilmo-worker ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
+
+      - name: Deploy project
+        uses: ./.github/workflows/deploy
 
       - name: Upload release to Sentry
         uses: getsentry/action-release@v1

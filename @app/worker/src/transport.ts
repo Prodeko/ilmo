@@ -1,7 +1,5 @@
 import { promises as fsp } from "fs";
 
-import { awsRegion } from "@app/config";
-import * as aws from "aws-sdk";
 import chalk from "chalk";
 import * as nodemailer from "nodemailer";
 
@@ -56,17 +54,21 @@ export default function getTransport(): Promise<nodemailer.Transporter> {
           },
         });
       } else {
-        if (!process.env.AWS_ACCESS_KEY_ID) {
-          throw new Error("Misconfiguration: no AWS_ACCESS_KEY_ID");
+        const { SENDGRID_API_KEY, SENDGRID_USERNAME } = process.env;
+        if (!SENDGRID_USERNAME) {
+          throw new Error("Misconfiguration: no SENDGRID_USERNAME");
         }
-        if (!process.env.AWS_SECRET_ACCESS_KEY) {
-          throw new Error("Misconfiguration: no AWS_SECRET_ACCESS_KEY");
+        if (!SENDGRID_API_KEY) {
+          throw new Error("Misconfiguration: no SENDGRID_API_KEY");
         }
         return nodemailer.createTransport({
-          SES: new aws.SES({
-            apiVersion: "2010-12-01",
-            region: awsRegion,
-          }),
+          host: "smtp.sendgrid.net",
+          port: 465,
+          secure: true,
+          auth: {
+            user: SENDGRID_USERNAME,
+            pass: SENDGRID_API_KEY,
+          },
         });
       }
     })();
