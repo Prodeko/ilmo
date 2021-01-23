@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   server:
-    image: ilmo-server
+    image: prodekoregistry.azurecr.io/ilmo/ilmo-server
     container_name: ilmo_server
     entrypoint: yarn server start
     env_file:
@@ -11,7 +11,7 @@ services:
       - redis
 
   worker:
-    image: ilmo-worker
+    image: prodekoregistry.azurecr.io/ilmo/ilmo-worker
     container_name: ilmo_worker
     env_file:
       - .env.production
@@ -33,3 +33,4 @@ networks:
 
 volumes:
   ilmo-redis:
+    external: true
