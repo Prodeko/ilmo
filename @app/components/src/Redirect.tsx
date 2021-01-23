@@ -16,7 +16,7 @@ export interface RedirectProps {
 
 export function Redirect({ href, as, layout }: RedirectProps) {
   const client = useApolloClient();
-  const { t } = useTranslation("Common");
+  const { t } = useTranslation("common");
 
   useEffect(() => {
     Router.push(href, as);
