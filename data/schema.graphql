@@ -23,6 +23,11 @@ type AcceptInvitationToOrganizationPayload {
   query: Query
 }
 
+type AppLanguage {
+  defaultLanguage: String
+  supportedLanguages: [String]
+}
+
 """
 A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’
 """
@@ -1995,8 +2000,6 @@ type PageInfo {
 
 """The root query type which gives access points into the data universe."""
 type Query {
-  checkLanguage(_column: JSON!): Boolean
-
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
@@ -2105,6 +2108,7 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
+  languages: AppLanguage
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 

@@ -33,8 +33,10 @@ const CreateEventCategoryPage: NextPage = () => {
   ] = useState<null | CreatedEventCategoryFragment>(null);
   const [createEventCategory] = useCreateEventCategoryMutation();
 
-  const defaultLanguage = "fi";
-  const [languages, setLanguages] = useState<string[]>([defaultLanguage]);
+  const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([
+    defaultLanguage!,
+  ]);
 
   const handleSubmit = useCallback(
     async (values: Store) => {
@@ -94,11 +96,12 @@ const CreateEventCategoryPage: NextPage = () => {
                 <Select
                   mode="multiple"
                   allowClear
-                  onChange={(e) => setLanguages(e as string[])}
+                  onChange={(e) => setSelectedLanguages(e as string[])}
                   placeholder={t("forms.placeholders.eventCategory.languages")}
                 >
-                  <Option value="fi">{t("common:finnish")}</Option>
-                  <Option value="en">{t("common:english")}</Option>
+                  {supportedLanguages?.map((l) => (
+                    <Option value={l ? l : ""}>{t(`common:${l}`)}</Option>
+                  ))}
                 </Select>
               </Form.Item>
               <Form.Item
@@ -124,50 +127,66 @@ const CreateEventCategoryPage: NextPage = () => {
               </Form.Item>
               <Form.Item label={t("common:name")}>
                 <Input.Group compact>
-                  {languages.map((l, i) => (
-                    <Form.Item
-                      key={l}
-                      name={["name", l]}
-                      noStyle
-                      rules={[
-                        {
-                          required: true,
-                          message: t("forms.rules.eventCategory.provideName"),
-                        },
-                      ]}
-                    >
-                      <Input
-                        style={i > 0 ? { marginTop: 5 } : undefined}
-                        placeholder={t(`forms.placeholders.eventCategory.${l}`)}
-                        data-cy={`createeventcategory-input-name-${l}`}
-                      />
+                  {selectedLanguages.length === 0 ? (
+                    <Form.Item noStyle>
+                      <Input disabled />
                     </Form.Item>
-                  ))}
+                  ) : (
+                    selectedLanguages.map((l, i) => (
+                      <Form.Item
+                        key={l}
+                        name={["name", l]}
+                        noStyle
+                        rules={[
+                          {
+                            required: true,
+                            message: t("forms.rules.eventCategory.provideName"),
+                          },
+                        ]}
+                      >
+                        <Input
+                          style={i > 0 ? { marginTop: 5 } : undefined}
+                          placeholder={t(
+                            `forms.placeholders.eventCategory.${l}`
+                          )}
+                          data-cy={`createeventcategory-input-name-${l}`}
+                        />
+                      </Form.Item>
+                    ))
+                  )}
                 </Input.Group>
               </Form.Item>
               <Form.Item label={t("common:shortDescription")}>
                 <Input.Group compact>
-                  {languages.map((l, i) => (
-                    <Form.Item
-                      key={l}
-                      name={["description", l]}
-                      noStyle
-                      rules={[
-                        {
-                          required: true,
-                          message: t(
-                            "forms.rules.eventCategory.provideDescription"
-                          ),
-                        },
-                      ]}
-                    >
-                      <Input.TextArea
-                        style={i > 0 ? { marginTop: 5 } : undefined}
-                        placeholder={t(`forms.placeholders.eventCategory.${l}`)}
-                        data-cy={`createeventcategory-input-description-${l}`}
-                      />
+                  {selectedLanguages.length === 0 ? (
+                    <Form.Item noStyle>
+                      <Input.TextArea disabled />
                     </Form.Item>
-                  ))}
+                  ) : (
+                    selectedLanguages.map((l, i) => (
+                      <Form.Item
+                        key={l}
+                        name={["description", l]}
+                        noStyle
+                        rules={[
+                          {
+                            required: true,
+                            message: t(
+                              "forms.rules.eventCategory.provideDescription"
+                            ),
+                          },
+                        ]}
+                      >
+                        <Input.TextArea
+                          style={i > 0 ? { marginTop: 5 } : undefined}
+                          placeholder={t(
+                            `forms.placeholders.eventCategory.${l}`
+                          )}
+                          data-cy={`createeventcategory-input-description-${l}`}
+                        />
+                      </Form.Item>
+                    ))
+                  )}
                 </Input.Group>
               </Form.Item>
               {formError ? (

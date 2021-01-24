@@ -33,7 +33,7 @@ import slugify from "slugify";
 const { RangePicker } = DatePicker;
 
 const CreateEventPage: NextPage = () => {
-  const { t } = useTranslation("events");
+  const { t, lang } = useTranslation("events");
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useEventCategoriesQuery();
   const [form] = Form.useForm();
@@ -134,7 +134,7 @@ const CreateEventPage: NextPage = () => {
                 >
                   {query.data?.eventCategories?.nodes.map((a) => (
                     <Select.Option value={a.id} key={a.id}>
-                      {a.name}
+                      {a.name[lang]}
                     </Select.Option>
                   ))}
                 </Select>

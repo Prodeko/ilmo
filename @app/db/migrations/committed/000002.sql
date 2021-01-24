@@ -1,7 +1,23 @@
 --! Previous: sha1:f7698dc9fbabceff5c566e3775f6cc33412c5a04
---! Hash: sha1:5cdc160bd287649e7ac58cace44be2a3d9bd102e
+--! Hash: sha1:232ba95e54f09ee0005f828c47886966358fe35e
 
 --! split: 1-current.sql
+/**********/
+-- Supported languages
+
+drop type if exists app_language cascade;
+drop function if exists app_public.languages cascade;
+
+create type app_language as (supported_languages text[], default_language text);
+
+-- Defines supported languages and default language
+create function app_public.languages()
+returns app_language
+as $$
+  select array['fi', 'en'], 'fi' as default_language;
+$$
+language sql stable;
+
 /**********/
 -- Event categories
 
@@ -306,7 +322,7 @@ create table app_public.quotas(
   questions_private json,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  
+
   constraint _cnstr_check_title_language check(check_language(title))
 );
 alter table app_public.quotas enable row level security;

@@ -80,6 +80,16 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: app_language; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.app_language AS (
+	supported_languages text[],
+	default_language text
+);
+
+
+--
 -- Name: question_type; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -1367,6 +1377,17 @@ begin
   insert into app_public.organization_invitations(organization_id, user_id, email, code)
     values (invite_to_organization.organization_id, v_user.id, email, v_code);
 end;
+$$;
+
+
+--
+-- Name: languages(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.languages() RETURNS app_public.app_language
+    LANGUAGE sql STABLE
+    AS $$
+  select array['fi', 'en'], 'fi' as default_language;
 $$;
 
 
@@ -3534,6 +3555,14 @@ GRANT ALL ON FUNCTION app_public.forgot_password(email public.citext) TO ilmo_vi
 
 REVOKE ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION languages(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.languages() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.languages() TO ilmo_visitor;
 
 
 --
