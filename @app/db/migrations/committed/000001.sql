@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:f7698dc9fbabceff5c566e3775f6cc33412c5a04
+--! Hash: sha1:698add179368389739f0d04607f51f0386fa4ac9
 
 --! split: 0001-reset.sql
 /*
@@ -238,14 +238,18 @@ comment on function app_public.tg__graphql_subscription() is
  */
 
 -- Used as a check constraint to verify that a column contains
--- the required languages. We store language dependent columns as jsonb.
--- Example:
+-- the required languages. Language dependent columns are stored as
+-- jsonb. This function defines the languages that our app supports.
+--
+-- Example usage:
 --   constraint _cnstr_check_name_language check(check_language(name))
 create function app_public.check_language(_column jsonb)
 returns boolean
 as $$
-  -- These are the languages that our app supports
-  select _column ?| array['fi', 'en'];
+  -- Check that 'fi' and 'en' exist as top level keys in _column
+  select _column ?| array['fi', 'en']
+  -- ...and that _column contains no other top level keys than 'fi' and 'en'
+  and (select array['fi', 'en'] @> array_agg(keys) from jsonb_object_keys(_column) as keys);
 $$
 language sql stable;
 

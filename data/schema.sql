@@ -828,8 +828,10 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
     LANGUAGE sql STABLE
     AS $$
-  -- These are the languages that our app supports
-  select _column ?| array['fi', 'en'];
+  -- Check that 'fi' and 'en' exist as top level keys in _column
+  select _column ?| array['fi', 'en']
+  -- ...and that _column contains no other top level keys than 'fi' and 'en'
+  and (select array['fi', 'en'] @> array_agg(keys) from jsonb_object_keys(_column) as keys);
 $$;
 
 
