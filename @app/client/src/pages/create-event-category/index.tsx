@@ -99,8 +99,10 @@ const CreateEventCategoryPage: NextPage = () => {
                   onChange={(e) => setSelectedLanguages(e as string[])}
                   placeholder={t("forms.placeholders.eventCategory.languages")}
                 >
-                  {supportedLanguages?.map((l) => (
-                    <Option value={l ? l : ""}>{t(`common:${l}`)}</Option>
+                  {supportedLanguages?.map((l, i) => (
+                    <Option key={i} value={l ? l : ""}>
+                      {t(`common:${l}`)}
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -118,9 +120,9 @@ const CreateEventCategoryPage: NextPage = () => {
                   placeholder={t("forms.placeholders.eventCategory.organizer")}
                   data-cy="createeventcategory-select-organization-id"
                 >
-                  {organizationMemberships?.map((a) => (
-                    <Option value={a.organization?.id} key={a.organization?.id}>
-                      {a.organization?.name}
+                  {organizationMemberships?.map((o) => (
+                    <Option key={o.organization?.id} value={o.organization?.id}>
+                      {o.organization?.name}
                     </Option>
                   ))}
                 </Select>
