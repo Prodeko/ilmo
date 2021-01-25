@@ -13,7 +13,11 @@ afterAll(teardown);
 test("currentUser when logged out", async () => {
   await runGraphQLQuery(
     // GraphQL query goes here:
-    `{currentUser{id}}`,
+    `{
+      currentUser {
+        id
+      }
+    }`,
 
     // GraphQL variables:
     {},

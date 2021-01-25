@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`languages query 1`] = `
+Object {
+  "data": Object {
+    "languages": Object {
+      "defaultLanguage": "fi",
+      "supportedLanguages": Array [
+        "fi",
+        "en",
+      ],
+    },
+  },
+}
+`;

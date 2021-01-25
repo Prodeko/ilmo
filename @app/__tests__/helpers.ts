@@ -45,9 +45,8 @@ export const poolFromUrl = (url: string) => {
   return pools[url];
 };
 
-export const deleteTestUsers = () => {
+export const deleteTestUsers = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
-  const pool = poolFromUrl(TEST_DATABASE_URL);
   return pool.query(
     `
       delete from app_public.users
@@ -58,9 +57,8 @@ export const deleteTestUsers = () => {
   );
 };
 
-export const deleteTestEventData = () => {
+export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
-  const pool = poolFromUrl(TEST_DATABASE_URL);
   return pool.query(
     `
     BEGIN;
@@ -80,8 +78,9 @@ export const deleteTestEventData = () => {
 };
 
 export const deleteTestData = async () => {
-  await deleteTestUsers();
-  await deleteTestEventData();
+  const pool = poolFromUrl(TEST_DATABASE_URL);
+  await deleteTestUsers(pool);
+  await deleteTestEventData(pool);
 };
 
 /* Quickly becomes root, does the thing, and then reverts back to previous role */
