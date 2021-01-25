@@ -1,10 +1,4 @@
-import {
-  createUserAndLogIn,
-  deleteTestData,
-  runGraphQLQuery,
-  setup,
-  teardown,
-} from "../helpers";
+import { deleteTestData, runGraphQLQuery, setup, teardown } from "../helpers";
 
 beforeEach(deleteTestData);
 beforeAll(setup);
