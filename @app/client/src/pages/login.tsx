@@ -210,7 +210,7 @@ function LoginForm({
           <a>Forgotten passphrase?</a>
         </Link>
       </Form.Item>
-      {error ? (
+      {error && (
         <Form.Item>
           <Alert
             type="error"
@@ -218,17 +218,16 @@ function LoginForm({
             description={
               <span>
                 {extractError(error).message}
-                {code ? (
+                {code && (
                   <span>
-                    {" "}
                     (Error code: <code>ERR_{code}</code>)
                   </span>
-                ) : null}
+                )}
               </span>
             }
           />
         </Form.Item>
-      ) : null}
+      )}
       <Form.Item>
         <Button
           type="primary"

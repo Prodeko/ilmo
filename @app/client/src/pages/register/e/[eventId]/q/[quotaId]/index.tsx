@@ -213,7 +213,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
         >
           <Input data-cy="createregistration-input-email" />
         </Form.Item>
-        {error ? (
+        {error && (
           <Form.Item {...tailFormItemLayout}>
             <Alert
               data-cy="createregistration-error-alert"
@@ -222,17 +222,16 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
               description={
                 <span>
                   {extractError(error).message}
-                  {code ? (
+                  {code && (
                     <span>
-                      {" "}
                       ({t("error:errorCode")}: <code>ERR_{code}</code>)
                     </span>
-                  ) : null}
+                  )}
                 </span>
               }
             />
           </Form.Item>
-        ) : null}
+        )}
         <Form.Item {...tailFormItemLayout}>
           <Button
             data-cy="createregistration-button-create"
@@ -245,7 +244,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           </Button>
         </Form.Item>
       </Form>
-      {recentRegistrations ? (
+      {recentRegistrations && (
         <List
           header={<div>{t("recentlyRegisteredHeader")}</div>}
           bordered
@@ -259,7 +258,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
             </List.Item>
           )}
         />
-      ) : null}
+      )}
     </>
   );
 };

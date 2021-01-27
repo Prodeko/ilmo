@@ -142,8 +142,8 @@ const Settings_Accounts: NextPage = () => {
           }
         />
       )}
-      {error ? (
-        getCodeFromError(error) === "OWNER" ? (
+      {error &&
+        (getCodeFromError(error) === "OWNER" ? (
           <Alert
             type="error"
             showIcon
@@ -164,8 +164,7 @@ const Settings_Accounts: NextPage = () => {
           />
         ) : (
           <ErrorAlert error={error} />
-        )
-      ) : null}
+        ))}
 
       <Modal
         visible={confirmOpen}

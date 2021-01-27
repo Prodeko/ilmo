@@ -206,12 +206,11 @@ const Settings_Security: NextPage = () => {
                 description={
                   <span>
                     {extractError(error).message}
-                    {code ? (
+                    {code && (
                       <span>
-                        {" "}
                         (Error code: <code>ERR_{code}</code>)
                       </span>
-                    ) : null}
+                    )}
                   </span>
                 }
               />

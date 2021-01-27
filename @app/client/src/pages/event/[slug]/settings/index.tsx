@@ -118,7 +118,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
           >
             <Input />
           </Form.Item>
-          {error ? (
+          {error && (
             <Form.Item>
               <Alert
                 type="error"
@@ -126,7 +126,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
                 description={<span>{extractError(error).message}</span>}
               />
             </Form.Item>
-          ) : null}
+          )}
           <Form.Item {...tailFormItemLayout}>
             <Button htmlType="submit">Update organization</Button>
           </Form.Item>

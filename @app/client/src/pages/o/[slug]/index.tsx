@@ -48,19 +48,17 @@ const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
           <PageHeader
             title={"Dashboard"}
             extra={
-              organization.currentUserIsOwner
-                ? [
-                    <ButtonLink
-                      key="settings"
-                      href={`/o/[slug]/settings`}
-                      as={`/o/${organization.slug}/settings`}
-                      type="primary"
-                      data-cy="organizationpage-button-settings"
-                    >
-                      Settings
-                    </ButtonLink>,
-                  ]
-                : null
+              organization.currentUserIsOwner && [
+                <ButtonLink
+                  key="settings"
+                  href={`/o/[slug]/settings`}
+                  as={`/o/${organization.slug}/settings`}
+                  type="primary"
+                  data-cy="organizationpage-button-settings"
+                >
+                  Settings
+                </ButtonLink>,
+              ]
             }
           />
           <Empty

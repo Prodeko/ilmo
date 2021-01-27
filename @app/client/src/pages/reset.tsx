@@ -209,7 +209,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
                   data-cy="registerpage-input-password2"
                 />
               </Form.Item>
-              {error ? (
+              {error && (
                 <Form.Item>
                   <Alert
                     type="error"
@@ -220,7 +220,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
                     }
                   />
                 </Form.Item>
-              ) : null}
+              )}
               <Form.Item {...tailFormItemLayout}>
                 <Button htmlType="submit" data-cy="resetpage-submit-button">
                   Reset passphrase
