@@ -318,7 +318,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                 data-cy="registerpage-input-password2"
               />
             </Form.Item>
-            {error ? (
+            {error && (
               <Form.Item label="Error">
                 <Alert
                   type="error"
@@ -326,17 +326,16 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                   description={
                     <span>
                       {extractError(error).message}
-                      {code ? (
+                      {code && (
                         <span>
-                          {" "}
                           (Error code: <code>ERR_{code}</code>)
                         </span>
-                      ) : null}
+                      )}
                     </span>
                   }
                 />
               </Form.Item>
-            ) : null}
+            )}
             <Form.Item {...tailFormItemLayout}>
               <Button htmlType="submit" data-cy="registerpage-submit-button">
                 Register

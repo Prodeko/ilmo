@@ -30,6 +30,7 @@ import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
 import slugify from "slugify";
 
+const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const CreateEventPage: NextPage = () => {
@@ -41,6 +42,11 @@ const CreateEventPage: NextPage = () => {
   const code = getCodeFromError(formError);
   const [event, setEvent] = useState<null | CreatedEventFragment>(null);
   const [createEvent] = useCreateEventMutation();
+
+  const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([
+    defaultLanguage!,
+  ]);
 
   const handleSubmit = useCallback(
     async (values) => {
@@ -93,7 +99,36 @@ const CreateEventPage: NextPage = () => {
         <Col flex={1}>
           <PageHeader title={t("createEvent.title")} />
           <div>
-            <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
+            <Form
+              {...formItemLayout}
+              form={form}
+              initialValues={{ languages: [defaultLanguage] }}
+              onFinish={handleSubmit}
+            >
+              <Form.Item
+                name="languages"
+                label={t("languages")}
+                rules={[
+                  {
+                    required: true,
+                    message: t("forms.rules.provideLanguage"),
+                    type: "array",
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  allowClear
+                  onChange={(e) => setSelectedLanguages(e as string[])}
+                  placeholder={t("forms.placeholders.languages")}
+                >
+                  {supportedLanguages?.map((l, i) => (
+                    <Option key={i} value={l ? l : ""}>
+                      {t(`common:${l}`)}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
               <Form.Item
                 name="organizationId"
                 label={t("organizer")}
@@ -139,29 +174,63 @@ const CreateEventPage: NextPage = () => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item
-                name="name"
-                label={t("common:name")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.event.provideName"),
-                  },
-                ]}
-              >
-                <Input data-cy="createevent-input-name" />
+              <Form.Item label={t("common:name")}>
+                <Input.Group compact>
+                  {selectedLanguages.length === 0 ? (
+                    <Form.Item noStyle>
+                      <Input disabled />
+                    </Form.Item>
+                  ) : (
+                    selectedLanguages.map((l, i) => (
+                      <Form.Item
+                        key={l}
+                        name={["name", l]}
+                        noStyle
+                        rules={[
+                          {
+                            required: true,
+                            message: t("forms.rules.event.provideName"),
+                          },
+                        ]}
+                      >
+                        <Input
+                          style={i > 0 ? { marginTop: 5 } : undefined}
+                          placeholder={t(`forms.placeholders.${l}`)}
+                          data-cy={`createevent-input-name-${l}`}
+                        />
+                      </Form.Item>
+                    ))
+                  )}
+                </Input.Group>
               </Form.Item>
-              <Form.Item
-                name="description"
-                label={t("common:description")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.event.provideDescription"),
-                  },
-                ]}
-              >
-                <Input.TextArea data-cy="createevent-input-description" />
+              <Form.Item label={t("common:description")}>
+                <Input.Group compact>
+                  {selectedLanguages.length === 0 ? (
+                    <Form.Item noStyle>
+                      <Input.TextArea disabled />
+                    </Form.Item>
+                  ) : (
+                    selectedLanguages.map((l, i) => (
+                      <Form.Item
+                        key={l}
+                        name={["description", l]}
+                        noStyle
+                        rules={[
+                          {
+                            required: true,
+                            message: t("forms.rules.event.provideDescription"),
+                          },
+                        ]}
+                      >
+                        <Input.TextArea
+                          style={i > 0 ? { marginTop: 5 } : undefined}
+                          placeholder={t(`forms.placeholders.${l}`)}
+                          data-cy={`createevent-input-description-${l}`}
+                        />
+                      </Form.Item>
+                    ))
+                  )}
+                </Input.Group>
               </Form.Item>
               <Form.Item
                 name="eventTime"
@@ -183,7 +252,7 @@ const CreateEventPage: NextPage = () => {
               >
                 <Switch />
               </Form.Item>
-              {formError ? (
+              {formError && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     type="error"
@@ -191,17 +260,16 @@ const CreateEventPage: NextPage = () => {
                     description={
                       <span>
                         {extractError(formError).message}
-                        {code ? (
+                        {code && (
                           <span>
-                            {" "}
                             ({t("error:errorCode")}: <code>ERR_{code}</code>)
                           </span>
-                        ) : null}
+                        )}
                       </span>
                     }
                   />
                 </Form.Item>
-              ) : null}
+              )}
               <Form.Item {...tailFormItemLayout}>
                 <Button htmlType="submit" data-cy="createevent-button-create">
                   {t("common:create")}

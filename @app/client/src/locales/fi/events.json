@@ -19,14 +19,14 @@
     "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
     "placeholders": {
+      "languages": "Valitse kielet",
+      "en": "Englanniksi",
+      "fi": "Suomeksi",
       "event": {
         "organizer": "Valitse tapahtuman järjestäjä",
         "category": "Valitse tapahtuman kategoria"
       },
       "eventCategory": {
-        "en": "Englanniksi",
-        "fi": "Suomeksi",
-        "languages": "Valitse kielet",
         "organizer": "Valitse kategorian järjestäjä"
       }
     },

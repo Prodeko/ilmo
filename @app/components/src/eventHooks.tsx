@@ -4,7 +4,7 @@ import { EventPage_QueryFragment } from "@app/graphql";
 import { Col, Row } from "antd";
 import { useRouter } from "next/router";
 
-import { SpinPadded } from "./SpinPadded";
+import { Loading } from "./Loading";
 import { ErrorAlert, FourOhFour } from "./";
 
 export function useEventSlug() {
@@ -25,7 +25,7 @@ export function useEventLoading(
   const event = data?.eventBySlug;
   if (event) {
   } else if (loading) {
-    child = <SpinPadded />;
+    child = <Loading />;
   } else if (error) {
     child = <ErrorAlert error={error} />;
   } else {
@@ -33,9 +33,11 @@ export function useEventLoading(
     child = <FourOhFour currentUser={data?.currentUser} />;
   }
 
-  return child ? (
-    <Row>
-      <Col flex={1}>{child}</Col>
-    </Row>
-  ) : null;
+  return (
+    child && (
+      <Row>
+        <Col flex={1}>{child}</Col>
+      </Row>
+    )
+  );
 }

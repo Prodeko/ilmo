@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
+import { AuthRestrict, Loading, Redirect, SharedLayout } from "@app/components";
 import {
   CreatedOrganizationFragment,
   useCreateOrganizationMutation,
@@ -14,7 +14,7 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import * as Sentry from "@sentry/react";
-import { Alert, Button, Col, Form, Input, PageHeader, Row, Spin } from "antd";
+import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import Text from "antd/lib/typography/Text";
 import { debounce } from "lodash";
@@ -135,7 +135,7 @@ const CreateOrganizationPage: NextPage = () => {
                   </p>
                   {!slug ? null : !slugCheckIsValid || slugLoading ? (
                     <div>
-                      <Spin /> Checking organization name
+                      <Loading /> Checking organization name
                     </div>
                   ) : existingOrganizationData?.organizationBySlug ? (
                     <Text
@@ -152,7 +152,7 @@ const CreateOrganizationPage: NextPage = () => {
                   ) : null}
                 </div>
               </Form.Item>
-              {formError ? (
+              {formError && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     type="error"
@@ -167,17 +167,16 @@ const CreateOrganizationPage: NextPage = () => {
                         ) : (
                           extractError(formError).message
                         )}
-                        {code ? (
+                        {code && (
                           <span>
-                            {" "}
                             (Error code: <code>ERR_{code}</code>)
                           </span>
-                        ) : null}
+                        )}
                       </span>
                     }
                   />
                 </Form.Item>
-              ) : null}
+              )}
               <Form.Item {...tailFormItemLayout}>
                 <Button
                   htmlType="submit"

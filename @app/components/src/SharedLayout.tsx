@@ -116,9 +116,9 @@ export function SharedLayout({
     const inner =
       props.error && !props.loading && !noHandleErrors ? (
         <>
-          {process.env.NODE_ENV === "development" ? (
+          {process.env.NODE_ENV === "development" && (
             <ErrorAlert error={props.error} />
-          ) : null}
+          )}
         </>
       ) : typeof children === "function" ? (
         children(props)
@@ -178,13 +178,15 @@ export function SharedLayout({
         <Head>
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
-        <Row justify="space-between">
-          <Col span={6}>
+        <Row wrap={false} justify="space-between">
+          <Col flex="auto">
             <Link href="/">
-              <a>{projectName}</a>
+              <a>
+                <img src="/images/header-logo.png" width={120} alt="Prodeko" />
+              </a>
             </Link>
           </Col>
-          <Col span={9}>
+          <Col xs={{ span: 2 }} md={{ span: 5 }}>
             <H3
               style={{
                 margin: 0,
@@ -203,10 +205,10 @@ export function SharedLayout({
               )}
             </H3>
           </Col>
-          <Col span={7} style={{ textAlign: "right" }}>
+          <Col flex="auto" style={{ textAlign: "right" }}>
             <LocaleSelect />
           </Col>
-          <Col span={2} style={{ textAlign: "right" }}>
+          <Col xs={{ span: 5 }} md={{ span: 2 }} style={{ textAlign: "right" }}>
             {data && data.currentUser ? (
               <Dropdown
                 trigger={["click"]}
@@ -241,24 +243,23 @@ export function SharedLayout({
                         </a>
                       </Link>
                     </Menu.Item>
-                    {data.currentUser?.organizationMemberships?.nodes.length > 0
-                      ? [
-                          <Menu.Item key="create-event">
-                            <Link href="/create-event">
-                              <a data-cy="layout-link-create-event">
-                                {t("headerMenu.createEvent")}
-                              </a>
-                            </Link>
-                          </Menu.Item>,
-                          <Menu.Item key="create-event-category">
-                            <Link href="/create-event-category">
-                              <a data-cy="layout-link-create-event-category">
-                                {t("headerMenu.createEventCategory")}
-                              </a>
-                            </Link>
-                          </Menu.Item>,
-                        ]
-                      : ""}
+                    {data.currentUser?.organizationMemberships?.nodes.length >
+                      0 && [
+                      <Menu.Item key="create-event">
+                        <Link href="/create-event">
+                          <a data-cy="layout-link-create-event">
+                            {t("headerMenu.createEvent")}
+                          </a>
+                        </Link>
+                      </Menu.Item>,
+                      <Menu.Item key="create-event-category">
+                        <Link href="/create-event-category">
+                          <a data-cy="layout-link-create-event-category">
+                            {t("headerMenu.createEventCategory")}
+                          </a>
+                        </Link>
+                      </Menu.Item>,
+                    ]}
                     <Menu.Item>
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">
@@ -315,9 +316,8 @@ export function SharedLayout({
           <Text>
             Copyright &copy; {new Date().getFullYear()} {companyName}. All
             rights reserved.
-            {process.env.T_AND_C_URL ? (
+            {process.env.T_AND_C_URL && (
               <span>
-                {" "}
                 <a
                   style={{ textDecoration: "underline" }}
                   href={process.env.T_AND_C_URL}
@@ -325,7 +325,7 @@ export function SharedLayout({
                   Terms and conditions
                 </a>
               </span>
-            ) : null}
+            )}
           </Text>
           <Text>
             Powered by{" "}

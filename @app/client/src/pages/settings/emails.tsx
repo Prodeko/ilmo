@@ -236,7 +236,7 @@ function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
       >
         <Input data-cy="settingsemails-input-email" />
       </Form.Item>
-      {error ? (
+      {error && (
         <Form.Item>
           <Alert
             type="error"
@@ -244,17 +244,16 @@ function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
             description={
               <span>
                 {extractError(error).message}
-                {code ? (
+                {code && (
                   <span>
-                    {" "}
                     (Error code: <code>ERR_{code}</code>)
                   </span>
-                ) : null}
+                )}
               </span>
             }
           />
         </Form.Item>
-      ) : null}
+      )}
       <Form.Item {...tailFormItemLayout}>
         <Button htmlType="submit" data-cy="settingsemails-button-submit">
           Add email

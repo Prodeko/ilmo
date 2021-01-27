@@ -231,7 +231,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   return (
     <List.Item
       actions={[
-        organization.currentUserIsOwner && node.user?.id !== currentUser?.id ? (
+        organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
             title={`Are you sure you want to remove ${node.user?.name} from ${organization.name}?`}
             onConfirm={handleRemove}
@@ -241,8 +241,8 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
           >
             <a>Remove</a>
           </Popconfirm>
-        ) : null,
-        organization.currentUserIsOwner && node.user?.id !== currentUser?.id ? (
+        ),
+        organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
             title={`Are you sure you want to transfer ownership of ${organization.name} to ${node.user?.name}?`}
             onConfirm={handleTransfer}
@@ -252,7 +252,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
           >
             <a>Make owner</a>
           </Popconfirm>
-        ) : null,
+        ),
       ].filter(Boolean)}
     >
       <List.Item.Meta
@@ -261,11 +261,11 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         description={
           <div>
             <Text>{node.user?.username}</Text>
-            {roles ? (
+            {roles && (
               <div>
                 <Text type="secondary">({roles})</Text>
               </div>
-            ) : null}
+            )}
           </div>
         }
       />

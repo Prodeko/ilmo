@@ -6,9 +6,9 @@ import {
   AuthRestrict,
   ButtonLink,
   ErrorAlert,
+  Loading,
   Redirect,
   SharedLayout,
-  SpinPadded,
 } from "@app/components";
 import {
   InvitationDetailQuery,
@@ -117,7 +117,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
 
   let child: JSX.Element | null = null;
   if (status === Status.ACCEPTING) {
-    child = <SpinPadded />;
+    child = <Loading />;
   } else if (error || acceptError) {
     const code = getCodeFromError(error || acceptError);
     if (code === "NTFND") {

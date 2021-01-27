@@ -46,8 +46,8 @@ const CreateEventCategoryPage: NextPage = () => {
         const { data } = await createEventCategory({
           variables: {
             name,
-            desc: description,
-            org_id: organization,
+            description,
+            organization,
           },
         });
         setFormError(null);
@@ -97,7 +97,7 @@ const CreateEventCategoryPage: NextPage = () => {
                   mode="multiple"
                   allowClear
                   onChange={(e) => setSelectedLanguages(e as string[])}
-                  placeholder={t("forms.placeholders.eventCategory.languages")}
+                  placeholder={t("forms.placeholders.languages")}
                 >
                   {supportedLanguages?.map((l, i) => (
                     <Option key={i} value={l ? l : ""}>
@@ -148,9 +148,7 @@ const CreateEventCategoryPage: NextPage = () => {
                       >
                         <Input
                           style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(
-                            `forms.placeholders.eventCategory.${l}`
-                          )}
+                          placeholder={t(`forms.placeholders.${l}`)}
                           data-cy={`createeventcategory-input-name-${l}`}
                         />
                       </Form.Item>
@@ -181,9 +179,7 @@ const CreateEventCategoryPage: NextPage = () => {
                       >
                         <Input.TextArea
                           style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(
-                            `forms.placeholders.eventCategory.${l}`
-                          )}
+                          placeholder={t(`forms.placeholders.${l}`)}
                           data-cy={`createeventcategory-input-description-${l}`}
                         />
                       </Form.Item>
@@ -191,7 +187,7 @@ const CreateEventCategoryPage: NextPage = () => {
                   )}
                 </Input.Group>
               </Form.Item>
-              {formError ? (
+              {formError && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     type="error"
@@ -199,17 +195,16 @@ const CreateEventCategoryPage: NextPage = () => {
                     description={
                       <span>
                         {extractError(formError).message}
-                        {code ? (
+                        {code && (
                           <span>
-                            {" "}
                             ({t("error:errorCode")}: <code>ERR_{code}</code>)
                           </span>
-                        ) : null}
+                        )}
                       </span>
                     }
                   />
                 </Form.Item>
-              ) : null}
+              )}
               <Form.Item {...tailFormItemLayout}>
                 <Button
                   htmlType="submit"

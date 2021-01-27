@@ -19,14 +19,14 @@
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
     "placeholders": {
+      "languages": "Please select languages",
+      "en": "In English",
+      "fi": "In Finnish",
       "event": {
         "organizer": "Please select an organizer for the event",
         "category": "Please select a category for the event"
       },
       "eventCategory": {
-        "en": "In English",
-        "fi": "In Finnish",
-        "languages": "Please select languages",
         "organizer": "Please select an organizer for the event category"
       }
     },

@@ -5,6 +5,7 @@ import { ColumnsType, TablePaginationConfig } from "antd/lib/table";
 import { get } from "lodash";
 
 import { ErrorAlert } from "./ErrorAlert";
+import { Loading } from "./Loading";
 
 interface Props {
   queryDocument: DocumentNode;
@@ -60,7 +61,7 @@ export function ServerPaginatedTable({
     <ErrorAlert error={error} />
   ) : (
     <Table
-      loading={loading}
+      loading={loading && { indicator: <Loading /> }}
       columns={columns}
       dataSource={get(data, dataField)?.nodes || []}
       pagination={showPagination && pagination}

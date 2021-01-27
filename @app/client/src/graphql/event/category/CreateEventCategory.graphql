@@ -7,13 +7,17 @@ fragment CreatedEventCategory on EventCategory {
   }
 }
 
-mutation CreateEventCategory($name: JSON!, $desc: JSON!, $org_id: UUID!) {
+mutation CreateEventCategory(
+  $name: JSON!
+  $description: JSON!
+  $organization: UUID!
+) {
   createEventCategory(
     input: {
       eventCategory: {
         name: $name
-        description: $desc
-        ownerOrganizationId: $org_id
+        description: $description
+        ownerOrganizationId: $organization
       }
     }
   ) {

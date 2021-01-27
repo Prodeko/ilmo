@@ -85,7 +85,7 @@ const ForgotPassword: NextPage = () => {
           />
         </Form.Item>
 
-        {error ? (
+        {error && (
           <Form.Item>
             <Alert
               type="error"
@@ -93,17 +93,16 @@ const ForgotPassword: NextPage = () => {
               description={
                 <span>
                   {extractError(error).message}
-                  {code ? (
+                  {code && (
                     <span>
-                      {" "}
                       (Error code: <code>ERR_{code}</code>)
                     </span>
-                  ) : null}
+                  )}
                 </span>
               }
             />
           </Form.Item>
-        ) : null}
+        )}
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Reset password

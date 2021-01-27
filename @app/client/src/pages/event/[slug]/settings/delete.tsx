@@ -104,7 +104,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
             description="Only the owner may delete the organization. If you cannot reach the owner, please get in touch with support."
           />
         )}
-        {error ? <ErrorAlert error={error} /> : null}
+        {error && <ErrorAlert error={error} />}
       </div>
     </OrganizationSettingsLayout>
   );
