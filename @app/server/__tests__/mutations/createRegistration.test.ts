@@ -1,4 +1,4 @@
-import { createNodeRedisClient } from "handy-redis";
+import Redis from "ioredis";
 
 import {
   asRoot,
@@ -41,9 +41,7 @@ test("CreateRegistration", async () => {
   // use the same computer for registering to an event.
 
   const key = `rate-limit:claimRegistrationToken:${event.id}:127.1.1.1`;
-  const redisClient = createNodeRedisClient({
-    url: process.env.TEST_REDIS_URL,
-  });
+  const redisClient = new Redis(process.env.TEST_REDIS_URL);
   await redisClient.incr(key);
   redisClient.quit();
 

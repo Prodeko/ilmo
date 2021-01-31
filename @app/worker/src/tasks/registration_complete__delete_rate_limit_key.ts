@@ -1,5 +1,5 @@
 import { Task } from "graphile-worker";
-import { createNodeRedisClient } from "handy-redis";
+import Redis from "ioredis";
 
 interface Payload {
   eventId: string;
@@ -12,7 +12,7 @@ const url = isTest ? process.env.TEST_REDIS_URL : process.env.REDIS_URL;
 const task: Task = async (inPayload, _helpers) => {
   const payload: Payload = inPayload as any;
   const { eventId, ipAddress } = payload;
-  const client = createNodeRedisClient({ url });
+  const client = new Redis(url);
 
   const key = `rate-limit:claimRegistrationToken:${eventId}:${ipAddress}`;
   client.del(key);

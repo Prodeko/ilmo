@@ -3,26 +3,28 @@
 import { createServer } from "http";
 
 import chalk from "chalk";
+import { FastifyServerFactory } from "fastify";
 
-import { getShutdownActions, makeApp } from "./app";
+import { makeApp } from "./app";
 
 // @ts-ignore
 const packageJson = require("../../../package.json");
 
+const serverFactory: FastifyServerFactory = (handler, _opts) => {
+  const server = createServer((req, res) => {
+    handler(req, res);
+  });
+  return server;
+};
+
 async function main() {
-  // Create our HTTP server
-  const httpServer = createServer();
-
   // Make our application (loading all the middleware, etc)
-  const app = await makeApp({ httpServer });
-
-  // Add our application to our HTTP server
-  httpServer.addListener("request", app);
+  const app = await makeApp({ serverFactory });
 
   // And finally, we open the listen port
   const PORT = parseInt(process.env.PORT || "", 10) || 3000;
-  httpServer.listen(PORT, () => {
-    const address = httpServer.address();
+  app.listen(PORT, () => {
+    const address = app.server.address();
     const actualPort: string =
       typeof address === "string"
         ? address
@@ -50,9 +52,9 @@ async function main() {
   });
 
   // Nodemon SIGUSR2 handling
-  const shutdownActions = getShutdownActions(app);
+  const shutdownActions = app.shutdownActions;
   shutdownActions.push(() => {
-    httpServer.close();
+    app.server.close();
   });
 }
 

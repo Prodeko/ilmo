@@ -1,28 +1,95 @@
 import {
   ApolloClient,
   ApolloLink,
+  FetchResult,
   HttpLink,
   InMemoryCache,
+  Observable,
+  Operation,
   split,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { getDataFromTree } from "@apollo/client/react/ssr";
 import { SentryLink } from "apollo-link-sentry";
-import { getOperationAST } from "graphql";
+import { getOperationAST, GraphQLError, print } from "graphql";
+import { Client, createClient } from "graphql-ws";
 import withApolloBase from "next-with-apollo";
 
 import { GraphileApolloLink } from "./GraphileApolloLink";
-import { WebSocketLink } from "./WebsocketApolloLink";
+
+let wsClient: Client | null = null;
+
+class WebSocketLink extends ApolloLink {
+  public request(operation: Operation): Observable<FetchResult> {
+    return new Observable((sink) => {
+      if (!wsClient) {
+        sink.error(new Error("No websocket connection"));
+        return;
+      }
+      return wsClient.subscribe<FetchResult>(
+        { ...operation, query: print(operation.query) },
+        {
+          next: sink.next.bind(sink),
+          complete: sink.complete.bind(sink),
+          error: (err) => {
+            if (err instanceof Error) {
+              sink.error(err);
+            } else if (err instanceof CloseEvent) {
+              sink.error(
+                new Error(
+                  `Socket closed with event ${err.code}` + err.reason
+                    ? `: ${err.reason}` // reason will be available on clean closes
+                    : ""
+                )
+              );
+            } else {
+              sink.error(
+                new Error(
+                  (err as GraphQLError[])
+                    .map(({ message }) => message)
+                    .join(", ")
+                )
+              );
+            }
+          },
+        }
+      );
+    });
+  }
+}
+
+let _rootURL: string | null = null;
+function createWsClient() {
+  if (!_rootURL) {
+    throw new Error("No ROOT_URL");
+  }
+  const url = `${_rootURL.replace(/^http/, "ws")}/graphql`;
+  return createClient({
+    url,
+  });
+}
+
+export function resetWebsocketConnection(): void {
+  if (wsClient) {
+    wsClient.dispose();
+  }
+  wsClient = createWsClient();
+}
 
 function makeServerSideLink(req: any, res: any) {
   return new GraphileApolloLink({
     req,
     res,
-    postgraphileMiddleware: req.app.get("postgraphileMiddleware"),
+    postgraphileMiddleware: req.postgraphileMiddleware,
   });
 }
 
 function makeClientSideLink(ROOT_URL: string) {
+  if (_rootURL) {
+    throw new Error("Must only makeClientSideLink once");
+  }
+  _rootURL = ROOT_URL;
+
   const nextDataEl = document.getElementById("__NEXT_DATA__");
   if (!nextDataEl || !nextDataEl.textContent) {
     throw new Error("Cannot read from __NEXT_DATA__ element");
@@ -36,9 +103,8 @@ function makeClientSideLink(ROOT_URL: string) {
       "CSRF-Token": CSRF_TOKEN,
     },
   });
-  const wsLink = new WebSocketLink({
-    url: `${ROOT_URL.replace(/^http/, "ws")}/graphql`,
-  });
+  wsClient = createWsClient();
+  const wsLink = new WebSocketLink();
 
   // Using the ability to split links, you can send data to each link
   // depending on what kind of operation is being sent.
@@ -56,7 +122,7 @@ function makeClientSideLink(ROOT_URL: string) {
 
 export const withApollo = withApolloBase(
   ({ initialState, ctx }) => {
-    const ROOT_URL = process.env.ROOT_URL;
+    const ROOT_URL = "http://localhost:5678";
     if (!ROOT_URL) {
       throw new Error("ROOT_URL envvar is not set");
     }
@@ -79,6 +145,7 @@ export const withApollo = withApolloBase(
       isServer && req && res
         ? makeServerSideLink(req, res)
         : makeClientSideLink(ROOT_URL);
+
     const sentryLink = new SentryLink({
       breadcrumb: {
         includeQuery: true,

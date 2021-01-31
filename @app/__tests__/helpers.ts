@@ -70,6 +70,8 @@ export const deleteTestEventData = (pool: Pool) => {
       delete from app_public.event_questions;
       delete from app_public.organizations;
 
+      delete from app_private.sessions;
+
       -- Delete graphile worker jobs
       delete from graphile_worker.jobs;
     COMMIT;

@@ -1,9 +1,9 @@
-import { Express, RequestHandler } from "express";
+import { RequestHandler } from "express";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 
-import { getWebsocketMiddlewares } from "../app";
-
-declare module "express-serve-static-core" {
-  interface Request {
+declare module "http" {
+  interface IncomingMessage {
     /**
      * True if either the request 'Origin' header matches our ROOT_URL, or if
      * there was no 'Origin' header (in which case we must give the benefit of
@@ -13,12 +13,14 @@ declare module "express-serve-static-core" {
   }
 }
 
-export default (app: Express) => {
-  const middleware: RequestHandler = (req, res, next) => {
+const SameOrigin: FastifyPluginAsync = async (app) => {
+  const middleware: RequestHandler = (req, _res, next) => {
     req.isSameOrigin =
       !req.headers.origin || req.headers.origin === process.env.ROOT_URL;
     next();
   };
   app.use(middleware);
-  getWebsocketMiddlewares(app).push(middleware);
+  app.websocketMiddlewares.push(middleware);
 };
+
+export default fp(SameOrigin);

@@ -29,7 +29,7 @@ account feature baked into the starter.
 We do not advise that you build your own projects on top of this project until
 you're comfortable with the various tools it uses
 ([Node.js](https://nodejs.org/en/docs/),
-[Express](https://expressjs.com/en/api.html),
+[Fastify](https://github.com/fastify/fastify),
 [PostgreSQL](https://www.postgresql.org/docs/current/index.html),
 [GraphQL](https://graphql.org/learn/),
 [PostGraphile](https://www.graphile.org/postgraphile/introduction/),
@@ -138,7 +138,7 @@ And please give some love to our featured sponsors 🤩:
 Graphile Starter is a full-stack [GraphQL](https://graphql.org/learn/) and
 [React](https://reactjs.org/) project, with server-side rendering (SSR) and
 routing thanks to [Next.js](https://nextjs.org/). The backend is a beautiful
-pairing of Node.js and PostgreSQL running on Express.js, enabled by
+pairing of Node.js and PostgreSQL running on Fastify, enabled by
 [PostGraphile](https://www.graphile.org/postgraphile/) in library mode. The
 frontend uses the [AntD](https://ant.design/) design framework to accelerate
 development. The entire stack is written in TypeScript, with auto-generated

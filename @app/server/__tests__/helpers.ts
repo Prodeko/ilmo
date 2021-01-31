@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { IncomingMessage, ServerResponse } from "http";
+
 import { makeWorkerUtils, WorkerUtils } from "graphile-worker";
 import { ExecutionResult, graphql, GraphQLSchema } from "graphql";
-import { createNodeRedisClient, WrappedNodeRedisClient } from "handy-redis";
+import Redis from "ioredis";
 import { Pool, PoolClient } from "pg";
 import {
   createPostGraphileSchema,
@@ -168,9 +169,9 @@ export function sanitize(json: any): any {
 // Contains the PostGraphile schema and rootPgPool
 interface ICtx {
   rootPgPool: Pool;
-  redisClient: WrappedNodeRedisClient;
+  redisClient: Redis.Redis;
   workerUtils: WorkerUtils;
-  options: PostGraphileOptions<Request, Response>;
+  options: PostGraphileOptions<IncomingMessage, ServerResponse>;
   schema: GraphQLSchema;
 }
 let ctx: ICtx | null = null;
@@ -179,9 +180,7 @@ export const setup = async () => {
   const rootPgPool = new Pool({
     connectionString: process.env.TEST_DATABASE_URL,
   });
-  const redisClient = createNodeRedisClient({
-    url: process.env.TEST_REDIS_URL,
-  });
+  const redisClient = new Redis(process.env.TEST_REDIS_URL);
   const workerUtils = await makeWorkerUtils({
     connectionString: process.env.TEST_DATABASE_URL,
   });
@@ -233,8 +232,8 @@ export const runGraphQLQuery = async function runGraphQLQuery(
     result: ExecutionResult,
     context: {
       pgClient: PoolClient;
-      redisClient: WrappedNodeRedisClient;
-      req: Request;
+      redisClient: Redis.Redis;
+      req: any;
     }
   ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {} // Place test assertions in this function
 ) {

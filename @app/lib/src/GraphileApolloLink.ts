@@ -1,3 +1,5 @@
+import { IncomingMessage, ServerResponse } from "http";
+
 import {
   ApolloLink,
   FetchResult,
@@ -5,19 +7,18 @@ import {
   Observable,
   Operation,
 } from "@apollo/client";
-import { Request, Response } from "express";
 import { execute, getOperationAST } from "graphql";
 import { HttpRequestHandler } from "postgraphile";
 
 export interface GraphileApolloLinkInterface {
   /** The request object. */
-  req: Request;
+  req: IncomingMessage;
 
   /** The response object. */
-  res: Response;
+  res: ServerResponse;
 
-  /** The instance of the express middleware returned by calling `postgraphile()` */
-  postgraphileMiddleware: HttpRequestHandler<Request, Response>;
+  /** The instance of the middleware returned by calling `postgraphile()` */
+  postgraphileMiddleware: HttpRequestHandler;
 
   /** An optional rootValue to use inside resolvers. */
   rootValue?: any;
@@ -50,6 +51,7 @@ export class GraphileApolloLink extends ApolloLink {
           }
           const schema = await postgraphileMiddleware.getGraphQLSchema();
           const data = await postgraphileMiddleware.withPostGraphileContextFromReqRes(
+            // @ts-ignore
             req,
             res,
             {},

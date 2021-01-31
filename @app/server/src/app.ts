@@ -2,38 +2,47 @@ import { Server } from "http";
 
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
-import express, { Express } from "express";
-import { Middleware } from "postgraphile";
+import { Request, Response } from "express";
+import Fastify, {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  FastifyServerFactory,
+} from "fastify";
+import fastifyExpress from "fastify-express";
+import {
+  Middleware,
+  PostGraphileResponse,
+  PostGraphileResponseFastify3,
+} from "postgraphile";
 
-import { cloudflareIps } from "./cloudflare";
 import * as middleware from "./middleware";
 import { makeShutdownActions, ShutdownAction } from "./shutdownActions";
 import { sanitizeEnv } from "./utils";
 
-// Server may not always be supplied, e.g. where mounting on a sub-route
-export function getHttpServer(app: Express): Server | void {
-  return app.get("httpServer");
+declare module "fastify" {
+  export interface FastifyInstance {
+    httpServer: Server;
+    shutdownActions: ShutdownAction[];
+    websocketMiddlewares: Middleware<Request, Response>[];
+  }
 }
 
-export function getShutdownActions(app: Express): ShutdownAction[] {
-  return app.get("shutdownActions");
-}
+/**
+ * Converts a PostGraphile route handler into a Fastify request handler.
+ */
+export const convertHandler = (
+  handler: (res: PostGraphileResponse) => Promise<void>
+) => (request: FastifyRequest, reply: FastifyReply) =>
+  handler(new PostGraphileResponseFastify3(request, reply));
 
-export function getWebsocketMiddlewares(
-  app: Express
-): Middleware<express.Request, express.Response>[] {
-  return app.get("websocketMiddlewares");
-}
-
-function initSentry(app: Express) {
+function initSentry() {
   Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: process.env.SENTRY_DSN,
     integrations: [
       // enable HTTP calls tracing
       new Sentry.Integrations.Http({ tracing: true }),
-      // enable Express.js middleware tracing
-      new Tracing.Integrations.Express({ app }),
       // enable database query tracing
       new Tracing.Integrations.Postgres(),
     ],
@@ -45,10 +54,10 @@ function initSentry(app: Express) {
 }
 
 export async function makeApp({
-  httpServer,
+  serverFactory,
 }: {
-  httpServer?: Server;
-} = {}): Promise<Express> {
+  serverFactory?: FastifyServerFactory;
+} = {}): Promise<FastifyInstance> {
   sanitizeEnv();
 
   const isTest = process.env.NODE_ENV === "test";
@@ -63,87 +72,72 @@ export async function makeApp({
   }
 
   /*
-   * Our Express server
+   * Our FastifyInstance server
    */
-  const app = express();
-  initSentry(app);
+  const app = Fastify({
+    pluginTimeout: isDev ? 30000 : 10000,
+    logger: false,
+    serverFactory,
+  });
+  initSentry();
 
-  /*
-   * In production, we may need to enable the 'trust proxy' setting so that the
-   * server knows it's running in SSL mode, and so the logs can log the true
-   * IP address of the client rather than the IP address of our proxy.
+  /**
+   * Register Fastify Express compatability plugin.
+   * This plugin allows us to use express style middleware with Fastify.
+   * We need this to have session support with postgraphile websockets.
+   * Currently, Postgraphile only supports express style middlewares with
+   * websocketMiddlewares option. We use this compatability layer with
+   * session related middlewares (installSession, installSameOrigin,
+   * installCSRFProtection and installPassport).
+   *
+   * See: https://github.com/graphile/postgraphile/blob/ba9a7bcf1c3fa3347cf07de0a3732cfd0d5b6dcb/src/postgraphile/http/subscriptions.ts#L109
    */
-  if (process.env.TRUST_PROXY) {
-    /*
-      We recommend you set TRUST_PROXY to the following:
-
-        loopback,linklocal,uniquelocal
-
-      followed by any other IPs you need to trust. For example for CloudFlare
-      you can get the list of IPs from https://www.cloudflare.com/ips-v4; we
-      have a script that does this for you (`yarn server cloudflare:import`)
-      and a special `TRUST_PROXY=cloudflare` setting you can use to use them.
-    */
-    app.set(
-      "trust proxy",
-      process.env.TRUST_PROXY === "1"
-        ? true
-        : process.env.TRUST_PROXY === "cloudflare"
-        ? ["loopback", "linklocal", "uniquelocal", ...cloudflareIps]
-        : process.env.TRUST_PROXY.split(",")
-    );
-  }
+  await app.register(fastifyExpress);
 
   /*
    * Getting access to the HTTP server directly means that we can do things
    * with websockets if we need to (e.g. GraphQL subscriptions).
    */
-  app.set("httpServer", httpServer);
+  app.decorate("httpServer", app.server);
 
   /*
    * For a clean nodemon shutdown, we need to close all our sockets otherwise
    * we might not come up cleanly again (inside nodemon).
    */
-  app.set("shutdownActions", shutdownActions);
+  app.decorate("shutdownActions", shutdownActions);
 
   /*
    * When we're using websockets, we may want them to have access to
    * sessions/etc for authentication.
    */
-  const websocketMiddlewares: Middleware<
-    express.Request,
-    express.Response
-  >[] = [];
-  app.set("websocketMiddlewares", websocketMiddlewares);
+  const websocketMiddlewares: Middleware<Request, Response>[] = [];
+  app.decorate("websocketMiddlewares", websocketMiddlewares);
 
   /*
    * Middleware is installed from the /server/middleware directory. These
-   * helpers may augment the express app with new settings and/or install
-   * express middleware. These helpers may be asynchronous, but they should
+   * helpers may augment the FastifyInstance app with new settings and/or install
+   * FastifyInstance middleware. These helpers may be asynchronous, but they should
    * operate very rapidly to enable quick as possible server startup.
    */
-  await middleware.installSentryRequestHandler(app);
-  await middleware.installDatabasePools(app);
-  await middleware.installRedis(app);
-  await middleware.installWorkerUtils(app);
-  await middleware.installHelmet(app);
-  await middleware.installSameOrigin(app);
-  await middleware.installSession(app);
-  await middleware.installCSRFProtection(app);
-  await middleware.installPassport(app);
-  await middleware.installLogging(app);
-  // These are our assets: images/etc; served out of the /@app/server/public folder (if present)
-  await middleware.installSharedStatic(app);
+  await app.register(middleware.installSentryRequestHandler);
+  await app.register(middleware.installDatabasePools);
+  await app.register(middleware.installRedis);
+  await app.register(middleware.installWorkerUtils);
+  await app.register(middleware.installHelmet);
+  await app.register(middleware.installSameOrigin);
+  await app.register(middleware.installSession);
+  await app.register(middleware.installCSRFProtection);
+  await app.register(middleware.installPassport);
   if (isTest || isDev) {
-    await middleware.installCypressServerCommand(app);
+    await app.register(middleware.installCypressServerCommand);
   }
-  await middleware.installPostGraphile(app);
-  await middleware.installSSR(app);
+  await app.register(middleware.installPostGraphile);
+  await app.register(middleware.installSSR);
 
   /*
    * Error handling middleware
    */
-  await middleware.installErrorHandler(app);
+  app.register(middleware.installErrorHandler);
 
   return app;
 }

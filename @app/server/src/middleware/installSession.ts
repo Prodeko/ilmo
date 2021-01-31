@@ -1,9 +1,8 @@
 import ConnectRedis from "connect-redis";
-import { Express, RequestHandler } from "express";
+import { RequestHandler } from "express";
 import session from "express-session";
-import * as redis from "redis";
-
-import { getWebsocketMiddlewares } from "../app";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 
 const RedisStore = ConnectRedis(session);
 
@@ -21,11 +20,9 @@ const MAXIMUM_SESSION_DURATION_IN_MILLISECONDS =
   parseInt(process.env.MAXIMUM_SESSION_DURATION_IN_MILLISECONDS || "", 10) ||
   3 * DAY;
 
-export default (app: Express) => {
+const Session: FastifyPluginAsync = async (app) => {
   const store = new RedisStore({
-    client: redis.createClient({
-      url: process.env.REDIS_URL,
-    }),
+    client: app.redis,
   });
 
   const sessionMiddleware = session({
@@ -56,5 +53,7 @@ export default (app: Express) => {
   };
 
   app.use(wrappedSessionMiddleware);
-  getWebsocketMiddlewares(app).push(wrappedSessionMiddleware);
+  app.websocketMiddlewares.push(wrappedSessionMiddleware);
 };
+
+export default fp(Session);

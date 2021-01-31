@@ -1,10 +1,12 @@
-import { Express } from "express";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import passport from "passport";
 
-import { getWebsocketMiddlewares } from "../app";
-
-interface DbSession {
-  session_id: string;
+declare module "http" {
+  export interface IncomingMessage {
+    login(user: Express.User, done: (err: any) => void): void;
+    logout(): void;
+  }
 }
 
 declare global {
@@ -14,9 +16,8 @@ declare global {
     }
   }
 }
-
-export default async (app: Express) => {
-  passport.serializeUser((sessionObject: DbSession, done) => {
+const Passport: FastifyPluginAsync = async (app) => {
+  passport.serializeUser((sessionObject, done) => {
     done(null, sessionObject.session_id);
   });
 
@@ -26,14 +27,16 @@ export default async (app: Express) => {
 
   const passportInitializeMiddleware = passport.initialize();
   app.use(passportInitializeMiddleware);
-  getWebsocketMiddlewares(app).push(passportInitializeMiddleware);
+  app.websocketMiddlewares.push(passportInitializeMiddleware);
 
   const passportSessionMiddleware = passport.session();
   app.use(passportSessionMiddleware);
-  getWebsocketMiddlewares(app).push(passportSessionMiddleware);
+  app.websocketMiddlewares.push(passportSessionMiddleware);
 
   app.get("/logout", (req, res) => {
-    req.logout();
+    req.raw.logout();
     res.redirect("/");
   });
 };
+
+export default fp(Passport);
