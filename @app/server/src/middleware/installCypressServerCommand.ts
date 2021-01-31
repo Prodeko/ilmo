@@ -1,13 +1,20 @@
-import { urlencoded } from "body-parser";
+import { IncomingMessage, Server, ServerResponse } from "http";
+import { ParsedUrlQuery } from "querystring";
+
 import dayjs from "dayjs";
-import { Express, Request, RequestHandler, Response } from "express";
 import * as faker from "faker";
+import {
+  FastifyPluginAsync,
+  FastifyReply,
+  FastifyRequest,
+  RouteHandlerMethod,
+} from "fastify";
+import { RouteGenericInterface } from "fastify/types/route";
+import fp from "fastify-plugin";
 import { Pool, PoolClient } from "pg";
 import slugify from "slugify";
 
-import { getRootPgPool } from "./installDatabasePools";
-
-export default (app: Express) => {
+const CypressServerCommands: FastifyPluginAsync = async (app) => {
   // Only enable this in test/development mode
   if (!["test", "development"].includes(process.env.NODE_ENV || "")) {
     throw new Error("This code must not run in production");
@@ -19,15 +26,20 @@ export default (app: Express) => {
    * attacks.
    */
   const safeToRun = process.env.ENABLE_CYPRESS_COMMANDS === "1";
-
-  const rootPgPool = getRootPgPool(app);
+  const rootPgPool = app.rootPgPool;
 
   /*
    * This function is invoked for the /cypressServerCommand route and is
    * responsible for parsing the request and handing it off to the relevant
    * function.
    */
-  const handleCypressServerCommand: RequestHandler = async (req, res, next) => {
+  const handleCypressServerCommand: RouteHandlerMethod<
+    Server,
+    IncomingMessage,
+    ServerResponse,
+    RouteGenericInterface,
+    unknown
+  > = async (req: FastifyRequest, res: FastifyReply) => {
     /*
      * If we didn't set ENABLE_CYPRESS_COMMANDS, output a warning to the server
      * log, and then pretend the /cypressServerCommand route doesn't exist.
@@ -37,8 +49,7 @@ export default (app: Express) => {
         "/cypressServerCommand denied because ENABLE_CYPRESS_COMMANDS is not set."
       );
       // Pretend like nothing happened
-      next();
-      return;
+      return null;
     }
 
     try {
@@ -48,7 +59,10 @@ export default (app: Express) => {
         throw new Error("Query not specified");
       }
 
-      const { command: rawCommand, payload: rawPayload } = query;
+      const {
+        command: rawCommand,
+        payload: rawPayload,
+      } = query as ParsedUrlQuery;
       if (!rawCommand) {
         throw new Error("Command not specified");
       }
@@ -69,7 +83,10 @@ export default (app: Express) => {
         /*
          * The command returned a result, send it back to the test suite.
          */
-        res.json(result);
+        res
+          .code(200)
+          .header("Content-Type", "application/json; charset=utf-8")
+          .send(result);
       }
     } catch (e) {
       /*
@@ -78,7 +95,7 @@ export default (app: Express) => {
        */
       console.error("cypressServerCommand failed!");
       console.error(e);
-      res.status(500).json({
+      res.status(500).serialize({
         error: {
           message: e.message,
           stack: e.stack,
@@ -86,16 +103,12 @@ export default (app: Express) => {
       });
     }
   };
-  app.get(
-    "/cypressServerCommand",
-    urlencoded({ extended: false }),
-    handleCypressServerCommand
-  );
+  app.get("/cypressServerCommand", {}, handleCypressServerCommand);
 };
 
 async function runCommand(
-  req: Request,
-  res: Response,
+  req: FastifyRequest,
+  res: FastifyReply,
   rootPgPool: Pool,
   command: string,
   payload: { [key: string]: any }
@@ -231,7 +244,7 @@ async function runCommand(
       await client.release();
     }
 
-    req.login({ session_id: session.uuid }, () => {
+    req.raw.login({ session_id: session.uuid }, () => {
       setTimeout(() => {
         // This 500ms delay is required to keep GitHub actions happy. 200ms wasn't enough.
         res.redirect(next || "/");
@@ -543,3 +556,5 @@ async function getUserEmailSecrets(rootPgPool: Pool, email: string) {
   );
   return userEmailSecrets;
 }
+
+export default fp(CypressServerCommands);

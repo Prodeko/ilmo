@@ -1,19 +1,15 @@
-import { Express } from "express";
-import { createNodeRedisClient, WrappedNodeRedisClient } from "handy-redis";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
+import fastifyRedis from "fastify-redis";
 
-import { getShutdownActions } from "../app";
+const Redis: FastifyPluginAsync = async (app) => {
+  app.register(fastifyRedis, { url: process.env.REDIS_URL });
+  const client = app.redis;
 
-export function getRedisClient(app: Express): WrappedNodeRedisClient {
-  return app.get("redisClient");
-}
-
-export default (app: Express) => {
-  const client = createNodeRedisClient({ url: process.env.REDIS_URL });
-
-  app.set("redisClient", client);
-
-  const shutdownActions = getShutdownActions(app);
+  const shutdownActions = app.shutdownActions;
   shutdownActions.push(() => {
     client.quit();
   });
 };
+
+export default fp(Redis);

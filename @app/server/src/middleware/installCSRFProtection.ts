@@ -1,7 +1,19 @@
 import csrf from "csurf";
-import { Express } from "express";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 
-export default (app: Express) => {
+declare module "fastify" {
+  interface FastifyRequest {
+    /**
+     * True if either the request 'Origin' header matches our ROOT_URL, or if
+     * there was no 'Origin' header (in which case we must give the benefit of
+     * the doubt; for example for normal resource GETs).
+     */
+    csrfToken: () => string;
+  }
+}
+
+const CSRFProtection: FastifyPluginAsync = async (app) => {
   const csrfProtection = csrf({
     // Store to the session rather than a Cookie
     cookie: false,
@@ -27,3 +39,5 @@ export default (app: Express) => {
     }
   });
 };
+
+export default fp(CSRFProtection);

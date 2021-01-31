@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import { resolve } from "path";
 
-import { ErrorRequestHandler, Express } from "express";
+import { FastifyError, FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import { template, TemplateExecutor } from "lodash";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -12,7 +13,7 @@ interface ParsedError {
   code?: string;
 }
 
-function parseError(error: Error): ParsedError {
+function parseError(error: FastifyError): ParsedError {
   /*
    * Because an error may contain confidential information or information that
    * might help attackers, by default we don't output the error message at all.
@@ -42,7 +43,7 @@ function parseError(error: Error): ParsedError {
 }
 
 let errorPageTemplate: TemplateExecutor;
-function getErrorPage({ message }: ParsedError) {
+function _getErrorPage({ message }: ParsedError) {
   if (!errorPageTemplate || isDev) {
     errorPageTemplate = template(
       fs.readFileSync(resolve(__dirname, "../../error.html"), "utf8")
@@ -56,40 +57,21 @@ function getErrorPage({ message }: ParsedError) {
   });
 }
 
-export default function (app: Express) {
-  const errorRequestHandler: ErrorRequestHandler = (error, _req, res, next) => {
-    try {
-      const parsedError = parseError(error);
-      const errorMessageString = `ERROR: ${parsedError.message}`;
-      if (res.headersSent) {
-        console.error(errorMessageString);
-        res.end();
-        return;
-      }
-      res.status(parsedError.status);
-      res.format({
-        "application/json": function () {
-          res.send({
-            errors: [{ message: errorMessageString, code: parsedError.code }],
-          });
-        },
+const ErrorHandler: FastifyPluginAsync = async (app) => {
+  app.setErrorHandler((error, _req, res): void => {
+    const parsedError = parseError(error);
+    const errorMessageString = `ERROR: ${parsedError.message}`;
 
-        "text/html": function () {
-          res.send(getErrorPage(parsedError));
-        },
-
-        "text/plain": function () {
-          res.send(errorMessageString);
-        },
-
-        default: function () {
-          // log the request and respond with 406
-          res.status(406).send("Not Acceptable");
-        },
-      });
-    } catch (e) {
-      next(e);
+    if (res.sent) {
+      console.error(errorMessageString);
+      return;
     }
-  };
-  app.use(errorRequestHandler);
-}
+
+    res.status(parsedError.status);
+    res.header("Content-Type", "application/json; charset=utf-8").send({
+      errors: [{ message: errorMessageString, code: parsedError.code }],
+    });
+  });
+};
+
+export default fp(ErrorHandler);

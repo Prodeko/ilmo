@@ -1,16 +1,19 @@
-import { Express } from "express";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import { makeWorkerUtils, WorkerUtils } from "graphile-worker";
 
-import { getRootPgPool } from "./installDatabasePools";
-
-export function getWorkerUtils(app: Express): WorkerUtils {
-  return app.get("workerUtils");
+declare module "fastify" {
+  export interface FastifyInstance {
+    workerUtils: WorkerUtils;
+  }
 }
 
-export default async (app: Express) => {
+const InstallWorkerUtils: FastifyPluginAsync = async (app) => {
   const workerUtils = await makeWorkerUtils({
-    pgPool: getRootPgPool(app),
+    pgPool: app.rootPgPool,
   });
 
-  app.set("workerUtils", workerUtils);
+  app.decorate("workerUtils", workerUtils);
 };
+
+export default fp(InstallWorkerUtils);

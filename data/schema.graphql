@@ -2525,6 +2525,21 @@ input RegistrationPatch {
   quotaId: UUID
 }
 
+"""
+Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.
+"""
+type RegistrationToken {
+  """Timestamp of when the token was created."""
+  createdAt: Datetime!
+
+  """Reads a single `Event` that is related to this `RegistrationToken`."""
+  event: Event
+
+  """Unique identifier for the event."""
+  eventId: UUID!
+  token: UUID!
+}
+
 """A connection to a list of `Registration` values."""
 type RegistrationsConnection {
   """
@@ -2564,21 +2579,6 @@ enum RegistrationsOrderBy {
   PRIMARY_KEY_DESC
   QUOTA_ID_ASC
   QUOTA_ID_DESC
-}
-
-"""
-Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.
-"""
-type RegistrationToken {
-  """Timestamp of when the token was created."""
-  createdAt: Datetime!
-
-  """Reads a single `Event` that is related to this `RegistrationToken`."""
-  event: Event
-
-  """Unique identifier for the event."""
-  eventId: UUID!
-  token: UUID!
 }
 
 """All input for the `removeFromOrganization` mutation."""
@@ -2723,14 +2723,14 @@ input StringFilter {
   """Included in the specified list."""
   in: [String!]
 
+  """Included in the specified list (case-insensitive)."""
+  inInsensitive: [String!]
+
   """Contains the specified string (case-sensitive)."""
   includes: String
 
   """Contains the specified string (case-insensitive)."""
   includesInsensitive: String
-
-  """Included in the specified list (case-insensitive)."""
-  inInsensitive: [String!]
 
   """
   Is null (if `true` is specified) or is not null (if `false` is specified).
@@ -2782,14 +2782,14 @@ input StringFilter {
   """Not included in the specified list."""
   notIn: [String!]
 
+  """Not included in the specified list (case-insensitive)."""
+  notInInsensitive: [String!]
+
   """Does not contain the specified string (case-sensitive)."""
   notIncludes: String
 
   """Does not contain the specified string (case-insensitive)."""
   notIncludesInsensitive: String
-
-  """Not included in the specified list (case-insensitive)."""
-  notInInsensitive: [String!]
 
   """
   Does not match the specified pattern (case-sensitive). An underscore (_) matches any single character; a percent sign (%) matches any sequence of zero or more characters.
@@ -2857,6 +2857,53 @@ type TransferOrganizationOwnershipPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+}
+
+"""
+A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122).
+"""
+scalar UUID
+
+"""
+A filter to be used against UUID fields. All fields are combined with a logical ‘and.’
+"""
+input UUIDFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: UUID
+
+  """Equal to the specified value."""
+  equalTo: UUID
+
+  """Greater than the specified value."""
+  greaterThan: UUID
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: UUID
+
+  """Included in the specified list."""
+  in: [UUID!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: UUID
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: UUID
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: UUID
+
+  """Not equal to the specified value."""
+  notEqualTo: UUID
+
+  """Not included in the specified list."""
+  notIn: [UUID!]
 }
 
 """All input for the `updateEventCategory` mutation."""
@@ -3496,6 +3543,11 @@ input UserPatch {
   username: String
 }
 
+type UserSubscriptionPayload {
+  event: String
+  user: User
+}
+
 """A `User` edge in the connection."""
 type UsersEdge {
   """A cursor for use in pagination."""
@@ -3514,58 +3566,6 @@ enum UsersOrderBy {
   PRIMARY_KEY_DESC
   USERNAME_ASC
   USERNAME_DESC
-}
-
-type UserSubscriptionPayload {
-  event: String
-  user: User
-}
-
-"""
-A universally unique identifier as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122).
-"""
-scalar UUID
-
-"""
-A filter to be used against UUID fields. All fields are combined with a logical ‘and.’
-"""
-input UUIDFilter {
-  """
-  Not equal to the specified value, treating null like an ordinary value.
-  """
-  distinctFrom: UUID
-
-  """Equal to the specified value."""
-  equalTo: UUID
-
-  """Greater than the specified value."""
-  greaterThan: UUID
-
-  """Greater than or equal to the specified value."""
-  greaterThanOrEqualTo: UUID
-
-  """Included in the specified list."""
-  in: [UUID!]
-
-  """
-  Is null (if `true` is specified) or is not null (if `false` is specified).
-  """
-  isNull: Boolean
-
-  """Less than the specified value."""
-  lessThan: UUID
-
-  """Less than or equal to the specified value."""
-  lessThanOrEqualTo: UUID
-
-  """Equal to the specified value, treating null like an ordinary value."""
-  notDistinctFrom: UUID
-
-  """Not equal to the specified value."""
-  notEqualTo: UUID
-
-  """Not included in the specified list."""
-  notIn: [UUID!]
 }
 
 """All input for the `verifyEmail` mutation."""

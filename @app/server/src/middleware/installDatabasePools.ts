@@ -1,14 +1,12 @@
-import { Express } from "express";
+import { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
 import { Pool } from "pg";
 
-import { getShutdownActions } from "../app";
-
-export function getRootPgPool(app: Express): Pool {
-  return app.get("rootPgPool");
-}
-
-export function getAuthPgPool(app: Express): Pool {
-  return app.get("authPgPool");
+declare module "fastify" {
+  export interface FastifyInstance {
+    authPgPool: Pool;
+    rootPgPool: Pool;
+  }
 }
 
 /**
@@ -24,22 +22,22 @@ function swallowPoolError(_error: Error) {
   /* noop */
 }
 
-export default (app: Express) => {
+const DatabasePools: FastifyPluginAsync = async (app) => {
   // This pool runs as the database owner, so it can do anything.
   const rootPgPool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
   rootPgPool.on("error", swallowPoolError);
-  app.set("rootPgPool", rootPgPool);
+  app.decorate("rootPgPool", rootPgPool);
 
   // This pool runs as the unprivileged user, it's what PostGraphile uses.
   const authPgPool = new Pool({
     connectionString: process.env.AUTH_DATABASE_URL,
   });
   authPgPool.on("error", swallowPoolError);
-  app.set("authPgPool", authPgPool);
+  app.decorate("authPgPool", authPgPool);
 
-  const shutdownActions = getShutdownActions(app);
+  const shutdownActions = app.shutdownActions;
   shutdownActions.push(() => {
     rootPgPool.end();
   });
@@ -47,3 +45,5 @@ export default (app: Express) => {
     authPgPool.end();
   });
 };
+
+export default fp(DatabasePools);

@@ -16,17 +16,9 @@ responsibility of the job queue, which can be found in
 ## Entry point
 
 The entry point to the server is [src/index.ts](src/index.ts). This file sets up
-an HTTP server and installs our express app (defined in
-[src/app.ts](src/app.ts)) into it. The express app installs the middleware it
+an HTTP server and installs our fastify app (defined in
+[src/app.ts](src/app.ts)) into it. The fastify app installs the middleware it
 needs from the src/middleware/\*.ts files.
-
-## Express getters
-
-Commonly-used values are stored into the Express app itself, using Express'
-`app.set(key, value)` API. Unfortunately this API does not allow for type-safe
-retrieval, so we encourage the use of custom typed getters to retrieve the
-relevant values, for example:
-`function getHttpServer(app: Express): Server | void { return app.get("httpServer"); }`
 
 ## PostGraphile smart tags
 
