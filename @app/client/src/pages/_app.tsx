@@ -11,6 +11,8 @@ import App from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
 
+import "dayjs/locale/fi";
+import "dayjs/locale/en-gb";
 import "antd/dist/antd.less";
 import "../styles.less";
 
@@ -81,10 +83,11 @@ interface Props {
 
 class Ilmo extends App<Props> {
   static async getInitialProps({ Component, ctx, router }: any) {
-    let pageProps = { locale: router.locale };
+    const locale = router.locale;
+    let pageProps = { locale };
 
     // TODO: Not sure if this is the best place for this..
-    dayjs.locale(router.locale);
+    dayjs.locale(locale === "en" ? "en-gb" : "fi");
 
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);

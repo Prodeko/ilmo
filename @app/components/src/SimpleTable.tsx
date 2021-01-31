@@ -1,10 +1,9 @@
 import React from "react";
 import { Table } from "antd";
-import { ColumnsType } from "antd/lib/table";
+import { TableProps } from "antd/lib/table";
 
-interface Props {
+interface Props extends TableProps<any> {
   data?: any;
-  columns: ColumnsType<any>;
 }
 
 export function SimpleTable({ data, columns, ...props }: Props) {

@@ -16,12 +16,12 @@ if (!process.env.ROOT_URL) {
   // You *must not* use `process.env` in here, because we need to check we have
   // those variables. To enforce this, we've deliberately shadowed process.
   module.exports = () => {
-    const withCss = require("@zeit/next-css");
-    const withLess = require("@zeit/next-less");
-    const lessToJS = require("less-vars-to-js");
-    const nextTranslate = require("next-translate");
     const fs = require("fs");
     const path = require("path");
+
+    const withAntdLess = require("next-plugin-antd-less");
+    const lessToJS = require("less-vars-to-js");
+
     // Where your antd-custom.less file lives
     const themeVariables = lessToJS(
       fs.readFileSync(
@@ -29,22 +29,21 @@ if (!process.env.ROOT_URL) {
         "utf8"
       )
     );
+    const withNextTranslate = require("next-translate");
+
     // fix: prevents error when .less files are required by node
     if (typeof require !== "undefined") {
       require.extensions[".less"] = () => {};
     }
     return compose(
-      withCss,
-      withLess,
-      nextTranslate
+      withAntdLess,
+      withNextTranslate
     )({
       poweredByHeader: false,
       distDir: `../.next`,
       trailingSlash: false,
-      lessLoaderOptions: {
-        javascriptEnabled: true,
-        modifyVars: themeVariables, // make your antd custom effective
-      },
+      lessVarsFilePath: path.resolve(__dirname, "../assets/antd-custom.less"),
+      modifyVars: themeVariables,
       i18n: {
         locales,
         defaultLocale,

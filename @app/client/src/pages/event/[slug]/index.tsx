@@ -12,12 +12,14 @@ import {
   useEventPageQuery,
   useEventRegistrationsSubscription,
 } from "@app/graphql";
-import { Button, Card, Col, PageHeader, Row, Tag } from "antd";
+import { Button, Card, Col, Grid, PageHeader, Row, Tag } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
+
+const { useBreakpoint } = Grid;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -45,6 +47,8 @@ interface EventPageInnerProps {
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter();
   const { t, lang } = useTranslation("register");
+  const screens = useBreakpoint();
+  const isMobile = screens["xs"];
 
   const [registrations, setRegistrations] = useState<
     Registration[] | null | undefined
@@ -83,7 +87,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       <PageHeader
         title={t("common:backHome")}
         onBack={() => router.push("/")}
-        extra={[
+        tags={[
+          <Tag color="red" key={event.ownerOrganization?.id}>
+            {event.ownerOrganization?.name}
+          </Tag>,
           <Tag color="red" key={event.category?.id}>
             {event.category?.name[lang]}
           </Tag>,
@@ -96,13 +103,21 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             data-cy="eventpage-signups-table"
             data={registrations}
             columns={columns}
+            style={{
+              marginTop: "1rem",
+            }}
+            size="small"
           />
         </Col>
         <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>
           <Card
             data-cy="eventpage-quotas-card"
             title={t("sidebar.title")}
-            style={{ marginLeft: "1rem", width: "100%" }}
+            style={{
+              marginLeft: !isMobile ? "1rem" : undefined,
+              marginBottom: isMobile ? "1rem" : undefined,
+              width: "100%",
+            }}
             bordered
           >
             {event.quotas.nodes.map((q, i) => {

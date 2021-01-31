@@ -10,8 +10,18 @@ import {
   useLogoutMutation,
 } from "@app/graphql";
 import * as Sentry from "@sentry/react";
-import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
+import {
+  Avatar,
+  Col,
+  Dropdown,
+  Grid,
+  Layout,
+  Menu,
+  Row,
+  Typography,
+} from "antd";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
@@ -22,6 +32,7 @@ import { ErrorAlert, H3, StandardWidth, Warn } from ".";
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
+const { useBreakpoint } = Grid;
 /*
  * For some reason, possibly related to the interaction between
  * `babel-plugin-import` and https://github.com/babel/babel/pull/9766, we can't
@@ -89,12 +100,15 @@ export function SharedLayout({
   const router = useRouter();
   const currentUrl = router.asPath;
   const client = useApolloClient();
+  const screens = useBreakpoint();
   const [logout] = useLogoutMutation();
   const { t } = useTranslation("common");
 
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
   const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
+
+  const isMobile = screens["xs"];
 
   const handleLogout = useCallback(() => {
     const reset = async () => {
@@ -179,36 +193,44 @@ export function SharedLayout({
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
         <Row wrap={false} justify="space-between">
-          <Col flex="auto">
+          <Col flex="auto" style={{ padding: 5 }}>
             <Link href="/">
               <a>
-                <img src="/images/header-logo.png" width={120} alt="Prodeko" />
+                <Image
+                  src={"/images/header-logo.png"}
+                  height={50}
+                  width={50}
+                  alt="Prodeko"
+                  priority
+                />
               </a>
             </Link>
           </Col>
-          <Col xs={{ span: 2 }} md={{ span: 5 }}>
-            <H3
-              style={{
-                margin: 0,
-                padding: 0,
-                textAlign: "center",
-                lineHeight: "64px",
-              }}
-              data-cy="layout-header-title"
-            >
-              {titleHref ? (
-                <Link href={titleHref} as={titleHrefAs}>
-                  <a data-cy="layout-header-titlelink">{title}</a>
-                </Link>
-              ) : (
-                title
-              )}
-            </H3>
-          </Col>
+          {!isMobile ? (
+            <Col xs={{ span: 4 }} md={{ span: 5 }}>
+              <H3
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  textAlign: "center",
+                  lineHeight: "64px",
+                }}
+                data-cy="layout-header-title"
+              >
+                {titleHref ? (
+                  <Link href={titleHref} as={titleHrefAs}>
+                    <a data-cy="layout-header-titlelink">{title}</a>
+                  </Link>
+                ) : (
+                  title
+                )}
+              </H3>
+            </Col>
+          ) : null}
           <Col flex="auto" style={{ textAlign: "right" }}>
             <LocaleSelect />
           </Col>
-          <Col xs={{ span: 5 }} md={{ span: 2 }} style={{ textAlign: "right" }}>
+          <Col xs={{ span: 7 }} md={{ span: 2 }} style={{ textAlign: "right" }}>
             {data && data.currentUser ? (
               <Dropdown
                 trigger={["click"]}

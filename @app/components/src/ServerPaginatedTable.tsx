@@ -1,16 +1,15 @@
 import React, { useCallback, useState } from "react";
 import { DocumentNode, useQuery } from "@apollo/client";
 import { Table } from "antd";
-import { ColumnsType, TablePaginationConfig } from "antd/lib/table";
+import { TablePaginationConfig, TableProps } from "antd/lib/table";
 import { get } from "lodash";
 
 import { ErrorAlert } from "./ErrorAlert";
 import { Loading } from "./Loading";
 
-interface Props {
+interface Props extends TableProps<any> {
   queryDocument: DocumentNode;
   variables?: any;
-  columns: ColumnsType<any>;
   dataField: string;
   showPagination?: boolean;
 }
@@ -45,7 +44,7 @@ export function ServerPaginatedTable({
     async (pagination) => {
       setPagination({ ...pagination });
       const { current, pageSize } = pagination;
-      const newOffset = (current - 1) * pageSize;
+      const newOffset = (current - 1) * pageSize || 0;
 
       await fetchMore({
         variables: {
@@ -70,6 +69,7 @@ export function ServerPaginatedTable({
       rowClassName={(record, _index) =>
         record?.isHighlighted ? "table-row-highlight" : ""
       }
+      scroll={{ x: 100 }}
       {...props}
     />
   );
