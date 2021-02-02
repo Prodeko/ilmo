@@ -11,5 +11,5 @@ module.exports = {
     "/register/e/[eventId]/q/[quotaId]": ["register"],
   },
   loadLocaleFrom: (lang, ns) =>
-    import(`./locales/${lang}/${ns}.json`).then((m) => m.default),
+    import(`./src/translations/${lang}/${ns}.json`).then((m) => m.default),
 };

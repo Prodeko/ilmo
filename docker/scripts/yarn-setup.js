@@ -51,7 +51,7 @@ ROOT_DATABASE_URL=postgres://postgres:${password}@db/postgres
 LD_TABLE_PATTERN=app_public.*
 
 # Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly
-NEXT_TRANSLATE_PATH=../client/src
+NEXT_TRANSLATE_PATH=../client
 
 # Redis is used for session storage and as a rate limiting store
 REDIS_URL=redis://redis:6379
