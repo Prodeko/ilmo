@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { InfoCircleOutlined } from "@ant-design/icons";
+import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined";
 import { Col, Popover, Progress, Row } from "antd";
 
 export interface PasswordStrengthProps {

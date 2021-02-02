@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined";
 import { ApolloError, useApolloClient } from "@apollo/client";
 import {
   AuthRestrict,

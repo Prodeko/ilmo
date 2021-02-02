@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useCallback } from "react";
-import { CrownOutlined, DownOutlined } from "@ant-design/icons";
+import CrownOutlined from "@ant-design/icons/CrownOutlined";
+import DownOutlined from "@ant-design/icons/DownOutlined";
 import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
 import { companyName, projectName } from "@app/config";
 import {

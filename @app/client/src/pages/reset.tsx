@@ -11,7 +11,7 @@ import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib";
 import * as Sentry from "@sentry/react";
 import { Alert, Button, Form, Input } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import get from "lodash/get";
+import { get } from "lodash";
 import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 

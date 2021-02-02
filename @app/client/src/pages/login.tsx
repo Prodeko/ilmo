@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons";
+import LockOutlined from "@ant-design/icons/LockOutlined";
+import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
+import UserOutlined from "@ant-design/icons/UserOutlined";
 import { ApolloError, useApolloClient } from "@apollo/client";
 import {
   AuthRestrict,

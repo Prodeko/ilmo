@@ -18,13 +18,13 @@ COPY @app/ /app/@app/
 WORKDIR /app/
 RUN yarn install --frozen-lockfile --production=false --no-progress
 
-COPY tsconfig.json /app/
+COPY tsconfig.json babel.config.js /app/
 # Folders must be copied separately, files can be copied all at once
 COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 
 # Finally run the build script
-RUN NEXT_TRANSLATE_PATH=../client/src yarn run build
+RUN NEXT_TRANSLATE_PATH=../client yarn run build
 
 ################################################################################
 # Build stage 2 - COPY the relevant things (multiple steps)
@@ -44,8 +44,9 @@ COPY --from=builder /app/@app/components/package.json /app/@app/components/
 COPY --from=builder /app/@app/components/dist/ /app/@app/components/dist/
 COPY --from=builder /app/@app/client/package.json /app/@app/client/package.json
 COPY --from=builder /app/@app/client/assets/ /app/@app/client/assets/
-COPY --from=builder /app/@app/client/src/next.config.js /app/@app/client/src/next.config.js
-COPY --from=builder /app/@app/client/src/i18n.js /app/@app/client/src/i18n.js
+COPY --from=builder /app/@app/client/public/ /app/@app/client/public/
+COPY --from=builder /app/@app/client/next.config.js /app/@app/client/next.config.js
+COPY --from=builder /app/@app/client/i18n.js /app/@app/client/i18n.js
 COPY --from=builder /app/@app/client/src/pages /app/@app/client/src/pages
 COPY --from=builder /app/@app/client/.next /app/@app/client/.next
 COPY --from=builder /app/@app/server/package.json /app/@app/server/
