@@ -123,7 +123,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add(
     "NEXT_TRANSLATE_PATH",
-    "../client/src",
+    "../client",
     `\
 # Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly`
   );

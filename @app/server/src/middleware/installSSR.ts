@@ -1,5 +1,4 @@
 import { parse } from "url";
-import path from "path";
 
 import { FastifyPluginCallback } from "fastify";
 import fp from "fastify-plugin";

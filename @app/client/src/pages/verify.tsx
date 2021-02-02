@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Col, Row, SharedLayout } from "@app/components";
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql";
 import { Alert } from "antd";
-import get from "lodash/get";
+import { get } from "lodash";
 import { NextPage } from "next";
 
 interface Props {

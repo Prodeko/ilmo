@@ -1,5 +1,5 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": false,
     "incremental": false,
@@ -12,11 +12,11 @@
     "isolatedModules": true
   },
   "exclude": ["node_modules"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "i18n.js"],
+  "include": ["next-env.d.ts", "src/*.ts", "src/*.tsx"],
   "references": [
-    { "path": "../../config" },
-    { "path": "../../graphql" },
-    { "path": "../../components" },
-    { "path": "../../lib" }
+    { "path": "../config" },
+    { "path": "../graphql" },
+    { "path": "../components" },
+    { "path": "../lib" }
   ]
 }
