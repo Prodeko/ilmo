@@ -39,7 +39,6 @@
     "fastify-helmet": "^5.2.0",
     "fastify-plugin": "^3.0.0",
     "fastify-redis": "^4.1.0",
-    "fastify-static": "^3.4.0",
     "graphile-build": "^4.11.0",
     "graphile-build-pg": "^4.11.2",
     "graphile-utils": "^4.11.2",
