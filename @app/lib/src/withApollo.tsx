@@ -122,7 +122,7 @@ function makeClientSideLink(ROOT_URL: string) {
 
 export const withApollo = withApolloBase(
   ({ initialState, ctx }) => {
-    const ROOT_URL = "http://localhost:5678";
+    const ROOT_URL = process.env.ROOT_URL;
     if (!ROOT_URL) {
       throw new Error("ROOT_URL envvar is not set");
     }
