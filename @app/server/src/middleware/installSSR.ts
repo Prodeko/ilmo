@@ -1,4 +1,5 @@
 import { parse } from "url";
+import path from "path";
 
 import { FastifyPluginCallback } from "fastify";
 import fp from "fastify-plugin";
@@ -20,7 +21,7 @@ const isDev = process.env.NODE_ENV === "development";
 const SSR: FastifyPluginCallback = (fastify, _options, next) => {
   const nextApp = Next({
     dev: isDev,
-    dir: `${__dirname}/../../../client/src`,
+    dir: `${__dirname}/../../../client`,
     quiet: !isDev,
     // Don't specify 'conf' key
   });
@@ -35,7 +36,6 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
           ...parsedUrl,
           query: {
             ...parsedUrl.query,
-            // @ts-ignore
             CSRF_TOKEN: req.raw.csrfToken(),
             // See 'next.config.js'
             ROOT_URL: process.env.ROOT_URL || "http://localhost:5678",
@@ -43,6 +43,11 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
             SENTRY_DSN: process.env.SENTRY_DSN,
           },
         });
+        reply.sent = true;
+      });
+
+      fastify.setNotFoundHandler(async (request, reply) => {
+        await nextApp.render404(request.raw, reply.raw);
         reply.sent = true;
       });
 

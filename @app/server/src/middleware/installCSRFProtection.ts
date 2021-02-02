@@ -2,8 +2,8 @@ import csrf from "csurf";
 import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
 
-declare module "fastify" {
-  interface FastifyRequest {
+declare module "http" {
+  interface IncomingMessage {
     /**
      * True if either the request 'Origin' header matches our ROOT_URL, or if
      * there was no 'Origin' header (in which case we must give the benefit of
