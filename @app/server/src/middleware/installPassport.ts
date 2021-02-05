@@ -98,10 +98,12 @@ and clicking 'I agree' on the displayed prompt.`.replace(/\n/g, " ")
           throw e;
         }
 
+        // Use email as username since that is the
+        // unique field in prodeko.org authentication
         return {
           id: pk,
           displayName: first_name || "",
-          username: first_name,
+          username: email,
           avatarUrl:
             "https://static.prodeko.org/media/public/2020/07/07/anonymous_prodeko.jpg",
           email: email,
