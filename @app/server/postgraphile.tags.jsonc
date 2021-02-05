@@ -63,6 +63,31 @@
           }
         }
       },
+      "app_public.user_authentications": {
+        "tags": {
+          "omit": "all",
+          "simpleCollections": "only"
+        },
+        "attribute": {
+          "details": {
+            "tags": {
+              "omit": true
+            }
+          }
+        },
+        "constraint": {
+          "uniq_user_authentications": {
+            "tags": {
+              "omit": true
+            }
+          },
+          "user_authentications_pkey": {
+            "tags": {
+              "omit": "all"
+            }
+          }
+        }
+      },
       "app_public.user_emails": {
         "tags": {
           /*

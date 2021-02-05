@@ -13,6 +13,7 @@ import NProgress from "nprogress";
 
 import "dayjs/locale/fi";
 import "dayjs/locale/en-gb";
+import "../styles/styles.less";
 
 import "nprogress/nprogress.css";
 

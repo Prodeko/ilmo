@@ -675,12 +675,6 @@ type DeleteUserAuthenticationPayload {
 
   """The `UserAuthentication` that was deleted by this mutation."""
   userAuthentication: UserAuthentication
-
-  """An edge for our `UserAuthentication`. May be used by Relay 1."""
-  userAuthenticationEdge(
-    """The method to use when ordering `UserAuthentication`."""
-    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): UserAuthenticationsEdge
 }
 
 """All input for the `deleteUserEmail` mutation."""
@@ -2223,41 +2217,6 @@ type Query {
   ): RegistrationsConnection
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
-  userAuthenticationByServiceAndIdentifier(identifier: String!, service: String!): UserAuthentication
-
-  """Reads and enables pagination through a set of `UserAuthentication`."""
-  userAuthentications(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: UserAuthenticationCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: UserAuthenticationFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `UserAuthentication`."""
-    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): UserAuthenticationsConnection
   userByUsername(username: String!): User
   userEmail(id: UUID!): UserEmail
 }
@@ -3256,13 +3215,7 @@ type User {
   updatedAt: Datetime!
 
   """Reads and enables pagination through a set of `UserAuthentication`."""
-  userAuthentications(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
+  userAuthenticationsList(
     """
     A condition to be used in determining which values should be returned by the collection.
     """
@@ -3276,18 +3229,12 @@ type User {
     """Only read the first `n` values of the set."""
     first: Int
 
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
+    """Skip the first `n` values."""
     offset: Int
 
     """The method to use when ordering `UserAuthentication`."""
-    orderBy: [UserAuthenticationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): UserAuthenticationsConnection!
+    orderBy: [UserAuthenticationsOrderBy!]
+  ): [UserAuthentication!]!
 
   """Reads and enables pagination through a set of `UserEmail`."""
   userEmails(
@@ -3332,9 +3279,6 @@ Contains information about the login providers this user has used, so that they 
 """
 type UserAuthentication {
   createdAt: Datetime!
-
-  """Additional profile details extracted from this login method"""
-  details: JSON!
   id: UUID!
 
   """A unique identifier for the user within the login service."""
@@ -3385,34 +3329,6 @@ input UserAuthenticationFilter {
 
   """Filter by the object’s `userId` field."""
   userId: UUIDFilter
-}
-
-"""A connection to a list of `UserAuthentication` values."""
-type UserAuthenticationsConnection {
-  """
-  A list of edges which contains the `UserAuthentication` and cursor to aid in pagination.
-  """
-  edges: [UserAuthenticationsEdge!]!
-
-  """A list of `UserAuthentication` objects."""
-  nodes: [UserAuthentication!]!
-
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
-
-  """
-  The count of *all* `UserAuthentication` you could get from the connection.
-  """
-  totalCount: Int!
-}
-
-"""A `UserAuthentication` edge in the connection."""
-type UserAuthenticationsEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `UserAuthentication` at the end of the edge."""
-  node: UserAuthentication!
 }
 
 """Methods to use when ordering `UserAuthentication`."""
