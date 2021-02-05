@@ -33,7 +33,7 @@ Rewritten, the above rules state:
 - DNIED: permission denied
 - NUNIQ: not unique (from PostgreSQL 23505)
 - NTFND: not found
-- RLMIT: requets rate limited
+- RLMIT: request rate limited
 - BADFK: foreign key violation (from PostgreSQL 23503)
 
 ## Registration
@@ -47,6 +47,7 @@ Rewritten, the above rules state:
 - EMTKN: a different user account is already linked to this email
 - CREDS: bad credentials (incorrect username/password)
 - LOGIN: you're not logged in
+- PRPOL: privacy policy not accepted
 
 ## Email management
 

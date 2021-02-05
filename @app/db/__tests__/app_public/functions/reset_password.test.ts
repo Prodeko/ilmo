@@ -1,8 +1,9 @@
 import { PoolClient } from "pg";
 
 import { login } from "../../app_private/functions/login.test";
-import { forgotPassword } from "../../app_public/functions/forgot_password.test";
 import { createUsers, getJobs, withRootDb } from "../../helpers";
+
+import { forgotPassword } from "./forgot_password.test";
 
 export async function resetPassword(
   client: PoolClient,

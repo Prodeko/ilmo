@@ -2,7 +2,7 @@ import { Server } from "http";
 
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
-import { Request, Response } from "express";
+import { Application, Request, Response, Router } from "express";
 import Fastify, {
   FastifyInstance,
   FastifyReply,
@@ -22,6 +22,7 @@ import { sanitizeEnv } from "./utils";
 
 declare module "fastify" {
   export interface FastifyInstance {
+    express: Application;
     httpServer: Server;
     shutdownActions: ShutdownAction[];
     websocketMiddlewares: Middleware<Request, Response>[];
@@ -84,15 +85,17 @@ export async function makeApp({
   /**
    * Register Fastify Express compatability plugin.
    * This plugin allows us to use express style middleware with Fastify.
-   * We need this to have session support with postgraphile websockets.
-   * Currently, Postgraphile only supports express style middlewares with
-   * websocketMiddlewares option. We use this compatability layer with
-   * session related middlewares (installSession, installSameOrigin,
-   * installCSRFProtection and installPassport).
+   * The plugin enables us to use sessions with websocket connections
+   * and to install express style middlewares.
+   *
+   * This compatability layer with is used with the following middlewares:
+   * installSession, installSameOrigin, installCSRFProtection, installPassport
+   * and installPassportStrategy.
    *
    * See: https://github.com/graphile/postgraphile/blob/ba9a7bcf1c3fa3347cf07de0a3732cfd0d5b6dcb/src/postgraphile/http/subscriptions.ts#L109
    */
   await app.register(fastifyExpress);
+  app.use(Router());
 
   /*
    * Getting access to the HTTP server directly means that we can do things

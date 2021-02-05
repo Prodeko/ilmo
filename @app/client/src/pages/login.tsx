@@ -11,6 +11,7 @@ import {
   Row,
   SharedLayout,
   SharedLayoutChildProps,
+  SocialLoginOptions,
 } from "@app/components";
 import { useLoginMutation, useSharedQuery } from "@app/graphql";
 import {
@@ -74,15 +75,20 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                 <Row style={{ marginBottom: 8 }}>
                   <Col span={24}>
                     <Button
+                      block
+                      size="large"
                       data-cy="loginpage-button-withusername"
                       icon={<UserOutlined />}
-                      size="large"
-                      block
                       onClick={() => setShowLogin(true)}
                       type="primary"
                     >
                       Sign in with E-mail or Username
                     </Button>
+                  </Col>
+                </Row>
+                <Row style={{ marginBottom: 8 }}>
+                  <Col span={24}>
+                    <SocialLoginOptions next={next} />
                   </Col>
                 </Row>
                 <Row justify="center">

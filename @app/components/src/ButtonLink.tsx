@@ -1,13 +1,13 @@
 import React from "react";
 import { Button } from "antd";
 import { ButtonProps } from "antd/lib/button";
-import Link from "next/link";
+import Link, { LinkProps } from "next/link";
 
-export function ButtonLink(props: ButtonProps & { href: string; as?: string }) {
-  const { href, as, ...rest } = props;
+export const ButtonLink: React.FC<ButtonProps & LinkProps> = (props) => {
+  const { href, as, locale, ...rest } = props;
   return (
-    <Link href={href} as={as} passHref>
+    <Link href={href} as={as} locale={locale} passHref>
       <Button {...rest} />
     </Link>
   );
-}
+};

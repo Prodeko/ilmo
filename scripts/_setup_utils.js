@@ -102,6 +102,37 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # IMPORTANT: must NOT end with a slash`
   );
 
+  add(
+    "PRODEKO_OAUTH_KEY",
+    null,
+    `\
+# To enable login with Prodeko credentials, create a Oauth2 application by visiting
+# https://prodeko.org/oauth2/applications/register/ and then enter the Client
+# ID/Secret and auth root url (dev: http://localhost:8000, prod: https://prodeko.org) below
+#
+#   Name: Ilmo
+#   Client type: 'confidential'
+#   Authorization grant type: 'Authorization code'
+#   Redirect uris: http://localhost:5678/auth/oauth2/callback
+#
+# Client ID:`
+  );
+
+  add(
+    "PRODEKO_OAUTH_SECRET",
+    null,
+    `\
+# Client Secret:`
+  );
+
+  add(
+    "PRODEKO_OAUTH_ROOT_URL",
+    null,
+    `\
+# Oauth root url:
+# IMPORTANT: must NOT end with a slash`
+  );
+
   const nodeVersion = parseInt(
     process.version.replace(/\..*$/, "").replace(/[^0-9]/g, ""),
     10
@@ -109,7 +140,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add(
     "GRAPHILE_TURBO",
-    nodeVersion >= 12 ? "1" : "",
+    nodeVersion >= 14 ? "1" : "",
     `\
 # Set to 1 only if you're on Node v14 of higher; enables advanced optimisations`
   );
