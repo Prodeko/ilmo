@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ButtonLink } from "./ButtonLink";
+import { Button } from "antd";
 import { ProdekoIcon } from "./ProdekoIcon";
 
 export interface SocialLoginOptionsProps {
@@ -17,15 +17,14 @@ export function SocialLoginOptions({
   buttonTextFromService = defaultButtonTextFromService,
 }: SocialLoginOptionsProps) {
   return (
-    <ButtonLink
+    <Button
       block
       size="large"
       icon={<ProdekoIcon style={{ verticalAlign: "middle" }} size="20px" />}
       href={`/auth/oauth2?next=${encodeURIComponent(next)}`}
       type="primary"
-      locale={false}
     >
       {buttonTextFromService("Prodeko")}
-    </ButtonLink>
+    </Button>
   );
 }
