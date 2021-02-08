@@ -6,8 +6,8 @@ import { UploadFile } from "antd/lib/upload/interface";
 import ImgCrop from "antd-img-crop";
 import useTranslation from "next-translate/useTranslation";
 
-import "antd/es/modal/style";
-import "antd/es/slider/style";
+import "antd/lib/modal/style";
+import "antd/lib/slider/style";
 
 const { Dragger } = Upload;
 

@@ -2897,7 +2897,7 @@ ALTER TABLE ONLY app_public.organization_memberships
 --
 
 ALTER TABLE ONLY app_public.quotas
-    ADD CONSTRAINT quotas_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
+    ADD CONSTRAINT quotas_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
 
 
 --
@@ -2913,7 +2913,7 @@ ALTER TABLE ONLY app_public.registration_tokens
 --
 
 ALTER TABLE ONLY app_public.registrations
-    ADD CONSTRAINT registrations_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
+    ADD CONSTRAINT registrations_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
 
 
 --

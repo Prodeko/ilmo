@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const { useBreakpoint } = Grid;
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -90,8 +90,12 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         title={t("common:backHome")}
         onBack={() => router.push("/")}
       />
-      <Row style={{ maxWidth: "64rem" }}>
-        <Col xs={{ span: 24, order: 1 }} sm={{ span: 16, order: 1 }}>
+      <Row>
+        <Col
+          style={{ display: "inline-block" }}
+          xs={{ span: 24 }}
+          sm={{ span: 16 }}
+        >
           {event.headerImageFile && (
             <Image
               src={event.headerImageFile}
@@ -103,19 +107,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             />
           )}
         </Col>
-        <Col xs={{ span: 24, order: 3 }} sm={{ span: 16 }}>
-          <Title level={2}>{event.description[lang]}</Title>
-          <SimpleTable
-            data-cy="eventpage-signups-table"
-            data={registrations}
-            columns={columns}
-            style={{
-              marginTop: "1rem",
-            }}
-            size="small"
-          />
-        </Col>
-        <Col xs={{ span: 24, order: 2 }} sm={{ span: 8, order: 2 }}>
+        <Col
+          xs={{ span: 24 }}
+          sm={{ span: 8 }}
+          style={{ maxHeight: isMobile ? "100%" : 0 }}
+        >
           <Card
             data-cy="eventpage-quotas-card"
             title={t("sidebar.title")}
@@ -154,6 +150,19 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
               );
             })}
           </Card>
+        </Col>
+        <Col xs={{ span: 24 }} sm={{ span: 16 }}>
+          <Title level={2}>{event.name[lang]}</Title>
+          <Paragraph>{event.description[lang]}</Paragraph>
+          <SimpleTable
+            data-cy="eventpage-signups-table"
+            data={registrations}
+            columns={columns}
+            style={{
+              marginTop: "1rem",
+            }}
+            size="small"
+          />
         </Col>
       </Row>
     </>

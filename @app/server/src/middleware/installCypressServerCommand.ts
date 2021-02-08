@@ -366,8 +366,9 @@ export const createOrganizations = async function createOrganizations(
 ) {
   const organizations = [];
   for (let i = 0; i < count; i++) {
-    const slug = `organization-${i}`;
-    const name = `Organization ${i}`;
+    const random = faker.lorem.paragraph();
+    const slug = `organization-${random}`;
+    const name = `Organization ${random}`;
     const {
       rows: [organization],
     } = await client.query(
@@ -422,7 +423,7 @@ export const createEvents = async function createEvents(
   const events = [];
   for (let i = 0; i < count; i++) {
     const name = {
-      fi: `Tapahtuma ${faker.lorem.word()} ${i}`,
+      fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
       en: `Event ${faker.lorem.words()} ${i}`,
     };
     const description = {

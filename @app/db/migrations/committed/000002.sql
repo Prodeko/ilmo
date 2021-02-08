@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:bfa1982e5982fafe4691b67facfb0d6d5c7aed9d
+--! Hash: sha1:ba67ab3080e7fa43f4ed54808cf74fac09cc3ea7
 
 --! split: 1-current.sql
 /**********/
@@ -160,7 +160,7 @@ create policy manage_as_admin on app_public.events
 create trigger _100_timestamps
   before insert or update on app_public.events for each row
   execute procedure app_private.tg__timestamps();
-
+  
 /**********/
 -- Event questions
 
@@ -319,7 +319,7 @@ drop table if exists app_public.quotas cascade;
 
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete no action,
+  event_id uuid not null references app_public.events(id) on delete cascade,
   title jsonb not null,
   size smallint not null check (size > 0),
   -- TODO: Implement questions
@@ -391,7 +391,7 @@ drop function if exists app_public.create_registration(uuid, uuid, text, text, c
 
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete no action,
+  event_id uuid not null references app_public.events(id) on delete cascade,
   quota_id uuid not null references app_public.quotas(id) on delete no action,
   first_name text not null,
   last_name text not null,
