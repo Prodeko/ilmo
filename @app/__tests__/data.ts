@@ -164,7 +164,7 @@ export const createEvents = async function createEvents(
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     };
-    const startTime = faker.date.soon();
+    const startTime = faker.date.recent();
     const endTime = faker.date.soon();
     const eventCategoryId = categoryId;
 

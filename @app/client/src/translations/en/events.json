@@ -2,6 +2,7 @@
   "category": "Category",
   "eventName": "Event",
   "eventNotFound": "Event not found",
+  "headerImage": "Event header image",
   "languages": "Languages",
   "organizer": "Organizer",
   "time": "Time",

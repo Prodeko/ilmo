@@ -763,6 +763,9 @@ type Event {
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection!
 
+  """Header image for the event"""
+  headerImageFile: String
+
   """Unique identifier for the event."""
   id: UUID!
 
@@ -884,6 +887,8 @@ type EventCategoriesEdge {
 enum EventCategoriesOrderBy {
   ID_ASC
   ID_DESC
+  NAME_ASC
+  NAME_DESC
   NATURAL
   OWNER_ORGANIZATION_ID_ASC
   OWNER_ORGANIZATION_ID_DESC
@@ -954,6 +959,9 @@ input EventCategoryCondition {
   """Checks for equality with the object’s `id` field."""
   id: UUID
 
+  """Checks for equality with the object’s `name` field."""
+  name: JSON
+
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 }
@@ -967,6 +975,9 @@ input EventCategoryFilter {
 
   """Filter by the object’s `id` field."""
   id: UUIDFilter
+
+  """Filter by the object’s `name` field."""
+  name: JSONFilter
 
   """Negates the expression."""
   not: EventCategoryFilter
@@ -1064,6 +1075,9 @@ input EventInput {
   """Ending time of the event."""
   endTime: Datetime!
 
+  """Header image for the event"""
+  headerImageFile: Upload
+
   """A highlighted event."""
   isHighlighted: Boolean
 
@@ -1092,6 +1106,9 @@ input EventPatch {
 
   """Ending time of the event."""
   endTime: Datetime
+
+  """Header image for the event"""
+  headerImageFile: Upload
 
   """A highlighted event."""
   isHighlighted: Boolean
@@ -1308,6 +1325,63 @@ type InviteToOrganizationPayload {
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSON
+
+"""
+A filter to be used against JSON fields. All fields are combined with a logical ‘and.’
+"""
+input JSONFilter {
+  """Contained by the specified JSON."""
+  containedBy: JSON
+
+  """Contains the specified JSON."""
+  contains: JSON
+
+  """Contains all of the specified keys."""
+  containsAllKeys: [String!]
+
+  """Contains any of the specified keys."""
+  containsAnyKeys: [String!]
+
+  """Contains the specified key."""
+  containsKey: String
+
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: JSON
+
+  """Equal to the specified value."""
+  equalTo: JSON
+
+  """Greater than the specified value."""
+  greaterThan: JSON
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: JSON
+
+  """Included in the specified list."""
+  in: [JSON!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: JSON
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: JSON
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: JSON
+
+  """Not equal to the specified value."""
+  notEqualTo: JSON
+
+  """Not included in the specified list."""
+  notIn: [JSON!]
+}
 
 input LoginInput {
   password: String!
@@ -3159,6 +3233,9 @@ type UpdateUserPayload {
     orderBy: [UsersOrderBy!] = [PRIMARY_KEY_ASC]
   ): UsersEdge
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 """A user who can log in to the application."""
 type User {

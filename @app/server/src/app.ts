@@ -136,6 +136,7 @@ export async function makeApp({
   }
   await app.register(middleware.installPostGraphile);
   await app.register(middleware.installSSR);
+  await app.register(middleware.installFileUpload);
 
   /*
    * Error handling middleware

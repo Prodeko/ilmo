@@ -83,6 +83,7 @@
   "resolutions": {
     "graphql": "15.x",
     "pg-connection-string": "2.x",
+    "webpack": "4.x",
     "less-loader": "7.x"
   },
   "workspaces": {

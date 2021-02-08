@@ -2,6 +2,7 @@
   "category": "Kategoria",
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
+  "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "organizer": "Järjestäjä",
   "time": "Aika",
@@ -16,7 +17,7 @@
     "eventCreationFailed": "Tapahtuman luonti epäonnistui"
   },
   "forms": {
-    "eventTime": "Tapahtuman ajankohta",
+    "eventTime": "Ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
     "placeholders": {
       "languages": "Valitse kielet",

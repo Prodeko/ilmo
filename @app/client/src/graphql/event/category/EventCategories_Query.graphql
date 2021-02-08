@@ -6,7 +6,7 @@ fragment EventCategories_EventCategory on EventCategory {
 
 fragment EventCategories_Query on Query {
   ...SharedLayout_Query
-  eventCategories {
+  eventCategories(orderBy: NAME_ASC) {
     nodes {
       id
       ...EventCategories_EventCategory
