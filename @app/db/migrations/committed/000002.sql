@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:7441cb8cd5957f5e36e7e4cd7ff055dbb56ed613
+--! Hash: sha1:bfa1982e5982fafe4691b67facfb0d6d5c7aed9d
 
 --! split: 1-current.sql
 /**********/
@@ -48,6 +48,7 @@ comment on column app_public.event_categories.owner_organization_id is
   E'Identifier of the organizer.';
 
 create index on app_public.event_categories(owner_organization_id);
+create index on app_public.event_categories(name);
 
 grant
   select,
@@ -79,11 +80,13 @@ create table app_public.events(
   start_time timestamptz not null,
   end_time timestamptz not null,
   is_highlighted boolean not null default false,
+  header_image_file text,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   category_id uuid not null references app_public.event_categories on delete no action,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 
+  constraint _cnstr_check_event_time check(start_time < end_time)
   constraint _cnstr_check_name_language check(check_language(name))
   constraint _cnstr_check_description_language check(check_language(description))
 );
@@ -105,6 +108,8 @@ comment on column app_public.events.end_time is
   E'Ending time of the event.';
 comment on column app_public.events.is_highlighted is
   E'A highlighted event.';
+comment on column app_public.events.header_image_file is
+  E'Header image for the event';
 comment on column app_public.events.owner_organization_id is
   E'Id of the organizer.';
 comment on column app_public.events.category_id is
@@ -116,8 +121,8 @@ create index on app_public.events(category_id);
 
 grant
   select,
-  insert (name, slug, description, start_time, end_time, is_highlighted, owner_organization_id, category_id),
-  update (name, slug, description, start_time, end_time, is_highlighted, owner_organization_id, category_id),
+  insert (name, slug, description, start_time, end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
+  update (name, slug, description, start_time, end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
   delete
 on app_public.events to :DATABASE_VISITOR;
 
@@ -423,7 +428,6 @@ comment on column app_public.registrations.last_name is
   E'Last name of the person registering to an event.';
 comment on column app_public.registrations.email is
   E'@omit\nEmail address of the person registering to an event.';
-create index on app_public.registrations(event_id);
 
 grant
   select,

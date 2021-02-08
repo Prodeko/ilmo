@@ -323,8 +323,8 @@ async function createEventData(rootPgPool: Pool) {
     await client.query("begin");
 
     const user = await reallyCreateUser(rootPgPool, {
-      username: "testuser",
-      email: "testuser@example.com",
+      username: "testuser_events",
+      email: "testuser_events@example.com",
       name: "testuser",
       verified: true,
       password: "DOESNT MATTER",
@@ -429,7 +429,7 @@ export const createEvents = async function createEvents(
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     };
-    const startTime = faker.date.soon();
+    const startTime = faker.date.recent();
     const endTime = faker.date.soon();
     const eventCategoryId = categoryId;
 

@@ -1,6 +1,11 @@
 import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
+import {
+  AuthRestrict,
+  FileUpload,
+  Redirect,
+  SharedLayout,
+} from "@app/components";
 import {
   CreatedEventFragment,
   useCreateEventMutation,
@@ -41,7 +46,9 @@ const CreateEventPage: NextPage = () => {
 
   const code = getCodeFromError(formError);
   const [event, setEvent] = useState<null | CreatedEventFragment>(null);
-  const [createEvent] = useCreateEventMutation();
+  const [createEvent] = useCreateEventMutation({
+    context: { hasUpload: true },
+  });
 
   const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([
@@ -52,13 +59,14 @@ const CreateEventPage: NextPage = () => {
     async (values) => {
       setFormError(null);
       try {
-        const startTime = values["eventTime"][0].toISOString();
-        const endTime = values["eventTime"][1].toISOString();
+        const startTime = values.eventTime[0].toISOString();
+        const endTime = values.eventTime[1].toISOString();
 
         const daySlug = dayjs(startTime).format("YYYY-M-D");
-        const slug = slugify(`${daySlug}-${values.name}`, {
+        const slug = slugify(`${daySlug}-${values.name["fi"]}`, {
           lower: true,
         });
+        const headerImageFile = values?.headerImageFile?.file?.originFileObj;
 
         const { data } = await createEvent({
           variables: {
@@ -66,6 +74,7 @@ const CreateEventPage: NextPage = () => {
             slug,
             startTime,
             endTime,
+            headerImageFile,
           },
         });
         setFormError(null);
@@ -121,9 +130,14 @@ const CreateEventPage: NextPage = () => {
                   allowClear
                   onChange={(e) => setSelectedLanguages(e as string[])}
                   placeholder={t("forms.placeholders.languages")}
+                  data-cy="createevent-select-language"
                 >
                   {supportedLanguages?.map((l, i) => (
-                    <Option key={i} value={l ? l : ""}>
+                    <Option
+                      key={i}
+                      value={l ? l : ""}
+                      data-cy={`createevent-select-language-option-${l}`}
+                    >
                       {t(`common:${l}`)}
                     </Option>
                   ))}
@@ -143,13 +157,14 @@ const CreateEventPage: NextPage = () => {
                   placeholder={t("forms.placeholders.event.organizer")}
                   data-cy="createevent-select-organization-id"
                 >
-                  {organizationMemberships?.map((a) => (
-                    <Select.Option
+                  {organizationMemberships?.map((a, i) => (
+                    <Option
                       value={a.organization?.id}
                       key={a.organization?.id}
+                      data-cy={`createevent-select-organization-id-option-${i}`}
                     >
                       {a.organization?.name}
-                    </Select.Option>
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -167,10 +182,14 @@ const CreateEventPage: NextPage = () => {
                   placeholder={t("forms.placeholders.event.category")}
                   data-cy="createevent-select-category-id"
                 >
-                  {query.data?.eventCategories?.nodes.map((a) => (
-                    <Select.Option value={a.id} key={a.id}>
+                  {query.data?.eventCategories?.nodes.map((a, i) => (
+                    <Option
+                      value={a.id}
+                      key={a.id}
+                      data-cy={`createevent-select-category-id-option-${i}`}
+                    >
                       {a.name[lang]}
-                    </Select.Option>
+                    </Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -243,14 +262,30 @@ const CreateEventPage: NextPage = () => {
                   },
                 ]}
               >
-                <RangePicker showTime format="YYYY-MM-DD HH:mm" />
+                <RangePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm"
+                  data-cy="createevent-input-rangepicker"
+                />
               </Form.Item>
               <Form.Item
                 name="isHighlighted"
                 label={t("forms.highlightEvent")}
                 valuePropName="checked"
               >
-                <Switch />
+                <Switch data-cy="createevent-switch-highlight" />
+              </Form.Item>
+              <Form.Item
+                name="headerImageFile"
+                label={t("headerImage")}
+                valuePropName="headerImageFile"
+              >
+                <FileUpload
+                  accept="image/*"
+                  maxCount={1}
+                  cropAspect={851 / 315}
+                  data-cy="createevent-header-image-upload"
+                />
               </Form.Item>
               {formError && (
                 <Form.Item {...tailFormItemLayout}>

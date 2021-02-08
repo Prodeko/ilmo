@@ -22,6 +22,8 @@
 
 /// <reference types="Cypress" />
 
+import "cypress-file-upload";
+
 type Chainable<Subject = any> = Cypress.Chainable<Subject>;
 
 type User = {

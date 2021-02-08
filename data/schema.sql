@@ -2090,11 +2090,13 @@ CREATE TABLE app_public.events (
     start_time timestamp with time zone NOT NULL,
     end_time timestamp with time zone NOT NULL,
     is_highlighted boolean DEFAULT false NOT NULL,
+    header_image_file text,
     owner_organization_id uuid NOT NULL,
     category_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
+    CONSTRAINT _cnstr_check_event_time CHECK ((start_time < end_time)),
     CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name))
 );
 
@@ -2153,6 +2155,13 @@ COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
 --
 
 COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the event';
 
 
 --
@@ -2508,6 +2517,13 @@ CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
 
 
 --
+-- Name: event_categories_name_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_categories_name_idx ON app_public.event_categories USING btree (name);
+
+
+--
 -- Name: event_categories_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2603,13 +2619,6 @@ CREATE INDEX registrations_created_at_idx ON app_public.registrations USING btre
 --
 
 CREATE INDEX registrations_event_id_idx ON app_public.registrations USING btree (event_id);
-
-
---
--- Name: registrations_event_id_idx1; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registrations_event_id_idx1 ON app_public.registrations USING btree (event_id);
 
 
 --
@@ -3812,6 +3821,13 @@ GRANT INSERT(end_time),UPDATE(end_time) ON TABLE app_public.events TO ilmo_visit
 --
 
 GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

@@ -11,6 +11,7 @@ import {
 import { onError } from "@apollo/client/link/error";
 import { getDataFromTree } from "@apollo/client/react/ssr";
 import { SentryLink } from "apollo-link-sentry";
+import { createUploadLink } from "apollo-upload-client";
 import { getOperationAST, GraphQLError, print } from "graphql";
 import { Client, createClient } from "graphql-ws";
 import withApolloBase from "next-with-apollo";
@@ -105,9 +106,18 @@ function makeClientSideLink(ROOT_URL: string) {
   });
   wsClient = createWsClient();
   const wsLink = new WebSocketLink();
+  const uploadLink = createUploadLink({ uri: `${ROOT_URL}/graphql` });
 
   // Using the ability to split links, you can send data to each link
   // depending on what kind of operation is being sent.
+  const testLink = split(
+    // split based on operation type
+    (operation) => operation.getContext().hasUpload,
+    // @ts-ignore: TODO remove comment when typings have been updated
+    uploadLink,
+    httpLink
+  );
+
   const mainLink = split(
     // split based on operation type
     ({ query, operationName }) => {
@@ -115,7 +125,7 @@ function makeClientSideLink(ROOT_URL: string) {
       return (op && op.operation === "subscription") || false;
     },
     wsLink,
-    httpLink
+    testLink
   );
   return mainLink;
 }

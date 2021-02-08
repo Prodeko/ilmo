@@ -1,6 +1,6 @@
 import React from "react";
-
 import { Button } from "antd";
+
 import { ProdekoIcon } from "./ProdekoIcon";
 
 export interface SocialLoginOptionsProps {

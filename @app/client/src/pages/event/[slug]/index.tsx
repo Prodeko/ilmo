@@ -12,14 +12,16 @@ import {
   useEventPageQuery,
   useEventRegistrationsSubscription,
 } from "@app/graphql";
-import { Button, Card, Col, Grid, PageHeader, Row, Tag } from "antd";
+import { Button, Card, Col, Grid, PageHeader, Row, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const { useBreakpoint } = Grid;
+const { Title } = Typography;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -87,18 +89,22 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       <PageHeader
         title={t("common:backHome")}
         onBack={() => router.push("/")}
-        tags={[
-          <Tag color="red" key={event.ownerOrganization?.id}>
-            {event.ownerOrganization?.name}
-          </Tag>,
-          <Tag color="red" key={event.category?.id}>
-            {event.category?.name[lang]}
-          </Tag>,
-        ]}
       />
-      <Row>
-        <Col xs={{ span: 24, order: 2 }} sm={{ span: 16, order: 1 }}>
-          {event.description[lang]}
+      <Row style={{ maxWidth: "64rem" }}>
+        <Col xs={{ span: 24, order: 1 }} sm={{ span: 16, order: 1 }}>
+          {event.headerImageFile && (
+            <Image
+              src={event.headerImageFile}
+              alt={t("events:headerImage")}
+              width={851}
+              height={315}
+              objectFit="cover"
+              priority
+            />
+          )}
+        </Col>
+        <Col xs={{ span: 24, order: 3 }} sm={{ span: 16 }}>
+          <Title level={2}>{event.description[lang]}</Title>
           <SimpleTable
             data-cy="eventpage-signups-table"
             data={registrations}
@@ -109,7 +115,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             size="small"
           />
         </Col>
-        <Col xs={{ span: 24, order: 1 }} sm={{ span: 8, order: 1 }}>
+        <Col xs={{ span: 24, order: 2 }} sm={{ span: 8, order: 2 }}>
           <Card
             data-cy="eventpage-quotas-card"
             title={t("sidebar.title")}

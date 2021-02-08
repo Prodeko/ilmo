@@ -15,6 +15,7 @@
     "@babel/runtime": "^7.12.13",
     "@sentry/react": "^6.0.4",
     "antd": "^4.12.2",
+    "antd-img-crop": "^3.13.2",
     "lodash": "^4.17.20",
     "next": "^10.0.6",
     "next-translate": "^1.0.2",

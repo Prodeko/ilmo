@@ -14,6 +14,7 @@ mutation CreateEvent(
   $organizationId: UUID!
   $categoryId: UUID!
   $isHighlighted: Boolean
+  $headerImageFile: Upload
   $startTime: Datetime!
   $endTime: Datetime!
 ) {
@@ -26,6 +27,7 @@ mutation CreateEvent(
         ownerOrganizationId: $organizationId
         categoryId: $categoryId
         isHighlighted: $isHighlighted
+        headerImageFile: $headerImageFile
         startTime: $startTime
         endTime: $endTime
       }

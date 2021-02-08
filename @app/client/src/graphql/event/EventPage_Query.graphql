@@ -6,6 +6,7 @@ fragment EventPage_Event on Event {
   endTime
   description
   createdAt
+  headerImageFile
   category {
     id
     description

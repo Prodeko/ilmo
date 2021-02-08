@@ -1,5 +1,15 @@
+@import "~antd/lib/style/themes/default.less";
+
 :root {
   // Work around for using less variables in react code.
   // Example usage: style={{ backgroundColor: "var(--primary-color) }}"
   --primary-color: @primary-color;
+}
+
+.table-row-highlight {
+  background-color: @blue-1;
+
+  &:hover > td {
+    background-color: @blue-2 !important;
+  }
 }
