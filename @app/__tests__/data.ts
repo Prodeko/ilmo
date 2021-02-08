@@ -81,8 +81,9 @@ export const createOrganizations = async function createOrganizations(
 ) {
   const organizations: Organization[] = [];
   for (let i = 0; i < count; i++) {
-    const slug = `organization-${i}`;
-    const name = `Organization ${i}`;
+    const random = faker.lorem.word();
+    const slug = `organization-${random}`;
+    const name = `Organization ${random}`;
     const {
       rows: [organization],
     } = await client.query(
@@ -157,7 +158,7 @@ export const createEvents = async function createEvents(
   const events: Event[] = [];
   for (let i = 0; i < count; i++) {
     const name = {
-      fi: `Tapahtuma ${faker.lorem.word()} ${i}`,
+      fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
       en: `Event ${faker.lorem.words()} ${i}`,
     };
     const description = {
@@ -168,6 +169,8 @@ export const createEvents = async function createEvents(
     const endTime = faker.date.soon();
     const eventCategoryId = categoryId;
 
+    const headerImageFile = faker.image.imageUrl(851, 315, "nature");
+
     const daySlug = dayjs(startTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
@@ -177,14 +180,15 @@ export const createEvents = async function createEvents(
       rows: [event],
     } = await client.query(
       `
-        insert into app_public.events(name, slug, description, start_time, end_time, owner_organization_id, category_id)
-        values ($1, $2, $3, $4, $5, $6, $7)
+        insert into app_public.events(name, slug, description, header_image_file, start_time, end_time, owner_organization_id, category_id)
+        values ($1, $2, $3, $4, $5, $6, $7, $8)
         returning *
       `,
       [
         name,
         slug,
         description,
+        headerImageFile,
         startTime,
         endTime,
         organizationId,
