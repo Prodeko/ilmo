@@ -29,7 +29,7 @@ export function saveLocal({
   const timestamp = new Date().toISOString().replace(/\D/g, "");
   const id = `${timestamp}_${filename}`;
   const filepath = join("/uploads", id);
-  const fsPath = join(process.cwd(), "../client/public", filepath);
+  const fsPath = join(process.cwd(), filepath);
   return new Promise((resolve, reject) =>
     stream
       .on("error", (error: Error) => {

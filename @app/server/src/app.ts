@@ -131,6 +131,7 @@ export async function makeApp({
   await app.register(middleware.installSession);
   await app.register(middleware.installCSRFProtection);
   await app.register(middleware.installPassport);
+  await app.register(middleware.installStaticUploads);
   if (isTest || isDev) {
     await app.register(middleware.installCypressServerCommand);
   }
