@@ -1,25 +1,25 @@
 {
   "createdAt": "Time",
-  "title": "Register to event:",
+  "errors": {
+    "registrationFailed": "Registering to the event failed"
+  },
   "eventSignupComplete": "Event signup saved",
+  "forms": {
+    "email": "E-mail",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "quota": "Quota",
+    "rules": {
+      "emailEmpty": "Please input your E-mail.",
+      "emailValid": "The input is not valid E-mail.",
+      "provideFirstName": "Please enter your first name",
+      "provideLastName": "Please enter your last name"
+    }
+  },
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
   "sidebar": {
     "title": "Quotas"
   },
-  "errors": {
-    "registrationFailed": "Registering to the event failed"
-  },
-  "forms": {
-    "firstName": "First name",
-    "lastName": "Last name",
-    "email": "E-mail",
-    "quota": "Quota",
-    "rules": {
-      "provideFirstName": "Please enter your first name",
-      "provideLastName": "Please enter your last name",
-      "emailEmpty": "Please input your E-mail.",
-      "emailValid": "The input is not valid E-mail."
-    }
-  }
+  "title": "Register to event:"
 }

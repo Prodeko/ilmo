@@ -3,17 +3,17 @@
   "create": "Create",
   "description": "Description",
   "dragToUpload": "Click or drag file to this area to upload",
-  "fi": "Finnish",
   "en": "English",
+  "fi": "Finnish",
+  "headerMenu": {
+    "createEvent": "Create event",
+    "createEventCategory": "Create event category",
+    "createOrganization": "Create organization"
+  },
   "logout": "Logout",
   "name": "Name",
   "redirect": "Redirecting...",
   "settings": "Settings",
   "shortDescription": "Short description",
-  "signin": "Sign in",
-  "headerMenu": {
-    "createEvent": "Create event",
-    "createEventCategory": "Create event category",
-    "createOrganization": "Create organization"
-  }
+  "signin": "Sign in"
 }
