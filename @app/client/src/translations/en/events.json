@@ -1,11 +1,5 @@
 {
   "category": "Category",
-  "eventName": "Event",
-  "eventNotFound": "Event not found",
-  "headerImage": "Event header image",
-  "languages": "Languages",
-  "organizer": "Organizer",
-  "time": "Time",
   "createEvent": {
     "title": "Luo tapahtuma"
   },
@@ -16,35 +10,41 @@
     "eventCategoryCreationFailed": "Creating event category failed",
     "eventCreationFailed": "Creating event failed"
   },
+  "eventName": "Event",
+  "eventNotFound": "Event not found",
   "forms": {
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
     "placeholders": {
-      "languages": "Please select languages",
       "en": "In English",
-      "fi": "In Finnish",
       "event": {
-        "organizer": "Please select an organizer for the event",
-        "category": "Please select a category for the event"
+        "category": "Please select a category for the event",
+        "organizer": "Please select an organizer for the event"
       },
       "eventCategory": {
         "organizer": "Please select an organizer for the event category"
-      }
+      },
+      "fi": "In Finnish",
+      "languages": "Please select languages"
     },
     "rules": {
-      "provideLanguage": "Please select languages",
       "event": {
-        "provideOrganizer": "Please choose an organizer for the event",
         "provideCategory": "Please choose a category for the event",
-        "provideName": "Please choose a name for the event",
         "provideDescription": "Please provide a description of the event",
-        "provideEventTime": "Please select event time"
+        "provideEventTime": "Please select event time",
+        "provideName": "Please choose a name for the event",
+        "provideOrganizer": "Please choose an organizer for the event"
       },
       "eventCategory": {
-        "provideOrganizer": "Please choose a host organization for the category",
+        "provideDescription": "Please choose a description for the category",
         "provideName": "Please choose a name for the category",
-        "provideDescription": "Please choose a description for the category"
-      }
+        "provideOrganizer": "Please choose a host organization for the category"
+      },
+      "provideLanguage": "Please select languages"
     }
-  }
+  },
+  "headerImage": "Event header image",
+  "languages": "Languages",
+  "organizer": "Organizer",
+  "time": "Time"
 }

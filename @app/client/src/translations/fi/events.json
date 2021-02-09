@@ -1,11 +1,5 @@
 {
   "category": "Kategoria",
-  "eventName": "Tapahtuma",
-  "eventNotFound": "Tapahtumaa ei löytynyt",
-  "headerImage": "Tapahtuman kansikuva",
-  "languages": "Kielet",
-  "organizer": "Järjestäjä",
-  "time": "Aika",
   "createEvent": {
     "title": "Luo tapahtuma"
   },
@@ -16,35 +10,41 @@
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
     "eventCreationFailed": "Tapahtuman luonti epäonnistui"
   },
+  "eventName": "Tapahtuma",
+  "eventNotFound": "Tapahtumaa ei löytynyt",
   "forms": {
     "eventTime": "Ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
     "placeholders": {
-      "languages": "Valitse kielet",
       "en": "Englanniksi",
-      "fi": "Suomeksi",
       "event": {
-        "organizer": "Valitse tapahtuman järjestäjä",
-        "category": "Valitse tapahtuman kategoria"
+        "category": "Valitse tapahtuman kategoria",
+        "organizer": "Valitse tapahtuman järjestäjä"
       },
       "eventCategory": {
         "organizer": "Valitse kategorian järjestäjä"
-      }
+      },
+      "fi": "Suomeksi",
+      "languages": "Valitse kielet"
     },
     "rules": {
-      "provideLanguage": "Valitse kielet",
       "event": {
-        "provideOrganizer": "Valitse järjestäjä tapahtumalle",
         "provideCategory": "Valitse tapahtuman kategoria",
-        "provideName": "Anna tapahtuman nimi",
         "provideDescription": "Anna tapahtuman kuvaus",
-        "provideEventTime": "Aseta tapahtuman ajankohta"
+        "provideEventTime": "Aseta tapahtuman ajankohta",
+        "provideName": "Anna tapahtuman nimi",
+        "provideOrganizer": "Valitse järjestäjä tapahtumalle"
       },
       "eventCategory": {
-        "provideOrganizer": "Valitse järjestäjä kategorialle",
+        "provideDescription": "Anna kategorian kuvaus",
         "provideName": "Anna kategorian nimi",
-        "provideDescription": "Anna kategorian kuvaus"
-      }
+        "provideOrganizer": "Valitse järjestäjä kategorialle"
+      },
+      "provideLanguage": "Valitse kielet"
     }
-  }
+  },
+  "headerImage": "Tapahtuman kansikuva",
+  "languages": "Kielet",
+  "organizer": "Järjestäjä",
+  "time": "Aika"
 }

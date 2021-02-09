@@ -1,5 +1,5 @@
 {
-  "pageNotFound": "Sivua ei löytynyt",
+  "errorCode": "Virhekoodi",
   "errorOccurred": "Tapahtui virhe",
-  "errorCode": "Virhekoodi"
+  "pageNotFound": "Sivua ei löytynyt"
 }

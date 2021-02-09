@@ -12,6 +12,7 @@ import {
   useEventPageQuery,
   useEventRegistrationsSubscription,
 } from "@app/graphql";
+import { uploadsLoader } from "@app/lib";
 import { Button, Card, Col, Grid, PageHeader, Row, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
@@ -103,6 +104,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
               width={851}
               height={315}
               objectFit="cover"
+              loader={uploadsLoader}
               priority
             />
           )}

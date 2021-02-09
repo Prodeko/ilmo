@@ -14,6 +14,7 @@ import {
 } from "./installSentry";
 import installSession from "./installSession";
 import installSSR from "./installSSR";
+import installStaticUploads from "./installStaticUploads";
 import installWorkerUtils from "./installWorkerUtils";
 
 export {
@@ -31,5 +32,6 @@ export {
   installSentryRequestHandler,
   installSession,
   installSSR,
+  installStaticUploads,
   installWorkerUtils,
 };

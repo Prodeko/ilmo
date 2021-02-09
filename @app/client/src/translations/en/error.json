@@ -1,5 +1,5 @@
 {
-  "pageNotFound": "Page not found",
+  "errorCode": "Error code",
   "errorOccurred": "An error occurred",
-  "errorCode": "Error code"
+  "pageNotFound": "Page not found"
 }

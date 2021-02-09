@@ -11,6 +11,9 @@ if (!process.env.ROOT_URL) {
   }
 }
 
+const { NODE_ENV } = process.env;
+const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 (function (process = null) {
   // You *must not* use `process.env` in here, because we need to check we have
@@ -44,6 +47,9 @@ if (!process.env.ROOT_URL) {
       i18n: {
         locales,
         defaultLocale,
+      },
+      images: {
+        domains: [isDevOrTest ? "placeimg.com" : ""],
       },
       webpack(config, { webpack, dev, isServer }) {
         const makeSafe = (externals) => {

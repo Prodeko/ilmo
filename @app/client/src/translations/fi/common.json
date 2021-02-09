@@ -3,17 +3,17 @@
   "create": "Luo",
   "description": "Kuvaus",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
-  "fi": "Suomi",
   "en": "Englanti",
+  "fi": "Suomi",
+  "headerMenu": {
+    "createEvent": "Luo tapahtuma",
+    "createEventCategory": "Luo tapahtumakategoria",
+    "createOrganization": "Luo organisaatio"
+  },
   "logout": "Kirjaudu ulos",
   "name": "Nimi",
   "redirect": "Uudelleenohjataan...",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
-  "signin": "Kirjaudu sisään",
-  "headerMenu": {
-    "createEvent": "Luo tapahtuma",
-    "createEventCategory": "Luo tapahtumakategoria",
-    "createOrganization": "Luo organisaatio"
-  }
+  "signin": "Kirjaudu sisään"
 }
