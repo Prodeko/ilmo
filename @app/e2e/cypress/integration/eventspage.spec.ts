@@ -13,7 +13,7 @@ context("Events page", () => {
     // Action
     cy.get("@createEventDataResult").then(
       ({ eventCategory, event, quota }: any) => {
-        cy.getCy("homepage-signup-open-events").find("a").click();
+        cy.getCy("homepage-signup-closed-events").find("a").click();
 
         // Assertions
         cy.url().should(
@@ -61,7 +61,7 @@ context("Events page", () => {
       cy.getCy("createregistration-input-firstname").type("Per");
       cy.getCy("createregistration-input-lastname").type("Webteamsson");
       cy.getCy("createregistration-input-email").type(
-        "per.Webteamsson@example.com"
+        "per.webteamsson@example.com"
       );
       cy.getCy("createregistration-button-create").click();
 

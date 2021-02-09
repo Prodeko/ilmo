@@ -366,7 +366,7 @@ export const createOrganizations = async function createOrganizations(
 ) {
   const organizations = [];
   for (let i = 0; i < count; i++) {
-    const random = faker.lorem.paragraph();
+    const random = faker.lorem.word();
     const slug = `organization-${random}`;
     const name = `Organization ${random}`;
     const {
