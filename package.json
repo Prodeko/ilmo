@@ -78,7 +78,8 @@
   },
   "resolutions": {
     "graphql": "15.x",
-    "less-loader": "7.x"
+    "less-loader": "7.x",
+    "webpack": "4.x"
   },
   "workspaces": {
     "packages": [
