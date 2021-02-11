@@ -283,6 +283,11 @@ export function SharedLayout({
                       </Menu.Item>,
                     ]}
                     <Menu.Item>
+                      <Link href="/admin">
+                        <a data-cy="layout-link-admin">{t("admin")}</a>
+                      </Link>
+                    </Menu.Item>
+                    <Menu.Item>
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">
                           <Warn okay={data.currentUser.isVerified}>

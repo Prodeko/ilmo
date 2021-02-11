@@ -1,3 +1,4 @@
+export * from "./AdminLayout";
 export * from "./ButtonLink";
 export * from "./ErrorAlert";
 export * from "./ErrorOccurred";
