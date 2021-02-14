@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AuthRestrict, Loading, Redirect, SharedLayout } from "@app/components";
+import { AdminLayout, AuthRestrict, Loading, Redirect } from "@app/components";
 import {
   CreatedOrganizationFragment,
+  useAdminLayoutQuery,
   useCreateOrganizationMutation,
   useOrganizationBySlugLazyQuery,
-  useSharedQuery,
 } from "@app/graphql";
 import {
   extractError,
@@ -24,7 +24,7 @@ import slugify from "slugify";
 
 const CreateOrganizationPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useSharedQuery();
+  const query = useAdminLayoutQuery();
   const [form] = useForm();
   const [slug, setSlug] = useState("");
   const [
@@ -106,7 +106,7 @@ const CreateOrganizationPage: NextPage = () => {
   }
 
   return (
-    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
+    <AdminLayout href="/admin/create-organization" query={query}>
       <Row>
         <Col flex={1}>
           <PageHeader title="Create Organization" />
@@ -189,7 +189,7 @@ const CreateOrganizationPage: NextPage = () => {
           </div>
         </Col>
       </Row>
-    </SharedLayout>
+    </AdminLayout>
   );
 };
 

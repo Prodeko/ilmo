@@ -284,7 +284,9 @@ export function SharedLayout({
                     ]}
                     <Menu.Item>
                       <Link href="/admin">
-                        <a data-cy="layout-link-admin">{t("admin")}</a>
+                        <a data-cy="layout-link-admin">
+                          {t("headerMenu.admin")}
+                        </a>
                       </Link>
                     </Menu.Item>
                     <Menu.Item>

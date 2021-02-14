@@ -1,10 +1,11 @@
 import * as qs from "querystring";
 
 import React from "react";
-import { Layout, Menu, Typography } from "antd";
-import { TextProps } from "antd/lib/typography/Text";
-import Link from "next/link";
+import { useAdminLayoutQuery } from "@app/graphql";
+import { Layout } from "antd";
+import _ from "lodash";
 import { NextRouter, useRouter } from "next/router";
+import useTranslation from "next-translate/useTranslation";
 
 import { Redirect } from "./Redirect";
 import {
@@ -12,56 +13,32 @@ import {
   contentMinHeight,
   SharedLayout,
   SharedLayoutChildProps,
-  SharedLayoutProps,
 } from "./SharedLayout";
+import { MenuItem, SideMenu } from "./SideMenu";
 import { StandardWidth } from "./StandardWidth";
-import { Warn } from "./Warn";
 
-const { Text } = Typography;
 const { Sider, Content } = Layout;
 
-interface PageSpec {
-  title: string;
-  cy: string;
-  warnIfUnverified?: boolean;
-  titleProps?: TextProps;
-}
-
-// TypeScript shenanigans (so we can still use `keyof typeof pages` later)
-function page(spec: PageSpec): PageSpec {
-  return spec;
-}
-
-const pages = {
-  "/admin": page({
-    title: "Admin",
-    cy: "adminlayout-link-admin",
-  }),
-  "/settings/security": page({
-    title: "Passphrase",
-    cy: "settingslayout-link-password",
-  }),
-  "/settings/accounts": page({
-    title: "Linked Accounts",
-    cy: "settingslayout-link-accounts",
-  }),
-  "/settings/emails": page({
-    title: "Emails",
-    warnIfUnverified: true,
-    cy: "settingslayout-link-emails",
-  }),
-  "/settings/delete": page({
-    title: "Delete Account",
-    titleProps: {
-      type: "danger",
-    },
-    cy: "settingslayout-link-delete",
-  }),
+const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
+  if (items.some((item) => item.key === key)) {
+    return items.find((item) => item.key === key);
+  }
+  const itemsWithChildren = items.filter(
+    (item) =>
+      typeof item.target !== "string" && typeof item.target !== "function"
+  );
+  for (let i = 0; i < itemsWithChildren.length; i++) {
+    const res = findPage(key, itemsWithChildren[i].target as MenuItem[]);
+    if (res) {
+      return res;
+    }
+  }
+  return undefined;
 };
 
 export interface AdminLayoutProps {
-  query: SharedLayoutProps["query"];
-  href: keyof typeof pages;
+  query: ReturnType<typeof useAdminLayoutQuery>;
+  href: string;
   children: React.ReactNode;
 }
 
@@ -70,15 +47,96 @@ export function AdminLayout({
   href: inHref,
   children,
 }: AdminLayoutProps) {
-  const href = pages[inHref] ? inHref : Object.keys(pages)[0];
-  const page = pages[href];
+  const { t, lang } = useTranslation("admin");
+
+  const basicMenuItems = {
+    main: {
+      key: "/admin",
+      title: t("adminMain"),
+      target: "/admin",
+    },
+  };
+
+  const items: MenuItem[] = query.loading
+    ? [basicMenuItems.main]
+    : [
+        basicMenuItems.main,
+        {
+          key: "admin-menu-organizations",
+          title: t("organizations"),
+          target: [
+            ...(query.data?.currentUser?.organizationMemberships.nodes.map(
+              (organization): MenuItem => ({
+                title: organization.organization?.name || "",
+                key: `/o/${organization.organization?.slug}`,
+
+                target: `/o/${organization.organization?.slug}`,
+              })
+            ) || []),
+            {
+              title: t("createNewOrganization"),
+              titleProps: { strong: true },
+              key: "/admin/create-organization",
+              target: "/admin/create-organization",
+            },
+          ],
+        },
+        {
+          key: "admin-menu-event-categories",
+          title: t("eventCategories"),
+          target: [
+            ...(query.data?.currentUser?.organizationMemberships.nodes.map(
+              (organization): MenuItem => ({
+                title: organization.organization?.name || "",
+                key: `event-category-${organization.organization?.slug}`,
+
+                target: [
+                  ...(organization.organization?.eventCategoriesByOwnerOrganizationId.nodes.map(
+                    (category): MenuItem => ({
+                      title: category.name[lang],
+                      key: `/admin/category/${category.id}`,
+                      target: `/admin/category/${category.id}`,
+                    })
+                  ) || []),
+                  {
+                    title: t("createNewCategory"),
+                    titleProps: { strong: true },
+                    key: `/admin/create-event-category${
+                      organization.organization?.slug
+                        ? `?org=${organization.organization.slug}`
+                        : ""
+                    }`,
+                    target: `/admin/create-event-category${
+                      organization.organization?.slug
+                        ? `?org=${organization.organization.slug}`
+                        : ""
+                    }`,
+                  },
+                ],
+              })
+            ) || []),
+            {
+              title: t("createNewCategory"),
+              titleProps: { strong: true },
+              key: "/admin/create-event-category",
+              target: "/admin/create-event-category",
+            },
+          ],
+        },
+      ];
+
+  const page = findPage(String(inHref), items) || items[0];
+  const href = page.key;
+  console.log(page);
+
   // `useRouter()` sometimes returns null
   const router: NextRouter | null = useRouter();
   const fullHref =
     href + (router && router.query ? `?${qs.stringify(router.query)}` : "");
+
   return (
     <SharedLayout
-      title={`Settings: ${page.title}`}
+      title={`${t("admin")}`}
       noPad
       query={query}
       forbidWhen={AuthRestrict.LOGGED_OUT}
@@ -89,27 +147,7 @@ export function AdminLayout({
         ) : (
           <Layout style={{ minHeight: contentMinHeight }} hasSider>
             <Sider>
-              <Menu selectedKeys={[href]}>
-                {Object.keys(pages).map((pageHref) => (
-                  <Menu.Item key={pageHref}>
-                    <Link href={pageHref}>
-                      <a data-cy={pages[pageHref].cy}>
-                        <Warn
-                          okay={
-                            !currentUser ||
-                            currentUser.isVerified ||
-                            !pages[pageHref].warnIfUnverified
-                          }
-                        >
-                          <Text {...pages[pageHref].titleProps}>
-                            {pages[pageHref].title}
-                          </Text>
-                        </Warn>
-                      </a>
-                    </Link>
-                  </Menu.Item>
-                ))}
-              </Menu>
+              <SideMenu items={items} initialKey={href} />
             </Sider>
             <Content>
               <StandardWidth>{children}</StandardWidth>

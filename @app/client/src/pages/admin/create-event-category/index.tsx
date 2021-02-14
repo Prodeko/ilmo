@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AuthRestrict, Redirect, SharedLayout } from "@app/components";
+import { AdminLayout, Redirect } from "@app/components";
 import {
   CreatedEventCategoryFragment,
+  useAdminLayoutQuery,
   useCreateEventCategoryMutation,
-  useSharedQuery,
 } from "@app/graphql";
 import {
   extractError,
@@ -15,6 +15,7 @@ import {
 import * as Sentry from "@sentry/react";
 import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
 import { NextPage } from "next";
+import { NextRouter, useRouter } from "next/dist/client/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
@@ -23,9 +24,12 @@ const { TextArea, Group } = Input;
 
 const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useSharedQuery();
+  const query = useAdminLayoutQuery();
   const { t } = useTranslation("events");
   const [form] = Form.useForm();
+  const router: NextRouter | null = useRouter();
+
+  console.log(router.query);
 
   const code = getCodeFromError(formError);
   const [
@@ -71,8 +75,25 @@ const CreateEventCategoryPage: NextPage = () => {
     return <Redirect href="/" layout />;
   }
 
+  console.log(organizationMemberships, router.query.org);
+
+  const initialOrganization =
+    router &&
+    router.query &&
+    router.query.org &&
+    organizationMemberships &&
+    organizationMemberships.length > 0 &&
+    organizationMemberships.find(
+      (membership) => membership.organization.slug === router.query.org
+    )?.organization?.id;
+
   return (
-    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
+    <AdminLayout
+      href={`/admin/create-event-category${
+        router?.query?.org ? `?org=${router.query.org}` : ""
+      }`}
+      query={query}
+    >
       <Row>
         <Col flex={1}>
           <PageHeader title={t("createEventCategory.title")} />
@@ -119,7 +140,7 @@ const CreateEventCategoryPage: NextPage = () => {
               >
                 <Select
                   data-cy="createeventcategory-select-organization-id"
-                  placeholder={t("forms.placeholders.eventCategory.organizer")}
+                  defaultValue={initialOrganization}
                 >
                   {organizationMemberships?.map((o) => (
                     <Option key={o.organization?.id} value={o.organization?.id}>
@@ -218,7 +239,7 @@ const CreateEventCategoryPage: NextPage = () => {
           </div>
         </Col>
       </Row>
-    </SharedLayout>
+    </AdminLayout>
   );
 };
 
