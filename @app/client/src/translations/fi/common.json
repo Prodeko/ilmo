@@ -6,6 +6,7 @@
   "en": "Englanti",
   "fi": "Suomi",
   "headerMenu": {
+    "admin": "Sikariporras",
     "createEvent": "Luo tapahtuma",
     "createEventCategory": "Luo tapahtumakategoria",
     "createOrganization": "Luo organisaatio"

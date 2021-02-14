@@ -3,7 +3,7 @@ import { ApolloError } from "@apollo/client";
 import { AdminLayout, ErrorAlert, Redirect } from "@app/components";
 import {
   ProfileSettingsForm_UserFragment,
-  useSettingsProfileQuery,
+  useAdminLayoutQuery,
   useUpdateUserMutation,
 } from "@app/graphql";
 import {
@@ -20,7 +20,7 @@ import { Store } from "rc-field-form/lib/interface";
 
 const Settings_Profile: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useSettingsProfileQuery();
+  const query = useAdminLayoutQuery();
   const { data, loading, error } = query;
 
   return (

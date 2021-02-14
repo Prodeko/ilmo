@@ -91,23 +91,13 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
   const inner = menuItems.map((item) => item[0]);
   const initialOpenKeys = menuItems.find((i) => i[1].length > 0);
 
+  console.log(initialOpenKeys, initialKey);
+
   if (openKeys.length === 0) {
     if (initialOpenKeys) {
       setOpenKeys(initialOpenKeys[1]);
     }
   }
-
-  const onOpenChange2 = (key: React.ReactText) => {
-    const keyIndex = openKeys.indexOf(key + "");
-    if (keyIndex === -1) {
-      setOpenKeys([...openKeys, key + ""]);
-    } else {
-      setOpenKeys([
-        ...openKeys.slice(0, keyIndex),
-        ...openKeys.slice(keyIndex + 1),
-      ]);
-    }
-  };
 
   const onOpenChange = (prekeys: React.ReactText[]) => {
     const keys = prekeys.map((i) => i + "");

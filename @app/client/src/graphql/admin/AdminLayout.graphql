@@ -1,0 +1,24 @@
+query AdminLayout {
+  ...SharedLayout_Query
+  currentUser {
+    id
+    organizationMemberships(first: 20) {
+      nodes {
+        id
+        isOwner
+        organization {
+          id
+          name
+          slug
+          eventCategoriesByOwnerOrganizationId(first: 20) {
+            nodes {
+              id
+              name
+              description
+            }
+          }
+        }
+      }
+    }
+  }
+}
