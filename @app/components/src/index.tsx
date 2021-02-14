@@ -16,6 +16,7 @@ export * from "./Redirect";
 export * from "./ServerPaginatedTable";
 export * from "./SettingsLayout";
 export * from "./SharedLayout";
+export * from "./SideMenu";
 export * from "./SimpleTable";
 export * from "./SocialLoginOptions";
 export * from "./SpinPadded";
