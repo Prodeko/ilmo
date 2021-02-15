@@ -13,7 +13,6 @@
     "@app/config": "0.0.0",
     "@app/graphql": "0.0.0",
     "@app/lib": "0.0.0",
-    "@next/bundle-analyzer": "^10.0.6",
     "@sentry/react": "^6.1.0",
     "@sentry/tracing": "^6.1.0",
     "@types/lodash": "^4.14.168",
