@@ -873,7 +873,7 @@ Confirm intent
               <tr>
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
-      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">You can delete the registration through this link:</div>
+      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">You can delete your registration through this link:</div>
     
                 </td>
               </tr>
@@ -1008,7 +1008,7 @@ Successfully registered to the event:
 - Event time: 2021-01-01 12:00 - 2021-01-01 15:00
 - Link: http://localhost:5678/event/2021-01-01-testitapahtuma [http://localhost:5678/event/2021-01-01-testitapahtuma]
 
-You can delete the registration through this link:
+You can delete your registration through this link:
 
 © Tuotantotalouden Kilta Prodeko ry.
 
