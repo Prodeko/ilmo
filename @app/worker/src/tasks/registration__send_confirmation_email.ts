@@ -11,7 +11,7 @@ interface RegistrationSendConfirmationEmail {
 }
 
 const { NODE_ENV, ROOT_URL } = process.env;
-const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
+const isDev = NODE_ENV === "development";
 
 function getFormattedEventTime(event: any) {
   const { start_time, end_time } = event;
@@ -87,10 +87,10 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     },
   };
 
-  if (isDevOrTest) {
-    // Don't send these emails in dev or test
-    // For example generating fake data with yarn db create-fake-data
-    // would result in a large number of emails being sent
+  if (!isDev) {
+    // Don't send these emails in dev
+    // Generating fake data with yarn db create-fake-data
+    // would result in a large number of emails being sent.
     await addJob("send_email", sendEmailPayload);
   }
 };
