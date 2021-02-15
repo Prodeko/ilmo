@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:ba67ab3080e7fa43f4ed54808cf74fac09cc3ea7
+--! Hash: sha1:105c3cd972dabf1fe54832087af65cc9cebe3d47
 
 --! split: 1-current.sql
 /**********/
@@ -160,7 +160,7 @@ create policy manage_as_admin on app_public.events
 create trigger _100_timestamps
   before insert or update on app_public.events for each row
   execute procedure app_private.tg__timestamps();
-  
+
 /**********/
 -- Event questions
 
@@ -388,6 +388,7 @@ create trigger _100_timestamps
 
 drop table if exists app_public.registrations cascade;
 drop function if exists app_public.create_registration(uuid, uuid, text, text, citext);
+drop function if exists app_public.registration_send_email();
 
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
@@ -400,6 +401,10 @@ create table app_public.registrations(
   updated_at timestamptz not null default now()
 );
 alter table app_public.registrations enable row level security;
+
+create trigger _100_send_registration_email
+  after insert on app_public.registrations
+  for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
 
 create trigger _500_gql_insert
   after insert on app_public.registrations

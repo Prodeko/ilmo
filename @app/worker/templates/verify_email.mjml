@@ -1,56 +1,93 @@
 <mjml>
   <mj-head>
+    <mj-font
+      name="Raleway"
+      href="https://fonts.googleapis.com/css?family=Raleway"
+    />
     <mj-attributes>
-      <mj-class name="background" background-color="#f5faff" font-size="13px" />
-      <mj-class name="bold-text" align="center" font-size="20px" font-family="Helvetica" font-weight="bold" />
-      <mj-class name="text" align="center" font-size="16px" font-family="Helvetica" />
-      <mj-class name="small-text" align="center" font-size="13px" font-family="Helvetica" />
-      <mj-class name="blue-section" background-color="#4680b4" />
+      <mj-all font-family="'Raleway', Helvetica, Arial, sans-serif"> </mj-all>
+      <mj-class
+        name="bold-text"
+        align="center"
+        font-size="16px"
+        font-weight="bold"
+      />
+      <mj-class
+        name="small-text"
+        align="center"
+        font-size="11px"
+        color="#445566"
+      />
+      <mj-class name="background" background-color="#e7e7e7" />
+      <mj-class name="blue-section" background-color="#002e7d" />
       <mj-class name="white-section" background-color="#fff" />
     </mj-attributes>
+    <mj-style inline="inline">
+      .body-section { -webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15);
+      -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
+      11px 0px rgba(0, 0, 0, 0.15); background-color: "white"; }
+    </mj-style>
   </mj-head>
-
   <mj-body mj-class="background">
-    <mj-section padding-bottom="20px"></mj-section>
+    <mj-section
+      padding-bottom="0"
+      background-url="https://static.prodeko.org/static/images/backgrounds/bg-white.jpg"
+    >
+      <mj-column width="100%">
+        <mj-image
+          src="https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png"
+          width="200px"
+          padding-top="0"
+          padding-bottom="15px"
+        />
+      </mj-column>
+    </mj-section>
 
     <mj-section mj-class="blue-section">
       <mj-column width="100%">
-        <mj-text mj-class="bold-text" color="#FFF" padding-left="25px" padding-right="25px" padding-bottom="28px" padding-top="28px">
+        <mj-text mj-class="bold-text" color="#fff" padding="30px">
           Please confirm your email by clicking the link below.
         </mj-text>
       </mj-column>
     </mj-section>
 
-    <mj-section mj-class="white-section">
-      <mj-column width="50%">
-        <mj-button mj-class="text" background-color="#4680b4" color="#FFF" font-weight="bold" border="none" padding="15px 30px" border-radius="10px" href="[[verifyLink]]" font-family="Helvetica" padding-left="25px" padding-right="25px" padding-bottom="10px">Verify Email</mj-button>
-      </mj-column>
-      <mj-column width="50%">
-        <mj-text mj-class="text" padding-bottom="0">
-          Verification code:
-        </mj-text>
-        <mj-text align="center">
-          <span style="font-size: 20px">[[token]]</span>
-        </mj-text>
-      </mj-column>
-    </mj-section>
+    <mj-wrapper padding-top="0" padding-bottom="0" css-class="body-section">
+      <mj-section mj-class="white-section">
+        <mj-column width="50%">
+          <mj-text align="center" padding-bottom="0">
+            Verification code:
+          </mj-text>
+          <mj-text align="center">
+            <span style="font-size: 20px">[[token]]</span>
+          </mj-text>
+        </mj-column>
+        <mj-column width="50%">
+          <mj-button
+            background-color="#002e7d"
+            color="#fff"
+            font-weight="bold"
+            border="none"
+            border-radius="0px"
+            href="[[verifyLink]]"
+            >Verify Email</mj-button
+          >
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
 
-    <mj-section mj-class="blue-section">
-      <mj-column width="100%">
-        <mj-text mj-class="text" color="#FFF" padding-left="25px" padding-right="25px" padding-bottom="20px" padding-top="20px">
-          Best,<br/>
-          The [[projectName]] Team
-        </mj-text>
-      </mj-column>
-    </mj-section>
-
-    <mj-section>
-      <mj-column width="100%">
-        <mj-text mj-class="small-text" color="#777" padding-left="25px" padding-right="25px" padding-bottom="20px" padding-top="20px">
-          [[legalText]]
-        </mj-text>
-      </mj-column>
-    </mj-section>
-
+    <mj-wrapper full-width="full-width">
+      <mj-section>
+        <mj-column width="100%" padding="0">
+          <mj-text
+            mj-class="small-text"
+            font-size="11px"
+            align="center"
+            line-height="16px"
+          >
+            [[legalText]]
+          </mj-text>
+        </mj-column>
+      </mj-section>
+    </mj-wrapper>
   </mj-body>
 </mjml>

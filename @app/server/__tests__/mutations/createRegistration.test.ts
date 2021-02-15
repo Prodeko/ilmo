@@ -117,16 +117,27 @@ test("CreateRegistration", async () => {
       }
       expect(rows[0].id).toEqual(registration.id);
 
-      const jobs = await getJobs(
+      const rateLimitjobs = await getJobs(
         pgClient,
         "registration_complete__delete_rate_limit_key"
       );
 
-      expect(jobs).toHaveLength(1);
-      const [job] = jobs;
-      expect(job.payload).toMatchObject({
+      expect(rateLimitjobs).toHaveLength(1);
+      const [rateLimitJob] = rateLimitjobs;
+      expect(rateLimitJob.payload).toMatchObject({
         eventId: event.id,
         ipAddress: req.ip,
+      });
+
+      const confirmationEmailJobs = await getJobs(
+        pgClient,
+        "registration__send_confirmation_email"
+      );
+
+      expect(confirmationEmailJobs).toHaveLength(1);
+      const [confirmationEmailJob] = confirmationEmailJobs;
+      expect(confirmationEmailJob.payload).toMatchObject({
+        id: registration.id,
       });
 
       // Escape transaction set by runGraphQLQuery.
@@ -146,10 +157,11 @@ test("CreateRegistration", async () => {
       // run_at >= now() and the task is not executed if we don't end the transaction here.
       await pgClient.query("commit");
 
-      // Assert that the job can run correctly
       // Run the job
       await runJobs(pgClient);
-      await assertJobComplete(pgClient, job);
+      // Assert that the jobs can run correctly
+      await assertJobComplete(pgClient, rateLimitJob);
+      await assertJobComplete(pgClient, confirmationEmailJob);
 
       // Redis should not contain a rate limiting key after
       // successful registration

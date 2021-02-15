@@ -2650,6 +2650,13 @@ CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications
 
 
 --
+-- Name: registrations _100_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_send_registration_email AFTER INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_job('registration__send_confirmation_email');
+
+
+--
 -- Name: event_categories _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
