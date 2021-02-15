@@ -3,6 +3,7 @@
   "create": "Create",
   "description": "Description",
   "dragToUpload": "Click or drag file to this area to upload",
+  "emailSwitchLabel": "Show html version",
   "en": "English",
   "fi": "Finnish",
   "headerMenu": {

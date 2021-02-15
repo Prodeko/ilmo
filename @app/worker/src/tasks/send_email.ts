@@ -9,11 +9,10 @@ import chalk from "chalk";
 import { Task } from "graphile-worker";
 import * as html2text from "html-to-text";
 import { template as lodashTemplate } from "lodash";
+import mjml2html from "mjml";
 import * as nodemailer from "nodemailer";
 
 import getTransport from "../transport";
-// @ts-ignore
-import mjml2html = require("mjml");
 
 declare module global {
   let TEST_EMAILS: any[];
@@ -53,6 +52,7 @@ const task: Task = async (inPayload) => {
     const text = html2text
       .fromString(html2textableHtml, {
         wordwrap: 120,
+        tags: { img: { format: "skip" } },
       })
       .replace(/\n\s+\n/g, "\n\n");
     Object.assign(options, { html, text });
@@ -85,11 +85,14 @@ function loadTemplate(template: string) {
         escape: /\[\[([\s\S]+?)\]\]/g,
       });
       return (variables: { [varName: string]: any }) => {
+        // Use | in template variable to insert a line break
+        // See an example in @app/client/src/pages/create-event/index.ts
         const mjml = templateFn({
           projectName,
           legalText,
           ...variables,
-        });
+        }).replace(/\|/g, "<br/>");
+
         const { html, errors } = mjml2html(mjml);
         if (errors && errors.length) {
           console.error(errors);

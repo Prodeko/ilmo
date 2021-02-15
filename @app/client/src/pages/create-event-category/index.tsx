@@ -19,6 +19,7 @@ import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
 const { Option } = Select;
+const { TextArea, Group } = Input;
 
 const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
@@ -128,7 +129,7 @@ const CreateEventCategoryPage: NextPage = () => {
                 </Select>
               </Form.Item>
               <Form.Item label={t("common:name")}>
-                <Input.Group compact>
+                <Group compact>
                   {selectedLanguages.length === 0 ? (
                     <Form.Item noStyle>
                       <Input disabled />
@@ -154,13 +155,13 @@ const CreateEventCategoryPage: NextPage = () => {
                       </Form.Item>
                     ))
                   )}
-                </Input.Group>
+                </Group>
               </Form.Item>
               <Form.Item label={t("common:shortDescription")}>
-                <Input.Group compact>
+                <Group compact>
                   {selectedLanguages.length === 0 ? (
                     <Form.Item noStyle>
-                      <Input.TextArea disabled />
+                      <TextArea disabled />
                     </Form.Item>
                   ) : (
                     selectedLanguages.map((l, i) => (
@@ -177,7 +178,7 @@ const CreateEventCategoryPage: NextPage = () => {
                           },
                         ]}
                       >
-                        <Input.TextArea
+                        <TextArea
                           style={i > 0 ? { marginTop: 5 } : undefined}
                           placeholder={t(`forms.placeholders.${l}`)}
                           data-cy={`createeventcategory-input-description-${l}`}
@@ -185,7 +186,7 @@ const CreateEventCategoryPage: NextPage = () => {
                       </Form.Item>
                     ))
                   )}
-                </Input.Group>
+                </Group>
               </Form.Item>
               {formError && (
                 <Form.Item {...tailFormItemLayout}>

@@ -3,6 +3,7 @@
   "create": "Luo",
   "description": "Kuvaus",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
+  "emailSwitchLabel": "Näytä html-versio",
   "en": "Englanti",
   "fi": "Suomi",
   "headerMenu": {

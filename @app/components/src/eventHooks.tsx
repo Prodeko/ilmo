@@ -4,8 +4,7 @@ import { EventPage_QueryFragment } from "@app/graphql";
 import { Col, Row } from "antd";
 import { useRouter } from "next/router";
 
-import { Loading } from "./Loading";
-import { ErrorAlert, FourOhFour } from "./";
+import { ErrorAlert, FourOhFour, LoadingPadded } from "./";
 
 export function useEventSlug() {
   const router = useRouter();
@@ -25,11 +24,10 @@ export function useEventLoading(
   const event = data?.eventBySlug;
   if (event) {
   } else if (loading) {
-    child = <Loading />;
+    child = <LoadingPadded size="huge" />;
   } else if (error) {
     child = <ErrorAlert error={error} />;
   } else {
-    // TODO: 404
     child = <FourOhFour currentUser={data?.currentUser} />;
   }
 

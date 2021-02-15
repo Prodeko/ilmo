@@ -33,7 +33,8 @@
         "provideDescription": "Anna tapahtuman kuvaus",
         "provideEventTime": "Aseta tapahtuman ajankohta",
         "provideName": "Anna tapahtuman nimi",
-        "provideOrganizer": "Valitse järjestäjä tapahtumalle"
+        "provideOrganizer": "Valitse järjestäjä tapahtumalle",
+        "provideSignupEmail": "Ilmoittautumissähköposti vaaditaan"
       },
       "eventCategory": {
         "provideDescription": "Anna kategorian kuvaus",
@@ -41,6 +42,11 @@
         "provideOrganizer": "Valitse järjestäjä kategorialle"
       },
       "provideLanguage": "Valitse kielet"
+    },
+    "signupEmail": "Sähköposti",
+    "tabs": {
+      "email": "Sähköposti",
+      "generalInfo": "Yleistä"
     }
   },
   "headerImage": "Tapahtuman kansikuva",

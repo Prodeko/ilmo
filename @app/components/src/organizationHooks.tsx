@@ -4,8 +4,7 @@ import { OrganizationPage_QueryFragment } from "@app/graphql";
 import { Col, Row } from "antd";
 import { useRouter } from "next/router";
 
-import { Loading } from "./Loading";
-import { ErrorAlert, FourOhFour } from "./";
+import { ErrorAlert, FourOhFour, LoadingPadded } from "./";
 
 export function useOrganizationSlug() {
   const router = useRouter();
@@ -24,13 +23,11 @@ export function useOrganizationLoading(
   let child: JSX.Element | null = null;
   const organization = data?.organizationBySlug;
   if (organization) {
-    //child = <OrganizationPageInner organization={organization} />;
   } else if (loading) {
-    child = <Loading />;
+    child = <LoadingPadded size="large" />;
   } else if (error) {
     child = <ErrorAlert error={error} />;
   } else {
-    // TODO: 404
     child = <FourOhFour currentUser={data?.currentUser} />;
   }
 

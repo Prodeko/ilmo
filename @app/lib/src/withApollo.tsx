@@ -157,10 +157,12 @@ export const withApollo = withApolloBase(
         : makeClientSideLink(ROOT_URL);
 
     const sentryLink = new SentryLink({
-      breadcrumb: {
+      attachBreadcrumbs: {
         includeQuery: true,
         includeVariables: true,
+        includeFetchResult: true,
         includeError: true,
+        includeCache: true,
       },
     });
 

@@ -1,0 +1,9 @@
+query RenderEmailTemplates {
+  renderEmailTemplates {
+    templates {
+      name
+      html
+      text
+    }
+  }
+}

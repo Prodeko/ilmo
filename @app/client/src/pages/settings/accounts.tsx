@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from "react";
-import { GithubFilled } from "@ant-design/icons";
 import {
   ErrorAlert,
   ProdekoIcon,
@@ -19,9 +18,9 @@ import { NextPage } from "next";
 
 const AUTH_NAME_LOOKUP = {
   // Could add more login options in the future
-  github: "GitHub",
-  facebook: "Facebook",
-  twitter: "Twitter",
+  // github: "GitHub",
+  // facebook: "Facebook",
+  // twitter: "Twitter",
   oauth2: "Prodeko",
 };
 function authName(service: string) {
@@ -29,7 +28,6 @@ function authName(service: string) {
 }
 
 const AUTH_ICON_LOOKUP = {
-  github: <GithubFilled />,
   oauth2: <ProdekoIcon size="25px" />,
 };
 function authAvatar(service: string) {
