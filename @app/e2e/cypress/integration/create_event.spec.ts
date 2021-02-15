@@ -35,8 +35,10 @@ context("Create event", () => {
 
       cy.getCy("createevent-input-rangepicker").eq(0).click();
       cy.getCy("createevent-input-rangepicker").within(() => {
-        cy.get("input[id='eventTime']").type("2021-02-08 01:58");
-        cy.get("input").eq(1).click().type("2021-02-08 01:59");
+        cy.get("input[id='eventTime']").type("2021-02-08 01:58", {
+          force: true,
+        });
+        cy.get("input").eq(1).click().type("2021-02-08 01:59", { force: true });
       });
       cy.get(".ant-picker-footer button").click();
 
