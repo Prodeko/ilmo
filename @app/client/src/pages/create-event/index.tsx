@@ -92,7 +92,7 @@ const CreateEventPage: NextPage = () => {
         eventNameEn: formValues?.name?.en || "",
         registrationName: "[[registrationName]]",
         registrationQuotaFi: "[[registrationQuotaFi]]",
-        registrationQuotaEn: "[[registrationQuotaFi]]",
+        registrationQuotaEn: "[[registrationQuotaEn]]",
         eventTime: getFormattedEventTime(formValues?.eventTime) || "",
         eventLink: `${process.env.ROOT_URL}/${getEventSlug(
           formValues?.name,
