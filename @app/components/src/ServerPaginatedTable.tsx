@@ -22,17 +22,16 @@ export function ServerPaginatedTable({
   showPagination = true,
   ...props
 }: Props) {
-  const [pageSize, _setPageSize] = useState(5);
   const [offset, setOffset] = useState(0);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: pageSize,
+    pageSize: 10,
   });
   const { error, loading, data, fetchMore } = useQuery<
     typeof queryDocument,
     typeof variables
   >(queryDocument, {
-    variables: { ...variables, first: pageSize, offset: offset },
+    variables: { ...variables, first: pagination.pageSize, offset: offset },
     onCompleted: () =>
       setPagination({
         ...pagination,

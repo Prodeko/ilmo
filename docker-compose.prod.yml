@@ -3,6 +3,7 @@ services:
   server:
     image: prodekoregistry.azurecr.io/ilmo/ilmo-server
     container_name: ilmo_server
+    restart: unless-stopped
     # When starting the server for the first time change the
     # entrypoint to 'yarn db migrate' manually. TODO: Figure out a better
     # way to run migrations on initial deployment.
@@ -15,6 +16,7 @@ services:
   worker:
     image: prodekoregistry.azurecr.io/ilmo/ilmo-worker
     container_name: ilmo_worker
+    restart: unless-stopped
     env_file:
       - .env.production
     depends_on:
@@ -24,6 +26,7 @@ services:
   redis:
     image: redis:6-alpine
     container_name: ilmo_redis
+    restart: unless-stopped
     volumes:
       - ilmo-redis:/data
 

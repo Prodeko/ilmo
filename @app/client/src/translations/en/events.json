@@ -33,7 +33,8 @@
         "provideDescription": "Please provide a description of the event",
         "provideEventTime": "Please select event time",
         "provideName": "Please choose a name for the event",
-        "provideOrganizer": "Please choose an organizer for the event"
+        "provideOrganizer": "Please choose an organizer for the event",
+        "provideSignupEmail": "Please provide a welcome email for the event"
       },
       "eventCategory": {
         "provideDescription": "Please choose a description for the category",
@@ -41,6 +42,11 @@
         "provideOrganizer": "Please choose a host organization for the category"
       },
       "provideLanguage": "Please select languages"
+    },
+    "signupEmail": "Event signup email",
+    "tabs": {
+      "email": "Email",
+      "generalInfo": "General"
     }
   },
   "headerImage": "Event header image",

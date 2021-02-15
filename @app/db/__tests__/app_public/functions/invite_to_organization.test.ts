@@ -85,9 +85,9 @@ it("Can invite user to organization", () =>
       id: invitation.id,
     });
 
-    // Assert that the job can run correctly
     // Run the job
     await runJobs(client);
+    // Assert that the job can run correctly
     await assertJobComplete(client, job);
 
     // Check that the email was sent

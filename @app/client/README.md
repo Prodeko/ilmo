@@ -25,14 +25,14 @@ like `use*Query`, `use*Mutation` and `use*Query` so we do not include `Query`,
 ### GraphQL naming conventions
 
 1. Operations are named in PascalCase
-1. Name the file after the operation or fragment (e.g.
+2. Name the file after the operation or fragment (e.g.
    `fragment EmailsForm_User {...}` would be in a file called
    `EmailsForm_User.graphql`)
-1. Do not add `Query`, `Mutation` or `Subscription` suffixes to operations
-1. Do not add `Fragment` suffix to fragments
-1. Operations (i.e. non-fragments) should never contain an underscore in their
+3. Do not add `Query`, `Mutation` or `Subscription` suffixes to operations
+4. Do not add `Fragment` suffix to fragments
+5. Operations (i.e. non-fragments) should never contain an underscore in their
    name - underscores are reserved for fragments.
-1. Fragments should always contain exactly one underscore, see fragment naming
+6. Fragments should always contain exactly one underscore, see fragment naming
    below
 
 ### GraphQL fragment naming

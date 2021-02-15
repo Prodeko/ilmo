@@ -714,6 +714,22 @@ type DeleteUserEmailPayload {
   ): UserEmailsEdge
 }
 
+input EmailTemplateVariables {
+  eventLink: String
+  eventNameEn: String
+  eventNameFi: String
+  eventRegistrationDeleteLink: String
+  eventTime: String
+  registrationName: String
+  registrationQuotaEn: String
+  registrationQuotaFi: String
+}
+
+"""The output of our `renderEmailTemplates` query."""
+type EmailTemplatesConnection {
+  templates: [RenderEmailPayload!]!
+}
+
 """Main table for events."""
 type Event {
   """Reads a single `EventCategory` that is related to this `Event`."""
@@ -2289,6 +2305,14 @@ type Query {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
+
+  """Use this query to render server-side mjml templates to html and text."""
+  renderEmailTemplate(input: RenderEmailInput!): RenderEmailPayload
+
+  """
+  Use this query to render all server-side email templates to html and text.
+  """
+  renderEmailTemplates: EmailTemplatesConnection
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userByUsername(username: String!): User
@@ -2637,6 +2661,19 @@ type RemoveFromOrganizationPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+}
+
+"""All input for the `renderEmail` mutation."""
+input RenderEmailInput {
+  template: String!
+  variables: EmailTemplateVariables
+}
+
+"""The output of our `renderEmailTemplate` query."""
+type RenderEmailPayload {
+  html: String
+  name: String
+  text: String
 }
 
 """All input for the `requestAccountDeletion` mutation."""

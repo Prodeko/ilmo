@@ -24,6 +24,7 @@ import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
 import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter";
 
 import { convertHandler } from "../app";
+import EmailsPlugin from "../plugins/EmailsPlugin";
 import EventRegistrationPlugin from "../plugins/EventRegistrationPlugin";
 import OrdersPlugin from "../plugins/Orders";
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
@@ -204,6 +205,9 @@ export function getPostGraphileOptions({
 
       // Wrap createRegistration mutation
       EventRegistrationPlugin,
+
+      // Render email templates
+      EmailsPlugin,
 
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
