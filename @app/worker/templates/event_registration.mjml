@@ -70,7 +70,7 @@
             ><br />
           </mj-text>
           <mj-text
-            >You can delete the registration through this link:
+            >You can delete your registration through this link:
             [[eventRegistrationDeleteLink]]</mj-text
           >
         </mj-column>
