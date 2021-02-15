@@ -25,10 +25,14 @@ const Helmet: FastifyPluginAsync = async (app) => {
               "'self'",
               ROOT_URL.replace(/^http/, "ws"),
               "https://sentry.prodeko.org",
-              "https://static.prodeko.org",
             ],
             // Event creation page needs blob:
-            "img-src": ["'self'", "data:", "blob:"],
+            "img-src": [
+              "'self'",
+              "data:",
+              "blob:",
+              "https://static.prodeko.org",
+            ],
             "style-src": ["'self'", "'unsafe-inline'"],
             "report-uri": [sentryReportUri],
           },
