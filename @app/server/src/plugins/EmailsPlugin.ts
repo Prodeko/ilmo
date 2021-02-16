@@ -9,16 +9,22 @@ import { loadTemplate } from "../utils/emailUtils";
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors";
 
 const { ROOT_URL } = process.env;
-const EMAIL_SEND_TEMPLATE_WHITELIST = ["event_registration.mjml"];
+const EMAIL_SEND_TEMPLATE_WHITELIST = ["event_registration.mjml.njk"];
 
 const EmailsPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
+    """
+    An input type for translated fields.
+    """
+    input TranslatedInputField {
+      fi: String
+      en: String
+    }
+
     input EmailTemplateVariables {
-      eventNameFi: String
-      eventNameEn: String
       registrationName: String
-      registrationQuotaFi: String
-      registrationQuotaEn: String
+      registrationQuota: TranslatedInputField
+      eventName: TranslatedInputField
       eventTime: String
       eventLink: String
       eventRegistrationDeleteLink: String
@@ -80,12 +86,10 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           const templateFn = await loadTemplate(template);
           const html = await templateFn(variables);
           const html2textableHtml = html.replace(/(<\/?)div/g, "$1p");
-          const text = html2text
-            .fromString(html2textableHtml, {
-              wordwrap: 120,
-              tags: { img: { format: "skip" } },
-            })
-            .replace(/\n\s+\n/g, "\n\n");
+          const text = html2text.fromString(html2textableHtml, {
+            wordwrap: 120,
+            tags: { img: { format: "skip" } },
+          });
 
           return {
             html,
@@ -126,11 +130,9 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           const ret = templateFiles.map(async (filename) => {
             // Dummy variables for mjml templates
             const variables = {
-              eventNameFi: "Testitapahtuma",
-              eventNameEn: "Test event",
+              registrationQuota: { fi: "N", en: "N" },
               registrationName: "Teppo Testinen",
-              registrationQuotaFi: "N",
-              registrationQuotaEn: "N",
+              eventName: { fi: "Testitapahtuma", en: "Test event" },
               eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
               eventLink: `${ROOT_URL}/event/2021-01-01-testitapahtuma`,
               eventRegistrationDeleteLink: "",
@@ -156,8 +158,8 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               })
               .replace(/\n\s+\n/g, "\n\n");
 
-            // All templates end in .mjml, remove the file extension
-            const name = filename.slice(0, -5).replace(/_/g, " ");
+            // All templates end in .mjml.njk, remove the file extension
+            const name = filename.slice(0, -9).replace(/_/g, " ");
 
             return {
               name,

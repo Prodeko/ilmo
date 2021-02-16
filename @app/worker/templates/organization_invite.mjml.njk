@@ -1,0 +1,22 @@
+{% extends "base.mjml.njk" %}
+
+{% block content %}
+<mj-column width="100%">
+  <mj-text mj-class="bold-text">
+    You have been invited to join {{ organizationName }}. Please click the
+    button below to accept the invitation. If you do not wish to join
+    this organization then no action is necessary.
+  </mj-text>
+</mj-column>
+<mj-column width="100%">
+  <mj-button
+    background-color="#002e7d"
+    color="#fff"
+    font-weight="bold"
+    border="none"
+    border-radius="0px"
+    href="{{ link }}"
+    >Accept invitation</mj-button
+  >
+</mj-column>
+{% endblock %}

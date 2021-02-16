@@ -163,7 +163,7 @@ const task: Task = async (inPayload, { addJob, withPgClient, job }) => {
       to: emails,
       subject: `[${projectName}] ${subject}`,
     },
-    template: "account_activity.mjml",
+    template: "account_activity.mjml.njk",
     variables: {
       actionDescription,
     },

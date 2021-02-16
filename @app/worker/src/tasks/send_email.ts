@@ -1,5 +1,3 @@
-import { promises as fsp } from "fs";
-
 import {
   emailLegalText as legalText,
   fromEmail,
@@ -8,9 +6,9 @@ import {
 import chalk from "chalk";
 import { Task } from "graphile-worker";
 import * as html2text from "html-to-text";
-import { template as lodashTemplate } from "lodash";
 import mjml2html from "mjml";
 import * as nodemailer from "nodemailer";
+import nunjucks from "nunjucks";
 
 import getTransport from "../transport";
 
@@ -20,7 +18,9 @@ declare module global {
 
 global.TEST_EMAILS = [];
 
-const { readFile } = fsp;
+const njk = new nunjucks.Environment(
+  new nunjucks.FileSystemLoader(`${__dirname}/../../../worker/templates/`)
+);
 
 const isTest = process.env.NODE_ENV === "test";
 const isDev = process.env.NODE_ENV !== "production";
@@ -71,27 +71,18 @@ const task: Task = async (inPayload) => {
 export default task;
 
 const templatePromises = {};
-function loadTemplate(template: string) {
+export function loadTemplate(template: string) {
   if (isDev || !templatePromises[template]) {
     templatePromises[template] = (async () => {
       if (!template.match(/^[a-zA-Z0-9_.-]+$/)) {
         throw new Error(`Disallowed template name '${template}'`);
       }
-      const templateString = await readFile(
-        `${__dirname}/../../templates/${template}`,
-        "utf8"
-      );
-      const templateFn = lodashTemplate(templateString, {
-        escape: /\[\[([\s\S]+?)\]\]/g,
-      });
       return (variables: { [varName: string]: any }) => {
-        // Use | in template variable to insert a line break
-        // See an example in @app/client/src/pages/create-event/index.ts
-        const mjml = templateFn({
+        const mjml = njk.render(template, {
           projectName,
           legalText,
           ...variables,
-        }).replace(/\|/g, "<br/>");
+        });
 
         const { html, errors } = mjml2html(mjml);
         if (errors && errors.length) {

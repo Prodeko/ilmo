@@ -22,7 +22,7 @@ const task: Task = async (inPayload, { addJob }) => {
       to: email,
       subject: "Confirmation required: really delete account?",
     },
-    template: "delete_account.mjml",
+    template: "delete_account.mjml.njk",
     variables: {
       token,
       deleteAccountLink: `${

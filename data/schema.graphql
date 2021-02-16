@@ -716,13 +716,11 @@ type DeleteUserEmailPayload {
 
 input EmailTemplateVariables {
   eventLink: String
-  eventNameEn: String
-  eventNameFi: String
+  eventName: TranslatedInputField
   eventRegistrationDeleteLink: String
   eventTime: String
   registrationName: String
-  registrationQuotaEn: String
-  registrationQuotaFi: String
+  registrationQuota: TranslatedInputField
 }
 
 """The output of our `renderEmailTemplates` query."""
@@ -2927,6 +2925,12 @@ type TransferOrganizationOwnershipPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+}
+
+"""An input type for translated fields."""
+input TranslatedInputField {
+  en: String
+  fi: String
 }
 
 """
