@@ -1,31 +1,23 @@
 import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AdminLayout, Redirect } from "@app/components";
+import { AdminLayout, EventCategoryForm, Redirect } from "@app/components";
 import {
   CreatedEventCategoryFragment,
   useAdminLayoutQuery,
   useCreateEventCategoryMutation,
 } from "@app/graphql";
-import {
-  extractError,
-  formItemLayout,
-  getCodeFromError,
-  tailFormItemLayout,
-} from "@app/lib";
+import { getCodeFromError } from "@app/lib";
 import * as Sentry from "@sentry/react";
-import { Alert, Button, Col, Form, Input, PageHeader, Row, Select } from "antd";
+import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 import { NextRouter, useRouter } from "next/dist/client/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
-const { Option } = Select;
-
 const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useAdminLayoutQuery();
   const { t } = useTranslation("events");
-  const [form] = Form.useForm();
   const router: NextRouter | null = useRouter();
 
   const code = getCodeFromError(formError);
@@ -36,14 +28,12 @@ const CreateEventCategoryPage: NextPage = () => {
   const [createEventCategory] = useCreateEventCategoryMutation();
 
   const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([
-    defaultLanguage!,
-  ]);
 
   const handleSubmit = useCallback(
     async (values: Store) => {
       setFormError(null);
       try {
+        console.log(values);
         const { name, description, organization } = values;
         const { data } = await createEventCategory({
           variables: {
@@ -63,7 +53,8 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 
   if (eventCategory) {
-    return <Redirect layout href="/" />;
+    console.log(eventCategory);
+    return <Redirect layout href={`/admin/category/${eventCategory.id}`} />;
   }
 
   const organizationMemberships =
@@ -93,147 +84,22 @@ const CreateEventCategoryPage: NextPage = () => {
         <Col flex={1}>
           <PageHeader title={t("createEventCategory.title")} />
           <div>
-            <Form
-              {...formItemLayout}
-              form={form}
-              initialValues={{
-                languages: [defaultLanguage],
-                organization: initialOrganization,
-              }}
-              onFinish={handleSubmit}
-            >
-              <Form.Item
-                name="languages"
-                label={t("languages")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.provideLanguage"),
-                    type: "array",
-                  },
-                ]}
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  onChange={(e) => setSelectedLanguages(e as string[])}
-                  placeholder={t("forms.placeholders.languages")}
-                >
-                  {supportedLanguages?.map((l, i) => (
-                    <Option key={i} value={l ? l : ""}>
-                      {t(`common:${l}`)}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item
-                name="organization"
-                label={t("organizer")}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.eventCategory.provideOrganizer"),
-                  },
-                ]}
-              >
-                <Select
-                  placeholder={t("forms.placeholders.eventCategory.organizer")}
-                  data-cy="createeventcategory-select-organization-id"
-                >
-                  {organizationMemberships?.map((o) => (
-                    <Option key={o.organization?.id} value={o.organization?.id}>
-                      {o.organization?.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item label={t("common:name")}>
-                <Input.Group compact>
-                  {selectedLanguages.length === 0 ? (
-                    <Form.Item noStyle>
-                      <Input disabled />
-                    </Form.Item>
-                  ) : (
-                    selectedLanguages.map((l, i) => (
-                      <Form.Item
-                        key={l}
-                        name={["name", l]}
-                        noStyle
-                        rules={[
-                          {
-                            required: true,
-                            message: t("forms.rules.eventCategory.provideName"),
-                          },
-                        ]}
-                      >
-                        <Input
-                          style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(`forms.placeholders.${l}`)}
-                          data-cy={`createeventcategory-input-name-${l}`}
-                        />
-                      </Form.Item>
-                    ))
-                  )}
-                </Input.Group>
-              </Form.Item>
-              <Form.Item label={t("common:shortDescription")}>
-                <Input.Group compact>
-                  {selectedLanguages.length === 0 ? (
-                    <Form.Item noStyle>
-                      <Input.TextArea disabled />
-                    </Form.Item>
-                  ) : (
-                    selectedLanguages.map((l, i) => (
-                      <Form.Item
-                        key={l}
-                        name={["description", l]}
-                        noStyle
-                        rules={[
-                          {
-                            required: true,
-                            message: t(
-                              "forms.rules.eventCategory.provideDescription"
-                            ),
-                          },
-                        ]}
-                      >
-                        <Input.TextArea
-                          style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(`forms.placeholders.${l}`)}
-                          data-cy={`createeventcategory-input-description-${l}`}
-                        />
-                      </Form.Item>
-                    ))
-                  )}
-                </Input.Group>
-              </Form.Item>
-              {formError && (
-                <Form.Item {...tailFormItemLayout}>
-                  <Alert
-                    type="error"
-                    message={t("errors.eventCategoryCreationFailed")}
-                    description={
-                      <span>
-                        {extractError(formError).message}
-                        {code && (
-                          <span>
-                            ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                          </span>
-                        )}
-                      </span>
-                    }
-                  />
-                </Form.Item>
-              )}
-              <Form.Item {...tailFormItemLayout}>
-                <Button
-                  htmlType="submit"
-                  data-cy="createeventcategory-button-create"
-                >
-                  {t("common:create")}
-                </Button>
-              </Form.Item>
-            </Form>
+            {supportedLanguages ? (
+              <EventCategoryForm
+                handleSubmit={handleSubmit}
+                initialValues={{
+                  languages: [defaultLanguage],
+                  organization: initialOrganization,
+                }}
+                formError={formError}
+                defaultLanguage={defaultLanguage}
+                supportedLanguages={supportedLanguages}
+                organizationMemberships={organizationMemberships}
+                code={code}
+              />
+            ) : (
+              <p>Loading...</p>
+            )}
           </div>
         </Col>
       </Row>

@@ -3,6 +3,7 @@ export * from "./AdminLayout";
 export * from "./ButtonLink";
 export * from "./ErrorAlert";
 export * from "./ErrorOccurred";
+export * from "./EventCategoryForm";
 export * from "./eventHooks";
 export * from "./FileUpload";
 export * from "./FourOhFour";
