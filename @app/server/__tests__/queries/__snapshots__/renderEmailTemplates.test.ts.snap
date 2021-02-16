@@ -156,8 +156,8 @@ Object {
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:570px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -176,7 +176,7 @@ Object {
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">This email is purely for your information and security, if you
-            performed the action above then no further action is necessary.</div>
+    performed the action above then no further action is necessary.</div>
     
                 </td>
               </tr>
@@ -348,6 +348,269 @@ necessary.
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
+      }
+    </style>
+    
+  
+        <style type=\\"text/css\\">
+        
+        
+
+    @media only screen and (max-width:480px) {
+      table.mj-full-width-mobile { width: 100% !important; }
+      td.mj-full-width-mobile { width: auto !important; }
+    }
+  
+        </style>
+        
+        
+      </head>
+      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+        
+        
+      <div style=\\"background-color:#e7e7e7;\\">
+        
+      
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+          
+      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+        <div style=\\"line-height:0;font-size:0;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+            
+      <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
+        
+      <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"vertical-align:top;\\" width=\\"100%\\">
+        <tbody>
+          
+              <tr>
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;padding-top:0;padding-bottom:15px;word-break:break-word;\\">
+                  
+      <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:collapse;border-spacing:0px;\\">
+        <tbody>
+          <tr>
+            <td style=\\"width:200px;\\">
+              
+      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+    
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    
+                </td>
+              </tr>
+            
+        </tbody>
+      </table>
+    
+      </div>
+    
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+    
+      
+      <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
+        
+        <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#002e7d;background-color:#002e7d;width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </div>
+    
+      
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+    
+      
+      <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
+      11px 0px rgba(0, 0, 0, 0.15); margin: 0px auto; max-width: 600px;\\">
+        
+        <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+    
+      
+      <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
+        
+        <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </div>
+    
+      
+      <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </div>
+    
+      
+      <!--[if mso | IE]></td></tr></table><![endif]-->
+    
+    
+      <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
+        <tbody>
+          <tr>
+            <td>
+              
+        
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+    
+        
+      <div style=\\"margin:0px auto;max-width:600px;\\">
+        
+        <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+    
+      
+      <div style=\\"margin:0px auto;max-width:600px;\\">
+        
+        <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
+          <tbody>
+            <tr>
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+            
+      <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
+        
+      <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" width=\\"100%\\">
+        <tbody>
+          <tr>
+            <td style=\\"vertical-align:top;padding:0;\\">
+              
+      <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style width=\\"100%\\">
+        <tbody>
+          
+              <tr>
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
+                  
+      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:11px;line-height:16px;text-align:center;color:#445566;\\">© Tuotantotalouden Kilta Prodeko ry.</div>
+    
+                </td>
+              </tr>
+            
+        </tbody>
+      </table>
+    
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    
+      </div>
+    
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </div>
+    
+      
+      <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+      </div>
+    
+        
+      <!--[if mso | IE]></td></tr></table><![endif]-->
+    
+      
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    
+      </div>
+    
+      </body>
+    </html>
+  ",
+          "name": "base",
+          "text": "© Tuotantotalouden Kilta Prodeko ry.
+
+",
+        },
+        Object {
+          "html": "
+    <!doctype html>
+    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+      <head>
+        <title>
+          
+        </title>
+        <!--[if !mso]><!-->
+        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+        <!--<![endif]-->
+        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+        <style type=\\"text/css\\">
+          #outlook a { padding:0; }
+          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+          p { display:block;margin:13px 0; }
+        </style>
+        <!--[if mso]>
+        <xml>
+        <o:OfficeDocumentSettings>
+          <o:AllowPNG/>
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+        </xml>
+        <![endif]-->
+        <!--[if lte mso 11]>
+        <style type=\\"text/css\\">
+          .mj-outlook-group-fix { width:100% !important; }
+        </style>
+        <![endif]-->
+        
+      <!--[if !mso]><!-->
+        <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
+        <style type=\\"text/css\\">
+          @import url(https://fonts.googleapis.com/css?family=Raleway);
+        </style>
+      <!--<![endif]-->
+
+    
+        
+    <style type=\\"text/css\\">
+      @media only screen and (min-width:480px) {
+        .mj-column-per-100 { width:100% !important; max-width: 100%; }
 .mj-column-per-50 { width:50% !important; max-width: 50%; }
       }
     </style>
@@ -427,27 +690,7 @@ necessary.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
-            
-      <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
-        
-      <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"vertical-align:top;\\" width=\\"100%\\">
-        <tbody>
-          
-              <tr>
-                <td align=\\"center\\" style=\\"font-size:0px;padding:30px;word-break:break-word;\\">
-                  
-      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1;text-align:center;color:#ffffff;\\">Click the button below to continue deleting your account.</div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
@@ -474,8 +717,8 @@ necessary.
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -503,7 +746,7 @@ necessary.
     
       </div>
     
-          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -638,9 +881,7 @@ necessary.
     </html>
   ",
           "name": "delete account",
-          "text": "Click the button below to continue deleting your account.
-
-Verification code:
+          "text": "Verification code:
 
 12345
 
@@ -821,10 +1062,10 @@ Confirm intent
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;padding-top:0;padding-bottom:0;padding-left:40px;word-break:break-word;\\">
                   
       <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">- Nimi: Teppo Testinen <br>
-            - Kiintiö: N <br>
-            - Tapahtuma: Testitapahtuma <br>
-            - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
-            - Linkki: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
+    - Kiintiö: N <br>
+    - Tapahtuma: Testitapahtuma <br>
+    - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
+    - Linkki tapahtumaan: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
     
                 </td>
               </tr>
@@ -862,10 +1103,10 @@ Confirm intent
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;padding-top:0;padding-bottom:0;padding-left:40px;word-break:break-word;\\">
                   
       <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">- Nimi: Teppo Testinen <br>
-            - Kiintiö: N <br>
-            - Tapahtuma: Test event <br>
-            - Event time: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
-            - Link: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
+    - Kiintiö: N <br>
+    - Tapahtuma: Test event <br>
+    - Event time: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
+    - Link to the event: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
     
                 </td>
               </tr>
@@ -996,7 +1237,8 @@ Confirm intent
 - Kiintiö: N
 - Tapahtuma: Testitapahtuma
 - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00
-- Linkki: http://localhost:5678/event/2021-01-01-testitapahtuma [http://localhost:5678/event/2021-01-01-testitapahtuma]
+- Linkki tapahtumaan: http://localhost:5678/event/2021-01-01-testitapahtuma
+[http://localhost:5678/event/2021-01-01-testitapahtuma]
 
 Voit poistaa ilmoittautumisen tämän linkin takaa:
 
@@ -1006,7 +1248,8 @@ Successfully registered to the event:
 - Kiintiö: N
 - Tapahtuma: Test event
 - Event time: 2021-01-01 12:00 - 2021-01-01 15:00
-- Link: http://localhost:5678/event/2021-01-01-testitapahtuma [http://localhost:5678/event/2021-01-01-testitapahtuma]
+- Link to the event: http://localhost:5678/event/2021-01-01-testitapahtuma
+[http://localhost:5678/event/2021-01-01-testitapahtuma]
 
 You can delete your registration through this link:
 
@@ -1165,8 +1408,8 @@ You can delete your registration through this link:
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:570px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -1177,8 +1420,8 @@ You can delete your registration through this link:
                 <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1;text-align:center;color:#000000;\\">You have been invited to join Webbitiimi. Please click the
-            button below to accept the invitation. If you do not wish to join
-            this organization then no action is necessary.</div>
+    button below to accept the invitation. If you do not wish to join
+    this organization then no action is necessary.</div>
     
                 </td>
               </tr>
@@ -1188,7 +1431,7 @@ You can delete your registration through this link:
     
       </div>
     
-          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:570px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -1490,7 +1733,7 @@ Accept invitation
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
-      11px 0px rgba(0, 0, 0, 0.15); background-color: 'white'; margin: 0px auto; max-width: 600px;\\">
+      11px 0px rgba(0, 0, 0, 0.15); margin: 0px auto; max-width: 600px;\\">
         
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
           <tbody>
@@ -1504,8 +1747,8 @@ Accept invitation
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -1533,7 +1776,7 @@ Accept invitation
     
       </div>
     
-          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -1831,8 +2074,8 @@ Change Passphrase
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:600px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:570px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-100 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -1843,7 +2086,7 @@ Change Passphrase
                 <td align=\\"center\\" style=\\"font-size:0px;padding:30px;word-break:break-word;\\">
                   
       <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1;text-align:center;color:#000000;\\">Someone (hopefully you) tried to reset your password for http://localhost:5678,
-            but no account is registered for this email address.</div>
+    but no account is registered for this email address.</div>
     
                 </td>
               </tr>
@@ -2135,7 +2378,7 @@ This message is purely for your information. No action is required.
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
-      11px 0px rgba(0, 0, 0, 0.15); background-color: 'white'; margin: 0px auto; max-width: 600px;\\">
+      11px 0px rgba(0, 0, 0, 0.15); margin: 0px auto; max-width: 600px;\\">
         
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"width:100%;\\">
           <tbody>
@@ -2149,8 +2392,8 @@ This message is purely for your information. No action is required.
         <table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:#ffffff;background-color:#ffffff;width:100%;\\">
           <tbody>
             <tr>
-              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+              <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-left:15px;padding-right:15px;text-align:center;\\">
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         
@@ -2178,7 +2421,7 @@ This message is purely for your information. No action is required.
     
       </div>
     
-          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:300px;\\" ><![endif]-->
+          <!--[if mso | IE]></td><td class=\\"\\" style=\\"vertical-align:top;width:285px;\\" ><![endif]-->
             
       <div class=\\"mj-column-per-50 mj-outlook-group-fix\\" style=\\"font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;\\">
         

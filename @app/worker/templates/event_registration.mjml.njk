@@ -1,0 +1,33 @@
+{% extends "base.mjml.njk" %}
+
+{% block content %}
+<mj-column width="100%">
+  <mj-text>Ilmoittautuminen tapahtumaan onnistui:</mj-text>
+  <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
+    - Nimi: {{ registrationName }} <br />
+    - Kiintiö: {{ registrationQuota.fi }} <br />
+    - Tapahtuma: {{ eventName.fi }} <br />
+    - Ajankohta: {{ eventTime }} <br />
+    - Linkki tapahtumaan: <a href="{{ eventLink }}" target="_blank">{{ eventLink }}</a
+    ><br />
+  </mj-text>
+  <mj-text
+    >Voit poistaa ilmoittautumisen tämän linkin takaa:
+    {{ eventRegistrationDeleteLink }}</mj-text
+  >
+  <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  <mj-text>Successfully registered to the event:</mj-text>
+  <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
+    - Nimi: {{ registrationName }} <br />
+    - Kiintiö: {{ registrationQuota.en }} <br />
+    - Tapahtuma: {{ eventName.en }} <br />
+    - Event time: {{ eventTime }} <br />
+    - Link to the event: <a href="{{ eventLink }}" target="_blank">{{ eventLink }}</a
+    ><br />
+  </mj-text>
+  <mj-text
+    >You can delete your registration through this link:
+    {{ eventRegistrationDeleteLink }}</mj-text
+  >
+</mj-column>
+{% endblock %}

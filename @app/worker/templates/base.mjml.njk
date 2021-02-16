@@ -25,7 +25,7 @@
     <mj-style inline="inline">
       .body-section { -webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15);
       -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
-      11px 0px rgba(0, 0, 0, 0.15); background-color: "white"; }
+      11px 0px rgba(0, 0, 0, 0.15); }
     </mj-style>
   </mj-head>
   <mj-body mj-class="background">
@@ -44,34 +44,18 @@
     </mj-section>
 
     <mj-section mj-class="blue-section">
-      <mj-column width="100%">
-        <mj-text mj-class="bold-text" color="#fff" padding="30px">
-          Click below to reset your password.
-        </mj-text>
-      </mj-column>
+      {% block headerContent %}{% endblock %}
     </mj-section>
 
     <mj-wrapper padding-top="0" padding-bottom="0" css-class="body-section">
-      <mj-section mj-class="white-section">
-        <mj-column width="50%">
-          <mj-text align="center" padding-bottom="0">
-            Verification code:
-          </mj-text>
-          <mj-text align="center">
-            <span style="font-size: 20px">[[token]]</span>
-          </mj-text>
-        </mj-column>
-        <mj-column width="50%">
-          <mj-button
-            background-color="#002e7d"
-            color="#fff"
-            font-weight="bold"
-            border="none"
-            border-radius="0px"
-            href="[[verifyLink]]"
-            >Change Passphrase</mj-button
-          >
-        </mj-column>
+      <mj-section
+        mj-class="white-section"
+        padding-left="15px"
+        padding-right="15px"
+      >
+
+      {% block content %}{% endblock %}
+
       </mj-section>
     </mj-wrapper>
 
@@ -84,7 +68,7 @@
             align="center"
             line-height="16px"
           >
-            [[legalText]]
+            {{ legalText }}
           </mj-text>
         </mj-column>
       </mj-section>

@@ -43,7 +43,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
       to: email,
       subject: "Password reset",
     },
-    template: "password_reset.mjml",
+    template: "password_reset.mjml.njk",
     variables: {
       token,
       verifyLink: `${process.env.ROOT_URL}/reset?user_id=${encodeURIComponent(

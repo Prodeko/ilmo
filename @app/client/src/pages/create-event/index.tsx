@@ -86,19 +86,20 @@ const CreateEventPage: NextPage = () => {
     data: emailTemplatesData,
   } = useRenderEmailTemplateQuery({
     variables: {
-      template: "event_registration.mjml",
+      template: "event_registration.mjml.njk",
       variables: {
-        eventNameFi: formValues?.name?.fi || "",
-        eventNameEn: formValues?.name?.en || "",
-        registrationName: "[[registrationName]]",
-        registrationQuotaFi: "[[registrationQuotaFi]]",
-        registrationQuotaEn: "[[registrationQuotaEn]]",
+        registrationName: "{{ registrationName }}",
+        registrationQuota: {
+          fi: "{{ registrationQuota }}",
+          en: "{{ registrationQuota }}",
+        },
+        eventName: formValues?.name,
         eventTime: getFormattedEventTime(formValues?.eventTime) || "",
         eventLink: `${process.env.ROOT_URL}/${getEventSlug(
           formValues?.name,
           formValues?.eventTime
         )}`,
-        eventRegistrationDeleteLink: "[[eventRegistrationDeleteLink]]",
+        eventRegistrationDeleteLink: "{{ eventRegistrationDeleteLink }}",
       },
     },
   });

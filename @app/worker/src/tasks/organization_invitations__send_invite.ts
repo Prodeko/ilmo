@@ -61,7 +61,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
       to: email,
       subject: `You have been invited to ${organization.name}`,
     },
-    template: "organization_invite.mjml",
+    template: "organization_invite.mjml.njk",
     variables: {
       organizationName: organization.name,
       link:

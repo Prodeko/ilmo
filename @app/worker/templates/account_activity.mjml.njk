@@ -1,0 +1,13 @@
+{% extends "base.mjml.njk" %}
+
+{% block content %}
+<mj-column width="100%">
+  <mj-text mj-class="bold-text" padding="30px">
+    {{ actionDescription }}
+  </mj-text>
+  <mj-text mj-class="text">
+    This email is purely for your information and security, if you
+    performed the action above then no further action is necessary.
+  </mj-text>
+</mj-column>
+{% endblock %}
