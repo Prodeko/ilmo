@@ -92,7 +92,7 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
   const initialOpenKeys = menuItems.find((i) => i[1].length > 0);
 
   if (openKeys.length === 0) {
-    if (initialOpenKeys) {
+    if (initialOpenKeys && initialOpenKeys[1].length > 0) {
       setOpenKeys(initialOpenKeys[1]);
     }
   }

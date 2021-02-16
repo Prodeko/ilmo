@@ -54,13 +54,13 @@ const CreateEventCategoryPage: NextPage = () => {
 
   if (eventCategory) {
     console.log(eventCategory);
-    return <Redirect href={`/admin/category/${eventCategory.id}`} layout />;
+    return <Redirect layout href={`/admin/category/${eventCategory.id}`} />;
   }
 
   const organizationMemberships =
     query.data?.currentUser?.organizationMemberships?.nodes;
   if (organizationMemberships && organizationMemberships?.length <= 0) {
-    return <Redirect href="/" layout />;
+    return <Redirect layout href="/" />;
   }
 
   const initialOrganization: string | undefined =
@@ -86,16 +86,16 @@ const CreateEventCategoryPage: NextPage = () => {
           <div>
             {supportedLanguages ? (
               <EventCategoryForm
-                code={code}
-                defaultLanguage={defaultLanguage}
-                formError={formError}
                 handleSubmit={handleSubmit}
                 initialValues={{
                   languages: [defaultLanguage],
                   organization: initialOrganization,
                 }}
-                organizationMemberships={organizationMemberships}
+                formError={formError}
+                defaultLanguage={defaultLanguage}
                 supportedLanguages={supportedLanguages}
+                organizationMemberships={organizationMemberships}
+                code={code}
               />
             ) : (
               <p>Loading...</p>
