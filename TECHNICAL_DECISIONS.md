@@ -10,7 +10,7 @@
 - [Cypress e2e tests](#cypress-e2e-tests)
 - [Next.js](#nextjs)
 - [AntD](#antd)
-- [Detailed list of all technologies](#detailed-list-of-all-technologies)
+- [Detailed list of technologies](#detailed-list-of-technologies)
 
 ## Overview
 
