@@ -1,0 +1,3 @@
+query AdminCategory($id: UUID!) {
+  ...AdminCategory_Query
+}

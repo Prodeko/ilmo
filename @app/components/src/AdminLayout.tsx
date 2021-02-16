@@ -1,7 +1,8 @@
 import * as qs from "querystring";
 
 import React from "react";
-import { useAdminLayoutQuery } from "@app/graphql";
+import { QueryResult } from "@apollo/client";
+import { AdminLayout_QueryFragment } from "@app/graphql";
 import { Layout } from "antd";
 import _ from "lodash";
 import { NextRouter, useRouter } from "next/router";
@@ -37,7 +38,10 @@ const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
 };
 
 export interface AdminLayoutProps {
-  query: ReturnType<typeof useAdminLayoutQuery>;
+  query: Pick<
+    QueryResult<AdminLayout_QueryFragment>,
+    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
+  >;
   href: string;
   children: React.ReactNode;
 }
@@ -127,7 +131,6 @@ export function AdminLayout({
 
   const page = findPage(String(inHref), items) || items[0];
   const href = page.key;
-  console.log(page);
 
   // `useRouter()` sometimes returns null
   const router: NextRouter | null = useRouter();

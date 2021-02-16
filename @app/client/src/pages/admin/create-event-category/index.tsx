@@ -28,8 +28,6 @@ const CreateEventCategoryPage: NextPage = () => {
   const [form] = Form.useForm();
   const router: NextRouter | null = useRouter();
 
-  console.log(router.query);
-
   const code = getCodeFromError(formError);
   const [
     eventCategory,
@@ -74,9 +72,7 @@ const CreateEventCategoryPage: NextPage = () => {
     return <Redirect layout href="/" />;
   }
 
-  console.log(organizationMemberships, router.query.org);
-
-  const initialOrganization =
+  const initialOrganization: string | undefined =
     router &&
     router.query &&
     router.query.org &&
@@ -100,7 +96,10 @@ const CreateEventCategoryPage: NextPage = () => {
             <Form
               {...formItemLayout}
               form={form}
-              initialValues={{ languages: [defaultLanguage] }}
+              initialValues={{
+                languages: [defaultLanguage],
+                organization: initialOrganization,
+              }}
               onFinish={handleSubmit}
             >
               <Form.Item
@@ -140,7 +139,6 @@ const CreateEventCategoryPage: NextPage = () => {
                 <Select
                   placeholder={t("forms.placeholders.eventCategory.organizer")}
                   data-cy="createeventcategory-select-organization-id"
-                  defaultValue={initialOrganization}
                 >
                   {organizationMemberships?.map((o) => (
                     <Option key={o.organization?.id} value={o.organization?.id}>
