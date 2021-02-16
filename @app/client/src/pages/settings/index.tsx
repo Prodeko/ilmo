@@ -112,8 +112,8 @@ function ProfileSettingsForm({
       <Form
         {...formItemLayout}
         form={form}
-        onFinish={handleSubmit}
         initialValues={{ name: user.name, username: user.username }}
+        onFinish={handleSubmit}
       >
         <Form.Item
           label="Name"
@@ -142,8 +142,6 @@ function ProfileSettingsForm({
         {error ? (
           <Form.Item>
             <Alert
-              type="error"
-              message={`Updating username`}
               description={
                 <span>
                   {extractError(error).message}
@@ -154,11 +152,13 @@ function ProfileSettingsForm({
                   )}
                 </span>
               }
+              message={`Updating username`}
+              type="error"
             />
           </Form.Item>
         ) : success ? (
           <Form.Item>
-            <Alert type="success" message={`Profile updated`} />
+            <Alert message={`Profile updated`} type="success" />
           </Form.Item>
         ) : null}
         <Form.Item {...tailFormItemLayout}>

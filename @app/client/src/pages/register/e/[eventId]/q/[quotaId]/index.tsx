@@ -79,17 +79,17 @@ const EventRegistrationPage: NextPage = () => {
 
   // If event or quota don't exist redirect to index
   if ((!loading && !event) || (!loading && !quota)) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
   return (
-    <SharedLayout title="" query={query}>
+    <SharedLayout query={query} title="">
       <EventRegisterPageinner
+        error={error}
         event={event!}
         quota={quota!}
-        token={registrationToken}
-        error={error}
         setError={setError}
+        token={registrationToken}
       />
     </SharedLayout>
   );
@@ -160,7 +160,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
 
   // If registration was completed successfully redirect to event page
   if (registration) {
-    return <Redirect href="/event/[slug]" as={`/event/${event.slug}`} />;
+    return <Redirect as={`/event/${event.slug}`} href="/event/[slug]" />;
   }
 
   const code = getCodeFromError(error);
@@ -174,8 +174,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
       />
       <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
         <Form.Item
-          name="firstName"
           label={t("forms.firstName")}
+          name="firstName"
           rules={[
             {
               required: true,
@@ -186,8 +186,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           <Input data-cy="createregistration-input-firstname" />
         </Form.Item>
         <Form.Item
-          name="lastName"
           label={t("forms.lastName")}
+          name="lastName"
           rules={[
             {
               required: true,
@@ -198,8 +198,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           <Input data-cy="createregistration-input-lastname" />
         </Form.Item>
         <Form.Item
-          name="email"
           label={t("forms.email")}
+          name="email"
           rules={[
             {
               type: "email",
@@ -217,8 +217,6 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
           <Form.Item {...tailFormItemLayout}>
             <Alert
               data-cy="createregistration-error-alert"
-              type="error"
-              message={t("errors.registrationFailed")}
               description={
                 <span>
                   {extractError(error).message}
@@ -229,16 +227,18 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
                   )}
                 </span>
               }
+              message={t("errors.registrationFailed")}
+              type="error"
             />
           </Form.Item>
         )}
         <Form.Item {...tailFormItemLayout}>
           <Button
             data-cy="createregistration-button-create"
-            type="primary"
-            loading={!!token || error ? false : true}
             disabled={error ? true : false}
             htmlType="submit"
+            loading={!!token || error ? false : true}
+            type="primary"
           >
             {t("common:create")}
           </Button>
@@ -246,9 +246,8 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
       </Form>
       {recentRegistrations && (
         <List
-          header={<div>{t("recentlyRegisteredHeader")}</div>}
-          bordered
           dataSource={recentRegistrations}
+          header={<div>{t("recentlyRegisteredHeader")}</div>}
           renderItem={(item) => (
             <List.Item>
               <Typography.Text>
@@ -257,6 +256,7 @@ const EventRegisterPageinner: React.FC<EventRegistrationPageInnerProps> = ({
               </Typography.Text>
             </List.Item>
           )}
+          bordered
         />
       )}
     </>

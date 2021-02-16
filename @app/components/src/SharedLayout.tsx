@@ -193,33 +193,33 @@ export function SharedLayout({
         <Head>
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
-        <Row wrap={false} justify="space-between">
+        <Row justify="space-between" wrap={false}>
           <Col flex="auto" style={{ padding: 5 }}>
             <Link href="/">
               <a>
                 <Image
-                  src={"/images/header-logo.png"}
-                  height={50}
-                  width={50}
                   alt="Prodeko"
+                  height={50}
+                  src={"/images/header-logo.png"}
+                  width={50}
                   priority
                 />
               </a>
             </Link>
           </Col>
           {!isMobile ? (
-            <Col xs={{ span: 4 }} md={{ span: 5 }}>
+            <Col md={{ span: 5 }} xs={{ span: 4 }}>
               <H3
+                data-cy="layout-header-title"
                 style={{
                   margin: 0,
                   padding: 0,
                   textAlign: "center",
                   lineHeight: "64px",
                 }}
-                data-cy="layout-header-title"
               >
                 {titleHref ? (
-                  <Link href={titleHref} as={titleHrefAs}>
+                  <Link as={titleHrefAs} href={titleHref}>
                     <a data-cy="layout-header-titlelink">{title}</a>
                   </Link>
                 ) : (
@@ -231,18 +231,17 @@ export function SharedLayout({
           <Col flex="auto" style={{ textAlign: "right" }}>
             <LocaleSelect />
           </Col>
-          <Col xs={{ span: 7 }} md={{ span: 2 }} style={{ textAlign: "right" }}>
+          <Col md={{ span: 2 }} style={{ textAlign: "right" }} xs={{ span: 7 }}>
             {data && data.currentUser ? (
               <Dropdown
-                trigger={["click"]}
                 overlay={
                   <Menu>
                     {data.currentUser.organizationMemberships.nodes.map(
                       ({ organization, isOwner }) => (
                         <Menu.Item key={organization?.id}>
                           <Link
-                            href={`/o/[slug]`}
                             as={`/o/${organization?.slug}`}
+                            href={`/o/[slug]`}
                           >
                             <a>
                               {organization?.name}
@@ -297,6 +296,7 @@ export function SharedLayout({
                     </Menu.Item>
                   </Menu>
                 }
+                trigger={["click"]}
               >
                 <span
                   data-cy="layout-dropdown-user"
@@ -342,8 +342,8 @@ export function SharedLayout({
             {process.env.T_AND_C_URL && (
               <span>
                 <a
-                  style={{ textDecoration: "underline" }}
                   href={process.env.T_AND_C_URL}
+                  style={{ textDecoration: "underline" }}
                 >
                   Terms and conditions
                 </a>
@@ -353,8 +353,8 @@ export function SharedLayout({
           <Text>
             Powered by{" "}
             <a
-              style={{ textDecoration: "underline" }}
               href="https://graphile.org/postgraphile"
+              style={{ textDecoration: "underline" }}
             >
               PostGraphile
             </a>

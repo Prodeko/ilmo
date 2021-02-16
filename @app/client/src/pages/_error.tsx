@@ -48,7 +48,7 @@ const ErrorPage: NextPage<ErrorPageProps> = (props) => {
   const query = useSharedQuery();
 
   return (
-    <SharedLayout title={title} query={query}>
+    <SharedLayout query={query} title={title}>
       <Row>
         <Col flex={1}>
           <Component {...componentProps} />

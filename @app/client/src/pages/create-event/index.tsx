@@ -159,7 +159,7 @@ const CreateEventPage: NextPage = () => {
   );
 
   if (event) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
   // Redirect to index if the user is not part of any organization
@@ -171,11 +171,11 @@ const CreateEventPage: NextPage = () => {
     organizationMemberships &&
     organizationMemberships?.length <= 0
   ) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
   return (
-    <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>
+    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
       <Row>
         <Col flex={1}>
           <PageHeader title={t("createEvent.title")} />
@@ -189,13 +189,13 @@ const CreateEventPage: NextPage = () => {
             >
               <Tabs defaultActiveKey="general">
                 <TabPane
+                  key="general"
                   data-cy="createevent-tab-general"
                   tab={t("forms.tabs.generalInfo")}
-                  key="general"
                 >
                   <Form.Item
-                    name="languages"
                     label={t("languages")}
+                    name="languages"
                     rules={[
                       {
                         required: true,
@@ -205,17 +205,17 @@ const CreateEventPage: NextPage = () => {
                     ]}
                   >
                     <Select
+                      data-cy="createevent-select-language"
                       mode="multiple"
+                      placeholder={t("forms.placeholders.languages")}
                       allowClear
                       onChange={(e) => setSelectedLanguages(e as string[])}
-                      placeholder={t("forms.placeholders.languages")}
-                      data-cy="createevent-select-language"
                     >
                       {supportedLanguages?.map((l, i) => (
                         <Option
                           key={i}
-                          value={l ? l : ""}
                           data-cy={`createevent-select-language-option-${l}`}
+                          value={l ? l : ""}
                         >
                           {t(`common:${l}`)}
                         </Option>
@@ -223,8 +223,8 @@ const CreateEventPage: NextPage = () => {
                     </Select>
                   </Form.Item>
                   <Form.Item
-                    name="organizationId"
                     label={t("organizer")}
+                    name="organizationId"
                     rules={[
                       {
                         required: true,
@@ -233,14 +233,14 @@ const CreateEventPage: NextPage = () => {
                     ]}
                   >
                     <Select
-                      placeholder={t("forms.placeholders.event.organizer")}
                       data-cy="createevent-select-organization-id"
+                      placeholder={t("forms.placeholders.event.organizer")}
                     >
                       {organizationMemberships?.map((a, i) => (
                         <Option
-                          value={a.organization?.id}
                           key={a.organization?.id}
                           data-cy={`createevent-select-organization-id-option-${i}`}
+                          value={a.organization?.id}
                         >
                           {a.organization?.name}
                         </Option>
@@ -248,8 +248,8 @@ const CreateEventPage: NextPage = () => {
                     </Select>
                   </Form.Item>
                   <Form.Item
-                    name="categoryId"
                     label={t("category")}
+                    name="categoryId"
                     rules={[
                       {
                         required: true,
@@ -258,14 +258,14 @@ const CreateEventPage: NextPage = () => {
                     ]}
                   >
                     <Select
-                      placeholder={t("forms.placeholders.event.category")}
                       data-cy="createevent-select-category-id"
+                      placeholder={t("forms.placeholders.event.category")}
                     >
                       {query.data?.eventCategories?.nodes.map((a, i) => (
                         <Option
-                          value={a.id}
                           key={a.id}
                           data-cy={`createevent-select-category-id-option-${i}`}
+                          value={a.id}
                         >
                           {a.name[lang]}
                         </Option>
@@ -283,18 +283,18 @@ const CreateEventPage: NextPage = () => {
                           <Form.Item
                             key={l}
                             name={["name", l]}
-                            noStyle
                             rules={[
                               {
                                 required: true,
                                 message: t("forms.rules.event.provideName"),
                               },
                             ]}
+                            noStyle
                           >
                             <Input
-                              style={i > 0 ? { marginTop: 5 } : undefined}
-                              placeholder={t(`forms.placeholders.${l}`)}
                               data-cy={`createevent-input-name-${l}`}
+                              placeholder={t(`forms.placeholders.${l}`)}
+                              style={i > 0 ? { marginTop: 5 } : undefined}
                             />
                           </Form.Item>
                         ))
@@ -312,7 +312,6 @@ const CreateEventPage: NextPage = () => {
                           <Form.Item
                             key={l}
                             name={["description", l]}
-                            noStyle
                             rules={[
                               {
                                 required: true,
@@ -321,11 +320,12 @@ const CreateEventPage: NextPage = () => {
                                 ),
                               },
                             ]}
+                            noStyle
                           >
                             <TextArea
-                              style={i > 0 ? { marginTop: 5 } : undefined}
-                              placeholder={t(`forms.placeholders.${l}`)}
                               data-cy={`createevent-input-description-${l}`}
+                              placeholder={t(`forms.placeholders.${l}`)}
+                              style={i > 0 ? { marginTop: 5 } : undefined}
                             />
                           </Form.Item>
                         ))
@@ -333,8 +333,8 @@ const CreateEventPage: NextPage = () => {
                     </Group>
                   </Form.Item>
                   <Form.Item
-                    name="eventTime"
                     label={t("forms.eventTime")}
+                    name="eventTime"
                     rules={[
                       {
                         type: "array",
@@ -344,35 +344,33 @@ const CreateEventPage: NextPage = () => {
                     ]}
                   >
                     <RangePicker
-                      showTime
-                      format="YYYY-MM-DD HH:mm"
                       data-cy="createevent-input-rangepicker"
+                      format="YYYY-MM-DD HH:mm"
+                      showTime
                     />
                   </Form.Item>
                   <Form.Item
-                    name="isHighlighted"
                     label={t("forms.highlightEvent")}
+                    name="isHighlighted"
                     valuePropName="checked"
                   >
                     <Switch data-cy="createevent-switch-highlight" />
                   </Form.Item>
                   <Form.Item
-                    name="headerImageFile"
                     label={t("headerImage")}
+                    name="headerImageFile"
                     valuePropName="headerImageFile"
                   >
                     <FileUpload
                       accept="image/*"
-                      maxCount={1}
                       cropAspect={851 / 315}
                       data-cy="createevent-header-image-upload"
+                      maxCount={1}
                     />
                   </Form.Item>
                   {formError && (
                     <Form.Item {...tailFormItemLayout}>
                       <Alert
-                        type="error"
-                        message={t("errors.eventCreationFailed")}
                         description={
                           <span>
                             {extractError(formError).message}
@@ -384,35 +382,37 @@ const CreateEventPage: NextPage = () => {
                             )}
                           </span>
                         }
+                        message={t("errors.eventCreationFailed")}
+                        type="error"
                       />
                     </Form.Item>
                   )}
                   <Form.Item {...tailFormItemLayout}>
                     <Button
-                      htmlType="submit"
                       data-cy="createevent-button-create"
+                      htmlType="submit"
                     >
                       {t("common:create")}
                     </Button>
                   </Form.Item>
                 </TabPane>
                 <TabPane
+                  key="email"
                   data-cy="createevent-tab-email"
                   tab={t("forms.tabs.email")}
-                  key="email"
                 >
                   <Row>
-                    <Col xs={{ span: 24 }} sm={{ span: 24 }}>
+                    <Col sm={{ span: 24 }} xs={{ span: 24 }}>
                       <Switch
-                        defaultChecked
-                        onChange={(checked) => setShowHtml(checked)}
                         loading={templatesLoading}
                         style={{ margin: 10 }}
+                        defaultChecked
+                        onChange={(checked) => setShowHtml(checked)}
                       />
                       <Text>{t("common:emailSwitchLabel")}</Text>
                       <Card
-                        style={{ marginLeft: 10 }}
                         loading={templatesLoading}
+                        style={{ marginLeft: 10 }}
                       >
                         {showHtml ? (
                           <div

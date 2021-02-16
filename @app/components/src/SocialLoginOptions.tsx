@@ -18,11 +18,11 @@ export function SocialLoginOptions({
 }: SocialLoginOptionsProps) {
   return (
     <Button
-      block
-      size="large"
-      icon={<ProdekoIcon style={{ verticalAlign: "middle" }} size="20px" />}
       href={`/auth/oauth2?next=${encodeURIComponent(next)}`}
+      icon={<ProdekoIcon size="20px" style={{ verticalAlign: "middle" }} />}
+      size="large"
       type="primary"
+      block
     >
       {buttonTextFromService("Prodeko")}
     </Button>

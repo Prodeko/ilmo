@@ -25,7 +25,6 @@ export function Redirect({ href, as, layout }: RedirectProps) {
   if (layout) {
     return (
       <SharedLayout
-        title={t("redirect")}
         query={{
           loading: true,
           data: undefined,
@@ -36,6 +35,7 @@ export function Redirect({ href, as, layout }: RedirectProps) {
             throw new Error("Redirecting...");
           }) as any,
         }}
+        title={t("redirect")}
       >
         <Skeleton />
       </SharedLayout>

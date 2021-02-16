@@ -78,10 +78,10 @@ export function SettingsLayout({
     href + (router && router.query ? `?${qs.stringify(router.query)}` : "");
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={`Settings: ${page.title}`}
       noPad
-      query={query}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
     >
       {({ currentUser, error, loading }: SharedLayoutChildProps) =>
         !currentUser && !error && !loading ? (

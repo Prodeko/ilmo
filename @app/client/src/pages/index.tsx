@@ -47,13 +47,13 @@ const Home: NextPage = () => {
           key: "name",
           render: (name: string, event: Event) => (
             <Link
+              as={`/event/${event.slug}`}
               href={{
                 pathname: "/event/[slug]",
                 query: {
                   slug: event.slug,
                 },
               }}
-              as={`/event/${event.slug}`}
             >
               <a>{name}</a>
             </Link>
@@ -75,7 +75,7 @@ const Home: NextPage = () => {
               b?.ownerOrganization?.name || ""
             ),
           render: (name: string, record: Event, index: number) => (
-            <Tag color={getColor(name)} key={`${record.id}-${index}`}>
+            <Tag key={`${record.id}-${index}`} color={getColor(name)}>
               {name?.toUpperCase()}
             </Tag>
           ),
@@ -94,7 +94,7 @@ const Home: NextPage = () => {
           sorter: (a: Event, b: Event) =>
             a?.name[lang]?.localeCompare(b?.name[lang] || ""),
           render: (name: string, record: Event, index: number) => (
-            <Tag color={getColor(name)} key={`${record.id}-${index}`}>
+            <Tag key={`${record.id}-${index}`} color={getColor(name)}>
               {name?.toUpperCase()}
             </Tag>
           ),
@@ -113,13 +113,13 @@ const Home: NextPage = () => {
           key: "name",
           render: (name: string, event: Event) => (
             <Link
+              as={`/event/${event.slug}`}
               href={{
                 pathname: "/event/[slug]",
                 query: {
                   slug: event.slug,
                 },
               }}
-              as={`/event/${event.slug}`}
             >
               <a>{name}</a>
             </Link>
@@ -136,29 +136,29 @@ const Home: NextPage = () => {
   const now = dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (
-    <SharedLayout title="" query={query}>
-      <Row justify="space-between" gutter={32}>
+    <SharedLayout query={query} title="">
+      <Row gutter={32} justify="space-between">
         <Col xs={24}>
           <Title level={4}>{t("events.signupsOpenEvents")}</Title>
           <ServerPaginatedTable
-            data-cy="homepage-signup-open-events"
-            queryDocument={HomePageDocument}
-            variables={{ now }}
             columns={columns}
+            data-cy="homepage-signup-open-events"
             dataField="signupOpenEvents"
+            queryDocument={HomePageDocument}
             showPagination={false}
             size="middle"
+            variables={{ now }}
           />
           <Divider dashed />
           <Title level={4}>{t("events.signupsClosedEvents")}</Title>
           <ServerPaginatedTable
-            data-cy="homepage-signup-closed-events"
-            queryDocument={HomePageDocument}
-            variables={{ now }}
             columns={columns}
+            data-cy="homepage-signup-closed-events"
             dataField="signupClosedEvents"
+            queryDocument={HomePageDocument}
             showPagination={true}
             size="middle"
+            variables={{ now }}
           />
         </Col>
       </Row>

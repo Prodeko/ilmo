@@ -21,11 +21,11 @@ const OrganizationPage: NextPage = () => {
 
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={`${organization?.name ?? slug}`}
       titleHref={`/o/[slug]`}
       titleHrefAs={`/o/${slug}`}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
-      query={query}
     >
       {organizationLoadingElement || (
         <OrganizationPageInner organization={organization!} />
@@ -46,20 +46,20 @@ const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
       <Col flex={1}>
         <div>
           <PageHeader
-            title={"Dashboard"}
             extra={
               organization.currentUserIsOwner && [
                 <ButtonLink
                   key="settings"
-                  href={`/o/[slug]/settings`}
                   as={`/o/${organization.slug}/settings`}
-                  type="primary"
                   data-cy="organizationpage-button-settings"
+                  href={`/o/[slug]/settings`}
+                  type="primary"
                 >
                   Settings
                 </ButtonLink>,
               ]
             }
+            title={"Dashboard"}
           />
           <Empty
             description={

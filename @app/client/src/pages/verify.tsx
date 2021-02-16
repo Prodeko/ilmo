@@ -63,7 +63,7 @@ const VerifyPage: NextPage<Props> = (props) => {
   const query = useSharedQuery();
 
   return (
-    <SharedLayout title="Verify Email Address" query={query}>
+    <SharedLayout query={query} title="Verify Email Address">
       <Row>
         <Col flex={1}>
           {state === "PENDING" ? (
@@ -72,10 +72,10 @@ const VerifyPage: NextPage<Props> = (props) => {
             "Submitting..."
           ) : state === "SUCCESS" ? (
             <Alert
+              description="Thank you for verifying your email address. You may now close this window."
+              message="Email Verified"
               type="success"
               showIcon
-              message="Email Verified"
-              description="Thank you for verifying your email address. You may now close this window."
             />
           ) : (
             "Unknown state"

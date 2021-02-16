@@ -36,10 +36,10 @@ export function FileUpload(props: FileUploadProps) {
   return (
     <ImgCrop aspect={cropAspect}>
       <Dragger
-        maxCount={maxCount}
-        listType="picture-card"
-        fileList={file ? [file] : undefined}
         customRequest={dummyRequest}
+        fileList={file ? [file] : undefined}
+        listType="picture-card"
+        maxCount={maxCount}
         onChange={handleOnChange}
         {...props}
       >

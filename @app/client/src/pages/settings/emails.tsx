@@ -41,10 +41,6 @@ function Email({
 
   return (
     <List.Item
-      data-cy={`settingsemails-emailitem-${email.email.replace(
-        /[^a-zA-Z0-9]/g,
-        "-"
-      )}`}
       key={email.id}
       actions={[
         email.isPrimary && (
@@ -52,8 +48,8 @@ function Email({
         ),
         canDelete && (
           <a
-            onClick={() => deleteEmail({ variables: { emailId: email.id } })}
             data-cy="settingsemails-button-delete"
+            onClick={() => deleteEmail({ variables: { emailId: email.id } })}
           >
             Delete
           </a>
@@ -69,15 +65,19 @@ function Email({
         ),
         email.isVerified && !email.isPrimary && (
           <a
+            data-cy="settingsemails-button-makeprimary"
             onClick={() =>
               makeEmailPrimary({ variables: { emailId: email.id } })
             }
-            data-cy="settingsemails-button-makeprimary"
           >
             Make primary
           </a>
         ),
       ].filter((_) => _)}
+      data-cy={`settingsemails-emailitem-${email.email.replace(
+        /[^a-zA-Z0-9]/g,
+        "-"
+      )}`}
     >
       <List.Item.Meta
         avatar={
@@ -85,6 +85,9 @@ function Email({
             ✉️
           </Avatar>
         }
+        description={`Added ${new Date(
+          Date.parse(email.createdAt)
+        ).toLocaleString()}`}
         title={
           <span>
             {" "}
@@ -105,9 +108,6 @@ function Email({
             </span>{" "}
           </span>
         }
-        description={`Added ${new Date(
-          Date.parse(email.createdAt)
-        ).toLocaleString()}`}
       />
     </List.Item>
   );
@@ -136,15 +136,15 @@ const Settings_Emails: NextPage = () => {
           {user.isVerified ? null : (
             <div style={{ marginBottom: "0.5rem" }}>
               <Alert
-                type="warning"
-                showIcon
-                message="No verified emails"
                 description={`
                   You do not have any verified email addresses, this will make
                   account recovery impossible and may limit your available
                   functionality within this application. Please complete email
                   verification.
                 `}
+                message="No verified emails"
+                type="warning"
+                showIcon
               />
             </div>
           )}
@@ -158,34 +158,34 @@ const Settings_Emails: NextPage = () => {
             until verified.
           </P>
           <List
-            bordered
-            size="large"
             dataSource={user.userEmails.nodes}
-            renderItem={(email) => (
-              <Email
-                email={email}
-                hasOtherEmails={user.userEmails.nodes.length > 1}
-              />
-            )}
             footer={
               !showAddEmailForm ? (
                 <div>
                   <Button
+                    data-cy="settingsemails-button-addemail"
                     type="primary"
                     onClick={() => setShowAddEmailForm(true)}
-                    data-cy="settingsemails-button-addemail"
                   >
                     Add email
                   </Button>
                 </div>
               ) : (
                 <AddEmailForm
-                  onComplete={() => setShowAddEmailForm(false)}
                   error={formError}
                   setError={setFormError}
+                  onComplete={() => setShowAddEmailForm(false)}
                 />
               )
             }
+            renderItem={(email) => (
+              <Email
+                email={email}
+                hasOtherEmails={user.userEmails.nodes.length > 1}
+              />
+            )}
+            size="large"
+            bordered
           />
         </div>
       );
@@ -239,8 +239,6 @@ function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
       {error && (
         <Form.Item>
           <Alert
-            type="error"
-            message={`Error adding email`}
             description={
               <span>
                 {extractError(error).message}
@@ -251,11 +249,13 @@ function AddEmailForm({ error, setError, onComplete }: AddEmailFormProps) {
                 )}
               </span>
             }
+            message={`Error adding email`}
+            type="error"
           />
         </Form.Item>
       )}
       <Form.Item {...tailFormItemLayout}>
-        <Button htmlType="submit" data-cy="settingsemails-button-submit">
+        <Button data-cy="settingsemails-button-submit" htmlType="submit">
           Add email
         </Button>
       </Form.Item>

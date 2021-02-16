@@ -15,7 +15,6 @@ export function ErrorAlert({ error }: ErrorAlertProps) {
     return (
       <Result
         status="403"
-        title="Invalid CSRF token"
         subTitle={
           <>
             <Paragraph type="secondary">
@@ -24,30 +23,31 @@ export function ErrorAlert({ error }: ErrorAlertProps) {
             </Paragraph>
             <Paragraph>
               <Button
+                icon={<SyncOutlined />}
                 type="primary"
                 onClick={() => window.location.reload()}
-                icon={<SyncOutlined />}
               >
                 Refresh page
               </Button>
             </Paragraph>
           </>
         }
+        title="Invalid CSRF token"
       />
     );
   }
   return (
     <Result
       status="error"
-      title="Unexpected error occurred"
       subTitle={
         <span>
           We're really sorry, but an unexpected error occurred. Please{" "}
           <a href="/">return to the homepage</a> and try again.
         </span>
       }
+      title="Unexpected error occurred"
     >
-      <Alert type="error" message={error.message} />
+      <Alert message={error.message} type="error" />
     </Result>
   );
 }

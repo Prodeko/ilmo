@@ -95,8 +95,6 @@ const Settings_Accounts: NextPage = () => {
       </P>
       {token ? (
         <Alert
-          type="error"
-          message="Confirm account deletion"
           description={
             <>
               <P>
@@ -107,16 +105,16 @@ const Settings_Accounts: NextPage = () => {
                 We're sorry to see you go, please don't hesitate to reach out
                 and let us know why you no longer want your account.
               </P>
-              <Button onClick={confirmDeletion} danger disabled={deleting}>
+              <Button disabled={deleting} danger onClick={confirmDeletion}>
                 PERMANENTLY DELETE MY ACCOUNT
               </Button>
             </>
           }
+          message="Confirm account deletion"
+          type="error"
         />
       ) : itIsDone ? (
         <Alert
-          type="warning"
-          message="Confirm deletion via email link"
           description={
             <P>
               You've been sent an email with a confirmation link in it, you must
@@ -124,30 +122,29 @@ const Settings_Accounts: NextPage = () => {
               may continue deleting your account.
             </P>
           }
+          message="Confirm deletion via email link"
+          type="warning"
         />
       ) : (
         <Alert
-          type="error"
-          message="Delete user account?"
           description={
             <>
               <P>
                 Deleting your account cannot be undone, you will lose all your
                 data.
               </P>
-              <Button onClick={openModal} danger>
+              <Button danger onClick={openModal}>
                 I want to delete my account
               </Button>
             </>
           }
+          message="Delete user account?"
+          type="error"
         />
       )}
       {error &&
         (getCodeFromError(error) === "OWNER" ? (
           <Alert
-            type="error"
-            showIcon
-            message="Cannot delete account"
             description={
               <>
                 <P>
@@ -161,20 +158,23 @@ const Settings_Accounts: NextPage = () => {
                 </P>
               </>
             }
+            message="Cannot delete account"
+            type="error"
+            showIcon
           />
         ) : (
           <ErrorAlert error={error} />
         ))}
 
       <Modal
+        confirmLoading={doingIt}
+        okButtonProps={{ danger: true }}
+        okText="Send delete account email"
+        okType="primary"
+        title="Send delete account confirmation email?"
         visible={confirmOpen}
         onCancel={closeModal}
         onOk={doIt}
-        okText="Send delete account email"
-        okType="primary"
-        okButtonProps={{ danger: true }}
-        title="Send delete account confirmation email?"
-        confirmLoading={doingIt}
       >
         <P>
           Before we can delete your account, we need to confirm it's definitely
@@ -187,9 +187,7 @@ const Settings_Accounts: NextPage = () => {
         </P>
       </Modal>
       <Modal
-        visible={deleted}
         closable={false}
-        title="Account deleted"
         footer={
           <div>
             <Button
@@ -202,6 +200,8 @@ const Settings_Accounts: NextPage = () => {
             </Button>
           </div>
         }
+        title="Account deleted"
+        visible={deleted}
       >
         Your account has been successfully deleted. We wish you all the best.
       </Modal>

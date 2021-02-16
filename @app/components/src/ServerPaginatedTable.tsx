@@ -59,16 +59,16 @@ export function ServerPaginatedTable({
     <ErrorAlert error={error} />
   ) : (
     <Table
-      loading={loading && { indicator: <Loading /> }}
       columns={columns}
       dataSource={get(data, dataField)?.nodes || []}
+      loading={loading && { indicator: <Loading /> }}
       pagination={showPagination && pagination}
-      onChange={handleTableChange}
-      rowKey={(obj) => obj.id}
       rowClassName={(record, _index) =>
         record?.isHighlighted ? "table-row-highlight" : ""
       }
+      rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}
+      onChange={handleTableChange}
       {...props}
     />
   );

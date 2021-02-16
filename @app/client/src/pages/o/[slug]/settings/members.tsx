@@ -48,18 +48,18 @@ const OrganizationSettingsPage: NextPage = () => {
 
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={organization?.name ?? slug}
       titleHref={`/o/[slug]`}
       titleHrefAs={`/o/${slug}`}
       noPad
-      query={query}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
     >
       {({ currentUser }) =>
         organizationLoadingElement || (
           <OrganizationSettingsPageInner
-            organization={organization!}
             currentUser={currentUser}
+            organization={organization!}
             page={page}
             setPage={setPage}
           />
@@ -95,9 +95,9 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
   const renderItem = useCallback(
     (node: OrganizationMembers_MembershipFragment) => (
       <OrganizationMemberListItem
+        currentUser={currentUser}
         node={node}
         organization={organization}
-        currentUser={currentUser}
       />
     ),
     [currentUser, organization]
@@ -143,34 +143,31 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
   }
 
   return (
-    <OrganizationSettingsLayout organization={organization} href={router.route}>
+    <OrganizationSettingsLayout href={router.route} organization={organization}>
       <div>
         <PageHeader title="Members" />
         <Card title="Invite new member">
           <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
             <Form.Item label="Username or email" name="inviteText">
               <Input
-                placeholder="Enter username or email"
                 disabled={inviteInProgress}
+                placeholder="Enter username or email"
               />
             </Form.Item>
             <Form.Item {...tailFormItemLayout}>
-              <Button htmlType="submit" disabled={inviteInProgress}>
+              <Button disabled={inviteInProgress} htmlType="submit">
                 Invite
               </Button>
             </Form.Item>
           </Form>
         </Card>
         <List
-          style={{ marginTop: "2rem", borderColor: "#f0f0f0" }}
+          dataSource={organization.organizationMemberships?.nodes ?? []}
           header={
             <Typography.Text style={{ fontSize: "16px" }} strong>
               Existing members
             </Typography.Text>
           }
-          size="large"
-          bordered
-          dataSource={organization.organizationMemberships?.nodes ?? []}
           pagination={{
             current: page,
             pageSize: RESULTS_PER_PAGE,
@@ -178,6 +175,9 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
             onChange: handlePaginationChange,
           }}
           renderItem={renderItem}
+          size="large"
+          style={{ marginTop: "2rem", borderColor: "#f0f0f0" }}
+          bordered
         />
       </div>
     </OrganizationSettingsLayout>
@@ -233,22 +233,22 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
       actions={[
         organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
+            key="remove"
+            cancelText="No"
+            okText="Yes"
             title={`Are you sure you want to remove ${node.user?.name} from ${organization.name}?`}
             onConfirm={handleRemove}
-            okText="Yes"
-            cancelText="No"
-            key="remove"
           >
             <a>Remove</a>
           </Popconfirm>
         ),
         organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
+            key="transfer"
+            cancelText="No"
+            okText="Yes"
             title={`Are you sure you want to transfer ownership of ${organization.name} to ${node.user?.name}?`}
             onConfirm={handleTransfer}
-            okText="Yes"
-            cancelText="No"
-            key="transfer"
           >
             <a>Make owner</a>
           </Popconfirm>
@@ -257,7 +257,6 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
     >
       <List.Item.Meta
         //avatar={...}
-        title={node.user?.name}
         description={
           <div>
             <Text>{node.user?.username}</Text>
@@ -268,6 +267,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
             )}
           </div>
         }
+        title={node.user?.name}
       />
     </List.Item>
   );

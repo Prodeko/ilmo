@@ -7,10 +7,10 @@ interface SvgProps {
 
 export const ProdekoSvg: React.FC<SvgProps> = ({ size }) => (
   <svg
-    width={size}
-    height={size}
     fill="currentColor"
+    height={size}
     viewBox="0 0 1417.32 1417.32"
+    width={size}
   >
     <g>
       <g>

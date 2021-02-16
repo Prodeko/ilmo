@@ -62,17 +62,17 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 
   if (eventCategory) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
   const organizationMemberships =
     query.data?.currentUser?.organizationMemberships?.nodes;
   if (organizationMemberships && organizationMemberships?.length <= 0) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
   return (
-    <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>
+    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
       <Row>
         <Col flex={1}>
           <PageHeader title={t("createEventCategory.title")} />
@@ -84,8 +84,8 @@ const CreateEventCategoryPage: NextPage = () => {
               onFinish={handleSubmit}
             >
               <Form.Item
-                name="languages"
                 label={t("languages")}
+                name="languages"
                 rules={[
                   {
                     required: true,
@@ -96,9 +96,9 @@ const CreateEventCategoryPage: NextPage = () => {
               >
                 <Select
                   mode="multiple"
+                  placeholder={t("forms.placeholders.languages")}
                   allowClear
                   onChange={(e) => setSelectedLanguages(e as string[])}
-                  placeholder={t("forms.placeholders.languages")}
                 >
                   {supportedLanguages?.map((l, i) => (
                     <Option key={i} value={l ? l : ""}>
@@ -108,8 +108,8 @@ const CreateEventCategoryPage: NextPage = () => {
                 </Select>
               </Form.Item>
               <Form.Item
-                name="organization"
                 label={t("organizer")}
+                name="organization"
                 rules={[
                   {
                     required: true,
@@ -118,8 +118,8 @@ const CreateEventCategoryPage: NextPage = () => {
                 ]}
               >
                 <Select
-                  placeholder={t("forms.placeholders.eventCategory.organizer")}
                   data-cy="createeventcategory-select-organization-id"
+                  placeholder={t("forms.placeholders.eventCategory.organizer")}
                 >
                   {organizationMemberships?.map((o) => (
                     <Option key={o.organization?.id} value={o.organization?.id}>
@@ -139,18 +139,18 @@ const CreateEventCategoryPage: NextPage = () => {
                       <Form.Item
                         key={l}
                         name={["name", l]}
-                        noStyle
                         rules={[
                           {
                             required: true,
                             message: t("forms.rules.eventCategory.provideName"),
                           },
                         ]}
+                        noStyle
                       >
                         <Input
-                          style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(`forms.placeholders.${l}`)}
                           data-cy={`createeventcategory-input-name-${l}`}
+                          placeholder={t(`forms.placeholders.${l}`)}
+                          style={i > 0 ? { marginTop: 5 } : undefined}
                         />
                       </Form.Item>
                     ))
@@ -168,7 +168,6 @@ const CreateEventCategoryPage: NextPage = () => {
                       <Form.Item
                         key={l}
                         name={["description", l]}
-                        noStyle
                         rules={[
                           {
                             required: true,
@@ -177,11 +176,12 @@ const CreateEventCategoryPage: NextPage = () => {
                             ),
                           },
                         ]}
+                        noStyle
                       >
                         <TextArea
-                          style={i > 0 ? { marginTop: 5 } : undefined}
-                          placeholder={t(`forms.placeholders.${l}`)}
                           data-cy={`createeventcategory-input-description-${l}`}
+                          placeholder={t(`forms.placeholders.${l}`)}
+                          style={i > 0 ? { marginTop: 5 } : undefined}
                         />
                       </Form.Item>
                     ))
@@ -191,8 +191,6 @@ const CreateEventCategoryPage: NextPage = () => {
               {formError && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
-                    type="error"
-                    message={t("errors.eventCategoryCreationFailed")}
                     description={
                       <span>
                         {extractError(formError).message}
@@ -203,13 +201,15 @@ const CreateEventCategoryPage: NextPage = () => {
                         )}
                       </span>
                     }
+                    message={t("errors.eventCategoryCreationFailed")}
+                    type="error"
                   />
                 </Form.Item>
               )}
               <Form.Item {...tailFormItemLayout}>
                 <Button
-                  htmlType="submit"
                   data-cy="createeventcategory-button-create"
+                  htmlType="submit"
                 >
                   {t("common:create")}
                 </Button>

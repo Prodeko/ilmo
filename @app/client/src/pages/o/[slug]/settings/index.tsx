@@ -28,12 +28,12 @@ const OrganizationSettingsPage: NextPage = () => {
 
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={organization?.name ?? slug}
       titleHref={`/o/[slug]`}
       titleHrefAs={`/o/${slug}`}
       noPad
-      query={query}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
     >
       {organizationLoadingElement || (
         <OrganizationSettingsPageInner organization={organization!} />
@@ -86,17 +86,17 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
   }
 
   return (
-    <OrganizationSettingsLayout organization={organization} href={router.route}>
+    <OrganizationSettingsLayout href={router.route} organization={organization}>
       <div>
         <PageHeader title="Profile" />
         <Form
           {...formItemLayout}
           form={form}
-          onFinish={handleSubmit}
           initialValues={{
             slug,
             name,
           }}
+          onFinish={handleSubmit}
         >
           <Form.Item
             label="Organization name"
@@ -121,9 +121,9 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
           {error && (
             <Form.Item>
               <Alert
-                type="error"
-                message={`Updating organization`}
                 description={<span>{extractError(error).message}</span>}
+                message={`Updating organization`}
+                type="error"
               />
             </Form.Item>
           )}

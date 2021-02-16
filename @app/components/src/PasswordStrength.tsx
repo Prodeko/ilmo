@@ -59,7 +59,7 @@ export function PasswordStrength({
 
   return (
     <Row style={{ lineHeight: "2rem" }}>
-      <Col span={20} offset={1}>
+      <Col offset={1} span={20}>
         <Progress
           percent={strengthToPercent(passwordStrength)}
           status={passwordStrength < 2 ? "exception" : undefined}
@@ -67,9 +67,9 @@ export function PasswordStrength({
       </Col>
       <Col span={3}>
         <Popover
+          content={content}
           placement="bottomRight"
           title={"Password Hints"}
-          content={content}
           trigger="click"
           visible={visible}
           onVisibleChange={handleVisibleChange}

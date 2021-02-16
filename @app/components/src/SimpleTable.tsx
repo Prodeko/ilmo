@@ -11,10 +11,10 @@ export function SimpleTable({ data, columns, ...props }: Props) {
     <Table
       columns={columns}
       dataSource={data}
-      rowKey={(obj) => obj.id}
       rowClassName={(record, _index) =>
         record?.isHighlighted ? "table-row-highlight" : ""
       }
+      rowKey={(obj) => obj.id}
       {...props}
     />
   );

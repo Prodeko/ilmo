@@ -51,11 +51,11 @@ const ForgotPassword: NextPage = () => {
 
   if (successfulEmail != null) {
     return (
-      <SharedLayout title="Forgot Password" query={query}>
+      <SharedLayout query={query} title="Forgot Password">
         <Alert
-          type="success"
-          message="You've got mail"
           description={`We've sent an email reset link to '${successfulEmail}'; click the link and follow the instructions. If you don't receive the link, please ensure you entered the email address correctly, and check in your spam folder just in case.`}
+          message="You've got mail"
+          type="success"
         />
       </SharedLayout>
     );
@@ -63,9 +63,9 @@ const ForgotPassword: NextPage = () => {
 
   return (
     <SharedLayout
-      title="Forgot Password"
-      query={query}
       forbidWhen={AuthRestrict.LOGGED_IN}
+      query={query}
+      title="Forgot Password"
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
@@ -79,17 +79,15 @@ const ForgotPassword: NextPage = () => {
           ]}
         >
           <Input
-            prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
-            placeholder="Email"
             ref={focusElement}
+            placeholder="Email"
+            prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
           />
         </Form.Item>
 
         {error && (
           <Form.Item>
             <Alert
-              type="error"
-              message={`Something went wrong`}
               description={
                 <span>
                   {extractError(error).message}
@@ -100,11 +98,13 @@ const ForgotPassword: NextPage = () => {
                   )}
                 </span>
               }
+              message={`Something went wrong`}
+              type="error"
             />
           </Form.Item>
         )}
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button htmlType="submit" type="primary">
             Reset password
           </Button>
         </Form.Item>

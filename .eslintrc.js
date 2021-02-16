@@ -151,6 +151,16 @@ module.exports = {
     "arrow-body-style": 0,
     "no-nested-ternary": 0,
 
+    // Sort component props alphabetically
+    "react/jsx-sort-props": [
+      1,
+      {
+        callbacksLast: true,
+        shorthandLast: true,
+        reservedFirst: true,
+      },
+    ],
+
     /*
      * simple-import-sort seems to be the most stable import sorting currently,
      * disable others

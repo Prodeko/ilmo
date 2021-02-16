@@ -6,7 +6,7 @@ import Link, { LinkProps } from "next/link";
 export const ButtonLink: React.FC<ButtonProps & LinkProps> = (props) => {
   const { href, as, locale, ...rest } = props;
   return (
-    <Link href={href} as={as} locale={locale} passHref>
+    <Link as={as} href={href} locale={locale} passHref>
       <Button {...rest} />
     </Link>
   );

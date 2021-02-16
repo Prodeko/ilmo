@@ -125,36 +125,36 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
 
   return (
     <SharedLayout
-      title="Reset Password"
-      query={query}
       forbidWhen={
         // reset is used to change password of OAuth-authenticated users
         AuthRestrict.NEVER
       }
+      query={query}
+      title="Reset Password"
     >
       <Row>
         <Col flex={1}>
           <div>
             {state === "SUBMITTING" ? (
               <Alert
-                type="info"
-                message="Submitting..."
                 description="This might take a few moments..."
+                message="Submitting..."
+                type="info"
               />
             ) : state === "SUCCESS" ? (
               <Alert
-                type="success"
-                message="Password Reset"
                 description="Your password was reset; you can go and log in now"
+                message="Password Reset"
+                type="success"
               />
             ) : null}
 
             <Form
               {...formItemLayout}
               form={form}
+              style={{ display: state === State.PENDING ? "" : "none" }}
               onFinish={handleSubmit}
               onValuesChange={handleValuesChange}
-              style={{ display: state === State.PENDING ? "" : "none" }}
             >
               <Form.Item label="Enter your reset token:">
                 <Input
@@ -165,7 +165,6 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
               </Form.Item>
               <Form.Item label="Choose a new passphrase:" required>
                 <Form.Item
-                  noStyle
                   name="password"
                   rules={[
                     {
@@ -173,20 +172,21 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
                       message: "Please input your passphrase.",
                     },
                   ]}
+                  noStyle
                 >
                   <Input
-                    type="password"
                     autoComplete="new-password"
                     data-cy="registerpage-input-password"
-                    onFocus={setPasswordFocussed}
+                    type="password"
                     onBlur={setPasswordNotFocussed}
+                    onFocus={setPasswordFocussed}
                   />
                 </Form.Item>
                 <PasswordStrength
-                  passwordStrength={passwordStrength}
-                  suggestions={passwordSuggestions}
                   isDirty={passwordIsDirty}
                   isFocussed={passwordIsFocussed}
+                  passwordStrength={passwordStrength}
+                  suggestions={passwordSuggestions}
                 />
               </Form.Item>
               <Form.Item
@@ -203,26 +203,26 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
                 ]}
               >
                 <Input
-                  type="password"
                   autoComplete="new-password"
-                  onBlur={handleConfirmBlur}
                   data-cy="registerpage-input-password2"
+                  type="password"
+                  onBlur={handleConfirmBlur}
                 />
               </Form.Item>
               {error && (
                 <Form.Item>
                   <Alert
-                    type="error"
-                    closable
-                    onClose={clearError}
                     message={
                       error.message ? String(error.message) : String(error)
                     }
+                    type="error"
+                    closable
+                    onClose={clearError}
                   />
                 </Form.Item>
               )}
               <Form.Item {...tailFormItemLayout}>
-                <Button htmlType="submit" data-cy="resetpage-submit-button">
+                <Button data-cy="resetpage-submit-button" htmlType="submit">
                   Reset passphrase
                 </Button>
               </Form.Item>

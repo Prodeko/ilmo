@@ -11,9 +11,9 @@ export function LocaleSelect() {
       {locales?.map((locale) => (
         <ReactCountryFlag
           key={locale}
-          data-cy={`localeselect-${locale}`}
-          countryCode={locale === "en" ? "GB" : locale}
           aria-label={`${locale} flag`}
+          countryCode={locale === "en" ? "GB" : locale}
+          data-cy={`localeselect-${locale}`}
           style={{
             fontSize: "2rem",
             lineHeight: "2rem",

@@ -51,10 +51,10 @@ const InvitationAccept: NextPage<Props> = (props) => {
 
   return (
     <SharedLayout
-      title="Accept Invitation"
-      query={query}
-      noHandleErrors
       forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
+      title="Accept Invitation"
+      noHandleErrors
     >
       {({ currentUser, error, loading }) =>
         !currentUser && !error && !loading ? (
@@ -63,9 +63,9 @@ const InvitationAccept: NextPage<Props> = (props) => {
           <Row>
             <Col flex={1}>
               <InvitationAcceptInner
+                code={code}
                 currentUser={currentUser}
                 id={id}
-                code={code}
                 query={query}
               />
             </Col>
@@ -124,23 +124,21 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
       child = (
         <Result
           status="404"
-          title="That invitation could not be found"
           subTitle="Perhaps you have already accepted it?"
+          title="That invitation could not be found"
         />
       );
     } else if (code === "DNIED") {
       child = (
         <Result
           status="403"
-          title="That invitation is not for you"
           subTitle="Perhaps you should log out and log in with a different account?"
+          title="That invitation is not for you"
         />
       );
     } else if (code === "LOGIN") {
       child = (
         <Result
-          status="403"
-          title="Log in to accept invitation"
           extra={
             <ButtonLink
               href={`/login?next=${encodeURIComponent(router.asPath)}`}
@@ -148,6 +146,8 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
               Log in
             </ButtonLink>
           }
+          status="403"
+          title="Log in to accept invitation"
         />
       );
     } else {
@@ -156,13 +156,13 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   } else if (organization) {
     child = (
       <Result
-        status="success"
-        title={`You were invited to ${organization.name}`}
         extra={
-          <Button onClick={handleAccept} type="primary">
+          <Button type="primary" onClick={handleAccept}>
             Accept invitation
           </Button>
         }
+        status="success"
+        title={`You were invited to ${organization.name}`}
       />
     );
   } else if (loading) {
@@ -171,8 +171,8 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
     child = (
       <Result
         status="error"
-        title="Something went wrong"
         subTitle="We couldn't find details about this invite, please try again later"
+        title="Something went wrong"
       />
     );
   }

@@ -33,10 +33,10 @@ const EventPage: NextPage = () => {
 
   return (
     <SharedLayout
+      query={query}
       title={query.loading ? "" : `${event?.name[lang] ?? t("eventNotFound")}`}
       titleHref="/event/[slug]"
       titleHrefAs={`/event/${event?.slug}`}
-      query={query}
     >
       {eventLoadingElement || <EventPageInner event={event!} />}
     </SharedLayout>
@@ -93,35 +93,35 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       />
       <Row>
         <Col
+          sm={{ span: 16 }}
           style={{ display: "inline-block" }}
           xs={{ span: 24 }}
-          sm={{ span: 16 }}
         >
           {event.headerImageFile && (
             <Image
-              src={event.headerImageFile}
               alt={t("events:headerImage")}
-              width={851}
               height={315}
-              objectFit="cover"
               loader={uploadsLoader}
+              objectFit="cover"
+              src={event.headerImageFile}
+              width={851}
               priority
             />
           )}
         </Col>
         <Col
-          xs={{ span: 24 }}
           sm={{ span: 8 }}
           style={{ maxHeight: isMobile ? "100%" : 0 }}
+          xs={{ span: 24 }}
         >
           <Card
             data-cy="eventpage-quotas-card"
-            title={t("sidebar.title")}
             style={{
               marginLeft: !isMobile ? "1rem" : undefined,
               marginBottom: isMobile ? "1rem" : undefined,
               width: "100%",
             }}
+            title={t("sidebar.title")}
             bordered
           >
             {event.quotas.nodes.map((q, i) => {
@@ -140,8 +140,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                   >
                     <Button
                       data-cy={`eventpage-quotas-link-${i}`}
-                      target="a"
                       disabled={registrations.totalCount >= size}
+                      target="a"
                       block
                     >
                       {q.title[lang]}
@@ -153,17 +153,17 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             })}
           </Card>
         </Col>
-        <Col xs={{ span: 24 }} sm={{ span: 16 }}>
+        <Col sm={{ span: 16 }} xs={{ span: 24 }}>
           <Title level={2}>{event.name[lang]}</Title>
           <Paragraph>{event.description[lang]}</Paragraph>
           <SimpleTable
-            data-cy="eventpage-signups-table"
-            data={registrations}
             columns={columns}
+            data={registrations}
+            data-cy="eventpage-signups-table"
+            size="small"
             style={{
               marginTop: "1rem",
             }}
-            size="small"
           />
         </Col>
       </Row>

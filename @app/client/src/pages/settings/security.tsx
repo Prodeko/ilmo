@@ -145,7 +145,7 @@ const Settings_Security: NextPage = () => {
             (you can choose a different email by making it primary in{" "}
             <Link href="/settings/emails">email settings</Link>).
           </P>
-          <Button onClick={handleResetPassword} disabled={resetInProgress}>
+          <Button disabled={resetInProgress} onClick={handleResetPassword}>
             Reset passphrase
           </Button>
         </div>
@@ -176,7 +176,6 @@ const Settings_Security: NextPage = () => {
           </Form.Item>
           <Form.Item label="New passphrase" required>
             <Form.Item
-              noStyle
               name="newPassword"
               rules={[
                 {
@@ -184,25 +183,24 @@ const Settings_Security: NextPage = () => {
                   message: "Please confirm your passphrase",
                 },
               ]}
+              noStyle
             >
               <Input
                 type="password"
-                onFocus={setPasswordFocussed}
                 onBlur={setPasswordNotFocussed}
+                onFocus={setPasswordFocussed}
               />
             </Form.Item>
             <PasswordStrength
-              passwordStrength={passwordStrength}
-              suggestions={passwordSuggestions}
               isDirty={passwordIsDirty}
               isFocussed={passwordIsFocussed}
+              passwordStrength={passwordStrength}
+              suggestions={passwordSuggestions}
             />
           </Form.Item>
           {error ? (
             <Form.Item>
               <Alert
-                type="error"
-                message={`Changing passphrase failed`}
                 description={
                   <span>
                     {extractError(error).message}
@@ -213,11 +211,13 @@ const Settings_Security: NextPage = () => {
                     )}
                   </span>
                 }
+                message={`Changing passphrase failed`}
+                type="error"
               />
             </Form.Item>
           ) : success ? (
             <Form.Item>
-              <Alert type="success" message={`Password changed!`} />
+              <Alert message={`Password changed!`} type="success" />
             </Form.Item>
           ) : null}
           <Form.Item {...tailFormItemLayout}>

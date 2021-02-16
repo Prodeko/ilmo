@@ -50,9 +50,9 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
 
   return (
     <SharedLayout
-      title="Sign in"
-      query={query}
       forbidWhen={AuthRestrict.LOGGED_IN}
+      query={query}
+      title="Sign in"
     >
       {({ currentUser }: SharedLayoutChildProps) =>
         currentUser ? (
@@ -60,27 +60,27 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
         ) : (
           <Row justify="center" style={{ marginTop: 32 }}>
             {showLogin ? (
-              <Col xs={24} sm={12}>
+              <Col sm={12} xs={24}>
                 <Row>
                   <LoginForm
-                    onSuccessRedirectTo={next}
-                    onCancel={() => setShowLogin(false)}
                     error={error}
                     setError={setError}
+                    onCancel={() => setShowLogin(false)}
+                    onSuccessRedirectTo={next}
                   />
                 </Row>
               </Col>
             ) : (
-              <Col xs={24} sm={12}>
+              <Col sm={12} xs={24}>
                 <Row style={{ marginBottom: 8 }}>
                   <Col span={24}>
                     <Button
-                      block
-                      size="large"
                       data-cy="loginpage-button-withusername"
                       icon={<UserOutlined />}
-                      onClick={() => setShowLogin(true)}
+                      size="large"
                       type="primary"
+                      block
+                      onClick={() => setShowLogin(true)}
                     >
                       Sign in with E-mail or Username
                     </Button>
@@ -95,11 +95,11 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                   <Col flex={1}>
                     <ButtonLink
                       data-cy="loginpage-button-register"
+                      href={`/register?next=${encodeURIComponent(next)}`}
                       icon={<UserAddOutlined />}
                       size="large"
-                      block
                       type="default"
-                      href={`/register?next=${encodeURIComponent(next)}`}
+                      block
                     >
                       Create an account
                     </ButtonLink>
@@ -188,21 +188,21 @@ function LoginForm({
     <Form
       form={form}
       layout="vertical"
+      style={{ width: "100%" }}
       onFinish={handleSubmit}
       onValuesChange={handleValuesChange}
-      style={{ width: "100%" }}
     >
       <Form.Item
         name="username"
         rules={[{ required: true, message: "Please input your username" }]}
       >
         <Input
-          size="large"
-          prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
-          placeholder="E-mail or Username"
-          autoComplete="email username"
           ref={focusElement}
+          autoComplete="email username"
           data-cy="loginpage-input-username"
+          placeholder="E-mail or Username"
+          prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+          size="large"
         />
       </Form.Item>
       <Form.Item
@@ -210,12 +210,12 @@ function LoginForm({
         rules={[{ required: true, message: "Please input your passphrase" }]}
       >
         <Input
+          autoComplete="current-password"
+          data-cy="loginpage-input-password"
+          placeholder="Passphrase"
           prefix={<LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
           size="large"
           type="password"
-          placeholder="Passphrase"
-          autoComplete="current-password"
-          data-cy="loginpage-input-password"
         />
       </Form.Item>
       <Form.Item>
@@ -226,8 +226,6 @@ function LoginForm({
       {error && (
         <Form.Item>
           <Alert
-            type="error"
-            message={`Sign in failed`}
             description={
               <span>
                 {extractError(error).message}
@@ -238,15 +236,17 @@ function LoginForm({
                 )}
               </span>
             }
+            message={`Sign in failed`}
+            type="error"
           />
         </Form.Item>
       )}
       <Form.Item>
         <Button
-          type="primary"
-          htmlType="submit"
-          disabled={submitDisabled}
           data-cy="loginpage-button-submit"
+          disabled={submitDisabled}
+          htmlType="submit"
+          type="primary"
         >
           Sign in
         </Button>

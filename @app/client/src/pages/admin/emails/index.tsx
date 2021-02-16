@@ -28,19 +28,19 @@ const Admin_Emails: NextPage = () => {
       ) : (
         <>
           <Switch
-            defaultChecked
-            onChange={(checked) => setShowHtml(checked)}
             loading={loading}
             style={{ marginRight: "1rem" }}
+            defaultChecked
+            onChange={(checked) => setShowHtml(checked)}
           />
           <Text>{t("common:emailSwitchLabel")}</Text>
-          <Row style={{ marginTop: "1rem" }} gutter={16}>
+          <Row gutter={16} style={{ marginTop: "1rem" }}>
             {data?.renderEmailTemplates.templates.map((email, i) => (
-              <Col key={i} xs={{ span: 24 }} sm={{ span: 12 }}>
+              <Col key={i} sm={{ span: 12 }} xs={{ span: 24 }}>
                 <Card
-                  title={capitalize(email?.name)}
-                  style={{ margin: "10px" }}
                   loading={loading}
+                  style={{ margin: "10px" }}
+                  title={capitalize(email?.name)}
                 >
                   {showHtml ? (
                     <div

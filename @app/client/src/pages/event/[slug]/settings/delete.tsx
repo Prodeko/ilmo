@@ -28,18 +28,18 @@ const OrganizationSettingsPage: NextPage = () => {
 
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={organization?.name ?? slug}
       titleHref={`/o/[slug]`}
       titleHrefAs={`/o/${slug}`}
       noPad
-      query={query}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
     >
       {({ currentUser }) =>
         organizationLoadingElement || (
           <OrganizationSettingsPageInner
-            organization={organization!}
             currentUser={currentUser}
+            organization={organization!}
           />
         )
       }
@@ -76,32 +76,32 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
     }
   }, [deleteOrganization, organization.id, organization.name, router]);
   return (
-    <OrganizationSettingsLayout organization={organization} href={router.route}>
+    <OrganizationSettingsLayout href={router.route} organization={organization}>
       <div>
         <PageHeader title="Delete Organization?" />
         {organization.currentUserIsOwner ? (
           <Alert
-            type="error"
-            message={`Really delete '${organization.name}'`}
             description={
               <div>
                 <P>This action cannot be undone, be very careful.</P>
                 <Popconfirm
+                  cancelText="No"
+                  okText="Yes"
                   title={`Are you sure you want to delete ${organization.name}?`}
                   onConfirm={handleDelete}
-                  okText="Yes"
-                  cancelText="No"
                 >
                   <Button>Delete this organization</Button>
                 </Popconfirm>
               </div>
             }
+            message={`Really delete '${organization.name}'`}
+            type="error"
           />
         ) : (
           <Alert
-            type="warning"
-            message="You are not permitted to do this"
             description="Only the owner may delete the organization. If you cannot reach the owner, please get in touch with support."
+            message="You are not permitted to do this"
+            type="warning"
           />
         )}
         {error && <ErrorAlert error={error} />}

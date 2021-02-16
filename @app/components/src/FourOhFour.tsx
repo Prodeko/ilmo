@@ -15,16 +15,16 @@ export function FourOhFour(props: FourOhFourProps) {
   return (
     <div data-cy="fourohfour-div">
       <Result
-        status="404"
-        title="404"
-        subTitle={`The page you attempted to load was not found.${
-          currentUser ? "" : " Maybe you need to log in?"
-        }`}
         extra={
-          <ButtonLink type="primary" href="/">
+          <ButtonLink href="/" type="primary">
             {t("common:backHome")}
           </ButtonLink>
         }
+        status="404"
+        subTitle={`The page you attempted to load was not found.${
+          currentUser ? "" : " Maybe you need to log in?"
+        }`}
+        title="404"
       />
     </div>
   );

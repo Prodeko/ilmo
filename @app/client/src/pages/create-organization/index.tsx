@@ -101,12 +101,12 @@ const CreateOrganizationPage: NextPage = () => {
 
   if (organization) {
     return (
-      <Redirect layout href={`/o/[slug]`} as={`/o/${organization.slug}`} />
+      <Redirect as={`/o/${organization.slug}`} href={`/o/[slug]`} layout />
     );
   }
 
   return (
-    <SharedLayout title="" query={query} forbidWhen={AuthRestrict.LOGGED_OUT}>
+    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
       <Row>
         <Col flex={1}>
           <PageHeader title="Create Organization" />
@@ -114,8 +114,8 @@ const CreateOrganizationPage: NextPage = () => {
             <Form
               {...formItemLayout}
               form={form}
-              onValuesChange={handleValuesChange}
               onFinish={handleSubmit}
+              onValuesChange={handleValuesChange}
             >
               <Form.Item
                 label="Name"
@@ -139,8 +139,8 @@ const CreateOrganizationPage: NextPage = () => {
                     </div>
                   ) : existingOrganizationData?.organizationBySlug ? (
                     <Text
-                      type="danger"
                       data-cy="createorganization-hint-nameinuse"
+                      type="danger"
                     >
                       Organization name is already in use
                     </Text>
@@ -155,8 +155,6 @@ const CreateOrganizationPage: NextPage = () => {
               {formError && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
-                    type="error"
-                    message={`Creating organization failed`}
                     description={
                       <span>
                         {code === "NUNIQ" ? (
@@ -174,13 +172,15 @@ const CreateOrganizationPage: NextPage = () => {
                         )}
                       </span>
                     }
+                    message={`Creating organization failed`}
+                    type="error"
                   />
                 </Form.Item>
               )}
               <Form.Item {...tailFormItemLayout}>
                 <Button
-                  htmlType="submit"
                   data-cy="createorganization-button-create"
+                  htmlType="submit"
                 >
                   Create
                 </Button>

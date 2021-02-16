@@ -175,9 +175,9 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
   const code = getCodeFromError(error);
   return (
     <SharedLayout
-      title="Register"
-      query={query}
       forbidWhen={AuthRestrict.LOGGED_IN}
+      query={query}
+      title="Register"
     >
       {({ currentUser }) =>
         currentUser ? (
@@ -276,7 +276,6 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
             </Form.Item>
             <Form.Item label="Passphrase" required>
               <Form.Item
-                noStyle
                 name="password"
                 rules={[
                   {
@@ -284,20 +283,21 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                     message: "Please input your passphrase.",
                   },
                 ]}
+                noStyle
               >
                 <Input
-                  type="password"
                   autoComplete="new-password"
                   data-cy="registerpage-input-password"
-                  onFocus={setPasswordFocussed}
+                  type="password"
                   onBlur={setPasswordNotFocussed}
+                  onFocus={setPasswordFocussed}
                 />
               </Form.Item>
               <PasswordStrength
-                passwordStrength={passwordStrength}
-                suggestions={passwordSuggestions}
                 isDirty={passwordIsDirty}
                 isFocussed={passwordIsFocussed}
+                passwordStrength={passwordStrength}
+                suggestions={passwordSuggestions}
               />
             </Form.Item>
             <Form.Item
@@ -314,17 +314,15 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
               ]}
             >
               <Input
-                type="password"
                 autoComplete="new-password"
-                onBlur={handleConfirmBlur}
                 data-cy="registerpage-input-password2"
+                type="password"
+                onBlur={handleConfirmBlur}
               />
             </Form.Item>
             {error && (
               <Form.Item label="Error">
                 <Alert
-                  type="error"
-                  message={`Registration failed`}
                   description={
                     <span>
                       {extractError(error).message}
@@ -335,11 +333,13 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                       )}
                     </span>
                   }
+                  message={`Registration failed`}
+                  type="error"
                 />
               </Form.Item>
             )}
             <Form.Item {...tailFormItemLayout}>
-              <Button htmlType="submit" data-cy="registerpage-submit-button">
+              <Button data-cy="registerpage-submit-button" htmlType="submit">
                 Register
               </Button>
             </Form.Item>

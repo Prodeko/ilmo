@@ -66,8 +66,8 @@ export function OrganizationSettingsLayout({
           {Object.keys(pages).map((pageHref) => (
             <Menu.Item key={pageHref}>
               <Link
-                href={pageHref}
                 as={pageHref.replace("[slug]", organization.slug)}
+                href={pageHref}
               >
                 <a data-cy={pages[pageHref].cy}>
                   <Text {...pages[pageHref].titleProps}>

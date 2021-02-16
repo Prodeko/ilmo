@@ -35,12 +35,12 @@ function authAvatar(service: string) {
   if (icon) {
     return (
       <Avatar
+        icon={icon}
+        size="large"
         style={{
           backgroundColor: "var(--primary-color)",
           verticalAlign: "sub",
         }}
-        size="large"
-        icon={icon}
       />
     );
   }
@@ -94,11 +94,11 @@ function renderAuth(
       actions={[<UnlinkAccountButton key="unlink" id={auth.id} />]}
     >
       <List.Item.Meta
-        title={<Strong>{authName(auth.service)}</Strong>}
+        avatar={authAvatar(auth.service)}
         description={`Added ${new Date(
           Date.parse(auth.createdAt)
         ).toLocaleString()}`}
-        avatar={authAvatar(auth.service)}
+        title={<Strong>{authName(auth.service)}</Strong>}
       />
     </List.Item>
   );
@@ -112,10 +112,10 @@ const Settings_Accounts: NextPage = () => {
       <SpinPadded />
     ) : (
       <List
-        bordered
-        size="large"
         dataSource={data.currentUser.authentications}
         renderItem={renderAuth}
+        size="large"
+        bordered
       />
     );
 
@@ -127,8 +127,8 @@ const Settings_Accounts: NextPage = () => {
       {error && !loading ? <ErrorAlert error={error} /> : linkedAccounts}
       <Card style={{ marginTop: "2rem" }} title="Link another account">
         <SocialLoginOptions
-          next="/settings/accounts"
           buttonTextFromService={(service) => `Link ${service} account`}
+          next="/settings/accounts"
         />
       </Card>
     </SettingsLayout>
