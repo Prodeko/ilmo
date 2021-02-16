@@ -1,3 +1,4 @@
+export * from "./adminHooks";
 export * from "./AdminLayout";
 export * from "./ButtonLink";
 export * from "./ErrorAlert";

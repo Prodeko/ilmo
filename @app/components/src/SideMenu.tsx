@@ -91,8 +91,6 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
   const inner = menuItems.map((item) => item[0]);
   const initialOpenKeys = menuItems.find((i) => i[1].length > 0);
 
-  console.log(initialOpenKeys, initialKey);
-
   if (openKeys.length === 0) {
     if (initialOpenKeys) {
       setOpenKeys(initialOpenKeys[1]);
