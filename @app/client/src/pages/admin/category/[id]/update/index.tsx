@@ -1,33 +1,39 @@
 import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AdminLayout, EventCategoryForm, Redirect } from "@app/components";
+import {
+  AdminLayout,
+  ButtonLink,
+  EventCategoryForm,
+  Redirect,
+  useAdminCategoryId,
+} from "@app/components";
 import {
   CreatedEventCategoryFragment,
-  useAdminLayoutQuery,
-  useCreateEventCategoryMutation,
+  useAdminCategoryQuery,
+  useUpdateEventCategoryMutation,
 } from "@app/graphql";
 import { getCodeFromError } from "@app/lib";
 import * as Sentry from "@sentry/react";
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import { NextRouter, useRouter } from "next/dist/client/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
 const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useAdminLayoutQuery();
+  const id = useAdminCategoryId();
+  const query = useAdminCategoryQuery({ variables: { id } });
   const { t } = useTranslation("events");
-  const router: NextRouter | null = useRouter();
 
   const code = getCodeFromError(formError);
   const [
     eventCategory,
     setEventCategory,
   ] = useState<null | CreatedEventCategoryFragment>(null);
-  const [createEventCategory] = useCreateEventCategoryMutation();
+  const [updateEventCategory] = useUpdateEventCategoryMutation();
 
-  const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
+  const { supportedLanguages } = query.data?.languages || {};
+  const defaultLanguages = Object.keys(query.data?.eventCategory.name || {});
 
   const handleSubmit = useCallback(
     async (values: Store) => {
@@ -35,67 +41,71 @@ const CreateEventCategoryPage: NextPage = () => {
       try {
         console.log(values);
         const { name, description, organization } = values;
-        const { data } = await createEventCategory({
+        const { data } = await updateEventCategory({
           variables: {
+            id,
             name,
             description,
             organization,
           },
         });
         setFormError(null);
-        setEventCategory(data?.createEventCategory?.eventCategory || null);
+        setEventCategory(data?.updateEventCategory?.eventCategory || null);
       } catch (e) {
         setFormError(e);
         Sentry.captureException(e);
       }
     },
-    [createEventCategory]
+    [updateEventCategory, id]
   );
 
   if (eventCategory) {
     console.log(eventCategory);
-    return <Redirect layout href={`/admin/category/${eventCategory.id}`} />;
+    return <Redirect href={`/admin/category/${eventCategory.id}`} layout />;
   }
 
   const organizationMemberships =
     query.data?.currentUser?.organizationMemberships?.nodes;
   if (organizationMemberships && organizationMemberships?.length <= 0) {
-    return <Redirect layout href="/" />;
+    return <Redirect href="/" layout />;
   }
 
-  const initialOrganization: string | undefined =
-    router &&
-    router.query &&
-    router.query.org &&
-    organizationMemberships &&
-    organizationMemberships.length > 0 &&
-    organizationMemberships.find(
-      (membership) => membership.organization.slug === router.query.org
-    )?.organization?.id;
+  const initialValues: Store = query.data
+    ? {
+        name: query.data.eventCategory.name,
+        languages: defaultLanguages,
+        organization: query.data.eventCategory.ownerOrganization.id,
+        description: query.data.eventCategory.description,
+      }
+    : {};
 
   return (
-    <AdminLayout
-      href={`/admin/create-event-category${
-        router?.query?.org ? `?org=${router.query.org}` : ""
-      }`}
-      query={query}
-    >
+    <AdminLayout href={`/admin/category/${id}`} query={query}>
       <Row>
         <Col flex={1}>
-          <PageHeader title={t("createEventCategory.title")} />
+          <PageHeader
+            extra={[
+              <ButtonLink
+                key="update-back"
+                as={`/admin/category/${id}`}
+                data-cy="admin-update-back-wo-saving"
+                href="/admin/category/[id]"
+              >
+                {t("admin:backWithoutSaving")}
+              </ButtonLink>,
+            ]}
+            title={t("createEventCategory.title")}
+          />
           <div>
             {supportedLanguages ? (
               <EventCategoryForm
-                handleSubmit={handleSubmit}
-                initialValues={{
-                  languages: [defaultLanguage],
-                  organization: initialOrganization,
-                }}
-                formError={formError}
-                defaultLanguage={defaultLanguage}
-                supportedLanguages={supportedLanguages}
-                organizationMemberships={organizationMemberships}
                 code={code}
+                defaultLanguages={defaultLanguages}
+                formError={formError}
+                handleSubmit={handleSubmit}
+                initialValues={initialValues}
+                organizationMemberships={organizationMemberships}
+                supportedLanguages={supportedLanguages}
               />
             ) : (
               <p>Loading...</p>

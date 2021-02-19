@@ -87,7 +87,7 @@ const CreateEventCategoryPage: NextPage = () => {
             {supportedLanguages ? (
               <EventCategoryForm
                 code={code}
-                defaultLanguage={defaultLanguage}
+                defaultLanguages={[defaultLanguage]}
                 formError={formError}
                 handleSubmit={handleSubmit}
                 initialValues={{

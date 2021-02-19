@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ApolloError } from "@apollo/client";
-import { AdminLayout, AuthRestrict, Loading, Redirect } from "@app/components";
+import { AdminLayout, Loading, Redirect } from "@app/components";
 import {
   CreatedOrganizationFragment,
   useAdminLayoutQuery,

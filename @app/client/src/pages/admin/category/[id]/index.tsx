@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AdminLayout,
+  ButtonLink,
   ServerPaginatedTable,
   useAdminCategoryId,
   useAdminCategoryLoading,
@@ -11,7 +12,15 @@ import {
   Event,
   useAdminCategoryQuery,
 } from "@app/graphql";
-import { Col, PageHeader, Popover, Progress, Row, Typography } from "antd";
+import {
+  Col,
+  Divider,
+  PageHeader,
+  Popover,
+  Progress,
+  Row,
+  Typography,
+} from "antd";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { NextPage } from "next";
@@ -54,13 +63,13 @@ const OrganizationPageInner: React.FC<AdminCategoryPageInnerProps> = (
       key: "name",
       render: (name: string, event: Event) => (
         <Link
+          as={`/event/${event.slug}`}
           href={{
             pathname: "/event/[slug]",
             query: {
               slug: event.slug,
             },
           }}
-          as={`/event/${event.slug}`}
         >
           <a>{name}</a>
         </Link>
@@ -78,10 +87,10 @@ const OrganizationPageInner: React.FC<AdminCategoryPageInnerProps> = (
                   <Col span={8}>{quota.title[lang]}</Col>
                   <Col span={12}>
                     <Progress
-                      showInfo={false}
                       percent={
                         (quota.registrations.totalCount * 100) / quota.size
                       }
+                      showInfo={false}
                     />
                   </Col>
                   <Col span={4}>
@@ -105,8 +114,8 @@ const OrganizationPageInner: React.FC<AdminCategoryPageInnerProps> = (
             <Row gutter={12}>
               <Col span={18}>
                 <Progress
-                  showInfo={false}
                   percent={(event.registrations.totalCount * 100) / totalSize}
+                  showInfo={false}
                 />
               </Col>
               <Col span={6}>
@@ -129,29 +138,29 @@ const OrganizationPageInner: React.FC<AdminCategoryPageInnerProps> = (
       <Col flex={1}>
         <div>
           <PageHeader
+            extra={[
+              <ButtonLink
+                key="update-category"
+                as={`/admin/category/${id}/update`}
+                data-cy="adminpage-category-update"
+                href={`/admin/category/[id]/update`}
+                type="primary"
+              >
+                {t("admin:update")}
+              </ButtonLink>,
+            ]}
             title={category.name[lang]}
-            /*extra={
-              organization.currentUserIsOwner && [
-                <ButtonLink
-                  key="settings"
-                  href={`/o/[slug]/settings`}
-                  as={`/o/${organization.slug}/settings`}
-                  type="primary"
-                  data-cy="organizationpage-button-settings"
-                >
-                  Settings
-                </ButtonLink>,
-              ]
-            }*/
           />
+          <Typography.Text>{category.description[lang]}</Typography.Text>
+          <Divider>{t("admin:events")}</Divider>
           <ServerPaginatedTable
-            data-cy="homepage-signup-open-events"
-            queryDocument={AdminCategoryEventsDocument}
-            variables={{ today, id }}
             columns={columns}
+            data-cy="adminpage-category-open-events"
             dataField="eventCategory.eventsByCategoryId"
+            queryDocument={AdminCategoryEventsDocument}
             showPagination={true}
             size="middle"
+            variables={{ today, id }}
           />
         </div>
       </Col>

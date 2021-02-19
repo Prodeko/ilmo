@@ -11,7 +11,7 @@ export type EventCategoryFormProps = {
   handleSubmit: (store: Store) => Promise<void>;
   initialValues: Store | undefined;
   formError: Error | ApolloError | null;
-  defaultLanguage: string;
+  defaultLanguages: string[];
   supportedLanguages: string[];
   organizationMemberships?: { organization?: { name: string; id: string } }[];
   code: string;
@@ -21,14 +21,14 @@ export const EventCategoryForm = ({
   handleSubmit,
   initialValues,
   formError,
-  defaultLanguage,
+  defaultLanguages,
   supportedLanguages,
   organizationMemberships,
   code,
 }: EventCategoryFormProps) => {
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([
-    defaultLanguage!,
-  ]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
+    defaultLanguages
+  );
   const { t } = useTranslation("events");
   const [form] = Form.useForm();
 
@@ -40,8 +40,8 @@ export const EventCategoryForm = ({
       onFinish={handleSubmit}
     >
       <Form.Item
-        name="languages"
         label={t("languages")}
+        name="languages"
         rules={[
           {
             required: true,
@@ -52,9 +52,9 @@ export const EventCategoryForm = ({
       >
         <Select
           mode="multiple"
+          placeholder={t("forms.placeholders.languages")}
           allowClear
           onChange={(e) => setSelectedLanguages(e as string[])}
-          placeholder={t("forms.placeholders.languages")}
         >
           {supportedLanguages?.map((l, i) => (
             <Option key={i} value={l ? l : ""}>
@@ -64,8 +64,8 @@ export const EventCategoryForm = ({
         </Select>
       </Form.Item>
       <Form.Item
-        name="organization"
         label={t("organizer")}
+        name="organization"
         rules={[
           {
             required: true,
@@ -74,8 +74,8 @@ export const EventCategoryForm = ({
         ]}
       >
         <Select
-          placeholder={t("forms.placeholders.eventCategory.organizer")}
           data-cy="createeventcategory-select-organization-id"
+          placeholder={t("forms.placeholders.eventCategory.organizer")}
         >
           {organizationMemberships?.map((o) => (
             <Option key={o.organization?.id} value={o.organization?.id!}>
@@ -95,18 +95,18 @@ export const EventCategoryForm = ({
               <Form.Item
                 key={l}
                 name={["name", l]}
-                noStyle
                 rules={[
                   {
                     required: true,
                     message: t("forms.rules.eventCategory.provideName"),
                   },
                 ]}
+                noStyle
               >
                 <Input
-                  style={i > 0 ? { marginTop: 5 } : undefined}
-                  placeholder={t(`forms.placeholders.${l}`)}
                   data-cy={`createeventcategory-input-name-${l}`}
+                  placeholder={t(`forms.placeholders.${l}`)}
+                  style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
             ))
@@ -124,18 +124,18 @@ export const EventCategoryForm = ({
               <Form.Item
                 key={l}
                 name={["description", l]}
-                noStyle
                 rules={[
                   {
                     required: true,
                     message: t("forms.rules.eventCategory.provideDescription"),
                   },
                 ]}
+                noStyle
               >
                 <Input.TextArea
-                  style={i > 0 ? { marginTop: 5 } : undefined}
-                  placeholder={t(`forms.placeholders.${l}`)}
                   data-cy={`createeventcategory-input-description-${l}`}
+                  placeholder={t(`forms.placeholders.${l}`)}
+                  style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
             ))
@@ -145,8 +145,6 @@ export const EventCategoryForm = ({
       {formError && (
         <Form.Item {...tailFormItemLayout}>
           <Alert
-            type="error"
-            message={t("errors.eventCategoryCreationFailed")}
             description={
               <span>
                 {extractError(formError).message}
@@ -157,11 +155,17 @@ export const EventCategoryForm = ({
                 )}
               </span>
             }
+            message={t("errors.eventCategoryCreationFailed")}
+            type="error"
           />
         </Form.Item>
       )}
       <Form.Item {...tailFormItemLayout}>
-        <Button htmlType="submit" data-cy="createeventcategory-button-create">
+        <Button
+          data-cy="createeventcategory-button-create"
+          htmlType="submit"
+          type="primary"
+        >
           {t("common:create")}
         </Button>
       </Form.Item>
