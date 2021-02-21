@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "gw": "cd dist && cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" graphile-worker",
+    "gw": "cd dist && cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" graphile-worker --crontab ../crontab",
     "build": "tsc -b",
     "start": "yarn gw",
     "dev": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --inspect=9757\" yarn gw --watch",

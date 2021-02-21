@@ -1,26 +1,12 @@
-import {
-  Event,
-  EventCategory,
-  Organization,
-  Quota,
-  Registration,
-  RegistrationToken,
-  User as SchemaUser,
-} from "@app/graphql/index";
 import dayjs from "dayjs";
 import * as faker from "faker";
 import { PoolClient } from "pg";
 import slugify from "slugify";
 
-export type User = SchemaUser & {
+export type User = {
   _email: string;
   _password: string;
 };
-
-/**
- * The utility functions below are used to prepopulate the database with objects
- * that might be needed by other tests or scripts.
- */
 
 let userCreationCounter = 0;
 if (process.env.IN_TESTS) {
@@ -31,11 +17,16 @@ if (process.env.IN_TESTS) {
   });
 }
 
-export const createUsers = async function createUsers(
+/**
+ * The utility functions below are used to prepopulate the database with objects
+ * that might be needed by other tests or scripts.
+ */
+
+export const createUsers = async (
   client: PoolClient,
   count: number = 1,
   verified: boolean = true
-) {
+) => {
   const users = [];
   if (userCreationCounter > 25) {
     throw new Error("Too many users created!");
@@ -45,7 +36,7 @@ export const createUsers = async function createUsers(
     userCreationCounter++;
     const password = userLetter.repeat(12);
     const email = `${userLetter}${i || ""}@b.c`;
-    const user: User = (
+    const user = (
       await client.query(
         `select * from app_private.really_create_user(
         username := $1,
@@ -75,11 +66,11 @@ export const createUsers = async function createUsers(
 /******************************************************************************/
 // Organizations
 
-export const createOrganizations = async function createOrganizations(
+export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
-) {
-  const organizations: Organization[] = [];
+) => {
+  const organizations = [];
   for (let i = 0; i < count; i++) {
     const random = faker.lorem.word();
     const slug = `organization-${random}`;
@@ -121,12 +112,12 @@ export const createSession = async (
 /******************************************************************************/
 // Events
 
-export const createEventCategories = async function createEventCategories(
+export const createEventCategories = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string
-) {
-  const categories: EventCategory[] = [];
+) => {
+  const categories = [];
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
     const description = {
@@ -149,13 +140,13 @@ export const createEventCategories = async function createEventCategories(
   return categories;
 };
 
-export const createEvents = async function createEvents(
+export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
   categoryId: string
-) {
-  const events: Event[] = [];
+) => {
+  const events = [];
   for (let i = 0; i < count; i++) {
     const name = {
       fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
@@ -165,13 +156,26 @@ export const createEvents = async function createEvents(
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     };
-    const startTime = faker.date.recent();
-    const endTime = faker.date.soon();
-    const eventCategoryId = categoryId;
 
+    const registrationStartTime = faker.date.soon();
+    const registrationEndTime = faker.date.between(
+      registrationStartTime,
+      dayjs(registrationStartTime).add(1, "day").toDate()
+    );
+
+    const eventStartTime = faker.date.between(
+      registrationEndTime,
+      dayjs(registrationEndTime).add(7, "day").toDate()
+    );
+    const eventEndTime = faker.date.between(
+      eventStartTime,
+      dayjs(eventStartTime).add(1, "day").toDate()
+    );
+
+    const eventCategoryId = categoryId;
     const headerImageFile = faker.image.imageUrl(851, 315, "nature");
 
-    const daySlug = dayjs(startTime).format("YYYY-M-D");
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     });
@@ -180,17 +184,30 @@ export const createEvents = async function createEvents(
       rows: [event],
     } = await client.query(
       `
-        insert into app_public.events(name, slug, description, header_image_file, start_time, end_time, owner_organization_id, category_id)
-        values ($1, $2, $3, $4, $5, $6, $7, $8)
-        returning *
+      insert into app_public.events  (
+        name,
+        slug,
+        description,
+        header_image_file,
+        event_start_time,
+        event_end_time,
+        registration_start_time,
+        registration_end_time,
+        owner_organization_id,
+        category_id
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      returning *
       `,
       [
         name,
         slug,
         description,
         headerImageFile,
-        startTime,
-        endTime,
+        eventStartTime,
+        eventEndTime,
+        registrationStartTime,
+        registrationEndTime,
         organizationId,
         eventCategoryId,
       ]
@@ -204,12 +221,12 @@ export const createEvents = async function createEvents(
 /******************************************************************************/
 // Quotas
 
-export const createQuotas = async function createQuotas(
+export const createQuotas = async (
   client: PoolClient,
   count: number = 1,
   eventId: string
-) {
-  const quotas: Quota[] = [];
+) => {
+  const quotas = [];
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
     const size = faker.random.number({
@@ -235,12 +252,12 @@ export const createQuotas = async function createQuotas(
 /******************************************************************************/
 // Registration tokens
 
-export const createRegistrationTokens = async function createRegistrationTokens(
+export const createRegistrationTokens = async (
   client: PoolClient,
   count: number = 1,
   eventId: string
-) {
-  const registrationTokens: RegistrationToken[] = [];
+) => {
+  const registrationTokens = [];
   for (let i = 0; i < count; i++) {
     const {
       rows: [token],
@@ -261,13 +278,13 @@ export const createRegistrationTokens = async function createRegistrationTokens(
 /******************************************************************************/
 // Registrations
 
-export const createRegistrations = async function createRegistrations(
+export const createRegistrations = async (
   client: PoolClient,
   count: number = 1,
   eventId: string,
   quotaId: string
-) {
-  const registrations: Registration[] = [];
+) => {
+  const registrations = [];
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();

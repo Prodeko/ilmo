@@ -430,11 +430,25 @@ export const createEvents = async function createEvents(
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     };
-    const startTime = faker.date.recent();
-    const endTime = faker.date.soon();
+
+    const registrationStartTime = faker.date.soon();
+    const registrationEndTime = faker.date.between(
+      registrationStartTime,
+      dayjs(registrationStartTime).add(1, "day").toDate()
+    );
+
+    const eventStartTime = faker.date.between(
+      registrationEndTime,
+      dayjs(registrationEndTime).add(7, "day").toDate()
+    );
+    const eventEndTime = faker.date.between(
+      eventStartTime,
+      dayjs(eventStartTime).add(1, "day").toDate()
+    );
+
     const eventCategoryId = categoryId;
 
-    const daySlug = dayjs(startTime).format("YYYY-M-D");
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     });
@@ -443,16 +457,28 @@ export const createEvents = async function createEvents(
       rows: [event],
     } = await client.query(
       `
-        insert into app_public.events(name, slug, description, start_time, end_time, owner_organization_id, category_id)
-        values ($1, $2, $3, $4, $5, $6, $7)
-        returning *
+      insert into app_public.events(
+        name,
+        slug,
+        description,
+        event_start_time,
+        event_end_time,
+        registration_start_time,
+        registration_end_time,
+        owner_organization_id,
+        category_id
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      returning *
       `,
       [
         name,
         slug,
         description,
-        startTime,
-        endTime,
+        eventStartTime,
+        eventEndTime,
+        registrationStartTime,
+        registrationEndTime,
         organizationId,
         eventCategoryId,
       ]

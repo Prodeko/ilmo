@@ -1,11 +1,6 @@
 import React from "react";
 import { ServerPaginatedTable, SharedLayout } from "@app/components";
-import {
-  Event,
-  HomePageDocument,
-  useOrganizationsAndCategoriesQuery,
-  useSharedQuery,
-} from "@app/graphql";
+import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql";
 import { Col, Divider, Grid, Row, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
@@ -28,16 +23,15 @@ const getColor = (org: string) => {
 
 const Home: NextPage = () => {
   const { t, lang } = useTranslation("home");
-  const query = useSharedQuery();
-  const { data } = useOrganizationsAndCategoriesQuery();
+  const query = useHomePageQuery();
   const screens = useBreakpoint();
   const isMobile = screens["xs"];
 
   // TODO: use eventCategories and organizations to
   // add filtering to the table. Might not be needed on the
   // frontpage but might be nice for admin.
-  const eventCategories = data?.eventCategories?.nodes;
-  const organizations = data?.organizations?.nodes;
+  const eventCategories = query?.data?.eventCategories?.nodes;
+  const organizations = query?.data?.organizations?.nodes;
 
   const columns = !isMobile
     ? [
@@ -101,9 +95,10 @@ const Home: NextPage = () => {
         },
         {
           title: t("events:time"),
-          dataIndex: "startTime",
-          key: "startTime",
-          render: (startTime: string) => dayjs(startTime).format("l LTS"),
+          dataIndex: "eventStartTime",
+          key: "eventStartTime",
+          render: (eventStartTime: string) =>
+            dayjs(eventStartTime).format("l LTS"),
         },
       ]
     : [
@@ -127,9 +122,10 @@ const Home: NextPage = () => {
         },
         {
           title: t("events:time"),
-          dataIndex: "startTime",
-          key: "startTime",
-          render: (startTime: string) => dayjs(startTime).format("l LTS"),
+          dataIndex: "eventStartTime",
+          key: "eventStartTime",
+          render: (eventStartTime: string) =>
+            dayjs(eventStartTime).format("l LTS"),
         },
       ];
 
@@ -144,7 +140,7 @@ const Home: NextPage = () => {
             columns={columns}
             data-cy="homepage-signup-open-events"
             dataField="signupOpenEvents"
-            queryDocument={HomePageDocument}
+            queryDocument={HomePageEventsDocument}
             showPagination={false}
             size="middle"
             variables={{ now }}
@@ -155,7 +151,7 @@ const Home: NextPage = () => {
             columns={columns}
             data-cy="homepage-signup-closed-events"
             dataField="signupClosedEvents"
-            queryDocument={HomePageDocument}
+            queryDocument={HomePageEventsDocument}
             showPagination={true}
             size="middle"
             variables={{ now }}

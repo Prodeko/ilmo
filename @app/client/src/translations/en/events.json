@@ -1,7 +1,7 @@
 {
   "category": "Category",
   "createEvent": {
-    "title": "Luo tapahtuma"
+    "title": "Create event"
   },
   "createEventCategory": {
     "title": "Create event category"
@@ -27,6 +27,7 @@
       "fi": "In Finnish",
       "languages": "Please select languages"
     },
+    "registrationTime": "Registration time",
     "rules": {
       "event": {
         "provideCategory": "Please choose a category for the event",
@@ -34,6 +35,7 @@
         "provideEventTime": "Please select event time",
         "provideName": "Please choose a name for the event",
         "provideOrganizer": "Please choose an organizer for the event",
+        "provideRegistrationTime": "Please select event registration time",
         "provideSignupEmail": "Please provide a welcome email for the event"
       },
       "eventCategory": {
@@ -52,5 +54,8 @@
   "headerImage": "Event header image",
   "languages": "Languages",
   "organizer": "Organizer",
-  "time": "Time"
+  "time": "Time",
+  "updateEvent": {
+    "title": "Update event"
+  }
 }

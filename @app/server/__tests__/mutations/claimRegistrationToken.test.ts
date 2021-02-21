@@ -42,8 +42,7 @@ test("ClaimRegistrationToken", async () => {
         .registrationToken;
 
       expect(registrationToken).toBeTruthy();
-      expect(registrationToken.token).toBeTruthy();
-      expect(registrationToken.eventId).toBeTruthy();
+      expect(registrationToken.eventId).toEqual(event.id);
 
       expect(sanitize(registrationToken)).toMatchInlineSnapshot(`
         Object {

@@ -1,6 +1,5 @@
 fragment SharedLayout_Query on Query {
   currentUser {
-    id
     ...SharedLayout_User
   }
   languages {
@@ -31,4 +30,8 @@ fragment SharedLayout_User on User {
 fragment SharedLayout_Languages on AppLanguage {
   supportedLanguages
   defaultLanguage
+}
+
+query Shared {
+  ...SharedLayout_Query
 }

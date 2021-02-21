@@ -2087,17 +2087,22 @@ CREATE TABLE app_public.events (
     slug public.citext NOT NULL,
     name jsonb NOT NULL,
     description jsonb NOT NULL,
-    start_time timestamp with time zone NOT NULL,
-    end_time timestamp with time zone NOT NULL,
+    event_start_time timestamp with time zone NOT NULL,
+    event_end_time timestamp with time zone NOT NULL,
+    registration_start_time timestamp with time zone NOT NULL,
+    registration_end_time timestamp with time zone NOT NULL,
     is_highlighted boolean DEFAULT false NOT NULL,
+    is_draft boolean DEFAULT true NOT NULL,
     header_image_file text,
     owner_organization_id uuid NOT NULL,
     category_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
-    CONSTRAINT _cnstr_check_event_time CHECK ((start_time < end_time)),
-    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name))
+    CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
+    CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
+    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name)),
+    CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
 );
 
 
@@ -2137,17 +2142,31 @@ COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
 
 
 --
--- Name: COLUMN events.start_time; Type: COMMENT; Schema: app_public; Owner: -
+-- Name: COLUMN events.event_start_time; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.events.start_time IS 'Starting time of the event.';
+COMMENT ON COLUMN app_public.events.event_start_time IS 'Starting time of the event.';
 
 
 --
--- Name: COLUMN events.end_time; Type: COMMENT; Schema: app_public; Owner: -
+-- Name: COLUMN events.event_end_time; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
+COMMENT ON COLUMN app_public.events.event_end_time IS 'Ending time of the event.';
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_start_time IS 'Time of event registration open.';
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_end_time IS 'Time of event registration end.';
 
 
 --
@@ -2545,6 +2564,13 @@ CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_i
 
 
 --
+-- Name: events_event_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_event_start_time_idx ON app_public.events USING btree (event_start_time);
+
+
+--
 -- Name: events_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2552,10 +2578,10 @@ CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (
 
 
 --
--- Name: events_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+-- Name: events_registration_end_time_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
-CREATE INDEX events_start_time_idx ON app_public.events USING btree (start_time);
+CREATE INDEX events_registration_end_time_idx ON app_public.events USING btree (registration_end_time);
 
 
 --
@@ -3810,17 +3836,31 @@ GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo
 
 
 --
--- Name: COLUMN events.start_time; Type: ACL; Schema: app_public; Owner: -
+-- Name: COLUMN events.event_start_time; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(start_time),UPDATE(start_time) ON TABLE app_public.events TO ilmo_visitor;
+GRANT INSERT(event_start_time),UPDATE(event_start_time) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --
--- Name: COLUMN events.end_time; Type: ACL; Schema: app_public; Owner: -
+-- Name: COLUMN events.event_end_time; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(end_time),UPDATE(end_time) ON TABLE app_public.events TO ilmo_visitor;
+GRANT INSERT(event_end_time),UPDATE(event_end_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_start_time),UPDATE(registration_start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_end_time),UPDATE(registration_end_time) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

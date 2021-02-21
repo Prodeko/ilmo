@@ -7,12 +7,10 @@ fragment CreatedOrganization on Organization {
 mutation CreateOrganization($name: String!, $slug: String!) {
   createOrganization(input: { name: $name, slug: $slug }) {
     organization {
-      id
       ...CreatedOrganization
     }
     query {
       organizationBySlug(slug: $slug) {
-        id
         ...CreatedOrganization
       }
     }

@@ -1,3 +1,0 @@
-query HomePage($now: Datetime!, $offset: Int!, $first: Int!) {
-  ...HomePage_Query
-}

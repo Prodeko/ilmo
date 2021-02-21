@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:105c3cd972dabf1fe54832087af65cc9cebe3d47
+--! Hash: sha1:6ae6c72ae9643fc04f55331dc36357159d7a9d4c
 
 --! split: 1-current.sql
 /**********/
@@ -77,16 +77,21 @@ create table app_public.events(
   slug citext not null unique,
   name jsonb not null,
   description jsonb not null,
-  start_time timestamptz not null,
-  end_time timestamptz not null,
+  event_start_time timestamptz not null,
+  event_end_time timestamptz not null,
+  registration_start_time timestamptz not null,
+  registration_end_time timestamptz not null,
   is_highlighted boolean not null default false,
+  is_draft boolean not null default true,
   header_image_file text,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   category_id uuid not null references app_public.event_categories on delete no action,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 
-  constraint _cnstr_check_event_time check(start_time < end_time)
+  constraint _cnstr_check_event_time check(event_start_time < event_end_time)
+  constraint _cnstr_check_event_registration_time check(registration_start_time < registration_end_time)
+  constraint _cnstr_check_registration_end_before_event_start check(registration_end_time < event_start_time)
   constraint _cnstr_check_name_language check(check_language(name))
   constraint _cnstr_check_description_language check(check_language(description))
 );
@@ -102,10 +107,14 @@ comment on column app_public.events.slug is
   E'Slug for the event.';
 comment on column app_public.events.description is
   E'Description of the event.';
-comment on column app_public.events.start_time is
+comment on column app_public.events.event_start_time is
   E'Starting time of the event.';
-comment on column app_public.events.end_time is
+comment on column app_public.events.event_end_time is
   E'Ending time of the event.';
+  comment on column app_public.events.registration_start_time is
+  E'Time of event registration open.';
+comment on column app_public.events.registration_end_time is
+  E'Time of event registration end.';
 comment on column app_public.events.is_highlighted is
   E'A highlighted event.';
 comment on column app_public.events.header_image_file is
@@ -115,14 +124,15 @@ comment on column app_public.events.owner_organization_id is
 comment on column app_public.events.category_id is
   E'Id of the event category.';
 
-create index on app_public.events(start_time);
+create index on app_public.events(event_start_time);
+create index on app_public.events(registration_end_time);
 create index on app_public.events(owner_organization_id);
 create index on app_public.events(category_id);
 
 grant
   select,
-  insert (name, slug, description, start_time, end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
-  update (name, slug, description, start_time, end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
+  insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
+  update (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
   delete
 on app_public.events to :DATABASE_VISITOR;
 

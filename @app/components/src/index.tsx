@@ -1,6 +1,7 @@
 export * from "./ButtonLink";
 export * from "./ErrorAlert";
 export * from "./ErrorOccurred";
+export * from "./EventForm";
 export * from "./eventHooks";
 export * from "./FileUpload";
 export * from "./FourOhFour";

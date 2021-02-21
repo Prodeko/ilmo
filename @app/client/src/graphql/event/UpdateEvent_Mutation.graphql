@@ -1,5 +1,5 @@
-mutation CreateEvent(
-  $slug: String!
+mutation UpdateEvent(
+  $eventId: UUID!
   $name: JSON!
   $description: JSON!
   $organizationId: UUID!
@@ -11,10 +11,10 @@ mutation CreateEvent(
   $registrationStartTime: Datetime!
   $registrationEndTime: Datetime!
 ) {
-  createEvent(
+  updateEvent(
     input: {
-      event: {
-        slug: $slug
+      id: $eventId
+      patch: {
         name: $name
         description: $description
         ownerOrganizationId: $organizationId

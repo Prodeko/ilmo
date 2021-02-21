@@ -1,16 +1,41 @@
-fragment EventPage_Event on Event {
+fragment EventFields on Event {
   id
   name
   slug
-  startTime
-  endTime
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
   description
   createdAt
+  isHighlighted
+  isDraft
   headerImageFile
+}
+
+fragment EventPage_EventCategory on EventCategory {
+  id
+  description
+  name
+}
+
+fragment EventPage_Quota on Quota {
+  id
+  title
+  size
+}
+
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  createdAt
+}
+
+fragment EventPage_Event on Event {
+  ...EventFields
+  id
   category {
-    id
-    description
-    name
+    ...EventPage_EventCategory
   }
   ownerOrganization {
     id
@@ -18,9 +43,7 @@ fragment EventPage_Event on Event {
   }
   quotas {
     nodes {
-      id
-      title
-      size
+      ...EventPage_Quota
       registrations {
         totalCount
       }
@@ -29,12 +52,9 @@ fragment EventPage_Event on Event {
   registrations(orderBy: CREATED_AT_DESC) {
     totalCount
     nodes {
-      id
-      fullName
-      createdAt
+      ...EventPage_Registration
       quota {
-        id
-        title
+        ...EventPage_Quota
       }
     }
   }
@@ -43,7 +63,10 @@ fragment EventPage_Event on Event {
 fragment EventPage_Query on Query {
   ...SharedLayout_Query
   eventBySlug(slug: $slug) {
-    id
     ...EventPage_Event
   }
+}
+
+query EventPage($slug: String!) {
+  ...EventPage_Query
 }

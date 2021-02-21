@@ -268,7 +268,7 @@ export function SharedLayout({
                     {data.currentUser?.organizationMemberships?.nodes.length >
                       0 && [
                       <Menu.Item key="create-event">
-                        <Link href="/create-event">
+                        <Link href="/event/create">
                           <a data-cy="layout-link-create-event">
                             {t("headerMenu.createEvent")}
                           </a>

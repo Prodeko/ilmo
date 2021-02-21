@@ -13,7 +13,7 @@
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
   "forms": {
-    "eventTime": "Ajankohta",
+    "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
     "placeholders": {
       "en": "Englanniksi",
@@ -27,6 +27,7 @@
       "fi": "Suomeksi",
       "languages": "Valitse kielet"
     },
+    "registrationTime": "Ilmoittautumisen aukiolo",
     "rules": {
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",
@@ -34,6 +35,7 @@
         "provideEventTime": "Aseta tapahtuman ajankohta",
         "provideName": "Anna tapahtuman nimi",
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",
+        "provideRegistrationTime": "Aseta tapahtumaan ilmoittautumisen ajankohta",
         "provideSignupEmail": "Ilmoittautumissähköposti vaaditaan"
       },
       "eventCategory": {
@@ -52,5 +54,8 @@
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "organizer": "Järjestäjä",
-  "time": "Aika"
+  "time": "Aika",
+  "updateEvent": {
+    "title": "Päivitä tapahtuma"
+  }
 }

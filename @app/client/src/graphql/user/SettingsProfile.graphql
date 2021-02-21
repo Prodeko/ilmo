@@ -1,7 +1,6 @@
 query SettingsProfile {
   ...SharedLayout_Query
   currentUser {
-    id
     ...ProfileSettingsForm_User
   }
 }
