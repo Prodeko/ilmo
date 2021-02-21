@@ -1,6 +1,6 @@
 import { Task } from "graphile-worker";
 
-// 30 days
+// 60 days
 const GDPR_ANONYMIZATION_TIMEOUT = 60;
 
 const task: Task = async (_payload, { withPgClient }) => {
