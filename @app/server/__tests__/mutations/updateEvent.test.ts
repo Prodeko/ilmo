@@ -101,20 +101,9 @@ test("UpdateEvent", async () => {
       expect(json.data).toBeTruthy();
 
       const updatedEvent = json.data!.updateEvent.event;
-      const {
-        ownerOrganizationId,
-        eventStartTime,
-        eventEndTime,
-        registrationStartTime,
-        registrationEndTime,
-      } = updatedEvent;
 
       expect(updatedEvent).toBeTruthy();
-      expect(ownerOrganizationId).toEqual(organization.id);
-      expect(eventStartTime.slice(0, -6)).toEqual("2021-02-20T14:00:00");
-      expect(eventEndTime.slice(0, -6)).toEqual("2021-02-20T15:00:00");
-      expect(registrationStartTime.slice(0, -6)).toEqual("2021-02-20T12:00:00");
-      expect(registrationEndTime.slice(0, -6)).toEqual("2021-02-20T13:00:00");
+      expect(updatedEvent.ownerOrganizationId).toEqual(organization.id);
 
       expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
         Object {
