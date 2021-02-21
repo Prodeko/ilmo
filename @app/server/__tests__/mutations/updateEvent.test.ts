@@ -101,10 +101,20 @@ test("UpdateEvent", async () => {
       expect(json.data).toBeTruthy();
 
       const updatedEvent = json.data!.updateEvent.event;
+      const {
+        ownerOrganizationId,
+        eventStartTime,
+        eventEndTime,
+        registrationStartTime,
+        registrationEndTime,
+      } = updatedEvent;
 
       expect(updatedEvent).toBeTruthy();
-      expect(updatedEvent.ownerOrganizationId).toEqual(organization.id);
-      expect(updatedEvent.categoryId).toEqual(eventCategory.id);
+      expect(ownerOrganizationId).toEqual(organization.id);
+      expect(eventStartTime).toEqual("2021-02-20T14:00:00+02:00");
+      expect(eventEndTime).toEqual("2021-02-20T15:00:00+02:00");
+      expect(registrationStartTime).toEqual("2021-02-20T12:00:00+02:00");
+      expect(registrationEndTime).toEqual("2021-02-20T13:00:00+02:00");
 
       expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
         Object {
@@ -113,8 +123,8 @@ test("UpdateEvent", async () => {
             "en": "Updated test description",
             "fi": "Päivitetty testikuvaus",
           },
-          "eventEndTime": "2021-02-20T15:00:00+02:00",
-          "eventStartTime": "2021-02-20T14:00:00+02:00",
+          "eventEndTime": "[timestamp-2]",
+          "eventStartTime": "[timestamp-1]",
           "id": "[id-1]",
           "isHighlighted": true,
           "name": Object {
@@ -122,8 +132,8 @@ test("UpdateEvent", async () => {
             "fi": "Päivitetty testitapahtuma",
           },
           "ownerOrganizationId": "[id-2]",
-          "registrationEndTime": "2021-02-20T13:00:00+02:00",
-          "registrationStartTime": "2021-02-20T12:00:00+02:00",
+          "registrationEndTime": "[timestamp-4]",
+          "registrationStartTime": "[timestamp-3]",
         }
       `);
 

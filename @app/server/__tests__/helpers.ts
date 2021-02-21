@@ -144,7 +144,7 @@ export function sanitize(json: any): any {
       ) {
         result[k] = mask(result[k], "id");
       } else if (
-        (k.endsWith("At") || k === "datetime") &&
+        (k.endsWith("At") || k.endsWith("Time") || k === "datetime") &&
         typeof json[k] === "string"
       ) {
         result[k] = mask(result[k], "timestamp");
