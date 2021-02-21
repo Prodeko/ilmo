@@ -1,0 +1,28 @@
+fragment HomePageEvents_Query on Query {
+  signupOpenEvents: events(
+    first: $first
+    offset: $offset
+    filter: { eventStartTime: { greaterThanOrEqualTo: $now } }
+    orderBy: EVENT_START_TIME_DESC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+    totalCount
+  }
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: { eventStartTime: { lessThanOrEqualTo: $now } }
+    orderBy: EVENT_START_TIME_DESC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+    totalCount
+  }
+}
+
+query HomePageEvents($now: Datetime!, $offset: Int!, $first: Int!) {
+  ...HomePageEvents_Query
+}

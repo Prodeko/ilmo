@@ -1,0 +1,3 @@
+# Used by @graphql-eslint/eslint-plugin to load schema and documents
+schema: 'data/schema.graphql'
+documents: '@app/client/src/graphql/**/*.graphql'

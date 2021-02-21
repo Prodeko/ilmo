@@ -12,11 +12,9 @@ fragment EventRegistrationPage_Quota on Quota {
 fragment EventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   event(id: $eventId) {
-    id
     ...EventRegistrationPage_Event
   }
   quota(id: $quotaId) {
-    id
     ...EventRegistrationPage_Quota
   }
 }

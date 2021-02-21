@@ -1,13 +1,10 @@
 subscription EventRegistrations($eventId: UUID!, $after: Datetime!) {
   eventRegistrations(eventId: $eventId) {
     registrations(after: $after) {
-      id
-      fullName
+      ...EventPage_Registration
       quota {
-        id
-        title
+        ...EventPage_Quota
       }
-      createdAt
     }
   }
 }

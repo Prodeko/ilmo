@@ -23,7 +23,6 @@ mutation CreateRegistration(
     }
   ) {
     registration {
-      id
       ...CreatedRegistration
     }
   }

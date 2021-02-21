@@ -8,7 +8,6 @@ fragment OrganizationPage_Organization on Organization {
 fragment OrganizationPage_Query on Query {
   ...SharedLayout_Query
   organizationBySlug(slug: $slug) {
-    id
     ...OrganizationPage_Organization
   }
 }
