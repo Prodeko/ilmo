@@ -55,6 +55,7 @@ COPY --from=builder /app/@app/server/dist/ /app/@app/server/dist/
 COPY --from=builder /app/@app/server/uploads/ /app/@app/server/uploads/
 COPY --from=builder /app/@app/worker/package.json /app/@app/worker/
 COPY --from=builder /app/@app/worker/templates/ /app/@app/worker/templates/
+COPY --from=builder /app/@app/worker/crontab/ /app/@app/worker/crontab/
 COPY --from=builder /app/@app/worker/dist/ /app/@app/worker/dist/
 
 # Shared args shouldn't be overridable at runtime (because they're baked into

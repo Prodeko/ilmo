@@ -14,10 +14,10 @@ const { NODE_ENV, ROOT_URL } = process.env;
 const isDev = NODE_ENV === "development";
 
 function getFormattedEventTime(event: any) {
-  const { start_time, end_time } = event;
+  const { event_start_time, event_end_time } = event;
   const formatString = "D.M.YY HH:mm";
-  const startTime = dayjs(start_time).format(formatString);
-  const endTime = dayjs(end_time).format(formatString);
+  const startTime = dayjs(event_start_time).format(formatString);
+  const endTime = dayjs(event_end_time).format(formatString);
   return `${startTime} - ${endTime}`;
 }
 
@@ -67,7 +67,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     return;
   }
 
-  let email = registration.email;
+  const { email, first_name, last_name } = registration;
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -76,7 +76,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     template: "event_registration.mjml.njk",
     variables: {
       eventName: event.name,
-      registrationName: `${registration.first_name} ${registration.last_name}`,
+      registrationName: `${first_name} ${last_name}`,
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
       eventLink: `${ROOT_URL}/${event.slug}`,
