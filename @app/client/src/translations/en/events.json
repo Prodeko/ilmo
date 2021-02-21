@@ -14,7 +14,6 @@
   "eventNotFound": "Event not found",
   "forms": {
     "eventTime": "Event time",
-    "registrationTime": "Registration time",
     "highlightEvent": "Highlighted event",
     "placeholders": {
       "en": "In English",
@@ -28,14 +27,15 @@
       "fi": "In Finnish",
       "languages": "Please select languages"
     },
+    "registrationTime": "Registration time",
     "rules": {
       "event": {
         "provideCategory": "Please choose a category for the event",
         "provideDescription": "Please provide a description of the event",
         "provideEventTime": "Please select event time",
-        "provideRegistrationTime": "Please select event registration time",
         "provideName": "Please choose a name for the event",
         "provideOrganizer": "Please choose an organizer for the event",
+        "provideRegistrationTime": "Please select event registration time",
         "provideSignupEmail": "Please provide a welcome email for the event"
       },
       "eventCategory": {
