@@ -19,6 +19,7 @@ import {
   createSession,
   createUsers,
   poolFromUrl,
+  TEST_DATABASE_URL,
 } from "../../__tests__/helpers";
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile";
 
@@ -27,7 +28,7 @@ export * from "../../__tests__/helpers";
 const MockReq = require("mock-req");
 
 export async function createUserAndLogIn() {
-  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+  const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
     const [user] = await createUsers(client, 1, true);
@@ -40,7 +41,7 @@ export async function createUserAndLogIn() {
 }
 
 export async function createEventDataAndLogin() {
-  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+  const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
     // Have to begin a transaction here, since we set the third parameter
@@ -178,11 +179,11 @@ let ctx: ICtx | null = null;
 
 export const setup = async () => {
   const rootPgPool = new Pool({
-    connectionString: process.env.TEST_DATABASE_URL,
+    connectionString: TEST_DATABASE_URL,
   });
   const redisClient = new Redis(process.env.TEST_REDIS_URL);
   const workerUtils = await makeWorkerUtils({
-    connectionString: process.env.TEST_DATABASE_URL,
+    connectionString: TEST_DATABASE_URL,
   });
   const options = getPostGraphileOptions({
     rootPgPool,

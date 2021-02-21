@@ -68,6 +68,8 @@ test("CreateRegistration", async () => {
           id
           firstName
           lastName
+          eventId
+          quotaId
         }
       }
     }
@@ -94,15 +96,16 @@ test("CreateRegistration", async () => {
       const registration = json.data!.createRegistration.registration;
 
       expect(registration).toBeTruthy();
-      expect(registration.id).toBeTruthy();
-      expect(registration.firstName).toEqual("Testname");
-      expect(registration.lastName).toEqual("Testlastname");
+      expect(registration.eventId).toEqual(event.id);
+      expect(registration.quotaId).toEqual(quota.id);
 
       expect(sanitize(registration)).toMatchInlineSnapshot(`
         Object {
+          "eventId": "[id-2]",
           "firstName": "Testname",
           "id": "[id-1]",
           "lastName": "Testlastname",
+          "quotaId": "[id-3]",
         }
       `);
 
@@ -157,8 +160,9 @@ test("CreateRegistration", async () => {
       // run_at >= now() and the task is not executed if we don't end the transaction here.
       await pgClient.query("commit");
 
-      // Run the job
+      // Run the jobs
       await runJobs(pgClient);
+
       // Assert that the jobs can run correctly
       await assertJobComplete(pgClient, rateLimitJob);
       await assertJobComplete(pgClient, confirmationEmailJob);
@@ -167,6 +171,9 @@ test("CreateRegistration", async () => {
       // successful registration
       const value = await redisClient.get(key);
       expect(value).toEqual(null);
+
+      // TODO: Figure out a way to test gdpr__delete_event_registrations
+      // graphile worer cron task.
     }
   );
 });

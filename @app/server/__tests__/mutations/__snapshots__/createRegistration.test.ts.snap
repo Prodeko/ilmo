@@ -5,9 +5,11 @@ Object {
   "data": Object {
     "createRegistration": Object {
       "registration": Object {
+        "eventId": "[id-2]",
         "firstName": "Testname",
         "id": "[id-1]",
         "lastName": "Testlastname",
+        "quotaId": "[id-3]",
       },
     },
   },

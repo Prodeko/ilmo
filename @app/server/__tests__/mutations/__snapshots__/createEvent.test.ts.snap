@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CreateEvent 2`] = `
+Object {
+  "data": Object {
+    "createEvent": Object {
+      "event": Object {
+        "categoryId": "[id-3]",
+        "description": Object {
+          "en": "Test description",
+          "fi": "Testikuvaus",
+        },
+        "id": "[id-1]",
+        "isHighlighted": true,
+        "name": Object {
+          "en": "Test event",
+          "fi": "Testitapahtuma",
+        },
+        "ownerOrganizationId": "[id-2]",
+        "slug": "2021-2-20-testitapahtuma",
+      },
+    },
+  },
+}
+`;

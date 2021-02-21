@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UpdateEvent 2`] = `
+Object {
+  "data": Object {
+    "updateEvent": Object {
+      "event": Object {
+        "categoryId": "[id-3]",
+        "description": Object {
+          "en": "Updated test description",
+          "fi": "Päivitetty testikuvaus",
+        },
+        "eventEndTime": "2021-02-20T15:00:00+02:00",
+        "eventStartTime": "2021-02-20T14:00:00+02:00",
+        "id": "[id-1]",
+        "isHighlighted": true,
+        "name": Object {
+          "en": "Updated test event",
+          "fi": "Päivitetty testitapahtuma",
+        },
+        "ownerOrganizationId": "[id-2]",
+        "registrationEndTime": "2021-02-20T13:00:00+02:00",
+        "registrationStartTime": "2021-02-20T12:00:00+02:00",
+      },
+    },
+  },
+}
+`;
