@@ -111,10 +111,10 @@ test("UpdateEvent", async () => {
 
       expect(updatedEvent).toBeTruthy();
       expect(ownerOrganizationId).toEqual(organization.id);
-      expect(eventStartTime).toEqual("2021-02-20T14:00:00+02:00");
-      expect(eventEndTime).toEqual("2021-02-20T15:00:00+02:00");
-      expect(registrationStartTime).toEqual("2021-02-20T12:00:00+02:00");
-      expect(registrationEndTime).toEqual("2021-02-20T13:00:00+02:00");
+      expect(eventStartTime.slice(0, -6)).toEqual("2021-02-20T14:00:00");
+      expect(eventEndTime.slice(0, -6)).toEqual("2021-02-20T15:00:00");
+      expect(registrationStartTime.slice(0, -6)).toEqual("2021-02-20T12:00:00");
+      expect(registrationEndTime.slice(0, -6)).toEqual("2021-02-20T13:00:00");
 
       expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
         Object {
