@@ -11,7 +11,7 @@ import {
   withUserDb,
 } from "../../helpers";
 
-async function claimToken(client: PoolClient, eventId: string | null | void) {
+async function claimToken(client: PoolClient, eventId: string) {
   const {
     rows: [row],
   } = await client.query(

@@ -12,6 +12,12 @@ export function useEventSlug() {
   return String(rawSlug);
 }
 
+export function useEventId() {
+  const router = useRouter();
+  const { id: rawId } = router.query;
+  return String(rawId);
+}
+
 export function useEventLoading(
   query: Pick<
     QueryResult<EventPage_QueryFragment>,
