@@ -80,7 +80,6 @@ module.exports = {
         "@typescript-eslint",
         "react-hooks",
         "react",
-        "graphql",
         "simple-import-sort",
         "import",
       ],
