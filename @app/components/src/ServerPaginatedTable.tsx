@@ -31,7 +31,12 @@ export function ServerPaginatedTable({
     typeof queryDocument,
     typeof variables
   >(queryDocument, {
-    variables: { ...variables, first: pagination.pageSize, offset: offset },
+    variables: {
+      ...variables,
+      // Pagination can be empty if table contains less than 10 elements
+      first: pagination.pageSize || 10,
+      offset: offset,
+    },
     onCompleted: () =>
       setPagination({
         ...pagination,
