@@ -12,6 +12,7 @@
     "createOrganization": "Create organization"
   },
   "logout": "Logout",
+  "moreInfo": "Show details",
   "name": "Name",
   "redirect": "Redirecting...",
   "settings": "Settings",

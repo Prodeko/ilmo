@@ -81,7 +81,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       title: t("createdAt"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string) => dayjs(createdAt).format("l LTS"),
+      render: (createdAt: string) => dayjs(createdAt).format("l LT"),
     },
   ];
 

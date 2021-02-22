@@ -11,6 +11,9 @@ fragment EventFields on Event {
   isHighlighted
   isDraft
   headerImageFile
+  signupOpen
+  signupUpcoming
+  signupClosed
 }
 
 fragment EventPage_EventCategory on EventCategory {

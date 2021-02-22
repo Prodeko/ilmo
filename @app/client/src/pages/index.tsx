@@ -1,7 +1,7 @@
 import React from "react";
-import { ServerPaginatedTable, SharedLayout } from "@app/components";
+import { EventCard, ServerPaginatedTable, SharedLayout } from "@app/components";
 import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql";
-import { Col, Divider, Grid, Row, Tag, Typography } from "antd";
+import { Col, Divider, Empty, Grid, Row, Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import Link from "next/link";
@@ -21,17 +21,38 @@ const getColor = (org: string) => {
   }
 };
 
+const gridTemplateColumn = {
+  xs: "1, 1fr",
+  sm: "2, 1fr",
+  md: "2, 1fr",
+  lg: "3, 1fr",
+  xl: "4, 1fr",
+  xxl: "4, 1fr",
+};
+
 const Home: NextPage = () => {
   const { t, lang } = useTranslation("home");
+
   const query = useHomePageQuery();
   const screens = useBreakpoint();
+  const currentBreakPoint = Object.entries(screens)
+    .filter((screen) => !!screen[1])
+    .slice(-1)[0] || ["xs", true];
   const isMobile = screens["xs"];
+
+  const homeGridStyle = {
+    display: "grid",
+    gridTemplateColumns: `repeat(${gridTemplateColumn[currentBreakPoint[0]]})`,
+    gridGap: 16,
+  };
 
   // TODO: use eventCategories and organizations to
   // add filtering to the table. Might not be needed on the
   // frontpage but might be nice for admin.
   const eventCategories = query?.data?.eventCategories?.nodes;
   const organizations = query?.data?.organizations?.nodes;
+  const signupsOpenEvents = query?.data?.signupOpenEvents?.nodes;
+  const signupsUpcomingEvents = query?.data?.signupUpcomingEvents?.nodes;
 
   const columns = !isMobile
     ? [
@@ -95,10 +116,9 @@ const Home: NextPage = () => {
         },
         {
           title: t("events:time"),
-          dataIndex: "eventStartTime",
-          key: "eventStartTime",
-          render: (eventStartTime: string) =>
-            dayjs(eventStartTime).format("l LTS"),
+          dataIndex: "eventEndTime",
+          key: "eventEndTime",
+          render: (eventEndTime: string) => dayjs(eventEndTime).format("l LT"),
         },
       ]
     : [
@@ -125,39 +145,48 @@ const Home: NextPage = () => {
           dataIndex: "eventStartTime",
           key: "eventStartTime",
           render: (eventStartTime: string) =>
-            dayjs(eventStartTime).format("l LTS"),
+            dayjs(eventStartTime).format("l LT"),
         },
       ];
 
-  const now = dayjs().format("YYYY-MM-DDTHH:mm");
-
   return (
     <SharedLayout query={query} title="">
-      <Row gutter={32} justify="space-between">
-        <Col xs={24}>
-          <Title level={4}>{t("events.signupsOpenEvents")}</Title>
-          <ServerPaginatedTable
-            columns={columns}
-            data-cy="homepage-signup-open-events"
-            dataField="signupOpenEvents"
-            queryDocument={HomePageEventsDocument}
-            showPagination={false}
-            size="middle"
-            variables={{ now }}
-          />
+      <Space direction="vertical">
+        <Title level={3}>{t("events.signupsOpenEvents")}</Title>
+        <div style={homeGridStyle}>
+          {signupsOpenEvents?.length > 0 ? (
+            signupsOpenEvents.map((event) => {
+              return <EventCard key={event.id} event={event as Event} />;
+            })
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
+        </div>
+        <Title level={3}>{t("events.signupsUpcomingEvents")}</Title>
+        <div style={homeGridStyle}>
+          {signupsUpcomingEvents?.length > 0 ? (
+            signupsUpcomingEvents?.map((event) => {
+              return <EventCard key={event.id} event={event as Event} />;
+            })
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          )}
           <Divider dashed />
-          <Title level={4}>{t("events.signupsClosedEvents")}</Title>
-          <ServerPaginatedTable
-            columns={columns}
-            data-cy="homepage-signup-closed-events"
-            dataField="signupClosedEvents"
-            queryDocument={HomePageEventsDocument}
-            showPagination={true}
-            size="middle"
-            variables={{ now }}
-          />
-        </Col>
-      </Row>
+        </div>
+        <Row>
+          <Col xs={24}>
+            <Title level={3}>{t("events.signupsClosedEvents")}</Title>
+            <ServerPaginatedTable
+              columns={columns}
+              data-cy="homepage-signup-closed-events"
+              dataField="signupClosedEvents"
+              queryDocument={HomePageEventsDocument}
+              showPagination={true}
+              size="middle"
+            />
+          </Col>
+        </Row>
+      </Space>
     </SharedLayout>
   );
 };
