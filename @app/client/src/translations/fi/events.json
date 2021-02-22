@@ -54,6 +54,7 @@
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "organizer": "Järjestäjä",
+  "registerToAnEvent": "Ilmoittaudu",
   "time": "Aika",
   "updateEvent": {
     "title": "Päivitä tapahtuma"

@@ -1,6 +1,9 @@
 {
   "events": {
+    "eventTime": "Event",
+    "registrationTime": "Signup",
     "signupsClosedEvents": "Signup closed",
-    "signupsOpenEvents": "Signup open"
+    "signupsOpenEvents": "Signup open",
+    "signupsUpcomingEvents": "Signup upcoming"
   }
 }

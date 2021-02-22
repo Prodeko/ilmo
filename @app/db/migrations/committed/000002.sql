@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:6ae6c72ae9643fc04f55331dc36357159d7a9d4c
+--! Hash: sha1:62e25e23713b5f28cc64a3a563fd452375549fd2
 
 --! split: 1-current.sql
 /**********/
@@ -97,6 +97,21 @@ create table app_public.events(
 );
 alter table app_public.events enable row level security;
 
+create function app_public.events_signup_upcoming(e app_public.events)
+returns boolean as $$
+  select now() < e.registration_start_time;
+$$ language sql stable;
+
+create function app_public.events_signup_open(e app_public.events)
+returns boolean as $$
+  select now() between e.registration_start_time and e.registration_end_time;
+$$ language sql stable;
+
+create function app_public.events_signup_closed(e app_public.events)
+returns boolean as $$
+  select now() > e.registration_end_time;
+$$ language sql stable;
+
 comment on table app_public.events is
   E'Main table for events.';
 comment on column app_public.events.id is
@@ -125,6 +140,8 @@ comment on column app_public.events.category_id is
   E'Id of the event category.';
 
 create index on app_public.events(event_start_time);
+create index on app_public.events(event_end_time);
+create index on app_public.events(registration_start_time);
 create index on app_public.events(registration_end_time);
 create index on app_public.events(owner_organization_id);
 create index on app_public.events(category_id);

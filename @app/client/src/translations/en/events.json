@@ -54,6 +54,7 @@
   "headerImage": "Event header image",
   "languages": "Languages",
   "organizer": "Organizer",
+  "registerToAnEvent": "Signup",
   "time": "Time",
   "updateEvent": {
     "title": "Update event"

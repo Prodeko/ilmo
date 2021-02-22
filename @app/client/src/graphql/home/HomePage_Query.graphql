@@ -18,6 +18,22 @@ fragment HomePage_Query on Query {
       name
     }
   }
+  signupOpenEvents: events(
+    filter: { signupOpen: { equalTo: true } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+  }
+  signupUpcomingEvents: events(
+    filter: { signupUpcoming: { equalTo: true } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+  }
   eventCategories {
     nodes {
       ...EventPage_EventCategory

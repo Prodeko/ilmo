@@ -140,6 +140,10 @@ export const createEventCategories = async (
   return categories;
 };
 
+function randomNumber(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
 export const createEvents = async (
   client: PoolClient,
   count: number = 1,
@@ -157,10 +161,12 @@ export const createEvents = async (
       en: faker.lorem.paragraph(),
     };
 
-    const registrationStartTime = faker.date.soon();
+    const now = new Date();
+    const randomDays = randomNumber(-10, 10);
+    const registrationStartTime = dayjs(now).add(randomDays, "day").toDate();
     const registrationEndTime = faker.date.between(
       registrationStartTime,
-      dayjs(registrationStartTime).add(1, "day").toDate()
+      dayjs(registrationStartTime).add(7, "day").toDate()
     );
 
     const eventStartTime = faker.date.between(
@@ -173,7 +179,11 @@ export const createEvents = async (
     );
 
     const eventCategoryId = categoryId;
-    const headerImageFile = faker.image.imageUrl(851, 315, "nature");
+    const headerImageFile = faker.image.imageUrl(
+      851,
+      315,
+      `nature?random=${Math.round(Math.random() * 1000)}`
+    );
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {

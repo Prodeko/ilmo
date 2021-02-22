@@ -1223,6 +1223,158 @@ COMMENT ON FUNCTION app_public.delete_registration_token(token uuid) IS 'Delete 
 
 
 --
+-- Name: events; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.events (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    slug public.citext NOT NULL,
+    name jsonb NOT NULL,
+    description jsonb NOT NULL,
+    event_start_time timestamp with time zone NOT NULL,
+    event_end_time timestamp with time zone NOT NULL,
+    registration_start_time timestamp with time zone NOT NULL,
+    registration_end_time timestamp with time zone NOT NULL,
+    is_highlighted boolean DEFAULT false NOT NULL,
+    is_draft boolean DEFAULT true NOT NULL,
+    header_image_file text,
+    owner_organization_id uuid NOT NULL,
+    category_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
+    CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
+    CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
+    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name)),
+    CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
+);
+
+
+--
+-- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.events IS 'Main table for events.';
+
+
+--
+-- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
+
+
+--
+-- Name: COLUMN events.slug; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.slug IS 'Slug for the event.';
+
+
+--
+-- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
+
+
+--
+-- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
+
+
+--
+-- Name: COLUMN events.event_start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.event_start_time IS 'Starting time of the event.';
+
+
+--
+-- Name: COLUMN events.event_end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.event_end_time IS 'Ending time of the event.';
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_start_time IS 'Time of event registration open.';
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_end_time IS 'Time of event registration end.';
+
+
+--
+-- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the event';
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
+
+
+--
+-- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
+
+
+--
+-- Name: events_signup_closed(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_closed(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() > e.registration_end_time;
+$$;
+
+
+--
+-- Name: events_signup_open(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_open(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() between e.registration_start_time and e.registration_end_time;
+$$;
+
+
+--
+-- Name: events_signup_upcoming(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_upcoming(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() < e.registration_start_time;
+$$;
+
+
+--
 -- Name: forgot_password(public.citext); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2079,125 +2231,6 @@ CREATE TABLE app_public.event_questions (
 
 
 --
--- Name: events; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.events (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    slug public.citext NOT NULL,
-    name jsonb NOT NULL,
-    description jsonb NOT NULL,
-    event_start_time timestamp with time zone NOT NULL,
-    event_end_time timestamp with time zone NOT NULL,
-    registration_start_time timestamp with time zone NOT NULL,
-    registration_end_time timestamp with time zone NOT NULL,
-    is_highlighted boolean DEFAULT false NOT NULL,
-    is_draft boolean DEFAULT true NOT NULL,
-    header_image_file text,
-    owner_organization_id uuid NOT NULL,
-    category_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
-    CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
-    CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
-    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name)),
-    CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
-);
-
-
---
--- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.events IS 'Main table for events.';
-
-
---
--- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
-
-
---
--- Name: COLUMN events.slug; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.slug IS 'Slug for the event.';
-
-
---
--- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
-
-
---
--- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
-
-
---
--- Name: COLUMN events.event_start_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.event_start_time IS 'Starting time of the event.';
-
-
---
--- Name: COLUMN events.event_end_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.event_end_time IS 'Ending time of the event.';
-
-
---
--- Name: COLUMN events.registration_start_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.registration_start_time IS 'Time of event registration open.';
-
-
---
--- Name: COLUMN events.registration_end_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.registration_end_time IS 'Time of event registration end.';
-
-
---
--- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
-
-
---
--- Name: COLUMN events.header_image_file; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the event';
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
-
-
---
--- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
-
-
---
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -2564,6 +2597,13 @@ CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_i
 
 
 --
+-- Name: events_event_end_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_event_end_time_idx ON app_public.events USING btree (event_end_time);
+
+
+--
 -- Name: events_event_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2582,6 +2622,13 @@ CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (
 --
 
 CREATE INDEX events_registration_end_time_idx ON app_public.events USING btree (registration_end_time);
+
+
+--
+-- Name: events_registration_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_registration_start_time_idx ON app_public.events USING btree (registration_start_time);
 
 
 --
@@ -3586,6 +3633,114 @@ GRANT ALL ON FUNCTION app_public.delete_registration_token(token uuid) TO ilmo_v
 
 
 --
+-- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.slug; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(slug),UPDATE(slug) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.event_start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_start_time),UPDATE(event_start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.event_end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_end_time),UPDATE(event_end_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_start_time),UPDATE(registration_start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_end_time),UPDATE(registration_end_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.is_highlighted; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_closed(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_closed(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_closed(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_open(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_open(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_open(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_upcoming(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION forgot_password(email public.citext); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3805,90 +3960,6 @@ GRANT INSERT(type),UPDATE(type) ON TABLE app_public.event_questions TO ilmo_visi
 --
 
 GRANT INSERT(options),UPDATE(options) ON TABLE app_public.event_questions TO ilmo_visitor;
-
-
---
--- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.slug; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(slug),UPDATE(slug) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.event_start_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_start_time),UPDATE(event_start_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.event_end_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_end_time),UPDATE(event_end_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.registration_start_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(registration_start_time),UPDATE(registration_start_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.registration_end_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(registration_end_time),UPDATE(registration_end_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.is_highlighted; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.header_image_file; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

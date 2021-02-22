@@ -872,6 +872,9 @@ type Event {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
+  signupClosed: Boolean
+  signupOpen: Boolean
+  signupUpcoming: Boolean
 
   """Slug for the event."""
   slug: String!
@@ -1043,6 +1046,9 @@ input EventCondition {
   """Checks for equality with the object’s `categoryId` field."""
   categoryId: UUID
 
+  """Checks for equality with the object’s `eventEndTime` field."""
+  eventEndTime: Datetime
+
   """Checks for equality with the object’s `eventStartTime` field."""
   eventStartTime: Datetime
 
@@ -1054,6 +1060,9 @@ input EventCondition {
 
   """Checks for equality with the object’s `registrationEndTime` field."""
   registrationEndTime: Datetime
+
+  """Checks for equality with the object’s `registrationStartTime` field."""
+  registrationStartTime: Datetime
 
   """Checks for equality with the object’s `slug` field."""
   slug: String
@@ -1068,6 +1077,9 @@ input EventFilter {
 
   """Filter by the object’s `categoryId` field."""
   categoryId: UUIDFilter
+
+  """Filter by the object’s `eventEndTime` field."""
+  eventEndTime: DatetimeFilter
 
   """Filter by the object’s `eventStartTime` field."""
   eventStartTime: DatetimeFilter
@@ -1086,6 +1098,18 @@ input EventFilter {
 
   """Filter by the object’s `registrationEndTime` field."""
   registrationEndTime: DatetimeFilter
+
+  """Filter by the object’s `registrationStartTime` field."""
+  registrationStartTime: DatetimeFilter
+
+  """Filter by the object’s `signupClosed` field."""
+  signupClosed: BooleanFilter
+
+  """Filter by the object’s `signupOpen` field."""
+  signupOpen: BooleanFilter
+
+  """Filter by the object’s `signupUpcoming` field."""
+  signupUpcoming: BooleanFilter
 
   """Filter by the object’s `slug` field."""
   slug: StringFilter
@@ -1297,6 +1321,8 @@ type EventsEdge {
 enum EventsOrderBy {
   CATEGORY_ID_ASC
   CATEGORY_ID_DESC
+  EVENT_END_TIME_ASC
+  EVENT_END_TIME_DESC
   EVENT_START_TIME_ASC
   EVENT_START_TIME_DESC
   ID_ASC
@@ -1308,6 +1334,8 @@ enum EventsOrderBy {
   PRIMARY_KEY_DESC
   REGISTRATION_END_TIME_ASC
   REGISTRATION_END_TIME_DESC
+  REGISTRATION_START_TIME_ASC
+  REGISTRATION_START_TIME_DESC
   SLUG_ASC
   SLUG_DESC
 }
