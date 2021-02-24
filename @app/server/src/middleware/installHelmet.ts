@@ -33,7 +33,11 @@ const Helmet: FastifyPluginAsync = async (app) => {
               "blob:",
               "https://static.prodeko.org",
             ],
-            "style-src": ["'self'", "'unsafe-inline'"],
+            "style-src": [
+              "'self'",
+              "'unsafe-inline'",
+              "https://fonts.googleapis.com",
+            ],
             "report-uri": [sentryReportUri],
           },
         },
