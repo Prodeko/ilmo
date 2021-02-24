@@ -41,7 +41,7 @@ export async function createUserAndLogIn() {
   }
 }
 
-export async function createEventDataAndLogin() {
+export async function createEventDataAndLogin(createRegistration = true) {
   const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
@@ -74,12 +74,15 @@ export async function createEventDataAndLogin() {
       1,
       event.id
     );
-    const [registration] = await createRegistrations(
-      client,
-      1,
-      event.id,
-      quota.id
-    );
+    let registration;
+
+    // We need an existing registration for updateRegistration.test.ts but
+    // don't want to create a registration for createRegistration.test.ts
+    // since that would create another registration__send_confirmation_email
+    // task.
+    if (createRegistration) {
+      [registration] = await createRegistrations(client, 1, event.id, quota.id);
+    }
 
     client.query("COMMIT");
     return {
