@@ -7,7 +7,7 @@ context("Create event", () => {
 
   it("can create an event", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
     cy.login({
       verified: true,
       orgs: [["Test Organization", "test-organization"]],
@@ -75,7 +75,7 @@ context("Create event", () => {
 
   it("redirects to index if user is not part of any organization", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
     cy.login({
       verified: true,
     });

@@ -1,7 +1,7 @@
 import React from "react";
 import { EventCard, ServerPaginatedTable, SharedLayout } from "@app/components";
 import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql";
-import { Col, Divider, Empty, Grid, Row, Space, Tag, Typography } from "antd";
+import { Col, Divider, Empty, Grid, Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import Link from "next/link";
@@ -21,7 +21,7 @@ const getColor = (org: string) => {
   }
 };
 
-const gridTemplateColumn = {
+const gridTemplateColumns = {
   xs: "1, 1fr",
   sm: "2, 1fr",
   md: "2, 1fr",
@@ -42,8 +42,8 @@ const Home: NextPage = () => {
 
   const homeGridStyle = {
     display: "grid",
-    gridTemplateColumns: `repeat(${gridTemplateColumn[currentBreakPoint[0]]})`,
-    gridGap: 16,
+    gridTemplateColumns: `repeat(${gridTemplateColumns[currentBreakPoint[0]]})`,
+    gridGap: 10,
   };
 
   // TODO: use eventCategories and organizations to
@@ -151,41 +151,39 @@ const Home: NextPage = () => {
 
   return (
     <SharedLayout query={query} title="">
-      <Space direction="vertical">
-        <Title level={3}>{t("events.signupsOpenEvents")}</Title>
-        <div data-cy="homepage-signup-open-events" style={homeGridStyle}>
-          {signupsOpenEvents?.length > 0 ? (
-            signupsOpenEvents.map((event) => {
-              return <EventCard key={event.id} event={event as Event} />;
-            })
-          ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-        </div>
+      <Title level={3}>{t("events.signupsOpenEvents")}</Title>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {signupsOpenEvents?.length > 0 ? (
+          <div data-cy="homepage-signup-open-events" style={homeGridStyle}>
+            {signupsOpenEvents.map((event) => (
+              <EventCard key={event.id} event={event as Event} />
+            ))}
+          </div>
+        ) : (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        )}
         <Title level={3}>{t("events.signupsUpcomingEvents")}</Title>
-        <div data-cy="homepage-signup-upcoming-events" style={homeGridStyle}>
-          {signupsUpcomingEvents?.length > 0 ? (
-            signupsUpcomingEvents?.map((event) => {
-              return <EventCard key={event.id} event={event as Event} />;
-            })
-          ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-          <Divider dashed />
-        </div>
-        <Row>
-          <Col xs={24}>
-            <Title level={3}>{t("events.signupsClosedEvents")}</Title>
-            <ServerPaginatedTable
-              columns={columns}
-              data-cy="homepage-signup-closed-events"
-              dataField="signupClosedEvents"
-              queryDocument={HomePageEventsDocument}
-              showPagination={true}
-              size="middle"
-            />
-          </Col>
-        </Row>
+        {signupsUpcomingEvents?.length > 0 ? (
+          <div data-cy="homepage-signup-upcoming-events" style={homeGridStyle}>
+            {signupsUpcomingEvents?.map((event) => (
+              <EventCard key={event.id} event={event as Event} />
+            ))}
+          </div>
+        ) : (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        )}
+        <Divider dashed />
+        <Col xs={24}>
+          <Title level={3}>{t("events.signupsClosedEvents")}</Title>
+          <ServerPaginatedTable
+            columns={columns}
+            data-cy="homepage-signup-closed-events"
+            dataField="signupClosedEvents"
+            queryDocument={HomePageEventsDocument}
+            showPagination={true}
+            size="middle"
+          />
+        </Col>
       </Space>
     </SharedLayout>
   );

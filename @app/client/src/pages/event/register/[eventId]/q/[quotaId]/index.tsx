@@ -23,6 +23,7 @@ const EventRegistrationPage: NextPage = () => {
 
   const event = query?.data?.event;
   const quota = query?.data?.quota;
+  const { signupClosed, signupUpcoming } = event || {};
 
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), []);
@@ -39,8 +40,13 @@ const EventRegistrationPage: NextPage = () => {
       ),
   });
 
-  // If event or quota is not found, redirect to index
-  if (!loading && !error && (!event || !quota)) {
+  // If event or quota is not found, or if event
+  // registration is not open redirect to index
+  if (
+    !loading &&
+    !error &&
+    (!event || !quota || signupClosed || signupUpcoming)
+  ) {
     return <Redirect href="/" layout />;
   }
 

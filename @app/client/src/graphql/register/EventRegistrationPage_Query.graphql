@@ -2,6 +2,8 @@ fragment EventRegistrationPage_Event on Event {
   id
   name
   slug
+  signupUpcoming
+  signupClosed
 }
 
 fragment EventRegistrationPage_Quota on Quota {

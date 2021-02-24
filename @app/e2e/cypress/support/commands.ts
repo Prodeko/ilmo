@@ -70,7 +70,7 @@ function serverCommand(
  */
 function serverCommand(
   command: "createTestEventData",
-  payload: {}
+  payload?: {}
 ): Chainable<{
   success: true;
 }>;

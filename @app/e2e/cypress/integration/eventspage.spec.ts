@@ -7,7 +7,7 @@ context("Events page", () => {
 
   it("Can navigate to an event from homepage", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
     cy.visit(Cypress.env("ROOT_URL"));
 
     // Action
@@ -32,7 +32,7 @@ context("Events page", () => {
 
   it("Can register to an event multiple times on the same machine", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action
@@ -78,7 +78,7 @@ context("Events page", () => {
 
   it("Registration rate limiting works", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action

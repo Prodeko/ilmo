@@ -8,12 +8,12 @@ mutation CreateRegistration(
 ) {
   createRegistration(
     input: {
+      token: $registrationToken
       eventId: $eventId
       quotaId: $quotaId
       firstName: $firstName
       lastName: $lastName
       email: $email
-      token: $registrationToken
     }
   ) {
     registration {

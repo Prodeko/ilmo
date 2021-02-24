@@ -274,7 +274,7 @@ async function runCommand(
       event,
       quota,
       registration,
-    } = await createEventData(rootPgPool);
+    } = await createEventData(rootPgPool, payload);
 
     return {
       user,
@@ -333,8 +333,13 @@ async function reallyCreateUser(
   return user;
 }
 
-async function createEventData(rootPgPool: Pool) {
+async function createEventData(
+  rootPgPool: Pool,
+  payload: { [key: string]: any }
+) {
   const client = await rootPgPool.connect();
+  const { eventSignupUpcoming = false, eventSignupClosed = false } = payload;
+
   try {
     await client.query("begin");
 
@@ -359,7 +364,9 @@ async function createEventData(rootPgPool: Pool) {
       client,
       1,
       organization.id,
-      eventCategory.id
+      eventCategory.id,
+      eventSignupUpcoming,
+      eventSignupClosed
     );
     const [quota] = await createQuotas(client, 1, event.id);
     const [registration] = await createRegistrations(
@@ -444,7 +451,9 @@ export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
-  categoryId: string
+  categoryId: string,
+  eventSignupUpcoming: boolean,
+  eventSignupClosed: boolean
 ) => {
   const events = [];
   for (let i = 0; i < count; i++) {
@@ -457,8 +466,16 @@ export const createEvents = async (
       en: faker.lorem.paragraph(),
     };
 
+    // By default create events that are open to registration (-1)
     const now = new Date();
-    const registrationStartTime = dayjs(now).add(-1, "day").toDate();
+    const dateAdjustment = eventSignupUpcoming
+      ? 1
+      : eventSignupClosed
+      ? -8
+      : -1;
+    const registrationStartTime = dayjs(now)
+      .add(dateAdjustment, "day")
+      .toDate();
     const registrationEndTime = faker.date.between(
       registrationStartTime,
       dayjs(registrationStartTime).add(7, "day").toDate()

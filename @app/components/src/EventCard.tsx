@@ -39,7 +39,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <img alt={t("events:headerImage")} src={headerImageFile} />
         ) : null
       }
-      style={{ minWidth: 300, maxWidth: 768 }}
+      style={{ overflow: "hidden", minWidth: 0 }}
     >
       <Meta
         description={
@@ -47,14 +47,15 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
             <div style={cardEventDatesStyle}>
               {t("home:events.registrationTime")}:
               <br />
-              {dayjs(registrationStartTime).format("LLLL")}
+              {dayjs(registrationStartTime).format("LLL")}
               <br />
-              {dayjs(registrationEndTime).format("LLLL")}
+              {dayjs(registrationEndTime).format("LLL")}
             </div>
             <Paragraph
               ellipsis={{
                 rows: 2,
               }}
+              style={{ fontSize: 12 }}
               type="secondary"
             >
               {description[lang]}
