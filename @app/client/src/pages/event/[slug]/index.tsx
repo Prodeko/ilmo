@@ -52,13 +52,23 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const { t, lang } = useTranslation("register");
   const screens = useBreakpoint();
   const isMobile = screens["xs"];
+  const {
+    id: eventId,
+    name,
+    description,
+    headerImageFile,
+    createdAt,
+    signupClosed,
+    signupUpcoming,
+    quotas,
+  } = event;
 
   const [registrations, setRegistrations] = useState<
     Registration[] | null | undefined
   >(event.registrations.nodes as Registration[]);
   useEventRegistrationsSubscription({
-    variables: { eventId: event?.id, after: event.createdAt },
-    skip: !event?.id,
+    variables: { eventId, after: createdAt },
+    skip: !eventId,
     onSubscriptionData: ({ subscriptionData }) =>
       setRegistrations(
         subscriptionData?.data?.eventRegistrations
@@ -97,13 +107,13 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           style={{ display: "inline-block" }}
           xs={{ span: 24 }}
         >
-          {event.headerImageFile && (
+          {headerImageFile && (
             <Image
               alt={t("events:headerImage")}
               height={315}
               loader={uploadsLoader}
               objectFit="cover"
-              src={event.headerImageFile}
+              src={headerImageFile}
               width={851}
               priority
             />
@@ -124,38 +134,43 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             title={t("sidebar.title")}
             bordered
           >
-            {event?.quotas?.nodes.map((quota, i) => {
-              const { size, registrations } = quota;
-              const percentageFilled = Math.round(
-                (registrations.totalCount / size) * 100
-              );
+            {quotas?.nodes.map((quota, i) => {
+              const { id: quotaId, title, size, registrations } = quota;
+              const { totalCount } = registrations;
+              const percentageFilled = Math.round((totalCount / size) * 100);
 
               return (
-                <div key={quota.id} style={{ paddingBottom: 12 }}>
+                <div key={quotaId} style={{ paddingBottom: 12 }}>
                   <Link
                     href={{
                       pathname: "/event/register/[eventId]/q/[quotaId]",
-                      query: { eventId: event.id, quotaId: quota.id },
+                      query: { eventId, quotaId },
                     }}
                   >
                     <Button
                       data-cy={`eventpage-quotas-link-${i}`}
-                      disabled={registrations.totalCount >= size}
+                      disabled={
+                        totalCount >= size || signupClosed || signupUpcoming
+                      }
                       target="a"
                       block
                     >
-                      {quota.title[lang]}
+                      {title[lang]}
                     </Button>
                   </Link>
-                  <ProgressBar completed={percentageFilled} />
+                  <ProgressBar
+                    filled={totalCount}
+                    percentageFilled={percentageFilled}
+                    size={size}
+                  />
                 </div>
               );
             })}
           </Card>
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
-          <Title level={2}>{event.name[lang]}</Title>
-          <Paragraph>{event.description[lang]}</Paragraph>
+          <Title level={2}>{name[lang]}</Title>
+          <Paragraph>{description[lang]}</Paragraph>
           <SimpleTable
             columns={columns}
             data={registrations}

@@ -1,13 +1,13 @@
 /// <reference types="Cypress" />
 
-context("Update registration", () => {
+context("Update event registration", () => {
   beforeEach(() => cy.serverCommand("clearTestUsers"));
   beforeEach(() => cy.serverCommand("clearTestEventData"));
   beforeEach(() => cy.serverCommand("clearTestOrganizations"));
 
   it("can update an existing registration", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     // Action
     cy.get("@createEventDataResult").then(
@@ -51,7 +51,7 @@ context("Update registration", () => {
 
   it("redirects to index if registration is not found", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     // Action
     cy.get("@createEventDataResult").then(() => {

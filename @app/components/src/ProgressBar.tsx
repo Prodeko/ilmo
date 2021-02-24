@@ -2,19 +2,21 @@ import React, { CSSProperties, useEffect, useState } from "react";
 import { green, orange, red } from "@ant-design/colors";
 
 interface Props {
-  completed: number;
+  percentageFilled: number;
+  filled: number;
+  size: number;
 }
 
-export const ProgressBar = ({ completed }: Props) => {
+export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
   const [color, setColor] = useState(green[6]);
 
   useEffect(() => {
-    if (completed >= 100) {
-      setColor(red[7]);
-    } else if (completed >= 75) {
+    if (percentageFilled >= 100) {
+      setColor(red[6]);
+    } else if (percentageFilled >= 75) {
       setColor(orange[6]);
     }
-  }, [completed]);
+  }, [percentageFilled]);
 
   const containerStyles: CSSProperties = {
     height: 20,
@@ -22,25 +24,32 @@ export const ProgressBar = ({ completed }: Props) => {
     display: "flex",
     alignItems: "center",
     margin: "5px 0",
+    position: "relative",
   };
 
   const progressBackgroundStyles: CSSProperties = {
     height: 20,
     width: "100%",
-    backgroundColor: "#e0e0de",
+    backgroundColor: "#c1c1c1",
     position: "relative",
   };
 
   const fillerStyles: CSSProperties = {
     height: "100%",
-    width: `${completed > 100 ? 100 : completed.toString()}%`,
+    width: `${percentageFilled > 100 ? "100%" : percentageFilled.toString()}%`,
     backgroundColor: color,
   };
 
   const labelStyles: CSSProperties = {
     flexShrink: 0,
-    width: "4ch",
-    textAlign: "right",
+    position: "absolute",
+    color: "white",
+    left: 0,
+    right: 0,
+    marginLeft: "auto",
+    marginRight: "auto",
+    textAlign: "center",
+    whiteSpace: "nowrap",
   };
 
   return (
@@ -48,7 +57,7 @@ export const ProgressBar = ({ completed }: Props) => {
       <div style={progressBackgroundStyles}>
         <div style={fillerStyles}></div>
       </div>
-      <span style={labelStyles}>{`${completed.toString()}%`}</span>
+      <span style={labelStyles}>{`${filled.toString()} / ${size}`}</span>
     </div>
   );
 };

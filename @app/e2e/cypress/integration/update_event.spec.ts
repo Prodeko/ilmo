@@ -7,7 +7,7 @@ context("Update event", () => {
 
   it("can update an existing event", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     // Action
     cy.get("@createEventDataResult").then(
@@ -84,7 +84,7 @@ context("Update event", () => {
 
   it("redirects to index if event is not found", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     // Action
     cy.get("@createEventDataResult").then(() => {

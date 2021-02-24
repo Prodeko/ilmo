@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:89ddfe7a65cbea39d59922ad3092db0ceb1a7173
+--! Hash: sha1:141febdbac18d63f4b645ed3ddeb064aa99a2735
 
 --! split: 1-current.sql
 /**********/
@@ -505,6 +505,8 @@ create function app_public.create_registration(
   as $$
 declare
   v_registration app_public.registrations;
+  v_quota app_public.quotas;
+  v_num_registrations integer;
 begin
   -- If the provided token does not exist, prevent event registration
   if not exists(
@@ -512,6 +514,21 @@ begin
       where registration_tokens.token = create_registration.token
   ) then
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
+  end if;
+
+  select count(*)
+    into v_num_registrations
+    from app_public.registrations
+    where registrations.quota_id = "quotaId";
+
+  select *
+    into v_quota
+    from app_public.quotas
+    where id = "quotaId";
+
+  -- If the quota is already full, prevent event registration
+  if (v_num_registrations >= v_quota.size) then
+    raise exception 'Event quota already full.' using errcode = 'DNIED';
   end if;
 
   insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
