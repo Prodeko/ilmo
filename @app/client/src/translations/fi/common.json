@@ -11,6 +11,7 @@
     "createEventCategory": "Luo tapahtumakategoria",
     "createOrganization": "Luo organisaatio"
   },
+  "loading": "Ladataan...",
   "logout": "Kirjaudu ulos",
   "moreInfo": "Lisätietoja",
   "name": "Nimi",

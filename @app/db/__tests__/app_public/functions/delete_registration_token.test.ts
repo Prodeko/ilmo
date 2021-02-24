@@ -1,28 +1,4 @@
-import { PoolClient } from "pg";
-
-import {
-  createEventCategories,
-  createEvents,
-  createOrganizations,
-  withUserDb,
-} from "../../helpers";
-
-async function createEventData(client: PoolClient) {
-  const [organization] = await createOrganizations(client, 1);
-  const [eventCategory] = await createEventCategories(
-    client,
-    1,
-    organization.id
-  );
-  const [event] = await createEvents(
-    client,
-    1,
-    organization.id,
-    eventCategory.id
-  );
-
-  return { organization, eventCategory, event };
-}
+import { createEventData, withUserDb } from "../../helpers";
 
 it("can delete registration token with app_public.delete_registration_token", () =>
   withUserDb(async (client) => {

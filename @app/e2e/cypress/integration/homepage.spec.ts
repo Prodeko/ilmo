@@ -11,6 +11,7 @@ context("HomePage", () => {
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/");
     cy.getCy("header-login-button").should("exist");
     cy.getCy("homepage-signup-open-events").should("exist");
+    cy.getCy("homepage-signup-upcoming-events").should("exist");
     cy.getCy("homepage-signup-closed-events").should("exist");
   });
 });

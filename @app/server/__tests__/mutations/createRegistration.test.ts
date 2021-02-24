@@ -173,7 +173,7 @@ test("CreateRegistration", async () => {
       expect(value).toEqual(null);
 
       // TODO: Figure out a way to test gdpr__delete_event_registrations
-      // graphile worer cron task.
+      // graphile worker cron task.
     }
   );
 });

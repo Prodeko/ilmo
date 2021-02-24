@@ -1,5 +1,5 @@
 --! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:62e25e23713b5f28cc64a3a563fd452375549fd2
+--! Hash: sha1:89ddfe7a65cbea39d59922ad3092db0ceb1a7173
 
 --! split: 1-current.sql
 /**********/
@@ -467,6 +467,10 @@ grant
   update (event_id, quota_id, first_name, last_name, email),
   delete
 on app_public.registrations to :DATABASE_VISITOR;
+
+create policy update_all on app_public.registrations
+  for update
+    using (true);
 
 create policy select_all on app_public.registrations
   for select

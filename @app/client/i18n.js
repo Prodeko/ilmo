@@ -9,7 +9,8 @@ module.exports = {
     "/event/create": ["events"],
     "/event/update/[id]": ["events"],
     "/event/[slug]": ["register", "events"],
-    "/register/e/[eventId]/q/[quotaId]": ["register"],
+    "/event/register/[eventId]/q/[quotaId]": ["register"],
+    "/update-registration/[registrationId]": ["register"],
   },
   loadLocaleFrom: (lang, ns) =>
     import(`./src/translations/${lang}/${ns}.json`).then((m) => m.default),

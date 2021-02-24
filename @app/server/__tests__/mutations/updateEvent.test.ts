@@ -68,9 +68,7 @@ test("UpdateEvent", async () => {
           registrationEndTime
         }
       }
-    }
-
-    `,
+    }`,
 
     // GraphQL variables:
     {

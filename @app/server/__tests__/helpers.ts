@@ -15,6 +15,7 @@ import {
   createEvents,
   createOrganizations,
   createQuotas,
+  createRegistrations,
   createRegistrationTokens,
   createSession,
   createUsers,
@@ -73,6 +74,12 @@ export async function createEventDataAndLogin() {
       1,
       event.id
     );
+    const [registration] = await createRegistrations(
+      client,
+      1,
+      event.id,
+      quota.id
+    );
 
     client.query("COMMIT");
     return {
@@ -83,6 +90,7 @@ export async function createEventDataAndLogin() {
       event,
       quota,
       registrationToken,
+      registration,
     };
   } finally {
     await client.release();
