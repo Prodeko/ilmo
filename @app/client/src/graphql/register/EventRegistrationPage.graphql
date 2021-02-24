@@ -1,3 +1,0 @@
-query EventRegistrationPage($eventId: UUID!, $quotaId: UUID!) {
-  ...EventRegistrationPage_Query
-}

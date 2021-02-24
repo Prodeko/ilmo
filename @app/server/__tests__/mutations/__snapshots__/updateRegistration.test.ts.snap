@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UpdateEvent 2`] = `
+Object {
+  "data": Object {
+    "updateRegistration": Object {
+      "registration": Object {
+        "fullName": "Päivi Tetty",
+        "id": "[id-1]",
+      },
+    },
+  },
+}
+`;

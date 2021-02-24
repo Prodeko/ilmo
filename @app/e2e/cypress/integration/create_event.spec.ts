@@ -9,7 +9,6 @@ context("Create event", () => {
     // Setup
     cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
     cy.login({
-      next: "/",
       verified: true,
       orgs: [["Test Organization", "test-organization"]],
     });
@@ -72,5 +71,21 @@ context("Create event", () => {
       .contains("Testitapahtuma")
       .closest("tr")
       .should("have.class", "table-row-highlight");
+  });
+
+  it("redirects to index if user is not part of any organization", () => {
+    // Setup
+    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.login({
+      verified: true,
+    });
+
+    // Action
+    cy.get("@createEventDataResult").then(() => {
+      cy.visit(Cypress.env("ROOT_URL") + "/event/create");
+    });
+
+    // Assertion
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/");
   });
 });

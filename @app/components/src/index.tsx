@@ -4,6 +4,7 @@ export * from "./ErrorOccurred";
 export * from "./EventCard";
 export * from "./EventForm";
 export * from "./eventHooks";
+export * from "./EventRegistrationForm";
 export * from "./FileUpload";
 export * from "./FourOhFour";
 export * from "./Loading";

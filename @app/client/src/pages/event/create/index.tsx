@@ -15,7 +15,7 @@ const CreateEventPage: NextPage = () => {
         <Col flex={1}>
           <PageHeader title={t("createEvent.title")} />
           <EventForm
-            dataQuery={query}
+            data={query.data}
             formMutationDocument={CreateEventDocument}
             formRedirect="/"
             type="create"

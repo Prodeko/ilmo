@@ -153,7 +153,7 @@ const Home: NextPage = () => {
     <SharedLayout query={query} title="">
       <Space direction="vertical">
         <Title level={3}>{t("events.signupsOpenEvents")}</Title>
-        <div style={homeGridStyle}>
+        <div data-cy="homepage-signup-open-events" style={homeGridStyle}>
           {signupsOpenEvents?.length > 0 ? (
             signupsOpenEvents.map((event) => {
               return <EventCard key={event.id} event={event as Event} />;
@@ -163,7 +163,7 @@ const Home: NextPage = () => {
           )}
         </div>
         <Title level={3}>{t("events.signupsUpcomingEvents")}</Title>
-        <div style={homeGridStyle}>
+        <div data-cy="homepage-signup-upcoming-events" style={homeGridStyle}>
           {signupsUpcomingEvents?.length > 0 ? (
             signupsUpcomingEvents?.map((event) => {
               return <EventCard key={event.id} event={event as Event} />;

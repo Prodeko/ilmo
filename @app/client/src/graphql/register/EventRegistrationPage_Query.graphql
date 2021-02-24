@@ -18,3 +18,7 @@ fragment EventRegistrationPage_Query on Query {
     ...EventRegistrationPage_Quota
   }
 }
+
+query EventRegistrationPage($eventId: UUID!, $quotaId: UUID!) {
+  ...EventRegistrationPage_Query
+}

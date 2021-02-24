@@ -124,18 +124,18 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             title={t("sidebar.title")}
             bordered
           >
-            {event.quotas.nodes.map((q, i) => {
-              const { size, registrations } = q;
+            {event?.quotas?.nodes.map((quota, i) => {
+              const { size, registrations } = quota;
               const percentageFilled = Math.round(
                 (registrations.totalCount / size) * 100
               );
 
               return (
-                <div key={q.id} style={{ paddingBottom: 12 }}>
+                <div key={quota.id} style={{ paddingBottom: 12 }}>
                   <Link
                     href={{
-                      pathname: "/register/e/[eventId]/q/[quotaId]",
-                      query: { eventId: event.id, quotaId: q.id },
+                      pathname: "/event/register/[eventId]/q/[quotaId]",
+                      query: { eventId: event.id, quotaId: quota.id },
                     }}
                   >
                     <Button
@@ -144,7 +144,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                       target="a"
                       block
                     >
-                      {q.title[lang]}
+                      {quota.title[lang]}
                     </Button>
                   </Link>
                   <ProgressBar completed={percentageFilled} />

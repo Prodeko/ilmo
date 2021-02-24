@@ -56,7 +56,11 @@ function rateLimitResolver(
       const current = Number(await redisClient.get(key));
 
       if (current >= limit) {
-        throw new RateLimitException("Too many requests.");
+        throw new RateLimitException(
+          `Too many requests. You have been rate-limited for ${
+            RATE_LIMIT_TIMEOUT / 60
+          } minutes.`
+        );
       }
 
       if (current < limit) {

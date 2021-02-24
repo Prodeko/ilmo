@@ -185,26 +185,40 @@ async function runCommand(
       password = "TestUserPassword",
       next = "/",
       orgs = [],
+      existingUser = false,
     } = payload;
-    const user = await reallyCreateUser(rootPgPool, {
-      username,
-      email,
-      verified,
-      name,
-      avatarUrl,
-      password,
-    });
-    const otherUser = await reallyCreateUser(rootPgPool, {
-      username: "testuser_other",
-      email: "testuser_other@example.com",
-      name: "testuser_other",
-      verified: true,
-      password: "DOESNT MATTER",
-    });
-    const session = await createSession(rootPgPool, user.id);
-    const otherSession = await createSession(rootPgPool, otherUser.id);
-
     const client = await rootPgPool.connect();
+
+    let user: any, otherUser: any, session: any, otherSession: any;
+
+    if (existingUser) {
+      const {
+        rows,
+      } = await client.query("select * from app_private.login($1, $2)", [
+        username,
+        password,
+      ]);
+      [session] = rows;
+    } else {
+      user = await reallyCreateUser(rootPgPool, {
+        username,
+        email,
+        verified,
+        name,
+        avatarUrl,
+        password,
+      });
+      otherUser = await reallyCreateUser(rootPgPool, {
+        username: "testuser_other",
+        email: "testuser_other@example.com",
+        name: "testuser_other",
+        verified: true,
+        password: "DOESNT MATTER",
+      });
+      session = await createSession(rootPgPool, user.id);
+      otherSession = await createSession(rootPgPool, otherUser.id);
+    }
+
     try {
       await client.query("begin");
       try {
@@ -259,6 +273,7 @@ async function runCommand(
       eventCategory,
       event,
       quota,
+      registration,
     } = await createEventData(rootPgPool);
 
     return {
@@ -267,6 +282,7 @@ async function runCommand(
       eventCategory,
       event,
       quota,
+      registration,
     };
   } else if (command === "getEmailSecrets") {
     const { email = "test.user@example.com" } = payload;
@@ -346,6 +362,12 @@ async function createEventData(rootPgPool: Pool) {
       eventCategory.id
     );
     const [quota] = await createQuotas(client, 1, event.id);
+    const [registration] = await createRegistrations(
+      client,
+      1,
+      event.id,
+      quota.id
+    );
 
     await client.query("commit");
     return {
@@ -353,6 +375,7 @@ async function createEventData(rootPgPool: Pool) {
       organization,
       eventCategory,
       event,
+      registration,
       quota,
     };
   } finally {
@@ -360,10 +383,13 @@ async function createEventData(rootPgPool: Pool) {
   }
 }
 
-export const createOrganizations = async function createOrganizations(
+/******************************************************************************/
+// Organizations
+
+export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
-) {
+) => {
   const organizations = [];
   for (let i = 0; i < count; i++) {
     const random = faker.lorem.word();
@@ -386,11 +412,11 @@ export const createOrganizations = async function createOrganizations(
 /******************************************************************************/
 // Events
 
-export const createEventCategories = async function createEventCategories(
+export const createEventCategories = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string
-) {
+) => {
   const categories = [];
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
@@ -414,12 +440,12 @@ export const createEventCategories = async function createEventCategories(
   return categories;
 };
 
-export const createEvents = async function createEvents(
+export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
   categoryId: string
-) {
+) => {
   const events = [];
   for (let i = 0; i < count; i++) {
     const name = {
@@ -431,10 +457,11 @@ export const createEvents = async function createEvents(
       en: faker.lorem.paragraph(),
     };
 
-    const registrationStartTime = faker.date.soon();
+    const now = new Date();
+    const registrationStartTime = dayjs(now).add(-1, "day").toDate();
     const registrationEndTime = faker.date.between(
       registrationStartTime,
-      dayjs(registrationStartTime).add(1, "day").toDate()
+      dayjs(registrationStartTime).add(7, "day").toDate()
     );
 
     const eventStartTime = faker.date.between(
@@ -447,6 +474,11 @@ export const createEvents = async function createEvents(
     );
 
     const eventCategoryId = categoryId;
+    const headerImageFile = faker.image.imageUrl(
+      851,
+      315,
+      `nature?random=${Math.round(Math.random() * 1000)}`
+    );
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
@@ -457,10 +489,11 @@ export const createEvents = async function createEvents(
       rows: [event],
     } = await client.query(
       `
-      insert into app_public.events(
+      insert into app_public.events  (
         name,
         slug,
         description,
+        header_image_file,
         event_start_time,
         event_end_time,
         registration_start_time,
@@ -468,13 +501,14 @@ export const createEvents = async function createEvents(
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       returning *
       `,
       [
         name,
         slug,
         description,
+        headerImageFile,
         eventStartTime,
         eventEndTime,
         registrationStartTime,
@@ -492,11 +526,11 @@ export const createEvents = async function createEvents(
 /******************************************************************************/
 // Quotas
 
-export const createQuotas = async function createQuotas(
+export const createQuotas = async (
   client: PoolClient,
   count: number = 1,
   eventId: string
-) {
+) => {
   const quotas = [];
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
@@ -523,12 +557,12 @@ export const createQuotas = async function createQuotas(
 /******************************************************************************/
 // Registrations
 
-export const createRegistrations = async function createRegistrations(
+export const createRegistrations = async (
   client: PoolClient,
   count: number = 1,
   eventId: string,
   quotaId: string
-) {
+) => {
   const registrations = [];
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName();

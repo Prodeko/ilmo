@@ -32,7 +32,7 @@ export function Redirect({ href, as, layout }: RedirectProps) {
           networkStatus: 0,
           client,
           refetch: (async () => {
-            throw new Error("Redirecting...");
+            throw new Error(t("redirect"));
           }) as any,
         }}
         title={t("redirect")}
@@ -43,7 +43,7 @@ export function Redirect({ href, as, layout }: RedirectProps) {
   } else {
     return (
       <StandardWidth>
-        <H3>Redirecting...</H3>
+        <H3>{t("common:redirect")}</H3>
         <Skeleton />
       </StandardWidth>
     );

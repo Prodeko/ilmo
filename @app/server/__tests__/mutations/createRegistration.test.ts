@@ -18,7 +18,9 @@ beforeAll(setup);
 afterAll(teardown);
 
 test("CreateRegistration", async () => {
-  const { event, quota, registrationToken } = await createEventDataAndLogin();
+  const { event, quota, registrationToken } = await createEventDataAndLogin(
+    false
+  );
   // Set rate-limiting key artificially to redis. Normally RateLimitPlugin
   // would set this key after a client calls claimRegistrationToken.
   // Server mutation tests are run in isolation with runGraphQLQuery and the
@@ -173,7 +175,7 @@ test("CreateRegistration", async () => {
       expect(value).toEqual(null);
 
       // TODO: Figure out a way to test gdpr__delete_event_registrations
-      // graphile worer cron task.
+      // graphile worker cron task.
     }
   );
 });

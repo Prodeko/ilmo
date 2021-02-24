@@ -1,7 +1,8 @@
 {
   "createdAt": "Time",
   "errors": {
-    "registrationFailed": "Registering to the event failed"
+    "registrationFailed": "Registering to the event failed",
+    "registrationUpdateFailed": "Failed to update registration information"
   },
   "eventSignupComplete": "Event signup saved",
   "forms": {
@@ -18,8 +19,12 @@
   },
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
+  "registrationUpdateComplete": "Updated registration information",
   "sidebar": {
     "title": "Quotas"
   },
-  "title": "Register to event:"
+  "title": "Register to event:",
+  "updateRegistration": {
+    "title": "Update event registration information"
+  }
 }

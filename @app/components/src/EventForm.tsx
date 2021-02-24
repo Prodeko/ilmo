@@ -1,13 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { ApolloError, DocumentNode, useMutation } from "@apollo/client";
 import {
-  ApolloError,
-  DocumentNode,
-  QueryResult,
-  useMutation,
-} from "@apollo/client";
-import {
-  CreateEventPage_QueryFragment,
-  UpdateEventPage_QueryFragment,
+  CreateEventPageQuery,
+  UpdateEventPageQuery,
   useRenderEmailTemplateQuery,
 } from "@app/graphql";
 import {
@@ -58,10 +53,7 @@ type FormValues = {
 interface EventFormProps {
   type: "update" | "create";
   formRedirect: string;
-  dataQuery: Pick<
-    QueryResult<CreateEventPage_QueryFragment | UpdateEventPage_QueryFragment>,
-    "data" | "loading" | "error" | "called"
-  >;
+  data: CreateEventPageQuery | UpdateEventPageQuery;
   formMutationDocument: DocumentNode;
   // eventId and initialValues are only used when type is "update"
   // i.e. we are updating an existing event
@@ -90,13 +82,12 @@ function getEventSlug(name?: FormValueName, dates?: Date[]) {
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const {
     formRedirect,
-    dataQuery,
+    data,
     initialValues,
     formMutationDocument,
     type,
     eventId,
   } = props;
-  const { data, loading, called } = dataQuery;
   const { supportedLanguages } = data?.languages || {};
 
   const { t, lang } = useTranslation("events");
@@ -191,13 +182,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   // Redirect to index if the user is not part of any organization
   const organizationMemberships =
     data?.currentUser?.organizationMemberships?.nodes;
-  if (
-    called &&
-    !loading &&
-    organizationMemberships &&
-    organizationMemberships?.length <= 0
-  ) {
-    return <Redirect href="/" layout />;
+  if (organizationMemberships && organizationMemberships?.length <= 0) {
+    return <Redirect href="/" />;
   }
 
   return (
@@ -257,15 +243,17 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               data-cy="eventform-select-organization-id"
               placeholder={t("forms.placeholders.event.organizer")}
             >
-              {organizationMemberships?.map((a, i) => (
-                <Option
-                  key={a.organization?.id}
-                  data-cy={`eventform-select-organization-id-option-${i}`}
-                  value={a.organization?.id}
-                >
-                  {a.organization?.name}
-                </Option>
-              ))}
+              {data?.currentUser?.organizationMemberships?.nodes?.map(
+                (o, i) => (
+                  <Option
+                    key={o.organization?.id}
+                    data-cy={`eventform-select-organization-id-option-${i}`}
+                    value={o.organization?.id}
+                  >
+                    {o.organization?.name}
+                  </Option>
+                )
+              )}
             </Select>
           </Form.Item>
           <Form.Item
@@ -284,7 +272,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             >
               {
                 // @ts-ignore
-                data?.eventCategories?.nodes.map((a, i) => (
+                data?.eventCategories?.nodes?.map((a, i) => (
                   <Option
                     key={a.id}
                     data-cy={`eventform-select-category-id-option-${i}`}

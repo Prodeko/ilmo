@@ -2,23 +2,16 @@ import React from "react";
 import {
   AuthRestrict,
   EventForm,
+  Redirect,
   SharedLayout,
   useEventId,
 } from "@app/components";
 import { UpdateEventDocument, useUpdateEventPageQuery } from "@app/graphql";
+import { filterObjectByKeys } from "@app/lib";
 import { Col, PageHeader, Row } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
-
-const filterObjectByKeys = (raw: object, allowed: string[]) =>
-  raw &&
-  Object.keys(raw)
-    .filter((key) => allowed.includes(key))
-    .reduce((obj, key) => {
-      obj[key] = raw[key];
-      return obj;
-    }, {});
 
 type UpdateFormInitialValues = {
   name: string;
@@ -69,7 +62,16 @@ function constructInitialValues(values: any) {
 const UpdateEventPage: NextPage = () => {
   const { t } = useTranslation("events");
   const eventId = useEventId();
-  const query = useUpdateEventPageQuery({ variables: { id: eventId } });
+  const query = useUpdateEventPageQuery({
+    variables: { id: eventId },
+  });
+  const { loading, error } = query;
+  const event = query?.data?.event;
+
+  // If event is not found redirect to index
+  if (!loading && !error && !event) {
+    return <Redirect href="/" layout />;
+  }
 
   return (
     <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
@@ -77,11 +79,11 @@ const UpdateEventPage: NextPage = () => {
         <Col flex={1}>
           <PageHeader title={t("updateEvent.title")} />
           <EventForm
-            dataQuery={query}
+            data={query.data}
             eventId={eventId}
             formMutationDocument={UpdateEventDocument}
             formRedirect="/"
-            initialValues={constructInitialValues(query?.data?.event)}
+            initialValues={constructInitialValues(event)}
             type="update"
           />
         </Col>

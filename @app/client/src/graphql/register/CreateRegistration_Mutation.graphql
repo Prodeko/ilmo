@@ -1,16 +1,10 @@
-fragment CreatedRegistration on Registration {
-  id
-  firstName
-  lastName
-}
-
 mutation CreateRegistration(
   $eventId: UUID!
   $quotaId: UUID!
   $firstName: String!
   $lastName: String!
   $email: String!
-  $token: UUID!
+  $registrationToken: UUID!
 ) {
   createRegistration(
     input: {
@@ -19,11 +13,11 @@ mutation CreateRegistration(
       firstName: $firstName
       lastName: $lastName
       email: $email
-      token: $token
+      token: $registrationToken
     }
   ) {
     registration {
-      ...CreatedRegistration
+      id
     }
   }
 }

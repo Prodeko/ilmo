@@ -1,0 +1,16 @@
+mutation UpdateEventRegistration(
+  $registrationId: UUID!
+  $firstName: String!
+  $lastName: String!
+) {
+  updateRegistration(
+    input: {
+      id: $registrationId
+      patch: { firstName: $firstName, lastName: $lastName }
+    }
+  ) {
+    registration {
+      id
+    }
+  }
+}
