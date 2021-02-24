@@ -12,7 +12,6 @@ context("Update registration", () => {
     // Action
     cy.get("@createEventDataResult").then(
       ({ event, quota, registration }: any) => {
-        console.log(registration);
         cy.visit(
           Cypress.env("ROOT_URL") + `/update-registration/${registration.id}`
         );

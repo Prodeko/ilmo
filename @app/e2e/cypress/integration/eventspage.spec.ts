@@ -13,7 +13,6 @@ context("Events page", () => {
     // Action
     cy.get("@createEventDataResult").then(
       ({ eventCategory, event, quota }: any) => {
-        console.log(event);
         cy.getCy("homepage-signup-open-events").find("a").click();
 
         // Assertions
