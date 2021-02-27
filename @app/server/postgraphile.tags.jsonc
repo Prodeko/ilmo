@@ -120,6 +120,14 @@
         "tags": {
           "omit": "create,delete"
         }
+      },
+      // Omit all quota CRUD operations. We define custom mutations that create or update
+      // quotas related to events. See app_public.create_event_quotas and
+      // app_public.update_event_quotas.
+      "app_public.quotas": {
+        "tags": {
+          "omit": "all"
+        }
       }
     },
     "procedure": {

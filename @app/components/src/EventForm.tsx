@@ -1,12 +1,21 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { ApolloError, DocumentNode, useMutation } from "@apollo/client";
+import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone";
+import PlusOutlined from "@ant-design/icons/PlusOutlined";
+import {
+  ApolloError,
+  DocumentNode,
+  useApolloClient,
+  useMutation,
+} from "@apollo/client";
 import {
   CreateEventPageQuery,
+  Quota,
   UpdateEventPageQuery,
   useRenderEmailTemplateQuery,
 } from "@app/graphql";
 import {
   extractError,
+  filterObjectByKeys,
   formItemLayout,
   getCodeFromError,
   tailFormItemLayout,
@@ -14,25 +23,29 @@ import {
 import * as Sentry from "@sentry/react";
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Col,
   DatePicker,
   Form,
   Input,
+  InputNumber,
   Row,
   Select,
+  Space,
   Switch,
   Tabs,
+  Tooltip,
   Typography,
 } from "antd";
 import dayjs from "dayjs";
-import { debounce } from "lodash";
+import { debounce, uniq } from "lodash";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 import slugify from "slugify";
 
-import { FileUpload, Redirect } from "./index";
+import { FileUpload } from "./index";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -54,7 +67,8 @@ interface EventFormProps {
   type: "update" | "create";
   formRedirect: string;
   data: CreateEventPageQuery | UpdateEventPageQuery;
-  formMutationDocument: DocumentNode;
+  eventMutationDocument: DocumentNode;
+  quotasMutationDocument: DocumentNode;
   // eventId and initialValues are only used when type is "update"
   // i.e. we are updating an existing event
   eventId?: string;
@@ -84,7 +98,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     formRedirect,
     data,
     initialValues,
-    formMutationDocument,
+    eventMutationDocument,
+    quotasMutationDocument,
     type,
     eventId,
   } = props;
@@ -92,14 +107,22 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
 
   const { t, lang } = useTranslation("events");
   const router = useRouter();
+  const client = useApolloClient();
 
   // Handling form values, errors and submission
   const [form] = Form.useForm();
+  const [formSubmitting, setFormSubmimtting] = useState(false);
   const [formValues, setFormValues] = useState<FormValues | undefined>();
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const [formQuery] = useMutation(formMutationDocument, {
+  const [quotaErrors, setQuotaErrors] = useState<any[] | null>(null);
+  const [isDraft, setIsDraft] = useState(
+    type === "create" || initialValues.isDraft
+  );
+
+  const [eventQuery] = useMutation(eventMutationDocument, {
     context: { hasUpload: true },
   });
+  const [quotasQuery] = useMutation(quotasMutationDocument);
   const [selectedLanguages, setSelectedLanguages] = useState(
     supportedLanguages || []
   );
@@ -131,6 +154,68 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     },
   });
 
+  const handleSubmit = useCallback(
+    async (values) => {
+      setFormSubmimtting(true);
+      setFormError(null);
+      setQuotaErrors(null);
+      try {
+        const {
+          eventTime,
+          registrationTime,
+          name,
+          headerImageFile: headerFile,
+          quotas: valueQuotas,
+        } = values;
+
+        if (!valueQuotas) {
+          throw new Error(t("errors.mustProvideEventQuota"));
+        }
+
+        const eventStartTime = eventTime[0].toISOString();
+        const eventEndTime = eventTime[1].toISOString();
+
+        const registrationStartTime = registrationTime[0].toISOString();
+        const registrationEndTime = registrationTime[1].toISOString();
+
+        const slug = getEventSlug(name, eventTime);
+        const headerImageFile = headerFile?.file?.originFileObj;
+
+        // eventId is only used in update mutation
+        const { data } = await eventQuery({
+          variables: {
+            ...values,
+            slug,
+            eventStartTime,
+            eventEndTime,
+            registrationStartTime,
+            registrationEndTime,
+            headerImageFile,
+            eventId,
+          },
+        });
+        const accessor = type === "create" ? "createEvent" : "updateEvent";
+        const createdEventId = data[accessor].event.id;
+        const quotas = valueQuotas.map((q: Quota) =>
+          filterObjectByKeys(q, ["id", "title", "size"])
+        );
+        // Run quotas query
+        quotasQuery({
+          variables: { input: { eventId: createdEventId, quotas } },
+        });
+
+        client.resetStore();
+        setFormError(null);
+        router.push(formRedirect, formRedirect);
+      } catch (e) {
+        setFormSubmimtting(false);
+        setFormError(e);
+        Sentry.captureException(e);
+      }
+    },
+    [eventQuery, quotasQuery, client, formRedirect, router, t, type, eventId]
+  );
+
   const debouncedSetFormValues = useMemo(
     () => debounce((newValues) => setFormValues(newValues), 500),
     []
@@ -143,58 +228,45 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     [debouncedSetFormValues]
   );
 
-  const handleSubmit = useCallback(
-    async (values) => {
-      setFormError(null);
-      try {
-        const eventStartTime = values.eventTime[0].toISOString();
-        const eventEndTime = values.eventTime[1].toISOString();
-
-        const registrationStartTime = values.registrationTime[0].toISOString();
-        const registrationEndTime = values.registrationTime[1].toISOString();
-
-        const slug = getEventSlug(values.name, values.eventTime);
-        const headerImageFile = values?.headerImageFile?.file?.originFileObj;
-
-        // eventId is only used in update mutation
-        await formQuery({
-          variables: {
-            ...values,
-            slug,
-            eventStartTime,
-            eventEndTime,
-            registrationStartTime,
-            registrationEndTime,
-            headerImageFile,
-            eventId,
-          },
-        });
-        setFormError(null);
-        router.push(formRedirect, formRedirect);
-      } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
-      }
-    },
-    [formQuery, formRedirect, router, eventId]
+  const debounceSetQuotaErrors = useMemo(
+    () =>
+      debounce(() => {
+        let quotaErrors = form
+          .getFieldsError()
+          .filter((e) => e && e?.name[0] === "quotas" && e?.errors.length > 0)
+          .map((e) => e?.errors[0])
+          .filter((e) => !!e);
+        return quotaErrors.length > 0 && setQuotaErrors(uniq(quotaErrors));
+      }, 500),
+    [form]
   );
 
-  // Redirect to index if the user is not part of any organization
-  const organizationMemberships =
-    data?.currentUser?.organizationMemberships?.nodes;
-  if (organizationMemberships && organizationMemberships?.length <= 0) {
-    return <Redirect href="/" />;
-  }
+  const handleFieldsChange = useCallback(async () => {
+    // Filters form errors that relate to quotas in order to
+    // display them on the general tab
+    debounceSetQuotaErrors();
+  }, [debounceSetQuotaErrors]);
 
   return (
     <Form
       {...formItemLayout}
       form={form}
       initialValues={{ languages: selectedLanguages, ...initialValues }}
+      onFieldsChange={handleFieldsChange}
       onFinish={handleSubmit}
       onValuesChange={handleValuesChange}
     >
-      <Tabs defaultActiveKey="general">
+      <Tabs
+        defaultActiveKey="general"
+        tabBarExtraContent={{
+          right: (
+            <Badge
+              color={isDraft ? "yellow" : "green"}
+              text={isDraft ? t("forms.isDraft") : t("forms.isNotDraft")}
+            />
+          ),
+        }}
+      >
         <TabPane
           key="general"
           data-cy="eventform-tab-general"
@@ -395,6 +467,17 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               maxCount={1}
             />
           </Form.Item>
+          <Form.Item
+            label={t("forms.saveAsDraft")}
+            name="isDraft"
+            valuePropName="checked"
+          >
+            <Switch
+              data-cy="eventform-switch-save-as-draft"
+              defaultChecked={isDraft}
+              onChange={(checked) => setIsDraft(checked)}
+            />
+          </Form.Item>
           {formError && (
             <Form.Item {...tailFormItemLayout}>
               <Alert
@@ -413,11 +496,143 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               />
             </Form.Item>
           )}
+          {quotaErrors ? (
+            <Form.Item label={t("errors.otherFormErrors")}>
+              {quotaErrors?.map((e, i) => (
+                <div key={i} className="ant-form-text" style={{ color: "red" }}>
+                  {e}
+                </div>
+              ))}
+            </Form.Item>
+          ) : null}
           <Form.Item {...tailFormItemLayout}>
-            <Button data-cy="eventform-button-submit" htmlType="submit">
+            <Button
+              data-cy="eventform-button-submit"
+              disabled={selectedLanguages.length === 0 ? true : false}
+              htmlType="submit"
+              loading={formSubmitting}
+            >
               {t(`common:${type}`)}
             </Button>
           </Form.Item>
+        </TabPane>
+        <TabPane
+          key="quotas"
+          data-cy="eventform-tab-quotas"
+          tab={t("forms.tabs.quotas")}
+        >
+          <Form.List
+            name="quotas"
+            rules={[
+              {
+                validator: async (_, quotas) => {
+                  if (!quotas || quotas.length < 1) {
+                    return Promise.reject(
+                      new Error(t("errors.mustProvideEventQuota"))
+                    );
+                  }
+                },
+              },
+            ]}
+          >
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field) => {
+                  const { name, fieldKey } = field;
+                  const numRegistrations =
+                    initialValues?.quotas[fieldKey]?.registrations
+                      ?.totalCount || 0;
+                  return (
+                    <>
+                      <Form.Item
+                        {...field}
+                        fieldKey={[fieldKey, "id"]}
+                        name={[name, "id"]}
+                        required={false}
+                        noStyle
+                      >
+                        <Input type="hidden" />
+                      </Form.Item>
+                      <Space
+                        key={field.key}
+                        align="baseline"
+                        style={{ display: "flex", marginBottom: 8 }}
+                      >
+                        {selectedLanguages.map((l) => (
+                          <div key={l}>
+                            <Form.Item
+                              {...field}
+                              fieldKey={[fieldKey, "title", l!]}
+                              name={[name, "title", l!]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: t(
+                                    "forms.rules.quota.provideQuotaTitle"
+                                  ),
+                                },
+                              ]}
+                              noStyle
+                            >
+                              <Input
+                                data-cy={`eventform-input-quotas-title-${l}-${fieldKey}`}
+                                placeholder={`${t(
+                                  "forms.placeholders.quota.title"
+                                )} ${t(
+                                  `forms.placeholders.${l}`
+                                ).toLowerCase()}`}
+                              />
+                            </Form.Item>{" "}
+                          </div>
+                        ))}
+                        <Form.Item
+                          {...field}
+                          fieldKey={[fieldKey, "size"]}
+                          name={[name, "size"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: t("forms.rules.quota.provideQuotaSize"),
+                            },
+                          ]}
+                          noStyle
+                        >
+                          <InputNumber
+                            data-cy={`eventform-input-quotas-size-${fieldKey}`}
+                            min={1}
+                            placeholder={t("forms.placeholders.quota.size")}
+                          />
+                        </Form.Item>
+                        {numRegistrations === 0 ? (
+                          <Tooltip title={t("removeQuota")}>
+                            <MinusCircleTwoTone
+                              twoToneColor="red"
+                              onClick={() => remove(name)}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <div>
+                            {t("numRegistrations")}: {numRegistrations}
+                          </div>
+                        )}
+                      </Space>
+                    </>
+                  );
+                })}
+                <Form.Item>
+                  <Button
+                    data-cy="eventform-quotas-add-quota"
+                    icon={<PlusOutlined />}
+                    type="dashed"
+                    block
+                    onClick={() => add()}
+                  >
+                    {t("addQuota")}
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
         </TabPane>
         <TabPane
           key="email"

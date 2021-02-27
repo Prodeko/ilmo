@@ -61,15 +61,20 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
     signupClosed,
     signupUpcoming,
     quotas,
+    registrations: eventRegistrations,
   } = event;
 
+  // Set registrations initially from EventPage_Query data
   const [registrations, setRegistrations] = useState<
     Registration[] | null | undefined
-  >(event.registrations.nodes as Registration[]);
+  >(eventRegistrations.nodes as Registration[]);
+
+  // Use a subscription to fetch event registrations in real time
   useEventRegistrationsSubscription({
     variables: { eventId, after: createdAt },
     skip: !eventId,
     onSubscriptionData: ({ subscriptionData }) =>
+      // Update state when subscription receives data
       setRegistrations(
         subscriptionData?.data?.eventRegistrations
           ?.registrations as Registration[]
@@ -135,8 +140,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             bordered
           >
             {quotas?.nodes.map((quota, i) => {
-              const { id: quotaId, title, size, registrations } = quota;
-              const { totalCount } = registrations;
+              const { id: quotaId, title, size } = quota;
+              const totalCount = registrations.filter(
+                (r) => r.quota.id === quotaId
+              ).length;
               const percentageFilled = Math.round((totalCount / size) * 100);
 
               return (

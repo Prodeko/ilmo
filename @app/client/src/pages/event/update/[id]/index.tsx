@@ -6,7 +6,12 @@ import {
   SharedLayout,
   useEventId,
 } from "@app/components";
-import { UpdateEventDocument, useUpdateEventPageQuery } from "@app/graphql";
+import {
+  QuotasConnection,
+  UpdateEventDocument,
+  UpdateEventQuotasDocument,
+  useUpdateEventPageQuery,
+} from "@app/graphql";
 import { filterObjectByKeys } from "@app/lib";
 import { Col, PageHeader, Row } from "antd";
 import dayjs from "dayjs";
@@ -21,7 +26,9 @@ type UpdateFormInitialValues = {
   registrationStartTime: string;
   registrationEndTime: string;
   isHighlighted: boolean;
+  isDraft: boolean;
   headerImageFile: string;
+  quotas: QuotasConnection;
 };
 
 function constructInitialValues(values: any) {
@@ -34,7 +41,9 @@ function constructInitialValues(values: any) {
     "registrationStartTime",
     "registrationEndTime",
     "isHighlighted",
+    "isDraft",
     "headerImageFile",
+    "quotas",
   ]) as UpdateFormInitialValues;
 
   const {
@@ -42,6 +51,7 @@ function constructInitialValues(values: any) {
     eventEndTime,
     registrationStartTime,
     registrationEndTime,
+    quotas: quotasConnection,
   } = filteredValues || {};
 
   const eventTime = [dayjs(eventStartTime), dayjs(eventEndTime)];
@@ -49,6 +59,10 @@ function constructInitialValues(values: any) {
     dayjs(registrationStartTime),
     dayjs(registrationEndTime),
   ];
+  const quotas = quotasConnection?.nodes.map((quota) =>
+    filterObjectByKeys(quota, ["id", "title", "size", "registrations"])
+  );
+
   return {
     organizationId: values?.ownerOrganization?.id,
     categoryId: values?.category?.id,
@@ -56,6 +70,7 @@ function constructInitialValues(values: any) {
     registrationTime,
     eventTime,
     languages,
+    quotas,
   };
 }
 
@@ -73,6 +88,13 @@ const UpdateEventPage: NextPage = () => {
     return <Redirect href="/" layout />;
   }
 
+  // Redirect to index if the user is not part of any organization
+  const organizationMemberships =
+    query?.data?.currentUser?.organizationMemberships?.nodes;
+  if (organizationMemberships && organizationMemberships?.length <= 0) {
+    return <Redirect href="/" layout />;
+  }
+
   return (
     <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
       <Row>
@@ -81,9 +103,10 @@ const UpdateEventPage: NextPage = () => {
           <EventForm
             data={query.data}
             eventId={eventId}
-            formMutationDocument={UpdateEventDocument}
+            eventMutationDocument={UpdateEventDocument}
             formRedirect="/"
             initialValues={constructInitialValues(event)}
+            quotasMutationDocument={UpdateEventQuotasDocument}
             type="update"
           />
         </Col>

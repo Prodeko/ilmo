@@ -47,13 +47,9 @@ fragment EventPage_Event on Event {
   quotas {
     nodes {
       ...EventPage_Quota
-      registrations {
-        totalCount
-      }
     }
   }
   registrations(orderBy: CREATED_AT_DESC) {
-    totalCount
     nodes {
       ...EventPage_Registration
       quota {
