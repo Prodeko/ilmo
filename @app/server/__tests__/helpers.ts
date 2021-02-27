@@ -41,7 +41,16 @@ export async function createUserAndLogIn() {
   }
 }
 
-export async function createEventDataAndLogin(createRegistration = true) {
+interface CreateEventDataAndLogin {
+  quotaOptions?: { create: boolean; amount?: number };
+  registrationOptions?: { create: boolean; amount?: number };
+}
+
+export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
+  const {
+    registrationOptions = { create: true, amount: 1 },
+    quotaOptions = { create: true, amount: 1 },
+  } = args || {};
   const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
@@ -65,23 +74,36 @@ export async function createEventDataAndLogin(createRegistration = true) {
       organization.id,
       eventCategory.id
     );
-    const [quota] = await createQuotas(client, 1, event.id);
 
     // Become root to bypass RLS policy on app_public.registration_tokens
+    // and app_public.quotas
     client.query("reset role");
+    // An existing quota should not exist for createQuotas.test.ts but
+    // other tests such as createRegistration.test.ts need an existing
+    // quota.
+    let quotas;
+    if (quotaOptions.create) {
+      quotas = await createQuotas(client, quotaOptions.amount, event.id);
+    }
+
     const [registrationToken] = await createRegistrationTokens(
       client,
       1,
       event.id
     );
-    let registration;
 
     // We need an existing registration for updateRegistration.test.ts but
     // don't want to create a registration for createRegistration.test.ts
     // since that would create another registration__send_confirmation_email
     // task.
-    if (createRegistration) {
-      [registration] = await createRegistrations(client, 1, event.id, quota.id);
+    let registration;
+    if (registrationOptions.create) {
+      [registration] = await createRegistrations(
+        client,
+        registrationOptions.amount,
+        event.id,
+        quotas[0].id
+      );
     }
 
     client.query("COMMIT");
@@ -91,7 +113,7 @@ export async function createEventDataAndLogin(createRegistration = true) {
       organization,
       eventCategory,
       event,
-      quota,
+      quotas,
       registrationToken,
       registration,
     };

@@ -29,14 +29,14 @@ test("CreateEvent", async () => {
   });
 
   await runGraphQLQuery(
-    `
-    mutation CreateEvent(
+    `mutation CreateEvent(
       $slug: String!
       $name: JSON!
       $description: JSON!
       $organizationId: UUID!
       $categoryId: UUID!
       $isHighlighted: Boolean
+      $isDraft: Boolean
       $eventStartTime: Datetime!
       $eventEndTime: Datetime!
       $registrationStartTime: Datetime!
@@ -51,6 +51,7 @@ test("CreateEvent", async () => {
             ownerOrganizationId: $organizationId
             categoryId: $categoryId
             isHighlighted: $isHighlighted
+            isDraft: $isDraft
             eventStartTime: $eventStartTime
             eventEndTime: $eventEndTime
             registrationStartTime: $registrationStartTime
@@ -66,11 +67,10 @@ test("CreateEvent", async () => {
           ownerOrganizationId
           categoryId
           isHighlighted
+          isDraft
         }
       }
-    }
-
-    `,
+    }`,
 
     // GraphQL variables:
     {
@@ -80,6 +80,7 @@ test("CreateEvent", async () => {
       organizationId: organization.id,
       categoryId: eventCategory.id,
       isHighlighted: true,
+      isDraft: false,
       eventStartTime: day.add(1, "days").toISOString(),
       eventEndTime: day.add(2, "days").toISOString(),
       registrationStartTime: day.toISOString(),
@@ -110,13 +111,14 @@ test("CreateEvent", async () => {
             "fi": "Testikuvaus",
           },
           "id": "[id-1]",
+          "isDraft": false,
           "isHighlighted": true,
           "name": Object {
             "en": "Test event",
             "fi": "Testitapahtuma",
           },
           "ownerOrganizationId": "[id-2]",
-          "slug": "${slug}",
+          "slug": "2021-2-20-testitapahtuma",
         }
       `);
 

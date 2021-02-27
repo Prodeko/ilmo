@@ -22,8 +22,7 @@ test("ClaimRegistrationToken", async () => {
           eventId
         }
       }
-    }
-    `,
+    }`,
 
     // GraphQL variables:
     {

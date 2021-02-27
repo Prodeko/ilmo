@@ -34,8 +34,7 @@ test("Register", async () => {
           username
         }
       }
-    }
-    `,
+    }`,
 
     // GraphQL variables:
     {
