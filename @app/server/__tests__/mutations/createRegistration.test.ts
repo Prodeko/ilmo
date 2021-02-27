@@ -22,9 +22,10 @@ afterAll(teardown);
 
 describe("CreateRegistration", () => {
   it("can create registration", async () => {
-    const { event, quota, registrationToken } = await createEventDataAndLogin(
-      false
-    );
+    const { event, quotas, registrationToken } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    });
+    const quotaId = quotas[0].id;
     // Set rate-limiting key artificially to redis. Normally RateLimitPlugin
     // would set this key after a client calls claimRegistrationToken.
     // Server mutation tests are run in isolation with runGraphQLQuery and the
@@ -83,7 +84,7 @@ describe("CreateRegistration", () => {
       // GraphQL variables:
       {
         eventId: event.id,
-        quotaId: quota.id,
+        quotaId: quotaId,
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
@@ -102,7 +103,7 @@ describe("CreateRegistration", () => {
 
         expect(registration).toBeTruthy();
         expect(registration.eventId).toEqual(event.id);
-        expect(registration.quotaId).toEqual(quota.id);
+        expect(registration.quotaId).toEqual(quotaId);
 
         expect(sanitize(registration)).toMatchInlineSnapshot(`
           Object {
@@ -185,9 +186,10 @@ describe("CreateRegistration", () => {
   });
 
   it("can't create registration if quota is full", async () => {
-    const { event, quota, registrationToken } = await createEventDataAndLogin(
-      false
-    );
+    const { event, quotas, registrationToken } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    });
+    const quota = quotas[0];
     const pool = poolFromUrl(TEST_DATABASE_URL);
     // Fill up quota. Should not be able to register to this quota after this.
     await createRegistrations(pool, quota.size, event.id, quota.id);

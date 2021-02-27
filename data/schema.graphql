@@ -266,6 +266,38 @@ type CreateEventQuestionPayload {
   query: Query
 }
 
+"""An input for mutations affecting `CreateEventQuota`"""
+input CreateEventQuotaInput {
+  size: Int
+  title: JSON
+}
+
+"""All input for the `createEventQuotas` mutation."""
+input CreateEventQuotasInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+  quotas: [CreateEventQuotaInput]!
+}
+
+"""The output of our `createEventQuotas` mutation."""
+type CreateEventQuotasPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  quotas: [Quota]
+}
+
 """All input for the `createOrganization` mutation."""
 input CreateOrganizationInput {
   """
@@ -785,6 +817,8 @@ type Event {
 
   """Unique identifier for the event."""
   id: UUID!
+
+  """A draft event that is not publicly visible."""
   isDraft: Boolean!
 
   """A highlighted event."""
@@ -872,8 +906,14 @@ type Event {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
+
+  """Designated whether event signup is closed or not."""
   signupClosed: Boolean
+
+  """Designated whether event signup is open or not."""
   signupOpen: Boolean
+
+  """Designated whether event signup is upcoming or not."""
   signupUpcoming: Boolean
 
   """Slug for the event."""
@@ -1055,6 +1095,9 @@ input EventCondition {
   """Checks for equality with the object’s `id` field."""
   id: UUID
 
+  """Checks for equality with the object’s `isDraft` field."""
+  isDraft: Boolean
+
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 
@@ -1086,6 +1129,9 @@ input EventFilter {
 
   """Filter by the object’s `id` field."""
   id: UUIDFilter
+
+  """Filter by the object’s `isDraft` field."""
+  isDraft: BooleanFilter
 
   """Negates the expression."""
   not: EventFilter
@@ -1132,6 +1178,9 @@ input EventInput {
   """Header image for the event"""
   headerImageFile: Upload
 
+  """A draft event that is not publicly visible."""
+  isDraft: Boolean
+
   """A highlighted event."""
   isHighlighted: Boolean
 
@@ -1169,6 +1218,9 @@ input EventPatch {
 
   """Header image for the event"""
   headerImageFile: Upload
+
+  """A draft event that is not publicly visible."""
+  isDraft: Boolean
 
   """A highlighted event."""
   isHighlighted: Boolean
@@ -1327,6 +1379,8 @@ enum EventsOrderBy {
   EVENT_START_TIME_DESC
   ID_ASC
   ID_DESC
+  IS_DRAFT_ASC
+  IS_DRAFT_DESC
   NATURAL
   OWNER_ORGANIZATION_ID_ASC
   OWNER_ORGANIZATION_ID_DESC
@@ -1564,6 +1618,12 @@ type Mutation {
     """
     input: CreateEventQuestionInput!
   ): CreateEventQuestionPayload
+  createEventQuotas(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateEventQuotasInput!
+  ): CreateEventQuotasPayload
 
   """
   An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' role. You may invite other users and redistribute roles.
@@ -1785,6 +1845,12 @@ type Mutation {
     """
     input: UpdateEventQuestionInput!
   ): UpdateEventQuestionPayload
+  updateEventQuotas(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateEventQuotasInput!
+  ): UpdateEventQuotasPayload
 
   """Updates a single `Organization` using a unique key and a patch."""
   updateOrganization(
@@ -2289,40 +2355,6 @@ type Query {
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
   quota(id: UUID!): Quota
-
-  """Reads and enables pagination through a set of `Quota`."""
-  quotas(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: QuotaCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: QuotaFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Quota`."""
-    orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
-  ): QuotasConnection
   registration(id: UUID!): Registration
 
   """Reads and enables pagination through a set of `Registration`."""
@@ -2484,9 +2516,6 @@ input QuotaInput {
 Represents an update to a `Quota`. Fields that are set will be updated.
 """
 input QuotaPatch {
-  """Identifier of the event that this quota is for."""
-  eventId: UUID
-
   """Size of the quota."""
   size: Int
 
@@ -2555,6 +2584,8 @@ type Registration {
 
   """First name of the person registering to an event."""
   firstName: String!
+
+  """Returns the full name of a registered person."""
   fullName: String
 
   """Unique identifier for the registration."""
@@ -3163,6 +3194,39 @@ type UpdateEventQuestionPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
+}
+
+"""An input for mutations affecting `UpdateEventQuota`"""
+input UpdateEventQuotaInput {
+  id: UUID
+  size: Int
+  title: JSON
+}
+
+"""All input for the `updateEventQuotas` mutation."""
+input UpdateEventQuotasInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+  quotas: [UpdateEventQuotaInput]!
+}
+
+"""The output of our `updateEventQuotas` mutation."""
+type UpdateEventQuotasPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  quotas: [Quota]
 }
 
 """All input for the `updateOrganization` mutation."""

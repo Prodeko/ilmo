@@ -61,6 +61,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               {description[lang]}
             </Paragraph>
             <ButtonLink
+              data-cy={`eventcard-eventpage-link-${event.slug}`}
               href={`/event/${slug}`}
               size="middle"
               type={signupOpen ? "success" : "default"}

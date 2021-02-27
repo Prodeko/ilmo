@@ -78,9 +78,7 @@ export const createOrganizations = async (
     const {
       rows: [organization],
     } = await client.query(
-      `
-        select * from app_public.create_organization($1, $2)
-      `,
+      `select * from app_public.create_organization($1, $2)`,
       [slug, name]
     );
     organizations.push(organization);
@@ -99,8 +97,7 @@ export const createSession = async (
   const {
     rows: [session],
   } = await client.query(
-    `
-      insert into app_private.sessions(user_id)
+    `insert into app_private.sessions(user_id)
       values ($1::uuid)
       returning *
     `,
@@ -127,8 +124,7 @@ export const createEventCategories = async (
     const {
       rows: [category],
     } = await client.query(
-      `
-        insert into app_public.event_categories(name, description, owner_organization_id)
+      `insert into app_public.event_categories(name, description, owner_organization_id)
         values ($1, $2, $3)
         returning *
       `,
@@ -189,35 +185,37 @@ export const createEvents = async (
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     });
+    const isDraft = false;
 
     const {
       rows: [event],
     } = await client.query(
-      `
-      insert into app_public.events  (
+      `insert into app_public.events(
         name,
         slug,
         description,
-        header_image_file,
         event_start_time,
         event_end_time,
         registration_start_time,
         registration_end_time,
+        is_draft,
+        header_image_file,
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       returning *
       `,
       [
         name,
         slug,
         description,
-        headerImageFile,
         eventStartTime,
         eventEndTime,
         registrationStartTime,
         registrationEndTime,
+        isDraft,
+        headerImageFile,
         organizationId,
         eventCategoryId,
       ]
@@ -246,8 +244,7 @@ export const createQuotas = async (
     const {
       rows: [quota],
     } = await client.query(
-      `
-        insert into app_public.quotas(event_id, title, size)
+      `insert into app_public.quotas(event_id, title, size)
         values ($1, $2, $3)
         returning *
       `,
@@ -272,8 +269,7 @@ export const createRegistrationTokens = async (
     const {
       rows: [token],
     } = await client.query(
-      `
-        insert into app_public.registration_tokens(event_id)
+      `insert into app_public.registration_tokens(event_id)
         values ($1)
         returning *
       `,
@@ -302,8 +298,7 @@ export const createRegistrations = async (
     const {
       rows: [registration],
     } = await client.query(
-      `
-        insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
         values ($1, $2, $3, $4, $5)
         returning *
       `,

@@ -208,7 +208,7 @@ export function SharedLayout({
             </Link>
           </Col>
           {!isMobile ? (
-            <Col span={16}>
+            <Col md={{ span: 13 }} lg={{ span: 16 }}>
               <H3
                 data-cy="layout-header-title"
                 style={{

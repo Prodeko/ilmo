@@ -11,6 +11,7 @@ Object {
           "fi": "Testikuvaus",
         },
         "id": "[id-1]",
+        "isDraft": false,
         "isHighlighted": true,
         "name": Object {
           "en": "Test event",

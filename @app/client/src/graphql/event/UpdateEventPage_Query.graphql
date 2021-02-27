@@ -11,6 +11,9 @@ fragment UpdateEventPage_Event on Event {
   quotas {
     nodes {
       ...EventPage_Quota
+      registrations {
+        totalCount
+      }
     }
   }
 }

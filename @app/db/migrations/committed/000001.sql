@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:698add179368389739f0d04607f51f0386fa4ac9
+--! Hash: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
 
 --! split: 0001-reset.sql
 /*
@@ -232,26 +232,49 @@ $$ language plpgsql volatile;
 comment on function app_public.tg__graphql_subscription() is
   E'This function enables the creation of simple focussed GraphQL subscriptions using database triggers. Read more here: https://www.graphile.org/postgraphile/subscriptions/#custom-subscriptions';
 
---! split: 0040-common-functions.sql
+--! split: 0040-languages.sql
+/*
+ * These types and functions define the supported languages of the app.
+ */
+
+drop type if exists app_languages cascade;
+create type app_languages as (supported_languages text[], default_language text);
+
+-- Defines supported languages and the default language
+create function app_public.languages()
+returns app_languages
+as $$
+  select array['fi', 'en'], 'fi';
+$$
+language sql stable;
+
+--! split: 0050-common-functions.sql
 /*
  * These functions are commonly used across many tables.
  */
 
 -- Used as a check constraint to verify that a column contains
 -- the required languages. Language dependent columns are stored as
--- jsonb. This function defines the languages that our app supports.
+-- jsonb.
 --
 -- Example usage:
 --   constraint _cnstr_check_name_language check(check_language(name))
 create function app_public.check_language(_column jsonb)
-returns boolean
-as $$
-  -- Check that 'fi' and 'en' exist as top level keys in _column
-  select _column ?| array['fi', 'en']
-  -- ...and that _column contains no other top level keys than 'fi' and 'en'
-  and (select array['fi', 'en'] @> array_agg(keys) from jsonb_object_keys(_column) as keys);
-$$
-language sql stable;
+  returns boolean
+  as $$
+declare
+  v_supported_languages text[];
+begin
+  select supported_languages into v_supported_languages from app_public.languages();
+
+  return (
+    -- Check that supported_languages exist as top level keys in _column
+    select _column ?| v_supported_languages
+    -- ...and that _column contains no other top level keys than supported_languages
+    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
+  );
+end;
+$$ language plpgsql stable security definer set search_path to pg_catalog, public, pg_temp;
 
 --! split: 1000-sessions.sql
 /*
@@ -1555,8 +1578,8 @@ comment on function app_public.resend_email_verification_code(email_id uuid) is
 /*
  * The organizations functionality in Starter is modelled in a way that would
  * be typically useful for a B2B SaaS project: the organization can have
- * multiple members, one of which is the "owner" and the others are just regular 
- * members (though you can of course add additional tiers by adding columns to the 
+ * multiple members, one of which is the "owner" and the others are just regular
+ * members (though you can of course add additional tiers by adding columns to the
  * `organization_memberships` table.
  *
  * This file drops all the organizations functionality, but it's unnecessary

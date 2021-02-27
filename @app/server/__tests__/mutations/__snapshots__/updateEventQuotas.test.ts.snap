@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UpdateEventQuotas can use custom mutation to update multiple quotas 2`] = `
+Object {
+  "data": Object {
+    "updateEventQuotas": Object {
+      "quotas": Array [
+        Object {
+          "eventId": "[id-2]",
+          "id": "[id-1]",
+          "size": 1,
+          "title": Object {
+            "en": "Test quota 1",
+            "fi": "Testikiintiö 1",
+          },
+        },
+        Object {
+          "eventId": "[id-2]",
+          "id": "[id-3]",
+          "size": 2,
+          "title": Object {
+            "en": "Test quota 2",
+            "fi": "Testikiintiö 2",
+          },
+        },
+        Object {
+          "eventId": "[id-2]",
+          "id": "[id-4]",
+          "size": 2,
+          "title": Object {
+            "en": "Test quota 3",
+            "fi": "Testikiintiö 3",
+          },
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`UpdateEventQuotas can't update quotas while logged out 1`] = `
+Object {
+  "data": Object {
+    "updateEventQuotas": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "LOGIN",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 11 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 2,
+        },
+      ],
+      "message": "You must log in to update event quotas",
+      "path": Array [
+        "updateEventQuotas",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`UpdateEventQuotas must specify at least one event quota 1`] = `
+Object {
+  "data": Object {
+    "updateEventQuotas": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 15 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 2,
+        },
+      ],
+      "message": "You must specify at least one quota",
+      "path": Array [
+        "updateEventQuotas",
+      ],
+    },
+  ],
+}
+`;

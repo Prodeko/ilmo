@@ -1,23 +1,7 @@
---! Previous: sha1:698add179368389739f0d04607f51f0386fa4ac9
---! Hash: sha1:141febdbac18d63f4b645ed3ddeb064aa99a2735
+--! Previous: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
+--! Hash: sha1:ca109441f679eae610a89bb3bc3384b4319dd209
 
 --! split: 1-current.sql
-/**********/
--- Supported languages
-
-drop type if exists app_language cascade;
-drop function if exists app_public.languages cascade;
-
-create type app_language as (supported_languages text[], default_language text);
-
--- Defines supported languages and default language
-create function app_public.languages()
-returns app_language
-as $$
-  select array['fi', 'en'], 'fi' as default_language;
-$$
-language sql stable;
-
 /**********/
 -- Event categories
 
@@ -102,15 +86,24 @@ returns boolean as $$
   select now() < e.registration_start_time;
 $$ language sql stable;
 
+comment on function app_public.events_signup_upcoming(e app_public.events) is
+  E'Designated whether event signup is upcoming or not.';
+
 create function app_public.events_signup_open(e app_public.events)
 returns boolean as $$
   select now() between e.registration_start_time and e.registration_end_time;
 $$ language sql stable;
 
+comment on function app_public.events_signup_open(e app_public.events) is
+  E'Designated whether event signup is open or not.';
+
 create function app_public.events_signup_closed(e app_public.events)
 returns boolean as $$
   select now() > e.registration_end_time;
 $$ language sql stable;
+
+comment on function app_public.events_signup_closed(e app_public.events) is
+  E'Designated whether event signup is closed or not.';
 
 comment on table app_public.events is
   E'Main table for events.';
@@ -132,6 +125,8 @@ comment on column app_public.events.registration_end_time is
   E'Time of event registration end.';
 comment on column app_public.events.is_highlighted is
   E'A highlighted event.';
+comment on column app_public.events.is_draft is
+  E'A draft event that is not publicly visible.';
 comment on column app_public.events.header_image_file is
   E'Header image for the event';
 comment on column app_public.events.owner_organization_id is
@@ -145,16 +140,18 @@ create index on app_public.events(registration_start_time);
 create index on app_public.events(registration_end_time);
 create index on app_public.events(owner_organization_id);
 create index on app_public.events(category_id);
+create index on app_public.events(is_draft);
 
 grant
   select,
-  insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
-  update (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, header_image_file, owner_organization_id, category_id),
+  insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
+  update (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
   delete
 on app_public.events to :DATABASE_VISITOR;
 
 create policy select_all on app_public.events
-  for select using (true);
+  for select
+  using (is_draft is false);
 
 create policy manage_own on app_public.events
   for all
@@ -375,10 +372,12 @@ comment on column app_public.quotas.questions_private is
 create index on app_public.quotas(id);
 create index on app_public.quotas(event_id);
 
+-- Allow update only on title and size. This means that once
+-- a quota is created it cannot be moved to another event
 grant
   select,
   insert (event_id, title, size),
-  update (event_id, title, size),
+  update (title, size),
   delete
 on app_public.quotas to :DATABASE_VISITOR;
 
@@ -409,6 +408,106 @@ create policy manage_as_admin on app_public.quotas
 create trigger _100_timestamps
   before insert or update on app_public.quotas for each row
   execute procedure app_private.tg__timestamps();
+
+drop type if exists app_public.create_event_quotas cascade;
+create type app_public.create_event_quotas as (
+  title jsonb,
+  size smallint
+);
+
+create function app_public.create_event_quotas(
+  event_id uuid,
+  quotas app_public.create_event_quotas[]
+)
+returns app_public.quotas[]
+as $$
+  declare
+    v_input app_public.create_event_quotas;
+    v_quota app_public.quotas;
+    v_ret app_public.quotas[] default '{}';
+  begin
+    if app_public.current_user_id() is null then
+      raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
+    end if;
+
+    if (select array_length(quotas, 1)) is null then
+      raise exception 'You must specify at least one quota' using errcode = 'DNIED';
+    end if;
+
+    foreach v_input in array quotas loop
+      insert into app_public.quotas(event_id, title, size)
+        values (event_id, v_input.title, v_input.size)
+        returning * into v_quota;
+
+      v_ret := array_append(v_ret, v_quota);
+    end loop;
+
+    return v_ret;
+  end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+
+drop type if exists app_public.update_event_quotas cascade;
+create type app_public.update_event_quotas as (
+  id uuid,
+  title jsonb,
+  size smallint
+);
+
+create function app_public.update_event_quotas(
+  event_id uuid,
+  quotas app_public.update_event_quotas[]
+)
+returns app_public.quotas[]
+as $$
+#variable_conflict use_variable
+  declare
+  v_test int;
+    v_quota_ids_to_delete uuid[];
+    v_input app_public.update_event_quotas;
+    v_quota app_public.quotas;
+    v_ret app_public.quotas[] default '{}';
+  begin
+    if app_public.current_user_id() is null then
+      raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
+    end if;
+
+    if (select array_length(quotas, 1)) is null then
+      raise exception 'You must specify at least one quota' using errcode = 'DNIED';
+    end if;
+
+    select array(
+      select id from app_public.quotas as q
+      where q.event_id = event_id
+      and q.id not in (select id from unnest(quotas))
+    )
+    into v_quota_ids_to_delete;
+
+    -- Delete existing event quotas that were not supplied
+    -- as input to this function
+    delete from app_public.quotas as q
+      where q.id = any(v_quota_ids_to_delete);
+
+    -- Update existing event quotas by id
+    foreach v_input in array quotas loop
+
+      if exists(select 1 from app_public.quotas where id = v_input.id) then
+        update app_public.quotas
+          set title = v_input.title, size = v_input.size
+          where id = v_input.id
+        returning * into v_quota;
+      else
+        -- Create new quotas that didn't exits before
+        insert into app_public.quotas(event_id, title, size)
+          values (event_id, v_input.title, v_input.size)
+        returning * into v_quota;
+      end if;
+
+      v_ret := array_append(v_ret, v_quota);
+    end loop;
+
+    return v_ret;
+  end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 
 /**********/
 -- Registrations
@@ -492,6 +591,9 @@ create function app_public.registrations_full_name(registration app_public.regis
   select registration.first_name || ' ' || registration.last_name
 $$ language sql stable;
 grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
+
+comment on function app_public.registrations_full_name(registration app_public.registrations) is
+  E'Returns the full name of a registered person.';
 
 create function app_public.create_registration(
   token uuid,
