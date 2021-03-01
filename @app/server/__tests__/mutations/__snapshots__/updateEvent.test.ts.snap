@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UpdateEvent 2`] = `
+exports[`UpdateEvent can update an existing event 2`] = `
 Object {
   "data": Object {
     "updateEvent": Object {
@@ -24,5 +24,30 @@ Object {
       },
     },
   },
+}
+`;
+
+exports[`UpdateEvent can't update an event while logged out (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "updateEvent": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {},
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 5,
+        },
+      ],
+      "message": "No values were updated in collection 'events' because no values you can update were found matching these criteria.",
+      "path": Array [
+        "updateEvent",
+      ],
+    },
+  ],
 }
 `;

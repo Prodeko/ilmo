@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { ApolloError, useApolloClient } from "@apollo/client";
 import {
-  ApolloError,
-  DocumentNode,
-  useApolloClient,
-  useMutation,
-} from "@apollo/client";
-import {
-  RegistrationToken,
   useClaimRegistrationTokenMutation,
+  useCreateEventRegistrationMutation,
+  useDeleteEventRegistrationMutation,
+  useUpdateEventRegistrationMutation,
 } from "@app/graphql";
 import {
   extractError,
@@ -16,19 +13,18 @@ import {
   tailFormItemLayout,
 } from "@app/lib";
 import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, message } from "antd";
+import { Alert, Button, Form, Input, message, Popconfirm } from "antd";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 interface EventRegistrationFormProps {
   type: "update" | "create";
   formRedirect: { pathname: string; query: { [key: string]: string } } | string;
-  formMutationDocument: DocumentNode;
-  // eventId, quotaId are only used when type is "create"
+  // eventId and quotaId are used when type is "create"
   eventId?: string;
   quotaId?: string;
-  // registrationId, initialValues are only used when type is "update"
-  registrationId?: string;
+  // updateToken, initialValues are used when type is "update"
+  updateToken?: string;
   initialValues?: any;
 }
 
@@ -39,9 +35,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     type,
     eventId,
     quotaId,
-    registrationId,
+    updateToken,
     formRedirect,
-    formMutationDocument,
     initialValues,
   } = props;
 
@@ -52,10 +47,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   // Handling form values, errors and submission
   const [form] = Form.useForm();
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const [formQuery] = useMutation(formMutationDocument);
+  const [createRegistration] = useCreateEventRegistrationMutation();
+  const [deleteRegistration] = useDeleteEventRegistrationMutation();
+  const [updateRegistration] = useUpdateEventRegistrationMutation();
   const [claimRegistratioToken] = useClaimRegistrationTokenMutation();
+  const [deleting, setDeleting] = useState(false);
   const [registrationToken, setRegistrationToken] = useState<
-    RegistrationToken | undefined
+    string | undefined
   >(undefined);
 
   const code = getCodeFromError(formError);
@@ -70,7 +68,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           const { data } = await claimRegistratioToken({
             variables: { eventId },
           });
-          const token = data?.claimRegistrationToken?.registrationToken?.token;
+          const token = data?.claimRegistrationToken?.registrationToken;
           setRegistrationToken(token);
         } catch (e) {
           setFormError(e);
@@ -81,21 +79,55 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     claimToken();
   }, [claimRegistratioToken, eventId, quotaId, type]);
 
+  const doDelete = useCallback(() => {
+    setFormError(null);
+    setDeleting(true);
+    (async () => {
+      try {
+        const result = await deleteRegistration({
+          variables: { updateToken },
+        });
+        if (!result) {
+          throw new Error("Result expected");
+        }
+        const { data } = result;
+        if (!data?.deleteRegistration?.success) {
+          throw new Error(t("deleteRegistrationFailed"));
+        }
+        // Success: refetch
+        client.resetStore();
+        router.push(formRedirect);
+        message.success(t("registrationDeleteComplete"));
+      } catch (e) {
+        setFormError(e);
+        Sentry.captureException(e);
+      }
+      setDeleting(false);
+    })();
+  }, [deleteRegistration, updateToken, client, formRedirect, router, t]);
+
   const handleSubmit = useCallback(
     async (values) => {
       setFormError(null);
       try {
-        // registrationToken, eventId and quotaId are used when type is "create"
-        // registrationId is used when type is "update"
-        await formQuery({
-          variables: {
-            ...values,
-            registrationToken,
-            eventId,
-            quotaId,
-            registrationId,
-          },
-        });
+        if (type === "create") {
+          await createRegistration({
+            variables: {
+              ...values,
+              eventId,
+              quotaId,
+              registrationToken,
+            },
+          });
+        } else if (type === "update") {
+          await updateRegistration({
+            variables: {
+              ...values,
+              updateToken,
+            },
+          });
+        }
+
         // Success: refetch
         client.resetStore();
         router.push(formRedirect);
@@ -108,16 +140,17 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       }
     },
     [
-      formQuery,
+      createRegistration,
+      updateRegistration,
       client,
-      registrationId,
-      t,
       registrationToken,
+      updateToken,
       formRedirect,
       router,
       eventId,
       quotaId,
       type,
+      t,
     ]
   );
 
@@ -206,6 +239,24 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         >
           {t(`common:${type}`)}
         </Button>
+        {type === "update" ? (
+          <Popconfirm
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
+            placement="top"
+            title={t("deleteRegistrationConfirmText")}
+            onConfirm={doDelete}
+          >
+            <Button
+              data-cy="eventregistrationform-button-delete-registration"
+              loading={deleting}
+              style={{ marginLeft: 5 }}
+              danger
+            >
+              {t("deleteRegistration")}
+            </Button>
+          </Popconfirm>
+        ) : null}
       </Form.Item>
     </Form>
   );

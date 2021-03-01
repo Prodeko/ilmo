@@ -7,7 +7,7 @@ export {
   createOrganizations,
   createQuotas,
   createRegistrations,
-  createRegistrationTokens,
+  createRegistrationSecrets,
   createSession,
   createUsers,
 } from "./data";
@@ -62,7 +62,7 @@ export const deleteTestEventData = (pool: Pool) => {
   return pool.query(
     `
     BEGIN;
-      delete from app_public.registration_tokens;
+      delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
       delete from app_public.events;

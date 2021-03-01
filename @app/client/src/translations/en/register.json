@@ -1,5 +1,8 @@
 {
   "createdAt": "Time",
+  "deleteRegistration": "Delete registration",
+  "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
+  "deleteRegistrationFailed": "Deleting event registration failed",
   "errors": {
     "registrationFailed": "Registering to the event failed",
     "registrationUpdateFailed": "Failed to update registration information"
@@ -19,6 +22,7 @@
   },
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
+  "registrationDeleteComplete": "Deleted registration",
   "registrationUpdateComplete": "Updated registration information",
   "sidebar": {
     "title": "Quotas"

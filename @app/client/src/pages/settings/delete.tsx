@@ -38,11 +38,7 @@ const Settings_Accounts: NextPage = () => {
           throw new Error("Result expected");
         }
         const { data } = result;
-        if (
-          !data ||
-          !data.requestAccountDeletion ||
-          !data.requestAccountDeletion.success
-        ) {
+        if (!data?.requestAccountDeletion?.success) {
           throw new Error("Requesting deletion failed");
         }
         setItIsDone(true);

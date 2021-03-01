@@ -257,28 +257,29 @@ export const createQuotas = async (
 };
 
 /******************************************************************************/
-// Registration tokens
+// Registration secrets
 
-export const createRegistrationTokens = async (
+export const createRegistrationSecrets = async (
   client: PoolClient,
   count: number = 1,
+  registrationId: string,
   eventId: string
 ) => {
-  const registrationTokens = [];
+  const registrationSecrets = [];
   for (let i = 0; i < count; i++) {
     const {
-      rows: [token],
+      rows: [secret],
     } = await client.query(
-      `insert into app_public.registration_tokens(event_id)
-        values ($1)
+      `insert into app_private.registration_secrets(event_id, registration_id)
+        values ($1, $2)
         returning *
       `,
-      [eventId]
+      [eventId, registrationId]
     );
-    registrationTokens.push(token);
+    registrationSecrets.push(secret);
   }
 
-  return registrationTokens;
+  return registrationSecrets;
 };
 
 /******************************************************************************/

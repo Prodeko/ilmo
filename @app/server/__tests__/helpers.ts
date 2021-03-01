@@ -16,7 +16,7 @@ import {
   createOrganizations,
   createQuotas,
   createRegistrations,
-  createRegistrationTokens,
+  createRegistrationSecrets,
   createSession,
   createUsers,
   poolFromUrl,
@@ -44,12 +44,14 @@ export async function createUserAndLogIn() {
 interface CreateEventDataAndLogin {
   quotaOptions?: { create: boolean; amount?: number };
   registrationOptions?: { create: boolean; amount?: number };
+  eventOptions?: { create: boolean; amount?: number };
 }
 
 export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
   const {
-    registrationOptions = { create: true, amount: 1 },
+    eventOptions = { create: true, amount: 1 },
     quotaOptions = { create: true, amount: 1 },
+    registrationOptions = { create: true, amount: 1 },
   } = args || {};
   const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
@@ -68,43 +70,49 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       1,
       organization.id
     );
-    const [event] = await createEvents(
-      client,
-      1,
-      organization.id,
-      eventCategory.id
-    );
 
-    // Become root to bypass RLS policy on app_public.registration_tokens
+    let events;
+    if (eventOptions.create) {
+      events = await createEvents(
+        client,
+        eventOptions.amount,
+        organization.id,
+        eventCategory.id
+      );
+    }
+
+    // Become root to bypass RLS policy on app_private.registration_secrets
     // and app_public.quotas
     client.query("reset role");
+
     // An existing quota should not exist for createQuotas.test.ts but
     // other tests such as createRegistration.test.ts need an existing
     // quota.
     let quotas;
     if (quotaOptions.create) {
-      quotas = await createQuotas(client, quotaOptions.amount, event.id);
+      quotas = await createQuotas(client, quotaOptions.amount, events[0].id);
     }
-
-    const [registrationToken] = await createRegistrationTokens(
-      client,
-      1,
-      event.id
-    );
 
     // We need an existing registration for updateRegistration.test.ts but
     // don't want to create a registration for createRegistration.test.ts
     // since that would create another registration__send_confirmation_email
     // task.
-    let registration;
+    let registrations;
     if (registrationOptions.create) {
-      [registration] = await createRegistrations(
+      registrations = await createRegistrations(
         client,
         registrationOptions.amount,
-        event.id,
+        events[0].id,
         quotas[0].id
       );
     }
+
+    const [registrationSecret] = await createRegistrationSecrets(
+      client,
+      1,
+      registrations ? registrations[0].id : null,
+      events[0].id
+    );
 
     client.query("COMMIT");
     return {
@@ -112,10 +120,10 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       session,
       organization,
       eventCategory,
-      event,
+      events,
       quotas,
-      registrationToken,
-      registration,
+      registrationSecret,
+      registrations,
     };
   } finally {
     await client.release();
@@ -173,7 +181,7 @@ export function sanitize(json: any): any {
         (k.endsWith("Id") &&
           (typeof json[k] === "number" || typeof json[k] === "string")) ||
         (k.endsWith("Uuid") && typeof k === "string") ||
-        k === "token"
+        k === "registrationToken"
       ) {
         result[k] = mask(result[k], "id");
       } else if (

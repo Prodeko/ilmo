@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { EventRegistrationForm, Redirect, SharedLayout } from "@app/components";
 import {
-  CreateRegistrationDocument,
   Registration,
   useEventRegistrationPageQuery,
   useEventRegistrationsSubscription,
@@ -59,7 +58,6 @@ const EventRegistrationPage: NextPage = () => {
       />
       <EventRegistrationForm
         eventId={event?.id}
-        formMutationDocument={CreateRegistrationDocument}
         formRedirect={{
           pathname: "/event/[slug]",
           query: { slug: event?.slug },

@@ -15,11 +15,11 @@ fragment UpdateEventRegistrationPage_Event on Registration {
 
 fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  registration(id: $registrationId) {
+  registrationByUpdateToken(updateToken: $updateToken) {
     ...UpdateEventRegistrationPage_Event
   }
 }
 
-query UpdateEventRegistrationPage($registrationId: UUID!) {
+query UpdateEventRegistrationPage($updateToken: UUID!) {
   ...UpdateEventRegistrationPage_Query
 }

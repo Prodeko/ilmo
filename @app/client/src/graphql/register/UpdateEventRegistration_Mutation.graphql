@@ -1,12 +1,13 @@
 mutation UpdateEventRegistration(
-  $registrationId: UUID!
+  $updateToken: UUID!
   $firstName: String!
   $lastName: String!
 ) {
   updateRegistration(
     input: {
-      id: $registrationId
-      patch: { firstName: $firstName, lastName: $lastName }
+      updateToken: $updateToken
+      firstName: $firstName
+      lastName: $lastName
     }
   ) {
     registration {

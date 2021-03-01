@@ -27,14 +27,9 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   const {
     rows: [registration],
   } = await withPgClient((pgClient) =>
-    pgClient.query(
-      `
-        select *
-        from app_public.registrations
-        where id = $1
-      `,
-      [registrationId]
-    )
+    pgClient.query("select * from app_public.registrations where id = $1", [
+      registrationId,
+    ])
   );
   if (!registration) {
     console.error("Registration not found; aborting");
@@ -44,26 +39,40 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   const {
     rows: [event],
   } = await withPgClient((pgClient) =>
-    pgClient.query(`select * from app_public.events where id = $1`, [
+    pgClient.query("select * from app_public.events where id = $1", [
       registration.event_id,
     ])
   );
 
   if (!event) {
-    console.error(`No event found for ${registration.event_id}; aborting`);
+    console.error("No event found; aborting");
     return;
   }
 
   const {
     rows: [quota],
   } = await withPgClient((pgClient) =>
-    pgClient.query(`select * from app_public.quotas where id = $1`, [
+    pgClient.query("select * from app_public.quotas where id = $1", [
       registration.quota_id,
     ])
   );
 
   if (!quota) {
-    console.error(`No quota found for ${registration.quota_id}; aborting`);
+    console.error("No quota found; aborting");
+    return;
+  }
+
+  const {
+    rows: [registrationSecret],
+  } = await withPgClient((pgClient) =>
+    pgClient.query(
+      "select * from app_private.registration_secrets where registration_id = $1",
+      [registration.id]
+    )
+  );
+
+  if (!registrationSecret) {
+    console.error("No registration secrets found; aborting");
     return;
   }
 
@@ -80,7 +89,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
       eventLink: `${ROOT_URL}/${event.slug}`,
-      eventRegistrationDeleteLink: ``,
+      eventRegistrationUpdateLink: `${ROOT_URL}/update-registration/${registrationSecret.update_token}`,
     },
   };
 

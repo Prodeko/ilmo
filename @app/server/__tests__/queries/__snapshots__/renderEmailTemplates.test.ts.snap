@@ -1073,7 +1073,8 @@ Confirm intent
               <tr>
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
-      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">Voit poistaa ilmoittautumisen tämän linkin takaa:</div>
+      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
+    <a href target=\\"_blank\\"></a></div>
     
                 </td>
               </tr>
@@ -1114,7 +1115,8 @@ Confirm intent
               <tr>
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
-      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">You can delete your registration through this link:</div>
+      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">You can update or delete your registration via this link:
+    <a href target=\\"_blank\\"></a></div>
     
                 </td>
               </tr>
@@ -1240,7 +1242,7 @@ Confirm intent
 - Linkki tapahtumaan: http://localhost:5678/event/2021-01-01-testitapahtuma
 [http://localhost:5678/event/2021-01-01-testitapahtuma]
 
-Voit poistaa ilmoittautumisen tämän linkin takaa:
+Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
 
 Successfully registered to the event:
 
@@ -1251,7 +1253,7 @@ Successfully registered to the event:
 - Link to the event: http://localhost:5678/event/2021-01-01-testitapahtuma
 [http://localhost:5678/event/2021-01-01-testitapahtuma]
 
-You can delete your registration through this link:
+You can update or delete your registration via this link:
 
 © Tuotantotalouden Kilta Prodeko ry.
 

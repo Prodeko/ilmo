@@ -26,7 +26,7 @@ async function getRegistrationToken(client: PoolClient, token: string) {
     rows: [row],
   } = await asRoot(client, () =>
     client.query(
-      "select * from app_public.registration_tokens where token = $1",
+      "select * from app_private.registration_secrets where id = $1",
       [token]
     )
   );
@@ -55,16 +55,16 @@ it("can claim registration token and token expires", () =>
     await claimToken(client, event.id);
 
     // Assertions
-    const { rows: registrationTokens } = await asRoot(client, () =>
+    const { rows: registrationSecrets } = await asRoot(client, () =>
       client.query(
-        "select * from app_public.registration_tokens where event_id = $1",
+        "select * from app_private.registration_secrets where event_id = $1",
         [event.id]
       )
     );
 
-    expect(registrationTokens).toHaveLength(1);
-    const [registrationToken] = registrationTokens;
-    expect(registrationToken.event_id).toEqual(event.id);
+    expect(registrationSecrets).toHaveLength(1);
+    const [registrationSecret] = registrationSecrets;
+    expect(registrationSecret.event_id).toEqual(event.id);
 
     const jobs = await getJobs(
       client,
@@ -73,7 +73,7 @@ it("can claim registration token and token expires", () =>
     expect(jobs).toHaveLength(1);
     const [job] = jobs;
     expect(job.payload).toMatchObject({
-      token: registrationToken.token,
+      token: registrationSecret.registration_token,
     });
 
     // Assert that the job can run correctly
@@ -84,16 +84,16 @@ it("can claim registration token and token expires", () =>
     const THIRTY_MINUTES = 1000 * 30 * 60;
 
     // Token should exist in the database after creating it
-    const t1 = await getRegistrationToken(client, registrationToken.token);
+    const t1 = await getRegistrationToken(client, registrationSecret.id);
     expect(t1).toBeTruthy();
 
     // Token should still be in the database 1ms before expiration
     jest.advanceTimersByTime(THIRTY_MINUTES - 1);
-    const t2 = await getRegistrationToken(client, registrationToken.token);
+    const t2 = await getRegistrationToken(client, registrationSecret.id);
     expect(t2).toBeTruthy();
 
     // Token should be deleted from db at expiration
     jest.advanceTimersByTime(1);
-    const t3 = await getRegistrationToken(client, registrationToken.token);
+    const t3 = await getRegistrationToken(client, registrationSecret.id);
     expect(t3).toBeUndefined();
   }));

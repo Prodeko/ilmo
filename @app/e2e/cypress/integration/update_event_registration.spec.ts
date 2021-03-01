@@ -11,9 +11,10 @@ context("Update event registration", () => {
 
     // Action
     cy.get("@createEventDataResult").then(
-      ({ event, quota, registration }: any) => {
+      ({ event, quota, registration, registrationSecret }: any) => {
         cy.visit(
-          Cypress.env("ROOT_URL") + `/update-registration/${registration.id}`
+          Cypress.env("ROOT_URL") +
+            `/update-registration/${registrationSecret.update_token}`
         );
         cy.getCy("eventregistrationform-input-firstname").should(
           "have.value",
@@ -35,6 +36,7 @@ context("Update event registration", () => {
         cy.getCy("eventregistrationform-button-submit").click();
 
         // Assertion
+        cy.get(".ant-message").contains("Tiedot päivitetty");
         cy.url().should(
           "equal",
           Cypress.env("ROOT_URL") + `/event/${event.slug}`
@@ -47,6 +49,28 @@ context("Update event registration", () => {
         );
       }
     );
+  });
+
+  it("can delete an existing registration", () => {
+    // Setup
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
+
+    // Action
+    cy.get("@createEventDataResult").then(({ registrationSecret }: any) => {
+      cy.visit(
+        Cypress.env("ROOT_URL") +
+          `/update-registration/${registrationSecret.update_token}`
+      );
+
+      cy.getCy("eventregistrationform-button-delete-registration").click();
+
+      // Assertion
+      cy.get(".ant-popover-buttons button").contains("Kyllä").click();
+      cy.get(".ant-message").contains(
+        "Ilmoittautuminen poistettu onnistuneesti"
+      );
+      cy.url().should("equal", Cypress.env("ROOT_URL") + "/");
+    });
   });
 
   it("redirects to index if registration is not found", () => {

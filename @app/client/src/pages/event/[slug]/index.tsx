@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  H2,
   ProgressBar,
   SharedLayout,
   SimpleTable,
@@ -22,7 +23,7 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const { useBreakpoint } = Grid;
-const { Title, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -176,7 +177,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           </Card>
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
-          <Title level={2}>{name[lang]}</Title>
+          <H2>{name[lang]}</H2>
           <Paragraph>{description[lang]}</Paragraph>
           <SimpleTable
             columns={columns}

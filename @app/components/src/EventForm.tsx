@@ -149,7 +149,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           formValues?.name,
           formValues?.eventTime
         )}`,
-        eventRegistrationDeleteLink: "{{ eventRegistrationDeleteLink }}",
+        eventRegistrationUpdateLink: "{{ eventRegistrationUpdateLink }}",
       },
     },
   });
@@ -208,10 +208,10 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         setFormError(null);
         router.push(formRedirect, formRedirect);
       } catch (e) {
-        setFormSubmimtting(false);
         setFormError(e);
         Sentry.captureException(e);
       }
+      setFormSubmimtting(false);
     },
     [eventQuery, quotasQuery, client, formRedirect, router, t, type, eventId]
   );

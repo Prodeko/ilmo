@@ -1,13 +1,17 @@
 import React from "react";
-import { EventCard, ServerPaginatedTable, SharedLayout } from "@app/components";
+import {
+  EventCard,
+  H3,
+  ServerPaginatedTable,
+  SharedLayout,
+} from "@app/components";
 import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql";
-import { Col, Divider, Empty, Grid, Space, Tag, Typography } from "antd";
+import { Col, Divider, Empty, Grid, Space, Tag } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
 import Link from "next/link";
 import useTranslation from "next-translate/useTranslation";
 
-const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
 const getColor = (org: string) => {
@@ -151,7 +155,7 @@ const Home: NextPage = () => {
 
   return (
     <SharedLayout query={query} title="">
-      <Title level={3}>{t("events.signupsOpenEvents")}</Title>
+      <H3>{t("events.signupsOpenEvents")}</H3>
       <Space direction="vertical" style={{ width: "100%" }}>
         {signupsOpenEvents?.length > 0 ? (
           <div data-cy="homepage-signup-open-events" style={homeGridStyle}>
@@ -162,7 +166,7 @@ const Home: NextPage = () => {
         ) : (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
-        <Title level={3}>{t("events.signupsUpcomingEvents")}</Title>
+        <H3>{t("events.signupsUpcomingEvents")}</H3>
         {signupsUpcomingEvents?.length > 0 ? (
           <div data-cy="homepage-signup-upcoming-events" style={homeGridStyle}>
             {signupsUpcomingEvents?.map((event) => (
@@ -174,7 +178,7 @@ const Home: NextPage = () => {
         )}
         <Divider dashed />
         <Col xs={24}>
-          <Title level={3}>{t("events.signupsClosedEvents")}</Title>
+          <H3>{t("events.signupsClosedEvents")}</H3>
           <ServerPaginatedTable
             columns={columns}
             data-cy="homepage-signup-closed-events"
