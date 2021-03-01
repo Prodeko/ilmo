@@ -1,14 +1,14 @@
-mutation CreateRegistration(
+mutation CreateEventRegistration(
+  $registrationToken: UUID!
   $eventId: UUID!
   $quotaId: UUID!
   $firstName: String!
   $lastName: String!
   $email: String!
-  $registrationToken: UUID!
 ) {
   createRegistration(
     input: {
-      token: $registrationToken
+      registrationToken: $registrationToken
       eventId: $eventId
       quotaId: $quotaId
       firstName: $firstName

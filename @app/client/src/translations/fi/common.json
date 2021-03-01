@@ -15,9 +15,11 @@
   "logout": "Kirjaudu ulos",
   "moreInfo": "Lisätietoja",
   "name": "Nimi",
+  "no": "Ei",
   "redirect": "Uudelleenohjataan...",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
   "signin": "Kirjaudu sisään",
-  "update": "Päivitä"
+  "update": "Päivitä",
+  "yes": "Kyllä"
 }

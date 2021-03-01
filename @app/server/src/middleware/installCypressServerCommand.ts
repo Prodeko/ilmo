@@ -126,7 +126,7 @@ async function runCommand(
   } else if (command === "clearTestEventData") {
     await rootPgPool.query(
       `
-      delete from app_public.registration_tokens;
+      delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
       delete from app_public.events;
@@ -274,6 +274,7 @@ async function runCommand(
       event,
       quota,
       registration,
+      registrationSecret,
     } = await createEventData(rootPgPool, payload);
 
     return {
@@ -283,6 +284,7 @@ async function runCommand(
       event,
       quota,
       registration,
+      registrationSecret,
     };
   } else if (command === "getEmailSecrets") {
     const { email = "test.user@example.com" } = payload;
@@ -376,14 +378,22 @@ async function createEventData(
       quota.id
     );
 
+    const [registrationSecret] = await createRegistrationSecrets(
+      client,
+      1,
+      registration.id,
+      event.id
+    );
+
     await client.query("commit");
     return {
       user,
       organization,
       eventCategory,
       event,
-      registration,
       quota,
+      registration,
+      registrationSecret,
     };
   } finally {
     await client.release();
@@ -567,6 +577,29 @@ export const createQuotas = async (
   }
 
   return quotas;
+};
+
+export const createRegistrationSecrets = async (
+  client: PoolClient,
+  count: number = 1,
+  registrationId: string,
+  eventId: string
+) => {
+  const registrationSecrets = [];
+  for (let i = 0; i < count; i++) {
+    const {
+      rows: [secret],
+    } = await client.query(
+      `insert into app_private.registration_secrets(event_id, registration_id)
+        values ($1, $2)
+        returning *
+      `,
+      [eventId, registrationId]
+    );
+    registrationSecrets.push(secret);
+  }
+
+  return registrationSecrets;
 };
 
 /******************************************************************************/

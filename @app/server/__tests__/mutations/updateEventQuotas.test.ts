@@ -15,10 +15,11 @@ afterAll(teardown);
 describe("UpdateEventQuotas", () => {
   it("can use custom mutation to update multiple quotas", async () => {
     // Create two quotas, the other one should be deleted on update
-    const { event, session, quotas } = await createEventDataAndLogin({
+    const { events, session, quotas } = await createEventDataAndLogin({
       quotaOptions: { create: true, amount: 2 },
       registrationOptions: { create: false },
     });
+    const eventId = events[0].id;
 
     await runGraphQLQuery(
       `mutation UpdateEventQuotas($input: UpdateEventQuotasInput!) {
@@ -35,7 +36,7 @@ describe("UpdateEventQuotas", () => {
       // GraphQL variables:
       {
         input: {
-          eventId: event.id,
+          eventId,
           quotas: [
             {
               id: quotas[0].id,
@@ -80,7 +81,7 @@ describe("UpdateEventQuotas", () => {
 
         expect(quotas).toBeTruthy();
         expect(quotas.length).toEqual(3);
-        expect(quotas[0].eventId).toEqual(event.id);
+        expect(quotas[0].eventId).toEqual(eventId);
 
         expect(sanitize(quotas)).toMatchInlineSnapshot(`
         Array [
@@ -117,23 +118,24 @@ describe("UpdateEventQuotas", () => {
         const { rows } = await asRoot(pgClient, () =>
           pgClient.query(
             `SELECT * FROM app_public.quotas WHERE event_id = $1`,
-            [event.id]
+            [eventId]
           )
         );
 
         if (rows.length !== 3) {
           throw new Error("Quotas not found!");
         }
-        expect(rows[0].event_id).toEqual(event.id);
+        expect(rows[0].event_id).toEqual(eventId);
       }
     );
   });
 
   it("must specify at least one event quota", async () => {
-    const { event, session } = await createEventDataAndLogin({
+    const { events, session } = await createEventDataAndLogin({
       quotaOptions: { create: false },
       registrationOptions: { create: false },
     });
+    const eventId = events[0].id;
 
     await runGraphQLQuery(
       `mutation UpdateEventQuotas($input: UpdateEventQuotasInput!) {
@@ -150,7 +152,7 @@ describe("UpdateEventQuotas", () => {
       // GraphQL variables:
       {
         input: {
-          eventId: event.id,
+          eventId,
           quotas: [],
         },
       },
@@ -171,10 +173,11 @@ describe("UpdateEventQuotas", () => {
   });
 
   it("can't update quotas while logged out", async () => {
-    const { event, quotas } = await createEventDataAndLogin({
+    const { events, quotas } = await createEventDataAndLogin({
       quotaOptions: { create: true, amount: 3 },
       registrationOptions: { create: false },
     });
+    const eventId = events[0].id;
 
     await runGraphQLQuery(
       `mutation UpdateEventQuotas($input: UpdateEventQuotasInput!) {
@@ -191,7 +194,7 @@ describe("UpdateEventQuotas", () => {
       // GraphQL variables:
       {
         input: {
-          eventId: event.id,
+          eventId,
           quotas: [
             {
               id: quotas[0].id,

@@ -1,5 +1,5 @@
 --! Previous: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
---! Hash: sha1:ca109441f679eae610a89bb3bc3384b4319dd209
+--! Hash: sha1:f10794aac27ec9b54299a4b8a5de0683d4ac225e
 
 --! split: 1-current.sql
 /**********/
@@ -261,82 +261,6 @@ create trigger _100_timestamps
   execute procedure app_private.tg__timestamps();
 
 /**********/
--- Registration tokens
-
-drop table if exists app_public.registration_tokens cascade;
-drop function if exists app_public.claim_registration_token(uuid);
-drop function if exists app_public.delete_registration_token(uuid);
-
-create table app_public.registration_tokens(
-  token uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete no action,
-  created_at timestamptz not null default now()
-);
-alter table app_public.registration_tokens enable row level security;
-
-comment on table app_public.registration_tokens is
-  E'Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.';
-comment on column app_public.registration_tokens.event_id is
-  E'Unique identifier for the event.';
-comment on column app_public.registration_tokens.created_at is
-  E'Timestamp of when the token was created.';
-
-create index on app_public.registration_tokens(event_id);
-
--- Schedule graphile worker task for token timeout
-create function app_public.claim_registration_token(
-  event_id uuid
-)
-  returns app_public.registration_tokens
-  as $$
-declare
-  v_token app_public.registration_tokens;
-begin
-  insert into app_public.registration_tokens(event_id)
-    values (event_id)
-  returning
-    * into v_token;
-
-  -- Schedule token deletion
-  perform graphile_worker.add_job(
-    'registration__delete_registration_token',
-    json_build_object('token', v_token.token)
-  );
-
-  return v_token;
-end;
-$$
-language plpgsql strict
-security definer volatile set search_path to pg_catalog, public, pg_temp;
-
-comment on function app_public.claim_registration_token(event_id uuid) is
-  E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
-
--- The function below is used by registration__delete_registration_token
--- worker task to bypass RLS policies on app_public.registration_tokens table.
--- This is achieved by setting SECURITY DEFINER to make this a 'sudo' function.
-create function app_public.delete_registration_token(
-  token uuid
-)
-returns bigint
-as $$
-  with deleted as (
-    -- Delete timed out token
-    delete from app_public.registration_tokens
-    where registration_tokens.token = delete_registration_token.token
-    returning *
-  )
-
-  -- Return number of deleted rows
-  select count(*) from deleted;
-$$
-language sql
-security definer volatile set search_path to pg_catalog, public, pg_temp;
-
-comment on function app_public.delete_registration_token(token uuid) is
-  E'Delete registration token by token id. Used by worker task to bypass RLS policies.';
-
-/**********/
 -- Quotas
 
 drop table if exists app_public.quotas cascade;
@@ -415,6 +339,7 @@ create type app_public.create_event_quotas as (
   size smallint
 );
 
+drop function if exists app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]);
 create function app_public.create_event_quotas(
   event_id uuid,
   quotas app_public.create_event_quotas[]
@@ -446,6 +371,9 @@ as $$
   end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 
+comment on function app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) is
+  E'Create event quotas.';
+
 drop type if exists app_public.update_event_quotas cascade;
 create type app_public.update_event_quotas as (
   id uuid,
@@ -453,6 +381,7 @@ create type app_public.update_event_quotas as (
   size smallint
 );
 
+drop function if exists app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]);
 create function app_public.update_event_quotas(
   event_id uuid,
   quotas app_public.update_event_quotas[]
@@ -509,11 +438,15 @@ as $$
   end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 
+comment on function app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) is
+  E'Update event quotas.';
+
 /**********/
 -- Registrations
 
 drop table if exists app_public.registrations cascade;
 drop function if exists app_public.create_registration(uuid, uuid, text, text, citext);
+drop function if exists app_public.update_registation(uuid, text, text);
 drop function if exists app_public.registration_send_email();
 
 create table app_public.registrations(
@@ -587,6 +520,84 @@ create trigger _100_timestamps
   before insert or update on app_public.registrations for each row
   execute procedure app_private.tg__timestamps();
 
+/**********/
+-- Registration secrets
+
+drop table if exists app_private.registration_secrets cascade;
+drop function if exists app_public.claim_registration_token(uuid);
+drop function if exists app_public.delete_registration_token(uuid);
+drop function if exists app_public.create_registration(uuid, uuid, uuid, text, text, citext);
+drop function if exists app_public.update_registration(uuid, text, text);
+drop function if exists app_public.delete_registration(uuid);
+drop function if exists app_public.registration_by_update_token(uuid);
+
+create table app_private.registration_secrets(
+  id uuid primary key default gen_random_uuid(),
+  registration_token uuid default gen_random_uuid(),
+  update_token uuid default gen_random_uuid(),
+
+  registration_id uuid null references app_public.registrations(id) on delete cascade,
+  event_id uuid not null references app_public.events(id) on delete no action
+);
+alter table app_private.registration_secrets enable row level security;
+
+comment on table app_private.registration_secrets is
+  E'The contents of this table should never be visible to the user. Contains data related to event registrations.';
+
+create index on app_private.registration_secrets(event_id);
+create index on app_private.registration_secrets(registration_id);
+
+-- Schedule graphile worker task for token timeout
+create function app_public.claim_registration_token(
+  event_id uuid
+)
+  returns uuid
+  as $$
+declare
+  v_token uuid;
+begin
+  insert into app_private.registration_secrets(event_id)
+    values (event_id)
+  returning
+    registration_token into v_token;
+
+  -- Schedule token deletion
+  perform graphile_worker.add_job(
+    'registration__delete_registration_token',
+    json_build_object('token', v_token)
+  );
+
+  return v_token;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+
+comment on function app_public.claim_registration_token(event_id uuid) is
+  E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
+
+-- The function below is used by registration__delete_registration_token
+-- worker task to bypass RLS policies on app_private.registration_secrets table.
+-- This is achieved by setting SECURITY DEFINER to make this a 'sudo' function.
+create function app_public.delete_registration_token(
+  token uuid
+)
+returns bigint
+as $$
+  with deleted as (
+    -- Delete timed out token
+    delete from app_private.registration_secrets
+    where registration_secrets.registration_token = token
+    returning *
+  )
+
+  -- Return number of deleted rows
+  select count(*) from deleted;
+$$
+language sql
+security definer volatile set search_path to pg_catalog, public, pg_temp;
+
+comment on function app_public.delete_registration_token(token uuid) is
+  E'Delete registration token by token id. Used by worker task to bypass RLS policies. Should not be publicly visible.';
+
 create function app_public.registrations_full_name(registration app_public.registrations) returns text as $$
   select registration.first_name || ' ' || registration.last_name
 $$ language sql stable;
@@ -596,7 +607,7 @@ comment on function app_public.registrations_full_name(registration app_public.r
   E'Returns the full name of a registered person.';
 
 create function app_public.create_registration(
-  token uuid,
+  "registrationToken" uuid,
   "eventId" uuid,
   "quotaId" uuid,
   "firstName" text,
@@ -610,23 +621,23 @@ declare
   v_quota app_public.quotas;
   v_num_registrations integer;
 begin
-  -- If the provided token does not exist, prevent event registration
+  -- If the provided token does not exist or is not valid for the specified event
+  -- prevent event registration
   if not exists(
-    select 1 from app_public.registration_tokens
-      where registration_tokens.token = create_registration.token
+    select 1 from app_private.registration_secrets
+      where registration_token = "registrationToken"
+      and event_id = "eventId"
   ) then
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
   end if;
 
-  select count(*)
-    into v_num_registrations
-    from app_public.registrations
-    where registrations.quota_id = "quotaId";
+  select count(*) into v_num_registrations from app_public.registrations where registrations.quota_id = "quotaId";
 
-  select *
-    into v_quota
-    from app_public.quotas
-    where id = "quotaId";
+  select * into v_quota from app_public.quotas where id = "quotaId";
+
+  if v_quota.id is null then
+    raise exception 'Quota not found.';
+  end if;
 
   -- If the quota is already full, prevent event registration
   if (v_num_registrations >= v_quota.size) then
@@ -638,13 +649,93 @@ begin
   returning
     * into v_registration;
 
-  -- Delete the used token
-  delete from app_public.registration_tokens
-    where registration_tokens.token = create_registration.token;
+  -- Set the used token to null and set registration_id
+  update app_private.registration_secrets
+    set registration_token = null, registration_id = v_registration.id
+    where registration_secrets.registration_token = "registrationToken";
 
   return v_registration;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 
-comment on function app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
+comment on function app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
   E'Register to an event. Checks that a valid registration token was suplied.';
+
+create function app_public.update_registration(
+  "updateToken" uuid,
+  "firstName" text,
+  "lastName" text
+)
+  returns app_public.registrations
+  as $$
+declare
+  v_registration_id uuid;
+  v_registration app_public.registrations;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    raise exception 'Registration matching token was not found.';
+  end if;
+
+  update app_public.registrations
+    set first_name = "firstName", last_name = "lastName"
+    where id = v_registration_id
+  returning
+    * into v_registration;
+
+  return v_registration;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+
+comment on function app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) is
+  E'Register to an event. Checks that a valid registration token was suplied.';
+
+create function app_public.delete_registration(
+  "updateToken" uuid
+)
+  returns boolean
+  as $$
+declare
+  v_registration_id uuid;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    raise exception 'Registration matching token was not found.';
+  end if;
+
+  -- Delete registration and associated secrets
+  delete from app_public.registrations where id = v_registration_id;
+
+  return true;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+
+comment on function app_public.delete_registration("updateToken" uuid) is
+  E'Delete event registration.';
+
+create function app_public.registration_by_update_token(
+  "updateToken" uuid
+)
+  returns app_public.registrations
+  as $$
+declare
+  v_registration_id uuid;
+  v_registration app_public.registrations;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    return null;
+  end if;
+
+  select * into v_registration from app_public.registrations where id = v_registration_id;
+
+  return v_registration;
+end;
+$$ language plpgsql stable security definer set search_path = pg_catalog, public, pg_temp;
+grant execute on function  app_public.registration_by_update_token("updateToken" uuid) to :DATABASE_VISITOR;
+
+comment on function app_public.registration_by_update_token("updateToken" uuid) is
+  E'Get registration by update token.';

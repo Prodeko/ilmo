@@ -11,13 +11,14 @@ context("Update event", () => {
 
     // Action
     cy.get("@createEventDataResult").then(
-      ({ event, organization, eventCategory }: any) => {
+      ({ event, quota, organization, eventCategory }: any) => {
         cy.login({
           username: "testuser_events",
           password: "DOESNT MATTER",
           existingUser: true,
         });
         cy.visit(Cypress.env("ROOT_URL") + `/event/update/${event.id}`);
+        cy.get(".ant-tabs-tab").as("tabs");
 
         // Assertion
         cy.getCy("eventform-select-language").contains("Suomi");
@@ -44,6 +45,27 @@ context("Update event", () => {
           "have.value",
           event.description["en"]
         );
+
+        // Quotas tab
+        cy.get("@tabs").eq(1).click();
+        cy.getCy("eventform-input-quotas-title-fi-0").should(
+          "have.value",
+          quota.title["fi"]
+        );
+        cy.getCy("eventform-input-quotas-title-en-0").should(
+          "have.value",
+          quota.title["en"]
+        );
+        cy.getCy("eventform-input-quotas-size-0").should(
+          "have.value",
+          quota.size
+        );
+
+        // Email tab
+        cy.get("@tabs").eq(2).click();
+
+        // Back to general tab
+        cy.get("@tabs").eq(0).click();
 
         // TODO: assert dates are correct
         // cy.getCy("eventform-input-event-time").within(() => {

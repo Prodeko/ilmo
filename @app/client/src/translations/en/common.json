@@ -15,9 +15,11 @@
   "logout": "Logout",
   "moreInfo": "Show details",
   "name": "Name",
+  "no": "No",
   "redirect": "Redirecting...",
   "settings": "Settings",
   "shortDescription": "Short description",
   "signin": "Sign in",
-  "update": "Update"
+  "update": "Update",
+  "yes": "Yes"
 }

@@ -4,10 +4,7 @@ exports[`ClaimRegistrationToken 2`] = `
 Object {
   "data": Object {
     "claimRegistrationToken": Object {
-      "registrationToken": Object {
-        "eventId": "[id-2]",
-        "token": "[id-1]",
-      },
+      "registrationToken": "[id-1]",
     },
   },
 }
