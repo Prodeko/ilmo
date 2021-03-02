@@ -13277,10 +13277,10 @@ rc-trigger@^5.0.0, rc-trigger@^5.0.4, rc-trigger@^5.1.2, rc-trigger@^5.2.1:
     rc-motion "^2.0.0"
     rc-util "^5.5.0"
 
-rc-upload@~4.0.0-alpha.6:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/rc-upload/-/rc-upload-4.0.0.tgz#c57e47c9e9fd487946b4759398e5abde7fae1366"
-  integrity sha512-+7FKTPm14zGgLe7/CpTR+aq1l3wWTU5QLBqJQbTwx7H/CqsKWlJG0rnwHpvqhJ/CQC7EMorEu20UVDLElObDDQ==
+rc-upload@3.x, rc-upload@~4.0.0-alpha.6:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/rc-upload/-/rc-upload-3.3.4.tgz#b0668d18661595c69c0621cec220fd116cc79952"
+  integrity sha512-v2sirR4JL31UTHD/f0LGUdd+tpFaOVUTPeIEjAXRP9kRN8TFhqOgcXl5ixtyqj90FmtRUmKmafCv0EmhBQUHqQ==
   dependencies:
     "@babel/runtime" "^7.10.1"
     classnames "^2.2.5"

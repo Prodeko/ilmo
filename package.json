@@ -80,7 +80,8 @@
   "resolutions": {
     "graphql": "15.x",
     "less-loader": "7.x",
-    "webpack": "4.x"
+    "webpack": "4.x",
+    "rc-upload": "3.x"
   },
   "workspaces": {
     "packages": [
