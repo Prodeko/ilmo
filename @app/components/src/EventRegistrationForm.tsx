@@ -23,7 +23,7 @@ interface EventRegistrationFormProps {
   // eventId and quotaId are used when type is "create"
   eventId?: string;
   quotaId?: string;
-  // updateToken, initialValues are used when type is "update"
+  // updateToken and initialValues are used when type is "update"
   updateToken?: string;
   initialValues?: any;
 }
