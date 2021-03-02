@@ -5,6 +5,7 @@ mutation UpdateEvent(
   $organizationId: UUID!
   $categoryId: UUID!
   $isHighlighted: Boolean
+  $isDraft: Boolean
   $headerImageFile: Upload
   $eventStartTime: Datetime!
   $eventEndTime: Datetime!
@@ -20,6 +21,7 @@ mutation UpdateEvent(
         ownerOrganizationId: $organizationId
         categoryId: $categoryId
         isHighlighted: $isHighlighted
+        isDraft: $isDraft
         headerImageFile: $headerImageFile
         eventStartTime: $eventStartTime
         eventEndTime: $eventEndTime
