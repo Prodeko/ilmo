@@ -121,7 +121,7 @@
       // app_public.update_event_quotas.
       "app_public.quotas": {
         "tags": {
-          "omit": "all"
+          "omit": "insert,update, delete"
         }
       }
     },
