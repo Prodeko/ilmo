@@ -8,7 +8,6 @@ import {
   useAdminCategoryId,
 } from "@app/components";
 import {
-  CreatedEventCategoryFragment,
   useAdminCategoryQuery,
   useUpdateEventCategoryMutation,
 } from "@app/graphql";
@@ -26,10 +25,7 @@ const CreateEventCategoryPage: NextPage = () => {
   const { t } = useTranslation("events");
 
   const code = getCodeFromError(formError);
-  const [
-    eventCategory,
-    setEventCategory,
-  ] = useState<null | CreatedEventCategoryFragment>(null);
+  const [eventCategoryId, setEventCategoryId] = useState<null | string>(null);
   const [updateEventCategory] = useUpdateEventCategoryMutation();
 
   const { supportedLanguages } = query.data?.languages || {};
@@ -50,7 +46,7 @@ const CreateEventCategoryPage: NextPage = () => {
           },
         });
         setFormError(null);
-        setEventCategory(data?.updateEventCategory?.eventCategory || null);
+        setEventCategoryId(data?.updateEventCategory?.eventCategory.id || null);
       } catch (e) {
         setFormError(e);
         Sentry.captureException(e);
@@ -59,9 +55,8 @@ const CreateEventCategoryPage: NextPage = () => {
     [updateEventCategory, id]
   );
 
-  if (eventCategory) {
-    console.log(eventCategory);
-    return <Redirect href={`/admin/category/${eventCategory.id}`} layout />;
+  if (eventCategoryId) {
+    return <Redirect href={`/admin/category/${eventCategoryId}`} layout />;
   }
 
   const organizationMemberships =
@@ -90,6 +85,7 @@ const CreateEventCategoryPage: NextPage = () => {
                 as={`/admin/category/${id}`}
                 data-cy="admin-update-back-wo-saving"
                 href="/admin/category/[id]"
+                type="default"
               >
                 {t("admin:backWithoutSaving")}
               </ButtonLink>,

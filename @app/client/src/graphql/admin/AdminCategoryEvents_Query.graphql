@@ -2,15 +2,15 @@ fragment AdminCategoryEvents_EventCategory on EventCategory {
   id
   eventsByCategoryId(
     first: $first
-    orderBy: START_TIME_ASC
+    orderBy: EVENT_START_TIME_ASC
     offset: $offset
-    filter: { startTime: { greaterThan: $today } }
+    filter: { eventStartTime: { greaterThan: $today } }
   ) {
     nodes {
       name
-      startTime
+      eventStartTime
       slug
-      endTime
+      eventEndTime
       id
       registrations {
         totalCount

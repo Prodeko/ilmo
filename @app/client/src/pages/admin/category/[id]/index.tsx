@@ -128,7 +128,7 @@ const OrganizationPageInner: React.FC<AdminCategoryPageInnerProps> = (
     },
     {
       title: t("events:time"),
-      dataIndex: "startTime",
+      dataIndex: "eventStartTime",
       render: (startTime: string) => dayjs(startTime).format("l LTS"),
     },
   ];

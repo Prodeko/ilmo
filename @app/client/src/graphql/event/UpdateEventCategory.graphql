@@ -16,7 +16,6 @@ mutation UpdateEventCategory(
   ) {
     eventCategory {
       id
-      ...CreatedEventCategory
     }
   }
 }
