@@ -8,7 +8,6 @@
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
   },
   "dependencies": {
-    "@ant-design/colors": "^6.0.0",
     "@ant-design/icons": "^4.5.0",
     "@apollo/client": "3.4.0-beta.11",
     "@app/graphql": "0.0.0",
