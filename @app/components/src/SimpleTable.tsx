@@ -11,6 +11,7 @@ export function SimpleTable({ data, columns, ...props }: Props) {
     <Table
       columns={columns}
       dataSource={data}
+      pagination={{ defaultPageSize: 10, hideOnSinglePage: true }}
       rowClassName={(record, _index) =>
         record?.isHighlighted ? "table-row-highlight" : ""
       }

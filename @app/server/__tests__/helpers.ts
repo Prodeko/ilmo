@@ -44,12 +44,16 @@ export async function createUserAndLogIn() {
 interface CreateEventDataAndLogin {
   quotaOptions?: { create: boolean; amount?: number };
   registrationOptions?: { create: boolean; amount?: number };
-  eventOptions?: { create: boolean; amount?: number };
+  eventOptions?: {
+    create: boolean;
+    amount?: number;
+    signupOpen?: boolean;
+  };
 }
 
 export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
   const {
-    eventOptions = { create: true, amount: 1 },
+    eventOptions = { create: true, amount: 1, signupOpen: true },
     quotaOptions = { create: true, amount: 1 },
     registrationOptions = { create: true, amount: 1 },
   } = args || {};
@@ -77,7 +81,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         client,
         eventOptions.amount,
         organization.id,
-        eventCategory.id
+        eventCategory.id,
+        eventOptions.signupOpen
       );
     }
 

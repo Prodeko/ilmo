@@ -136,15 +136,12 @@ export const createEventCategories = async (
   return categories;
 };
 
-function randomNumber(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
-
 export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
-  categoryId: string
+  categoryId: string,
+  signupOpen: boolean = true
 ) => {
   const events = [];
   for (let i = 0; i < count; i++) {
@@ -158,8 +155,8 @@ export const createEvents = async (
     };
 
     const now = new Date();
-    const randomDays = randomNumber(-10, 10);
-    const registrationStartTime = dayjs(now).add(randomDays, "day").toDate();
+    const dayAdjustment = signupOpen ? -1 : 1;
+    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate();
     const registrationEndTime = faker.date.between(
       registrationStartTime,
       dayjs(registrationStartTime).add(7, "day").toDate()

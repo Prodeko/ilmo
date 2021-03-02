@@ -1,13 +1,12 @@
 import React from "react";
 import { Event } from "@app/graphql";
-import { Card, Typography } from "antd";
+import { Card } from "antd";
 import dayjs from "dayjs";
 import useTranslation from "next-translate/useTranslation";
 
-import { ButtonLink } from ".";
+import { ButtonLink, P } from ".";
 
 const { Meta } = Card;
-const { Paragraph } = Typography;
 interface EventCardProps {
   event: Event;
 }
@@ -51,7 +50,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               <br />
               {dayjs(registrationEndTime).format("LLL")}
             </div>
-            <Paragraph
+            <P
               ellipsis={{
                 rows: 2,
               }}
@@ -59,7 +58,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               type="secondary"
             >
               {description[lang]}
-            </Paragraph>
+            </P>
             <ButtonLink
               data-cy={`eventcard-eventpage-link-${event.slug}`}
               href={`/event/${slug}`}

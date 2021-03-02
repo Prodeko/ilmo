@@ -29,7 +29,6 @@ context("Create event registration", () => {
       );
       cy.getCy("eventpage-signups-table").should("contain", "Etunimi");
       cy.getCy("eventpage-signups-table").should("contain", "Sukunimi");
-      cy.getCy("eventpage-signups-table").should("contain", quota.title["fi"]);
     });
   });
 

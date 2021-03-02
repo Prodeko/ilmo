@@ -11,7 +11,7 @@ context("Update event registration", () => {
 
     // Action
     cy.get("@createEventDataResult").then(
-      ({ event, quota, registration, registrationSecret }: any) => {
+      ({ event, registration, registrationSecret }: any) => {
         cy.visit(
           Cypress.env("ROOT_URL") +
             `/update-registration/${registrationSecret.update_token}`
@@ -43,10 +43,6 @@ context("Update event registration", () => {
         );
         cy.getCy("eventpage-signups-table").should("contain", "Etunimi");
         cy.getCy("eventpage-signups-table").should("contain", "Sukunimi");
-        cy.getCy("eventpage-signups-table").should(
-          "contain",
-          quota.title["fi"]
-        );
       }
     );
   });

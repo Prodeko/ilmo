@@ -1,5 +1,5 @@
 --! Previous: sha1:ba942d8cbb0359426ffdfb106fffa6b66729ab12
---! Hash: sha1:953ad30d66b6af5827f2714cb52ae2f9fdd28c92
+--! Hash: sha1:faff6961992051e6847ffaecdb8f4be1346e7e9a
 
 --! split: 1-current.sql
 /**********/
@@ -87,7 +87,7 @@ returns boolean as $$
 $$ language sql stable;
 
 comment on function app_public.events_signup_upcoming(e app_public.events) is
-  E'Designated whether event signup is upcoming or not.';
+  E'Designates whether event signup is upcoming or not.';
 
 create function app_public.events_signup_open(e app_public.events)
 returns boolean as $$
@@ -95,7 +95,7 @@ returns boolean as $$
 $$ language sql stable;
 
 comment on function app_public.events_signup_open(e app_public.events) is
-  E'Designated whether event signup is open or not.';
+  E'Designates whether event signup is open or not.';
 
 create function app_public.events_signup_closed(e app_public.events)
 returns boolean as $$
@@ -103,7 +103,7 @@ returns boolean as $$
 $$ language sql stable;
 
 comment on function app_public.events_signup_closed(e app_public.events) is
-  E'Designated whether event signup is closed or not.';
+  E'Designates whether event signup is closed or not.';
 
 comment on table app_public.events is
   E'Main table for events.';
@@ -466,7 +466,7 @@ create trigger _100_send_registration_email
   for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
 
 create trigger _500_gql_insert
-  after insert on app_public.registrations
+  after insert or update or delete on app_public.registrations
   for each row
   execute procedure app_public.tg__graphql_subscription(
     'registrationAdded', -- the "event" string, useful for the client to know what happened
@@ -496,7 +496,7 @@ comment on column app_public.registrations.email is
 grant
   select,
   insert (event_id, quota_id, first_name, last_name, email),
-  update (event_id, quota_id, first_name, last_name, email),
+  update (first_name, last_name),
   delete
 on app_public.registrations to :DATABASE_VISITOR;
 
@@ -598,13 +598,41 @@ security definer volatile set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.delete_registration_token(token uuid) is
   E'Delete registration token by token id. Used by worker task to bypass RLS policies. Should not be publicly visible.';
 
-create function app_public.registrations_full_name(registration app_public.registrations) returns text as $$
+create function app_public.registrations_full_name(registration app_public.registrations)
+returns text as $$
   select registration.first_name || ' ' || registration.last_name
 $$ language sql stable;
 grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
 
 comment on function app_public.registrations_full_name(registration app_public.registrations) is
   E'Returns the full name of a registered person.';
+
+create function app_public.registrations_is_queued(registration app_public.registrations)
+  returns boolean as $$
+declare
+  v_registrations_before_self integer;
+  v_quota app_public.quotas;
+begin
+  select * into v_quota from app_public.quotas where id = registration.quota_id;
+
+  select count(*)
+  into v_registrations_before_self
+  from app_public.registrations
+  where created_at < registration.created_at
+    and event_id = registration.event_id
+    and quota_id = registration.quota_id;
+
+  if v_registrations_before_self >= v_quota.size then
+    return true;
+  else
+    return false;
+  end if;
+end;
+$$ language plpgsql stable;
+grant execute on function app_public.registrations_is_queued(registration app_public.registrations) to :DATABASE_VISITOR;
+
+comment on function app_public.registrations_is_queued(registration app_public.registrations) is
+  E'Designates whether the registration is queued for a quota or not.';
 
 create function app_public.create_registration(
   "registrationToken" uuid,
@@ -619,8 +647,21 @@ create function app_public.create_registration(
 declare
   v_registration app_public.registrations;
   v_quota app_public.quotas;
-  v_num_registrations integer;
+  v_event app_public.events;
+  v_event_signup_open boolean;
 begin
+  select * into v_quota from app_public.quotas where id = "quotaId";
+  select * into v_event from app_public.events where id = "eventId";
+
+  -- If either event or quota are not found, prevent event registration
+  if v_quota.id is null then
+    raise exception 'Quota not found.' using errcode = 'NTFND';
+  end if;
+
+  if v_event.id is null then
+    raise exception 'Event not found.' using errcode = 'NTFND';
+  end if;
+
   -- If the provided token does not exist or is not valid for the specified event
   -- prevent event registration
   if not exists(
@@ -631,19 +672,13 @@ begin
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
   end if;
 
-  select count(*) into v_num_registrations from app_public.registrations where registrations.quota_id = "quotaId";
-
-  select * into v_quota from app_public.quotas where id = "quotaId";
-
-  if v_quota.id is null then
-    raise exception 'Quota not found.';
+  -- If the registration is not open yet, prevent event registration
+  v_event_signup_open := (select app_public.events_signup_open(v_event));
+  if not v_event_signup_open then
+    raise exception 'Event registration is not open.' using errcode = 'DNIED';
   end if;
 
-  -- If the quota is already full, prevent event registration
-  if (v_num_registrations >= v_quota.size) then
-    raise exception 'Event quota already full.' using errcode = 'DNIED';
-  end if;
-
+  -- Create registration
   insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
     values ("eventId", "quotaId", "firstName", "lastName", "email")
   returning
