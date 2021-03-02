@@ -1,0 +1,17 @@
+fragment HomePageEvents_Query on Query {
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: { signupClosed: { equalTo: true } }
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
+      ...HomePage_Event
+    }
+    totalCount
+  }
+}
+
+query HomePageEvents($offset: Int!, $first: Int!) {
+  ...HomePageEvents_Query
+}

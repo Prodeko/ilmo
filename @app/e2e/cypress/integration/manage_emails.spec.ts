@@ -5,7 +5,7 @@ context("Manage emails", () => {
 
   it("can navigate to manage emails page", () => {
     // Setup
-    cy.login({ next: "/", verified: true });
+    cy.login({ verified: true });
 
     // Action
     cy.getCy("layout-dropdown-user").click();

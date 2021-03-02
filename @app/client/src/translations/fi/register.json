@@ -1,7 +1,11 @@
 {
   "createdAt": "Aika",
+  "deleteRegistration": "Poista ilmoittautuminen",
+  "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautummisesi?",
+  "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
   "errors": {
-    "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui"
+    "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui",
+    "registrationUpdateFailed": "Tietojen päivittäminen epäonnistui"
   },
   "eventSignupComplete": "Ilmoittautuminen tallennettu",
   "forms": {
@@ -18,8 +22,13 @@
   },
   "recentlyRegisteredHeader": "Äskettäin rekisteröityneet:",
   "recentlyRegisteredListItem": "ilmoittautui juuri kiintiöön",
+  "registrationDeleteComplete": "Ilmoittautuminen poistettu onnistuneesti",
+  "registrationUpdateComplete": "Tiedot päivitetty",
   "sidebar": {
     "title": "Kiintiöt"
   },
-  "title": "Ilmoittaudu tapahtumaan:"
+  "title": "Ilmoittaudu tapahtumaan:",
+  "updateRegistration": {
+    "title": "Päivitä rekisteröitymistiedot"
+  }
 }

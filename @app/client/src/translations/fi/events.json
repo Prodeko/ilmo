@@ -1,4 +1,5 @@
 {
+  "addQuota": "Lisää kiintiö",
   "category": "Kategoria",
   "createEvent": {
     "title": "Luo tapahtuma"
@@ -8,13 +9,17 @@
   },
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
-    "eventCreationFailed": "Tapahtuman luonti epäonnistui"
+    "eventCreationFailed": "Tapahtuman luonti epäonnistui",
+    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö",
+    "otherFormErrors": "Muut virheet"
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
   "forms": {
-    "eventTime": "Ajankohta",
+    "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
+    "isDraft": "Luonnos",
+    "isNotDraft": "Julkaistu",
     "placeholders": {
       "en": "Englanniksi",
       "event": {
@@ -25,8 +30,13 @@
         "organizer": "Valitse kategorian järjestäjä"
       },
       "fi": "Suomeksi",
-      "languages": "Valitse kielet"
+      "languages": "Valitse kielet",
+      "quota": {
+        "size": "Koko",
+        "title": "Otsikko"
+      }
     },
+    "registrationTime": "Ilmoittautumisen aukiolo",
     "rules": {
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",
@@ -34,6 +44,7 @@
         "provideEventTime": "Aseta tapahtuman ajankohta",
         "provideName": "Anna tapahtuman nimi",
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",
+        "provideRegistrationTime": "Aseta tapahtumaan ilmoittautumisen ajankohta",
         "provideSignupEmail": "Ilmoittautumissähköposti vaaditaan"
       },
       "eventCategory": {
@@ -41,16 +52,28 @@
         "provideName": "Anna kategorian nimi",
         "provideOrganizer": "Valitse järjestäjä kategorialle"
       },
-      "provideLanguage": "Valitse kielet"
+      "provideLanguage": "Valitse kielet",
+      "quota": {
+        "provideQuotaSize": "Anna kiintiön koko",
+        "provideQuotaTitle": "Anna kiintiön nimi"
+      }
     },
+    "saveAsDraft": "Tallenna luonnoksena",
     "signupEmail": "Sähköposti",
     "tabs": {
       "email": "Sähköposti",
-      "generalInfo": "Yleistä"
+      "generalInfo": "Yleistä",
+      "quotas": "Kiintiöt"
     }
   },
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
+  "numRegistrations": "Rekisteröityneitä",
   "organizer": "Järjestäjä",
-  "time": "Aika"
+  "registerToAnEvent": "Ilmoittaudu",
+  "removeQuota": "Poista kiintiö",
+  "time": "Aika",
+  "updateEvent": {
+    "title": "Päivitä tapahtuma"
+  }
 }

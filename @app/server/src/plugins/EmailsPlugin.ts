@@ -27,7 +27,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       eventName: TranslatedInputField
       eventTime: String
       eventLink: String
-      eventRegistrationDeleteLink: String
+      eventRegistrationUpdateLink: String
     }
 
     """
@@ -135,7 +135,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               eventName: { fi: "Testitapahtuma", en: "Test event" },
               eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
               eventLink: `${ROOT_URL}/event/2021-01-01-testitapahtuma`,
-              eventRegistrationDeleteLink: "",
+              eventRegistrationUpdateLink: "",
               actionDescription: "You changed your password.",
               deleteAccountLink: "",
               contentFinnish:

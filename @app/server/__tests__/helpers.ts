@@ -15,10 +15,12 @@ import {
   createEvents,
   createOrganizations,
   createQuotas,
-  createRegistrationTokens,
+  createRegistrations,
+  createRegistrationSecrets,
   createSession,
   createUsers,
   poolFromUrl,
+  TEST_DATABASE_URL,
 } from "../../__tests__/helpers";
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile";
 
@@ -27,7 +29,7 @@ export * from "../../__tests__/helpers";
 const MockReq = require("mock-req");
 
 export async function createUserAndLogIn() {
-  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+  const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
     const [user] = await createUsers(client, 1, true);
@@ -39,8 +41,19 @@ export async function createUserAndLogIn() {
   }
 }
 
-export async function createEventDataAndLogin() {
-  const pool = poolFromUrl(process.env.TEST_DATABASE_URL!);
+interface CreateEventDataAndLogin {
+  quotaOptions?: { create: boolean; amount?: number };
+  registrationOptions?: { create: boolean; amount?: number };
+  eventOptions?: { create: boolean; amount?: number };
+}
+
+export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
+  const {
+    eventOptions = { create: true, amount: 1 },
+    quotaOptions = { create: true, amount: 1 },
+    registrationOptions = { create: true, amount: 1 },
+  } = args || {};
+  const pool = poolFromUrl(TEST_DATABASE_URL!);
   const client = await pool.connect();
   try {
     // Have to begin a transaction here, since we set the third parameter
@@ -57,20 +70,48 @@ export async function createEventDataAndLogin() {
       1,
       organization.id
     );
-    const [event] = await createEvents(
-      client,
-      1,
-      organization.id,
-      eventCategory.id
-    );
-    const [quota] = await createQuotas(client, 1, event.id);
 
-    // Become root to bypass RLS policy on app_public.registration_tokens
+    let events;
+    if (eventOptions.create) {
+      events = await createEvents(
+        client,
+        eventOptions.amount,
+        organization.id,
+        eventCategory.id
+      );
+    }
+
+    // Become root to bypass RLS policy on app_private.registration_secrets
+    // and app_public.quotas
     client.query("reset role");
-    const [registrationToken] = await createRegistrationTokens(
+
+    // An existing quota should not exist for createQuotas.test.ts but
+    // other tests such as createRegistration.test.ts need an existing
+    // quota.
+    let quotas;
+    if (quotaOptions.create) {
+      quotas = await createQuotas(client, quotaOptions.amount, events[0].id);
+    }
+
+    // We need an existing registration for updateRegistration.test.ts but
+    // don't want to create a registration for createRegistration.test.ts
+    // since that would create another registration__send_confirmation_email
+    // task.
+    let registrations;
+    if (registrationOptions.create) {
+      registrations = await createRegistrations(
+        client,
+        registrationOptions.amount,
+        events[0].id,
+        quotas[0].id
+      );
+    }
+
+    const [registrationSecret] = await createRegistrationSecrets(
       client,
       1,
-      event.id
+      registrations ? registrations[0].id : null,
+      events[0].id
     );
 
     client.query("COMMIT");
@@ -79,9 +120,10 @@ export async function createEventDataAndLogin() {
       session,
       organization,
       eventCategory,
-      event,
-      quota,
-      registrationToken,
+      events,
+      quotas,
+      registrationSecret,
+      registrations,
     };
   } finally {
     await client.release();
@@ -139,11 +181,11 @@ export function sanitize(json: any): any {
         (k.endsWith("Id") &&
           (typeof json[k] === "number" || typeof json[k] === "string")) ||
         (k.endsWith("Uuid") && typeof k === "string") ||
-        k === "token"
+        k === "registrationToken"
       ) {
         result[k] = mask(result[k], "id");
       } else if (
-        (k.endsWith("At") || k === "datetime") &&
+        (k.endsWith("At") || k.endsWith("Time") || k === "datetime") &&
         typeof json[k] === "string"
       ) {
         result[k] = mask(result[k], "timestamp");
@@ -178,11 +220,11 @@ let ctx: ICtx | null = null;
 
 export const setup = async () => {
   const rootPgPool = new Pool({
-    connectionString: process.env.TEST_DATABASE_URL,
+    connectionString: TEST_DATABASE_URL,
   });
   const redisClient = new Redis(process.env.TEST_REDIS_URL);
   const workerUtils = await makeWorkerUtils({
-    connectionString: process.env.TEST_DATABASE_URL,
+    connectionString: TEST_DATABASE_URL,
   });
   const options = getPostGraphileOptions({
     rootPgPool,

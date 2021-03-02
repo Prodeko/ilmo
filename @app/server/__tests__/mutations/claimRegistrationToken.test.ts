@@ -13,21 +13,19 @@ beforeAll(setup);
 afterAll(teardown);
 
 test("ClaimRegistrationToken", async () => {
-  const { event } = await createEventDataAndLogin();
+  const { events } = await createEventDataAndLogin();
+  const eventId = events[0].id;
+
   await runGraphQLQuery(
     `mutation ClaimRegistrationToken($eventId: UUID!) {
       claimRegistrationToken(input: { eventId: $eventId }) {
-        registrationToken {
-          token
-          eventId
-        }
+        registrationToken
       }
-    }
-    `,
+    }`,
 
     // GraphQL variables:
     {
-      eventId: event.id,
+      eventId,
     },
 
     // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
@@ -38,33 +36,29 @@ test("ClaimRegistrationToken", async () => {
       expect(json.errors).toBeFalsy();
       expect(json.data).toBeTruthy();
 
-      const registrationToken = json.data!.claimRegistrationToken
-        .registrationToken;
+      const tokenObject = json.data!.claimRegistrationToken;
+      expect(tokenObject).toBeTruthy();
 
-      expect(registrationToken).toBeTruthy();
-      expect(registrationToken.token).toBeTruthy();
-      expect(registrationToken.eventId).toBeTruthy();
-
-      expect(sanitize(registrationToken)).toMatchInlineSnapshot(`
+      expect(sanitize(tokenObject)).toMatchInlineSnapshot(`
         Object {
-          "eventId": "[id-2]",
-          "token": "[id-1]",
+          "registrationToken": "[id-1]",
         }
       `);
 
-      const token = registrationToken.token;
+      const registrationToken = tokenObject.registrationToken;
       const { rows } = await asRoot(pgClient, () =>
         pgClient.query(
-          `SELECT * FROM app_public.registration_tokens WHERE token = $1`,
-          [token]
+          `SELECT * FROM app_private.registration_secrets WHERE registration_token = $1`,
+          [registrationToken]
         )
       );
+
       if (rows.length !== 1) {
         throw new Error("Token not found!");
       }
-      expect(rows[0].event_id).toEqual(registrationToken.eventId);
+      expect(rows[0].registration_token).toEqual(registrationToken);
 
-      const redisKey = `rate-limit:claimRegistrationToken:${event.id}:${req.ip}`;
+      const redisKey = `rate-limit:claimRegistrationToken:${eventId}:${req.ip}`;
       const value = await redisClient.get(redisKey);
 
       // Redis should contain rate limit value after calling

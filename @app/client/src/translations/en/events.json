@@ -1,20 +1,25 @@
 {
+  "addQuota": "Add quota",
   "category": "Category",
   "createEvent": {
-    "title": "Luo tapahtuma"
+    "title": "Create event"
   },
   "createEventCategory": {
     "title": "Create event category"
   },
   "errors": {
     "eventCategoryCreationFailed": "Creating event category failed",
-    "eventCreationFailed": "Creating event failed"
+    "eventCreationFailed": "Creating event failed",
+    "mustProvideEventQuota": "Must provide at least one quota for the event",
+    "otherFormErrors": "Other errors"
   },
   "eventName": "Event",
   "eventNotFound": "Event not found",
   "forms": {
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
+    "isDraft": "Draft",
+    "isNotDraft": "Julkaistu",
     "placeholders": {
       "en": "In English",
       "event": {
@@ -25,8 +30,13 @@
         "organizer": "Please select an organizer for the event category"
       },
       "fi": "In Finnish",
-      "languages": "Please select languages"
+      "languages": "Please select languages",
+      "quota": {
+        "size": "Size",
+        "title": "Title"
+      }
     },
+    "registrationTime": "Registration time",
     "rules": {
       "event": {
         "provideCategory": "Please choose a category for the event",
@@ -34,6 +44,7 @@
         "provideEventTime": "Please select event time",
         "provideName": "Please choose a name for the event",
         "provideOrganizer": "Please choose an organizer for the event",
+        "provideRegistrationTime": "Please select event registration time",
         "provideSignupEmail": "Please provide a welcome email for the event"
       },
       "eventCategory": {
@@ -41,16 +52,28 @@
         "provideName": "Please choose a name for the category",
         "provideOrganizer": "Please choose a host organization for the category"
       },
-      "provideLanguage": "Please select languages"
+      "provideLanguage": "Please select languages",
+      "quota": {
+        "provideQuotaSize": "Please provide a size for the quota",
+        "provideQuotaTitle": "Please provide a description for the quota"
+      }
     },
+    "saveAsDraft": "Save as draft",
     "signupEmail": "Event signup email",
     "tabs": {
       "email": "Email",
-      "generalInfo": "General"
+      "generalInfo": "General",
+      "quotas": "Quotas"
     }
   },
   "headerImage": "Event header image",
   "languages": "Languages",
+  "numRegistrations": "Registered people",
   "organizer": "Organizer",
-  "time": "Time"
+  "registerToAnEvent": "Signup",
+  "removeQuota": "Remove quota",
+  "time": "Time",
+  "updateEvent": {
+    "title": "Update event"
+  }
 }

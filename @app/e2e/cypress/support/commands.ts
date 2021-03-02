@@ -70,7 +70,7 @@ function serverCommand(
  */
 function serverCommand(
   command: "createTestEventData",
-  payload: {}
+  payload?: {}
 ): Chainable<{
   success: true;
 }>;
@@ -134,6 +134,7 @@ function login(payload?: {
   verified?: boolean;
   password?: string;
   orgs?: [[string, string] | [string, string, boolean]];
+  existingUser?: true;
 }): Chainable<Window> {
   return cy.visit(
     Cypress.env("ROOT_URL") +

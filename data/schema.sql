@@ -80,12 +80,22 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- Name: app_language; Type: TYPE; Schema: app_public; Owner: -
+-- Name: app_languages; Type: TYPE; Schema: app_public; Owner: -
 --
 
-CREATE TYPE app_public.app_language AS (
+CREATE TYPE app_public.app_languages AS (
 	supported_languages text[],
 	default_language text
+);
+
+
+--
+-- Name: create_event_quotas; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.create_event_quotas AS (
+	title jsonb,
+	size smallint
 );
 
 
@@ -97,6 +107,17 @@ CREATE TYPE app_public.question_type AS ENUM (
     'short-text',
     'long-text',
     'option'
+);
+
+
+--
+-- Name: update_event_quotas; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.update_event_quotas AS (
+	id uuid,
+	title jsonb,
+	size smallint
 );
 
 
@@ -826,67 +847,44 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 --
 
 CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
-    LANGUAGE sql STABLE
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
-  -- Check that 'fi' and 'en' exist as top level keys in _column
-  select _column ?| array['fi', 'en']
-  -- ...and that _column contains no other top level keys than 'fi' and 'en'
-  and (select array['fi', 'en'] @> array_agg(keys) from jsonb_object_keys(_column) as keys);
+declare
+  v_supported_languages text[];
+begin
+  select supported_languages into v_supported_languages from app_public.languages();
+
+  return (
+    -- Check that supported_languages exist as top level keys in _column
+    select _column ?| v_supported_languages
+    -- ...and that _column contains no other top level keys than supported_languages
+    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
+  );
+end;
 $$;
-
-
---
--- Name: registration_tokens; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.registration_tokens (
-    token uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: TABLE registration_tokens; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.registration_tokens IS 'Contains event regitration tokens that are used to. Tokens expire in 30 miuntes.';
-
-
---
--- Name: COLUMN registration_tokens.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registration_tokens.event_id IS 'Unique identifier for the event.';
-
-
---
--- Name: COLUMN registration_tokens.created_at; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registration_tokens.created_at IS 'Timestamp of when the token was created.';
 
 
 --
 -- Name: claim_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.claim_registration_token(event_id uuid) RETURNS app_public.registration_tokens
-    LANGUAGE plpgsql STRICT SECURITY DEFINER
+CREATE FUNCTION app_public.claim_registration_token(event_id uuid) RETURNS uuid
+    LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
-  v_token app_public.registration_tokens;
+  v_token uuid;
 begin
-  insert into app_public.registration_tokens(event_id)
+  insert into app_private.registration_secrets(event_id)
     values (event_id)
   returning
-    * into v_token;
+    registration_token into v_token;
 
   -- Schedule token deletion
   perform graphile_worker.add_job(
     'registration__delete_registration_token',
-    json_build_object('token', v_token.token)
+    json_build_object('token', v_token)
   );
 
   return v_token;
@@ -949,6 +947,107 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.confirm_account_deletion(token text) IS 'If you''re certain you want to delete your account, use `requestAccountDeletion` to request an account deletion token, and then supply the token through this mutation to complete account deletion.';
+
+
+--
+-- Name: quotas; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.quotas (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    title jsonb NOT NULL,
+    size smallint NOT NULL,
+    questions_public json,
+    questions_private json,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT _cnstr_check_title_language CHECK (app_public.check_language(title)),
+    CONSTRAINT quotas_size_check CHECK ((size > 0))
+);
+
+
+--
+-- Name: TABLE quotas; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.quotas IS 'Main table for registration quotas.';
+
+
+--
+-- Name: COLUMN quotas.event_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.event_id IS 'Identifier of the event that this quota is for.';
+
+
+--
+-- Name: COLUMN quotas.title; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.title IS 'Title for the quota.';
+
+
+--
+-- Name: COLUMN quotas.size; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
+
+
+--
+-- Name: COLUMN quotas.questions_public; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.questions_public IS 'Public questions related to the quota.';
+
+
+--
+-- Name: COLUMN quotas.questions_private; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.questions_private IS 'Private questions related to the quota.';
+
+
+--
+-- Name: create_event_quotas(uuid, app_public.create_event_quotas[]); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) RETURNS app_public.quotas[]
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  declare
+    v_input app_public.create_event_quotas;
+    v_quota app_public.quotas;
+    v_ret app_public.quotas[] default '{}';
+  begin
+    if app_public.current_user_id() is null then
+      raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
+    end if;
+
+    if (select array_length(quotas, 1)) is null then
+      raise exception 'You must specify at least one quota' using errcode = 'DNIED';
+    end if;
+
+    foreach v_input in array quotas loop
+      insert into app_public.quotas(event_id, title, size)
+        values (event_id, v_input.title, v_input.size)
+        returning * into v_quota;
+
+      v_ret := array_append(v_ret, v_quota);
+    end loop;
+
+    return v_ret;
+  end;
+$$;
+
+
+--
+-- Name: FUNCTION create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) IS 'Create event quotas.';
 
 
 --
@@ -1056,19 +1155,36 @@ Email address of the person registering to an event.';
 -- Name: create_registration(uuid, uuid, uuid, text, text, public.citext); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) RETURNS app_public.registrations
+CREATE FUNCTION app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) RETURNS app_public.registrations
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
   v_registration app_public.registrations;
+  v_quota app_public.quotas;
+  v_num_registrations integer;
 begin
-  -- If the provided token does not exist, prevent event registration
+  -- If the provided token does not exist or is not valid for the specified event
+  -- prevent event registration
   if not exists(
-    select 1 from app_public.registration_tokens
-      where registration_tokens.token = create_registration.token
+    select 1 from app_private.registration_secrets
+      where registration_token = "registrationToken"
+      and event_id = "eventId"
   ) then
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
+  end if;
+
+  select count(*) into v_num_registrations from app_public.registrations where registrations.quota_id = "quotaId";
+
+  select * into v_quota from app_public.quotas where id = "quotaId";
+
+  if v_quota.id is null then
+    raise exception 'Quota not found.';
+  end if;
+
+  -- If the quota is already full, prevent event registration
+  if (v_num_registrations >= v_quota.size) then
+    raise exception 'Event quota already full.' using errcode = 'DNIED';
   end if;
 
   insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
@@ -1076,9 +1192,10 @@ begin
   returning
     * into v_registration;
 
-  -- Delete the used token
-  delete from app_public.registration_tokens
-    where registration_tokens.token = create_registration.token;
+  -- Set the used token to null and set registration_id
+  update app_private.registration_secrets
+    set registration_token = null, registration_id = v_registration.id
+    where registration_secrets.registration_token = "registrationToken";
 
   return v_registration;
 end;
@@ -1086,10 +1203,10 @@ $$;
 
 
 --
--- Name: FUNCTION create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: COMMENT; Schema: app_public; Owner: -
+-- Name: FUNCTION create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) IS 'Register to an event. Checks that a valid registration token was suplied.';
+COMMENT ON FUNCTION app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) IS 'Register to an event. Checks that a valid registration token was suplied.';
 
 
 --
@@ -1196,6 +1313,38 @@ $$;
 
 
 --
+-- Name: delete_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.delete_registration("updateToken" uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_id uuid;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    raise exception 'Registration matching token was not found.';
+  end if;
+
+  -- Delete registration and associated secrets
+  delete from app_public.registrations where id = v_registration_id;
+
+  return true;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION delete_registration("updateToken" uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.delete_registration("updateToken" uuid) IS 'Delete event registration.';
+
+
+--
 -- Name: delete_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1205,8 +1354,8 @@ CREATE FUNCTION app_public.delete_registration_token(token uuid) RETURNS bigint
     AS $$
   with deleted as (
     -- Delete timed out token
-    delete from app_public.registration_tokens
-    where registration_tokens.token = delete_registration_token.token
+    delete from app_private.registration_secrets
+    where registration_secrets.registration_token = token
     returning *
   )
 
@@ -1219,7 +1368,187 @@ $$;
 -- Name: FUNCTION delete_registration_token(token uuid); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.delete_registration_token(token uuid) IS 'Delete registration token by token id. Used by worker task to bypass RLS policies.';
+COMMENT ON FUNCTION app_public.delete_registration_token(token uuid) IS 'Delete registration token by token id. Used by worker task to bypass RLS policies. Should not be publicly visible.';
+
+
+--
+-- Name: events; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.events (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    slug public.citext NOT NULL,
+    name jsonb NOT NULL,
+    description jsonb NOT NULL,
+    event_start_time timestamp with time zone NOT NULL,
+    event_end_time timestamp with time zone NOT NULL,
+    registration_start_time timestamp with time zone NOT NULL,
+    registration_end_time timestamp with time zone NOT NULL,
+    is_highlighted boolean DEFAULT false NOT NULL,
+    is_draft boolean DEFAULT true NOT NULL,
+    header_image_file text,
+    owner_organization_id uuid NOT NULL,
+    category_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
+    CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
+    CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
+    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name)),
+    CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
+);
+
+
+--
+-- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.events IS 'Main table for events.';
+
+
+--
+-- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
+
+
+--
+-- Name: COLUMN events.slug; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.slug IS 'Slug for the event.';
+
+
+--
+-- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
+
+
+--
+-- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
+
+
+--
+-- Name: COLUMN events.event_start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.event_start_time IS 'Starting time of the event.';
+
+
+--
+-- Name: COLUMN events.event_end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.event_end_time IS 'Ending time of the event.';
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_start_time IS 'Time of event registration open.';
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.registration_end_time IS 'Time of event registration end.';
+
+
+--
+-- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
+
+
+--
+-- Name: COLUMN events.is_draft; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.is_draft IS 'A draft event that is not publicly visible.';
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the event';
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
+
+
+--
+-- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
+
+
+--
+-- Name: events_signup_closed(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_closed(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() > e.registration_end_time;
+$$;
+
+
+--
+-- Name: FUNCTION events_signup_closed(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.events_signup_closed(e app_public.events) IS 'Designated whether event signup is closed or not.';
+
+
+--
+-- Name: events_signup_open(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_open(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() between e.registration_start_time and e.registration_end_time;
+$$;
+
+
+--
+-- Name: FUNCTION events_signup_open(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.events_signup_open(e app_public.events) IS 'Designated whether event signup is open or not.';
+
+
+--
+-- Name: events_signup_upcoming(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_signup_upcoming(e app_public.events) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  select now() < e.registration_start_time;
+$$;
+
+
+--
+-- Name: FUNCTION events_signup_upcoming(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.events_signup_upcoming(e app_public.events) IS 'Designated whether event signup is upcoming or not.';
 
 
 --
@@ -1386,10 +1715,10 @@ $$;
 -- Name: languages(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.languages() RETURNS app_public.app_language
+CREATE FUNCTION app_public.languages() RETURNS app_public.app_languages
     LANGUAGE sql STABLE
     AS $$
-  select array['fi', 'en'], 'fi' as default_language;
+  select array['fi', 'en'], 'fi';
 $$;
 
 
@@ -1538,6 +1867,38 @@ $$;
 
 
 --
+-- Name: registration_by_update_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registration_by_update_token("updateToken" uuid) RETURNS app_public.registrations
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_id uuid;
+  v_registration app_public.registrations;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    return null;
+  end if;
+
+  select * into v_registration from app_public.registrations where id = v_registration_id;
+
+  return v_registration;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION registration_by_update_token("updateToken" uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registration_by_update_token("updateToken" uuid) IS 'Get registration by update token.';
+
+
+--
 -- Name: registrations_full_name(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1546,6 +1907,13 @@ CREATE FUNCTION app_public.registrations_full_name(registration app_public.regis
     AS $$
   select registration.first_name || ' ' || registration.last_name
 $$;
+
+
+--
+-- Name: FUNCTION registrations_full_name(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registrations_full_name(registration app_public.registrations) IS 'Returns the full name of a registered person.';
 
 
 --
@@ -1877,6 +2245,108 @@ $$;
 
 
 --
+-- Name: update_event_quotas(uuid, app_public.update_event_quotas[]); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) RETURNS app_public.quotas[]
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+  declare
+  v_test int;
+    v_quota_ids_to_delete uuid[];
+    v_input app_public.update_event_quotas;
+    v_quota app_public.quotas;
+    v_ret app_public.quotas[] default '{}';
+  begin
+    if app_public.current_user_id() is null then
+      raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
+    end if;
+
+    if (select array_length(quotas, 1)) is null then
+      raise exception 'You must specify at least one quota' using errcode = 'DNIED';
+    end if;
+
+    select array(
+      select id from app_public.quotas as q
+      where q.event_id = event_id
+      and q.id not in (select id from unnest(quotas))
+    )
+    into v_quota_ids_to_delete;
+
+    -- Delete existing event quotas that were not supplied
+    -- as input to this function
+    delete from app_public.quotas as q
+      where q.id = any(v_quota_ids_to_delete);
+
+    -- Update existing event quotas by id
+    foreach v_input in array quotas loop
+
+      if exists(select 1 from app_public.quotas where id = v_input.id) then
+        update app_public.quotas
+          set title = v_input.title, size = v_input.size
+          where id = v_input.id
+        returning * into v_quota;
+      else
+        -- Create new quotas that didn't exits before
+        insert into app_public.quotas(event_id, title, size)
+          values (event_id, v_input.title, v_input.size)
+        returning * into v_quota;
+      end if;
+
+      v_ret := array_append(v_ret, v_quota);
+    end loop;
+
+    return v_ret;
+  end;
+$$;
+
+
+--
+-- Name: FUNCTION update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) IS 'Update event quotas.';
+
+
+--
+-- Name: update_registration(uuid, text, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) RETURNS app_public.registrations
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_id uuid;
+  v_registration app_public.registrations;
+begin
+  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+
+  if v_registration_id is null then
+    raise exception 'Registration matching token was not found.';
+  end if;
+
+  update app_public.registrations
+    set first_name = "firstName", last_name = "lastName"
+    where id = v_registration_id
+  returning
+    * into v_registration;
+
+  return v_registration;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION update_registration("updateToken" uuid, "firstName" text, "lastName" text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) IS 'Register to an event. Checks that a valid registration token was suplied.';
+
+
+--
 -- Name: users_has_password(app_public.users); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1917,6 +2387,26 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.verify_email(user_email_id uuid, token text) IS 'Once you have received a verification token for your email, you may call this mutation with that token to make your email verified.';
+
+
+--
+-- Name: registration_secrets; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.registration_secrets (
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    registration_token uuid DEFAULT public.gen_random_uuid(),
+    update_token uuid DEFAULT public.gen_random_uuid(),
+    registration_id uuid,
+    event_id uuid NOT NULL
+);
+
+
+--
+-- Name: TABLE registration_secrets; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TABLE app_private.registration_secrets IS 'The contents of this table should never be visible to the user. Contains data related to event registrations.';
 
 
 --
@@ -2079,106 +2569,6 @@ CREATE TABLE app_public.event_questions (
 
 
 --
--- Name: events; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.events (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    slug public.citext NOT NULL,
-    name jsonb NOT NULL,
-    description jsonb NOT NULL,
-    start_time timestamp with time zone NOT NULL,
-    end_time timestamp with time zone NOT NULL,
-    is_highlighted boolean DEFAULT false NOT NULL,
-    header_image_file text,
-    owner_organization_id uuid NOT NULL,
-    category_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
-    CONSTRAINT _cnstr_check_event_time CHECK ((start_time < end_time)),
-    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name))
-);
-
-
---
--- Name: TABLE events; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.events IS 'Main table for events.';
-
-
---
--- Name: COLUMN events.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.id IS 'Unique identifier for the event.';
-
-
---
--- Name: COLUMN events.slug; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.slug IS 'Slug for the event.';
-
-
---
--- Name: COLUMN events.name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
-
-
---
--- Name: COLUMN events.description; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
-
-
---
--- Name: COLUMN events.start_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.start_time IS 'Starting time of the event.';
-
-
---
--- Name: COLUMN events.end_time; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.end_time IS 'Ending time of the event.';
-
-
---
--- Name: COLUMN events.is_highlighted; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.is_highlighted IS 'A highlighted event.';
-
-
---
--- Name: COLUMN events.header_image_file; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the event';
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.owner_organization_id IS 'Id of the organizer.';
-
-
---
--- Name: COLUMN events.category_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.category_id IS 'Id of the event category.';
-
-
---
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -2204,66 +2594,6 @@ CREATE TABLE app_public.organization_memberships (
     is_owner boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
-
-
---
--- Name: quotas; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.quotas (
-    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    title jsonb NOT NULL,
-    size smallint NOT NULL,
-    questions_public json,
-    questions_private json,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_title_language CHECK (app_public.check_language(title)),
-    CONSTRAINT quotas_size_check CHECK ((size > 0))
-);
-
-
---
--- Name: TABLE quotas; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.quotas IS 'Main table for registration quotas.';
-
-
---
--- Name: COLUMN quotas.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.event_id IS 'Identifier of the event that this quota is for.';
-
-
---
--- Name: COLUMN quotas.title; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.title IS 'Title for the quota.';
-
-
---
--- Name: COLUMN quotas.size; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
-
-
---
--- Name: COLUMN quotas.questions_public; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.questions_public IS 'Public questions related to the quota.';
-
-
---
--- Name: COLUMN quotas.questions_private; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.questions_private IS 'Private questions related to the quota.';
 
 
 --
@@ -2307,6 +2637,14 @@ COMMENT ON COLUMN app_public.user_authentications.identifier IS 'A unique identi
 --
 
 COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile details extracted from this login method';
+
+
+--
+-- Name: registration_secrets registration_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_pkey PRIMARY KEY (id);
 
 
 --
@@ -2446,14 +2784,6 @@ ALTER TABLE ONLY app_public.quotas
 
 
 --
--- Name: registration_tokens registration_tokens_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registration_tokens
-    ADD CONSTRAINT registration_tokens_pkey PRIMARY KEY (token);
-
-
---
 -- Name: registrations registrations_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2510,6 +2840,20 @@ ALTER TABLE ONLY app_public.users
 
 
 --
+-- Name: registration_secrets_event_id_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX registration_secrets_event_id_idx ON app_private.registration_secrets USING btree (event_id);
+
+
+--
+-- Name: registration_secrets_registration_id_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX registration_secrets_registration_id_idx ON app_private.registration_secrets USING btree (registration_id);
+
+
+--
 -- Name: sessions_user_id_idx; Type: INDEX; Schema: app_private; Owner: -
 --
 
@@ -2545,6 +2889,27 @@ CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_i
 
 
 --
+-- Name: events_event_end_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_event_end_time_idx ON app_public.events USING btree (event_end_time);
+
+
+--
+-- Name: events_event_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_event_start_time_idx ON app_public.events USING btree (event_start_time);
+
+
+--
+-- Name: events_is_draft_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_is_draft_idx ON app_public.events USING btree (is_draft);
+
+
+--
 -- Name: events_owner_organization_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -2552,10 +2917,17 @@ CREATE INDEX events_owner_organization_id_idx ON app_public.events USING btree (
 
 
 --
--- Name: events_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+-- Name: events_registration_end_time_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
-CREATE INDEX events_start_time_idx ON app_public.events USING btree (start_time);
+CREATE INDEX events_registration_end_time_idx ON app_public.events USING btree (registration_end_time);
+
+
+--
+-- Name: events_registration_start_time_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_registration_start_time_idx ON app_public.events USING btree (registration_start_time);
 
 
 --
@@ -2598,13 +2970,6 @@ CREATE INDEX quotas_event_id_idx ON app_public.quotas USING btree (event_id);
 --
 
 CREATE INDEX quotas_id_idx ON app_public.quotas USING btree (id);
-
-
---
--- Name: registration_tokens_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
---
-
-CREATE INDEX registration_tokens_event_id_idx ON app_public.registration_tokens USING btree (event_id);
 
 
 --
@@ -2804,6 +3169,22 @@ CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emai
 
 
 --
+-- Name: registration_secrets registration_secrets_event_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
+
+
+--
+-- Name: registration_secrets registration_secrets_registration_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_registration_id_fkey FOREIGN KEY (registration_id) REFERENCES app_public.registrations(id) ON DELETE CASCADE;
+
+
+--
 -- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -2908,14 +3289,6 @@ ALTER TABLE ONLY app_public.quotas
 
 
 --
--- Name: registration_tokens registration_tokens_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.registration_tokens
-    ADD CONSTRAINT registration_tokens_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
-
-
---
 -- Name: registrations registrations_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -2946,6 +3319,12 @@ ALTER TABLE ONLY app_public.user_authentications
 ALTER TABLE ONLY app_public.user_emails
     ADD CONSTRAINT user_emails_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
+
+--
+-- Name: registration_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
+--
+
+ALTER TABLE app_private.registration_secrets ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: sessions; Type: ROW SECURITY; Schema: app_private; Owner: -
@@ -3133,12 +3512,6 @@ ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.quotas ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: registration_tokens; Type: ROW SECURITY; Schema: app_public; Owner: -
---
-
-ALTER TABLE app_public.registration_tokens ENABLE ROW LEVEL SECURITY;
-
---
 -- Name: registrations; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -3162,7 +3535,7 @@ CREATE POLICY select_all ON app_public.event_questions FOR SELECT USING (true);
 -- Name: events select_all; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY select_all ON app_public.events FOR SELECT USING (true);
+CREATE POLICY select_all ON app_public.events FOR SELECT USING ((is_draft IS FALSE));
 
 
 --
@@ -3219,6 +3592,13 @@ CREATE POLICY select_own ON app_public.user_authentications FOR SELECT USING ((u
 --
 
 CREATE POLICY select_own ON app_public.user_emails FOR SELECT USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: registrations update_all; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY update_all ON app_public.registrations FOR UPDATE USING (true);
 
 
 --
@@ -3425,6 +3805,42 @@ GRANT ALL ON FUNCTION app_public.confirm_account_deletion(token text) TO ilmo_vi
 
 
 --
+-- Name: TABLE quotas; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN quotas.event_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_id) ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN quotas.title; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(title),UPDATE(title) ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN quotas.size; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(size),UPDATE(size) ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) TO ilmo_visitor;
+
+
+--
 -- Name: TABLE organizations; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3496,11 +3912,11 @@ GRANT INSERT(email),UPDATE(email) ON TABLE app_public.registrations TO ilmo_visi
 
 
 --
--- Name: FUNCTION create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.create_registration(token uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext) TO ilmo_visitor;
 
 
 --
@@ -3552,11 +3968,134 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO il
 
 
 --
+-- Name: FUNCTION delete_registration("updateToken" uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.delete_registration("updateToken" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" uuid) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION delete_registration_token(token uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_public.delete_registration_token(token uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_registration_token(token uuid) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.slug; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(slug),UPDATE(slug) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.event_start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_start_time),UPDATE(event_start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.event_end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_end_time),UPDATE(event_end_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_start_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_start_time),UPDATE(registration_start_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.registration_end_time; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(registration_end_time),UPDATE(registration_end_time) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.is_highlighted; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.is_draft; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_draft),UPDATE(is_draft) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.header_image_file; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_closed(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_closed(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_closed(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_open(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_open(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_open(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_signup_upcoming(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) TO ilmo_visitor;
 
 
 --
@@ -3627,6 +4166,14 @@ GRANT ALL ON FUNCTION app_public.organization_for_invitation(invitation_id uuid,
 
 REVOKE ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_public.organizations) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_public.organizations) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registration_by_update_token("updateToken" uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registration_by_update_token("updateToken" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registration_by_update_token("updateToken" uuid) TO ilmo_visitor;
 
 
 --
@@ -3710,6 +4257,22 @@ GRANT ALL ON FUNCTION app_public.transfer_organization_ownership(organization_id
 
 
 --
+-- Name: FUNCTION update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION update_registration("updateToken" uuid, "firstName" text, "lastName" text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION users_has_password(u app_public.users); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -3782,108 +4345,10 @@ GRANT INSERT(options),UPDATE(options) ON TABLE app_public.event_questions TO ilm
 
 
 --
--- Name: TABLE events; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.slug; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(slug),UPDATE(slug) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.description; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.start_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(start_time),UPDATE(start_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.end_time; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(end_time),UPDATE(end_time) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.is_highlighted; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(is_highlighted),UPDATE(is_highlighted) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.header_image_file; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.category_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
 -- Name: TABLE organization_memberships; Type: ACL; Schema: app_public; Owner: -
 --
 
 GRANT SELECT ON TABLE app_public.organization_memberships TO ilmo_visitor;
-
-
---
--- Name: TABLE quotas; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.event_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_id),UPDATE(event_id) ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.title; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(title),UPDATE(title) ON TABLE app_public.quotas TO ilmo_visitor;
-
-
---
--- Name: COLUMN quotas.size; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(size),UPDATE(size) ON TABLE app_public.quotas TO ilmo_visitor;
 
 
 --

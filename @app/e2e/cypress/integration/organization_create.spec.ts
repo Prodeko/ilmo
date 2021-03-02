@@ -6,7 +6,7 @@ context("Create organizations", () => {
 
   it("can create an organization", () => {
     // Setup
-    cy.login({ next: "/", verified: true });
+    cy.login({ verified: true });
 
     // Action
     cy.getCy("layout-dropdown-user").click();
@@ -27,7 +27,6 @@ context("Create organizations", () => {
   it("handles conflicting organization name", () => {
     // Setup
     cy.login({
-      next: "/",
       verified: true,
       orgs: [["Test Organization", "test-organization"]],
     });

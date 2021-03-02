@@ -1,44 +1,46 @@
 fragment HomePage_Event on Event {
+  ...EventFields
   id
-  name
-  slug
-  startTime
-  endTime
-  isHighlighted
   ownerOrganization {
     id
     name
   }
   category {
-    id
-    name
+    ...EventPage_EventCategory
   }
 }
 
 fragment HomePage_Query on Query {
   ...SharedLayout_Query
+  organizations {
+    nodes {
+      id
+      name
+    }
+  }
   signupOpenEvents: events(
-    first: $first
-    offset: $offset
-    filter: { startTime: { greaterThanOrEqualTo: $now } }
-    orderBy: START_TIME_DESC
+    filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
   ) {
     nodes {
-      id
       ...HomePage_Event
     }
-    totalCount
   }
-  signupClosedEvents: events(
-    first: $first
-    offset: $offset
-    filter: { startTime: { lessThanOrEqualTo: $now } }
-    orderBy: START_TIME_DESC
+  signupUpcomingEvents: events(
+    filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
   ) {
     nodes {
-      id
       ...HomePage_Event
     }
-    totalCount
   }
+  eventCategories {
+    nodes {
+      ...EventPage_EventCategory
+    }
+  }
+}
+
+query HomePage {
+  ...HomePage_Query
 }

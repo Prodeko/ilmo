@@ -111,14 +111,17 @@
           }
         }
       },
-      "app_public.registration_tokens": {
-        "tags": {
-          "omit": "all"
-        }
-      },
       "app_public.registrations": {
         "tags": {
-          "omit": "create,delete"
+          "omit": "create,update,delete"
+        }
+      },
+      // Omit all quota CRUD operations. We define custom mutations that create or update
+      // quotas related to events. See app_public.create_event_quotas and
+      // app_public.update_event_quotas.
+      "app_public.quotas": {
+        "tags": {
+          "omit": "all"
         }
       }
     },
@@ -178,6 +181,16 @@
       "app_public.verify_email": {
         "tags": {
           "resultFieldName": "success"
+        }
+      },
+      "app_public.delete_registration": {
+        "tags": {
+          "resultFieldName": "success"
+        }
+      },
+      "app_public.claim_registration_token": {
+        "tags": {
+          "resultFieldName": "registrationToken"
         }
       },
       "app_public.create_organization": {

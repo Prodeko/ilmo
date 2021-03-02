@@ -126,7 +126,7 @@ async function runCommand(
   } else if (command === "clearTestEventData") {
     await rootPgPool.query(
       `
-      delete from app_public.registration_tokens;
+      delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
       delete from app_public.events;
@@ -185,26 +185,40 @@ async function runCommand(
       password = "TestUserPassword",
       next = "/",
       orgs = [],
+      existingUser = false,
     } = payload;
-    const user = await reallyCreateUser(rootPgPool, {
-      username,
-      email,
-      verified,
-      name,
-      avatarUrl,
-      password,
-    });
-    const otherUser = await reallyCreateUser(rootPgPool, {
-      username: "testuser_other",
-      email: "testuser_other@example.com",
-      name: "testuser_other",
-      verified: true,
-      password: "DOESNT MATTER",
-    });
-    const session = await createSession(rootPgPool, user.id);
-    const otherSession = await createSession(rootPgPool, otherUser.id);
-
     const client = await rootPgPool.connect();
+
+    let user: any, otherUser: any, session: any, otherSession: any;
+
+    if (existingUser) {
+      const {
+        rows,
+      } = await client.query("select * from app_private.login($1, $2)", [
+        username,
+        password,
+      ]);
+      [session] = rows;
+    } else {
+      user = await reallyCreateUser(rootPgPool, {
+        username,
+        email,
+        verified,
+        name,
+        avatarUrl,
+        password,
+      });
+      otherUser = await reallyCreateUser(rootPgPool, {
+        username: "testuser_other",
+        email: "testuser_other@example.com",
+        name: "testuser_other",
+        verified: true,
+        password: "DOESNT MATTER",
+      });
+      session = await createSession(rootPgPool, user.id);
+      otherSession = await createSession(rootPgPool, otherUser.id);
+    }
+
     try {
       await client.query("begin");
       try {
@@ -259,7 +273,9 @@ async function runCommand(
       eventCategory,
       event,
       quota,
-    } = await createEventData(rootPgPool);
+      registration,
+      registrationSecret,
+    } = await createEventData(rootPgPool, payload);
 
     return {
       user,
@@ -267,6 +283,8 @@ async function runCommand(
       eventCategory,
       event,
       quota,
+      registration,
+      registrationSecret,
     };
   } else if (command === "getEmailSecrets") {
     const { email = "test.user@example.com" } = payload;
@@ -317,8 +335,13 @@ async function reallyCreateUser(
   return user;
 }
 
-async function createEventData(rootPgPool: Pool) {
+async function createEventData(
+  rootPgPool: Pool,
+  payload: { [key: string]: any }
+) {
   const client = await rootPgPool.connect();
+  const { eventSignupUpcoming = false, eventSignupClosed = false } = payload;
+
   try {
     await client.query("begin");
 
@@ -343,9 +366,24 @@ async function createEventData(rootPgPool: Pool) {
       client,
       1,
       organization.id,
-      eventCategory.id
+      eventCategory.id,
+      eventSignupUpcoming,
+      eventSignupClosed
     );
     const [quota] = await createQuotas(client, 1, event.id);
+    const [registration] = await createRegistrations(
+      client,
+      1,
+      event.id,
+      quota.id
+    );
+
+    const [registrationSecret] = await createRegistrationSecrets(
+      client,
+      1,
+      registration.id,
+      event.id
+    );
 
     await client.query("commit");
     return {
@@ -354,16 +392,21 @@ async function createEventData(rootPgPool: Pool) {
       eventCategory,
       event,
       quota,
+      registration,
+      registrationSecret,
     };
   } finally {
     await client.release();
   }
 }
 
-export const createOrganizations = async function createOrganizations(
+/******************************************************************************/
+// Organizations
+
+export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
-) {
+) => {
   const organizations = [];
   for (let i = 0; i < count; i++) {
     const random = faker.lorem.word();
@@ -372,9 +415,7 @@ export const createOrganizations = async function createOrganizations(
     const {
       rows: [organization],
     } = await client.query(
-      `
-        select * from app_public.create_organization($1, $2)
-      `,
+      `select * from app_public.create_organization($1, $2)`,
       [slug, name]
     );
     organizations.push(organization);
@@ -386,11 +427,11 @@ export const createOrganizations = async function createOrganizations(
 /******************************************************************************/
 // Events
 
-export const createEventCategories = async function createEventCategories(
+export const createEventCategories = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string
-) {
+) => {
   const categories = [];
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
@@ -401,8 +442,7 @@ export const createEventCategories = async function createEventCategories(
     const {
       rows: [category],
     } = await client.query(
-      `
-        insert into app_public.event_categories(name, description, owner_organization_id)
+      `insert into app_public.event_categories(name, description, owner_organization_id)
         values ($1, $2, $3)
         returning *
       `,
@@ -414,12 +454,14 @@ export const createEventCategories = async function createEventCategories(
   return categories;
 };
 
-export const createEvents = async function createEvents(
+export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
-  categoryId: string
-) {
+  categoryId: string,
+  eventSignupUpcoming: boolean,
+  eventSignupClosed: boolean
+) => {
   const events = [];
   for (let i = 0; i < count; i++) {
     const name = {
@@ -430,29 +472,73 @@ export const createEvents = async function createEvents(
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     };
-    const startTime = faker.date.recent();
-    const endTime = faker.date.soon();
-    const eventCategoryId = categoryId;
 
-    const daySlug = dayjs(startTime).format("YYYY-M-D");
+    // By default create events that are open to registration (-1)
+    const now = new Date();
+    const dateAdjustment = eventSignupUpcoming
+      ? 1
+      : eventSignupClosed
+      ? -8
+      : -1;
+    const registrationStartTime = dayjs(now)
+      .add(dateAdjustment, "day")
+      .toDate();
+    const registrationEndTime = faker.date.between(
+      registrationStartTime,
+      dayjs(registrationStartTime).add(7, "day").toDate()
+    );
+
+    const eventStartTime = faker.date.between(
+      registrationEndTime,
+      dayjs(registrationEndTime).add(7, "day").toDate()
+    );
+    const eventEndTime = faker.date.between(
+      eventStartTime,
+      dayjs(eventStartTime).add(1, "day").toDate()
+    );
+
+    const eventCategoryId = categoryId;
+    const headerImageFile = faker.image.imageUrl(
+      851,
+      315,
+      `nature?random=${Math.round(Math.random() * 1000)}`
+    );
+
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     });
+    const isDraft = false;
 
     const {
       rows: [event],
     } = await client.query(
-      `
-        insert into app_public.events(name, slug, description, start_time, end_time, owner_organization_id, category_id)
-        values ($1, $2, $3, $4, $5, $6, $7)
-        returning *
+      `insert into app_public.events  (
+        name,
+        slug,
+        description,
+        event_start_time,
+        event_end_time,
+        registration_start_time,
+        registration_end_time,
+        is_draft,
+        header_image_file,
+        owner_organization_id,
+        category_id
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      returning *
       `,
       [
         name,
         slug,
         description,
-        startTime,
-        endTime,
+        eventStartTime,
+        eventEndTime,
+        registrationStartTime,
+        registrationEndTime,
+        isDraft,
+        headerImageFile,
         organizationId,
         eventCategoryId,
       ]
@@ -466,11 +552,11 @@ export const createEvents = async function createEvents(
 /******************************************************************************/
 // Quotas
 
-export const createQuotas = async function createQuotas(
+export const createQuotas = async (
   client: PoolClient,
   count: number = 1,
   eventId: string
-) {
+) => {
   const quotas = [];
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
@@ -481,8 +567,7 @@ export const createQuotas = async function createQuotas(
     const {
       rows: [quota],
     } = await client.query(
-      `
-        insert into app_public.quotas(event_id, title, size)
+      `insert into app_public.quotas(event_id, title, size)
         values ($1, $2, $3)
         returning *
       `,
@@ -494,15 +579,38 @@ export const createQuotas = async function createQuotas(
   return quotas;
 };
 
+export const createRegistrationSecrets = async (
+  client: PoolClient,
+  count: number = 1,
+  registrationId: string,
+  eventId: string
+) => {
+  const registrationSecrets = [];
+  for (let i = 0; i < count; i++) {
+    const {
+      rows: [secret],
+    } = await client.query(
+      `insert into app_private.registration_secrets(event_id, registration_id)
+        values ($1, $2)
+        returning *
+      `,
+      [eventId, registrationId]
+    );
+    registrationSecrets.push(secret);
+  }
+
+  return registrationSecrets;
+};
+
 /******************************************************************************/
 // Registrations
 
-export const createRegistrations = async function createRegistrations(
+export const createRegistrations = async (
   client: PoolClient,
   count: number = 1,
   eventId: string,
   quotaId: string
-) {
+) => {
   const registrations = [];
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName();
@@ -511,8 +619,7 @@ export const createRegistrations = async function createRegistrations(
     const {
       rows: [registration],
     } = await client.query(
-      `
-        insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
         values ($1, $2, $3, $4, $5)
         returning *
       `,
@@ -528,8 +635,7 @@ async function createSession(rootPgPool: Pool, userId: string) {
   const {
     rows: [session],
   } = await rootPgPool.query(
-    `
-      insert into app_private.sessions (user_id)
+    `insert into app_private.sessions (user_id)
       values ($1)
       returning *
     `,
@@ -542,8 +648,7 @@ async function getUserEmailSecrets(rootPgPool: Pool, email: string) {
   const {
     rows: [userEmailSecrets],
   } = await rootPgPool.query(
-    `
-      select *
+    `select *
       from app_private.user_email_secrets
       where user_email_id = (
         select id

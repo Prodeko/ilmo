@@ -1,0 +1,43 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UdpateRegistration can create a registration 2`] = `
+Object {
+  "data": Object {
+    "updateRegistration": Object {
+      "registration": Object {
+        "fullName": "Päivi Tetty",
+        "id": "[id-1]",
+      },
+    },
+  },
+}
+`;
+
+exports[`UdpateRegistration can't create registration if registration token is not valid 1`] = `
+Object {
+  "data": Object {
+    "updateRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "P0001",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_registration(uuid,text,text) line 9 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 6,
+        },
+      ],
+      "message": "Registration matching token was not found.",
+      "path": Array [
+        "updateRegistration",
+      ],
+    },
+  ],
+}
+`;

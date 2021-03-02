@@ -16,7 +16,7 @@ async function cleanData(client: PoolClient) {
 
     delete from app_public.registrations;
     delete from app_public.quotas;
-    delete from app_public.registration_tokens;
+    delete from app_private.registration_secrets;
     delete from app_public.events;
     delete from app_public.event_categories;
     delete from app_public.event_questions;

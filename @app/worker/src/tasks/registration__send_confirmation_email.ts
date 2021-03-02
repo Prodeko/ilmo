@@ -14,10 +14,10 @@ const { NODE_ENV, ROOT_URL } = process.env;
 const isDev = NODE_ENV === "development";
 
 function getFormattedEventTime(event: any) {
-  const { start_time, end_time } = event;
+  const { event_start_time, event_end_time } = event;
   const formatString = "D.M.YY HH:mm";
-  const startTime = dayjs(start_time).format(formatString);
-  const endTime = dayjs(end_time).format(formatString);
+  const startTime = dayjs(event_start_time).format(formatString);
+  const endTime = dayjs(event_end_time).format(formatString);
   return `${startTime} - ${endTime}`;
 }
 
@@ -27,14 +27,9 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   const {
     rows: [registration],
   } = await withPgClient((pgClient) =>
-    pgClient.query(
-      `
-        select *
-        from app_public.registrations
-        where id = $1
-      `,
-      [registrationId]
-    )
+    pgClient.query("select * from app_public.registrations where id = $1", [
+      registrationId,
+    ])
   );
   if (!registration) {
     console.error("Registration not found; aborting");
@@ -44,30 +39,44 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   const {
     rows: [event],
   } = await withPgClient((pgClient) =>
-    pgClient.query(`select * from app_public.events where id = $1`, [
+    pgClient.query("select * from app_public.events where id = $1", [
       registration.event_id,
     ])
   );
 
   if (!event) {
-    console.error(`No event found for ${registration.event_id}; aborting`);
+    console.error("No event found; aborting");
     return;
   }
 
   const {
     rows: [quota],
   } = await withPgClient((pgClient) =>
-    pgClient.query(`select * from app_public.quotas where id = $1`, [
+    pgClient.query("select * from app_public.quotas where id = $1", [
       registration.quota_id,
     ])
   );
 
   if (!quota) {
-    console.error(`No quota found for ${registration.quota_id}; aborting`);
+    console.error("No quota found; aborting");
     return;
   }
 
-  let email = registration.email;
+  const {
+    rows: [registrationSecret],
+  } = await withPgClient((pgClient) =>
+    pgClient.query(
+      "select * from app_private.registration_secrets where registration_id = $1",
+      [registration.id]
+    )
+  );
+
+  if (!registrationSecret) {
+    console.error("No registration secrets found; aborting");
+    return;
+  }
+
+  const { email, first_name, last_name } = registration;
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -76,11 +85,11 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     template: "event_registration.mjml.njk",
     variables: {
       eventName: event.name,
-      registrationName: `${registration.first_name} ${registration.last_name}`,
+      registrationName: `${first_name} ${last_name}`,
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
       eventLink: `${ROOT_URL}/${event.slug}`,
-      eventRegistrationDeleteLink: ``,
+      eventRegistrationUpdateLink: `${ROOT_URL}/update-registration/${registrationSecret.update_token}`,
     },
   };
 

@@ -208,7 +208,7 @@ export function SharedLayout({
             </Link>
           </Col>
           {!isMobile ? (
-            <Col md={{ span: 5 }} xs={{ span: 4 }}>
+            <Col lg={{ span: 16 }} md={{ span: 13 }}>
               <H3
                 data-cy="layout-header-title"
                 style={{
@@ -268,7 +268,7 @@ export function SharedLayout({
                     {data.currentUser?.organizationMemberships?.nodes.length >
                       0 && [
                       <Menu.Item key="create-event">
-                        <Link href="/create-event">
+                        <Link href="/event/create">
                           <a data-cy="layout-link-create-event">
                             {t("headerMenu.createEvent")}
                           </a>

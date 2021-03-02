@@ -1,12 +1,3 @@
-fragment CreatedEvent on Event {
-  id
-  name
-  ownerOrganization {
-    id
-    name
-  }
-}
-
 mutation CreateEvent(
   $slug: String!
   $name: JSON!
@@ -14,9 +5,12 @@ mutation CreateEvent(
   $organizationId: UUID!
   $categoryId: UUID!
   $isHighlighted: Boolean
+  $isDraft: Boolean
   $headerImageFile: Upload
-  $startTime: Datetime!
-  $endTime: Datetime!
+  $eventStartTime: Datetime!
+  $eventEndTime: Datetime!
+  $registrationStartTime: Datetime!
+  $registrationEndTime: Datetime!
 ) {
   createEvent(
     input: {
@@ -27,15 +21,17 @@ mutation CreateEvent(
         ownerOrganizationId: $organizationId
         categoryId: $categoryId
         isHighlighted: $isHighlighted
+        isDraft: $isDraft
         headerImageFile: $headerImageFile
-        startTime: $startTime
-        endTime: $endTime
+        eventStartTime: $eventStartTime
+        eventEndTime: $eventEndTime
+        registrationStartTime: $registrationStartTime
+        registrationEndTime: $registrationEndTime
       }
     }
   ) {
     event {
       id
-      ...CreatedEvent
     }
   }
 }

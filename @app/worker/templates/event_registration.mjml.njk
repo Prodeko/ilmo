@@ -11,9 +11,10 @@
     - Linkki tapahtumaan: <a href="{{ eventLink }}" target="_blank">{{ eventLink }}</a
     ><br />
   </mj-text>
-  <mj-text
-    >Voit poistaa ilmoittautumisen tämän linkin takaa:
-    {{ eventRegistrationDeleteLink }}</mj-text
+  <mj-text>
+    Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
+    <a href="{{ eventRegistrationUpdateLink }}" target="_blank">{{ eventRegistrationUpdateLink }}</a>
+  </mj-text
   >
   <mj-divider border-color="#002851" border-width="1px"></mj-divider>
   <mj-text>Successfully registered to the event:</mj-text>
@@ -25,9 +26,9 @@
     - Link to the event: <a href="{{ eventLink }}" target="_blank">{{ eventLink }}</a
     ><br />
   </mj-text>
-  <mj-text
-    >You can delete your registration through this link:
-    {{ eventRegistrationDeleteLink }}</mj-text
-  >
+  <mj-text>
+    You can update or delete your registration via this link:
+    <a href="{{ eventRegistrationUpdateLink }}" target="_blank">{{ eventRegistrationUpdateLink }}</a>
+  </mj-text>
 </mj-column>
 {% endblock %}

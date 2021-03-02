@@ -1,7 +1,11 @@
 {
   "createdAt": "Time",
+  "deleteRegistration": "Delete registration",
+  "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
+  "deleteRegistrationFailed": "Deleting event registration failed",
   "errors": {
-    "registrationFailed": "Registering to the event failed"
+    "registrationFailed": "Registering to the event failed",
+    "registrationUpdateFailed": "Failed to update registration information"
   },
   "eventSignupComplete": "Event signup saved",
   "forms": {
@@ -18,8 +22,13 @@
   },
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
+  "registrationDeleteComplete": "Deleted registration",
+  "registrationUpdateComplete": "Updated registration information",
   "sidebar": {
     "title": "Quotas"
   },
-  "title": "Register to event:"
+  "title": "Register to event:",
+  "updateRegistration": {
+    "title": "Update event registration information"
+  }
 }

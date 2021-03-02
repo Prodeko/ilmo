@@ -4,6 +4,9 @@ import { PoolClient } from "pg";
 import { User } from "../../__tests__/data";
 import {
   asRoot,
+  createEventCategories,
+  createEvents,
+  createOrganizations,
   createSession,
   createUsers,
   deleteTestData,
@@ -43,6 +46,23 @@ beforeAll(deleteTestData);
 /******************************************************************************/
 
 type ClientCallback<T = any> = (client: PoolClient) => Promise<T>;
+
+export async function createEventData(client: PoolClient) {
+  const [organization] = await createOrganizations(client, 1);
+  const [eventCategory] = await createEventCategories(
+    client,
+    1,
+    organization.id
+  );
+  const [event] = await createEvents(
+    client,
+    1,
+    organization.id,
+    eventCategory.id
+  );
+
+  return { organization, eventCategory, event };
+}
 
 const withDbFromUrl = async <T>(url: string, fn: ClientCallback<T>) => {
   const pool = poolFromUrl(url);

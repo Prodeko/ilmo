@@ -1,0 +1,25 @@
+fragment UpdateEventRegistrationPage_Event on Registration {
+  id
+  firstName
+  lastName
+  quota {
+    id
+    title
+  }
+  event {
+    id
+    name
+    slug
+  }
+}
+
+fragment UpdateEventRegistrationPage_Query on Query {
+  ...SharedLayout_Query
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Event
+  }
+}
+
+query UpdateEventRegistrationPage($updateToken: UUID!) {
+  ...UpdateEventRegistrationPage_Query
+}

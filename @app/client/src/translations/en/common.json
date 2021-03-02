@@ -11,10 +11,15 @@
     "createEventCategory": "Create event category",
     "createOrganization": "Create organization"
   },
+  "loading": "Loading...",
   "logout": "Logout",
+  "moreInfo": "Show details",
   "name": "Name",
+  "no": "No",
   "redirect": "Redirecting...",
   "settings": "Settings",
   "shortDescription": "Short description",
-  "signin": "Sign in"
+  "signin": "Sign in",
+  "update": "Update",
+  "yes": "Yes"
 }

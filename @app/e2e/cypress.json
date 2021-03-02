@@ -1,1 +1,4 @@
-{}
+{
+  "nodeVersion": "system",
+  "defaultCommandTimeout": 10000
+}

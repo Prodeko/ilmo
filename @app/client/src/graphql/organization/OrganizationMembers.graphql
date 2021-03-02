@@ -10,8 +10,8 @@ fragment OrganizationMembers_Membership on OrganizationMembership {
 }
 
 fragment OrganizationMembers_Organization on Organization {
-  id
   ...OrganizationPage_Organization
+  id
   name
   slug
   organizationMemberships(
@@ -20,7 +20,6 @@ fragment OrganizationMembers_Organization on Organization {
     orderBy: [MEMBER_NAME_ASC]
   ) {
     nodes {
-      id
       ...OrganizationMembers_Membership
     }
     totalCount
@@ -30,7 +29,6 @@ fragment OrganizationMembers_Organization on Organization {
 query OrganizationMembers($slug: String!, $offset: Int = 0) {
   ...OrganizationPage_Query
   organizationBySlug(slug: $slug) {
-    id
     ...OrganizationMembers_Organization
   }
 }

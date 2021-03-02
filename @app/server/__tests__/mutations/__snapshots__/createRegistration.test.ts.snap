@@ -1,15 +1,104 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CreateRegistration 2`] = `
+exports[`CreateRegistration can create registration 2`] = `
 Object {
   "data": Object {
     "createRegistration": Object {
       "registration": Object {
+        "eventId": "[id-2]",
         "firstName": "Testname",
         "id": "[id-1]",
         "lastName": "Testlastname",
+        "quotaId": "[id-3]",
       },
     },
   },
+}
+`;
+
+exports[`CreateRegistration can't create registration if quota is full 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 27 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Event quota already full.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if registration token is for another event 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Registration token was not valid. Please reload the page.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if registration token is not valid 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Registration token was not valid. Please reload the page.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
 }
 `;

@@ -7,13 +7,13 @@ context("Events page", () => {
 
   it("Can navigate to an event from homepage", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
     cy.visit(Cypress.env("ROOT_URL"));
 
     // Action
     cy.get("@createEventDataResult").then(
       ({ eventCategory, event, quota }: any) => {
-        cy.getCy("homepage-signup-closed-events").find("a").click();
+        cy.getCy("homepage-signup-open-events").find("a").click();
 
         // Assertions
         cy.url().should(
@@ -32,7 +32,7 @@ context("Events page", () => {
 
   it("Can register to an event multiple times on the same machine", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action
@@ -40,30 +40,30 @@ context("Events page", () => {
       cy.getCy("eventpage-quotas-link-0").click();
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/register/e/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
       );
 
       // Create first registration
-      cy.getCy("createregistration-input-firstname").type("Test");
-      cy.getCy("createregistration-input-lastname").type("Testersson");
-      cy.getCy("createregistration-input-email").type(
+      cy.getCy("eventregistrationform-input-firstname").type("Test");
+      cy.getCy("eventregistrationform-input-lastname").type("Testersson");
+      cy.getCy("eventregistrationform-input-email").type(
         "test.testersson@example.com"
       );
-      cy.getCy("createregistration-button-create").click();
+      cy.getCy("eventregistrationform-button-submit").click();
 
       cy.getCy("eventpage-quotas-link-0").click();
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/register/e/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
       );
 
       // Create second registration
-      cy.getCy("createregistration-input-firstname").type("Per");
-      cy.getCy("createregistration-input-lastname").type("Webteamsson");
-      cy.getCy("createregistration-input-email").type(
+      cy.getCy("eventregistrationform-input-firstname").type("Per");
+      cy.getCy("eventregistrationform-input-lastname").type("Webteamsson");
+      cy.getCy("eventregistrationform-input-email").type(
         "per.webteamsson@example.com"
       );
-      cy.getCy("createregistration-button-create").click();
+      cy.getCy("eventregistrationform-button-submit").click();
 
       // Assertions
       cy.getCy("eventpage-signups-table").contains(quota.title["fi"]);
@@ -78,7 +78,7 @@ context("Events page", () => {
 
   it("Registration rate limiting works", () => {
     // Setup
-    cy.serverCommand("createTestEventData", {}).as("createEventDataResult");
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
 
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action
@@ -86,7 +86,7 @@ context("Events page", () => {
       cy.getCy("eventpage-quotas-link-0").click();
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/register/e/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
       );
 
       // Reload page, hit rate limit (3 requests from the same IP)
@@ -95,7 +95,9 @@ context("Events page", () => {
       });
 
       // Assertions
-      cy.getCy("createregistration-error-alert").contains("Too many requests.");
+      cy.getCy("eventregistrationform-error-alert").contains(
+        "Too many requests. You have been rate-limited for 30 minutes."
+      );
     });
   });
 });

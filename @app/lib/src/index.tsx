@@ -3,4 +3,5 @@ export * from "./forms";
 export * from "./GraphileApolloLink";
 export * from "./passwords";
 export * from "./uploadsLoader";
+export * from "./utils";
 export * from "./withApollo";

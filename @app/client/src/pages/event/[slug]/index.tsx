@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  H2,
   ProgressBar,
   SharedLayout,
   SimpleTable,
@@ -22,7 +23,7 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const { useBreakpoint } = Grid;
-const { Title, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -52,14 +53,29 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const { t, lang } = useTranslation("register");
   const screens = useBreakpoint();
   const isMobile = screens["xs"];
+  const {
+    id: eventId,
+    name,
+    description,
+    headerImageFile,
+    createdAt,
+    signupClosed,
+    signupUpcoming,
+    quotas,
+    registrations: eventRegistrations,
+  } = event;
 
+  // Set registrations initially from EventPage_Query data
   const [registrations, setRegistrations] = useState<
     Registration[] | null | undefined
-  >(event.registrations.nodes as Registration[]);
+  >(eventRegistrations.nodes as Registration[]);
+
+  // Use a subscription to fetch event registrations in real time
   useEventRegistrationsSubscription({
-    variables: { eventId: event?.id, after: event.createdAt },
-    skip: !event?.id,
+    variables: { eventId, after: createdAt },
+    skip: !eventId,
     onSubscriptionData: ({ subscriptionData }) =>
+      // Update state when subscription receives data
       setRegistrations(
         subscriptionData?.data?.eventRegistrations
           ?.registrations as Registration[]
@@ -81,7 +97,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       title: t("createdAt"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string) => dayjs(createdAt).format("l LTS"),
+      render: (createdAt: string) => dayjs(createdAt).format("l LT"),
     },
   ];
 
@@ -97,13 +113,13 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           style={{ display: "inline-block" }}
           xs={{ span: 24 }}
         >
-          {event.headerImageFile && (
+          {headerImageFile && (
             <Image
               alt={t("events:headerImage")}
               height={315}
               loader={uploadsLoader}
               objectFit="cover"
-              src={event.headerImageFile}
+              src={headerImageFile}
               width={851}
               priority
             />
@@ -124,38 +140,45 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
             title={t("sidebar.title")}
             bordered
           >
-            {event.quotas.nodes.map((q, i) => {
-              const { size, registrations } = q;
-              const percentageFilled = Math.round(
-                (registrations.totalCount / size) * 100
-              );
+            {quotas?.nodes.map((quota, i) => {
+              const { id: quotaId, title, size } = quota;
+              const totalCount = registrations.filter(
+                (r) => r.quota.id === quotaId
+              ).length;
+              const percentageFilled = Math.round((totalCount / size) * 100);
 
               return (
-                <div key={q.id} style={{ paddingBottom: 12 }}>
+                <div key={quotaId} style={{ paddingBottom: 12 }}>
                   <Link
                     href={{
-                      pathname: "/register/e/[eventId]/q/[quotaId]",
-                      query: { eventId: event.id, quotaId: q.id },
+                      pathname: "/event/register/[eventId]/q/[quotaId]",
+                      query: { eventId, quotaId },
                     }}
                   >
                     <Button
                       data-cy={`eventpage-quotas-link-${i}`}
-                      disabled={registrations.totalCount >= size}
+                      disabled={
+                        totalCount >= size || signupClosed || signupUpcoming
+                      }
                       target="a"
                       block
                     >
-                      {q.title[lang]}
+                      {title[lang]}
                     </Button>
                   </Link>
-                  <ProgressBar completed={percentageFilled} />
+                  <ProgressBar
+                    filled={totalCount}
+                    percentageFilled={percentageFilled}
+                    size={size}
+                  />
                 </div>
               );
             })}
           </Card>
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
-          <Title level={2}>{event.name[lang]}</Title>
-          <Paragraph>{event.description[lang]}</Paragraph>
+          <H2>{name[lang]}</H2>
+          <Paragraph>{description[lang]}</Paragraph>
           <SimpleTable
             columns={columns}
             data={registrations}

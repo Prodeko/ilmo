@@ -51,7 +51,6 @@ export class GraphileApolloLink extends ApolloLink {
           }
           const schema = await postgraphileMiddleware.getGraphQLSchema();
           const data = await postgraphileMiddleware.withPostGraphileContextFromReqRes(
-            // @ts-ignore
             req,
             res,
             {},
