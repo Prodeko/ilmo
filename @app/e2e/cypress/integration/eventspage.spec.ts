@@ -66,8 +66,6 @@ context("Events page", () => {
       cy.getCy("eventregistrationform-button-submit").click();
 
       // Assertions
-      cy.getCy("eventpage-signups-table").contains(quota.title["fi"]);
-
       cy.getCy("eventpage-signups-table").should("exist");
       cy.getCy("eventpage-signups-table").contains("Test");
       cy.getCy("eventpage-signups-table").contains("Testersson");

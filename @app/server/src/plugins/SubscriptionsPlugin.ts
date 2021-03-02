@@ -126,7 +126,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
             )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`;
             const orderBy = sql.fragment`created_at`;
             sqlBuilder.where(where);
-            sqlBuilder.orderBy(() => orderBy, false);
+            sqlBuilder.orderBy(() => orderBy, true);
           },
           // Whether to return a single record or a list.
           // If true, return list.

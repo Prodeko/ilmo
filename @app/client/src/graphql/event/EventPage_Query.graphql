@@ -31,6 +31,7 @@ fragment EventPage_Quota on Quota {
 fragment EventPage_Registration on Registration {
   id
   fullName
+  isQueued
   createdAt
 }
 
@@ -44,12 +45,12 @@ fragment EventPage_Event on Event {
     id
     name
   }
-  quotas {
+  quotas(orderBy: ID_ASC) {
     nodes {
       ...EventPage_Quota
     }
   }
-  registrations(orderBy: CREATED_AT_DESC) {
+  registrations(orderBy: CREATED_AT_ASC) {
     nodes {
       ...EventPage_Registration
       quota {

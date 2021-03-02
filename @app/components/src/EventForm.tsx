@@ -556,7 +556,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                         <Input type="hidden" />
                       </Form.Item>
                       <Space
-                        key={field.key}
                         align="baseline"
                         style={{ display: "flex", marginBottom: 8 }}
                       >
@@ -564,6 +563,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                           <div key={l}>
                             <Form.Item
                               {...field}
+                              key={`${name}-${l}`}
                               fieldKey={[fieldKey, "title", l!]}
                               name={[name, "title", l!]}
                               rules={[

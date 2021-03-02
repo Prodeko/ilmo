@@ -4,16 +4,13 @@ import {
   asRoot,
   assertJobComplete,
   createEventDataAndLogin,
-  createRegistrations,
   deleteTestData,
   getJobs,
-  poolFromUrl,
   runGraphQLQuery,
   runJobs,
   sanitize,
   setup,
   teardown,
-  TEST_DATABASE_URL,
 } from "../helpers";
 
 beforeEach(deleteTestData);
@@ -265,19 +262,11 @@ describe("CreateRegistration", () => {
     );
   });
 
-  it("can't create registration if quota is full", async () => {
-    const {
-      events,
-      quotas,
-      registrationSecret,
-    } = await createEventDataAndLogin({
+  it("can't create registration if quotaId is invalid", async () => {
+    const { events, registrationSecret } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     });
-    const event = events[0];
-    const quota = quotas[0];
-    const pool = poolFromUrl(TEST_DATABASE_URL);
-    // Fill up quota. Should not be able to register to this quota after this.
-    await createRegistrations(pool, quota.size, event.id, quota.id);
+    const eventId = events[0].id;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -306,8 +295,8 @@ describe("CreateRegistration", () => {
 
       // GraphQL variables:
       {
-        eventId: event.id,
-        quotaId: quota.id,
+        eventId,
+        quotaId: "d24a4112-81e2-440a-a9fa-be2371944310",
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
@@ -322,7 +311,127 @@ describe("CreateRegistration", () => {
         expect(json.errors).toBeTruthy();
 
         const message = json.errors![0].message;
-        expect(message).toEqual("Event quota already full.");
+        const code = json.errors![0].extensions.exception.code;
+        expect(message).toEqual("Quota not found.");
+        expect(code).toEqual("NTFND");
+      }
+    );
+  });
+
+  it("can't create registration if eventId is invalid", async () => {
+    const { quotas, registrationSecret } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    });
+    const quotaId = quotas[0].id;
+
+    await runGraphQLQuery(
+      `mutation CreateRegistration(
+        $registrationToken: UUID!
+        $eventId: UUID!
+        $quotaId: UUID!
+        $firstName: String!
+        $lastName: String!
+        $email: String!
+      ) {
+        createRegistration(
+          input: {
+            registrationToken: $registrationToken
+            eventId: $eventId
+            quotaId: $quotaId
+            firstName: $firstName
+            lastName: $lastName
+            email: $email
+          }
+        ) {
+          registration {
+            id
+          }
+        }
+      }`,
+
+      // GraphQL variables:
+      {
+        eventId: "d24a4112-81e2-440a-a9fa-be2371944310",
+        quotaId,
+        firstName: "Testname",
+        lastName: "Testlastname",
+        email: "testuser@example.com",
+        registrationToken: registrationSecret.registration_token,
+      },
+
+      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy();
+
+        const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
+        expect(message).toEqual("Event not found.");
+        expect(code).toEqual("NTFND");
+      }
+    );
+  });
+
+  it("can't create registration if registration is not open", async () => {
+    const {
+      quotas,
+      events,
+      registrationSecret,
+    } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      eventOptions: { create: true, amount: 1, signupOpen: false },
+    });
+    const eventId = events[0].id;
+    const quotaId = quotas[0].id;
+
+    await runGraphQLQuery(
+      `mutation CreateRegistration(
+        $registrationToken: UUID!
+        $eventId: UUID!
+        $quotaId: UUID!
+        $firstName: String!
+        $lastName: String!
+        $email: String!
+      ) {
+        createRegistration(
+          input: {
+            registrationToken: $registrationToken
+            eventId: $eventId
+            quotaId: $quotaId
+            firstName: $firstName
+            lastName: $lastName
+            email: $email
+          }
+        ) {
+          registration {
+            id
+          }
+        }
+      }`,
+
+      // GraphQL variables:
+      {
+        eventId,
+        quotaId,
+        firstName: "Testname",
+        lastName: "Testlastname",
+        email: "testuser@example.com",
+        registrationToken: registrationSecret.registration_token,
+      },
+
+      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy();
+
+        const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
+        expect(message).toEqual("Event registration is not open.");
+        expect(code).toEqual("DNIED");
       }
     );
   });
@@ -334,10 +443,10 @@ describe("CreateRegistration", () => {
       registrationSecret,
     } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 2 },
+      eventOptions: { create: true, amount: 2, signupOpen: true },
     });
     // RegistrationSecret is claimed for event[0], try to use it to
-    // register to another event which should not be allowed
+    // register to another event which is not allowed
     const event = events[1];
     const quota = quotas[0];
 
@@ -385,9 +494,11 @@ describe("CreateRegistration", () => {
         expect(json.errors).toBeTruthy();
 
         const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
         );
+        expect(code).toEqual("DNIED");
       }
     );
   });

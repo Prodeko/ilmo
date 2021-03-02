@@ -7,6 +7,7 @@
   "createEventCategory": {
     "title": "Create event category"
   },
+  "createdAt": "Time",
   "errors": {
     "eventCategoryCreationFailed": "Creating event category failed",
     "eventCreationFailed": "Creating event failed",
@@ -70,6 +71,8 @@
   "languages": "Languages",
   "numRegistrations": "Registered people",
   "organizer": "Organizer",
+  "queued": "Queue",
+  "quota": "Quota",
   "registerToAnEvent": "Signup",
   "removeQuota": "Remove quota",
   "time": "Time",

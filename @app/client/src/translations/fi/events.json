@@ -7,6 +7,7 @@
   "createEventCategory": {
     "title": "Luo tapahtumakategoria"
   },
+  "createdAt": "Aika",
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
     "eventCreationFailed": "Tapahtuman luonti epäonnistui",
@@ -70,6 +71,8 @@
   "languages": "Kielet",
   "numRegistrations": "Rekisteröityneitä",
   "organizer": "Järjestäjä",
+  "queued": "Jonossa",
+  "quota": "Kiintiö",
   "registerToAnEvent": "Ilmoittaudu",
   "removeQuota": "Poista kiintiö",
   "time": "Aika",

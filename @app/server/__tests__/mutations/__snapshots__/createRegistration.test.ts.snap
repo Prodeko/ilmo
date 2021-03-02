@@ -16,7 +16,65 @@ Object {
 }
 `;
 
-exports[`CreateRegistration can't create registration if quota is full 1`] = `
+exports[`CreateRegistration can't create registration if eventId is invalid 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 17 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Event not found.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if quotaId is invalid 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 13 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Quota not found.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if registration is not open 1`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -27,7 +85,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 27 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 33 at RAISE",
         },
       },
       "locations": Array [
@@ -36,7 +94,7 @@ Object {
           "line": 9,
         },
       ],
-      "message": "Event quota already full.",
+      "message": "Event registration is not open.",
       "path": Array [
         "createRegistration",
       ],
@@ -56,7 +114,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 27 at RAISE",
         },
       },
       "locations": Array [
@@ -85,7 +143,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 27 at RAISE",
         },
       },
       "locations": Array [
