@@ -239,7 +239,7 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
     const size = faker.random.number({
       min: 1,
-      max: 50,
+      max: 20,
     });
     const {
       rows: [quota],

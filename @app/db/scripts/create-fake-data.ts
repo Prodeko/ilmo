@@ -75,7 +75,7 @@ async function generateData(client: PoolClient) {
     events.forEach(async (e) => {
       const quotas = await createQuotas(client, 5, e.id);
       quotas.forEach(async (q) => {
-        await createRegistrations(client, random(0, 10), e.id, q.id);
+        await createRegistrations(client, random(0, 25), e.id, q.id);
       });
     });
   });
