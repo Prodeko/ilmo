@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
+--! Hash: sha1:ba942d8cbb0359426ffdfb106fffa6b66729ab12
 
 --! split: 0001-reset.sql
 /*
@@ -237,7 +237,6 @@ comment on function app_public.tg__graphql_subscription() is
  * These types and functions define the supported languages of the app.
  */
 
-drop type if exists app_languages cascade;
 create type app_languages as (supported_languages text[], default_language text);
 
 -- Defines supported languages and the default language
