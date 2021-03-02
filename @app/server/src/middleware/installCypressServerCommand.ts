@@ -483,19 +483,12 @@ export const createEvents = async (
     const registrationStartTime = dayjs(now)
       .add(dateAdjustment, "day")
       .toDate();
-    const registrationEndTime = faker.date.between(
-      registrationStartTime,
-      dayjs(registrationStartTime).add(7, "day").toDate()
-    );
+    const registrationEndTime = dayjs(registrationStartTime)
+      .add(7, "day")
+      .toDate();
 
-    const eventStartTime = faker.date.between(
-      registrationEndTime,
-      dayjs(registrationEndTime).add(7, "day").toDate()
-    );
-    const eventEndTime = faker.date.between(
-      eventStartTime,
-      dayjs(eventStartTime).add(1, "day").toDate()
-    );
+    const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate();
+    const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate();
 
     const eventCategoryId = categoryId;
     const headerImageFile = faker.image.imageUrl(

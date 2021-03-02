@@ -29,12 +29,12 @@ describe("UpdateEvent", () => {
     await runGraphQLQuery(
       `mutation UpdateEvent(
         $eventId: UUID!
-        $slug: String!
         $name: JSON!
         $description: JSON!
         $organizationId: UUID!
         $categoryId: UUID!
         $isHighlighted: Boolean
+        $isDraft: Boolean
         $eventStartTime: Datetime!
         $eventEndTime: Datetime!
         $registrationStartTime: Datetime!
@@ -44,12 +44,12 @@ describe("UpdateEvent", () => {
           input: {
             id: $eventId
             patch: {
-              slug: $slug
               name: $name
               description: $description
               ownerOrganizationId: $organizationId
               categoryId: $categoryId
               isHighlighted: $isHighlighted
+              isDraft: $isDraft
               eventStartTime: $eventStartTime
               eventEndTime: $eventEndTime
               registrationStartTime: $registrationStartTime
@@ -64,6 +64,7 @@ describe("UpdateEvent", () => {
             ownerOrganizationId
             categoryId
             isHighlighted
+            isDraft
             eventStartTime
             eventEndTime
             registrationStartTime
@@ -84,6 +85,7 @@ describe("UpdateEvent", () => {
         organizationId: organization.id,
         categoryId: eventCategory.id,
         isHighlighted: true,
+        isDraft: false,
         eventStartTime: day.add(2, "hour").toISOString(),
         eventEndTime: day.add(3, "hour").toISOString(),
         registrationStartTime: day.toISOString(),
@@ -115,6 +117,7 @@ describe("UpdateEvent", () => {
             "eventEndTime": "[timestamp-2]",
             "eventStartTime": "[timestamp-1]",
             "id": "[id-1]",
+            "isDraft": false,
             "isHighlighted": true,
             "name": Object {
               "en": "Updated test event",
