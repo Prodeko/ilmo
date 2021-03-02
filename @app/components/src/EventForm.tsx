@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone";
 import PlusOutlined from "@ant-design/icons/PlusOutlined";
 import {
@@ -271,6 +271,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           key="general"
           data-cy="eventform-tab-general"
           tab={t("forms.tabs.generalInfo")}
+          forceRender
         >
           <Form.Item
             label={t("languages")}
@@ -520,6 +521,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           key="quotas"
           data-cy="eventform-tab-quotas"
           tab={t("forms.tabs.quotas")}
+          forceRender
         >
           <Form.List
             name="quotas"
