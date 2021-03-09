@@ -1,4 +1,3 @@
-import { IncomingMessage, ServerResponse } from "http";
 import { resolve } from "path";
 
 import PgPubsub from "@graphile/pg-pubsub";
@@ -14,7 +13,6 @@ import { Redis } from "ioredis";
 import { Pool, PoolClient } from "pg";
 import {
   enhanceHttpServerWithSubscriptions,
-  HttpRequestHandler,
   makePluginHook,
   Middleware,
   postgraphile,
@@ -36,12 +34,6 @@ import { resolveUpload } from "../utils/fileUpload";
 import handleErrors from "../utils/handleErrors";
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field");
-
-declare module "fastify" {
-  export interface FastifyRequest {
-    postgraphileMiddleware: HttpRequestHandler<IncomingMessage, ServerResponse>;
-  }
-}
 
 declare module "postgraphile" {
   export interface CompatFastifyRequest {
