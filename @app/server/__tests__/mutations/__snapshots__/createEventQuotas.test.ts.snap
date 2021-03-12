@@ -40,7 +40,7 @@ Object {
         "exception": Object {
           "code": "LOGIN",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 8 at RAISE",
+          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 9 at RAISE",
         },
       },
       "locations": Array [
@@ -69,7 +69,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 12 at RAISE",
+          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 14 at RAISE",
         },
       },
       "locations": Array [

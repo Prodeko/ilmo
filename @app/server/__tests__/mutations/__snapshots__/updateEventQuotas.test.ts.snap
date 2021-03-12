@@ -49,7 +49,7 @@ Object {
         "exception": Object {
           "code": "LOGIN",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 11 at RAISE",
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 12 at RAISE",
         },
       },
       "locations": Array [
@@ -78,7 +78,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 15 at RAISE",
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 17 at RAISE",
         },
       },
       "locations": Array [

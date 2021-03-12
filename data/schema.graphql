@@ -327,44 +327,6 @@ type CreateOrganizationPayload {
   query: Query
 }
 
-"""All input for the create `Quota` mutation."""
-input CreateQuotaInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The `Quota` to be created by this mutation."""
-  quota: QuotaInput!
-}
-
-"""The output of our create `Quota` mutation."""
-type CreateQuotaPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """Reads a single `Event` that is related to this `Quota`."""
-  event: Event
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """The `Quota` that was created by this mutation."""
-  quota: Quota
-
-  """An edge for our `Quota`. May be used by Relay 1."""
-  quotaEdge(
-    """The method to use when ordering `Quota`."""
-    orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
-  ): QuotasEdge
-}
-
 """All input for the `createRegistration` mutation."""
 input CreateRegistrationInput {
   """
@@ -636,43 +598,6 @@ type DeleteOrganizationPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
-}
-
-"""All input for the `deleteQuota` mutation."""
-input DeleteQuotaInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  id: UUID!
-}
-
-"""The output of our delete `Quota` mutation."""
-type DeleteQuotaPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  deletedQuotaNodeId: ID
-
-  """Reads a single `Event` that is related to this `Quota`."""
-  event: Event
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """The `Quota` that was deleted by this mutation."""
-  quota: Quota
-
-  """An edge for our `Quota`. May be used by Relay 1."""
-  quotaEdge(
-    """The method to use when ordering `Quota`."""
-    orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
-  ): QuotasEdge
 }
 
 """All input for the `deleteRegistration` mutation."""
@@ -1641,7 +1566,7 @@ type Mutation {
     input: CreateEventQuestionInput!
   ): CreateEventQuestionPayload
 
-  """Create event quotas."""
+  """Create multiple quotas at once."""
   createEventQuotas(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1658,14 +1583,6 @@ type Mutation {
     """
     input: CreateOrganizationInput!
   ): CreateOrganizationPayload
-
-  """Creates a single `Quota`."""
-  createQuota(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateQuotaInput!
-  ): CreateQuotaPayload
 
   """
   Register to an event. Checks that a valid registration token was suplied.
@@ -1718,14 +1635,6 @@ type Mutation {
     """
     input: DeleteOrganizationInput!
   ): DeleteOrganizationPayload
-
-  """Deletes a single `Quota` using a unique key."""
-  deleteQuota(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteQuotaInput!
-  ): DeleteQuotaPayload
 
   """Delete event registration."""
   deleteRegistration(
@@ -1878,7 +1787,7 @@ type Mutation {
     input: UpdateEventQuestionInput!
   ): UpdateEventQuestionPayload
 
-  """Update event quotas."""
+  """Update multiple quotas at once."""
   updateEventQuotas(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2563,18 +2472,6 @@ input QuotaFilter {
 
   """Checks for any expressions in this list."""
   or: [QuotaFilter!]
-}
-
-"""An input for mutations affecting `Quota`"""
-input QuotaInput {
-  """Identifier of the event that this quota is for."""
-  eventId: UUID!
-
-  """Size of the quota."""
-  size: Int!
-
-  """Title for the quota."""
-  title: JSON!
 }
 
 """A connection to a list of `Quota` values."""

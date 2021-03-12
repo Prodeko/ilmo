@@ -113,7 +113,7 @@
       },
       "app_public.registrations": {
         "tags": {
-          "omit": "create,update,delete"
+          "omit": "create,insert,update,delete"
         }
       },
       // Omit all quota CRUD operations. We define custom mutations that create or update
@@ -121,7 +121,7 @@
       // app_public.update_event_quotas.
       "app_public.quotas": {
         "tags": {
-          "omit": "insert,update, delete"
+          "omit": "create,insert,update,delete"
         }
       }
     },
