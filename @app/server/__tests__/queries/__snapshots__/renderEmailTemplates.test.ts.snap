@@ -1074,7 +1074,8 @@ Confirm intent
     - Kiintiö: N <br>
     - Tapahtuma: Testitapahtuma <br>
     - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
-    - Linkki tapahtumaan: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
+    - Linkki tapahtumaan: <a href=\\"http://localhost:5678/fi/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/fi/event/2021-01-01-testitapahtuma</a>
+    <br></div>
     
                 </td>
               </tr>
@@ -1116,7 +1117,8 @@ Confirm intent
     - Kiintiö: N <br>
     - Tapahtuma: Test event <br>
     - Event time: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
-    - Link to the event: <a href=\\"http://localhost:5678/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/event/2021-01-01-testitapahtuma</a><br></div>
+    - Link to the event: <a href=\\"http://localhost:5678/en/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/en/event/2021-01-01-testitapahtuma</a>
+    <br></div>
     
                 </td>
               </tr>
@@ -1248,8 +1250,8 @@ Confirm intent
 - Kiintiö: N
 - Tapahtuma: Testitapahtuma
 - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00
-- Linkki tapahtumaan: http://localhost:5678/event/2021-01-01-testitapahtuma
-[http://localhost:5678/event/2021-01-01-testitapahtuma]
+- Linkki tapahtumaan: http://localhost:5678/fi/event/2021-01-01-testitapahtuma
+[http://localhost:5678/fi/event/2021-01-01-testitapahtuma]
 
 Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
 
@@ -1259,8 +1261,8 @@ Successfully registered to the event:
 - Kiintiö: N
 - Tapahtuma: Test event
 - Event time: 2021-01-01 12:00 - 2021-01-01 15:00
-- Link to the event: http://localhost:5678/event/2021-01-01-testitapahtuma
-[http://localhost:5678/event/2021-01-01-testitapahtuma]
+- Link to the event: http://localhost:5678/en/event/2021-01-01-testitapahtuma
+[http://localhost:5678/en/event/2021-01-01-testitapahtuma]
 
 You can update or delete your registration via this link:
 

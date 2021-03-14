@@ -75,7 +75,18 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     return;
   }
 
+  if (registrationSecret.confirmation_email_sent) {
+    console.error("Confirmation email already sent; aborting");
+    return;
+  }
+
   const { email, first_name, last_name } = registration;
+
+  if (!email) {
+    console.error("No email specified; aborting");
+    return;
+  }
+
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -83,16 +94,22 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     },
     template: "event_registration.mjml.njk",
     variables: {
+      url: ROOT_URL,
       eventName: event.name,
       registrationName: `${first_name} ${last_name}`,
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
-      eventLink: `${ROOT_URL}/${event.slug}`,
+      eventSlug: event.slug,
       eventRegistrationUpdateLink: `${ROOT_URL}/update-registration/${registrationSecret.update_token}`,
     },
   };
 
   await addJob("send_email", sendEmailPayload);
+  await withPgClient((pgClient) =>
+    pgClient.query(
+      "update app_private.registration_secrets set confirmation_email_sent = true"
+    )
+  );
 };
 
 module.exports = task;

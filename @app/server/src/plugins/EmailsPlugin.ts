@@ -8,7 +8,6 @@ import { OurGraphQLContext } from "../middleware/installPostGraphile";
 import { loadTemplate } from "../utils/emailUtils";
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors";
 
-const { ROOT_URL } = process.env;
 const EMAIL_SEND_TEMPLATE_WHITELIST = ["event_registration.mjml.njk"];
 
 const EmailsPlugin = makeExtendSchemaPlugin(() => ({
@@ -26,7 +25,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       registrationQuota: TranslatedInputField
       eventName: TranslatedInputField
       eventTime: String
-      eventLink: String
+      eventSlug: String
       eventRegistrationUpdateLink: String
     }
 
@@ -134,7 +133,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               registrationName: "Teppo Testinen",
               eventName: { fi: "Testitapahtuma", en: "Test event" },
               eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
-              eventLink: `${ROOT_URL}/event/2021-01-01-testitapahtuma`,
+              eventSlug: "2021-01-01-testitapahtuma",
               eventRegistrationUpdateLink: "",
               actionDescription: "You changed your password.",
               deleteAccountLink: "",
@@ -146,7 +145,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               link: "",
               verifyLink: "",
               token: "12345",
-              url: ROOT_URL,
+              url: process.env.ROOT_URL,
             };
             const templateFn = await loadTemplate(filename);
             const html = await templateFn(variables);

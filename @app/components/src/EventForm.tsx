@@ -145,10 +145,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         },
         eventName: formValues?.name,
         eventTime: getFormattedEventTime(formValues?.eventTime) || "",
-        eventLink: `${process.env.ROOT_URL}/${getEventSlug(
-          formValues?.name,
-          formValues?.eventTime
-        )}`,
+        eventSlug: getEventSlug(formValues?.name, formValues?.eventTime),
         eventRegistrationUpdateLink: "{{ eventRegistrationUpdateLink }}",
       },
     },
