@@ -24,6 +24,7 @@ fragment EventPage_EventCategory on EventCategory {
 
 fragment EventPage_Quota on Quota {
   id
+  position
   title
   size
 }
@@ -45,7 +46,7 @@ fragment EventPage_Event on Event {
     id
     name
   }
-  quotas(orderBy: ID_ASC) {
+  quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
     }

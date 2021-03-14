@@ -1,4 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import DragOutlined from "@ant-design/icons/DragOutlined";
 import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone";
 import PlusOutlined from "@ant-design/icons/PlusOutlined";
 import {
@@ -45,6 +48,7 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 import slugify from "slugify";
 
+import { DisableDraggable, Draggable } from "./Draggable";
 import { FileUpload } from "./index";
 
 const { Text } = Typography;
@@ -193,9 +197,13 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         });
         const accessor = type === "create" ? "createEvent" : "updateEvent";
         const createdEventId = data[accessor].event.id;
-        const quotas = valueQuotas.map((q: Quota) =>
-          filterObjectByKeys(q, ["id", "title", "size"])
-        );
+        console.log(valueQuotas, "valueQuotas");
+        const quotas = valueQuotas.map((q: Quota, index: number) => {
+          // Set quota position
+          q.position = index;
+          return filterObjectByKeys(q, ["id", "position", "title", "size"]);
+        });
+        console.log(quotas, "quotas");
         // Run quotas query
         quotasQuery({
           variables: { input: { eventId: createdEventId, quotas } },
@@ -520,118 +528,150 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           tab={t("forms.tabs.quotas")}
           forceRender
         >
-          <Form.List
-            name="quotas"
-            rules={[
-              {
-                validator: async (_, quotas) => {
-                  if (!quotas || quotas.length < 1) {
-                    return Promise.reject(
-                      new Error(t("errors.mustProvideEventQuota"))
-                    );
-                  }
+          <DndProvider backend={HTML5Backend}>
+            <Form.List
+              name="quotas"
+              rules={[
+                {
+                  validator: async (_, quotas) => {
+                    if (!quotas || quotas.length < 1) {
+                      return Promise.reject(
+                        new Error(t("errors.mustProvideEventQuota"))
+                      );
+                    }
+                  },
                 },
-              },
-            ]}
-          >
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map((field) => {
-                  const { name, fieldKey } = field;
-                  const numRegistrations =
-                    initialValues?.quotas[fieldKey]?.registrations
-                      ?.totalCount || 0;
-                  return (
-                    <>
-                      <Form.Item
+              ]}
+            >
+              {(fields, { add, remove, move }) => (
+                <>
+                  {fields.map((field, index) => {
+                    const { name, fieldKey } = field;
+                    const numRegistrations =
+                      initialValues?.quotas[fieldKey]?.registrations
+                        ?.totalCount || 0;
+                    return (
+                      <Draggable
                         {...field}
-                        fieldKey={[fieldKey, "id"]}
-                        name={[name, "id"]}
-                        required={false}
-                        noStyle
+                        key={field.key}
+                        id={field.key}
+                        index={index}
+                        move={move}
                       >
-                        <Input type="hidden" />
-                      </Form.Item>
-                      <Space
-                        align="baseline"
-                        style={{ display: "flex", marginBottom: 8 }}
-                      >
-                        {selectedLanguages.map((l) => (
-                          <div key={l}>
-                            <Form.Item
-                              {...field}
-                              key={`${name}-${l}`}
-                              fieldKey={[fieldKey, "title", l!]}
-                              name={[name, "title", l!]}
-                              rules={[
-                                {
-                                  required: true,
-                                  message: t(
-                                    "forms.rules.quota.provideQuotaTitle"
-                                  ),
-                                },
-                              ]}
-                              noStyle
-                            >
-                              <Input
-                                data-cy={`eventform-input-quotas-title-${l}-${fieldKey}`}
-                                placeholder={`${t(
-                                  "forms.placeholders.quota.title"
-                                )} ${t(
-                                  `forms.placeholders.${l}`
-                                ).toLowerCase()}`}
-                              />
-                            </Form.Item>{" "}
-                          </div>
-                        ))}
                         <Form.Item
-                          {...field}
-                          fieldKey={[fieldKey, "size"]}
-                          name={[name, "size"]}
-                          rules={[
-                            {
-                              required: true,
-                              message: t("forms.rules.quota.provideQuotaSize"),
-                            },
-                          ]}
+                          fieldKey={[fieldKey, "position"]}
+                          name={[name, "position"]}
+                          required={true}
                           noStyle
                         >
-                          <InputNumber
-                            data-cy={`eventform-input-quotas-size-${fieldKey}`}
-                            min={1}
-                            placeholder={t("forms.placeholders.quota.size")}
-                          />
+                          <Input type="hidden" />
                         </Form.Item>
-                        {numRegistrations === 0 ? (
-                          <Tooltip title={t("removeQuota")}>
-                            <MinusCircleTwoTone
-                              twoToneColor="red"
-                              onClick={() => remove(name)}
+                        <Form.Item
+                          fieldKey={[fieldKey, "id"]}
+                          name={[name, "id"]}
+                          required={false}
+                          noStyle
+                        >
+                          <Input type="hidden" />
+                        </Form.Item>
+                        <Space
+                          align="baseline"
+                          style={{ display: "flex", marginBottom: 8 }}
+                        >
+                          <DragOutlined />
+                          {selectedLanguages.map((l) => (
+                            <div key={l}>
+                              <Form.Item
+                                key={`${name}-${l}`}
+                                fieldKey={[fieldKey, "title", l!]}
+                                name={[name, "title", l!]}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: t(
+                                      "forms.rules.quota.provideQuotaTitle"
+                                    ),
+                                  },
+                                ]}
+                                noStyle
+                              >
+                                <Input
+                                  data-cy={`eventform-input-quotas-title-${l}-${fieldKey}`}
+                                  draggable={false}
+                                  placeholder={`${t(
+                                    "forms.placeholders.quota.title"
+                                  )} ${t(
+                                    `forms.placeholders.${l}`
+                                  ).toLowerCase()}`}
+                                  onDragStart={(event) => {
+                                    event.stopPropagation();
+                                    event.preventDefault();
+                                  }}
+                                />
+                              </Form.Item>{" "}
+                            </div>
+                          ))}
+                          <Form.Item
+                            fieldKey={[fieldKey, "size"]}
+                            name={[name, "size"]}
+                            rules={[
+                              {
+                                required: true,
+                                message: t(
+                                  "forms.rules.quota.provideQuotaSize"
+                                ),
+                              },
+                            ]}
+                            noStyle
+                          >
+                            <InputNumber
+                              {...DisableDraggable}
+                              data-cy={`eventform-input-quotas-size-${fieldKey}`}
+                              min={1}
+                              placeholder={t("forms.placeholders.quota.size")}
                             />
-                          </Tooltip>
-                        ) : (
-                          <div>
-                            {t("numRegistrations")}: {numRegistrations}
-                          </div>
-                        )}
-                      </Space>
-                    </>
-                  );
-                })}
-                <Form.Item>
-                  <Button
-                    data-cy="eventform-quotas-add-quota"
-                    icon={<PlusOutlined />}
-                    type="dashed"
-                    block
-                    onClick={() => add()}
-                  >
-                    {t("addQuota")}
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
+                          </Form.Item>
+                          {numRegistrations === 0 ? (
+                            <Tooltip title={t("removeQuota")}>
+                              <MinusCircleTwoTone
+                                {...DisableDraggable}
+                                twoToneColor="red"
+                                onClick={() => remove(name)}
+                              />
+                            </Tooltip>
+                          ) : (
+                            <div>
+                              {t("numRegistrations")}: {numRegistrations}
+                            </div>
+                          )}
+                        </Space>
+                      </Draggable>
+                    );
+                  })}
+                  <Form.Item>
+                    <Button
+                      data-cy="eventform-quotas-add-quota"
+                      icon={<PlusOutlined />}
+                      type="dashed"
+                      block
+                      onClick={() => add()}
+                    >
+                      {t("addQuota")}
+                    </Button>
+                  </Form.Item>
+                  <Form.Item shouldUpdate>
+                    {() => {
+                      return (
+                        <pre>
+                          {JSON.stringify(form.getFieldsValue(), null, 2)}
+                        </pre>
+                      );
+                    }}
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+          </DndProvider>
         </TabPane>
         <TabPane
           key="email"

@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Registration } from "@app/graphql";
+import { Skeleton } from "antd";
 import dayjs from "dayjs";
 import useTranslation from "next-translate/useTranslation";
 
@@ -41,6 +42,12 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       title: t("common:name"),
       dataIndex: "fullName",
       key: "fullName",
+      render: (fullName: string) =>
+        fullName ? (
+          fullName
+        ) : (
+          <Skeleton.Input active={true} size="small" style={{ width: 120 }} />
+        ),
     },
     {
       title: t("createdAt"),

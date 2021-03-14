@@ -69,14 +69,16 @@ const EventRegistrationPage: NextPage = () => {
         <List
           dataSource={recentRegistrations}
           header={<div>{t("recentlyRegisteredHeader")}</div>}
-          renderItem={(item) => (
-            <List.Item>
-              <Typography.Text>
-                {item?.fullName} {t("recentlyRegisteredListItem")}{" "}
-                {item?.quota?.title[lang]}
-              </Typography.Text>
-            </List.Item>
-          )}
+          renderItem={(item) =>
+            item.firstName ? (
+              <List.Item>
+                <Typography.Text>
+                  {item?.fullName} {t("recentlyRegisteredListItem")}{" "}
+                  {item?.quota?.title[lang]}
+                </Typography.Text>
+              </List.Item>
+            ) : null
+          }
           bordered
         />
       )}

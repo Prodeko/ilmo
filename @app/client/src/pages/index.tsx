@@ -164,7 +164,10 @@ const Home: NextPage = () => {
             ))}
           </div>
         ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty
+            description={<span>{t("noEvents")}</span>}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
         )}
         <H3>{t("events.signupsUpcomingEvents")}</H3>
         {signupsUpcomingEvents?.length > 0 ? (
@@ -174,7 +177,10 @@ const Home: NextPage = () => {
             ))}
           </div>
         ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <Empty
+            description={<span>{t("noEvents")}</span>}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
         )}
         <Divider dashed />
         <Col xs={24}>
