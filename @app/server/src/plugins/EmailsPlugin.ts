@@ -21,12 +21,19 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
     }
 
     input EmailTemplateVariables {
-      registrationName: String
-      registrationQuota: TranslatedInputField
+      actionDescription: String
+      deleteAccountLink: String
       eventName: TranslatedInputField
-      eventTime: String
-      eventSlug: String
       eventRegistrationUpdateLink: String
+      eventSlug: String
+      eventTime: String
+      link: String
+      organizationName: String
+      registrationQuota: TranslatedInputField
+      registrationName: String
+      token: String
+      url: String
+      verifyLink: String
     }
 
     """
@@ -83,7 +90,10 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           }
 
           const templateFn = await loadTemplate(template);
-          const html = await templateFn(variables);
+          const html = await templateFn({
+            ...variables,
+            url: process.env.ROOT_URL,
+          });
           const html2textableHtml = html.replace(/(<\/?)div/g, "$1p");
           const text = html2text.fromString(html2textableHtml, {
             wordwrap: 120,
@@ -129,23 +139,19 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           const ret = templateFiles.map(async (filename) => {
             // Dummy variables for mjml templates
             const variables = {
-              registrationQuota: { fi: "N", en: "N" },
-              registrationName: "Teppo Testinen",
-              eventName: { fi: "Testitapahtuma", en: "Test event" },
-              eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
-              eventSlug: "2021-01-01-testitapahtuma",
-              eventRegistrationUpdateLink: "",
               actionDescription: "You changed your password.",
               deleteAccountLink: "",
-              contentFinnish:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget tellus eros.",
-              contentEnglish:
-                "Morbi semper posuere placerat. Fusce lectus ex, egestas eget nunc placerat, placerat condimentum eros.",
-              organizationName: "Webbitiimi",
+              eventName: { fi: "Testitapahtuma", en: "Test event" },
+              eventSlug: "2021-01-01-testitapahtuma",
+              eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
+              eventRegistrationUpdateLink: "",
               link: "",
-              verifyLink: "",
+              organizationName: "Webbitiimi",
+              registrationQuota: { fi: "N", en: "N" },
+              registrationName: "Teppo Testinen",
               token: "12345",
               url: process.env.ROOT_URL,
+              verifyLink: "",
             };
             const templateFn = await loadTemplate(filename);
             const html = await templateFn(variables);

@@ -1,5 +1,5 @@
 import { makeWrapResolversPlugin } from "graphile-utils";
-import { GraphQLResolveInfo } from "graphql";
+import { Redis } from "ioredis";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
 
@@ -7,20 +7,8 @@ if (!process.env.NODE_ENV) {
   throw new Error("No NODE_ENV envvar! Try `export NODE_ENV=development`");
 }
 
-type AugmentedGraphQLFieldResolver<
-  TSource,
-  TContext,
-  TArgs = { [argName: string]: any }
-> = (
-  resolve: any,
-  source: TSource,
-  args: TArgs,
-  context: TContext,
-  resolveInfo: GraphQLResolveInfo
-) => any;
-
 // 30 minutes timeout
-const RATE_LIMIT_TIMEOUT = 60 * 30;
+const RATE_LIMIT_TIMEOUT = 30;
 
 function constructRateLimitKey(
   fieldName: string,
@@ -37,47 +25,61 @@ class RateLimitException extends Error {
   }
 }
 
-function rateLimitResolver(
-  limit: number
-): AugmentedGraphQLFieldResolver<{}, OurGraphQLContext, any> {
-  return async (
-    resolve,
-    _source,
-    { input: { eventId } },
-    { ipAddress, redisClient },
-    { fieldName }
-  ) => {
-    try {
-      // First run the resolver, if it throws an error we don't want
-      // to set a rate limit key to redis
-      const result = await resolve();
+async function rateLimitResolver(
+  limit: number,
+  rateLimitId: string,
+  ipAddress: string,
+  fieldName: string,
+  resolve: any,
+  redisClient: Redis
+) {
+  try {
+    // First run the resolver, if it throws an error we don't want
+    // to set a rate limit key to redis
+    const result = await resolve();
 
-      const key = constructRateLimitKey(fieldName, eventId, ipAddress);
-      const current = Number(await redisClient.get(key));
+    const key = constructRateLimitKey(fieldName, rateLimitId, ipAddress);
+    const current = Number(await redisClient.get(key));
 
-      if (current >= limit) {
-        throw new RateLimitException(
-          `Too many requests. You have been rate-limited for ${
-            RATE_LIMIT_TIMEOUT / 60
-          } minutes.`
-        );
-      }
-
-      if (current < limit) {
-        await redisClient.incr(key);
-        await redisClient.expire(key, RATE_LIMIT_TIMEOUT);
-      }
-
-      return result;
-    } catch (e) {
-      throw e;
+    if (current >= limit) {
+      throw new RateLimitException(
+        `Too many requests. You have been rate-limited for ${RATE_LIMIT_TIMEOUT} minutes.`
+      );
     }
-  };
+
+    if (current < limit) {
+      await redisClient.incr(key);
+      await redisClient.expire(key, RATE_LIMIT_TIMEOUT * 60);
+    }
+
+    return result;
+  } catch (e) {
+    throw e;
+  }
 }
 
 const RateLimitPlugin = makeWrapResolversPlugin({
   Mutation: {
-    claimRegistrationToken: rateLimitResolver(3),
+    claimRegistrationToken: async (
+      resolve,
+      _source,
+      args,
+      context: OurGraphQLContext,
+      resolveInfo
+    ) => {
+      const { ipAddress, redisClient } = context;
+      const { eventId, quotaId } = args.input;
+      const { fieldName } = resolveInfo;
+      const rateLimitId = `${eventId}:${quotaId}`;
+      return await rateLimitResolver(
+        3,
+        rateLimitId,
+        ipAddress,
+        fieldName,
+        resolve,
+        redisClient
+      );
+    },
     // If more resolvers need rate limiting in the future
     // they can be added here.
   },
