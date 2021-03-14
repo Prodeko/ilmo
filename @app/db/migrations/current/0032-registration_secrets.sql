@@ -13,9 +13,15 @@ create table app_private.registration_secrets(
   id uuid primary key default gen_random_uuid(),
   registration_token uuid default gen_random_uuid(),
   update_token uuid default gen_random_uuid(),
+  confirmation_email_sent boolean not null default false,
 
+  -- When a registration is deleted, also delete the secrets
   registration_id uuid null references app_public.registrations(id) on delete cascade,
-  event_id uuid not null references app_public.events(id) on delete no action
+  event_id uuid not null references app_public.events(id) on delete no action,
+  quota_id uuid not null references app_public.quotas(id) on delete no action,
+
+  unique(registration_token),
+  unique(update_token)
 );
 alter table app_private.registration_secrets enable row level security;
 

@@ -7,9 +7,9 @@ create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
   quota_id uuid not null references app_public.quotas(id) on delete no action,
-  first_name text not null,
-  last_name text not null,
-  email citext not null check (email ~ '[^@]+@[^@]+\.[^@]+'),
+  first_name text null,
+  last_name text null,
+  email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -25,18 +25,26 @@ create trigger _100_timestamps
   before insert or update on app_public.registrations for each row
   execute procedure app_private.tg__timestamps();
 
-create trigger _200_send_registration_email
-  -- Send email upon successful registration
-  after insert on app_public.registrations
+create trigger _200_registration_is_valid
+  before insert on app_public.registrations for each row
+  execute procedure app_private.tg__registration_is_valid();
+
+create trigger _300_send_registration_email
+  -- Send email upon successful registration. We run this trigger on update because
+  -- the registration is initially created with claim_registration_token and we
+  -- don't know the users email at that point. The registration__send_confirmation_email
+  -- task validates that only send one email per registration. This is tracked
+  -- in app_private.registration_secrets.confirmation_email_sent.
+  after update on app_public.registrations
   for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
 
-create trigger _500_gql_insert
+create trigger _500_gql_registration_updated
   -- Expose new registrations via a GraphQl subscription. Used for live updating
   -- views in the frontend application.
   after insert or update or delete on app_public.registrations
   for each row
   execute procedure app_public.tg__graphql_subscription(
-    'registrationAdded', -- the "event" string, useful for the client to know what happened
+    'registrationUpdated', -- the "event" string, useful for the client to know what happened
     'graphql:eventRegistrations:$1', -- the "topic" the event will be published to, as a template
     'event_id' -- If specified, `$1` above will be replaced with NEW.id or OLD.id from the trigger.
   );
@@ -118,4 +126,3 @@ create policy manage_as_admin on app_public.registrations
     app_public.users
   where
     is_admin is true and id = app_public.current_user_id()));
-

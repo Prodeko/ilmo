@@ -104,6 +104,7 @@ input ClaimRegistrationTokenInput {
   """
   clientMutationId: String
   eventId: UUID!
+  quotaId: UUID!
 }
 
 """The output of our `claimRegistrationToken` mutation."""
@@ -265,6 +266,7 @@ type CreateEventQuestionPayload {
 
 """An input for mutations affecting `CreateEventQuota`"""
 input CreateEventQuotaInput {
+  position: Int
   size: Int
   title: JSON
 }
@@ -694,12 +696,19 @@ type DeleteUserEmailPayload {
 }
 
 input EmailTemplateVariables {
-  eventLink: String
+  actionDescription: String
+  deleteAccountLink: String
   eventName: TranslatedInputField
   eventRegistrationUpdateLink: String
+  eventSlug: String
   eventTime: String
+  link: String
+  organizationName: String
   registrationName: String
   registrationQuota: TranslatedInputField
+  token: String
+  url: String
+  verifyLink: String
 }
 
 """The output of our `renderEmailTemplates` query."""
@@ -1365,6 +1374,48 @@ type ForgotPasswordPayload {
   query: Query
 }
 
+"""
+A filter to be used against Int fields. All fields are combined with a logical ‘and.’
+"""
+input IntFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: Int
+
+  """Equal to the specified value."""
+  equalTo: Int
+
+  """Greater than the specified value."""
+  greaterThan: Int
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: Int
+
+  """Included in the specified list."""
+  in: [Int!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: Int
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: Int
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: Int
+
+  """Not equal to the specified value."""
+  notEqualTo: Int
+
+  """Not included in the specified list."""
+  notIn: [Int!]
+}
+
 """All input for the `inviteToOrganization` mutation."""
 input InviteToOrganizationInput {
   """
@@ -1804,7 +1855,7 @@ type Mutation {
   ): UpdateOrganizationPayload
 
   """
-  Register to an event. Checks that a valid registration token was suplied.
+  Update event registration. Checks that a valid update token was suplied.
   """
   updateRegistration(
     """
@@ -2395,6 +2446,9 @@ type Quota {
   eventId: UUID!
   id: UUID!
 
+  """Quota position. Used to order quotas."""
+  position: Int!
+
   """Private questions related to the quota."""
   questionsPrivate: JSON
 
@@ -2452,6 +2506,9 @@ input QuotaCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+
+  """Checks for equality with the object’s `position` field."""
+  position: Int
 }
 
 """
@@ -2472,6 +2529,9 @@ input QuotaFilter {
 
   """Checks for any expressions in this list."""
   or: [QuotaFilter!]
+
+  """Filter by the object’s `position` field."""
+  position: IntFilter
 }
 
 """A connection to a list of `Quota` values."""
@@ -2507,6 +2567,8 @@ enum QuotasOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
+  POSITION_ASC
+  POSITION_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
@@ -2534,7 +2596,7 @@ type Registration {
   eventId: UUID!
 
   """First name of the person registering to an event."""
-  firstName: String!
+  firstName: String
 
   """Returns the full name of a registered person."""
   fullName: String
@@ -2546,7 +2608,7 @@ type Registration {
   isQueued: Boolean
 
   """Last name of the person registering to an event."""
-  lastName: String!
+  lastName: String
 
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
@@ -3124,6 +3186,7 @@ type UpdateEventQuestionPayload {
 """An input for mutations affecting `UpdateEventQuota`"""
 input UpdateEventQuotaInput {
   id: UUID
+  position: Int
   size: Int
   title: JSON
 }

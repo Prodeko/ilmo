@@ -213,11 +213,6 @@
       },
       "app_public.delete_organization": {
         "description": "Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend."
-      },
-      "app_public.delete_registration_token": {
-        "tags": {
-          "omit": true
-        }
       }
     }
   }
