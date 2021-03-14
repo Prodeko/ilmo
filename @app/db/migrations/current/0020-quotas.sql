@@ -9,6 +9,7 @@ drop table if exists app_public.quotas cascade;
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
+  position smallint not null,
   title jsonb not null,
   size smallint not null check (size > 0),
   -- TODO: Implement questions
@@ -24,6 +25,7 @@ alter table app_public.quotas enable row level security;
 -- Indices
 create index on app_public.quotas(id);
 create index on app_public.quotas(event_id);
+create index on app_public.quotas(position);
 
 -- Triggers
 create trigger _100_timestamps
@@ -35,6 +37,8 @@ comment on table app_public.quotas is
   E'Main table for registration quotas.';
 comment on column app_public.quotas.event_id is
   E'Identifier of the event that this quota is for.';
+comment on column app_public.quotas.position is
+  E'Quota position. Used to order quotas.';
 comment on column app_public.quotas.title is
   E'Title for the quota.';
 comment on column app_public.quotas.size is
@@ -47,10 +51,10 @@ comment on column app_public.quotas.questions_private is
 -- RLS policies and grants
 grant
   select,
-  -- Allow update only on title and size. This means that once
-  -- a quota is created it cannot be moved to another event
-  insert (event_id, title, size),
-  update (title, size),
+  -- Allow update only on position, title and size. This means that once
+  -- a quota is created it cannot be moved to another event.
+  insert (event_id, position, title, size),
+  update (position, title, size),
   delete
 on app_public.quotas to :DATABASE_VISITOR;
 

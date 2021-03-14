@@ -17,6 +17,7 @@ drop function if exists app_public.update_event_quotas(event_id uuid, quotas app
 
 -- Input type for app_public.create_event_quotas
 create type app_public.create_event_quotas as (
+  position smallint,
   title jsonb,
   size smallint
 );
@@ -44,8 +45,8 @@ as $$
 
     -- Create quotas
     foreach v_input in array quotas loop
-      insert into app_public.quotas(event_id, title, size)
-        values (event_id, v_input.title, v_input.size)
+      insert into app_public.quotas(event_id, position, title, size)
+        values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
 
       v_ret := array_append(v_ret, v_quota);
@@ -60,6 +61,7 @@ comment on function app_public.create_event_quotas(event_id uuid, quotas app_pub
 -- Input type for app_public.update_event_quotas
 create type app_public.update_event_quotas as (
   id uuid,
+  position smallint,
   title jsonb,
   size smallint
 );
@@ -104,13 +106,13 @@ as $$
     foreach v_input in array quotas loop
       if exists(select 1 from app_public.quotas where id = v_input.id) then
         update app_public.quotas
-          set title = v_input.title, size = v_input.size
+          set position = v_input.position, title = v_input.title, size = v_input.size
           where id = v_input.id
         returning * into v_quota;
       else
         -- Create new quotas that didn't exits before
-        insert into app_public.quotas(event_id, title, size)
-          values (event_id, v_input.title, v_input.size)
+        insert into app_public.quotas(event_id, position, title, size)
+          values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
       end if;
 
@@ -122,4 +124,3 @@ as $$
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) is
   E'Update multiple quotas at once.';
-
