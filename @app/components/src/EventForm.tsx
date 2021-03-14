@@ -197,13 +197,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         });
         const accessor = type === "create" ? "createEvent" : "updateEvent";
         const createdEventId = data[accessor].event.id;
-        console.log(valueQuotas, "valueQuotas");
         const quotas = valueQuotas.map((q: Quota, index: number) => {
           // Set quota position
           q.position = index;
           return filterObjectByKeys(q, ["id", "position", "title", "size"]);
         });
-        console.log(quotas, "quotas");
         // Run quotas query
         quotasQuery({
           variables: { input: { eventId: createdEventId, quotas } },
@@ -658,15 +656,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                     >
                       {t("addQuota")}
                     </Button>
-                  </Form.Item>
-                  <Form.Item shouldUpdate>
-                    {() => {
-                      return (
-                        <pre>
-                          {JSON.stringify(form.getFieldsValue(), null, 2)}
-                        </pre>
-                      );
-                    }}
                   </Form.Item>
                 </>
               )}
