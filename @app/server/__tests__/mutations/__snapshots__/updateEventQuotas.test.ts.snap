@@ -1,5 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`UpdateEventQuotas can use custom mutation to delete multiple quotas 2`] = `
+Object {
+  "data": Object {
+    "updateEventQuotas": Object {
+      "quotas": Array [
+        Object {
+          "eventId": "[id-2]",
+          "id": "[id-1]",
+          "size": 1,
+          "title": Object {
+            "en": "Test quota 1",
+            "fi": "Testikiintiö 1",
+          },
+        },
+      ],
+    },
+  },
+}
+`;
+
 exports[`UpdateEventQuotas can use custom mutation to update multiple quotas 2`] = `
 Object {
   "data": Object {

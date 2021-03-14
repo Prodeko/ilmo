@@ -17,6 +17,7 @@ describe("CreateEventQuotas", () => {
     const { events, session } = await createEventDataAndLogin({
       quotaOptions: { create: false },
       registrationOptions: { create: false },
+      registrationSecretOptions: { create: false },
     });
     const eventId = events[0].id;
 
@@ -25,9 +26,10 @@ describe("CreateEventQuotas", () => {
         createEventQuotas(input: $input) {
           quotas {
             id
+            eventId
+            position
             title
             size
-            eventId
           }
         }
       }`,
@@ -37,8 +39,16 @@ describe("CreateEventQuotas", () => {
         input: {
           eventId,
           quotas: [
-            { title: { fi: "Testikiintiö 1", en: "Test quota 1" }, size: 1 },
-            { title: { fi: "Testikiintiö 2", en: "Test quota 2" }, size: 2 },
+            {
+              position: 0,
+              title: { fi: "Testikiintiö 1", en: "Test quota 1" },
+              size: 1,
+            },
+            {
+              position: 1,
+              title: { fi: "Testikiintiö 2", en: "Test quota 2" },
+              size: 2,
+            },
           ],
         },
       },
@@ -61,27 +71,29 @@ describe("CreateEventQuotas", () => {
         expect(quotas[1].eventId).toEqual(eventId);
 
         expect(sanitize(quotas)).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "eventId": "[id-2]",
-            "id": "[id-1]",
-            "size": 1,
-            "title": Object {
-              "en": "Test quota 1",
-              "fi": "Testikiintiö 1",
+          Array [
+            Object {
+              "eventId": "[id-2]",
+              "id": "[id-1]",
+              "position": 0,
+              "size": 1,
+              "title": Object {
+                "en": "Test quota 1",
+                "fi": "Testikiintiö 1",
+              },
             },
-          },
-          Object {
-            "eventId": "[id-2]",
-            "id": "[id-3]",
-            "size": 2,
-            "title": Object {
-              "en": "Test quota 2",
-              "fi": "Testikiintiö 2",
+            Object {
+              "eventId": "[id-2]",
+              "id": "[id-3]",
+              "position": 1,
+              "size": 2,
+              "title": Object {
+                "en": "Test quota 2",
+                "fi": "Testikiintiö 2",
+              },
             },
-          },
-        ]
-      `);
+          ]
+        `);
 
         const { rows } = await asRoot(pgClient, () =>
           pgClient.query(
@@ -103,6 +115,7 @@ describe("CreateEventQuotas", () => {
     const { events, session } = await createEventDataAndLogin({
       quotaOptions: { create: false },
       registrationOptions: { create: false },
+      registrationSecretOptions: { create: false },
     });
     const eventId = events[0].id;
 
@@ -136,7 +149,9 @@ describe("CreateEventQuotas", () => {
         expect(json.errors).toBeTruthy();
 
         const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
         expect(message).toEqual("You must specify at least one quota");
+        expect(code).toEqual("DNIED");
       }
     );
   });
@@ -145,6 +160,7 @@ describe("CreateEventQuotas", () => {
     const { events } = await createEventDataAndLogin({
       quotaOptions: { create: false },
       registrationOptions: { create: false },
+      registrationSecretOptions: { create: false },
     });
     const eventId = events[0].id;
 

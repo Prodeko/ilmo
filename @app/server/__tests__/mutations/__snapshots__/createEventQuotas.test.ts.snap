@@ -8,6 +8,7 @@ Object {
         Object {
           "eventId": "[id-2]",
           "id": "[id-1]",
+          "position": 0,
           "size": 1,
           "title": Object {
             "en": "Test quota 1",
@@ -17,6 +18,7 @@ Object {
         Object {
           "eventId": "[id-2]",
           "id": "[id-3]",
+          "position": 1,
           "size": 2,
           "title": Object {
             "en": "Test quota 2",

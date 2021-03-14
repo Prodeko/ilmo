@@ -104,7 +104,7 @@ context("Update event", () => {
     );
   });
 
-  it("can to submit the form without any modifications", () => {
+  it("can submit the form without any modifications", () => {
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult");
 
