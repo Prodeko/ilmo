@@ -15,7 +15,7 @@ beforeAll(setup);
 afterAll(teardown);
 
 describe("UpdateEvent", () => {
-  test("can update an existing event", async () => {
+  it("can update an existing event", async () => {
     const {
       events,
       organization,
@@ -145,7 +145,6 @@ describe("UpdateEvent", () => {
 
   it("can't update an event while logged out (RLS policy)", async () => {
     const { events } = await createEventDataAndLogin({
-      quotaOptions: { create: true, amount: 3 },
       registrationOptions: { create: false },
     });
     const eventId = events[0].id;

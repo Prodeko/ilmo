@@ -2,9 +2,6 @@ mutation CreateEventQuotas($input: CreateEventQuotasInput!) {
   createEventQuotas(input: $input) {
     quotas {
       id
-      title
-      size
-      eventId
     }
   }
 }

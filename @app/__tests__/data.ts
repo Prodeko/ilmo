@@ -4,6 +4,8 @@ import { PoolClient } from "pg";
 import slugify from "slugify";
 
 export type User = {
+  id: string;
+  username: string;
   _email: string;
   _password: string;
 };
@@ -158,7 +160,7 @@ export const createEvents = async (
     const dayAdjustment = signupOpen ? -1 : 1;
     const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate();
     const registrationEndTime = faker.date.between(
-      registrationStartTime,
+      dayjs(registrationStartTime).add(1, "day").toDate(),
       dayjs(registrationStartTime).add(7, "day").toDate()
     );
 
@@ -241,11 +243,11 @@ export const createQuotas = async (
     const {
       rows: [quota],
     } = await client.query(
-      `insert into app_public.quotas(event_id, title, size)
-        values ($1, $2, $3)
+      `insert into app_public.quotas(event_id, position, title, size)
+        values ($1, $2, $3, $4)
         returning *
       `,
-      [eventId, title, size]
+      [eventId, i, title, size]
     );
     quotas.push(quota);
   }
@@ -260,18 +262,19 @@ export const createRegistrationSecrets = async (
   client: PoolClient,
   count: number = 1,
   registrationId: string,
-  eventId: string
+  eventId: string,
+  quotaId: string
 ) => {
   const registrationSecrets = [];
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
     } = await client.query(
-      `insert into app_private.registration_secrets(event_id, registration_id)
-        values ($1, $2)
+      `insert into app_private.registration_secrets(event_id, quota_id, registration_id)
+        values ($1, $2, $3)
         returning *
       `,
-      [eventId, registrationId]
+      [eventId, quotaId, registrationId]
     );
     registrationSecrets.push(secret);
   }

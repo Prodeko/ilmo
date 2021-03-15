@@ -42,13 +42,14 @@ export async function createUserAndLogIn() {
 }
 
 interface CreateEventDataAndLogin {
-  quotaOptions?: { create: boolean; amount?: number };
-  registrationOptions?: { create: boolean; amount?: number };
   eventOptions?: {
     create: boolean;
     amount?: number;
     signupOpen?: boolean;
   };
+  quotaOptions?: { create: boolean; amount?: number };
+  registrationOptions?: { create: boolean; amount?: number };
+  registrationSecretOptions?: { create: boolean; amount?: number };
 }
 
 export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
@@ -56,8 +57,9 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     eventOptions = { create: true, amount: 1, signupOpen: true },
     quotaOptions = { create: true, amount: 1 },
     registrationOptions = { create: true, amount: 1 },
+    registrationSecretOptions = { create: true, amount: 1 },
   } = args || {};
-  const pool = poolFromUrl(TEST_DATABASE_URL!);
+  const pool = poolFromUrl(TEST_DATABASE_URL);
   const client = await pool.connect();
   try {
     // Have to begin a transaction here, since we set the third parameter
@@ -112,12 +114,16 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       );
     }
 
-    const [registrationSecret] = await createRegistrationSecrets(
-      client,
-      1,
-      registrations ? registrations[0].id : null,
-      events[0].id
-    );
+    let registrationSecrets;
+    if (registrationSecretOptions.create) {
+      registrationSecrets = await createRegistrationSecrets(
+        client,
+        1,
+        registrations ? registrations[0].id : null,
+        events[0].id,
+        quotas[0].id
+      );
+    }
 
     client.query("COMMIT");
     return {
@@ -127,7 +133,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       eventCategory,
       events,
       quotas,
-      registrationSecret,
+      registrationSecrets,
       registrations,
     };
   } finally {
@@ -271,7 +277,7 @@ export const teardown = async () => {
   }
 };
 
-export const runGraphQLQuery = async function runGraphQLQuery(
+export const runGraphQLQuery = async (
   query: string, // The GraphQL query string
   variables: { [key: string]: any } | null, // The GraphQL variables
   reqOptions: { [key: string]: any } | null, // Any additional items to set on `req` (e.g. `{user: {id: 17}}`)
@@ -282,8 +288,9 @@ export const runGraphQLQuery = async function runGraphQLQuery(
       redisClient: Redis.Redis;
       req: any;
     }
-  ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {} // Place test assertions in this function
-) {
+  ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {}, // Place test assertions in this function
+  rollback = true
+) => {
   if (!ctx) throw new Error("No ctx!");
   const { schema, rootPgPool, options } = ctx;
   const req = new MockReq({
@@ -314,7 +321,10 @@ export const runGraphQLQuery = async function runGraphQLQuery(
     pgSettings.role = process.env.DATABASE_AUTHENTICATOR;
   }
 
-  await withPostGraphileContext(
+  // Pass callback = false to have the result available from running this
+  // function. Used by createRegistration test to first run the claimRegistrationToken
+  // mutation and use its result in the actual test.
+  const result = await withPostGraphileContext(
     {
       ...options,
       pgPool: rootPgPool,
@@ -385,10 +395,13 @@ export const runGraphQLQuery = async function runGraphQLQuery(
 
         return checkResult == null ? result : checkResult;
       } finally {
-        // Rollback the transaction so no changes are written to the DB - this
-        // makes our tests fairly deterministic.
-        await pgClient.query("rollback");
+        if (rollback) {
+          // Rollback the transaction so no changes are written to the DB - this
+          // makes our tests fairly deterministic.
+          await pgClient.query("rollback");
+        }
       }
     }
   );
+  return result;
 };

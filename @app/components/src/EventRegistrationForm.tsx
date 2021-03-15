@@ -66,7 +66,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       if (type === "create" && eventId && quotaId) {
         try {
           const { data } = await claimRegistratioToken({
-            variables: { eventId },
+            variables: { eventId, quotaId },
           });
           const token = data?.claimRegistrationToken?.registrationToken;
           setRegistrationToken(token);

@@ -1,6 +1,7 @@
 import { QueryBuilder, SQL } from "graphile-build-pg";
 import {
-  embed /*, AugmentedGraphQLFieldResolver */,
+  AugmentedGraphQLFieldResolver,
+  embed,
   gql,
   makeExtendSchemaPlugin,
 } from "graphile-utils";
@@ -8,20 +9,6 @@ import {
 import { GraphQLResolveInfo } from "graphql";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
-
-type GraphileHelpers = any;
-type AugmentedGraphQLFieldResolver<
-  TSource,
-  TContext,
-  TArgs = { [argName: string]: any }
-> = (
-  parent: TSource,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo & {
-    graphile: GraphileHelpers;
-  }
-) => any;
 
 /*
  * PG NOTIFY events are sent via a channel, this function helps us determine

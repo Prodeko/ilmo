@@ -1,5 +1,3 @@
-import Redis from "ioredis";
-
 import {
   asRoot,
   assertJobComplete,
@@ -18,42 +16,57 @@ beforeAll(setup);
 afterAll(teardown);
 
 describe("CreateRegistration", () => {
+  // A bit of background about the overall event registration setup. In order
+  // to register to an event the user first has to call a ClaimRegistrationToken
+  // mutation. This mutation provides the user with a registration token that
+  // must be passed to the CreateRegistration mutation. A row is inserted into
+  // app_public.registrations already when calling ClaimRegistrationToken. This
+  // same row (identified by registration_token) is then updated with user info
+  // when the user calls the CreateRegistration mutation. We also have a server
+  // plugin called EventRegistrationPlugin that wraps the CreateRegistration
+  // mutation. This plugin is reponsible for dispatching a graphile-worker event
+  // that deletes the rate limit key from redis after successful registration.
+  //
+  // This setup is designed to prevent people from claiming registration
+  // tokens by calling the API and then distributing registration tokens
+  // to their friends. By rate limiting the claimRegistrationToken
+  // endpoint we prevent this. After the registration is complete the rate
+  // limit key should be removed from redis. This enables multiple people to
+  // use the same computer for registering to an event.
+
   it("can create registration", async () => {
-    const {
-      events,
-      quotas,
-      registrationSecret,
-    } = await createEventDataAndLogin({
+    const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     });
     const eventId = events[0].id;
     const quotaId = quotas[0].id;
-    const registrationToken = registrationSecret.registration_token;
-    // Set rate-limiting key artificially to redis. Normally RateLimitPlugin
-    // would set this key after a client calls claimRegistrationToken.
-    // Server mutation tests are run in isolation with runGraphQLQuery and the
-    // transaction is rolled back after each test. This means that we can't test
-    // multiple mutations in a single test. End-to-end tests should verify
-    // functionality that depends on multiple mutations. CreateRegistration
-    // mutation should delete this key if it completes successfully.
-    //
-    // A bit more info about the overall event registration setup.
-    // We have a custom plugin (EventRegistrationPlugin) that wraps the
-    // CreateRegistration mutation. This plugin is reponsible for dispatching
-    // a graphile-worker event that deletes the rate limit key from redis
-    // after successful registration.
-    //
-    // This setup is designed to prevent people from claiming registration
-    // tokens by calling the API and then distributing registration tokens
-    // to their friends. By rate limiting the claimRegistrationToken
-    // endpoint we prevent this. After the registration is complete the rate
-    // limit key should be removed from redis. This enables multiple people to
-    // use the same computer for registering to an event.
 
-    const key = `rate-limit:claimRegistrationToken:${eventId}:127.1.1.1`;
-    const redisClient = new Redis(process.env.TEST_REDIS_URL);
-    await redisClient.incr(key);
-    redisClient.quit();
+    const rateLimitId = `${eventId}:${quotaId}`;
+    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`;
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const result = await runGraphQLQuery(
+      `mutation ClaimRegistrationToken($eventId: UUID!, $quotaId: UUID!) {
+        claimRegistrationToken(input: { eventId: $eventId, quotaId: $quotaId }) {
+          registrationToken
+        }
+      }`,
+      {
+        eventId,
+        quotaId,
+      },
+      {},
+      async (_json, { redisClient }) => {
+        const value = await redisClient.get(key);
+        // Redis should contain rate limit value after calling
+        // claimRegistrationToken mutation
+        expect(value).toEqual("1");
+      },
+      // Don't rollback in order to use the result of this mutation
+      false
+    );
+    const { registrationToken } = result.data.claimRegistrationToken;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -86,12 +99,12 @@ describe("CreateRegistration", () => {
 
       // GraphQL variables:
       {
-        eventId: eventId,
-        quotaId: quotaId,
+        eventId,
+        quotaId,
+        registrationToken,
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
-        registrationToken: registrationToken,
       },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
@@ -110,11 +123,11 @@ describe("CreateRegistration", () => {
 
         expect(sanitize(registration)).toMatchInlineSnapshot(`
           Object {
-            "eventId": "[id-2]",
+            "eventId": "[id-3]",
             "firstName": "Testname",
-            "id": "[id-1]",
+            "id": "[id-2]",
             "lastName": "Testlastname",
-            "quotaId": "[id-3]",
+            "quotaId": "[id-4]",
           }
         `);
 
@@ -184,10 +197,8 @@ describe("CreateRegistration", () => {
         // run_at >= now() and the task is not executed if we don't end the transaction here.
         await pgClient.query("commit");
 
-        // Run the jobs
+        // Run the jobs and assert that the jobs run correctly
         await runJobs(pgClient);
-
-        // Assert that the jobs can run correctly
         await assertJobComplete(pgClient, rateLimitJob);
         await assertJobComplete(pgClient, confirmationEmailJob);
 
@@ -255,18 +266,21 @@ describe("CreateRegistration", () => {
         expect(json.errors).toBeTruthy();
 
         const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
         );
+        expect(code).toEqual("DNIED");
       }
     );
   });
 
   it("can't create registration if quotaId is invalid", async () => {
-    const { events, registrationSecret } = await createEventDataAndLogin({
+    const { events, registrationSecrets } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     });
     const eventId = events[0].id;
+    const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -297,10 +311,10 @@ describe("CreateRegistration", () => {
       {
         eventId,
         quotaId: "d24a4112-81e2-440a-a9fa-be2371944310",
+        registrationToken,
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
-        registrationToken: registrationSecret.registration_token,
       },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
@@ -319,10 +333,11 @@ describe("CreateRegistration", () => {
   });
 
   it("can't create registration if eventId is invalid", async () => {
-    const { quotas, registrationSecret } = await createEventDataAndLogin({
+    const { quotas, registrationSecrets } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     });
     const quotaId = quotas[0].id;
+    const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -356,7 +371,7 @@ describe("CreateRegistration", () => {
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
-        registrationToken: registrationSecret.registration_token,
+        registrationToken,
       },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
@@ -378,13 +393,14 @@ describe("CreateRegistration", () => {
     const {
       quotas,
       events,
-      registrationSecret,
+      registrationSecrets,
     } = await createEventDataAndLogin({
       registrationOptions: { create: false },
       eventOptions: { create: true, amount: 1, signupOpen: false },
     });
     const eventId = events[0].id;
     const quotaId = quotas[0].id;
+    const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -415,10 +431,10 @@ describe("CreateRegistration", () => {
       {
         eventId,
         quotaId,
+        registrationToken,
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
-        registrationToken: registrationSecret.registration_token,
       },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
@@ -440,15 +456,16 @@ describe("CreateRegistration", () => {
     const {
       events,
       quotas,
-      registrationSecret,
+      registrationSecrets,
     } = await createEventDataAndLogin({
       registrationOptions: { create: false },
       eventOptions: { create: true, amount: 2, signupOpen: true },
     });
     // RegistrationSecret is claimed for event[0], try to use it to
     // register to another event which is not allowed
-    const event = events[1];
-    const quota = quotas[0];
+    const eventId = events[1].id;
+    const quotaId = quotas[0].id;
+    const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
@@ -478,12 +495,12 @@ describe("CreateRegistration", () => {
       // GraphQL variables:
       {
         // Registration token is not valid for this event
-        eventId: event.id,
-        quotaId: quota.id,
+        eventId,
+        quotaId,
+        registrationToken,
         firstName: "Testname",
         lastName: "Testlastname",
         email: "testuser@example.com",
-        registrationToken: registrationSecret.registration_token,
       },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)

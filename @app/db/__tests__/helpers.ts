@@ -1,7 +1,7 @@
 import { mapValues } from "lodash";
 import { PoolClient } from "pg";
 
-import { User } from "../../__tests__/data";
+import { createQuotas, User } from "../../__tests__/data";
 import {
   asRoot,
   createEventCategories,
@@ -60,8 +60,9 @@ export async function createEventData(client: PoolClient) {
     organization.id,
     eventCategory.id
   );
+  const [quota] = await createQuotas(client, 1, event.id);
 
-  return { organization, eventCategory, event };
+  return { organization, eventCategory, event, quota };
 }
 
 const withDbFromUrl = async <T>(url: string, fn: ClientCallback<T>) => {
