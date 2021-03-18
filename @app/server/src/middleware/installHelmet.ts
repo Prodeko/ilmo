@@ -16,6 +16,12 @@ const sentryReportUri = `https://sentry.prodeko.org/api/6/security/?sentry_key=7
 
 const Helmet: FastifyPluginAsync = async (app) => {
   app.register(helmet, {
+    // We use referer information in dev to allow bypassing persisted operations
+    // (query allowlist). See installPostgraphile.ts and allowUnpersistedOperation
+    // option.
+    referrerPolicy: {
+      policy: isDevOrTest ? "strict-origin-when-cross-origin" : "no-referrer",
+    },
     contentSecurityPolicy: isDevOrTest
       ? false
       : {

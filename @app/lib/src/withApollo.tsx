@@ -14,7 +14,10 @@ import { SentryLink } from "apollo-link-sentry";
 import { createUploadLink } from "apollo-upload-client";
 import { getOperationAST, GraphQLError, print } from "graphql";
 import { Client, createClient } from "graphql-ws";
+import { createPersistedQueryLink } from "@apollo/client/link/persisted-queries";
+import { usePregeneratedHashes } from "graphql-codegen-persisted-query-ids/lib/apollo";
 import withApolloBase from "next-with-apollo";
+import hashes from "@app/graphql/client.json";
 
 import { GraphileApolloLink } from "./GraphileApolloLink";
 
@@ -156,6 +159,12 @@ export const withApollo = withApolloBase(
         ? makeServerSideLink(req, res)
         : makeClientSideLink(ROOT_URL);
 
+    const persistedLink = createPersistedQueryLink({
+      useGETForHashedQueries: false,
+      generateHash: usePregeneratedHashes(hashes),
+      disable: () => false,
+    });
+
     const sentryLink = new SentryLink({
       attachBreadcrumbs: {
         includeQuery: true,
@@ -168,7 +177,7 @@ export const withApollo = withApolloBase(
 
     const client = new ApolloClient({
       ssrMode: isServer,
-      link: ApolloLink.from([onErrorLink, sentryLink, mainLink]),
+      link: ApolloLink.from([onErrorLink, sentryLink, persistedLink, mainLink]),
       cache: new InMemoryCache({}).restore(initialState || {}),
     });
 

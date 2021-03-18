@@ -1,0 +1,27 @@
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  isQueued
+  createdAt
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+subscription EventRegistrations($eventId: UUID!, $after: Datetime!) {
+  eventRegistrations(eventId: $eventId) {
+    registrations(after: $after) {
+      ...EventPage_Registration
+      quota {
+        ...EventPage_Quota
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

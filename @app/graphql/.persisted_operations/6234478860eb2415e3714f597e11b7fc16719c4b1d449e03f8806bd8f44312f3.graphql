@@ -1,0 +1,6 @@
+mutation ForgotPassword($email: String!) {
+  forgotPassword(input: {email: $email}) {
+    clientMutationId
+    __typename
+  }
+}
