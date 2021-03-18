@@ -89,12 +89,11 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
             (r: Registration) => !r.isQueued
           );
           return (
-            <>
+            <div key={quotaId}>
               <H4 style={{ marginTop: "1.5rem" }}>
                 {quotaTitle} – {quotaRegistrations?.length} / {quotaSize}
               </H4>
               <SimpleTable
-                key={quotaId}
                 columns={quotaColumns}
                 data={quotaRegistrations}
                 data-cy="eventpage-signups-table"
@@ -103,7 +102,7 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
                   margin: "1rem 0",
                 }}
               />
-            </>
+            </div>
           );
         })}
       <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
