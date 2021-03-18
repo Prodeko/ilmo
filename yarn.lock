@@ -1184,6 +1184,11 @@
   dependencies:
     tslib "^2.0.1"
 
+"@graphile/persisted-operations@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@graphile/persisted-operations/-/persisted-operations-0.1.0.tgz#0315e4adb380b061511814c418a64cd9abc98423"
+  integrity sha512-CaI5740cvHrE/M/U1siYICrDBfsUWgN93Mh5ayOpz1zL5inf1ZZw+2Xx//NSd75HoUJv0QyjxFTlnvQOhl4qdg==
+
 "@graphile/pg-pubsub@^4.11.0":
   version "4.11.0"
   resolved "https://registry.yarnpkg.com/@graphile/pg-pubsub/-/pg-pubsub-4.11.0.tgz#a3542545d84290c40b03bedf3a2dbd5a557d4525"
@@ -1194,16 +1199,6 @@
     debug "^4.1.1"
     graphql-subscriptions "^1.1.0"
     tslib "^2.0.1"
-
-"@graphile/pro@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@graphile/pro/-/pro-1.0.2.tgz#6258e9a4fe8b085c89a069dddc609a40313b2773"
-  integrity sha512-d3M+6cLFXCr37d0MpuPeALg5/hXMCG4OyHcc8TpeTV0IkcYrIUn/rTGTaf8QydyXTPWDQGhLaD5WQENBvZhBJg==
-  dependencies:
-    "@types/pg" "^7.4.14"
-    graphql ">=0.9 <16"
-    graphql-depth-limit "^1.1.0"
-    pg ">=6.1.0 <9"
 
 "@graphile/subscriptions-lds@^4.11.0":
   version "4.11.0"
@@ -1278,6 +1273,17 @@
     "@graphql-tools/merge" "^6"
     "@graphql-tools/utils" "^6"
     tslib "~2.0.1"
+
+"@graphql-codegen/plugin-helpers@^1.13.2":
+  version "1.18.4"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-1.18.4.tgz#0adc4c0f88386a50b7a69d358080b6ee54fc3b16"
+  integrity sha512-dpfhUmn9GOS8ByoOPIN3V4Nn9HX7sl9NR7Hf26TgN6Clg7cQvkT6XjHdS2e56Q3kWrxZT1zJ1sEa67D3tj9ZtQ==
+  dependencies:
+    "@graphql-tools/utils" "^7.0.0"
+    common-tags "1.8.0"
+    import-from "3.0.0"
+    lodash "~4.17.20"
+    tslib "~2.1.0"
 
 "@graphql-codegen/plugin-helpers@^1.18.2", "@graphql-codegen/plugin-helpers@^1.18.3":
   version "1.18.3"
@@ -7954,6 +7960,14 @@ graphile-worker@^0.9.0:
     tslib "^2.1.0"
     yargs "^16.2.0"
 
+graphql-codegen-persisted-query-ids@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/graphql-codegen-persisted-query-ids/-/graphql-codegen-persisted-query-ids-0.1.2.tgz#9d98bac8a49e5428288cfe61fe789990b857797e"
+  integrity sha512-XxxZAau4NEZzzjxo+oAr7FGdZEsKAe+7MvbRWspy/XqnMbanYgO8biq5wKKdUgRrZd/zEyByE8tMHglSAN4VfQ==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "^1.13.2"
+    graphql "^14.0.0"
+
 graphql-config@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/graphql-config/-/graphql-config-3.2.0.tgz#3ec3a7e319792086b80e54db4b37372ad4a79a32"
@@ -7972,7 +7986,7 @@ graphql-config@^3.2.0:
     string-env-interpolation "1.0.1"
     tslib "^2.0.0"
 
-graphql-depth-limit@1.1.0, graphql-depth-limit@^1.1.0:
+graphql-depth-limit@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/graphql-depth-limit/-/graphql-depth-limit-1.1.0.tgz#59fe6b2acea0ab30ee7344f4c75df39cc18244e8"
   integrity sha512-+3B2BaG8qQ8E18kzk9yiSdAa75i/hnnOwgSeAxVJctGQPvmeiLtqKOYF6HETCyRjiF7Xfsyal0HbLlxCQkgkrw==
@@ -8046,7 +8060,7 @@ graphql-ws@^4.2.1:
   resolved "https://registry.yarnpkg.com/graphql-ws/-/graphql-ws-4.2.1.tgz#3e734ede574f7c0840b45a18cf26e8c26d864722"
   integrity sha512-j4RA5gl6tVUq/2iPzmbt7qbGj2WsdGq45jsmyxL/ek25cCm/yl198qAxXyLy418jhkFVMxf8VoAxUS7Zh4/k4Q==
 
-graphql@15.x, "graphql@>=0.9 <0.14 || ^14.0.2 || ^15.4.0", "graphql@>=0.9 <16", "graphql@^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0", graphql@^15.3.0, graphql@^15.5.0:
+graphql@15.x, "graphql@>=0.9 <0.14 || ^14.0.2 || ^15.4.0", "graphql@^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0", graphql@^14.0.0, graphql@^15.3.0, graphql@^15.5.0:
   version "15.5.0"
   resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.5.0.tgz#39d19494dbe69d1ea719915b578bf920344a69d5"
   integrity sha512-OmaM7y0kaK31NKG31q4YbD2beNYa6jBBKtMFT6gLYJljHLJr42IqJ8KX08u3Li/0ifzTU5HjmoOOrwa5BRLeDA==

@@ -1,0 +1,6 @@
+mutation DeleteEventRegistration($updateToken: UUID!) {
+  deleteRegistration(input: {updateToken: $updateToken}) {
+    success
+    __typename
+  }
+}

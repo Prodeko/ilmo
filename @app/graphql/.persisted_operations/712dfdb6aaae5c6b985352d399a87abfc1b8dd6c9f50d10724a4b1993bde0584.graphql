@@ -1,0 +1,11 @@
+mutation UpdateEventRegistration($updateToken: UUID!, $firstName: String!, $lastName: String!) {
+  updateRegistration(
+    input: {updateToken: $updateToken, firstName: $firstName, lastName: $lastName}
+  ) {
+    registration {
+      id
+      __typename
+    }
+    __typename
+  }
+}

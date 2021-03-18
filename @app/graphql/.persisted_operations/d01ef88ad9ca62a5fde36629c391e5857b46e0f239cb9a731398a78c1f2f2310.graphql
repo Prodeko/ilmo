@@ -1,0 +1,24 @@
+fragment EmailsForm_UserEmail on UserEmail {
+  id
+  email
+  isVerified
+  isPrimary
+  createdAt
+  __typename
+}
+mutation DeleteEmail($emailId: UUID!) {
+  deleteUserEmail(input: {id: $emailId}) {
+    user {
+      id
+      userEmails(first: 50) {
+        nodes {
+          ...EmailsForm_UserEmail
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
