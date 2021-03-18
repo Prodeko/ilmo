@@ -9,15 +9,15 @@ import {
   split,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
+import { createPersistedQueryLink } from "@apollo/client/link/persisted-queries";
 import { getDataFromTree } from "@apollo/client/react/ssr";
+import hashes from "@app/graphql/client.json";
 import { SentryLink } from "apollo-link-sentry";
 import { createUploadLink } from "apollo-upload-client";
 import { getOperationAST, GraphQLError, print } from "graphql";
-import { Client, createClient } from "graphql-ws";
-import { createPersistedQueryLink } from "@apollo/client/link/persisted-queries";
 import { usePregeneratedHashes } from "graphql-codegen-persisted-query-ids/lib/apollo";
+import { Client, createClient } from "graphql-ws";
 import withApolloBase from "next-with-apollo";
-import hashes from "@app/graphql/client.json";
 
 import { GraphileApolloLink } from "./GraphileApolloLink";
 

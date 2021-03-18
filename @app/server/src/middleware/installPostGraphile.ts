@@ -1,8 +1,8 @@
 import { resolve } from "path";
 
+import PersistedOperationsPlugin from "@graphile/persisted-operations";
 import PgPubsub from "@graphile/pg-pubsub";
 import _PgSubscriptionsLds from "@graphile/subscriptions-lds";
-import PersistedOperationsPlugin from "@graphile/persisted-operations";
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Request, Response } from "express";
 import { FastifyPluginAsync } from "fastify";
