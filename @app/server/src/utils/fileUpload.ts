@@ -2,6 +2,7 @@ import { createWriteStream, ReadStream, unlinkSync } from "fs";
 import { join } from "path";
 
 import { FileUpload } from "graphql-upload";
+import { BlobServiceClient } from "@azure/storage-blob";
 
 declare module "fs" {
   interface ReadStream {
@@ -17,15 +18,39 @@ interface SaveLocalArgs {
   filename: string;
 }
 
-interface SaveLocalReturnValue {
+interface SaveFileReturnValue {
   id: string;
   filepath: string;
+}
+
+const { AZURE_STORAGE_CONNECTION_STRING } = process.env;
+
+export async function saveAzure({
+  stream,
+  filename,
+}: SaveLocalArgs): Promise<SaveFileReturnValue> {
+  const timestamp = new Date().toISOString().replace(/\D/g, "");
+  const id = `${timestamp}_${filename}`;
+  const filepath = join("ilmo/uploads", id);
+
+  try {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(
+      AZURE_STORAGE_CONNECTION_STRING!
+    );
+    const containerClient = blobServiceClient.getContainerClient("media");
+    await containerClient.getBlockBlobClient(filepath).uploadStream(stream);
+
+    return { id, filepath: `https://static.prodeko.org/media/${filepath}` };
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
 }
 
 export function saveLocal({
   stream,
   filename,
-}: SaveLocalArgs): Promise<SaveLocalReturnValue> {
+}: SaveLocalArgs): Promise<SaveFileReturnValue> {
   const timestamp = new Date().toISOString().replace(/\D/g, "");
   const id = `${timestamp}_${filename}`;
   const filepath = join("/uploads", id);
@@ -47,8 +72,13 @@ export async function resolveUpload(upload: FileUpload) {
   const { filename, createReadStream } = upload;
   const stream = createReadStream();
 
-  // Save file to the local filesystem
-  const { filepath } = await saveLocal({ stream, filename });
-  // Return metadata to save it to Postgres
-  return filepath;
+  if (AZURE_STORAGE_CONNECTION_STRING) {
+    // Save file to Azure Blob Storage
+    const { filepath } = await saveAzure({ stream, filename });
+    return filepath;
+  } else {
+    // Save file to the local filesystem
+    const { filepath } = await saveLocal({ stream, filename });
+    return filepath;
+  }
 }
