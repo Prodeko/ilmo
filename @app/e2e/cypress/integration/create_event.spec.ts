@@ -122,11 +122,22 @@ context("Create event", () => {
       cy.getCy(`eventcard-eventpage-link-${slug}`).click();
 
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${slug}`);
+
+      // Header image should exist and be visible
+      cy.getCy("eventpage-header-image").should("be.visible");
+      cy.get('img[src$="kitten.jpg"]').should("have.length", 1);
+
+      // Quotas should exist and be ordered correctly
       cy.getCy("eventpage-quotas-card")
         .children()
+        .eq(1) // Get the card body
+        .children()
+        .first()
         .should("contain", "Testikiintiö 1")
-        .and("contain", "Testikiintiö 2")
-        .and("contain", "Testikiintiö 3");
+        .next()
+        .should("contain", "Testikiintiö 2")
+        .next()
+        .should("contain", "Testikiintiö 3");
     });
   });
 
