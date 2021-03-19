@@ -1,5 +1,5 @@
 mutation UpdateEventRegistration(
-  $updateToken: UUID!
+  $updateToken: String!
   $firstName: String!
   $lastName: String!
 ) {

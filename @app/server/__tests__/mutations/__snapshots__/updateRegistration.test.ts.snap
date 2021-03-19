@@ -24,7 +24,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_registration(uuid,text,text) line 11 at RAISE",
+          "where": "PL/pgSQL function app_public.update_registration(text,text,text) line 11 at RAISE",
         },
       },
       "locations": Array [

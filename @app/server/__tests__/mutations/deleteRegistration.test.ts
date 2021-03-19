@@ -20,7 +20,7 @@ describe("DeleteRegistration", () => {
     } = registrationSecrets[0];
 
     await runGraphQLQuery(
-      `mutation DeleteEventRegistration($updateToken: UUID!) {
+      `mutation DeleteEventRegistration($updateToken: String!) {
         deleteRegistration(input: { updateToken: $updateToken }) {
           success
         }
@@ -71,7 +71,7 @@ describe("DeleteRegistration", () => {
 
   it("can't update registration if registration token is not valid", async () => {
     await runGraphQLQuery(
-      `mutation DeleteEventRegistration($updateToken: UUID!) {
+      `mutation DeleteEventRegistration($updateToken: String!) {
         deleteRegistration(input: { updateToken: $updateToken }) {
           success
         }

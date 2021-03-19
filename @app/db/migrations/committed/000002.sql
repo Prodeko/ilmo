@@ -1,5 +1,5 @@
 --! Previous: sha1:af9ffd0c6b1d63b517797fd034bcca6fbf6e8dfa
---! Hash: sha1:7f24b1f9e8c3abd175ac2206fa8c6c1536ccf0cc
+--! Hash: sha1:ec903cb127bfb083dbe2999c8defbffa7cfdd2b3
 
 --! split: 0010-event_categories.sql
 /*
@@ -660,8 +660,8 @@ create policy manage_as_admin on app_public.registrations
 drop table if exists app_private.registration_secrets cascade;
 create table app_private.registration_secrets(
   id uuid primary key default gen_random_uuid(),
-  registration_token uuid default gen_random_uuid(),
-  update_token uuid default gen_random_uuid(),
+  registration_token text default encode(gen_random_bytes(7), 'hex'),
+  update_token text default encode(gen_random_bytes(7), 'hex'),
   confirmation_email_sent boolean not null default false,
 
   -- When a registration is deleted, also delete the secrets
@@ -699,12 +699,12 @@ comment on table app_private.registration_secrets is
  * @app/server/postgraphile.tags.jsonc file.
  */
 
-drop function if exists app_public.create_registration(uuid, uuid, uuid, text, text, citext);
-drop function if exists app_public.update_registration(uuid, text, text);
-drop function if exists app_public.delete_registration(uuid);
+drop function if exists app_public.create_registration(text, uuid, uuid, text, text, citext);
+drop function if exists app_public.update_registration(text, text, text);
+drop function if exists app_public.delete_registration(text);
 
 create function app_public.create_registration(
-  "registrationToken" uuid,
+  "registrationToken" text,
   "eventId" uuid,
   "quotaId" uuid,
   "firstName" text,
@@ -770,11 +770,11 @@ begin
   return v_registration;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-comment on function app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
+comment on function app_public.create_registration("registrationToken" text, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
   E'Register to an event. Checks that a valid registration token was suplied.';
 
 create function app_public.update_registration(
-  "updateToken" uuid,
+  "updateToken" text,
   "firstName" text,
   "lastName" text
 )
@@ -801,10 +801,10 @@ begin
   return v_registration;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-comment on function app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) is
+comment on function app_public.update_registration("updateToken" text, "firstName" text, "lastName" text) is
   E'Update event registration. Checks that a valid update token was suplied.';
 
-create function app_public.delete_registration("updateToken" uuid)
+create function app_public.delete_registration("updateToken" text)
   returns boolean
   as $$
 declare
@@ -824,10 +824,10 @@ begin
   return true;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-comment on function app_public.delete_registration("updateToken" uuid) is
+comment on function app_public.delete_registration("updateToken" text) is
   E'Delete event registration.';
 
-create function app_public.registration_by_update_token("updateToken" uuid)
+create function app_public.registration_by_update_token("updateToken" text)
   returns app_public.registrations
   as $$
 declare
@@ -849,9 +849,9 @@ begin
   return v_registration;
 end;
 $$ language plpgsql stable security definer set search_path = pg_catalog, public, pg_temp;
-grant execute on function  app_public.registration_by_update_token("updateToken" uuid) to :DATABASE_VISITOR;
+grant execute on function  app_public.registration_by_update_token("updateToken" text) to :DATABASE_VISITOR;
 
-comment on function app_public.registration_by_update_token("updateToken" uuid) is
+comment on function app_public.registration_by_update_token("updateToken" text) is
   E'Get registration by update token.';
 
 --! split: 0034-registration_secrets-functions.sql
@@ -862,10 +862,10 @@ comment on function app_public.registration_by_update_token("updateToken" uuid) 
 drop function if exists app_public.claim_registration_token(uuid, uuid);
 
 create function app_public.claim_registration_token(event_id uuid, quota_id uuid)
-  returns uuid
+  returns text
   as $$
 declare
-  v_token uuid;
+  v_token text;
   v_registration_id uuid;
 begin
   -- Create a new registration secret

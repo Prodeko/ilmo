@@ -21,7 +21,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.delete_registration(uuid) line 10 at RAISE",
+          "where": "PL/pgSQL function app_public.delete_registration(text) line 10 at RAISE",
         },
       },
       "locations": Array [

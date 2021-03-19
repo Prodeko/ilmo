@@ -37,7 +37,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 18 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 18 at RAISE",
         },
       },
       "locations": Array [
@@ -66,7 +66,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 14 at RAISE",
         },
       },
       "locations": Array [
@@ -95,7 +95,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 24 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 24 at RAISE",
         },
       },
       "locations": Array [
@@ -124,7 +124,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 37 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
         },
       },
       "locations": Array [
@@ -153,7 +153,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 37 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
         },
       },
       "locations": Array [

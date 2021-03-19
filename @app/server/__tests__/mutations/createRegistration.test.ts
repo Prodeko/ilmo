@@ -70,7 +70,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!
@@ -224,7 +224,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!
@@ -284,7 +284,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!
@@ -341,7 +341,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!
@@ -404,7 +404,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!
@@ -469,7 +469,7 @@ describe("CreateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation CreateRegistration(
-        $registrationToken: UUID!
+        $registrationToken: String!
         $eventId: UUID!
         $quotaId: UUID!
         $firstName: String!

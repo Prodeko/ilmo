@@ -1,4 +1,4 @@
-mutation DeleteEventRegistration($updateToken: UUID!) {
+mutation DeleteEventRegistration($updateToken: String!) {
   deleteRegistration(input: {updateToken: $updateToken}) {
     success
     __typename

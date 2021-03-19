@@ -19,7 +19,7 @@ describe("UpdateRegistration", () => {
 
     await runGraphQLQuery(
       `mutation UpdateEventRegistration(
-        $updateToken: UUID!
+        $updateToken: String!
         $firstName: String!
         $lastName: String!
       ) {
@@ -84,7 +84,7 @@ describe("UpdateRegistration", () => {
   it("can't update registration if registration token is not valid", async () => {
     await runGraphQLQuery(
       `mutation UpdateEventRegistration(
-        $updateToken: UUID!
+        $updateToken: String!
         $firstName: String!
         $lastName: String!
       ) {

@@ -119,7 +119,7 @@ type ClaimRegistrationTokenPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
-  registrationToken: UUID
+  registrationToken: String
 }
 
 """All input for the `confirmAccountDeletion` mutation."""
@@ -341,7 +341,7 @@ input CreateRegistrationInput {
   firstName: String!
   lastName: String!
   quotaId: UUID!
-  registrationToken: UUID!
+  registrationToken: String!
 }
 
 """The output of our `createRegistration` mutation."""
@@ -609,7 +609,7 @@ input DeleteRegistrationInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-  updateToken: UUID!
+  updateToken: String!
 }
 
 """The output of our `deleteRegistration` mutation."""
@@ -2380,7 +2380,7 @@ type Query {
   registration(id: UUID!): Registration
 
   """Get registration by update token."""
-  registrationByUpdateToken(updateToken: UUID!): Registration
+  registrationByUpdateToken(updateToken: String!): Registration
 
   """Reads and enables pagination through a set of `Registration`."""
   registrations(
@@ -3264,7 +3264,7 @@ input UpdateRegistrationInput {
   clientMutationId: String
   firstName: String!
   lastName: String!
-  updateToken: UUID!
+  updateToken: String!
 }
 
 """The output of our `updateRegistration` mutation."""

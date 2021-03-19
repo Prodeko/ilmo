@@ -62,6 +62,6 @@ fragment UpdateEventRegistrationPage_Event on Registration {
   }
   __typename
 }
-query UpdateEventRegistrationPage($updateToken: UUID!) {
+query UpdateEventRegistrationPage($updateToken: String!) {
   ...UpdateEventRegistrationPage_Query
 }

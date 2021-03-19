@@ -20,6 +20,6 @@ fragment UpdateEventRegistrationPage_Query on Query {
   }
 }
 
-query UpdateEventRegistrationPage($updateToken: UUID!) {
+query UpdateEventRegistrationPage($updateToken: String!) {
   ...UpdateEventRegistrationPage_Query
 }

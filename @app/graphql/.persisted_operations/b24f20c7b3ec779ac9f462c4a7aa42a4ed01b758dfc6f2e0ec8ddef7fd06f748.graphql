@@ -1,4 +1,4 @@
-mutation UpdateEventRegistration($updateToken: UUID!, $firstName: String!, $lastName: String!) {
+mutation UpdateEventRegistration($updateToken: String!, $firstName: String!, $lastName: String!) {
   updateRegistration(
     input: {updateToken: $updateToken, firstName: $firstName, lastName: $lastName}
   ) {

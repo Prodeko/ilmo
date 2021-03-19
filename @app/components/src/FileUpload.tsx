@@ -12,11 +12,12 @@ import "antd/lib/slider/style";
 const { Dragger } = Upload;
 
 interface FileUploadProps {
-  id?: string;
   accept: string;
-  onChange?: () => any;
   cropAspect: number;
+  "data-cy": string;
+  id?: string;
   maxCount?: number;
+  onChange?: () => any;
 }
 
 export function FileUpload(props: FileUploadProps) {
@@ -42,6 +43,7 @@ export function FileUpload(props: FileUploadProps) {
           return file;
         }}
         customRequest={dummyRequest}
+        data-cy={props["data-cy"]}
         fileList={fileList}
         id={id}
         listType="picture-card"
