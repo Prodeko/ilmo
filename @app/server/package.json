@@ -13,6 +13,7 @@
   "dependencies": {
     "@app/client": "0.0.0",
     "@app/config": "0.0.0",
+    "@azure/storage-blob": "^12.5.0",
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
     "@graphile/persisted-operations": "^0.1.0",
     "@graphile/pg-pubsub": "^4.11.0",

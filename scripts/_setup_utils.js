@@ -173,6 +173,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Specify Sentry error tracking Data Source Name`
   );
 
+  add(
+    "AZURE_STORAGE_CONNECTION_STRING",
+    null,
+    `\
+# Azure blob storage connection string. If set, file uploads use the Azure backend, otherwise files are saved locally.`
+  );
+
   if (projectName) {
     add(
       "COMPOSE_PROJECT_NAME",

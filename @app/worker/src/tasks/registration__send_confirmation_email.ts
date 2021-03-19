@@ -90,7 +90,9 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
-      subject: `${event.name.en} - Registration successful`,
+      subject: event.name.fi
+        ? `${event.name.fi} - Rekisteröinti onnnistui`
+        : `${event.name.en} - Registration successful`,
     },
     template: "event_registration.mjml.njk",
     variables: {

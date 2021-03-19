@@ -95,8 +95,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         >
           {headerImageFile && (
             <Image
-              data-cy="eventpage-header-image"
               alt={t("headerImage")}
+              data-cy="eventpage-header-image"
               height={315}
               loader={uploadsLoader}
               objectFit="cover"
