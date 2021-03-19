@@ -2,6 +2,7 @@ import { resolve } from "path";
 
 import PersistedOperationsPlugin from "@graphile/persisted-operations";
 import PgPubsub from "@graphile/pg-pubsub";
+import GraphilePro from "@graphile/pro";
 import _PgSubscriptionsLds from "@graphile/subscriptions-lds";
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Request, Response } from "express";
@@ -80,6 +81,9 @@ function uuidOrNull(input: string | number | null | undefined): UUID | null {
 const pluginHook = makePluginHook([
   // Add the pub/sub realtime provider
   PgPubsub,
+
+  // If we have a Graphile Pro license, then enable the plugin
+  ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
 
   // Implements a query allowlist. Only queries in the allowlist can be executed
   // in production
@@ -354,6 +358,16 @@ export function getPostGraphileOptions({
         },
       };
     },
+    // Pro plugin options (requires process.env.GRAPHILE_LICENSE)
+    defaultPaginationCap:
+      parseInt(process.env.GRAPHQL_PAGINATION_CAP || "", 10) || 50,
+    graphqlDepthLimit:
+      parseInt(process.env.GRAPHQL_DEPTH_LIMIT || "", 10) || 12,
+    graphqlCostLimit:
+      parseInt(process.env.GRAPHQL_COST_LIMIT || "", 10) || 30000,
+    exposeGraphQLCost:
+      (parseInt(process.env.HIDE_QUERY_COST || "", 10) || 0) < 1,
+    // readReplicaPgPool ...,
   };
   return options;
 }
