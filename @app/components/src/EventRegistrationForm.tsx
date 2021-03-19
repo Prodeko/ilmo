@@ -61,8 +61,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   useEffect(() => {
     // Claim registration token on mount if related
     // event and quota exist
-    const claimToken = async () => {
-      // Only claim registration token when creating a registration
+    (async () => {
       if (type === "create" && eventId && quotaId) {
         try {
           const { data } = await claimRegistratioToken({
@@ -70,7 +69,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           });
           const token = data?.claimRegistrationToken?.registrationToken;
           if (!token) {
-            throw new Error(t("claimRegistrationTokenFailed"));
+            throw new Error(
+              "Claiming the registration token failed, please reload the page."
+            );
           }
           setRegistrationToken(token);
         } catch (e) {
@@ -78,9 +79,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           Sentry.captureException(e);
         }
       }
-    };
-    claimToken();
-  }, [claimRegistratioToken, eventId, quotaId, type, t]);
+    })();
+  }, [claimRegistratioToken, eventId, quotaId, type]);
 
   const doDelete = useCallback(() => {
     setFormError(null);

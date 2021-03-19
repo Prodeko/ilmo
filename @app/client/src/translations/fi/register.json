@@ -1,5 +1,4 @@
 {
-  "claimRegistrationTokenFailed": "Rekisteröintitunnuksen nouto epäonnistui. Lataa sivu uudelleen!",
   "deleteRegistration": "Poista ilmoittautuminen",
   "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautummisesi?",
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",

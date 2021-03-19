@@ -1,5 +1,4 @@
 {
-  "claimRegistrationTokenFailed": "Claiming the registration token failed, please reload the page!",
   "deleteRegistration": "Delete registration",
   "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
   "deleteRegistrationFailed": "Deleting event registration failed",
