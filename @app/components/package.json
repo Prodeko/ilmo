@@ -18,7 +18,7 @@
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^3.14.1",
     "lodash": "^4.17.21",
-    "next": "^10.0.9-canary.7",
+    "next": "^10.0.9",
     "next-translate": "^1.0.4",
     "react": "^17.0.1",
     "react-country-flag": "^2.3.0",

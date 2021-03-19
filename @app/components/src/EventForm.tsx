@@ -180,7 +180,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const registrationEndTime = registrationTime[1].toISOString();
 
         const slug = getEventSlug(name, eventTime);
-        const headerImageFile = headerFile?.file?.originFileObj;
+        const headerImageFile = headerFile?.originFileObj;
 
         // eventId is only used in update mutation
         const { data } = await eventQuery({
@@ -460,6 +460,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             <Switch data-cy="eventform-switch-highlight" />
           </Form.Item>
           <Form.Item
+            getValueFromEvent={(e) => e[0]}
             label={t("headerImage")}
             name="headerImageFile"
             valuePropName="headerImageFile"
@@ -606,7 +607,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                                     event.preventDefault();
                                   }}
                                 />
-                              </Form.Item>{" "}
+                              </Form.Item>
                             </div>
                           ))}
                           <Form.Item

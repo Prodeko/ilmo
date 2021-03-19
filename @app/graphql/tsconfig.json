@@ -12,5 +12,5 @@
     "module": "commonjs",
     "jsx": "react"
   },
-  "include": ["index.tsx", "client.json", "server.json"]
+  "include": ["index.tsx", "client.json"]
 }
