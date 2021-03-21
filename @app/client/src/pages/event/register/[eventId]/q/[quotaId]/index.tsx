@@ -80,6 +80,7 @@ const EventRegistrationPage: NextPage = () => {
       />
       {recentRegistrations && (
         <List
+          data-cy="eventregistrationpage-recent-registrations-list"
           dataSource={recentRegistrations}
           header={<div>{t("recentlyRegisteredHeader")}</div>}
           renderItem={(item, i) => {
