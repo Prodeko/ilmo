@@ -86,8 +86,7 @@ const Settings_Security: NextPage = () => {
   } = useSettingsPasswordQuery();
   const [forgotPassword] = useForgotPasswordMutation();
   const u = data && data.currentUser;
-  const userEmail = u && u.userEmails.nodes[0];
-  const email = userEmail ? userEmail.email : null;
+  const email = u ? u.primaryEmail : null;
   const [resetInProgress, setResetInProgress] = useState(false);
 
   const [resetError, setResetError] = useState(null);

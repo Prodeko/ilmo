@@ -28,5 +28,6 @@
   "title": "Register to event:",
   "updateRegistration": {
     "title": "Update event registration information"
-  }
+  },
+  "you": "You!"
 }

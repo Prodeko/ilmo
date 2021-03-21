@@ -84,6 +84,7 @@ const Passport: FastifyPluginAsync = async (app) => {
           pk,
           email,
           first_name,
+          last_name,
           has_accepted_policies,
         } = userResponse.body;
 
@@ -102,7 +103,7 @@ and clicking 'I agree' on the displayed prompt.`.replace(/\n/g, " ")
         // unique field in prodeko.org authentication
         return {
           id: pk,
-          displayName: first_name || "",
+          displayName: `${first_name} ${last_name}`,
           username: email,
           avatarUrl:
             "https://static.prodeko.org/media/public/2020/07/07/anonymous_prodeko.jpg",

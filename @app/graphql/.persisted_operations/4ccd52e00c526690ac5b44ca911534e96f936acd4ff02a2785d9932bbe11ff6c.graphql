@@ -3,5 +3,6 @@ query SettingsPassword {
     id
     hasPassword
     primaryEmail
+    __typename
   }
 }

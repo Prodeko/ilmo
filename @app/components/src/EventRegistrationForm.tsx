@@ -59,6 +59,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const code = getCodeFromError(formError);
 
   useEffect(() => {
+    // Set form initialValues if they have changed after the initial rendering
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
+
+  useEffect(() => {
     // Claim registration token on mount if related
     // event and quota exist
     (async () => {
