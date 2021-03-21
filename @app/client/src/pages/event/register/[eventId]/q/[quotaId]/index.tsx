@@ -20,9 +20,21 @@ const EventRegistrationPage: NextPage = () => {
   });
   const { loading, error } = query;
 
+  const currentUser = query?.data?.currentUser;
   const event = query?.data?.event;
   const quota = query?.data?.quota;
   const { signupClosed, signupUpcoming } = event || {};
+
+  const { name, primaryEmail } = currentUser || {};
+  // TODO: The users table schema could be changed to include first
+  // and last names. For now infer first and last name like this...
+  const [firstName, lastName] = name ? name?.split(" ") : [];
+
+  const formInitialValues = {
+    firstName,
+    lastName,
+    email: primaryEmail,
+  };
 
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), []);
@@ -62,23 +74,28 @@ const EventRegistrationPage: NextPage = () => {
           pathname: "/event/[slug]",
           query: { slug: event?.slug },
         }}
+        initialValues={formInitialValues}
         quotaId={quota?.id}
         type="create"
       />
       {recentRegistrations && (
         <List
+          data-cy="eventregistrationpage-recent-registrations-list"
           dataSource={recentRegistrations}
           header={<div>{t("recentlyRegisteredHeader")}</div>}
-          renderItem={(item) =>
-            item.firstName ? (
+          renderItem={(item, i) => {
+            const name = item?.fullName;
+            const quota = item?.quota?.title[lang];
+            return i === 0 || name ? (
               <List.Item>
                 <Typography.Text>
-                  {item?.fullName} {t("recentlyRegisteredListItem")}{" "}
-                  {item?.quota?.title[lang]}
+                  {i === 0
+                    ? t("you")
+                    : `${name} ${t("recentlyRegisteredListItem")} ${quota}`}
                 </Typography.Text>
               </List.Item>
-            ) : null
-          }
+            ) : null;
+          }}
           bordered
         />
       )}

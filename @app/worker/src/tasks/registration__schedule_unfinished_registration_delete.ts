@@ -30,10 +30,14 @@ const task: Task = async (inPayload, { withPgClient }) => {
           "select * from app_private.registration_secrets where registration_token = $1",
           [payload.token]
         );
-        await client.query(
-          "delete from app_public.registrations where id = $1",
-          [row.registration_id]
-        );
+
+        // Only delete a registration if secrets matching token were found
+        if (row) {
+          await client.query(
+            "delete from app_public.registrations where id = $1",
+            [row.registration_id]
+          );
+        }
       });
     } catch (e) {
       console.error(e);

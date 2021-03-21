@@ -32,6 +32,45 @@ context("Create event registration", () => {
     });
   });
 
+  it("autofills registration form if user is logged in", () => {
+    // Setup
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
+    cy.login({
+      name: "Test Tester",
+      verified: true,
+      orgs: [["Test Organization", "test-organization"]],
+    });
+
+    // Action
+    cy.get("@createEventDataResult").then(({ event, quota }: any) => {
+      cy.visit(
+        Cypress.env("ROOT_URL") + `/event/register/${event.id}/q/${quota.id}`
+      );
+      cy.getCy("eventregistrationform-input-firstname").should(
+        "contain.value",
+        "Test"
+      );
+      cy.getCy("eventregistrationform-input-lastname").should(
+        "contain.value",
+        "Tester"
+      );
+      cy.getCy("eventregistrationform-input-email").should(
+        "contain.value",
+        "testuser@example.com"
+      );
+
+      cy.getCy("eventregistrationform-button-submit").click();
+
+      // Assertion
+      cy.url().should(
+        "equal",
+        Cypress.env("ROOT_URL") + `/event/${event.slug}`
+      );
+      cy.getCy("eventpage-signups-table").should("contain", "Test");
+      cy.getCy("eventpage-signups-table").should("contain", "Tester");
+    });
+  });
+
   it("redirects to index if event registration is upcoming", () => {
     // Setup
     cy.serverCommand("createTestEventData", {

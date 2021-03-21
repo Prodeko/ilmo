@@ -49,6 +49,10 @@ context("Events page", () => {
       cy.getCy("eventregistrationform-input-email").type(
         "test.testersson@example.com"
       );
+      cy.getCy("eventregistrationpage-recent-registrations-list").should(
+        "contain",
+        "Sinä!"
+      );
       cy.getCy("eventregistrationform-button-submit").click();
 
       cy.getCy("eventpage-quotas-link-0").click();

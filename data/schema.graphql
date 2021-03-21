@@ -3389,6 +3389,7 @@ type User {
     """The method to use when ordering `OrganizationMembership`."""
     orderBy: [OrganizationMembershipsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationMembershipsConnection!
+  primaryEmail: String
   updatedAt: Datetime!
 
   """Reads and enables pagination through a set of `UserAuthentication`."""

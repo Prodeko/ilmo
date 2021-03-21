@@ -1,5 +1,20 @@
 --! Previous: sha1:af9ffd0c6b1d63b517797fd034bcca6fbf6e8dfa
---! Hash: sha1:ec903cb127bfb083dbe2999c8defbffa7cfdd2b3
+--! Hash: sha1:7bb52b614230b552f921e6f5f7077652bcd55265
+
+--! split: 0001-computed-columns.sql
+/*
+ * Get the user primary email as a computed column.
+ */
+create function app_public.users_primary_email(u app_public.users) returns citext as $$
+  select email
+    from app_public.user_emails
+    where
+      user_emails.user_id = u.id
+      and u.id = app_public.current_user_id()
+      and user_emails.is_primary = true;
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.users_primary_email(u app_public.users) is
+  E'Users primary email.';
 
 --! split: 0010-event_categories.sql
 /*
