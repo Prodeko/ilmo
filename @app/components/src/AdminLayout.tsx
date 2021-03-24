@@ -1,6 +1,6 @@
 import * as qs from "querystring";
 
-import React from "react";
+import React, { useState } from "react";
 import { QueryResult } from "@apollo/client";
 import { AdminLayout_QueryFragment } from "@app/graphql";
 import { Layout } from "antd";
@@ -51,79 +51,66 @@ export function AdminLayout({
   href: inHref,
   children,
 }: AdminLayoutProps) {
-  const { t, lang } = useTranslation("admin");
+  const { t } = useTranslation("admin");
+  const [siderCollapsed, setSiderCollapsed] = useState(false);
 
-  const basicMenuItems = {
-    main: {
+  const basicMenuItems = [
+    {
       key: "/admin",
-      title: t("adminMain"),
+      title: t("sider.titles.main"),
       target: "/admin",
     },
-  };
+    {
+      key: "/admin/emails",
+      title: t("sider.titles.emails"),
+      target: "/admin/emails",
+    },
+  ];
+
+  const organizationMemberships =
+    query.data?.currentUser?.organizationMemberships.nodes;
 
   const items: MenuItem[] = query.loading
-    ? [basicMenuItems.main]
+    ? [...basicMenuItems]
     : [
-        basicMenuItems.main,
+        ...basicMenuItems,
         {
           key: "admin-menu-organizations",
-          title: t("organizations"),
-          target: [
-            ...(query.data?.currentUser?.organizationMemberships.nodes.map(
-              (organization): MenuItem => ({
-                title: organization.organization?.name || "",
-                key: `/o/${organization.organization?.slug}`,
-
-                target: `/o/${organization.organization?.slug}`,
-              })
-            ) || []),
-            {
-              title: t("createNewOrganization"),
-              titleProps: { strong: true },
-              key: "/admin/create-organization",
-              target: "/admin/create-organization",
-            },
-          ],
+          title: t("sider.titles.organizations"),
+          target: organizationMemberships
+            ? [
+                ...organizationMemberships?.map(
+                  (organization): MenuItem => {
+                    const title = organization.organization?.name || "";
+                    const slug = organization.organization?.slug;
+                    return {
+                      title,
+                      key: `/admin/organizations/${slug}`,
+                      target: `/admin/organizations/${slug}`,
+                    };
+                  }
+                ),
+                {
+                  title: t("sider.titles.createOrganization"),
+                  key: `/admin/create-organization`,
+                  target: `/admin/create-organization`,
+                },
+              ]
+            : null,
         },
         {
-          key: "admin-menu-event-categories",
-          title: t("eventCategories"),
+          key: "admin-menu-events",
+          title: t("sider.titles.events"),
           target: [
-            ...(query.data?.currentUser?.organizationMemberships.nodes.map(
-              (organization): MenuItem => ({
-                title: organization.organization?.name || "",
-                key: `event-category-${organization.organization?.slug}`,
-
-                target: [
-                  ...(organization.organization?.eventCategoriesByOwnerOrganizationId.nodes.map(
-                    (category): MenuItem => ({
-                      title: category.name[lang],
-                      key: `/admin/category/${category.id}`,
-                      target: `/admin/category/${category.id}`,
-                    })
-                  ) || []),
-                  {
-                    title: t("createNewCategory"),
-                    titleProps: { strong: true },
-                    key: `/admin/create-event-category${
-                      organization.organization?.slug
-                        ? `?org=${organization.organization.slug}`
-                        : ""
-                    }`,
-                    target: `/admin/create-event-category${
-                      organization.organization?.slug
-                        ? `?org=${organization.organization.slug}`
-                        : ""
-                    }`,
-                  },
-                ],
-              })
-            ) || []),
             {
-              title: t("createNewCategory"),
-              titleProps: { strong: true },
-              key: "/admin/create-event-category",
-              target: "/admin/create-event-category",
+              title: t("sider.titles.listEvents"),
+              key: `/admin/list-events`,
+              target: `/admin/list-event`,
+            },
+            {
+              title: t("sider.titles.createEvent"),
+              key: `/admin/create-event`,
+              target: `/admin/create-event`,
             },
           ],
         },
@@ -139,18 +126,22 @@ export function AdminLayout({
 
   return (
     <SharedLayout
+      forbidWhen={AuthRestrict.LOGGED_OUT}
+      query={query}
       title={`${t("admin")}`}
       noPad
-      query={query}
-      forbidWhen={AuthRestrict.LOGGED_OUT}
     >
       {({ currentUser, error, loading }: SharedLayoutChildProps) =>
         !currentUser && !error && !loading ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
           <Layout style={{ minHeight: contentMinHeight }} hasSider>
-            <Sider>
-              <SideMenu items={items} initialKey={href} />
+            <Sider
+              collapsed={siderCollapsed}
+              collapsible
+              onCollapse={(collapsed) => setSiderCollapsed(collapsed)}
+            >
+              <SideMenu initialKey={href} items={items} />
             </Sider>
             <Content>
               <StandardWidth>{children}</StandardWidth>

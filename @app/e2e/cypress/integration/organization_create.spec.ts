@@ -11,7 +11,10 @@ context("Create organizations", () => {
     // Action
     cy.getCy("layout-dropdown-user").click();
     cy.getCy("layout-link-create-organization").click();
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/create-organization"
+    );
     cy.getCy("createorganization-input-name").type("Test Organization");
     cy.getCy("createorganization-slug-value").contains("test-organization");
     cy.getCy("createorganization-button-create").click();
@@ -34,7 +37,10 @@ context("Create organizations", () => {
     // Action
     cy.getCy("layout-dropdown-user").click();
     cy.getCy("layout-link-create-organization").click();
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/create-organization"
+    );
     cy.getCy("createorganization-input-name").type("Test Organization");
     cy.getCy("createorganization-slug-value").contains("test-organization");
 

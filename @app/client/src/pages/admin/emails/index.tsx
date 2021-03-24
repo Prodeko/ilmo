@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { ErrorAlert, SettingsLayout } from "@app/components";
-import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql";
-import * as Sentry from "@sentry/react";
+import { AdminLayout, ErrorAlert } from "@app/components";
+import {
+  useAdminLayoutQuery,
+  useRenderEmailTemplatesQuery,
+} from "@app/graphql";
 import { Card, Col, PageHeader, Row, Switch, Typography } from "antd";
 import { capitalize } from "lodash";
 import { NextPage } from "next";
@@ -11,18 +13,13 @@ const { Text } = Typography;
 
 const Admin_Emails: NextPage = () => {
   const { t } = useTranslation("admin");
-  const query = useSharedQuery();
+  const query = useAdminLayoutQuery();
   const [showHtml, setShowHtml] = useState(true);
   const { loading, data, error } = useRenderEmailTemplatesQuery();
 
-  if (error) {
-    Sentry.captureException(error);
-  }
-
   return (
-    <SettingsLayout href="/settings/accounts" query={query}>
+    <AdminLayout href="/admin/emails" query={query}>
       <PageHeader title="Emails" />
-
       {error ? (
         <ErrorAlert error={error} />
       ) : (
@@ -57,7 +54,7 @@ const Admin_Emails: NextPage = () => {
           </Row>
         </>
       )}
-    </SettingsLayout>
+    </AdminLayout>
   );
 };
 

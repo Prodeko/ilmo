@@ -35,7 +35,6 @@ const CreateEventCategoryPage: NextPage = () => {
     async (values: Store) => {
       setFormError(null);
       try {
-        console.log(values);
         const { name, description, organization } = values;
         const { data } = await updateEventCategory({
           variables: {

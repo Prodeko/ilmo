@@ -17,3 +17,7 @@ fragment AdminCategory_Query on Query {
     ...AdminCategory_EventCategory
   }
 }
+
+query AdminCategory($id: UUID!) {
+  ...AdminCategory_Query
+}

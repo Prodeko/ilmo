@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  AuthRestrict,
-  EventForm,
-  Redirect,
-  SharedLayout,
-} from "@app/components";
+import { AdminLayout, EventForm, Redirect } from "@app/components";
 import {
   CreateEventDocument,
   CreateEventQuotasDocument,
@@ -26,7 +21,7 @@ const CreateEventPage: NextPage = () => {
   }
 
   return (
-    <SharedLayout forbidWhen={AuthRestrict.LOGGED_OUT} query={query} title="">
+    <AdminLayout href="/admin/create-event" query={query}>
       <Row>
         <Col flex={1}>
           <PageHeader title={t("createEvent.title")} />
@@ -39,7 +34,7 @@ const CreateEventPage: NextPage = () => {
           />
         </Col>
       </Row>
-    </SharedLayout>
+    </AdminLayout>
   );
 };
 

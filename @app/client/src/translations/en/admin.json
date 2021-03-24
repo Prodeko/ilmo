@@ -1,0 +1,28 @@
+{
+  "admin": "Admin",
+  "createNewCategory": "Create a new event category",
+  "createNewOrganization": "Create a new organization",
+  "eventCategories": "Event categories",
+  "organizations": {
+    "deleteOrganization": "Delete organization",
+    "deleteOrganizationConfirmText": "Are you sure you want to delete this organization? This action cannot be undone.",
+    "forms": {
+      "labels": {
+        "name": "Organization name",
+        "slug": "Slug"
+      }
+    },
+    "updateOrganization": "Update organization"
+  },
+  "sider": {
+    "titles": {
+      "createEvent": "Create an event",
+      "createOrganization": "Create an organization",
+      "emails": "Emails",
+      "events": "Events",
+      "listEvents": "List events",
+      "main": "Dashboard",
+      "organizations": "Organizations"
+    }
+  }
+}

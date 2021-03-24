@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { AdminLayout, EventCategoryForm, Redirect } from "@app/components";
 import {
-  CreatedEventCategoryFragment,
+  EventCategory,
   useAdminLayoutQuery,
   useCreateEventCategoryMutation,
 } from "@app/graphql";
@@ -21,10 +21,10 @@ const CreateEventCategoryPage: NextPage = () => {
   const router: NextRouter | null = useRouter();
 
   const code = getCodeFromError(formError);
-  const [
-    eventCategory,
-    setEventCategory,
-  ] = useState<null | CreatedEventCategoryFragment>(null);
+  const [eventCategory, setEventCategory] = useState<null | Pick<
+    EventCategory,
+    "id"
+  >>(null);
   const [createEventCategory] = useCreateEventCategoryMutation();
 
   const { defaultLanguage, supportedLanguages } = query.data?.languages || {};
@@ -33,7 +33,6 @@ const CreateEventCategoryPage: NextPage = () => {
     async (values: Store) => {
       setFormError(null);
       try {
-        console.log(values);
         const { name, description, organization } = values;
         const { data } = await createEventCategory({
           variables: {
@@ -53,7 +52,6 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 
   if (eventCategory) {
-    console.log(eventCategory);
     return <Redirect href={`/admin/category/${eventCategory.id}`} layout />;
   }
 
@@ -63,21 +61,16 @@ const CreateEventCategoryPage: NextPage = () => {
     return <Redirect href="/" layout />;
   }
 
-  const initialOrganization: string | undefined =
-    router &&
-    router.query &&
-    router.query.org &&
-    organizationMemberships &&
-    organizationMemberships.length > 0 &&
-    organizationMemberships.find(
-      (membership) => membership.organization.slug === router.query.org
-    )?.organization?.id;
+  const org = router?.query?.org;
+  const initialOrganization = organizationMemberships.find(
+    (membership) => membership.organization.slug === org
+  )?.organization?.id;
+
+  console.log(initialOrganization);
 
   return (
     <AdminLayout
-      href={`/admin/create-event-category${
-        router?.query?.org ? `?org=${router.query.org}` : ""
-      }`}
+      href={`/admin/create-event-category${org ? `?org=${org}` : ""}`}
       query={query}
     >
       <Row>

@@ -20,7 +20,7 @@ context("Create event", () => {
 
     // Action
     cy.get("@createEventDataResult").then(() => {
-      cy.visit(Cypress.env("ROOT_URL") + "/event/create");
+      cy.visit(Cypress.env("ROOT_URL") + "/admin/create-event");
       cy.get(".ant-tabs-tab").as("tabs");
 
       cy.getCy("eventform-select-language").click();
@@ -150,7 +150,7 @@ context("Create event", () => {
 
     // Action
     cy.get("@createEventDataResult").then(() => {
-      cy.visit(Cypress.env("ROOT_URL") + "/event/create");
+      cy.visit(Cypress.env("ROOT_URL") + "/admin/create-event");
     });
 
     // Assertion

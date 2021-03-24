@@ -1,3 +1,0 @@
-query AdminLayout {
-  ...AdminLayout_Query
-}

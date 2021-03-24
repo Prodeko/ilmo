@@ -1,8 +1,0 @@
-query AdminCategoryEvents(
-  $today: Datetime!
-  $first: Int!
-  $offset: Int!
-  $id: UUID!
-) {
-  ...AdminCategoryEvents_Query
-}

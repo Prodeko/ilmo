@@ -10,15 +10,12 @@ fragment AdminLayout_Query on Query {
           id
           name
           slug
-          eventCategoriesByOwnerOrganizationId(first: 20) {
-            nodes {
-              id
-              name
-              description
-            }
-          }
         }
       }
     }
   }
+}
+
+query AdminLayout {
+  ...AdminLayout_Query
 }

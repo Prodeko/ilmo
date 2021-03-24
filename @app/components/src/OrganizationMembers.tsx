@@ -1,18 +1,9 @@
 import React, { useCallback, useState } from "react";
 import {
-  AuthRestrict,
-  OrganizationSettingsLayout,
-  Redirect,
-  SharedLayout,
-  useOrganizationLoading,
-  useOrganizationSlug,
-} from "@app/components";
-import {
-  OrganizationMembers_MembershipFragment,
-  OrganizationMembers_OrganizationFragment,
+  OrganizationPage_MembershipFragment,
+  OrganizationPage_OrganizationFragment,
   SharedLayout_UserFragment,
   useInviteToOrganizationMutation,
-  useOrganizationMembersQuery,
   useRemoveFromOrganizationMutation,
   useTransferOrganizationOwnershipMutation,
 } from "@app/graphql";
@@ -25,65 +16,28 @@ import {
   Input,
   List,
   message,
-  PageHeader,
   Popconfirm,
   Typography,
 } from "antd";
 import Text from "antd/lib/typography/Text";
-import { NextPage } from "next";
-import { useRouter } from "next/router";
+import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
-const OrganizationSettingsPage: NextPage = () => {
-  const slug = useOrganizationSlug();
-  const [page, setPage] = useState(1);
-  const query = useOrganizationMembersQuery({
-    variables: {
-      slug,
-      offset: (page - 1) * RESULTS_PER_PAGE,
-    },
-  });
-  const organizationLoadingElement = useOrganizationLoading(query);
-  const organization = query?.data?.organizationBySlug;
+import { Redirect } from "./index";
 
-  return (
-    <SharedLayout
-      forbidWhen={AuthRestrict.LOGGED_OUT}
-      query={query}
-      title={organization?.name ?? slug}
-      titleHref={`/o/[slug]`}
-      titleHrefAs={`/o/${slug}`}
-      noPad
-    >
-      {({ currentUser }) =>
-        organizationLoadingElement || (
-          <OrganizationSettingsPageInner
-            currentUser={currentUser}
-            organization={organization!}
-            page={page}
-            setPage={setPage}
-          />
-        )
-      }
-    </SharedLayout>
-  );
-};
-
-interface OrganizationSettingsPageInnerProps {
+interface OrganizationMembersProps {
   currentUser?: SharedLayout_UserFragment | null;
-  organization: OrganizationMembers_OrganizationFragment;
+  organization: OrganizationPage_OrganizationFragment;
   page: number;
   setPage: (newPage: number) => void;
 }
 
-// This needs to match the `first:` used in OrganizationMembers.graphql
-const RESULTS_PER_PAGE = 10;
+export const ORGANIZATION_RESULTS_PER_PAGE = 10;
 
-const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps> = (
+export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
   props
 ) => {
   const { organization, currentUser, page, setPage } = props;
-  const router = useRouter();
 
   const handlePaginationChange = (
     page: number
@@ -93,7 +47,7 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
   };
 
   const renderItem = useCallback(
-    (node: OrganizationMembers_MembershipFragment) => (
+    (node: OrganizationPage_MembershipFragment) => (
       <OrganizationMemberListItem
         currentUser={currentUser}
         node={node}
@@ -143,50 +97,47 @@ const OrganizationSettingsPageInner: React.FC<OrganizationSettingsPageInnerProps
   }
 
   return (
-    <OrganizationSettingsLayout href={router.route} organization={organization}>
-      <div>
-        <PageHeader title="Members" />
-        <Card title="Invite new member">
-          <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
-            <Form.Item label="Username or email" name="inviteText">
-              <Input
-                disabled={inviteInProgress}
-                placeholder="Enter username or email"
-              />
-            </Form.Item>
-            <Form.Item {...tailFormItemLayout}>
-              <Button disabled={inviteInProgress} htmlType="submit">
-                Invite
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-        <List
-          dataSource={organization.organizationMemberships?.nodes ?? []}
-          header={
-            <Typography.Text style={{ fontSize: "16px" }} strong>
-              Existing members
-            </Typography.Text>
-          }
-          pagination={{
-            current: page,
-            pageSize: RESULTS_PER_PAGE,
-            total: organization.organizationMemberships?.totalCount,
-            onChange: handlePaginationChange,
-          }}
-          renderItem={renderItem}
-          size="large"
-          style={{ marginTop: "2rem", borderColor: "#f0f0f0" }}
-          bordered
-        />
-      </div>
-    </OrganizationSettingsLayout>
+    <>
+      <Card title="Invite new member">
+        <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
+          <Form.Item label="Username or email" name="inviteText">
+            <Input
+              disabled={inviteInProgress}
+              placeholder="Enter username or email"
+            />
+          </Form.Item>
+          <Form.Item {...tailFormItemLayout}>
+            <Button disabled={inviteInProgress} htmlType="submit">
+              Invite
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+      <List
+        dataSource={organization.organizationMemberships?.nodes ?? []}
+        header={
+          <Typography.Text style={{ fontSize: "16px" }} strong>
+            Existing members
+          </Typography.Text>
+        }
+        pagination={{
+          current: page,
+          pageSize: ORGANIZATION_RESULTS_PER_PAGE,
+          total: organization.organizationMemberships?.totalCount,
+          onChange: handlePaginationChange,
+        }}
+        renderItem={renderItem}
+        size="large"
+        style={{ marginTop: "2rem", borderColor: "#f0f0f0" }}
+        bordered
+      />
+    </>
   );
 };
 
 interface OrganizationMemberListItemProps {
-  node: OrganizationMembers_MembershipFragment;
-  organization: OrganizationMembers_OrganizationFragment;
+  node: OrganizationPage_MembershipFragment;
+  organization: OrganizationPage_OrganizationFragment;
   currentUser?: SharedLayout_UserFragment | null;
 }
 
@@ -195,6 +146,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
 ) => {
   const { node, organization, currentUser } = props;
 
+  const { t } = useTranslation("admin");
   const [removeMember] = useRemoveFromOrganizationMutation();
   const handleRemove = useCallback(async () => {
     try {
@@ -234,8 +186,8 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
             key="remove"
-            cancelText="No"
-            okText="Yes"
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
             title={`Are you sure you want to remove ${node.user?.name} from ${organization.name}?`}
             onConfirm={handleRemove}
           >
@@ -245,8 +197,8 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
           <Popconfirm
             key="transfer"
-            cancelText="No"
-            okText="Yes"
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
             title={`Are you sure you want to transfer ownership of ${organization.name} to ${node.user?.name}?`}
             onConfirm={handleTransfer}
           >
@@ -272,5 +224,3 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
     </List.Item>
   );
 };
-
-export default OrganizationSettingsPage;

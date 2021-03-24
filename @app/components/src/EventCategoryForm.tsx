@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib";
 import { Alert, Button, Form, Input, Select } from "antd";
@@ -31,6 +31,11 @@ export const EventCategoryForm = ({
   );
   const { t } = useTranslation("events");
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    // Set form initialValues if they have changed after the initial rendering
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
 
   return (
     <Form

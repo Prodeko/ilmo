@@ -259,30 +259,6 @@ export function SharedLayout({
                       )
                     )}
                     <Menu.Item>
-                      <Link href="/create-organization">
-                        <a data-cy="layout-link-create-organization">
-                          {t("headerMenu.createOrganization")}
-                        </a>
-                      </Link>
-                    </Menu.Item>
-                    {data.currentUser?.organizationMemberships?.nodes.length >
-                      0 && [
-                      <Menu.Item key="create-event">
-                        <Link href="/event/create">
-                          <a data-cy="layout-link-create-event">
-                            {t("headerMenu.createEvent")}
-                          </a>
-                        </Link>
-                      </Menu.Item>,
-                      <Menu.Item key="create-event-category">
-                        <Link href="/create-event-category">
-                          <a data-cy="layout-link-create-event-category">
-                            {t("headerMenu.createEventCategory")}
-                          </a>
-                        </Link>
-                      </Menu.Item>,
-                    ]}
-                    <Menu.Item>
                       <Link href="/admin">
                         <a data-cy="layout-link-admin">
                           {t("headerMenu.admin")}

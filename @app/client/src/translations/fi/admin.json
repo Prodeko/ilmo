@@ -1,8 +1,29 @@
 {
   "admin": "Sikariosasto",
-  "adminMain": "Dashboard",
-  "organizations": "Organisaatiot",
+  "createNewCategory": "Luo uusi kategoria",
   "createNewOrganization": "Luo uusi organisaatio",
   "eventCategories": "Kategoriat",
-  "createNewCategory": "Luo uusi kategoria"
+  "organizations": {
+    "deleteOrganization": "Poista organisaatio",
+    "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
+    "forms": {
+      "labels": {
+        "name": "Organisaation nimi",
+        "slug": "Nimi jota käytetään URL:ssa"
+      }
+    },
+    "siderTitle": "Organisaatiot",
+    "updateOrganization": "Päivitä organisaatio"
+  },
+  "sider": {
+    "titles": {
+      "createEvent": "Luo tapahtuma",
+      "createOrganization": "Luo organisaatio",
+      "emails": "Sähköpostit",
+      "events": "Tapahtumat",
+      "listEvents": "Näytä tapahtumat",
+      "main": "Dashboard",
+      "organizations": "Organsaatiot"
+    }
+  }
 }

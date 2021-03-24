@@ -87,33 +87,31 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     })();
   }, [claimRegistratioToken, eventId, quotaId, type]);
 
-  const doDelete = useCallback(() => {
+  const doDelete = useCallback(async () => {
     setFormError(null);
     setDeleting(true);
-    (async () => {
-      try {
-        if (updateToken) {
-          const result = await deleteRegistration({
-            variables: { updateToken },
-          });
-          if (!result) {
-            throw new Error("Result expected");
-          }
-          const { data } = result;
-          if (!data?.deleteRegistration?.success) {
-            throw new Error(t("deleteRegistrationFailed"));
-          }
-          // Success: refetch
-          client.resetStore();
-          router.push(formRedirect);
-          message.success(t("registrationDeleteComplete"));
+    try {
+      if (updateToken) {
+        const result = await deleteRegistration({
+          variables: { updateToken },
+        });
+        if (!result) {
+          throw new Error("Result expected");
         }
-      } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
+        const { data } = result;
+        if (!data?.deleteRegistration?.success) {
+          throw new Error(t("deleteRegistrationFailed"));
+        }
+        // Success: refetch
+        client.resetStore();
+        router.push(formRedirect);
+        message.success(t("registrationDeleteComplete"));
       }
-      setDeleting(false);
-    })();
+    } catch (e) {
+      setFormError(e);
+      Sentry.captureException(e);
+    }
+    setDeleting(false);
   }, [deleteRegistration, updateToken, client, formRedirect, router, t]);
 
   const handleSubmit = useCallback(

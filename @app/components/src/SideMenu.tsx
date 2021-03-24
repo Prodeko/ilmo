@@ -11,7 +11,7 @@ const { Text } = Typography;
 
 export interface MenuItem {
   key: string;
-  target: string | (() => void) | MenuItem[];
+  target: string | null | MenuItem[];
   title: string;
   showWarn?: boolean;
   titleProps?: TextProps;
@@ -47,16 +47,16 @@ const getMenuItem = (
       initialKeyPath,
     ];
   }
-  const children = item.target.map((i) => getMenuItem(i, initialKey));
-  const keyPath = children.find((i) => i[1].length > 0);
+  const children = item?.target?.map((i) => getMenuItem(i, initialKey));
+  const keyPath = children?.find((i) => i[1].length > 0);
   return [
     <SubMenu
       key={item.key}
+      data-cy={item.cy}
       icon={item.icon}
       title={item.title}
-      data-cy={item.cy}
     >
-      {children.map((a) => a[0])}
+      {children?.map((a) => a[0])}
     </SubMenu>,
     keyPath ? keyPath[1].concat(item.key) : [],
   ];
@@ -115,8 +115,8 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
   return (
     <Menu
       mode="inline"
-      selectedKeys={[initialKey]}
       openKeys={openKeys}
+      selectedKeys={[initialKey]}
       onOpenChange={onOpenChange}
     >
       {inner}

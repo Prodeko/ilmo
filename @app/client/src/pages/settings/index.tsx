@@ -44,15 +44,6 @@ const Settings_Profile: NextPage = () => {
 
 export default Settings_Profile;
 
-/**
- * These are the values in our form
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface FormValues {
-  username: string;
-  name: string;
-}
-
 interface ProfileSettingsFormProps {
   user: ProfileSettingsForm_UserFragment;
   error: Error | ApolloError | null;
