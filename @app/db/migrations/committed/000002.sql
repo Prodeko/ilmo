@@ -1,10 +1,28 @@
---! Previous: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
---! Hash: sha1:f10794aac27ec9b54299a4b8a5de0683d4ac225e
+--! Previous: sha1:af9ffd0c6b1d63b517797fd034bcca6fbf6e8dfa
+--! Hash: sha1:7bb52b614230b552f921e6f5f7077652bcd55265
 
---! split: 1-current.sql
-/**********/
--- Event categories
+--! split: 0001-computed-columns.sql
+/*
+ * Get the user primary email as a computed column.
+ */
+create function app_public.users_primary_email(u app_public.users) returns citext as $$
+  select email
+    from app_public.user_emails
+    where
+      user_emails.user_id = u.id
+      and u.id = app_public.current_user_id()
+      and user_emails.is_primary = true;
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.users_primary_email(u app_public.users) is
+  E'Users primary email.';
 
+--! split: 0010-event_categories.sql
+/*
+ * The event categories table is to categorize events and to enforce RLS policies
+ * on events. For example, only the members of owner_organization_id organization
+ * can see private event registration information (such as allergies) and update
+ * event details.
+ */
 drop table if exists app_public.event_categories cascade;
 
 create table app_public.event_categories(
@@ -20,6 +38,16 @@ create table app_public.event_categories(
 );
 alter table app_public.event_categories enable row level security;
 
+-- Indices
+create index on app_public.event_categories(owner_organization_id);
+create index on app_public.event_categories(name);
+
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.event_categories for each row
+  execute procedure app_private.tg__timestamps();
+
+-- Comments
 comment on table app_public.event_categories is
   E'Table for event categories.';
 comment on column app_public.event_categories.id is
@@ -31,9 +59,7 @@ comment on column app_public.event_categories.description is
 comment on column app_public.event_categories.owner_organization_id is
   E'Identifier of the organizer.';
 
-create index on app_public.event_categories(owner_organization_id);
-create index on app_public.event_categories(name);
-
+-- RLS policies and grants
 grant
   select,
   insert (name, description, owner_organization_id),
@@ -47,15 +73,13 @@ create policy select_all on app_public.event_categories
 create policy manage_member on app_public.event_categories
   for all using (owner_organization_id in (select app_public.current_user_member_organization_ids()));
 
-create trigger _100_timestamps
-  before insert or update on app_public.event_categories for each row
-  execute procedure app_private.tg__timestamps();
-
-/**********/
--- Events
+--! split: 0011-events.sql
+/*
+ * The events table stores events that a user of the application can register to.
+ * Events can either be upcoming, open to registration or closed.
+ */
 
 drop table if exists app_public.events cascade;
-
 create table app_public.events(
   id uuid primary key default gen_random_uuid(),
   slug citext not null unique,
@@ -81,30 +105,43 @@ create table app_public.events(
 );
 alter table app_public.events enable row level security;
 
+-- Indices
+create index on app_public.events(event_start_time);
+create index on app_public.events(event_end_time);
+create index on app_public.events(registration_start_time);
+create index on app_public.events(registration_end_time);
+create index on app_public.events(owner_organization_id);
+create index on app_public.events(category_id);
+create index on app_public.events(is_draft);
+
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.events for each row
+  execute procedure app_private.tg__timestamps();
+
+-- Computed columns (https://www.graphile.org/postgraphile/computed-columns/)
 create function app_public.events_signup_upcoming(e app_public.events)
 returns boolean as $$
   select now() < e.registration_start_time;
 $$ language sql stable;
-
 comment on function app_public.events_signup_upcoming(e app_public.events) is
-  E'Designated whether event signup is upcoming or not.';
+  E'Designates whether event signup is upcoming or not.';
 
 create function app_public.events_signup_open(e app_public.events)
 returns boolean as $$
   select now() between e.registration_start_time and e.registration_end_time;
 $$ language sql stable;
-
 comment on function app_public.events_signup_open(e app_public.events) is
-  E'Designated whether event signup is open or not.';
+  E'Designates whether event signup is open or not.';
 
 create function app_public.events_signup_closed(e app_public.events)
 returns boolean as $$
   select now() > e.registration_end_time;
 $$ language sql stable;
-
 comment on function app_public.events_signup_closed(e app_public.events) is
-  E'Designated whether event signup is closed or not.';
+  E'Designates whether event signup is closed or not.';
 
+-- Comments
 comment on table app_public.events is
   E'Main table for events.';
 comment on column app_public.events.id is
@@ -134,14 +171,7 @@ comment on column app_public.events.owner_organization_id is
 comment on column app_public.events.category_id is
   E'Id of the event category.';
 
-create index on app_public.events(event_start_time);
-create index on app_public.events(event_end_time);
-create index on app_public.events(registration_start_time);
-create index on app_public.events(registration_end_time);
-create index on app_public.events(owner_organization_id);
-create index on app_public.events(category_id);
-create index on app_public.events(is_draft);
-
+-- RLS policies and grants
 grant
   select,
   insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
@@ -181,12 +211,11 @@ create policy manage_as_admin on app_public.events
   where
     is_admin is true and id = app_public.current_user_id()));
 
-create trigger _100_timestamps
-  before insert or update on app_public.events for each row
-  execute procedure app_private.tg__timestamps();
-
-/**********/
--- Event questions
+--! split: 0012-event_questions.sql
+/*
+ * The events_questions table stores questions that can be asked during event
+ * registration. TODO: not implemented yet.
+ */
 
 drop type if exists app_public.question_type cascade;
 drop table if exists app_public.event_questions cascade;
@@ -207,8 +236,15 @@ create table app_public.event_questions(
 );
 alter table app_public.event_questions enable row level security;
 
+-- Indices
 create index on app_public.event_questions(event_id);
 
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.event_questions for each row
+  execute procedure app_private.tg__timestamps();
+
+-- RLS policies and grants
 grant
   select,
   insert (event_id, type, options),
@@ -256,18 +292,19 @@ create policy manage_as_admin on app_public.event_questions
   where
     is_admin is true and id = app_public.current_user_id()));
 
-create trigger _100_timestamps
-  before insert or update on app_public.event_questions for each row
-  execute procedure app_private.tg__timestamps();
-
-/**********/
--- Quotas
+--! split: 0020-quotas.sql
+/*
+ * The quotas table defines quotas for event registrations. Once a quota is full
+ * no more registrations are allowed and additional registrations are considered
+ * to be in queue for the quota. There may be multiple quotas with different
+ * sizes for a single event.
+ */
 
 drop table if exists app_public.quotas cascade;
-
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
+  position smallint not null,
   title jsonb not null,
   size smallint not null check (size > 0),
   -- TODO: Implement questions
@@ -280,10 +317,23 @@ create table app_public.quotas(
 );
 alter table app_public.quotas enable row level security;
 
+-- Indices
+create index on app_public.quotas(id);
+create index on app_public.quotas(event_id);
+create index on app_public.quotas(position);
+
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.quotas for each row
+  execute procedure app_private.tg__timestamps();
+
+-- Comments
 comment on table app_public.quotas is
   E'Main table for registration quotas.';
 comment on column app_public.quotas.event_id is
   E'Identifier of the event that this quota is for.';
+comment on column app_public.quotas.position is
+  E'Quota position. Used to order quotas.';
 comment on column app_public.quotas.title is
   E'Title for the quota.';
 comment on column app_public.quotas.size is
@@ -293,15 +343,13 @@ comment on column app_public.quotas.questions_public is
 comment on column app_public.quotas.questions_private is
   E'Private questions related to the quota.';
 
-create index on app_public.quotas(id);
-create index on app_public.quotas(event_id);
-
--- Allow update only on title and size. This means that once
--- a quota is created it cannot be moved to another event
+-- RLS policies and grants
 grant
   select,
-  insert (event_id, title, size),
-  update (title, size),
+  -- Allow update only on position, title and size. This means that once
+  -- a quota is created it cannot be moved to another event.
+  insert (event_id, position, title, size),
+  update (position, title, size),
   delete
 on app_public.quotas to :DATABASE_VISITOR;
 
@@ -329,17 +377,31 @@ create policy manage_as_admin on app_public.quotas
   where
     is_admin is true and id = app_public.current_user_id()));
 
-create trigger _100_timestamps
-  before insert or update on app_public.quotas for each row
-  execute procedure app_private.tg__timestamps();
+--! split: 0021-quotas-crud-functions.sql
+/*
+ * These functions define create and update mutations that support operating on
+ * multiple quotas at once. These functions allow us to create or update all
+ * quotas related to a single event via a single mutation.
+ *
+ * By default PostGraphile creates CRUD mutations for database tables
+ * (https://www.graphile.org/postgraphile/crud-mutations/). We have omitted the
+ * create, insert, update and delete mutations for the quotas table and use
+ * these functions instead. The default mutations are omitted in
+ * @app/server/postgraphile.tags.jsonc file.
+ */
 
 drop type if exists app_public.create_event_quotas cascade;
+drop type if exists app_public.update_event_quotas cascade;
+drop function if exists app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]);
+drop function if exists app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]);
+
+-- Input type for app_public.create_event_quotas
 create type app_public.create_event_quotas as (
+  position smallint,
   title jsonb,
   size smallint
 );
 
-drop function if exists app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]);
 create function app_public.create_event_quotas(
   event_id uuid,
   quotas app_public.create_event_quotas[]
@@ -351,17 +413,20 @@ as $$
     v_quota app_public.quotas;
     v_ret app_public.quotas[] default '{}';
   begin
+    -- Check permissions
     if app_public.current_user_id() is null then
       raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
     end if;
 
+    -- Must specify at least one quota
     if (select array_length(quotas, 1)) is null then
       raise exception 'You must specify at least one quota' using errcode = 'DNIED';
     end if;
 
+    -- Create quotas
     foreach v_input in array quotas loop
-      insert into app_public.quotas(event_id, title, size)
-        values (event_id, v_input.title, v_input.size)
+      insert into app_public.quotas(event_id, position, title, size)
+        values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
 
       v_ret := array_append(v_ret, v_quota);
@@ -370,18 +435,17 @@ as $$
     return v_ret;
   end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-
 comment on function app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) is
-  E'Create event quotas.';
+  E'Create multiple quotas at once.';
 
-drop type if exists app_public.update_event_quotas cascade;
+-- Input type for app_public.update_event_quotas
 create type app_public.update_event_quotas as (
   id uuid,
+  position smallint,
   title jsonb,
   size smallint
 );
 
-drop function if exists app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]);
 create function app_public.update_event_quotas(
   event_id uuid,
   quotas app_public.update_event_quotas[]
@@ -396,10 +460,12 @@ as $$
     v_quota app_public.quotas;
     v_ret app_public.quotas[] default '{}';
   begin
+    -- Check permissions
     if app_public.current_user_id() is null then
       raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
     end if;
 
+    -- Must specify at least one quota
     if (select array_length(quotas, 1)) is null then
       raise exception 'You must specify at least one quota' using errcode = 'DNIED';
     end if;
@@ -418,16 +484,15 @@ as $$
 
     -- Update existing event quotas by id
     foreach v_input in array quotas loop
-
       if exists(select 1 from app_public.quotas where id = v_input.id) then
         update app_public.quotas
-          set title = v_input.title, size = v_input.size
+          set position = v_input.position, title = v_input.title, size = v_input.size
           where id = v_input.id
         returning * into v_quota;
       else
         -- Create new quotas that didn't exits before
-        insert into app_public.quotas(event_id, title, size)
-          values (event_id, v_input.title, v_input.size)
+        insert into app_public.quotas(event_id, position, title, size)
+          values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
       end if;
 
@@ -437,47 +502,123 @@ as $$
     return v_ret;
   end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-
 comment on function app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) is
-  E'Update event quotas.';
+  E'Update multiple quotas at once.';
 
-/**********/
--- Registrations
+--! split: 0030-registration-triggers.sql
+/*
+ * This trigger is used to validate inserts on app_public.registrations. The
+ * trigger makes sure that only valid registrations can be inserted into the
+ * database. That is, the related event is open to registrations.
+ */
+
+drop function if exists tg__registration_is_valid() cascade;
+create function app_private.tg__registration_is_valid() returns trigger as $$
+declare
+  v_event app_public.events;
+  v_event_signup_open boolean;
+begin
+  select * into v_event from app_public.events where id = NEW.event_id;
+  select app_public.events_signup_open(v_event) into v_event_signup_open;
+
+  if v_event_signup_open is false then
+    raise exception 'Event registration is not open.' using errcode = 'DNIED';
+  end if;
+
+  return NEW;
+end;
+$$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
+comment on function app_private.tg__registration_is_valid() is
+  E'This trigger validates that a registration is valid. That is, the related event is open to registrations.';
+
+--! split: 0031-registrations.sql
+/*
+ * The registrations table stores event registrations.
+ */
 
 drop table if exists app_public.registrations cascade;
-drop function if exists app_public.create_registration(uuid, uuid, text, text, citext);
-drop function if exists app_public.update_registation(uuid, text, text);
-drop function if exists app_public.registration_send_email();
-
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
   quota_id uuid not null references app_public.quotas(id) on delete no action,
-  first_name text not null,
-  last_name text not null,
-  email citext not null check (email ~ '[^@]+@[^@]+\.[^@]+'),
+  first_name text null,
+  last_name text null,
+  email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 alter table app_public.registrations enable row level security;
 
-create trigger _100_send_registration_email
-  after insert on app_public.registrations
-  for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
-
-create trigger _500_gql_insert
-  after insert on app_public.registrations
-  for each row
-  execute procedure app_public.tg__graphql_subscription(
-    'registrationAdded', -- the "event" string, useful for the client to know what happened
-    'graphql:eventRegistrations:$1', -- the "topic" the event will be published to, as a template
-    'event_id' -- If specified, `$1` above will be replaced with NEW.id or OLD.id from the trigger.
-  );
-
+-- Indices
 create index on app_public.registrations(event_id);
 create index on app_public.registrations(quota_id);
 create index on app_public.registrations(created_at);
 
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.registrations for each row
+  execute procedure app_private.tg__timestamps();
+
+create trigger _200_registration_is_valid
+  before insert on app_public.registrations for each row
+  execute procedure app_private.tg__registration_is_valid();
+
+create trigger _300_send_registration_email
+  -- Send email upon successful registration. We run this trigger on update because
+  -- the registration is initially created with claim_registration_token and we
+  -- don't know the users email at that point. The registration__send_confirmation_email
+  -- task validates that only send one email per registration. This is tracked
+  -- in app_private.registration_secrets.confirmation_email_sent.
+  after update on app_public.registrations
+  for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
+
+create trigger _500_gql_registration_updated
+  -- Expose new registrations via a GraphQl subscription. Used for live updating
+  -- views in the frontend application.
+  after insert or update or delete on app_public.registrations
+  for each row
+  execute procedure app_public.tg__graphql_subscription(
+    'registrationUpdated', -- the "event" string, useful for the client to know what happened
+    'graphql:eventRegistrations:$1', -- the "topic" the event will be published to, as a template
+    'event_id' -- If specified, `$1` above will be replaced with NEW.id or OLD.id from the trigger.
+  );
+
+-- Computed columns (https://www.graphile.org/postgraphile/computed-columns/)
+create function app_public.registrations_full_name(registration app_public.registrations)
+returns text as $$
+  select registration.first_name || ' ' || registration.last_name
+$$ language sql stable;
+grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
+comment on function app_public.registrations_full_name(registration app_public.registrations) is
+  E'Returns the full name of a registered person.';
+
+create function app_public.registrations_is_queued(registration app_public.registrations)
+  returns boolean as $$
+declare
+  v_registrations_before_self integer;
+  v_quota app_public.quotas;
+begin
+  select * into v_quota from app_public.quotas where id = registration.quota_id;
+
+  select count(*)
+  into v_registrations_before_self
+  from app_public.registrations
+  where created_at < registration.created_at
+    and event_id = registration.event_id
+    and quota_id = registration.quota_id;
+
+  if v_registrations_before_self >= v_quota.size then
+    return true;
+  else
+    return false;
+  end if;
+end;
+$$ language plpgsql stable;
+grant execute on function app_public.registrations_is_queued(registration app_public.registrations) to :DATABASE_VISITOR;
+comment on function app_public.registrations_is_queued(registration app_public.registrations) is
+  E'Designates whether the registration is queued for a quota or not.';
+
+-- Comments
 comment on table app_public.registrations is
   E'Main table for registrations.';
 comment on column app_public.registrations.id is
@@ -490,13 +631,17 @@ comment on column app_public.registrations.first_name is
   E'First name of the person registering to an event.';
 comment on column app_public.registrations.last_name is
   E'Last name of the person registering to an event.';
+-- Use @omit to prevet exposing emails via the GraphQL API
 comment on column app_public.registrations.email is
   E'@omit\nEmail address of the person registering to an event.';
 
+-- RLS policies and grants
 grant
   select,
   insert (event_id, quota_id, first_name, last_name, email),
-  update (event_id, quota_id, first_name, last_name, email),
+  -- Don't allow updating an existing registration to another event or quota
+  -- Don't allow updating registration email
+  update (first_name, last_name),
   delete
 on app_public.registrations to :DATABASE_VISITOR;
 
@@ -516,98 +661,65 @@ create policy manage_as_admin on app_public.registrations
   where
     is_admin is true and id = app_public.current_user_id()));
 
-create trigger _100_timestamps
-  before insert or update on app_public.registrations for each row
-  execute procedure app_private.tg__timestamps();
-
-/**********/
--- Registration secrets
+--! split: 0032-registration_secrets.sql
+/*
+ * The registrations_secrets table stores event secrets related to event
+ * registrations.
+ *
+ * In order to create a registration a registration_token (obtained via the
+ * claim_registration_token function) must be provided. To update a registration
+ * an update_token must be provided. Upon registration, an email containing an
+ * update_token is sent to the user.
+ */
 
 drop table if exists app_private.registration_secrets cascade;
-drop function if exists app_public.claim_registration_token(uuid);
-drop function if exists app_public.delete_registration_token(uuid);
-drop function if exists app_public.create_registration(uuid, uuid, uuid, text, text, citext);
-drop function if exists app_public.update_registration(uuid, text, text);
-drop function if exists app_public.delete_registration(uuid);
-drop function if exists app_public.registration_by_update_token(uuid);
-
 create table app_private.registration_secrets(
   id uuid primary key default gen_random_uuid(),
-  registration_token uuid default gen_random_uuid(),
-  update_token uuid default gen_random_uuid(),
+  registration_token text default encode(gen_random_bytes(7), 'hex'),
+  update_token text default encode(gen_random_bytes(7), 'hex'),
+  confirmation_email_sent boolean not null default false,
 
+  -- When a registration is deleted, also delete the secrets
   registration_id uuid null references app_public.registrations(id) on delete cascade,
-  event_id uuid not null references app_public.events(id) on delete no action
+  event_id uuid not null references app_public.events(id) on delete no action,
+  quota_id uuid not null references app_public.quotas(id) on delete no action,
+
+  unique(registration_token),
+  unique(update_token)
 );
 alter table app_private.registration_secrets enable row level security;
 
-comment on table app_private.registration_secrets is
-  E'The contents of this table should never be visible to the user. Contains data related to event registrations.';
-
+-- Indices
 create index on app_private.registration_secrets(event_id);
 create index on app_private.registration_secrets(registration_id);
 
--- Schedule graphile worker task for token timeout
-create function app_public.claim_registration_token(
-  event_id uuid
-)
-  returns uuid
-  as $$
-declare
-  v_token uuid;
-begin
-  insert into app_private.registration_secrets(event_id)
-    values (event_id)
-  returning
-    registration_token into v_token;
+-- Comments
+comment on table app_private.registration_secrets is
+  E'The contents of this table should never be visible to the user. Contains data related to event registrations.';
 
-  -- Schedule token deletion
-  perform graphile_worker.add_job(
-    'registration__delete_registration_token',
-    json_build_object('token', v_token)
-  );
+--! split: 0033-registrations-crud-functions.sql
+/*
+ * These functions define create, update and delete mutations for event
+ * registrations. This allows us to specify additional conditions in order to
+ * operate on registrations. For example, in order to create a registration a
+ * valid registration token must be provided. Similarly, to update or delete a
+ * registration a valid update token must be provided. The regitrationToken is
+ * obtained via the claim_registration_token function and the update token is
+ * emailed to the user on successful event registration.
+ *
+ * By default PostGraphile creates CRUD mutations for database tables
+ * (https://www.graphile.org/postgraphile/crud-mutations/). We have omitted the
+ * create, insert, update and delete mutations for the registrations table and
+ * use these functions instead. The default mutations are omitted in
+ * @app/server/postgraphile.tags.jsonc file.
+ */
 
-  return v_token;
-end;
-$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-
-comment on function app_public.claim_registration_token(event_id uuid) is
-  E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
-
--- The function below is used by registration__delete_registration_token
--- worker task to bypass RLS policies on app_private.registration_secrets table.
--- This is achieved by setting SECURITY DEFINER to make this a 'sudo' function.
-create function app_public.delete_registration_token(
-  token uuid
-)
-returns bigint
-as $$
-  with deleted as (
-    -- Delete timed out token
-    delete from app_private.registration_secrets
-    where registration_secrets.registration_token = token
-    returning *
-  )
-
-  -- Return number of deleted rows
-  select count(*) from deleted;
-$$
-language sql
-security definer volatile set search_path to pg_catalog, public, pg_temp;
-
-comment on function app_public.delete_registration_token(token uuid) is
-  E'Delete registration token by token id. Used by worker task to bypass RLS policies. Should not be publicly visible.';
-
-create function app_public.registrations_full_name(registration app_public.registrations) returns text as $$
-  select registration.first_name || ' ' || registration.last_name
-$$ language sql stable;
-grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
-
-comment on function app_public.registrations_full_name(registration app_public.registrations) is
-  E'Returns the full name of a registered person.';
+drop function if exists app_public.create_registration(text, uuid, uuid, text, text, citext);
+drop function if exists app_public.update_registration(text, text, text);
+drop function if exists app_public.delete_registration(text);
 
 create function app_public.create_registration(
-  "registrationToken" uuid,
+  "registrationToken" text,
   "eventId" uuid,
   "quotaId" uuid,
   "firstName" text,
@@ -618,36 +730,52 @@ create function app_public.create_registration(
   as $$
 declare
   v_registration app_public.registrations;
+  v_registration_id uuid;
   v_quota app_public.quotas;
-  v_num_registrations integer;
+  v_event app_public.events;
+  v_event_signup_open boolean;
 begin
+  select * into v_quota from app_public.quotas where id = "quotaId";
+  select * into v_event from app_public.events where id = "eventId";
+
+  -- If either event or quota are not found, prevent event registration
+  if v_quota.id is null then
+    raise exception 'Quota not found.' using errcode = 'NTFND';
+  end if;
+
+  if v_event.id is null then
+    raise exception 'Event not found.' using errcode = 'NTFND';
+  end if;
+
+  -- If the registration is not open yet, prevent event registration
+  v_event_signup_open := (select app_public.events_signup_open(v_event));
+  if not v_event_signup_open then
+    raise exception 'Event registration is not open.' using errcode = 'DNIED';
+  end if;
+
+  -- Get registration id matching registration token
+  select registration_id into v_registration_id
+  from app_private.registration_secrets
+  where registration_token = "registrationToken"
+    and event_id = "eventId"
+    and quota_id = "quotaId";
+
   -- If the provided token does not exist or is not valid for the specified event
   -- prevent event registration
-  if not exists(
-    select 1 from app_private.registration_secrets
-      where registration_token = "registrationToken"
-      and event_id = "eventId"
-  ) then
+  if v_registration_id is null then
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
   end if;
 
-  select count(*) into v_num_registrations from app_public.registrations where registrations.quota_id = "quotaId";
-
-  select * into v_quota from app_public.quotas where id = "quotaId";
-
-  if v_quota.id is null then
-    raise exception 'Quota not found.';
-  end if;
-
-  -- If the quota is already full, prevent event registration
-  if (v_num_registrations >= v_quota.size) then
-    raise exception 'Event quota already full.' using errcode = 'DNIED';
-  end if;
-
-  insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
-    values ("eventId", "quotaId", "firstName", "lastName", "email")
+  -- Update registration that was created by calling claim_registration_token
+  update app_public.registrations
+    set first_name = "firstName", last_name = "lastName", email = create_registration.email
+    where id = v_registration_id
   returning
     * into v_registration;
+
+  if v_registration.id is null then
+    raise exception 'Registration failed. Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
 
   -- Set the used token to null and set registration_id
   update app_private.registration_secrets
@@ -657,12 +785,11 @@ begin
   return v_registration;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-
-comment on function app_public.create_registration("registrationToken" uuid, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
+comment on function app_public.create_registration("registrationToken" text, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext) is
   E'Register to an event. Checks that a valid registration token was suplied.';
 
 create function app_public.update_registration(
-  "updateToken" uuid,
+  "updateToken" text,
   "firstName" text,
   "lastName" text
 )
@@ -672,10 +799,12 @@ declare
   v_registration_id uuid;
   v_registration app_public.registrations;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
-    raise exception 'Registration matching token was not found.';
+    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
 
   update app_public.registrations
@@ -687,55 +816,101 @@ begin
   return v_registration;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.update_registration("updateToken" text, "firstName" text, "lastName" text) is
+  E'Update event registration. Checks that a valid update token was suplied.';
 
-comment on function app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) is
-  E'Register to an event. Checks that a valid registration token was suplied.';
-
-create function app_public.delete_registration(
-  "updateToken" uuid
-)
+create function app_public.delete_registration("updateToken" text)
   returns boolean
   as $$
 declare
   v_registration_id uuid;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
-    raise exception 'Registration matching token was not found.';
+    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
 
-  -- Delete registration and associated secrets
+  -- Delete registration and associated secrets (foreign key has on delete)
   delete from app_public.registrations where id = v_registration_id;
 
   return true;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-
-comment on function app_public.delete_registration("updateToken" uuid) is
+comment on function app_public.delete_registration("updateToken" text) is
   E'Delete event registration.';
 
-create function app_public.registration_by_update_token(
-  "updateToken" uuid
-)
+create function app_public.registration_by_update_token("updateToken" text)
   returns app_public.registrations
   as $$
 declare
   v_registration_id uuid;
   v_registration app_public.registrations;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
     return null;
   end if;
 
-  select * into v_registration from app_public.registrations where id = v_registration_id;
+  select * into v_registration
+    from app_public.registrations
+    where id = v_registration_id;
 
   return v_registration;
 end;
 $$ language plpgsql stable security definer set search_path = pg_catalog, public, pg_temp;
-grant execute on function  app_public.registration_by_update_token("updateToken" uuid) to :DATABASE_VISITOR;
+grant execute on function  app_public.registration_by_update_token("updateToken" text) to :DATABASE_VISITOR;
 
-comment on function app_public.registration_by_update_token("updateToken" uuid) is
+comment on function app_public.registration_by_update_token("updateToken" text) is
   E'Get registration by update token.';
+
+--! split: 0034-registration_secrets-functions.sql
+/*
+ * These functions are used to create registration secrets that are required
+ * to create, update or delete registrations.
+ */
+drop function if exists app_public.claim_registration_token(uuid, uuid);
+
+create function app_public.claim_registration_token(event_id uuid, quota_id uuid)
+  returns text
+  as $$
+declare
+  v_token text;
+  v_registration_id uuid;
+begin
+  -- Create a new registration secret
+  insert into app_private.registration_secrets(event_id, quota_id)
+    values (event_id, quota_id)
+  returning
+    registration_token into v_token;
+
+  -- Create a registration. This means that a spot in the specified event and
+  -- quota is reserved for a user when this function is called. The user can
+  -- then proceed to enter their information at their own pace without worrying
+  -- that the quota would already be filled by the time they finished.
+  insert into app_public.registrations(event_id, quota_id)
+    values (event_id, quota_id)
+  returning
+    id into v_registration_id;
+
+  -- Set registration_id to the corresponding row in registration_secrets table
+  update app_private.registration_secrets
+    set registration_id = v_registration_id
+    where registration_token = v_token;
+
+  -- Schedule graphile worker task for token deletion
+  perform graphile_worker.add_job(
+    'registration__schedule_unfinished_registration_delete',
+    json_build_object('token', v_token)
+  );
+
+  return v_token;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.claim_registration_token(event_id uuid, quota_id uuid) is
+  E'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';

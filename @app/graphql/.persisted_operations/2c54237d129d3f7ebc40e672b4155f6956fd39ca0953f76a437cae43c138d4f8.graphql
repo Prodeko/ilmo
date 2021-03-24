@@ -1,0 +1,9 @@
+mutation CreateEventQuotas($input: CreateEventQuotasInput!) {
+  createEventQuotas(input: $input) {
+    quotas {
+      id
+      __typename
+    }
+    __typename
+  }
+}

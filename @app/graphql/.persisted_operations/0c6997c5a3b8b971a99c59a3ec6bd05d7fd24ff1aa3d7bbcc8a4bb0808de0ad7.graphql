@@ -1,0 +1,8 @@
+mutation ResetPassword($userId: UUID!, $token: String!, $password: String!) {
+  resetPassword(
+    input: {userId: $userId, resetToken: $token, newPassword: $password}
+  ) {
+    success
+    __typename
+  }
+}

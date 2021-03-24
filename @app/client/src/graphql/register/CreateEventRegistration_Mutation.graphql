@@ -1,5 +1,5 @@
 mutation CreateEventRegistration(
-  $registrationToken: UUID!
+  $registrationToken: String!
   $eventId: UUID!
   $quotaId: UUID!
   $firstName: String!

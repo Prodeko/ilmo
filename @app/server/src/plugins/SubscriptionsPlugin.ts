@@ -1,6 +1,7 @@
 import { QueryBuilder, SQL } from "graphile-build-pg";
 import {
-  embed /*, AugmentedGraphQLFieldResolver */,
+  AugmentedGraphQLFieldResolver,
+  embed,
   gql,
   makeExtendSchemaPlugin,
 } from "graphile-utils";
@@ -8,20 +9,6 @@ import {
 import { GraphQLResolveInfo } from "graphql";
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile";
-
-type GraphileHelpers = any;
-type AugmentedGraphQLFieldResolver<
-  TSource,
-  TContext,
-  TArgs = { [argName: string]: any }
-> = (
-  parent: TSource,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo & {
-    graphile: GraphileHelpers;
-  }
-) => any;
 
 /*
  * PG NOTIFY events are sent via a channel, this function helps us determine
@@ -126,7 +113,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
             )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`;
             const orderBy = sql.fragment`created_at`;
             sqlBuilder.where(where);
-            sqlBuilder.orderBy(() => orderBy, false);
+            sqlBuilder.orderBy(() => orderBy, true);
           },
           // Whether to return a single record or a list.
           // If true, return list.

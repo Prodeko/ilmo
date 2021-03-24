@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "noEmit": false,
     "rootDir": ".",
     "outDir": ".",
@@ -11,5 +12,5 @@
     "module": "commonjs",
     "jsx": "react"
   },
-  "include": ["index.tsx"]
+  "include": ["index.tsx", "client.json"]
 }

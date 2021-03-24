@@ -1,5 +1,4 @@
 import React, { CSSProperties, useEffect, useState } from "react";
-import { green, orange, red } from "@ant-design/colors";
 
 interface Props {
   percentageFilled: number;
@@ -8,13 +7,13 @@ interface Props {
 }
 
 export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
-  const [color, setColor] = useState(green[6]);
+  const [color, setColor] = useState("#5eb95e");
 
   useEffect(() => {
     if (percentageFilled >= 100) {
-      setColor(red[6]);
+      setColor("#dd514c");
     } else if (percentageFilled >= 75) {
-      setColor(orange[6]);
+      setColor("#faa732");
     }
   }, [percentageFilled]);
 
@@ -57,7 +56,9 @@ export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
       <div style={progressBackgroundStyles}>
         <div style={fillerStyles}></div>
       </div>
-      <span style={labelStyles}>{`${filled.toString()} / ${size}`}</span>
+      <span style={labelStyles}>{`${
+        filled <= size ? filled.toString() : size
+      } / ${size}`}</span>
     </div>
   );
 };

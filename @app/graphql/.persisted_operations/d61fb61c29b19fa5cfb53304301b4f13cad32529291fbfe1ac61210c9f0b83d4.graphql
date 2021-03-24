@@ -1,0 +1,11 @@
+mutation CreateEventCategory($name: JSON!, $description: JSON!, $organization: UUID!) {
+  createEventCategory(
+    input: {eventCategory: {name: $name, description: $description, ownerOrganizationId: $organization}}
+  ) {
+    eventCategory {
+      id
+      __typename
+    }
+    __typename
+  }
+}

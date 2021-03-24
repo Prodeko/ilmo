@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeleteRegistration can delete a registration with a valid updateToken 1`] = `
+Object {
+  "data": Object {
+    "deleteRegistration": Object {
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`DeleteRegistration can't update registration if registration token is not valid 1`] = `
+Object {
+  "data": Object {
+    "deleteRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.delete_registration(text) line 10 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 2,
+        },
+      ],
+      "message": "Registration matching token was not found.",
+      "path": Array [
+        "deleteRegistration",
+      ],
+    },
+  ],
+}
+`;

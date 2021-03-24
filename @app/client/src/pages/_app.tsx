@@ -7,7 +7,7 @@ import { ConfigProvider, notification } from "antd";
 import enUS from "antd/lib/locale/en_US";
 import fiFI from "antd/lib/locale/fi_FI";
 import dayjs from "dayjs";
-import App from "next/app";
+import App, { AppContext } from "next/app";
 import Router from "next/router";
 import NProgress from "nprogress";
 
@@ -81,18 +81,16 @@ interface Props {
 }
 
 class Ilmo extends App<Props> {
-  static async getInitialProps({ Component, ctx, router }: any) {
-    const locale = router.locale;
-    let pageProps = { locale };
+  static async getInitialProps(appContext: AppContext) {
+    const { router } = appContext;
 
+    const locale = router.locale;
     // TODO: Not sure if this is the best place for this..
     dayjs.locale(locale === "en" ? "en-gb" : "fi");
 
-    if (Component.getInitialProps) {
-      pageProps = await Component.getInitialProps(ctx);
-    }
+    const appProps = await App.getInitialProps(appContext);
 
-    return { pageProps };
+    return { ...appProps, locale };
   }
 
   render() {

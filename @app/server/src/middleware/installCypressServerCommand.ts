@@ -371,19 +371,19 @@ async function createEventData(
       eventSignupClosed
     );
     const [quota] = await createQuotas(client, 1, event.id);
-    const [registration] = await createRegistrations(
-      client,
-      1,
-      event.id,
-      quota.id
-    );
-
-    const [registrationSecret] = await createRegistrationSecrets(
-      client,
-      1,
-      registration.id,
-      event.id
-    );
+    let registration, registrationSecret;
+    if (!eventSignupClosed && !eventSignupUpcoming) {
+      // Database trigger prevents creating registrations for events that are
+      // closed or their signup is upcoming
+      [registration] = await createRegistrations(client, 1, event.id, quota.id);
+      [registrationSecret] = await createRegistrationSecrets(
+        client,
+        1,
+        registration.id,
+        event.id,
+        quota.id
+      );
+    }
 
     await client.query("commit");
     return {
@@ -483,19 +483,12 @@ export const createEvents = async (
     const registrationStartTime = dayjs(now)
       .add(dateAdjustment, "day")
       .toDate();
-    const registrationEndTime = faker.date.between(
-      registrationStartTime,
-      dayjs(registrationStartTime).add(7, "day").toDate()
-    );
+    const registrationEndTime = dayjs(registrationStartTime)
+      .add(7, "day")
+      .toDate();
 
-    const eventStartTime = faker.date.between(
-      registrationEndTime,
-      dayjs(registrationEndTime).add(7, "day").toDate()
-    );
-    const eventEndTime = faker.date.between(
-      eventStartTime,
-      dayjs(eventStartTime).add(1, "day").toDate()
-    );
+    const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate();
+    const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate();
 
     const eventCategoryId = categoryId;
     const headerImageFile = faker.image.imageUrl(
@@ -562,16 +555,16 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
     const size = faker.random.number({
       min: 1,
-      max: 50,
+      max: 20,
     });
     const {
       rows: [quota],
     } = await client.query(
-      `insert into app_public.quotas(event_id, title, size)
-        values ($1, $2, $3)
+      `insert into app_public.quotas(event_id, position, title, size)
+        values ($1, $2, $3, $4)
         returning *
       `,
-      [eventId, title, size]
+      [eventId, i, title, size]
     );
     quotas.push(quota);
   }
@@ -583,18 +576,19 @@ export const createRegistrationSecrets = async (
   client: PoolClient,
   count: number = 1,
   registrationId: string,
-  eventId: string
+  eventId: string,
+  quotaId: string
 ) => {
   const registrationSecrets = [];
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
     } = await client.query(
-      `insert into app_private.registration_secrets(event_id, registration_id)
-        values ($1, $2)
+      `insert into app_private.registration_secrets(event_id, quota_id, registration_id)
+        values ($1, $2, $3)
         returning *
       `,
-      [eventId, registrationId]
+      [eventId, quotaId, registrationId]
     );
     registrationSecrets.push(secret);
   }

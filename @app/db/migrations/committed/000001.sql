@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:4f4bcc659f537f697e05e587b992fbaf8291a21e
+--! Hash: sha1:af9ffd0c6b1d63b517797fd034bcca6fbf6e8dfa
 
 --! split: 0001-reset.sql
 /*
@@ -69,7 +69,7 @@ alter default privileges in schema public, app_public, app_hidden
  * These triggers are commonly used across many tables.
  */
 
--- Used for queueing jobs easily; relys on the fact that every table we have
+-- Used for queueing jobs easily; relies on the fact that every table we have
 -- has a primary key 'id' column; this won't work if you rename your primary
 -- key columns.
 create function app_private.tg__add_job() returns trigger as $$
@@ -237,7 +237,6 @@ comment on function app_public.tg__graphql_subscription() is
  * These types and functions define the supported languages of the app.
  */
 
-drop type if exists app_languages cascade;
 create type app_languages as (supported_languages text[], default_language text);
 
 -- Defines supported languages and the default language
@@ -314,7 +313,7 @@ create index on app_private.sessions (user_id);
 /*
  * This function is responsible for reading the `jwt.claims.session_id`
  * transaction setting (set from the `pgSettings` function within
- * `installPostGraphile.ts`). Defining this inside a function means we an
+ * `installPostGraphile.ts`). Defining this inside a function means we can
  * modify it in future to allow additional ways of defining the session.
  */
 

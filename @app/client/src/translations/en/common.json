@@ -11,6 +11,7 @@
     "createEventCategory": "Create event category",
     "createOrganization": "Create organization"
   },
+  "imgCropTitle": "Edit image",
   "loading": "Loading...",
   "logout": "Logout",
   "moreInfo": "Show details",

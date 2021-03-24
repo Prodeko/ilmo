@@ -1,0 +1,24 @@
+fragment EmailsForm_UserEmail on UserEmail {
+  id
+  email
+  isVerified
+  isPrimary
+  createdAt
+  __typename
+}
+mutation AddEmail($email: String!) {
+  createUserEmail(input: {userEmail: {email: $email}}) {
+    user {
+      id
+      userEmails(first: 50) {
+        nodes {
+          ...EmailsForm_UserEmail
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

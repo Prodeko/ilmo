@@ -1,0 +1,17 @@
+mutation MakeEmailPrimary($emailId: UUID!) {
+  makeEmailPrimary(input: {emailId: $emailId}) {
+    user {
+      id
+      userEmails(first: 50) {
+        nodes {
+          id
+          isPrimary
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

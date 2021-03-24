@@ -1,22 +1,90 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CreateRegistration can create registration 2`] = `
+exports[`CreateRegistration can create registration 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": Object {
+      "registrationToken": "[id-1]",
+    },
+  },
+}
+`;
+
+exports[`CreateRegistration can create registration 3`] = `
 Object {
   "data": Object {
     "createRegistration": Object {
       "registration": Object {
-        "eventId": "[id-2]",
+        "eventId": "[id-3]",
         "firstName": "Testname",
-        "id": "[id-1]",
+        "id": "[id-2]",
         "lastName": "Testlastname",
-        "quotaId": "[id-3]",
+        "quotaId": "[id-4]",
       },
     },
   },
 }
 `;
 
-exports[`CreateRegistration can't create registration if quota is full 1`] = `
+exports[`CreateRegistration can't create registration if eventId is invalid 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 18 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Event not found.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if quotaId is invalid 1`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 14 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 9,
+        },
+      ],
+      "message": "Quota not found.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if registration is not open 1`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -27,7 +95,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 27 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 24 at RAISE",
         },
       },
       "locations": Array [
@@ -36,7 +104,7 @@ Object {
           "line": 9,
         },
       ],
-      "message": "Event quota already full.",
+      "message": "Event registration is not open.",
       "path": Array [
         "createRegistration",
       ],
@@ -56,7 +124,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
         },
       },
       "locations": Array [
@@ -85,7 +153,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(uuid,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
         },
       },
       "locations": Array [

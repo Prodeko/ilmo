@@ -1,0 +1,16 @@
+query SettingsPassword {
+  currentUser {
+    id
+    hasPassword
+    primaryEmail
+    userEmails(first: 1, condition: {isPrimary: true}) {
+      nodes {
+        id
+        email
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

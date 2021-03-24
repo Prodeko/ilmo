@@ -113,7 +113,7 @@
       },
       "app_public.registrations": {
         "tags": {
-          "omit": "create,update,delete"
+          "omit": "create,insert,update,delete"
         }
       },
       // Omit all quota CRUD operations. We define custom mutations that create or update
@@ -121,7 +121,7 @@
       // app_public.update_event_quotas.
       "app_public.quotas": {
         "tags": {
-          "omit": "all"
+          "omit": "create,insert,update,delete"
         }
       }
     },
@@ -213,11 +213,6 @@
       },
       "app_public.delete_organization": {
         "description": "Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend."
-      },
-      "app_public.delete_registration_token": {
-        "tags": {
-          "omit": true
-        }
       }
     }
   }

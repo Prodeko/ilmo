@@ -10,8 +10,7 @@ interface RegistrationSendConfirmationEmail {
   id: string;
 }
 
-const { NODE_ENV, ROOT_URL } = process.env;
-const isDev = NODE_ENV === "development";
+const { ROOT_URL } = process.env;
 
 function getFormattedEventTime(event: any) {
   const { event_start_time, event_end_time } = event;
@@ -76,29 +75,43 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     return;
   }
 
+  if (registrationSecret.confirmation_email_sent) {
+    console.error("Confirmation email already sent; aborting");
+    return;
+  }
+
   const { email, first_name, last_name } = registration;
+
+  if (!email) {
+    console.error("No email specified; aborting");
+    return;
+  }
+
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
-      subject: `${event.name.en} - Registration successful`,
+      subject: event.name.fi
+        ? `${event.name.fi} - Rekisteröinti onnnistui`
+        : `${event.name.en} - Registration successful`,
     },
     template: "event_registration.mjml.njk",
     variables: {
+      url: ROOT_URL,
       eventName: event.name,
       registrationName: `${first_name} ${last_name}`,
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
-      eventLink: `${ROOT_URL}/${event.slug}`,
+      eventSlug: event.slug,
       eventRegistrationUpdateLink: `${ROOT_URL}/update-registration/${registrationSecret.update_token}`,
     },
   };
 
-  if (!isDev) {
-    // Don't send these emails in dev
-    // Generating fake data with yarn db create-fake-data
-    // would result in a large number of emails being sent.
-    await addJob("send_email", sendEmailPayload);
-  }
+  await addJob("send_email", sendEmailPayload);
+  await withPgClient((pgClient) =>
+    pgClient.query(
+      "update app_private.registration_secrets set confirmation_email_sent = true"
+    )
+  );
 };
 
 module.exports = task;

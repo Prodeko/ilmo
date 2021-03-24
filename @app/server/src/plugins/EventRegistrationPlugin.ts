@@ -23,12 +23,12 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
 
           const workerUtils = context.workerUtils;
           const ipAddress = context.ipAddress;
-          const eventId = args.input.eventId;
+          const { eventId, quotaId } = args.input;
 
-          // After successfull registration delete the rate limit key
-          // from redis
+          // After successfull registration delete the rate limit key from redis
           workerUtils.addJob("registration_complete__delete_rate_limit_key", {
             eventId,
+            quotaId,
             ipAddress,
           });
 

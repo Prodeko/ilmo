@@ -8,6 +8,7 @@ export * from "./EventCategoryForm";
 export * from "./EventForm";
 export * from "./eventHooks";
 export * from "./EventRegistrationForm";
+export * from "./EventRegistrationsTable";
 export * from "./FileUpload";
 export * from "./FourOhFour";
 export * from "./Loading";

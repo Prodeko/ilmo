@@ -104,6 +104,29 @@ context("Update event", () => {
     );
   });
 
+  it("can submit the form without any modifications", () => {
+    // Setup
+    cy.serverCommand("createTestEventData").as("createEventDataResult");
+
+    // Action
+    cy.get("@createEventDataResult").then(({ event }: any) => {
+      cy.login({
+        username: "testuser_events",
+        password: "DOESNT MATTER",
+        existingUser: true,
+      });
+      cy.visit(Cypress.env("ROOT_URL") + `/event/update/${event.id}`);
+      cy.getCy("eventform-button-submit").click();
+
+      // Assertion
+      cy.url().should("equal", Cypress.env("ROOT_URL") + "/");
+      cy.getCy("homepage-signup-open-events").should(
+        "contain",
+        event.name["fi"]
+      );
+    });
+  });
+
   it("redirects to index if event is not found", () => {
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult");

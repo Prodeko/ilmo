@@ -23,7 +23,7 @@ interface EventRegistrationFormProps {
   // eventId and quotaId are used when type is "create"
   eventId?: string;
   quotaId?: string;
-  // updateToken, initialValues are used when type is "update"
+  // updateToken and initialValues are used when type is "update"
   updateToken?: string;
   initialValues?: any;
 }
@@ -59,24 +59,32 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const code = getCodeFromError(formError);
 
   useEffect(() => {
+    // Set form initialValues if they have changed after the initial rendering
+    form.setFieldsValue(initialValues);
+  }, [form, initialValues]);
+
+  useEffect(() => {
     // Claim registration token on mount if related
     // event and quota exist
-    const claimToken = async () => {
-      // Only claim registration token when creating a registration
+    (async () => {
       if (type === "create" && eventId && quotaId) {
         try {
           const { data } = await claimRegistratioToken({
-            variables: { eventId },
+            variables: { eventId, quotaId },
           });
           const token = data?.claimRegistrationToken?.registrationToken;
+          if (!token) {
+            throw new Error(
+              "Claiming the registration token failed, please reload the page."
+            );
+          }
           setRegistrationToken(token);
         } catch (e) {
           setFormError(e);
           Sentry.captureException(e);
         }
       }
-    };
-    claimToken();
+    })();
   }, [claimRegistratioToken, eventId, quotaId, type]);
 
   const doDelete = useCallback(() => {
@@ -84,20 +92,22 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     setDeleting(true);
     (async () => {
       try {
-        const result = await deleteRegistration({
-          variables: { updateToken },
-        });
-        if (!result) {
-          throw new Error("Result expected");
+        if (updateToken) {
+          const result = await deleteRegistration({
+            variables: { updateToken },
+          });
+          if (!result) {
+            throw new Error("Result expected");
+          }
+          const { data } = result;
+          if (!data?.deleteRegistration?.success) {
+            throw new Error(t("deleteRegistrationFailed"));
+          }
+          // Success: refetch
+          client.resetStore();
+          router.push(formRedirect);
+          message.success(t("registrationDeleteComplete"));
         }
-        const { data } = result;
-        if (!data?.deleteRegistration?.success) {
-          throw new Error(t("deleteRegistrationFailed"));
-        }
-        // Success: refetch
-        client.resetStore();
-        router.push(formRedirect);
-        message.success(t("registrationDeleteComplete"));
       } catch (e) {
         setFormError(e);
         Sentry.captureException(e);

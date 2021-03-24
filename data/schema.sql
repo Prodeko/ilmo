@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.10
--- Dumped by pg_dump version 11.10
+-- Dumped from database version 11.11
+-- Dumped by pg_dump version 11.11
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -94,6 +94,7 @@ CREATE TYPE app_public.app_languages AS (
 --
 
 CREATE TYPE app_public.create_event_quotas AS (
+	"position" smallint,
 	title jsonb,
 	size smallint
 );
@@ -116,6 +117,7 @@ CREATE TYPE app_public.question_type AS ENUM (
 
 CREATE TYPE app_public.update_event_quotas AS (
 	id uuid,
+	"position" smallint,
 	title jsonb,
 	size smallint
 );
@@ -694,6 +696,37 @@ COMMENT ON FUNCTION app_private.tg__add_job() IS 'Useful shortcut to create a jo
 
 
 --
+-- Name: tg__registration_is_valid(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__registration_is_valid() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_event app_public.events;
+  v_event_signup_open boolean;
+begin
+  select * into v_event from app_public.events where id = NEW.event_id;
+  select app_public.events_signup_open(v_event) into v_event_signup_open;
+
+  if v_event_signup_open is false then
+    raise exception 'Event registration is not open.' using errcode = 'DNIED';
+  end if;
+
+  return NEW;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION tg__registration_is_valid(); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.tg__registration_is_valid() IS 'This trigger validates that a registration is valid. That is, the related event is open to registrations.';
+
+
+--
 -- Name: tg__timestamps(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -866,24 +899,40 @@ $$;
 
 
 --
--- Name: claim_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: claim_registration_token(uuid, uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.claim_registration_token(event_id uuid) RETURNS uuid
+CREATE FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) RETURNS uuid
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
   v_token uuid;
+  v_registration_id uuid;
 begin
-  insert into app_private.registration_secrets(event_id)
-    values (event_id)
+  -- Create a new registration secret
+  insert into app_private.registration_secrets(event_id, quota_id)
+    values (event_id, quota_id)
   returning
     registration_token into v_token;
 
-  -- Schedule token deletion
+  -- Create a registration. This means that a spot in the specified event and
+  -- quota is reserved for a user when this function is called. The user can
+  -- then proceed to enter their information at their own pace without worrying
+  -- that the quota would already be filled by the time they finished.
+  insert into app_public.registrations(event_id, quota_id)
+    values (event_id, quota_id)
+  returning
+    id into v_registration_id;
+
+  -- Set registration_id to the corresponding row in registration_secrets table
+  update app_private.registration_secrets
+    set registration_id = v_registration_id
+    where registration_token = v_token;
+
+  -- Schedule graphile worker task for token deletion
   perform graphile_worker.add_job(
-    'registration__delete_registration_token',
+    'registration__schedule_unfinished_registration_delete',
     json_build_object('token', v_token)
   );
 
@@ -893,10 +942,10 @@ $$;
 
 
 --
--- Name: FUNCTION claim_registration_token(event_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+-- Name: FUNCTION claim_registration_token(event_id uuid, quota_id uuid); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.claim_registration_token(event_id uuid) IS 'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
+COMMENT ON FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) IS 'Generates a registration token that must be provided during registration. The token is used to prevent F5-wars.';
 
 
 --
@@ -956,6 +1005,7 @@ COMMENT ON FUNCTION app_public.confirm_account_deletion(token text) IS 'If you''
 CREATE TABLE app_public.quotas (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
+    "position" smallint NOT NULL,
     title jsonb NOT NULL,
     size smallint NOT NULL,
     questions_public json,
@@ -979,6 +1029,13 @@ COMMENT ON TABLE app_public.quotas IS 'Main table for registration quotas.';
 --
 
 COMMENT ON COLUMN app_public.quotas.event_id IS 'Identifier of the event that this quota is for.';
+
+
+--
+-- Name: COLUMN quotas."position"; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas."position" IS 'Quota position. Used to order quotas.';
 
 
 --
@@ -1022,17 +1079,20 @@ CREATE FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.
     v_quota app_public.quotas;
     v_ret app_public.quotas[] default '{}';
   begin
+    -- Check permissions
     if app_public.current_user_id() is null then
       raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
     end if;
 
+    -- Must specify at least one quota
     if (select array_length(quotas, 1)) is null then
       raise exception 'You must specify at least one quota' using errcode = 'DNIED';
     end if;
 
+    -- Create quotas
     foreach v_input in array quotas loop
-      insert into app_public.quotas(event_id, title, size)
-        values (event_id, v_input.title, v_input.size)
+      insert into app_public.quotas(event_id, position, title, size)
+        values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
 
       v_ret := array_append(v_ret, v_quota);
@@ -1047,7 +1107,7 @@ $$;
 -- Name: FUNCTION create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) IS 'Create event quotas.';
+COMMENT ON FUNCTION app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]) IS 'Create multiple quotas at once.';
 
 
 --
@@ -1092,9 +1152,9 @@ CREATE TABLE app_public.registrations (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     quota_id uuid NOT NULL,
-    first_name text NOT NULL,
-    last_name text NOT NULL,
-    email public.citext NOT NULL,
+    first_name text,
+    last_name text,
+    email public.citext,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT registrations_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext))
@@ -1161,36 +1221,52 @@ CREATE FUNCTION app_public.create_registration("registrationToken" uuid, "eventI
     AS $$
 declare
   v_registration app_public.registrations;
+  v_registration_id uuid;
   v_quota app_public.quotas;
-  v_num_registrations integer;
+  v_event app_public.events;
+  v_event_signup_open boolean;
 begin
+  select * into v_quota from app_public.quotas where id = "quotaId";
+  select * into v_event from app_public.events where id = "eventId";
+
+  -- If either event or quota are not found, prevent event registration
+  if v_quota.id is null then
+    raise exception 'Quota not found.' using errcode = 'NTFND';
+  end if;
+
+  if v_event.id is null then
+    raise exception 'Event not found.' using errcode = 'NTFND';
+  end if;
+
+  -- If the registration is not open yet, prevent event registration
+  v_event_signup_open := (select app_public.events_signup_open(v_event));
+  if not v_event_signup_open then
+    raise exception 'Event registration is not open.' using errcode = 'DNIED';
+  end if;
+
+  -- Get registration id matching registration token
+  select registration_id into v_registration_id
+  from app_private.registration_secrets
+  where registration_token = "registrationToken"
+    and event_id = "eventId"
+    and quota_id = "quotaId";
+
   -- If the provided token does not exist or is not valid for the specified event
   -- prevent event registration
-  if not exists(
-    select 1 from app_private.registration_secrets
-      where registration_token = "registrationToken"
-      and event_id = "eventId"
-  ) then
+  if v_registration_id is null then
     raise exception 'Registration token was not valid. Please reload the page.' using errcode = 'DNIED';
   end if;
 
-  select count(*) into v_num_registrations from app_public.registrations where registrations.quota_id = "quotaId";
-
-  select * into v_quota from app_public.quotas where id = "quotaId";
-
-  if v_quota.id is null then
-    raise exception 'Quota not found.';
-  end if;
-
-  -- If the quota is already full, prevent event registration
-  if (v_num_registrations >= v_quota.size) then
-    raise exception 'Event quota already full.' using errcode = 'DNIED';
-  end if;
-
-  insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
-    values ("eventId", "quotaId", "firstName", "lastName", "email")
+  -- Update registration that was created by calling claim_registration_token
+  update app_public.registrations
+    set first_name = "firstName", last_name = "lastName", email = create_registration.email
+    where id = v_registration_id
   returning
     * into v_registration;
+
+  if v_registration.id is null then
+    raise exception 'Registration failed. Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
 
   -- Set the used token to null and set registration_id
   update app_private.registration_secrets
@@ -1323,13 +1399,15 @@ CREATE FUNCTION app_public.delete_registration("updateToken" uuid) RETURNS boole
 declare
   v_registration_id uuid;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
-    raise exception 'Registration matching token was not found.';
+    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
 
-  -- Delete registration and associated secrets
+  -- Delete registration and associated secrets (foreign key has on delete)
   delete from app_public.registrations where id = v_registration_id;
 
   return true;
@@ -1342,33 +1420,6 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.delete_registration("updateToken" uuid) IS 'Delete event registration.';
-
-
---
--- Name: delete_registration_token(uuid); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.delete_registration_token(token uuid) RETURNS bigint
-    LANGUAGE sql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-  with deleted as (
-    -- Delete timed out token
-    delete from app_private.registration_secrets
-    where registration_secrets.registration_token = token
-    returning *
-  )
-
-  -- Return number of deleted rows
-  select count(*) from deleted;
-$$;
-
-
---
--- Name: FUNCTION delete_registration_token(token uuid); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.delete_registration_token(token uuid) IS 'Delete registration token by token id. Used by worker task to bypass RLS policies. Should not be publicly visible.';
 
 
 --
@@ -1512,7 +1563,7 @@ $$;
 -- Name: FUNCTION events_signup_closed(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.events_signup_closed(e app_public.events) IS 'Designated whether event signup is closed or not.';
+COMMENT ON FUNCTION app_public.events_signup_closed(e app_public.events) IS 'Designates whether event signup is closed or not.';
 
 
 --
@@ -1530,7 +1581,7 @@ $$;
 -- Name: FUNCTION events_signup_open(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.events_signup_open(e app_public.events) IS 'Designated whether event signup is open or not.';
+COMMENT ON FUNCTION app_public.events_signup_open(e app_public.events) IS 'Designates whether event signup is open or not.';
 
 
 --
@@ -1548,7 +1599,7 @@ $$;
 -- Name: FUNCTION events_signup_upcoming(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.events_signup_upcoming(e app_public.events) IS 'Designated whether event signup is upcoming or not.';
+COMMENT ON FUNCTION app_public.events_signup_upcoming(e app_public.events) IS 'Designates whether event signup is upcoming or not.';
 
 
 --
@@ -1878,13 +1929,17 @@ declare
   v_registration_id uuid;
   v_registration app_public.registrations;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
     return null;
   end if;
 
-  select * into v_registration from app_public.registrations where id = v_registration_id;
+  select * into v_registration
+    from app_public.registrations
+    where id = v_registration_id;
 
   return v_registration;
 end;
@@ -1914,6 +1969,42 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.registrations_full_name(registration app_public.registrations) IS 'Returns the full name of a registered person.';
+
+
+--
+-- Name: registrations_is_queued(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registrations_is_queued(registration app_public.registrations) RETURNS boolean
+    LANGUAGE plpgsql STABLE
+    AS $$
+declare
+  v_registrations_before_self integer;
+  v_quota app_public.quotas;
+begin
+  select * into v_quota from app_public.quotas where id = registration.quota_id;
+
+  select count(*)
+  into v_registrations_before_self
+  from app_public.registrations
+  where created_at < registration.created_at
+    and event_id = registration.event_id
+    and quota_id = registration.quota_id;
+
+  if v_registrations_before_self >= v_quota.size then
+    return true;
+  else
+    return false;
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION registrations_is_queued(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) IS 'Designates whether the registration is queued for a quota or not.';
 
 
 --
@@ -2260,10 +2351,12 @@ CREATE FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.
     v_quota app_public.quotas;
     v_ret app_public.quotas[] default '{}';
   begin
+    -- Check permissions
     if app_public.current_user_id() is null then
       raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
     end if;
 
+    -- Must specify at least one quota
     if (select array_length(quotas, 1)) is null then
       raise exception 'You must specify at least one quota' using errcode = 'DNIED';
     end if;
@@ -2282,16 +2375,15 @@ CREATE FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.
 
     -- Update existing event quotas by id
     foreach v_input in array quotas loop
-
       if exists(select 1 from app_public.quotas where id = v_input.id) then
         update app_public.quotas
-          set title = v_input.title, size = v_input.size
+          set position = v_input.position, title = v_input.title, size = v_input.size
           where id = v_input.id
         returning * into v_quota;
       else
         -- Create new quotas that didn't exits before
-        insert into app_public.quotas(event_id, title, size)
-          values (event_id, v_input.title, v_input.size)
+        insert into app_public.quotas(event_id, position, title, size)
+          values (event_id, v_input.position, v_input.title, v_input.size)
         returning * into v_quota;
       end if;
 
@@ -2307,7 +2399,7 @@ $$;
 -- Name: FUNCTION update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) IS 'Update event quotas.';
+COMMENT ON FUNCTION app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]) IS 'Update multiple quotas at once.';
 
 
 --
@@ -2322,10 +2414,12 @@ declare
   v_registration_id uuid;
   v_registration app_public.registrations;
 begin
-  select registration_id into v_registration_id from app_private.registration_secrets where update_token = "updateToken";
+  select registration_id into v_registration_id
+    from app_private.registration_secrets
+    where update_token = "updateToken";
 
   if v_registration_id is null then
-    raise exception 'Registration matching token was not found.';
+    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
 
   update app_public.registrations
@@ -2343,7 +2437,7 @@ $$;
 -- Name: FUNCTION update_registration("updateToken" uuid, "firstName" text, "lastName" text); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) IS 'Register to an event. Checks that a valid registration token was suplied.';
+COMMENT ON FUNCTION app_public.update_registration("updateToken" uuid, "firstName" text, "lastName" text) IS 'Update event registration. Checks that a valid update token was suplied.';
 
 
 --
@@ -2397,8 +2491,10 @@ CREATE TABLE app_private.registration_secrets (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     registration_token uuid DEFAULT public.gen_random_uuid(),
     update_token uuid DEFAULT public.gen_random_uuid(),
+    confirmation_email_sent boolean DEFAULT false NOT NULL,
     registration_id uuid,
-    event_id uuid NOT NULL
+    event_id uuid NOT NULL,
+    quota_id uuid NOT NULL
 );
 
 
@@ -2645,6 +2741,22 @@ COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile
 
 ALTER TABLE ONLY app_private.registration_secrets
     ADD CONSTRAINT registration_secrets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: registration_secrets registration_secrets_registration_token_key; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_registration_token_key UNIQUE (registration_token);
+
+
+--
+-- Name: registration_secrets registration_secrets_update_token_key; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_update_token_key UNIQUE (update_token);
 
 
 --
@@ -2973,6 +3085,13 @@ CREATE INDEX quotas_id_idx ON app_public.quotas USING btree (id);
 
 
 --
+-- Name: quotas_position_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX quotas_position_idx ON app_public.quotas USING btree ("position");
+
+
+--
 -- Name: registrations_created_at_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -3012,13 +3131,6 @@ CREATE UNIQUE INDEX uniq_user_emails_verified_email ON app_public.user_emails US
 --
 
 CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications USING btree (user_id);
-
-
---
--- Name: registrations _100_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _100_send_registration_email AFTER INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_job('registration__send_confirmation_email');
 
 
 --
@@ -3085,6 +3197,20 @@ CREATE TRIGGER _200_forbid_existing_email BEFORE INSERT ON app_public.user_email
 
 
 --
+-- Name: registrations _200_registration_is_valid; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__registration_is_valid();
+
+
+--
+-- Name: registrations _300_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _300_send_registration_email AFTER UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_job('registration__send_confirmation_email');
+
+
+--
 -- Name: user_emails _500_audit_added; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
@@ -3113,10 +3239,10 @@ CREATE TRIGGER _500_deletion_organization_checks_and_actions BEFORE DELETE ON ap
 
 
 --
--- Name: registrations _500_gql_insert; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _500_gql_registration_updated; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_gql_insert AFTER INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_public.tg__graphql_subscription('registrationAdded', 'graphql:eventRegistrations:$1', 'event_id');
+CREATE TRIGGER _500_gql_registration_updated AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_public.tg__graphql_subscription('registrationUpdated', 'graphql:eventRegistrations:$1', 'event_id');
 
 
 --
@@ -3174,6 +3300,14 @@ CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emai
 
 ALTER TABLE ONLY app_private.registration_secrets
     ADD CONSTRAINT registration_secrets_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
+
+
+--
+-- Name: registration_secrets registration_secrets_quota_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.registration_secrets
+    ADD CONSTRAINT registration_secrets_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id);
 
 
 --
@@ -3744,6 +3878,13 @@ REVOKE ALL ON FUNCTION app_private.tg__add_job() FROM PUBLIC;
 
 
 --
+-- Name: FUNCTION tg__registration_is_valid(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__registration_is_valid() FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION tg__timestamps(); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -3789,11 +3930,11 @@ GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
 
 
 --
--- Name: FUNCTION claim_registration_token(event_id uuid); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION claim_registration_token(event_id uuid, quota_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.claim_registration_token(event_id uuid) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) TO ilmo_visitor;
 
 
 --
@@ -3816,6 +3957,13 @@ GRANT SELECT,DELETE ON TABLE app_public.quotas TO ilmo_visitor;
 --
 
 GRANT INSERT(event_id) ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN quotas."position"; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT("position"),UPDATE("position") ON TABLE app_public.quotas TO ilmo_visitor;
 
 
 --
@@ -3880,14 +4028,14 @@ GRANT SELECT,DELETE ON TABLE app_public.registrations TO ilmo_visitor;
 -- Name: COLUMN registrations.event_id; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(event_id),UPDATE(event_id) ON TABLE app_public.registrations TO ilmo_visitor;
+GRANT INSERT(event_id) ON TABLE app_public.registrations TO ilmo_visitor;
 
 
 --
 -- Name: COLUMN registrations.quota_id; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(quota_id),UPDATE(quota_id) ON TABLE app_public.registrations TO ilmo_visitor;
+GRANT INSERT(quota_id) ON TABLE app_public.registrations TO ilmo_visitor;
 
 
 --
@@ -3908,7 +4056,7 @@ GRANT INSERT(last_name),UPDATE(last_name) ON TABLE app_public.registrations TO i
 -- Name: COLUMN registrations.email; Type: ACL; Schema: app_public; Owner: -
 --
 
-GRANT INSERT(email),UPDATE(email) ON TABLE app_public.registrations TO ilmo_visitor;
+GRANT INSERT(email) ON TABLE app_public.registrations TO ilmo_visitor;
 
 
 --
@@ -3973,14 +4121,6 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO il
 
 REVOKE ALL ON FUNCTION app_public.delete_registration("updateToken" uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" uuid) TO ilmo_visitor;
-
-
---
--- Name: FUNCTION delete_registration_token(token uuid); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.delete_registration_token(token uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.delete_registration_token(token uuid) TO ilmo_visitor;
 
 
 --
@@ -4182,6 +4322,14 @@ GRANT ALL ON FUNCTION app_public.registration_by_update_token("updateToken" uuid
 
 REVOKE ALL ON FUNCTION app_public.registrations_full_name(registration app_public.registrations) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.registrations_full_name(registration app_public.registrations) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registrations_is_queued(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) TO ilmo_visitor;
 
 
 --

@@ -1,8 +1,8 @@
-import { IncomingMessage, ServerResponse } from "http";
 import { resolve } from "path";
 
+import PersistedOperationsPlugin from "@graphile/persisted-operations";
 import PgPubsub from "@graphile/pg-pubsub";
-import GraphilePro from "@graphile/pro"; // Requires license key
+import GraphilePro from "@graphile/pro";
 import _PgSubscriptionsLds from "@graphile/subscriptions-lds";
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
 import { Request, Response } from "express";
@@ -14,7 +14,6 @@ import { Redis } from "ioredis";
 import { Pool, PoolClient } from "pg";
 import {
   enhanceHttpServerWithSubscriptions,
-  HttpRequestHandler,
   makePluginHook,
   Middleware,
   postgraphile,
@@ -36,12 +35,6 @@ import { resolveUpload } from "../utils/fileUpload";
 import handleErrors from "../utils/handleErrors";
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field");
-
-declare module "fastify" {
-  export interface FastifyRequest {
-    postgraphileMiddleware: HttpRequestHandler<IncomingMessage, ServerResponse>;
-  }
-}
 
 declare module "postgraphile" {
   export interface CompatFastifyRequest {
@@ -91,6 +84,10 @@ const pluginHook = makePluginHook([
 
   // If we have a Graphile Pro license, then enable the plugin
   ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
+
+  // Implements a query allowlist. Only queries in the allowlist can be executed
+  // in production
+  PersistedOperationsPlugin,
 ]);
 
 // redisClient is set as an optional property here since it is not needed
@@ -194,6 +191,16 @@ export function getPostGraphileOptions({
     exportGqlSchemaPath: isDev
       ? `${__dirname}/../../../../data/schema.graphql`
       : undefined,
+
+    // @graphile/persisted-operations options
+    persistedOperationsDirectory: resolve(
+      `${__dirname}../../../../graphql/.persisted_operations/`
+    ),
+    allowUnpersistedOperation(req) {
+      // Allow arbitrary requests to be made via GraphiQL in development
+      return (process.env.NODE_ENV === "development" &&
+        req.headers.referer?.endsWith("/graphiql"))!;
+    },
 
     /*
      * Plugins to enhance the GraphQL schema, see:
@@ -351,7 +358,6 @@ export function getPostGraphileOptions({
         },
       };
     },
-
     // Pro plugin options (requires process.env.GRAPHILE_LICENSE)
     defaultPaginationCap:
       parseInt(process.env.GRAPHQL_PAGINATION_CAP || "", 10) || 50,

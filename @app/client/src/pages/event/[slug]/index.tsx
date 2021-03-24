@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import {
+  EventRegistrationsTable,
   H2,
+  P,
   ProgressBar,
   SharedLayout,
-  SimpleTable,
   useEventLoading,
   useEventSlug,
 } from "@app/components";
@@ -14,8 +15,7 @@ import {
   useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { uploadsLoader } from "@app/lib";
-import { Button, Card, Col, Grid, PageHeader, Row, Typography } from "antd";
-import dayjs from "dayjs";
+import { Button, Card, Col, Grid, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,7 +23,6 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const { useBreakpoint } = Grid;
-const { Paragraph } = Typography;
 
 const EventPage: NextPage = () => {
   const slug = useEventSlug();
@@ -50,7 +49,7 @@ interface EventPageInnerProps {
 
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter();
-  const { t, lang } = useTranslation("register");
+  const { t, lang } = useTranslation("events");
   const screens = useBreakpoint();
   const isMobile = screens["xs"];
   const {
@@ -82,25 +81,6 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
       ),
   });
 
-  const columns = [
-    {
-      title: t("common:name"),
-      dataIndex: "fullName",
-      key: "fullName",
-    },
-    {
-      title: t("forms.quota"),
-      dataIndex: ["quota", "title", lang],
-      key: "quota",
-    },
-    {
-      title: t("createdAt"),
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (createdAt: string) => dayjs(createdAt).format("l LT"),
-    },
-  ];
-
   return (
     <>
       <PageHeader
@@ -115,7 +95,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         >
           {headerImageFile && (
             <Image
-              alt={t("events:headerImage")}
+              alt={t("headerImage")}
+              data-cy="eventpage-header-image"
               height={315}
               loader={uploadsLoader}
               objectFit="cover"
@@ -137,7 +118,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
               marginBottom: isMobile ? "1rem" : undefined,
               width: "100%",
             }}
-            title={t("sidebar.title")}
+            title={t("register:sidebar.title")}
             bordered
           >
             {quotas?.nodes.map((quota, i) => {
@@ -157,9 +138,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                   >
                     <Button
                       data-cy={`eventpage-quotas-link-${i}`}
-                      disabled={
-                        totalCount >= size || signupClosed || signupUpcoming
-                      }
+                      disabled={signupClosed || signupUpcoming}
                       target="a"
                       block
                     >
@@ -178,15 +157,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
           <H2>{name[lang]}</H2>
-          <Paragraph>{description[lang]}</Paragraph>
-          <SimpleTable
-            columns={columns}
-            data={registrations}
+          <P>{description[lang]}</P>
+          <EventRegistrationsTable
             data-cy="eventpage-signups-table"
-            size="small"
-            style={{
-              marginTop: "1rem",
-            }}
+            registrations={registrations}
           />
         </Col>
       </Row>

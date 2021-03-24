@@ -13,6 +13,7 @@ Object {
         "eventEndTime": "[timestamp-2]",
         "eventStartTime": "[timestamp-1]",
         "id": "[id-1]",
+        "isDraft": false,
         "isHighlighted": true,
         "name": Object {
           "en": "Updated test event",

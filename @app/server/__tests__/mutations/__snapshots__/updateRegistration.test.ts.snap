@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UdpateRegistration can create a registration 2`] = `
+exports[`UpdateRegistration can update a registration with a valid updateToken 2`] = `
 Object {
   "data": Object {
     "updateRegistration": Object {
@@ -13,7 +13,7 @@ Object {
 }
 `;
 
-exports[`UdpateRegistration can't create registration if registration token is not valid 1`] = `
+exports[`UpdateRegistration can't update registration if registration token is not valid 1`] = `
 Object {
   "data": Object {
     "updateRegistration": null,
@@ -22,9 +22,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "P0001",
+          "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_registration(uuid,text,text) line 9 at RAISE",
+          "where": "PL/pgSQL function app_public.update_registration(text,text,text) line 11 at RAISE",
         },
       },
       "locations": Array [

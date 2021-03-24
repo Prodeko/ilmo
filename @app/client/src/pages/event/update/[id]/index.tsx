@@ -60,7 +60,13 @@ function constructInitialValues(values: any) {
     dayjs(registrationEndTime),
   ];
   const quotas = quotasConnection?.nodes.map((quota) =>
-    filterObjectByKeys(quota, ["id", "title", "size", "registrations"])
+    filterObjectByKeys(quota, [
+      "id",
+      "position",
+      "title",
+      "size",
+      "registrations",
+    ])
   );
 
   return {

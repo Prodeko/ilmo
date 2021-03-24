@@ -5,5 +5,6 @@
     "signupsClosedEvents": "Signup closed",
     "signupsOpenEvents": "Signup open",
     "signupsUpcomingEvents": "Signup upcoming"
-  }
+  },
+  "noEvents": "No events"
 }

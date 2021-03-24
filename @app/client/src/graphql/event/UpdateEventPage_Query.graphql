@@ -8,7 +8,7 @@ fragment UpdateEventPage_Event on Event {
     id
     name
   }
-  quotas {
+  quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
       registrations {

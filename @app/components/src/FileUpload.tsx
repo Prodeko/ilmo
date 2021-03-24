@@ -14,14 +14,17 @@ const { Dragger } = Upload;
 interface FileUploadProps {
   accept: string;
   cropAspect: number;
+  "data-cy": string;
+  id?: string;
   maxCount?: number;
+  onChange?: () => any;
 }
 
 export function FileUpload(props: FileUploadProps) {
-  const { accept, cropAspect, maxCount } = props;
+  const { accept, cropAspect, id, onChange: parentOnChange, maxCount } = props;
   const { t } = useTranslation();
 
-  const [file, setFile] = useState<UploadFile | undefined>(undefined);
+  const [fileList, setFileList] = useState<UploadFile[] | undefined>(undefined);
 
   const dummyRequest = ({ onSuccess }: any) => {
     setTimeout(() => {
@@ -29,19 +32,31 @@ export function FileUpload(props: FileUploadProps) {
     }, 0);
   };
 
-  const handleOnChange = ({ file }: { file: UploadFile }) => {
-    setFile(file);
-  };
-
   return (
-    <ImgCrop aspect={cropAspect}>
+    <ImgCrop aspect={cropAspect} modalTitle={t("common:imgCropTitle")}>
       <Dragger
+        accept={accept}
+        beforeUpload={async (file) => {
+          // This call to setFileList is needed for some reason. Probably
+          // because it triggers a rerender or something...
+          setFileList([file as any]);
+          return file;
+        }}
         customRequest={dummyRequest}
-        fileList={file ? [file] : undefined}
+        data-cy={props["data-cy"]}
+        fileList={fileList}
+        id={id}
         listType="picture-card"
         maxCount={maxCount}
-        onChange={handleOnChange}
-        {...props}
+        name="headerImageFile"
+        onChange={({ fileList }) => {
+          setFileList(fileList);
+          // The parentOnChange comes from Form.Item somehow. A propperty called
+          // getValueFromEvent on the Form.Item gets as input what is passed to
+          // parentOnChange
+          // @ts-ignore
+          parentOnChange(fileList);
+        }}
       >
         <p className="ant-upload-drag-icon">
           {accept.startsWith("image") ? <PictureOutlined /> : <InboxOutlined />}

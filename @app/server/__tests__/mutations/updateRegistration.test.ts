@@ -12,13 +12,14 @@ beforeEach(deleteTestData);
 beforeAll(setup);
 afterAll(teardown);
 
-describe("UdpateRegistration", () => {
-  test("can create a registration", async () => {
-    const { registrationSecret } = await createEventDataAndLogin();
+describe("UpdateRegistration", () => {
+  it("can update a registration with a valid updateToken", async () => {
+    const { registrationSecrets } = await createEventDataAndLogin();
+    const { update_token: updateToken } = registrationSecrets[0];
 
     await runGraphQLQuery(
       `mutation UpdateEventRegistration(
-        $updateToken: UUID!
+        $updateToken: String!
         $firstName: String!
         $lastName: String!
       ) {
@@ -38,7 +39,7 @@ describe("UdpateRegistration", () => {
 
       // GraphQL variables:
       {
-        updateToken: registrationSecret.update_token,
+        updateToken,
         firstName: "Päivi",
         lastName: "Tetty",
       },
@@ -74,14 +75,16 @@ describe("UdpateRegistration", () => {
           throw new Error("Registration not found!");
         }
         expect(rows[0].id).toEqual(updatedRegistration.id);
+        expect(rows[0].first_name).toEqual("Päivi");
+        expect(rows[0].last_name).toEqual("Tetty");
       }
     );
   });
 
-  it("can't create registration if registration token is not valid", async () => {
+  it("can't update registration if registration token is not valid", async () => {
     await runGraphQLQuery(
       `mutation UpdateEventRegistration(
-        $updateToken: UUID!
+        $updateToken: String!
         $firstName: String!
         $lastName: String!
       ) {
@@ -100,7 +103,7 @@ describe("UdpateRegistration", () => {
 
       // GraphQL variables:
       {
-        // Invalid update token
+        // Invalid updateToken
         updateToken: "a7def7b2-1687-48d8-839e-55e57f6ade85",
         firstName: "Päivi",
         lastName: "Tetty",
@@ -114,7 +117,9 @@ describe("UdpateRegistration", () => {
         expect(json.errors).toBeTruthy();
 
         const message = json.errors![0].message;
+        const code = json.errors![0].extensions.exception.code;
         expect(message).toEqual("Registration matching token was not found.");
+        expect(code).toEqual("NTFND");
       }
     );
   });

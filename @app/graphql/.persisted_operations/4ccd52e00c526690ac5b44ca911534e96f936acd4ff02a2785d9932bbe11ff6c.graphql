@@ -1,0 +1,8 @@
+query SettingsPassword {
+  currentUser {
+    id
+    hasPassword
+    primaryEmail
+    __typename
+  }
+}
