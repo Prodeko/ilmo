@@ -1,12 +1,14 @@
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
+    __typename
   }
   languages {
     ...SharedLayout_Languages
+    __typename
   }
+  __typename
 }
-
 fragment SharedLayout_User on User {
   id
   name
@@ -24,16 +26,30 @@ fragment SharedLayout_User on User {
         id
         name
         slug
+        __typename
       }
+      __typename
     }
+    __typename
   }
+  __typename
 }
-
 fragment SharedLayout_Languages on AppLanguage {
   supportedLanguages
   defaultLanguage
+  __typename
 }
-
-query Shared {
+fragment ProfileSettingsForm_User on User {
+  id
+  name
+  username
+  avatarUrl
+  __typename
+}
+query SettingsProfile {
   ...SharedLayout_Query
+  currentUser {
+    ...ProfileSettingsForm_User
+    __typename
+  }
 }

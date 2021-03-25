@@ -17,7 +17,7 @@ context("Update event", () => {
           password: "DOESNT MATTER",
           existingUser: true,
         });
-        cy.visit(Cypress.env("ROOT_URL") + `/event/update/${event.id}`);
+        cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`);
         cy.get(".ant-tabs-tab").as("tabs");
 
         // Assertion
@@ -115,7 +115,7 @@ context("Update event", () => {
         password: "DOESNT MATTER",
         existingUser: true,
       });
-      cy.visit(Cypress.env("ROOT_URL") + `/event/update/${event.id}`);
+      cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`);
       cy.getCy("eventform-button-submit").click();
 
       // Assertion
@@ -136,7 +136,7 @@ context("Update event", () => {
       // Invalid event id
       cy.visit(
         Cypress.env("ROOT_URL") +
-          "/event/update/359befe4-1a63-4f30-b226-b116ee131e90"
+          "/admin/event/update/359befe4-1a63-4f30-b226-b116ee131e90"
       );
     });
 

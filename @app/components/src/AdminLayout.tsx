@@ -1,10 +1,10 @@
 import * as qs from "querystring";
 
 import React, { useState } from "react";
+import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone";
 import { QueryResult } from "@apollo/client";
-import { AdminLayout_QueryFragment } from "@app/graphql";
+import { SharedLayout_QueryFragment } from "@app/graphql";
 import { Layout } from "antd";
-import _ from "lodash";
 import { NextRouter, useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
@@ -39,7 +39,7 @@ const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
 
 export interface AdminLayoutProps {
   query: Pick<
-    QueryResult<AdminLayout_QueryFragment>,
+    QueryResult<SharedLayout_QueryFragment>,
     "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
   >;
   href: string;
@@ -92,8 +92,9 @@ export function AdminLayout({
                 ),
                 {
                   title: t("sider.titles.createOrganization"),
-                  key: `/admin/create-organization`,
-                  target: `/admin/create-organization`,
+                  key: "/admin/organization/create",
+                  target: "/admin/organization/create",
+                  icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
                 },
               ]
             : null,
@@ -104,13 +105,31 @@ export function AdminLayout({
           target: [
             {
               title: t("sider.titles.listEvents"),
-              key: `/admin/list-events`,
-              target: `/admin/list-event`,
+              key: "/admin/event/list",
+              target: "/admin/event/list",
             },
             {
               title: t("sider.titles.createEvent"),
-              key: `/admin/create-event`,
-              target: `/admin/create-event`,
+              key: "/admin/event/create",
+              target: "/admin/event/create",
+              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
+            },
+          ],
+        },
+        {
+          key: "admin-menu-event-categories",
+          title: t("sider.titles.eventCategories"),
+          target: [
+            {
+              title: t("sider.titles.listEventCategories"),
+              key: "/admin/event-category/list",
+              target: "/admin/event-category/list",
+            },
+            {
+              title: t("sider.titles.createEventCategory"),
+              key: "/admin/event-category/create",
+              target: "/admin/event-category/create",
+              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
             },
           ],
         },

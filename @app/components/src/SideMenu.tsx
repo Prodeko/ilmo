@@ -2,7 +2,7 @@ import React, { ReactNode, useState } from "react";
 import { Menu, Typography } from "antd";
 import SubMenu from "antd/lib/menu/SubMenu";
 import { TextProps } from "antd/lib/typography/Text";
-import _ from "lodash";
+import { difference } from "lodash";
 import Link from "next/link";
 
 import { Warn } from ".";
@@ -23,26 +23,18 @@ const getMenuItem = (
   item: MenuItem,
   initialKey: string
 ): [JSX.Element, string[]] => {
-  if (typeof item.target === "string" || typeof item.target === "function") {
+  if (typeof item.target === "string") {
     const inner = (
-      <a data-cy={item.cy}>
+      <a>
         <Warn okay={!item.showWarn}>
           <Text {...item.titleProps}>{item.title}</Text>
         </Warn>
       </a>
     );
     const initialKeyPath = item.key === initialKey ? [initialKey] : [];
-    if (typeof item.target === "string") {
-      return [
-        <Menu.Item key={item.key}>
-          <Link href={item.target}>{inner}</Link>
-        </Menu.Item>,
-        initialKeyPath,
-      ];
-    }
     return [
-      <Menu.Item key={item.key}>
-        <a onClick={item.target}>{inner}</a>
+      <Menu.Item key={item.key} icon={item.icon}>
+        <Link href={item.target}>{inner}</Link>
       </Menu.Item>,
       initialKeyPath,
     ];
@@ -102,13 +94,13 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
     if (keys.length < openKeys.length) {
       setOpenKeys(keys);
     } else {
-      const newKeys = _.difference(keys, openKeys);
+      const newKeys = difference(keys, openKeys);
       if (newKeys.length !== 1) {
         throw new Error("Invalid sidemenu item key");
       }
       const newKey = newKeys[0];
       const keyPeers = getKeyPeers(newKey, items);
-      setOpenKeys(_.difference(keys, keyPeers));
+      setOpenKeys(difference(keys, keyPeers));
     }
   };
 

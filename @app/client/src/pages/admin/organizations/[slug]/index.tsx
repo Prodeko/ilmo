@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
   AdminLayout,
+  ORGANIZATION_RESULTS_PER_PAGE,
   OrganizationMembers,
   UpdateOrganizationForm,
   useOrganizationLoading,
-  useOrganizationSlug,
-  ORGANIZATION_RESULTS_PER_PAGE,
+  useQuerySlug,
 } from "@app/components";
 import {
   OrganizationPage_OrganizationFragment,
@@ -15,7 +15,7 @@ import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 
 const OrganizationPage: NextPage = () => {
-  const slug = useOrganizationSlug();
+  const slug = useQuerySlug();
   const [page, setPage] = useState(1);
   const query = useOrganizationPageQuery({
     variables: { slug, offset: (page - 1) * ORGANIZATION_RESULTS_PER_PAGE },

@@ -1,6 +1,7 @@
 {
   "backHome": "Takaisin etusivulle",
   "create": "Luo",
+  "delete": "Poista",
   "description": "Kuvaus",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",

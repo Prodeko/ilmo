@@ -1,12 +1,25 @@
+fragment CreateEventPage_Query on Query {
+  ...SharedLayout_Query
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...CreateEventPage_EventCategory
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
+    __typename
   }
   languages {
     ...SharedLayout_Languages
+    __typename
   }
+  __typename
 }
-
 fragment SharedLayout_User on User {
   id
   name
@@ -24,16 +37,24 @@ fragment SharedLayout_User on User {
         id
         name
         slug
+        __typename
       }
+      __typename
     }
+    __typename
   }
+  __typename
 }
-
 fragment SharedLayout_Languages on AppLanguage {
   supportedLanguages
   defaultLanguage
+  __typename
 }
-
-query Shared {
-  ...SharedLayout_Query
+fragment CreateEventPage_EventCategory on EventCategory {
+  id
+  name
+  __typename
+}
+query CreateEventPage {
+  ...CreateEventPage_Query
 }

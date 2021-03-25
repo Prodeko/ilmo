@@ -6,7 +6,7 @@ import {
   ProgressBar,
   SharedLayout,
   useEventLoading,
-  useEventSlug,
+  useQuerySlug,
 } from "@app/components";
 import {
   EventPage_EventFragment,
@@ -25,7 +25,7 @@ import useTranslation from "next-translate/useTranslation";
 const { useBreakpoint } = Grid;
 
 const EventPage: NextPage = () => {
-  const slug = useEventSlug();
+  const slug = useQuerySlug();
   const { t, lang } = useTranslation("events");
   const query = useEventPageQuery({ variables: { slug } });
   const eventLoadingElement = useEventLoading(query);

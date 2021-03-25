@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { AdminLayout, ErrorAlert } from "@app/components";
-import {
-  useAdminLayoutQuery,
-  useRenderEmailTemplatesQuery,
-} from "@app/graphql";
+import { useSharedQuery, useRenderEmailTemplatesQuery } from "@app/graphql";
 import { Card, Col, PageHeader, Row, Switch, Typography } from "antd";
 import { capitalize } from "lodash";
 import { NextPage } from "next";
@@ -13,7 +10,7 @@ const { Text } = Typography;
 
 const Admin_Emails: NextPage = () => {
   const { t } = useTranslation("admin");
-  const query = useAdminLayoutQuery();
+  const query = useSharedQuery();
   const [showHtml, setShowHtml] = useState(true);
   const { loading, data, error } = useRenderEmailTemplatesQuery();
 

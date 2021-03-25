@@ -13,7 +13,7 @@ context("Create organizations", () => {
     cy.getCy("layout-link-create-organization").click();
     cy.url().should(
       "equal",
-      Cypress.env("ROOT_URL") + "/admin/create-organization"
+      Cypress.env("ROOT_URL") + "/admin/organization/create"
     );
     cy.getCy("createorganization-input-name").type("Test Organization");
     cy.getCy("createorganization-slug-value").contains("test-organization");
@@ -39,7 +39,7 @@ context("Create organizations", () => {
     cy.getCy("layout-link-create-organization").click();
     cy.url().should(
       "equal",
-      Cypress.env("ROOT_URL") + "/admin/create-organization"
+      Cypress.env("ROOT_URL") + "/admin/organization/create"
     );
     cy.getCy("createorganization-input-name").type("Test Organization");
     cy.getCy("createorganization-slug-value").contains("test-organization");

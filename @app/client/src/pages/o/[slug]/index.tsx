@@ -4,7 +4,7 @@ import {
   ButtonLink,
   SharedLayout,
   useOrganizationLoading,
-  useOrganizationSlug,
+  useQuerySlug,
 } from "@app/components";
 import {
   OrganizationPage_OrganizationFragment,
@@ -14,7 +14,7 @@ import { Col, Empty, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 
 const OrganizationPage: NextPage = () => {
-  const slug = useOrganizationSlug();
+  const slug = useQuerySlug();
   const query = useOrganizationPageQuery({ variables: { slug } });
   const organizationLoadingElement = useOrganizationLoading(query);
   const organization = query?.data?.organizationBySlug;

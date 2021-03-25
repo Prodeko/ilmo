@@ -2,7 +2,6 @@
   "admin": "Sikariosasto",
   "createNewCategory": "Luo uusi kategoria",
   "createNewOrganization": "Luo uusi organisaatio",
-  "eventCategories": "Kategoriat",
   "organizations": {
     "deleteOrganization": "Poista organisaatio",
     "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
@@ -15,12 +14,25 @@
     "siderTitle": "Organisaatiot",
     "updateOrganization": "Päivitä organisaatio"
   },
+  "events": {
+    "list": {
+      "registrations": "Rekisteröityneitä",
+      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
+    },
+    "delete": {
+      "deleteEventConfirmText": "Haluatko varmasti poistaa tämän tapahtuman?"
+    }
+  },
+  "eventCategories": {},
   "sider": {
     "titles": {
       "createEvent": "Luo tapahtuma",
+      "createEventCategory": "Luo tapahtumakategoria",
       "createOrganization": "Luo organisaatio",
       "emails": "Sähköpostit",
+      "eventCategories": "Tapahtumakategoriat",
       "events": "Tapahtumat",
+      "listEventCategories": "Näytä tapahtumakategoriat",
       "listEvents": "Näytä tapahtumat",
       "main": "Dashboard",
       "organizations": "Organsaatiot"

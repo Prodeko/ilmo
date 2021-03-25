@@ -1,11 +1,11 @@
 import React from "react";
 import { AdminLayout, ErrorAlert, Redirect, SpinPadded } from "@app/components";
-import { useAdminLayoutQuery } from "@app/graphql";
+import { useSharedQuery } from "@app/graphql";
 import { PageHeader } from "antd";
 import { NextPage } from "next";
 
 const Admin_Main: NextPage = () => {
-  const query = useAdminLayoutQuery();
+  const query = useSharedQuery();
   const { data, loading, error } = query;
 
   return (
