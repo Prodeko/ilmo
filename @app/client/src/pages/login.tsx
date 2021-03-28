@@ -25,6 +25,7 @@ import { useForm } from "antd/lib/form/Form";
 import { NextPage } from "next";
 import Link from "next/link";
 import Router from "next/router";
+import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
 function hasErrors(fieldsError: Object) {
@@ -47,12 +48,13 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const next: string = isSafe(rawNext) ? rawNext! : "/";
   const query = useSharedQuery();
+  const { t } = useTranslation("login");
 
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
       query={query}
-      title="Sign in"
+      title={t("signin")}
     >
       {({ currentUser }: SharedLayoutChildProps) =>
         currentUser ? (
@@ -82,7 +84,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                       block
                       onClick={() => setShowLogin(true)}
                     >
-                      Sign in with E-mail or Username
+                      {t("signinEmail")}
                     </Button>
                   </Col>
                 </Row>
@@ -101,7 +103,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                       type="default"
                       block
                     >
-                      Create an account
+                      {t("signup")}
                     </ButtonLink>
                   </Col>
                 </Row>
@@ -136,6 +138,7 @@ function LoginForm({
   const [form] = useForm();
   const [login] = useLoginMutation({});
   const client = useApolloClient();
+  const { t } = useTranslation("login");
 
   const [submitDisabled, setSubmitDisabled] = useState(false);
   const handleSubmit = useCallback(
@@ -159,7 +162,7 @@ function LoginForm({
             {
               name: "password",
               value: form.getFieldValue("password"),
-              errors: ["Incorrect username or passphrase"],
+              errors: [t("errors:invalidCredentials")],
             },
           ]);
           setSubmitDisabled(true);
@@ -194,13 +197,13 @@ function LoginForm({
     >
       <Form.Item
         name="username"
-        rules={[{ required: true, message: "Please input your username" }]}
+        rules={[{ required: true, message: t("forms:rules:provideUsername") }]}
       >
         <Input
           ref={focusElement}
           autoComplete="email username"
           data-cy="loginpage-input-username"
-          placeholder="E-mail or Username"
+          placeholder={t("forms:placeholders:username")}
           prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
           size="large"
         />

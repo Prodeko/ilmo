@@ -1,0 +1,16 @@
+{
+  "signin": "Sign in",
+  "signinEmail": "Sign in with email or username",
+  "signup": "Create an account",
+  "errors": {
+    "incorrectCredentials": "Incorrect username or passphrase"
+  },
+  "forms": {
+    "placeholders": {
+      "username": "E-mail or username"
+    },
+    "rules": {
+      "provideUsername": "Please input your username"
+    }
+  }
+}

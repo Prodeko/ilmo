@@ -5,6 +5,7 @@ module.exports = {
     "*": ["common", "error"],
     "/404": ["error"],
     "/": ["home", "events"],
+    "/login": ["login"],
     "/create-event-category": ["events"],
     "/event/create": ["events"],
     "/event/update/[id]": ["events"],
