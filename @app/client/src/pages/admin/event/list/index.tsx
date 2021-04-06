@@ -1,17 +1,16 @@
 import React from "react";
-import { AdminLayout, ButtonLink, ServerPaginatedTable } from "@app/components";
-import { ListEventsDocument, Event, useSharedQuery } from "@app/graphql";
 import {
-  Button,
-  Col,
-  PageHeader,
-  Popconfirm,
-  Popover,
-  Progress,
-  Row,
-  Space,
-  Typography,
-} from "antd";
+  AdminLayout,
+  AdminTableActions,
+  ServerPaginatedTable,
+} from "@app/components";
+import {
+  Event,
+  ListEventsDocument,
+  useDeleteEventMutation,
+  useSharedQuery,
+} from "@app/graphql";
+import { Col, PageHeader, Popover, Progress, Row, Typography } from "antd";
 import dayjs from "dayjs";
 import { reduce } from "lodash";
 import { NextPage } from "next";
@@ -30,46 +29,24 @@ const AdminListEvents: NextPage = () => {
 
 const AdminListEventsInner: React.FC = () => {
   const { t, lang } = useTranslation("admin");
-  const today = "2021-02-11" || dayjs().format("YYYY-MM-DD");
 
   const columns = [
     {
       title: "",
-      dataIndex: ["name", lang],
-      key: "name",
-      render: (name: string, event: Event) => (
-        <Space>
-          <ButtonLink
-            info
-            as={`/admin/event/update/${event.id}`}
-            href={{
-              pathname: "/admin/event/update/[id]",
-              query: {
-                id: event.id,
-              },
-            }}
-          >
-            <a>{t("common:update")}</a>
-          </ButtonLink>
-          <Popconfirm
-            cancelText={t("common:no")}
-            okText={t("common:yes")}
-            placement="top"
-            title={t("events.delete.deleteEventConfirmText")}
-          >
-            <Button
-              data-cy="admin-event-list-button-delete-event"
-              style={{ marginLeft: 5 }}
-              danger
-            >
-              {t("common:delete")}
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
+      key: "actions",
+      render: (_name: string, event: Event) => {
+        return (
+          <AdminTableActions
+            adminUrl="event"
+            dataType={event}
+            deleteConfirmTranslate={t("events.delete.confirmText")}
+            deleteMutation={useDeleteEventMutation}
+          />
+        );
+      },
     },
     {
-      title: t("events:eventName"),
+      title: t("common:name"),
       dataIndex: ["name", lang],
       key: "name",
       render: (name: string, event: Event) => (
@@ -85,6 +62,11 @@ const AdminListEventsInner: React.FC = () => {
           <a>{name}</a>
         </Link>
       ),
+    },
+    {
+      title: t("events:category"),
+      dataIndex: ["category", "name"],
+      key: "categoryName",
     },
     {
       title: t("events.list.registrations"),
@@ -131,9 +113,9 @@ const AdminListEventsInner: React.FC = () => {
               </Col>
               <Col span={18}>
                 <Progress
-                  style={{ paddingLeft: "12px" }}
                   percent={(numRegistrations * 100) / totalSize}
                   showInfo={false}
+                  style={{ paddingLeft: "12px" }}
                 />
               </Col>
             </Row>
@@ -142,7 +124,7 @@ const AdminListEventsInner: React.FC = () => {
       },
     },
     {
-      title: t("events:time"),
+      title: t("events:startTime"),
       dataIndex: "eventStartTime",
       render: (startTime: string) => dayjs(startTime).format("l LTS"),
     },
@@ -154,12 +136,11 @@ const AdminListEventsInner: React.FC = () => {
         <PageHeader title={"Admin events"} />
         <ServerPaginatedTable
           columns={columns}
-          data-cy="adminpage-category-open-events"
+          data-cy="adminpage-events"
           dataField="events"
           queryDocument={ListEventsDocument}
           showPagination={true}
           size="middle"
-          variables={{ today }}
         />
       </Col>
     </Row>

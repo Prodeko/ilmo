@@ -26,7 +26,7 @@ const OrganizationPage: NextPage = () => {
   const props = { page, setPage };
 
   return (
-    <AdminLayout href="/admin/organizations/[slug]" query={query}>
+    <AdminLayout href="/admin/organization/[slug]" query={query}>
       {organizationLoadingElement || (
         <OrganizationPageInner organization={organization!} {...props} />
       )}

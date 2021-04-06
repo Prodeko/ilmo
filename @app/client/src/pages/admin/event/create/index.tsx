@@ -7,10 +7,12 @@ import {
 } from "@app/graphql";
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 const CreateEventPage: NextPage = () => {
   const { t } = useTranslation("events");
+  const router = useRouter();
   const query = useCreateEventPageQuery();
 
   // Redirect to index if the user is not part of any organization
@@ -24,11 +26,14 @@ const CreateEventPage: NextPage = () => {
     <AdminLayout href="/admin/event/create" query={query}>
       <Row>
         <Col flex={1}>
-          <PageHeader title={t("createEvent.title")} />
+          <PageHeader
+            title={t("createEvent.title")}
+            onBack={() => router.push("/admin/event/list")}
+          />
           <EventForm
             data={query.data}
             eventMutationDocument={CreateEventDocument}
-            formRedirect="/"
+            formRedirect="/admin/event/list"
             quotasMutationDocument={CreateEventQuotasDocument}
             type="create"
           />

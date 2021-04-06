@@ -2,32 +2,32 @@ import React, { useCallback, useState } from "react";
 import { ApolloError } from "@apollo/client";
 import {
   AdminLayout,
-  ButtonLink,
   EventCategoryForm,
   Redirect,
   useQueryId,
 } from "@app/components";
 import {
-  useUpdateEventCategoryPageQuery,
   useUpdateEventCategoryMutation,
+  useUpdateEventCategoryPageQuery,
 } from "@app/graphql";
 import { getCodeFromError } from "@app/lib";
 import * as Sentry from "@sentry/react";
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
-const CreateEventCategoryPage: NextPage = () => {
+const UpdateEventCategoryPage: NextPage = () => {
   // TODO: make EventCategoryForm more like EventRegistrationForm so the
   // boilerplate below can be reduced
+  const router = useRouter();
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const id = useQueryId();
   const query = useUpdateEventCategoryPageQuery({ variables: { id } });
   const { t } = useTranslation("events");
 
   const code = getCodeFromError(formError);
-  const [eventCategoryId, setEventCategoryId] = useState<null | string>(null);
   const [updateEventCategory] = useUpdateEventCategoryMutation();
 
   const { supportedLanguages } = query.data?.languages || {};
@@ -38,7 +38,7 @@ const CreateEventCategoryPage: NextPage = () => {
       setFormError(null);
       try {
         const { name, description, organization } = values;
-        const { data } = await updateEventCategory({
+        await updateEventCategory({
           variables: {
             id,
             name,
@@ -47,18 +47,14 @@ const CreateEventCategoryPage: NextPage = () => {
           },
         });
         setFormError(null);
-        setEventCategoryId(data?.updateEventCategory?.eventCategory.id || null);
+        router.push("/admin/event-category/list", "/admin/event-category/list");
       } catch (e) {
         setFormError(e);
         Sentry.captureException(e);
       }
     },
-    [updateEventCategory, id]
+    [updateEventCategory, id, router]
   );
-
-  if (eventCategoryId) {
-    return <Redirect href={`/admin/category/${eventCategoryId}`} layout />;
-  }
 
   const organizationMemberships =
     query.data?.currentUser?.organizationMemberships?.nodes;
@@ -76,22 +72,12 @@ const CreateEventCategoryPage: NextPage = () => {
     : {};
 
   return (
-    <AdminLayout href={`/admin/category/${id}`} query={query}>
+    <AdminLayout href={`/admin/event-category/${id}`} query={query}>
       <Row>
         <Col flex={1}>
           <PageHeader
-            extra={[
-              <ButtonLink
-                key="update-back"
-                as={`/admin/category/${id}`}
-                data-cy="admin-update-back-wo-saving"
-                href="/admin/category/[id]"
-                type="default"
-              >
-                {t("admin:backWithoutSaving")}
-              </ButtonLink>,
-            ]}
             title={t("createEventCategory.title")}
+            onBack={() => router.push("/admin/event-category/list")}
           />
           <div>
             {supportedLanguages ? (
@@ -105,7 +91,7 @@ const CreateEventCategoryPage: NextPage = () => {
                 supportedLanguages={supportedLanguages}
               />
             ) : (
-              <p>Loading...</p>
+              <p>{t("common:loading")}</p>
             )}
           </div>
         </Col>
@@ -114,4 +100,4 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 };
 
-export default CreateEventCategoryPage;
+export default UpdateEventCategoryPage;

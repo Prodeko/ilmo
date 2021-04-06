@@ -1,7 +1,11 @@
 {
-  "admin": "Sikariosasto",
+  "admin": "Hallintapaneeli",
   "createNewCategory": "Luo uusi kategoria",
   "createNewOrganization": "Luo uusi organisaatio",
+  "notifications": {
+    "deleteFailed": "Poisto epäonnistui",
+    "deleteSuccess": "Poistettu onnistuneesti"
+  },
   "organizations": {
     "deleteOrganization": "Poista organisaatio",
     "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
@@ -20,10 +24,15 @@
       "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
     },
     "delete": {
-      "deleteEventConfirmText": "Haluatko varmasti poistaa tämän tapahtuman?"
+      "confirmText": "Haluatko varmasti poistaa tämän tapahtuman?"
     }
   },
-  "eventCategories": {},
+  "eventCategories": {
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän tapahtumakategorian?",
+      "deleteFailedBADFK": "Tämä kategoria on yhä käytössä. Poista ensin kategoriaan liitetyt tapahtumat."
+    }
+  },
   "sider": {
     "titles": {
       "createEvent": "Luo tapahtuma",

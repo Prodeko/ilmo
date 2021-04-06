@@ -1,5 +1,8 @@
 fragment Events_Event on Event {
   ...EventFields
+  category {
+    ...EventPage_EventCategory
+  }
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
@@ -16,7 +19,7 @@ fragment Events_Event on Event {
   }
 }
 
-fragment Events_Query on Query {
+fragment ListEvents_Query on Query {
   events(first: $first, offset: $offset, orderBy: EVENT_END_TIME_ASC) {
     nodes {
       id
@@ -26,5 +29,5 @@ fragment Events_Query on Query {
 }
 
 query ListEvents($offset: Int!, $first: Int!) {
-  ...Events_Query
+  ...ListEvents_Query
 }

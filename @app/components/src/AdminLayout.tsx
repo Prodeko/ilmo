@@ -5,9 +5,10 @@ import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone";
 import { QueryResult } from "@apollo/client";
 import { SharedLayout_QueryFragment } from "@app/graphql";
 import { Layout } from "antd";
-import { NextRouter, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
+import { AdminSideMenu, MenuItem } from "./AdminSideMenu";
 import { Redirect } from "./Redirect";
 import {
   AuthRestrict,
@@ -15,7 +16,6 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout";
-import { MenuItem, SideMenu } from "./SideMenu";
 import { StandardWidth } from "./StandardWidth";
 
 const { Sider, Content } = Layout;
@@ -85,8 +85,8 @@ export function AdminLayout({
                     const slug = organization.organization?.slug;
                     return {
                       title,
-                      key: `/admin/organizations/${slug}`,
-                      target: `/admin/organizations/${slug}`,
+                      key: `/admin/organization/${slug}`,
+                      target: `/admin/organization/${slug}`,
                     };
                   }
                 ),
@@ -138,14 +138,13 @@ export function AdminLayout({
   const page = findPage(String(inHref), items) || items[0];
   const href = page.key;
 
-  // `useRouter()` sometimes returns null
-  const router: NextRouter | null = useRouter();
+  const router = useRouter();
   const fullHref =
     href + (router && router.query ? `?${qs.stringify(router.query)}` : "");
 
   return (
     <SharedLayout
-      forbidWhen={AuthRestrict.LOGGED_OUT}
+      forbidWhen={AuthRestrict.NOT_ADMIN}
       query={query}
       title={`${t("admin")}`}
       noPad
@@ -160,7 +159,7 @@ export function AdminLayout({
               collapsible
               onCollapse={(collapsed) => setSiderCollapsed(collapsed)}
             >
-              <SideMenu initialKey={href} items={items} />
+              <AdminSideMenu initialKey={href} items={items} />
             </Sider>
             <Content>
               <StandardWidth>{children}</StandardWidth>

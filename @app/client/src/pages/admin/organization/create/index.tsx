@@ -3,9 +3,9 @@ import { ApolloError } from "@apollo/client";
 import { AdminLayout, Loading, Redirect } from "@app/components";
 import {
   CreatedOrganizationFragment,
-  useSharedQuery,
   useCreateOrganizationMutation,
   useOrganizationBySlugLazyQuery,
+  useSharedQuery,
 } from "@app/graphql";
 import {
   extractError,

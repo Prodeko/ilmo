@@ -8,7 +8,7 @@
   "en": "Englanti",
   "fi": "Suomi",
   "headerMenu": {
-    "admin": "Sikariporras",
+    "admin": "Hallintapaneeli",
     "createEvent": "Luo tapahtuma",
     "createEventCategory": "Luo tapahtumakategoria",
     "createOrganization": "Luo organisaatio"
@@ -22,7 +22,7 @@
   "redirect": "Uudelleenohjataan...",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
-  "signin": "Kirjaudu sisään",
+  "signin": "Kirjaudu",
   "update": "Päivitä",
   "yes": "Kyllä"
 }

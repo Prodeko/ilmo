@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AdminLayout, ErrorAlert } from "@app/components";
-import { useSharedQuery, useRenderEmailTemplatesQuery } from "@app/graphql";
+import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql";
 import { Card, Col, PageHeader, Row, Switch, Typography } from "antd";
 import { capitalize } from "lodash";
 import { NextPage } from "next";

@@ -2,6 +2,10 @@
   "admin": "Admin",
   "createNewCategory": "Create a new event category",
   "createNewOrganization": "Create a new organization",
+  "notifications": {
+    "deleteFailed": "Failed to delete",
+    "deleteSuccess": "Deleted successfully"
+  },
   "organizations": {
     "deleteOrganization": "Delete organization",
     "deleteOrganizationConfirmText": "Are you sure you want to delete this organization? This action cannot be undone.",
@@ -19,10 +23,15 @@
       "registrationsPerQuota": "Registrations by quota"
     },
     "delete": {
-      "deleteEventConfirmText": "Are you sure you want to delete this event?"
+      "confirmText": "Are you sure you want to delete this event?"
     }
   },
-  "eventCategories": {},
+  "eventCategories": {
+    "delete": {
+      "confirmText": "Are you sure you want to delete this event?",
+      "deleteFailedBADFK": "This event category is still referenced by some events. Delete them first."
+    }
+  },
   "sider": {
     "titles": {
       "createEvent": "Create event",

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import DragOutlined from "@ant-design/icons/DragOutlined";
@@ -130,6 +130,14 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [selectedLanguages, setSelectedLanguages] = useState(
     supportedLanguages || []
   );
+
+  useEffect(() => {
+    // Set form initialValues if they have changed after the initial rendering
+    form.setFieldsValue(initialValues);
+    if (initialValues?.languages) {
+      setSelectedLanguages(initialValues.languages);
+    }
+  }, [form, initialValues]);
 
   const code = getCodeFromError(formError);
 

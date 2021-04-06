@@ -76,7 +76,7 @@ type MenuProps = {
   initialKey: string;
 };
 
-export const SideMenu = ({ items, initialKey }: MenuProps) => {
+export const AdminSideMenu = ({ items, initialKey }: MenuProps) => {
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   const menuItems = items.map((item) => getMenuItem(item, initialKey));
@@ -96,7 +96,7 @@ export const SideMenu = ({ items, initialKey }: MenuProps) => {
     } else {
       const newKeys = difference(keys, openKeys);
       if (newKeys.length !== 1) {
-        throw new Error("Invalid sidemenu item key");
+        throw new Error("Invalid AdminSideMenu item key");
       }
       const newKey = newKeys[0];
       const keyPeers = getKeyPeers(newKey, items);

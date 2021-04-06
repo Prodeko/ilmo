@@ -10,6 +10,7 @@ import { filterObjectByKeys } from "@app/lib";
 import { Col, PageHeader, Row } from "antd";
 import dayjs from "dayjs";
 import { NextPage } from "next";
+import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
 type UpdateFormInitialValues = {
@@ -76,6 +77,7 @@ function constructInitialValues(values: any) {
 
 const UpdateEventPage: NextPage = () => {
   const { t } = useTranslation("events");
+  const router = useRouter();
   const eventId = useQueryId();
   const query = useUpdateEventPageQuery({
     variables: { id: eventId },
@@ -99,12 +101,15 @@ const UpdateEventPage: NextPage = () => {
     <AdminLayout href="/admin/event/update" query={query}>
       <Row>
         <Col flex={1}>
-          <PageHeader title={t("updateEvent.title")} />
+          <PageHeader
+            title={t("updateEvent.title")}
+            onBack={() => router.push("/admin/event/list")}
+          />
           <EventForm
             data={query.data}
             eventId={eventId}
             eventMutationDocument={UpdateEventDocument}
-            formRedirect="/"
+            formRedirect="/admin/event/list"
             initialValues={constructInitialValues(event)}
             quotasMutationDocument={UpdateEventQuotasDocument}
             type="update"

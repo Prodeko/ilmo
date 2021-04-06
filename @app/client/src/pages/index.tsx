@@ -119,7 +119,7 @@ const Home: NextPage = () => {
           ),
         },
         {
-          title: t("events:time"),
+          title: t("events:endTime"),
           dataIndex: "eventEndTime",
           key: "eventEndTime",
           render: (eventEndTime: string) => dayjs(eventEndTime).format("l LT"),
@@ -145,11 +145,10 @@ const Home: NextPage = () => {
           ),
         },
         {
-          title: t("events:time"),
-          dataIndex: "eventStartTime",
-          key: "eventStartTime",
-          render: (eventStartTime: string) =>
-            dayjs(eventStartTime).format("l LT"),
+          title: t("events:endTime"),
+          dataIndex: "eventEndTime",
+          key: "eventEndTime",
+          render: (eventEndTime: string) => dayjs(eventEndTime).format("l LT"),
         },
       ];
 

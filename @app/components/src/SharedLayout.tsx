@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useCallback } from "react";
-import CrownOutlined from "@ant-design/icons/CrownOutlined";
 import DownOutlined from "@ant-design/icons/DownOutlined";
 import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
 import { companyName, projectName } from "@app/config";
@@ -228,36 +227,14 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col flex="auto" style={{ textAlign: "right" }}>
+          <Col flex="auto" style={{ textAlign: "right", marginRight: "10px" }}>
             <LocaleSelect />
           </Col>
-          <Col md={{ span: 2 }} style={{ textAlign: "right" }} xs={{ span: 7 }}>
+          <Col md={{ span: 2 }} style={{ textAlign: "left" }} xs={{ span: 4 }}>
             {data && data.currentUser ? (
               <Dropdown
                 overlay={
                   <Menu>
-                    {data.currentUser.organizationMemberships.nodes.map(
-                      ({ organization, isOwner }) => (
-                        <Menu.Item key={organization?.id}>
-                          <Link
-                            as={`/o/${organization?.slug}`}
-                            href={`/o/[slug]`}
-                          >
-                            <a>
-                              {organization?.name}
-                              {isOwner ? (
-                                <span>
-                                  {" "}
-                                  <CrownOutlined />
-                                </span>
-                              ) : (
-                                ""
-                              )}
-                            </a>
-                          </Link>
-                        </Menu.Item>
-                      )
-                    )}
                     <Menu.Item>
                       <Link href="/admin">
                         <a data-cy="layout-link-admin">

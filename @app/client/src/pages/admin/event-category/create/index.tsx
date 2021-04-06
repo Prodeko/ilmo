@@ -3,14 +3,14 @@ import { ApolloError } from "@apollo/client";
 import { AdminLayout, EventCategoryForm, Redirect } from "@app/components";
 import {
   EventCategory,
-  useSharedQuery,
   useCreateEventCategoryMutation,
+  useSharedQuery,
 } from "@app/graphql";
 import { getCodeFromError } from "@app/lib";
 import * as Sentry from "@sentry/react";
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
-import { NextRouter, useRouter } from "next/dist/client/router";
+import { useRouter } from "next/dist/client/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
@@ -20,7 +20,7 @@ const CreateEventCategoryPage: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useSharedQuery();
   const { t } = useTranslation("events");
-  const router: NextRouter | null = useRouter();
+  const router = useRouter();
 
   const code = getCodeFromError(formError);
   const [eventCategory, setEventCategory] = useState<null | Pick<
@@ -54,7 +54,9 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 
   if (eventCategory) {
-    return <Redirect href={`/admin/category/${eventCategory.id}`} layout />;
+    return (
+      <Redirect href={`/admin/event-category/${eventCategory.id}`} layout />
+    );
   }
 
   const organizationMemberships =
@@ -64,7 +66,7 @@ const CreateEventCategoryPage: NextPage = () => {
   }
 
   const org = router?.query?.org;
-  const initialOrganization = organizationMemberships.find(
+  const initialOrganization = organizationMemberships?.find(
     (membership) => membership.organization.slug === org
   )?.organization?.id;
 
@@ -75,7 +77,10 @@ const CreateEventCategoryPage: NextPage = () => {
     >
       <Row>
         <Col flex={1}>
-          <PageHeader title={t("createEventCategory.title")} />
+          <PageHeader
+            title={t("createEventCategory.title")}
+            onBack={() => router.push("/admin/event-category/list")}
+          />
           {supportedLanguages ? (
             <EventCategoryForm
               code={code}
@@ -90,7 +95,7 @@ const CreateEventCategoryPage: NextPage = () => {
               supportedLanguages={supportedLanguages}
             />
           ) : (
-            <p>Loading...</p>
+            <p>{t("common:loading")}</p>
           )}
         </Col>
       </Row>

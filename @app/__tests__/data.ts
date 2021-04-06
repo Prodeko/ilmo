@@ -236,7 +236,7 @@ export const createQuotas = async (
   const quotas = [];
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
-    const size = faker.random.number({
+    const size = faker.datatype.number({
       min: 1,
       max: 20,
     });
