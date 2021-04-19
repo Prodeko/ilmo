@@ -1,99 +1,71 @@
-import React, { useCallback, useState } from "react";
-import { ApolloError } from "@apollo/client";
+import React from "react";
 import {
   AdminLayout,
   EventCategoryForm,
   Redirect,
   useQueryId,
 } from "@app/components";
-import {
-  useUpdateEventCategoryMutation,
-  useUpdateEventCategoryPageQuery,
-} from "@app/graphql";
-import { getCodeFromError } from "@app/lib";
-import * as Sentry from "@sentry/react";
+import { useUpdateEventCategoryPageQuery } from "@app/graphql";
+import { filterObjectByKeys } from "@app/lib";
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
-import { Store } from "rc-field-form/lib/interface";
+
+type UpdateFormInitialValues = {
+  name: string;
+  description: string;
+};
+
+function constructInitialValues(values: any) {
+  const filteredValues = filterObjectByKeys(values, [
+    "name",
+    "description",
+  ]) as UpdateFormInitialValues;
+
+  return {
+    ...filteredValues,
+    ownerOrganizationId: values?.ownerOrganization?.id,
+  };
+}
 
 const Admin_UpdateEventCategory: NextPage = () => {
-  // TODO: make EventCategoryForm more like EventRegistrationForm so the
-  // boilerplate below can be reduced
-  const router = useRouter();
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const id = useQueryId();
-  const query = useUpdateEventCategoryPageQuery({ variables: { id } });
   const { t } = useTranslation("events");
+  const router = useRouter();
+  const categoryId = useQueryId();
+  const query = useUpdateEventCategoryPageQuery({
+    variables: { id: categoryId },
+  });
+  const { loading, error } = query;
+  const eventCategory = query?.data?.eventCategory;
 
-  const code = getCodeFromError(formError);
-  const [updateEventCategory] = useUpdateEventCategoryMutation();
-
-  const { supportedLanguages } = query.data?.languages || {};
-  const defaultLanguages = Object.keys(query.data?.eventCategory.name || {});
-
-  const handleSubmit = useCallback(
-    async (values: Store) => {
-      setFormError(null);
-      try {
-        const { name, description, organization } = values;
-        await updateEventCategory({
-          variables: {
-            id,
-            name,
-            description,
-            organization,
-          },
-        });
-        setFormError(null);
-        router.push("/admin/event-category/list", "/admin/event-category/list");
-      } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
-      }
-    },
-    [updateEventCategory, id, router]
-  );
-
-  const organizationMemberships =
-    query.data?.currentUser?.organizationMemberships?.nodes;
-  if (organizationMemberships && organizationMemberships?.length <= 0) {
+  // If event category is not found redirect to index
+  if (!loading && !error && !eventCategory) {
     return <Redirect href="/" layout />;
   }
 
-  const initialValues: Store = query.data
-    ? {
-        name: query.data.eventCategory.name,
-        languages: defaultLanguages,
-        organization: query.data.eventCategory.ownerOrganization.id,
-        description: query.data.eventCategory.description,
-      }
-    : {};
+  // Redirect to index if the user is not part of any organization
+  const organizationMemberships =
+    query?.data?.currentUser?.organizationMemberships?.totalCount;
+  if (organizationMemberships <= 0) {
+    return <Redirect href="/" layout />;
+  }
 
   return (
-    <AdminLayout href={`/admin/event-category/${id}`} query={query}>
+    <AdminLayout href={`/admin/event-category/${categoryId}`} query={query}>
       <Row>
         <Col flex={1}>
           <PageHeader
             title={t("createEventCategory.title")}
             onBack={() => router.push("/admin/event-category/list")}
           />
-          <div>
-            {supportedLanguages ? (
-              <EventCategoryForm
-                code={code}
-                defaultLanguages={defaultLanguages}
-                formError={formError}
-                handleSubmit={handleSubmit}
-                initialValues={initialValues}
-                organizationMemberships={organizationMemberships}
-                supportedLanguages={supportedLanguages}
-              />
-            ) : (
-              <p>{t("common:loading")}</p>
-            )}
-          </div>
+          <EventCategoryForm
+            categoryId={categoryId}
+            data={query.data}
+            formRedirect="/admin/event-category/list"
+            initialValues={constructInitialValues(eventCategory)}
+            type="update"
+          />
         </Col>
       </Row>
     </AdminLayout>

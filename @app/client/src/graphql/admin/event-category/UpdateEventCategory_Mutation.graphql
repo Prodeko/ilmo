@@ -1,7 +1,7 @@
 mutation UpdateEventCategory(
   $description: JSON!
   $name: JSON!
-  $organization: UUID!
+  $ownerOrganizationId: UUID!
   $id: UUID!
 ) {
   updateEventCategory(
@@ -9,7 +9,7 @@ mutation UpdateEventCategory(
       patch: {
         description: $description
         name: $name
-        ownerOrganizationId: $organization
+        ownerOrganizationId: $ownerOrganizationId
       }
       id: $id
     }

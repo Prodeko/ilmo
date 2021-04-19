@@ -1,14 +1,14 @@
 mutation CreateEventCategory(
   $name: JSON!
   $description: JSON!
-  $organization: UUID!
+  $ownerOrganizationId: UUID!
 ) {
   createEventCategory(
     input: {
       eventCategory: {
         name: $name
         description: $description
-        ownerOrganizationId: $organization
+        ownerOrganizationId: $ownerOrganizationId
       }
     }
   ) {

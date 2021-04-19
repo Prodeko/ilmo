@@ -139,7 +139,7 @@ export function SharedLayout({
     ) {
       return (
         <StandardWidth>
-          <Redirect href={"/"} />
+          <Redirect href="/" />
         </StandardWidth>
       );
     } else if (

@@ -27,7 +27,6 @@ type UpdateFormInitialValues = {
 };
 
 function constructInitialValues(values: any) {
-  const languages = values && Object.keys(values.name);
   const filteredValues = filterObjectByKeys(values, [
     "name",
     "description",
@@ -65,12 +64,11 @@ function constructInitialValues(values: any) {
   );
 
   return {
-    organizationId: values?.ownerOrganization?.id,
-    categoryId: values?.category?.id,
     ...filteredValues,
+    ownerOrganizationId: values?.ownerOrganization?.id,
+    categoryId: values?.category?.id,
     registrationTime,
     eventTime,
-    languages,
     quotas,
   };
 }
