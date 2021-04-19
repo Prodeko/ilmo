@@ -6,11 +6,14 @@ context("Create organizations", () => {
 
   it("can create an organization", () => {
     // Setup
-    cy.login({ verified: true });
+    cy.login({ verified: true, isAdmin: true });
 
     // Action
     cy.getCy("layout-dropdown-user").click();
-    cy.getCy("layout-link-create-organization").click();
+    cy.getCy("layout-link-admin").click();
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin");
+    cy.getCy("admin-sider-organizations").click();
+    cy.getCy("admin-sider-create-organization").click();
     cy.url().should(
       "equal",
       Cypress.env("ROOT_URL") + "/admin/organization/create"
@@ -20,23 +23,26 @@ context("Create organizations", () => {
     cy.getCy("createorganization-button-create").click();
 
     // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/o/test-organization");
-    cy.getCy("layout-header-title").contains("Test Organization");
-    cy.getCy("layout-header-titlelink")
-      .invoke("attr", "href")
-      .should("equal", "/o/test-organization");
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/organization/test-organization"
+    );
   });
 
   it("handles conflicting organization name", () => {
     // Setup
     cy.login({
       verified: true,
+      isAdmin: true,
       orgs: [["Test Organization", "test-organization"]],
     });
 
     // Action
     cy.getCy("layout-dropdown-user").click();
-    cy.getCy("layout-link-create-organization").click();
+    cy.getCy("layout-link-admin").click();
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin");
+    cy.getCy("admin-sider-organizations").click();
+    cy.getCy("admin-sider-create-organization").click();
     cy.url().should(
       "equal",
       Cypress.env("ROOT_URL") + "/admin/organization/create"

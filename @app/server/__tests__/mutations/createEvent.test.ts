@@ -33,7 +33,7 @@ test("CreateEvent", async () => {
       $slug: String!
       $name: JSON!
       $description: JSON!
-      $organizationId: UUID!
+      $ownerOrganizationId: UUID!
       $categoryId: UUID!
       $isHighlighted: Boolean
       $isDraft: Boolean
@@ -48,7 +48,7 @@ test("CreateEvent", async () => {
             slug: $slug
             name: $name
             description: $description
-            ownerOrganizationId: $organizationId
+            ownerOrganizationId: $ownerOrganizationId
             categoryId: $categoryId
             isHighlighted: $isHighlighted
             isDraft: $isDraft
@@ -77,7 +77,7 @@ test("CreateEvent", async () => {
       slug: slug,
       name: { fi: "Testitapahtuma", en: "Test event" },
       description: { fi: "Testikuvaus", en: "Test description" },
-      organizationId: organization.id,
+      ownerOrganizationId: organization.id,
       categoryId: eventCategory.id,
       isHighlighted: true,
       isDraft: false,

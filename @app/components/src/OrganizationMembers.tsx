@@ -93,7 +93,12 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
   );
 
   if (!organization.currentUserIsOwner) {
-    return <Redirect as={`/o/${organization.slug}`} href="/o/[slug]" />;
+    return (
+      <Redirect
+        as={`/admin/organization/${organization.slug}`}
+        href="/admin/organization/[slug]"
+      />
+    );
   }
 
   return (

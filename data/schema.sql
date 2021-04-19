@@ -406,10 +406,10 @@ COMMENT ON FUNCTION app_private.login(username public.citext, password text) IS 
 
 
 --
--- Name: really_create_user(public.citext, text, boolean, text, text, text); Type: FUNCTION; Schema: app_private; Owner: -
+-- Name: really_create_user(public.citext, text, text, text, text, boolean, boolean); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
-CREATE FUNCTION app_private.really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text DEFAULT NULL::text) RETURNS app_public.users
+CREATE FUNCTION app_private.really_create_user(username public.citext, email text, name text, avatar_url text, password text DEFAULT NULL::text, email_is_verified boolean DEFAULT false, is_admin boolean DEFAULT false) RETURNS app_public.users
     LANGUAGE plpgsql
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
@@ -425,8 +425,8 @@ begin
   end if;
 
   -- Insert the new user
-  insert into app_public.users (username, name, avatar_url) values
-    (v_username, name, avatar_url)
+  insert into app_public.users (username, name, avatar_url, is_admin) values
+    (v_username, name, avatar_url, is_admin)
     returning * into v_user;
 
 	-- Add the user's email
@@ -449,10 +449,10 @@ $$;
 
 
 --
--- Name: FUNCTION really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text); Type: COMMENT; Schema: app_private; Owner: -
+-- Name: FUNCTION really_create_user(username public.citext, email text, name text, avatar_url text, password text, email_is_verified boolean, is_admin boolean); Type: COMMENT; Schema: app_private; Owner: -
 --
 
-COMMENT ON FUNCTION app_private.really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text) IS 'Creates a user account. All arguments are optional, it trusts the calling method to perform sanitisation.';
+COMMENT ON FUNCTION app_private.really_create_user(username public.citext, email text, name text, avatar_url text, password text, email_is_verified boolean, is_admin boolean) IS 'Creates a user account. All arguments are optional, it trusts the calling method to perform sanitisation.';
 
 
 --
@@ -508,9 +508,9 @@ begin
   v_user = app_private.really_create_user(
     username => v_username,
     email => v_email,
-    email_is_verified => f_email_is_verified,
     name => v_name,
-    avatar_url => v_avatar_url
+    avatar_url => v_avatar_url,
+    email_is_verified => f_email_is_verified
   );
 
   -- Insert the user’s private account data (e.g. OAuth tokens)
@@ -3867,10 +3867,10 @@ REVOKE ALL ON FUNCTION app_private.login(username public.citext, password text) 
 
 
 --
--- Name: FUNCTION really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text); Type: ACL; Schema: app_private; Owner: -
+-- Name: FUNCTION really_create_user(username public.citext, email text, name text, avatar_url text, password text, email_is_verified boolean, is_admin boolean); Type: ACL; Schema: app_private; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_private.really_create_user(username public.citext, email text, email_is_verified boolean, name text, avatar_url text, password text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION app_private.really_create_user(username public.citext, email text, name text, avatar_url text, password text, email_is_verified boolean, is_admin boolean) FROM PUBLIC;
 
 
 --

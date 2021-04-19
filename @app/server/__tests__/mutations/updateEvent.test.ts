@@ -31,7 +31,7 @@ describe("UpdateEvent", () => {
         $eventId: UUID!
         $name: JSON!
         $description: JSON!
-        $organizationId: UUID!
+        $ownerOrganizationId: UUID!
         $categoryId: UUID!
         $isHighlighted: Boolean
         $isDraft: Boolean
@@ -46,7 +46,7 @@ describe("UpdateEvent", () => {
             patch: {
               name: $name
               description: $description
-              ownerOrganizationId: $organizationId
+              ownerOrganizationId: $ownerOrganizationId
               categoryId: $categoryId
               isHighlighted: $isHighlighted
               isDraft: $isDraft
@@ -82,7 +82,7 @@ describe("UpdateEvent", () => {
           fi: "Päivitetty testikuvaus",
           en: "Updated test description",
         },
-        organizationId: organization.id,
+        ownerOrganizationId: organization.id,
         categoryId: eventCategory.id,
         isHighlighted: true,
         isDraft: false,

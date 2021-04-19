@@ -33,7 +33,7 @@ const getMenuItem = (
     );
     const initialKeyPath = item.key === initialKey ? [initialKey] : [];
     return [
-      <Menu.Item key={item.key} icon={item.icon}>
+      <Menu.Item key={item.key} data-cy={item.cy} icon={item.icon}>
         <Link href={item.target}>{inner}</Link>
       </Menu.Item>,
       initialKeyPath,

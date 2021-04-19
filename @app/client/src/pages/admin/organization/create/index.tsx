@@ -135,7 +135,7 @@ const Admin_CreateOrganization: NextPage = () => {
                   <Input data-cy="createorganization-input-name" />
                   <p>
                     Your organization URL will be{" "}
-                    <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/o/${slug}`}</span>
+                    <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/admin/organization/${slug}`}</span>
                   </p>
                   {!slug ? null : !slugCheckIsValid || slugLoading ? (
                     <div>

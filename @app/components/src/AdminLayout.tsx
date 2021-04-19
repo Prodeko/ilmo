@@ -21,7 +21,7 @@ import { StandardWidth } from "./StandardWidth";
 const { Sider, Content } = Layout;
 
 const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
-  if (items.some((item) => item.key === key)) {
+  if (items?.some((item) => item.key === key)) {
     return items.find((item) => item.key === key);
   }
   const itemsWithChildren = items.filter(
@@ -77,6 +77,7 @@ export function AdminLayout({
         {
           key: "admin-menu-organizations",
           title: t("sider.titles.organizations"),
+          cy: "admin-sider-organizations",
           target: organizationMemberships
             ? [
                 ...organizationMemberships?.map(
@@ -92,6 +93,7 @@ export function AdminLayout({
                 ),
                 {
                   title: t("sider.titles.createOrganization"),
+                  cy: "admin-sider-create-organization",
                   key: "/admin/organization/create",
                   target: "/admin/organization/create",
                   icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
@@ -102,6 +104,7 @@ export function AdminLayout({
         {
           key: "admin-menu-events",
           title: t("sider.titles.events"),
+          cy: "admin-sider-events",
           target: [
             {
               title: t("sider.titles.listEvents"),
@@ -112,6 +115,7 @@ export function AdminLayout({
               title: t("sider.titles.createEvent"),
               key: "/admin/event/create",
               target: "/admin/event/create",
+              cy: "admin-sider-create-event",
               icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
             },
           ],
