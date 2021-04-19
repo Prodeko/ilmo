@@ -10,16 +10,8 @@ import {
   useLogoutMutation,
 } from "@app/graphql";
 import * as Sentry from "@sentry/react";
-import {
-  Avatar,
-  Col,
-  Dropdown,
-  Grid,
-  Layout,
-  Menu,
-  Row,
-  Typography,
-} from "antd";
+import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,7 +24,6 @@ import { ErrorAlert, H3, StandardWidth, Warn } from ".";
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
-const { useBreakpoint } = Grid;
 /*
  * For some reason, possibly related to the interaction between
  * `babel-plugin-import` and https://github.com/babel/babel/pull/9766, we can't
@@ -46,6 +37,7 @@ const _babelHackCol = Col;
 export { _babelHackCol as Col, Link, _babelHackRow as Row };
 
 export const contentMinHeight = "calc(100vh - 64px - 70px)";
+export const contentMaxWidth = "64rem";
 
 export interface SharedLayoutChildProps {
   error?: ApolloError | Error;

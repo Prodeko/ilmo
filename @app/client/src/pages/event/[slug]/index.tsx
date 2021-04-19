@@ -15,14 +15,13 @@ import {
   useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { uploadsLoader } from "@app/lib";
-import { Button, Card, Col, Grid, PageHeader, Row } from "antd";
+import { Button, Card, Col, PageHeader, Row } from "antd";
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
 import { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
-
-const { useBreakpoint } = Grid;
 
 const EventPage: NextPage = () => {
   const slug = useQuerySlug();
