@@ -22,7 +22,7 @@ import { NextPage } from "next";
 import { Store } from "rc-field-form/lib/interface";
 import slugify from "slugify";
 
-const CreateOrganizationPage: NextPage = () => {
+const Admin_CreateOrganization: NextPage = () => {
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
   const query = useSharedQuery();
   const [form] = useForm();
@@ -197,4 +197,4 @@ const CreateOrganizationPage: NextPage = () => {
   );
 };
 
-export default CreateOrganizationPage;
+export default Admin_CreateOrganization;

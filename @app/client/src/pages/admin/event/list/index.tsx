@@ -17,7 +17,7 @@ import { NextPage } from "next";
 import Link from "next/link";
 import useTranslation from "next-translate/useTranslation";
 
-const AdminListEvents: NextPage = () => {
+const Admin_ListEvents: NextPage = () => {
   const query = useSharedQuery();
 
   return (
@@ -147,4 +147,4 @@ const AdminListEventsInner: React.FC = () => {
   );
 };
 
-export default AdminListEvents;
+export default Admin_ListEvents;

@@ -14,7 +14,7 @@ import { useRouter } from "next/dist/client/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
-const CreateEventCategoryPage: NextPage = () => {
+const Admin_CreateEventCategory: NextPage = () => {
   // TODO: make EventCategoryForm more like EventRegistrationForm so the
   // boilerplate below can be reduced
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
@@ -103,4 +103,4 @@ const CreateEventCategoryPage: NextPage = () => {
   );
 };
 
-export default CreateEventCategoryPage;
+export default Admin_CreateEventCategory;

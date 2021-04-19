@@ -10,7 +10,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
-const CreateEventPage: NextPage = () => {
+const Admin_CreateEvent: NextPage = () => {
   const { t } = useTranslation("events");
   const router = useRouter();
   const query = useCreateEventPageQuery();
@@ -43,4 +43,4 @@ const CreateEventPage: NextPage = () => {
   );
 };
 
-export default CreateEventPage;
+export default Admin_CreateEvent;

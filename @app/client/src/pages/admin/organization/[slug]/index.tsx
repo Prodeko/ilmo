@@ -14,7 +14,7 @@ import {
 import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 
-const OrganizationPage: NextPage = () => {
+const Admin_Organizations: NextPage = () => {
   const slug = useQuerySlug();
   const [page, setPage] = useState(1);
   const query = useOrganizationPageQuery({
@@ -54,4 +54,4 @@ const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
   );
 };
 
-export default OrganizationPage;
+export default Admin_Organizations;

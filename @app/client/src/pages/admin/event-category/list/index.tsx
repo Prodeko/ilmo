@@ -14,7 +14,7 @@ import { Col, PageHeader, Row } from "antd";
 import { NextPage } from "next";
 import useTranslation from "next-translate/useTranslation";
 
-const AdminListEventCategories: NextPage = () => {
+const Admin_ListEventCategories: NextPage = () => {
   const query = useSharedQuery();
 
   return (
@@ -78,4 +78,4 @@ const AdminListEventCategoriesInner: React.FC = () => {
   );
 };
 
-export default AdminListEventCategories;
+export default Admin_ListEventCategories;

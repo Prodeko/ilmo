@@ -75,7 +75,7 @@ function constructInitialValues(values: any) {
   };
 }
 
-const UpdateEventPage: NextPage = () => {
+const Admin_UpdateEvent: NextPage = () => {
   const { t } = useTranslation("events");
   const router = useRouter();
   const eventId = useQueryId();
@@ -120,4 +120,4 @@ const UpdateEventPage: NextPage = () => {
   );
 };
 
-export default UpdateEventPage;
+export default Admin_UpdateEvent;

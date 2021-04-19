@@ -18,7 +18,7 @@ import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 import { Store } from "rc-field-form/lib/interface";
 
-const UpdateEventCategoryPage: NextPage = () => {
+const Admin_UpdateEventCategory: NextPage = () => {
   // TODO: make EventCategoryForm more like EventRegistrationForm so the
   // boilerplate below can be reduced
   const router = useRouter();
@@ -100,4 +100,4 @@ const UpdateEventCategoryPage: NextPage = () => {
   );
 };
 
-export default UpdateEventCategoryPage;
+export default Admin_UpdateEventCategory;
