@@ -3389,6 +3389,8 @@ type User {
     """The method to use when ordering `OrganizationMembership`."""
     orderBy: [OrganizationMembershipsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationMembershipsConnection!
+
+  """Users primary email."""
   primaryEmail: String
   updatedAt: Datetime!
 
