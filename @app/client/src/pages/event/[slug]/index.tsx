@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import {
+  EventQuotasCard,
   EventRegistrationsTable,
   H2,
   P,
-  ProgressBar,
   SharedLayout,
   useEventLoading,
   useQuerySlug,
@@ -15,11 +15,10 @@ import {
   useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { uploadsLoader } from "@app/lib";
-import { Button, Card, Col, PageHeader, Row } from "antd";
+import { Col, PageHeader, Row } from "antd";
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
 import { NextPage } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import useTranslation from "next-translate/useTranslation";
 
@@ -57,9 +56,6 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
     description,
     headerImageFile,
     createdAt,
-    signupClosed,
-    signupUpcoming,
-    quotas,
     registrations: eventRegistrations,
   } = event;
 
@@ -110,49 +106,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           style={{ maxHeight: isMobile ? "100%" : 0 }}
           xs={{ span: 24 }}
         >
-          <Card
-            data-cy="eventpage-quotas-card"
-            style={{
-              marginLeft: !isMobile ? "1rem" : undefined,
-              marginBottom: isMobile ? "1rem" : undefined,
-              width: "100%",
-            }}
-            title={t("register:sidebar.title")}
-            bordered
-          >
-            {quotas?.nodes.map((quota, i) => {
-              const { id: quotaId, title, size } = quota;
-              const totalCount = registrations.filter(
-                (r) => r.quota.id === quotaId
-              ).length;
-              const percentageFilled = Math.round((totalCount / size) * 100);
-
-              return (
-                <div key={quotaId} style={{ paddingBottom: 12 }}>
-                  <Link
-                    href={{
-                      pathname: "/event/register/[eventId]/q/[quotaId]",
-                      query: { eventId, quotaId },
-                    }}
-                  >
-                    <Button
-                      data-cy={`eventpage-quotas-link-${i}`}
-                      disabled={signupClosed || signupUpcoming}
-                      target="a"
-                      block
-                    >
-                      {title[lang]}
-                    </Button>
-                  </Link>
-                  <ProgressBar
-                    filled={totalCount}
-                    percentageFilled={percentageFilled}
-                    size={size}
-                  />
-                </div>
-              );
-            })}
-          </Card>
+          <EventQuotasCard event={event} registrations={registrations} />
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
           <H2>{name[lang]}</H2>

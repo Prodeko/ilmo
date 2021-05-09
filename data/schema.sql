@@ -696,6 +696,29 @@ COMMENT ON FUNCTION app_private.tg__add_job() IS 'Useful shortcut to create a jo
 
 
 --
+-- Name: tg__ownership_info(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__ownership_info() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  NEW.created_by = (case when TG_OP = 'INSERT' then app_public.current_user_id() else OLD.created_by end);
+  NEW.updated_by = (case when TG_OP = 'UPDATE' then app_public.current_user_id() else OLD.updated_by end);
+  return NEW;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION tg__ownership_info(); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.tg__ownership_info() IS 'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
+
+
+--
 -- Name: tg__registration_is_valid(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -1010,6 +1033,8 @@ CREATE TABLE app_public.quotas (
     size smallint NOT NULL,
     questions_public json,
     questions_private json,
+    created_by uuid,
+    updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_title_language CHECK (app_public.check_language(title)),
@@ -1354,6 +1379,39 @@ $$;
 
 
 --
+-- Name: current_user_is_admin(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_user_is_admin() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (select 1
+    from app_public.users
+    where
+      id = app_public.current_user_id()
+      and is_admin = true)
+$$;
+
+
+--
+-- Name: current_user_is_owner_organization_member(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_user_is_owner_organization_member(owner_organization_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (select 1
+    from
+      app_public.organization_memberships
+    where
+      user_id = app_public.current_user_id()
+      and owner_organization_id = organization_id)
+$$;
+
+
+--
 -- Name: current_user_member_organization_ids(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1440,6 +1498,8 @@ CREATE TABLE app_public.events (
     header_image_file text,
     owner_organization_id uuid NOT NULL,
     category_id uuid NOT NULL,
+    created_by uuid,
+    updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
@@ -2632,6 +2692,8 @@ CREATE TABLE app_public.event_categories (
     name jsonb NOT NULL,
     description jsonb NOT NULL,
     owner_organization_id uuid NOT NULL,
+    created_by uuid,
+    updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
@@ -2683,6 +2745,8 @@ CREATE TABLE app_public.event_questions (
     event_id uuid NOT NULL,
     type app_public.question_type NOT NULL,
     options json,
+    created_by uuid,
+    updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -2997,6 +3061,13 @@ CREATE INDEX sessions_user_id_idx ON app_private.sessions USING btree (user_id);
 
 
 --
+-- Name: event_categories_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_categories_created_by_idx ON app_public.event_categories USING btree (created_by);
+
+
+--
 -- Name: event_categories_name_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -3011,6 +3082,20 @@ CREATE INDEX event_categories_owner_organization_id_idx ON app_public.event_cate
 
 
 --
+-- Name: event_categories_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_categories_updated_by_idx ON app_public.event_categories USING btree (updated_by);
+
+
+--
+-- Name: event_questions_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_questions_created_by_idx ON app_public.event_questions USING btree (created_by);
+
+
+--
 -- Name: event_questions_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -3018,10 +3103,24 @@ CREATE INDEX event_questions_event_id_idx ON app_public.event_questions USING bt
 
 
 --
+-- Name: event_questions_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_questions_updated_by_idx ON app_public.event_questions USING btree (updated_by);
+
+
+--
 -- Name: events_category_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
 CREATE INDEX events_category_id_idx ON app_public.events USING btree (category_id);
+
+
+--
+-- Name: events_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_created_by_idx ON app_public.events USING btree (created_by);
 
 
 --
@@ -3067,6 +3166,13 @@ CREATE INDEX events_registration_start_time_idx ON app_public.events USING btree
 
 
 --
+-- Name: events_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_updated_by_idx ON app_public.events USING btree (updated_by);
+
+
+--
 -- Name: idx_user_emails_primary; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -3095,6 +3201,13 @@ CREATE INDEX organization_memberships_user_id_idx ON app_public.organization_mem
 
 
 --
+-- Name: quotas_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX quotas_created_by_idx ON app_public.quotas USING btree (created_by);
+
+
+--
 -- Name: quotas_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -3113,6 +3226,13 @@ CREATE INDEX quotas_id_idx ON app_public.quotas USING btree (id);
 --
 
 CREATE INDEX quotas_position_idx ON app_public.quotas USING btree ("position");
+
+
+--
+-- Name: quotas_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX quotas_updated_by_idx ON app_public.quotas USING btree (updated_by);
 
 
 --
@@ -3221,6 +3341,34 @@ CREATE TRIGGER _200_forbid_existing_email BEFORE INSERT ON app_public.user_email
 
 
 --
+-- Name: event_categories _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+
+
+--
+-- Name: event_questions _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+
+
+--
+-- Name: events _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+
+
+--
+-- Name: quotas _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+
+
+--
 -- Name: registrations _200_registration_is_valid; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
@@ -3323,7 +3471,7 @@ CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emai
 --
 
 ALTER TABLE ONLY app_private.registration_secrets
-    ADD CONSTRAINT registration_secrets_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id);
+    ADD CONSTRAINT registration_secrets_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
 
 
 --
@@ -3331,7 +3479,7 @@ ALTER TABLE ONLY app_private.registration_secrets
 --
 
 ALTER TABLE ONLY app_private.registration_secrets
-    ADD CONSTRAINT registration_secrets_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id);
+    ADD CONSTRAINT registration_secrets_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id) ON DELETE CASCADE;
 
 
 --
@@ -3375,11 +3523,35 @@ ALTER TABLE ONLY app_private.user_secrets
 
 
 --
+-- Name: event_categories event_categories_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: event_categories event_categories_owner_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
 ALTER TABLE ONLY app_public.event_categories
     ADD CONSTRAINT event_categories_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: event_categories event_categories_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_categories
+    ADD CONSTRAINT event_categories_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: event_questions event_questions_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -3391,11 +3563,27 @@ ALTER TABLE ONLY app_public.event_questions
 
 
 --
+-- Name: event_questions event_questions_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_questions
+    ADD CONSTRAINT event_questions_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
 ALTER TABLE ONLY app_public.events
-    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.event_categories(id);
+    ADD CONSTRAINT events_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_public.event_categories(id) ON DELETE SET NULL;
+
+
+--
+-- Name: events events_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -3404,6 +3592,14 @@ ALTER TABLE ONLY app_public.events
 
 ALTER TABLE ONLY app_public.events
     ADD CONSTRAINT events_owner_organization_id_fkey FOREIGN KEY (owner_organization_id) REFERENCES app_public.organizations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: events events_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.events
+    ADD CONSTRAINT events_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -3439,11 +3635,27 @@ ALTER TABLE ONLY app_public.organization_memberships
 
 
 --
+-- Name: quotas quotas_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.quotas
+    ADD CONSTRAINT quotas_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: quotas quotas_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
 ALTER TABLE ONLY app_public.quotas
     ADD CONSTRAINT quotas_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: quotas quotas_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.quotas
+    ADD CONSTRAINT quotas_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -3548,19 +3760,17 @@ CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_
 
 
 --
+-- Name: events manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin()) WITH CHECK (app_public.current_user_is_admin());
+
+
+--
 -- Name: event_questions manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY manage_as_admin ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
-
-
---
--- Name: events manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_as_admin ON app_public.events USING ((EXISTS ( SELECT 1
    FROM app_public.users
   WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
 
@@ -3591,6 +3801,13 @@ CREATE POLICY manage_member ON app_public.event_categories USING ((owner_organiz
 
 
 --
+-- Name: events manage_organization; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_organization ON app_public.events USING (app_public.current_user_is_owner_organization_member(owner_organization_id)) WITH CHECK (app_public.current_user_is_owner_organization_member(owner_organization_id));
+
+
+--
 -- Name: event_questions manage_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -3599,15 +3816,6 @@ CREATE POLICY manage_own ON app_public.event_questions USING ((EXISTS ( SELECT 1
   WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
            FROM app_public.events
           WHERE (events.id = event_questions.event_id)))))));
-
-
---
--- Name: events manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.events USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (events.owner_organization_id = organization_memberships.organization_id)))));
 
 
 --
@@ -3632,17 +3840,6 @@ CREATE POLICY manage_own_category ON app_public.event_questions USING ((EXISTS (
           WHERE (event_categories.id = ( SELECT events.category_id
                    FROM app_public.events
                   WHERE (events.id = event_questions.event_id)))))))));
-
-
---
--- Name: events manage_own_category; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own_category ON app_public.events USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
-           FROM app_public.event_categories
-          WHERE (event_categories.id = events.category_id)))))));
 
 
 --
@@ -3902,6 +4099,13 @@ REVOKE ALL ON FUNCTION app_private.tg__add_job() FROM PUBLIC;
 
 
 --
+-- Name: FUNCTION tg__ownership_info(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__ownership_info() FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION tg__registration_is_valid(); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -4121,6 +4325,22 @@ GRANT ALL ON FUNCTION app_public.current_user_id() TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public.current_user_invited_organization_ids() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.current_user_invited_organization_ids() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_user_is_admin(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_user_is_admin() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_user_is_admin() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_user_is_owner_organization_member(owner_organization_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_user_is_owner_organization_member(owner_organization_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_user_is_owner_organization_member(owner_organization_id uuid) TO ilmo_visitor;
 
 
 --

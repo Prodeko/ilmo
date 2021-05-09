@@ -8,6 +8,7 @@ export * from "./ErrorOccurred";
 export * from "./EventCard";
 export * from "./EventCategoryForm";
 export * from "./EventForm";
+export * from "./EventQuotasCard";
 export * from "./EventRegistrationForm";
 export * from "./EventRegistrationsTable";
 export * from "./FileUpload";
