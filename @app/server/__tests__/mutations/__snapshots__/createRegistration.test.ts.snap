@@ -42,8 +42,8 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 9,
+          "column": 3,
+          "line": 10,
         },
       ],
       "message": "Event not found.",
@@ -71,8 +71,8 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 9,
+          "column": 3,
+          "line": 10,
         },
       ],
       "message": "Quota not found.",
@@ -100,8 +100,8 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 9,
+          "column": 3,
+          "line": 10,
         },
       ],
       "message": "Event registration is not open.",
@@ -129,8 +129,8 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 9,
+          "column": 3,
+          "line": 10,
         },
       ],
       "message": "Registration token was not valid. Please reload the page.",
@@ -158,8 +158,8 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 9,
+          "column": 3,
+          "line": 10,
         },
       ],
       "message": "Registration token was not valid. Please reload the page.",

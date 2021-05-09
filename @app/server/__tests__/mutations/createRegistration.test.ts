@@ -15,6 +15,35 @@ beforeEach(deleteTestData);
 beforeAll(setup);
 afterAll(teardown);
 
+const createRegistrationMutation = `
+mutation CreateRegistration(
+  $registrationToken: String!
+  $eventId: UUID!
+  $quotaId: UUID!
+  $firstName: String!
+  $lastName: String!
+  $email: String!
+) {
+  createRegistration(
+    input: {
+      registrationToken: $registrationToken
+      eventId: $eventId
+      quotaId: $quotaId
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+    }
+  ) {
+    registration {
+      id
+      firstName
+      lastName
+      eventId
+      quotaId
+    }
+  }
+}`;
+
 describe("CreateRegistration", () => {
   // A bit of background about the overall event registration setup. In order
   // to register to an event the user first has to call a ClaimRegistrationToken
@@ -69,33 +98,7 @@ describe("CreateRegistration", () => {
     const { registrationToken } = result.data.claimRegistrationToken;
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-            firstName
-            lastName
-            eventId
-            quotaId
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
@@ -223,29 +226,7 @@ describe("CreateRegistration", () => {
     const quota = quotas[0];
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
@@ -283,29 +264,7 @@ describe("CreateRegistration", () => {
     const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
@@ -340,29 +299,7 @@ describe("CreateRegistration", () => {
     const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
@@ -403,29 +340,7 @@ describe("CreateRegistration", () => {
     const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
@@ -468,29 +383,7 @@ describe("CreateRegistration", () => {
     const registrationToken = registrationSecrets[0].registration_token;
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      createRegistrationMutation,
 
       // GraphQL variables:
       {
