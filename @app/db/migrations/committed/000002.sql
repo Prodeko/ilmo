@@ -1,10 +1,12 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:5a24cff4f5a4cef106421cd2064cd73b5e35912d
+--! Hash: sha1:ccff0b4c7de02aee9a5a4d67c543cb8ccc12bf5c
 
 --! split: 0001-computed-columns.sql
 /*
  * Get the user primary email as a computed column.
  */
+drop function if exists app_public.users_primary_email;
+
 create function app_public.users_primary_email(u app_public.users) returns citext as $$
   select email
     from app_public.user_emails
@@ -15,6 +17,46 @@ create function app_public.users_primary_email(u app_public.users) returns citex
 $$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.users_primary_email(u app_public.users) is
   E'Users primary email.';
+
+--! split: 0002-rls-functions.sql
+drop function if exists app_public.current_user_is_admin cascade;
+
+create function app_public.current_user_is_admin() returns boolean as $$
+  select exists (select 1
+    from app_public.users
+    where
+      id = app_public.current_user_id()
+      and is_admin = true)
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+
+drop function if exists app_public.current_user_is_owner_organization_member cascade;
+
+create function app_public.current_user_is_owner_organization_member(owner_organization_id uuid) returns boolean as $$
+  select exists (select 1
+    from
+      app_public.organization_memberships
+    where
+      user_id = app_public.current_user_id()
+      and owner_organization_id = organization_id)
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+
+--! split: 0003-triggers.sql
+/*
+ * This trigger is used on tables with created_by and updated_by to ensure that
+ * they are valid (namely: `created_by` cannot be changed after initial INSERT,
+ * and `updated_by` is updated after UPDATE statement).
+ */
+drop function if exists app_private.tg__ownership_info() cascade;
+
+create function app_private.tg__ownership_info() returns trigger as $$
+begin
+  NEW.created_by = (case when TG_OP = 'INSERT' then app_public.current_user_id() else OLD.created_by end);
+  NEW.updated_by = (case when TG_OP = 'UPDATE' then app_public.current_user_id() else OLD.updated_by end);
+  return NEW;
+end;
+$$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
+comment on function app_private.tg__ownership_info() is
+  E'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
 
 --! split: 0010-event_categories.sql
 /*
@@ -30,6 +72,9 @@ create table app_public.event_categories(
   name jsonb not null,
   description jsonb not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
+
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 
@@ -40,12 +85,18 @@ alter table app_public.event_categories enable row level security;
 
 -- Indices
 create index on app_public.event_categories(owner_organization_id);
+create index on app_public.event_categories(created_by);
+create index on app_public.event_categories(updated_by);
 create index on app_public.event_categories(name);
 
 -- Triggers
 create trigger _100_timestamps
   before insert or update on app_public.event_categories for each row
   execute procedure app_private.tg__timestamps();
+
+create trigger _200_ownership_info
+  before insert or update on app_public.event_categories for each row
+  execute procedure app_private.tg__ownership_info();
 
 -- Comments
 comment on table app_public.event_categories is
@@ -93,7 +144,10 @@ create table app_public.events(
   is_draft boolean not null default true,
   header_image_file text,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
-  category_id uuid not null references app_public.event_categories on delete no action,
+  category_id uuid not null references app_public.event_categories on delete set null,
+
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 
@@ -113,11 +167,17 @@ create index on app_public.events(registration_end_time);
 create index on app_public.events(owner_organization_id);
 create index on app_public.events(category_id);
 create index on app_public.events(is_draft);
+create index on app_public.events(created_by);
+create index on app_public.events(updated_by);
 
 -- Triggers
 create trigger _100_timestamps
   before insert or update on app_public.events for each row
   execute procedure app_private.tg__timestamps();
+
+create trigger _200_ownership_info
+  before insert or update on app_public.events for each row
+  execute procedure app_private.tg__ownership_info();
 
 -- Computed columns (https://www.graphile.org/postgraphile/computed-columns/)
 create function app_public.events_signup_upcoming(e app_public.events)
@@ -179,37 +239,9 @@ grant
   delete
 on app_public.events to :DATABASE_VISITOR;
 
-create policy select_all on app_public.events
-  for select
-  using (is_draft is false);
-
-create policy manage_own on app_public.events
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and owner_organization_id = organization_id));
-
-create policy manage_own_category on app_public.events
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and organization_id = (select owner_organization_id
-    from
-      app_public.event_categories
-    where
-      event_categories.id = events.category_id)));
-
-create policy manage_as_admin on app_public.events
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
+create policy select_all on app_public.events for select using (is_draft is false);
+create policy manage_admin on app_public.events for all using(app_public.current_user_is_admin()) with check(app_public.current_user_is_admin());
+create policy manage_organization on app_public.events for all using(app_public.current_user_is_owner_organization_member(owner_organization_id)) with check(app_public.current_user_is_owner_organization_member(owner_organization_id));
 
 --! split: 0012-event_questions.sql
 /*
@@ -231,6 +263,9 @@ create table app_public.event_questions(
   event_id uuid not null references app_public.events(id) on delete cascade,
   type app_public.question_type not null,
   options json,
+
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -238,11 +273,17 @@ alter table app_public.event_questions enable row level security;
 
 -- Indices
 create index on app_public.event_questions(event_id);
+create index on app_public.event_questions(created_by);
+create index on app_public.event_questions(updated_by);
 
 -- Triggers
 create trigger _100_timestamps
   before insert or update on app_public.event_questions for each row
   execute procedure app_private.tg__timestamps();
+
+create trigger _200_ownership_info
+  before insert or update on app_public.event_questions for each row
+  execute procedure app_private.tg__ownership_info();
 
 -- RLS policies and grants
 grant
@@ -252,9 +293,7 @@ grant
   delete
 on app_public.event_questions to :DATABASE_VISITOR;
 
-create policy select_all on app_public.event_questions
-  for select
-    using (true);
+create policy select_all on app_public.event_questions for select using (true);
 
 create policy manage_own on app_public.event_questions
   for all
@@ -303,13 +342,16 @@ create policy manage_as_admin on app_public.event_questions
 drop table if exists app_public.quotas cascade;
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete cascade,
+  event_id uuid not null references app_public.events on delete cascade,
   position smallint not null,
   title jsonb not null,
   size smallint not null check (size > 0),
   -- TODO: Implement questions
   questions_public json,
   questions_private json,
+
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
@@ -321,11 +363,17 @@ alter table app_public.quotas enable row level security;
 create index on app_public.quotas(id);
 create index on app_public.quotas(event_id);
 create index on app_public.quotas(position);
+create index on app_public.quotas(created_by);
+create index on app_public.quotas(updated_by);
 
 -- Triggers
 create trigger _100_timestamps
   before insert or update on app_public.quotas for each row
   execute procedure app_private.tg__timestamps();
+
+create trigger _200_ownership_info
+  before insert or update on app_public.quotas for each row
+  execute procedure app_private.tg__ownership_info();
 
 -- Comments
 comment on table app_public.quotas is
@@ -539,8 +587,8 @@ comment on function app_private.tg__registration_is_valid() is
 drop table if exists app_public.registrations cascade;
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
-  event_id uuid not null references app_public.events(id) on delete cascade,
-  quota_id uuid not null references app_public.quotas(id) on delete no action,
+  event_id uuid not null references app_public.events on delete cascade,
+  quota_id uuid not null references app_public.quotas on delete no action,
   first_name text null,
   last_name text null,
   email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
@@ -680,9 +728,9 @@ create table app_private.registration_secrets(
   confirmation_email_sent boolean not null default false,
 
   -- When a registration is deleted, also delete the secrets
-  registration_id uuid null references app_public.registrations(id) on delete cascade,
-  event_id uuid not null references app_public.events(id) on delete no action,
-  quota_id uuid not null references app_public.quotas(id) on delete no action,
+  registration_id uuid null references app_public.registrations on delete cascade,
+  event_id uuid not null references app_public.events on delete cascade,
+  quota_id uuid not null references app_public.quotas on delete cascade,
 
   unique(registration_token),
   unique(update_token)
