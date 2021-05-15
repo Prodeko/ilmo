@@ -26,6 +26,7 @@ interface EventRegistrationFormProps {
   // updateToken and initialValues are used when type is "update"
   updateToken?: string;
   initialValues?: any;
+  setUpdateToken: React.Dispatch<React.SetStateAction<string>>
 }
 
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
@@ -38,6 +39,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     updateToken,
     formRedirect,
     initialValues,
+    setUpdateToken
   } = props;
 
   const { t } = useTranslation("register");
@@ -72,20 +74,21 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           const { data } = await claimRegistratioToken({
             variables: { eventId, quotaId },
           });
-          const token = data?.claimRegistrationToken?.registrationToken;
-          if (!token) {
+          const { registrationToken, updateToken } = data?.claimRegistrationToken?.claimRegistrationTokenOutput || {};
+          if (!registrationToken || !updateToken) {
             throw new Error(
               "Claiming the registration token failed, please reload the page."
             );
           }
-          setRegistrationToken(token);
+          setRegistrationToken(registrationToken);
+          setUpdateToken(updateToken);
         } catch (e) {
           setFormError(e);
           Sentry.captureException(e);
         }
       }
     })();
-  }, [claimRegistratioToken, eventId, quotaId, type]);
+  }, [claimRegistratioToken, setUpdateToken, eventId, quotaId, type]);
 
   const doDelete = useCallback(async () => {
     setFormError(null);

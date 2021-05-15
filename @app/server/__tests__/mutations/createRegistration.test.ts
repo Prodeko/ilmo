@@ -78,7 +78,10 @@ describe("CreateRegistration", () => {
     const result = await runGraphQLQuery(
       `mutation ClaimRegistrationToken($eventId: UUID!, $quotaId: UUID!) {
         claimRegistrationToken(input: { eventId: $eventId, quotaId: $quotaId }) {
-          registrationToken
+          claimRegistrationTokenOutput {
+            registrationToken
+            updateToken
+          }
         }
       }`,
       {
@@ -95,7 +98,9 @@ describe("CreateRegistration", () => {
       // Don't rollback in order to use the result of this mutation
       false
     );
-    const { registrationToken } = result.data.claimRegistrationToken;
+    const {
+      registrationToken,
+    } = result.data.claimRegistrationToken.claimRegistrationTokenOutput;
 
     await runGraphQLQuery(
       createRegistrationMutation,

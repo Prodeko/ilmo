@@ -3,9 +3,7 @@
 exports[`CreateRegistration can create registration 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": Object {
-      "registrationToken": "[id-1]",
-    },
+    "claimRegistrationToken": "[id-1]",
   },
 }
 `;

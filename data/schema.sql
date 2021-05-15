@@ -90,6 +90,16 @@ CREATE TYPE app_public.app_languages AS (
 
 
 --
+-- Name: claim_registration_token_output; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.claim_registration_token_output AS (
+	registration_token text,
+	update_token text
+);
+
+
+--
 -- Name: create_event_quotas; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -925,19 +935,19 @@ $$;
 -- Name: claim_registration_token(uuid, uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) RETURNS text
+CREATE FUNCTION app_public.claim_registration_token(event_id uuid, quota_id uuid) RETURNS app_public.claim_registration_token_output
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
-  v_token text;
+  v_output app_public.claim_registration_token_output;
   v_registration_id uuid;
 begin
   -- Create a new registration secret
   insert into app_private.registration_secrets(event_id, quota_id)
     values (event_id, quota_id)
   returning
-    registration_token into v_token;
+    registration_token, update_token into v_output;
 
   -- Create a registration. This means that a spot in the specified event and
   -- quota is reserved for a user when this function is called. The user can
@@ -951,15 +961,15 @@ begin
   -- Set registration_id to the corresponding row in registration_secrets table
   update app_private.registration_secrets
     set registration_id = v_registration_id
-    where registration_token = v_token;
+    where registration_token = v_output.registration_token;
 
   -- Schedule graphile worker task for token deletion
   perform graphile_worker.add_job(
     'registration__schedule_unfinished_registration_delete',
-    json_build_object('token', v_token)
+    json_build_object('token', v_output.registration_token)
   );
 
-  return v_token;
+  return v_output;
 end;
 $$;
 

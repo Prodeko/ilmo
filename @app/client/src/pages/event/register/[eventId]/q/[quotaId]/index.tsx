@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { EventRegistrationForm, Redirect, SharedLayout, useEventRegistrations } from "@app/components";
 import {
+  useDeleteEventRegistrationMutation,
   useEventRegistrationPageQuery,
 } from "@app/graphql";
 import { List, PageHeader, Typography } from "antd";
@@ -37,6 +38,18 @@ const EventRegistrationPage: NextPage = () => {
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), []);
   const recentRegistrations = useEventRegistrations(eventId as string, after)
+  const [deleteRegistration] = useDeleteEventRegistrationMutation();
+  const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
+
+  const handleGoBack = useCallback(async () => {
+    // Delete the pending registration if the user goes back to event page
+    if (updateToken) {
+      await deleteRegistration({
+        variables: { updateToken },
+      });
+    }
+    router.push(`/event/${event.slug}`)
+  }, [deleteRegistration, router, event, updateToken]);
 
   // If event or quota is not found, or if event
   // registration is not open redirect to index
@@ -53,6 +66,7 @@ const EventRegistrationPage: NextPage = () => {
       <PageHeader
         title={`${t("title")} ${event?.name[lang] || t("common:loading")} - ${quota?.title[lang] || t("common:loading")
           }`}
+        onBack={handleGoBack}
       />
       <EventRegistrationForm
         eventId={event?.id}
@@ -62,6 +76,8 @@ const EventRegistrationPage: NextPage = () => {
         }}
         initialValues={formInitialValues}
         quotaId={quota?.id}
+        // Used to delete an unfinished registration
+        setUpdateToken={setUpdateToken}
         type="create"
       />
       {recentRegistrations && (

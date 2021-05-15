@@ -216,7 +216,7 @@ export function sanitize(json: any): any {
         (k.endsWith("Id") &&
           (typeof json[k] === "number" || typeof json[k] === "string")) ||
         (k.endsWith("Uuid") && typeof k === "string") ||
-        k === "registrationToken" ||
+        k.endsWith("Token") ||
         k.endsWith("By")
       ) {
         result[k] = mask(result[k], "id");

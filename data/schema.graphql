@@ -107,8 +107,15 @@ input ClaimRegistrationTokenInput {
   quotaId: UUID!
 }
 
+type ClaimRegistrationTokenOutput {
+  registrationToken: String
+  updateToken: String
+}
+
 """The output of our `claimRegistrationToken` mutation."""
 type ClaimRegistrationTokenPayload {
+  claimRegistrationTokenOutput: ClaimRegistrationTokenOutput
+
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
@@ -119,7 +126,6 @@ type ClaimRegistrationTokenPayload {
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
-  registrationToken: String
 }
 
 """All input for the `confirmAccountDeletion` mutation."""

@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:ccff0b4c7de02aee9a5a4d67c543cb8ccc12bf5c
+--! Hash: sha1:9f7e4b5a22a4a4ac93d4b8d2e49fb97b5b3a2fad
 
 --! split: 0001-computed-columns.sql
 /*
@@ -923,19 +923,26 @@ comment on function app_public.registration_by_update_token("updateToken" text) 
  * to create, update or delete registrations.
  */
 drop function if exists app_public.claim_registration_token(uuid, uuid);
+drop type if exists app_public.claim_registration_token_output;
+
+-- Output type for app_public.claim_registration_token
+create type app_public.claim_registration_token_output as (
+  registration_token text,
+  update_token text
+);
 
 create function app_public.claim_registration_token(event_id uuid, quota_id uuid)
-  returns text
+  returns app_public.claim_registration_token_output
   as $$
 declare
-  v_token text;
+  v_output app_public.claim_registration_token_output;
   v_registration_id uuid;
 begin
   -- Create a new registration secret
   insert into app_private.registration_secrets(event_id, quota_id)
     values (event_id, quota_id)
   returning
-    registration_token into v_token;
+    registration_token, update_token into v_output;
 
   -- Create a registration. This means that a spot in the specified event and
   -- quota is reserved for a user when this function is called. The user can
@@ -949,15 +956,15 @@ begin
   -- Set registration_id to the corresponding row in registration_secrets table
   update app_private.registration_secrets
     set registration_id = v_registration_id
-    where registration_token = v_token;
+    where registration_token = v_output.registration_token;
 
   -- Schedule graphile worker task for token deletion
   perform graphile_worker.add_job(
     'registration__schedule_unfinished_registration_delete',
-    json_build_object('token', v_token)
+    json_build_object('token', v_output.registration_token)
   );
 
-  return v_token;
+  return v_output;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.claim_registration_token(event_id uuid, quota_id uuid) is
