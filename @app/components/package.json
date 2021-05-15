@@ -13,8 +13,8 @@
     "@app/graphql": "0.0.0",
     "@app/lib": "0.0.0",
     "@babel/runtime": "^7.14.0",
-    "@sentry/react": "^6.3.5",
-    "antd": "^4.15.4",
+    "@sentry/react": "^6.3.6",
+    "antd": "^4.15.5",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^3.14.1",
     "lodash": "^4.17.21",
@@ -24,7 +24,7 @@
     "react-country-flag": "^2.3.0",
     "react-dnd": "^14.0.2",
     "react-dnd-html5-backend": "^14.0.0",
-    "slugify": "^1.5.2",
+    "slugify": "^1.5.3",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
