@@ -1,9 +1,7 @@
-import React, { useMemo, useState } from "react";
-import { EventRegistrationForm, Redirect, SharedLayout } from "@app/components";
+import React, { useCallback, useMemo } from "react";
+import { EventRegistrationForm, Redirect, SharedLayout, useEventRegistrations } from "@app/components";
 import {
-  Registration,
   useEventRegistrationPageQuery,
-  useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { List, PageHeader, Typography } from "antd";
 import { NextPage } from "next";
@@ -38,18 +36,7 @@ const EventRegistrationPage: NextPage = () => {
 
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), []);
-  const [recentRegistrations, setRecentRegistrations] = useState<
-    Registration[] | null | undefined
-  >(undefined);
-  useEventRegistrationsSubscription({
-    variables: { eventId, after },
-    skip: !eventId,
-    onSubscriptionData: ({ subscriptionData }) =>
-      setRecentRegistrations(
-        subscriptionData?.data?.eventRegistrations
-          ?.registrations as Registration[]
-      ),
-  });
+  const recentRegistrations = useEventRegistrations(eventId as string, after)
 
   // If event or quota is not found, or if event
   // registration is not open redirect to index
@@ -64,9 +51,8 @@ const EventRegistrationPage: NextPage = () => {
   return (
     <SharedLayout query={query} title="">
       <PageHeader
-        title={`${t("title")} ${event?.name[lang] || t("common:loading")} - ${
-          quota?.title[lang] || t("common:loading")
-        }`}
+        title={`${t("title")} ${event?.name[lang] || t("common:loading")} - ${quota?.title[lang] || t("common:loading")
+          }`}
       />
       <EventRegistrationForm
         eventId={event?.id}

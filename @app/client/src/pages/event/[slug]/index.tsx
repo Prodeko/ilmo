@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   EventQuotasCard,
   EventRegistrationsTable,
@@ -6,13 +6,13 @@ import {
   P,
   SharedLayout,
   useEventLoading,
-  useQuerySlug,
+  useEventRegistrations,
+  useQuerySlug
 } from "@app/components";
 import {
   EventPage_EventFragment,
   Registration,
   useEventPageQuery,
-  useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { uploadsLoader } from "@app/lib";
 import { Col, PageHeader, Row } from "antd";
@@ -60,21 +60,9 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   } = event;
 
   // Set registrations initially from EventPage_Query data
-  const [registrations, setRegistrations] = useState<
-    Registration[] | null | undefined
-  >(eventRegistrations.nodes as Registration[]);
-
   // Use a subscription to fetch event registrations in real time
-  useEventRegistrationsSubscription({
-    variables: { eventId, after: createdAt },
-    skip: !eventId,
-    onSubscriptionData: ({ subscriptionData }) =>
-      // Update state when subscription receives data
-      setRegistrations(
-        subscriptionData?.data?.eventRegistrations
-          ?.registrations as Registration[]
-      ),
-  });
+  const initialRegistrations = eventRegistrations.nodes as Registration[]
+  const registrations = useEventRegistrations(eventId as string, createdAt, initialRegistrations)
 
   return (
     <>

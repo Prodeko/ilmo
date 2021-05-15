@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { QueryResult } from "@apollo/client";
 import {
   EventPage_QueryFragment,
   OrganizationPage_QueryFragment,
+  Registration,
+  useEventRegistrationsSubscription,
 } from "@app/graphql";
 import { Col, Row } from "antd";
 import { useRouter } from "next/router";
@@ -75,4 +77,21 @@ export function useOrganizationLoading(
       </Row>
     )
   );
+}
+
+export function useEventRegistrations(eventId: string, after: string, initialRegistrations: Registration[] = []) {
+  const [registrations, setRegistrations] = useState<
+    Registration[] | null | undefined
+  >(initialRegistrations);
+  useEventRegistrationsSubscription({
+    variables: { eventId, after },
+    skip: !eventId,
+    onSubscriptionData: ({ subscriptionData }) =>
+      setRegistrations(
+        subscriptionData?.data?.eventRegistrations
+          ?.registrations as Registration[]
+      ),
+  });
+
+  return registrations
 }
