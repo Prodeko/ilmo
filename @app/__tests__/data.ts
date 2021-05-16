@@ -240,7 +240,7 @@ export const createQuotas = async (
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const size = faker.datatype.number({
-      min: 1,
+      min: 3,
       max: 20,
     })
     const {
