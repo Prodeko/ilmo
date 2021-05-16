@@ -1,5 +1,3 @@
-import dayjs from "dayjs"
-
 import {
   asRoot,
   createEventDataAndLogin,
@@ -14,37 +12,28 @@ beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
 
-describe("UpdateEvent", () => {
+describe("UpdateEventCategory", () => {
   it("can update an existing event", async () => {
-    const { events, organization, eventCategory, session } =
+    const { organization, eventCategory, session } =
       await createEventDataAndLogin()
-    const event = events[0]
-
-    const day = dayjs("2021-02-20T12:00:00+02:00")
+    const categoryId = eventCategory.id
 
     await runGraphQLQuery(
-      `mutation UpdateEvent(
-        $eventId: UUID!
-        $patch: EventPatch!
+      `mutation UpdateEventCategory(
+        $categoryId: UUID!
+        $patch: EventCategoryPatch!
       ) {
-        updateEvent(
+        updateEventCategory(
           input: {
-            id: $eventId
+            id: $categoryId
             patch: $patch
           }
         ) {
-          event {
+          eventCategory {
             id
             name
             description
             ownerOrganizationId
-            categoryId
-            isHighlighted
-            isDraft
-            eventStartTime
-            eventEndTime
-            registrationStartTime
-            registrationEndTime
             createdBy
             updatedBy
             createdAt
@@ -55,21 +44,17 @@ describe("UpdateEvent", () => {
 
       // GraphQL variables:
       {
-        eventId: event.id,
+        categoryId,
         patch: {
-          name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
+          name: {
+            fi: "Päivitetty testikategoria",
+            en: "Updated test event category",
+          },
           description: {
             fi: "Päivitetty testikuvaus",
             en: "Updated test description",
           },
           ownerOrganizationId: organization.id,
-          categoryId: eventCategory.id,
-          isHighlighted: true,
-          isDraft: false,
-          eventStartTime: day.add(2, "hour").toISOString(),
-          eventEndTime: day.add(3, "hour").toISOString(),
-          registrationStartTime: day.toISOString(),
-          registrationEndTime: day.add(1, "hour").toISOString(),
         },
       },
 
@@ -83,48 +68,45 @@ describe("UpdateEvent", () => {
         expect(json.errors).toBeFalsy()
         expect(json.data).toBeTruthy()
 
-        const updatedEvent = json.data!.updateEvent.event
+        const updatedEventCategory =
+          json.data!.updateEventCategory.eventCategory
 
-        expect(updatedEvent).toBeTruthy()
-        expect(updatedEvent.ownerOrganizationId).toEqual(organization.id)
+        expect(updatedEventCategory).toBeTruthy()
+        expect(updatedEventCategory.ownerOrganizationId).toEqual(
+          organization.id
+        )
 
-        expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
+        expect(sanitize(updatedEventCategory)).toMatchInlineSnapshot(`
           Object {
-            "categoryId": "[id-3]",
-            "createdAt": "[timestamp-5]",
-            "createdBy": "[id-4]",
+            "createdAt": "[timestamp-1]",
+            "createdBy": "[id-3]",
             "description": Object {
               "en": "Updated test description",
               "fi": "Päivitetty testikuvaus",
             },
-            "eventEndTime": "[timestamp-2]",
-            "eventStartTime": "[timestamp-1]",
             "id": "[id-1]",
-            "isDraft": false,
-            "isHighlighted": true,
             "name": Object {
-              "en": "Updated test event",
-              "fi": "Päivitetty testitapahtuma",
+              "en": "Updated test event category",
+              "fi": "Päivitetty testikategoria",
             },
             "ownerOrganizationId": "[id-2]",
-            "registrationEndTime": "[timestamp-4]",
-            "registrationStartTime": "[timestamp-3]",
-            "updatedAt": "[timestamp-6]",
-            "updatedBy": "[id-4]",
+            "updatedAt": "[timestamp-2]",
+            "updatedBy": "[id-3]",
           }
         `)
 
         const { rows } = await asRoot(pgClient, () =>
-          pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
-            updatedEvent.id,
-          ])
+          pgClient.query(
+            `SELECT * FROM app_public.event_categories WHERE id = $1`,
+            [updatedEventCategory.id]
+          )
         )
 
         if (rows.length !== 1) {
-          throw new Error("Event not found!")
+          throw new Error("Event category not found!")
         }
-        expect(rows[0].id).toEqual(updatedEvent.id)
-        expect(rows[0].name.fi).toEqual("Päivitetty testitapahtuma")
+        expect(rows[0].id).toEqual(updatedEventCategory.id)
+        expect(rows[0].name.fi).toEqual("Päivitetty testikategoria")
       }
     )
   })
@@ -133,22 +115,22 @@ describe("UpdateEvent", () => {
     const { events } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     })
-    const eventId = events[0].id
+    const categoryId = events[0].id
 
     await runGraphQLQuery(
-      `mutation UpdateEvent(
-        $eventId: UUID!
+      `mutation UpdateEventCategory(
+        $categoryId: UUID!
         $description: JSON!
       ) {
-        updateEvent(
+        updateEventCategory(
           input: {
-            id: $eventId
+            id: $categoryId
             patch: {
               description: $description
             }
           }
         ) {
-          event {
+          eventCategory {
             id
           }
         }
@@ -156,7 +138,7 @@ describe("UpdateEvent", () => {
 
       // GraphQL variables:
       {
-        eventId,
+        categoryId,
         description: { fi: "Testi", en: "Test" },
       },
 
@@ -169,7 +151,7 @@ describe("UpdateEvent", () => {
 
         const message = json.errors![0].message
         expect(message).toEqual(
-          "No values were updated in collection 'events' because no values you can update were found matching these criteria."
+          "No values were updated in collection 'event_categories' because no values you can update were found matching these criteria."
         )
       }
     )

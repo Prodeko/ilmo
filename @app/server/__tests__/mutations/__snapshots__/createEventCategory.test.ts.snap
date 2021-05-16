@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CreateEventCategory can create an event category 2`] = `
+Object {
+  "data": Object {
+    "createEventCategory": Object {
+      "eventCategory": Object {
+        "createdAt": "[timestamp-1]",
+        "createdBy": "[id-2]",
+        "description": Object {
+          "en": "Test description",
+          "fi": "Testikuvaus",
+        },
+        "id": "[id-1]",
+        "name": Object {
+          "en": "Test category",
+          "fi": "Testikategoria",
+        },
+        "updatedAt": "[timestamp-1]",
+        "updatedBy": "[id-3]",
+      },
+    },
+  },
+}
+`;
+
+exports[`CreateEventCategory can't create an event category while logged out 1`] = `
+Object {
+  "data": Object {
+    "createEventCategory": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "42501",
+          "message": "Permission denied (by RLS)",
+          "severity": "ERROR",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 3,
+        },
+      ],
+      "message": "Permission denied (by RLS)",
+      "path": Array [
+        "createEventCategory",
+      ],
+    },
+  ],
+}
+`;

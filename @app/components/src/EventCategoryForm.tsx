@@ -159,8 +159,8 @@ export const EventCategoryForm = ({
           data-cy="eventcategoryform-select-organization-id"
           placeholder={t("forms.placeholders.eventCategory.organizer")}
         >
-          {organizationMemberships?.nodes?.map((o) => (
-            <Option key={o.organization?.id} value={o.organization?.id!}>
+          {organizationMemberships?.nodes?.map((o, i) => (
+            <Option key={o.organization?.id} data-cy={`eventcategoryform-select-organization-id-option-${i}`} value={o.organization?.id!}>
               {o.organization?.name}
             </Option>
           ))}
@@ -244,7 +244,7 @@ export const EventCategoryForm = ({
       )}
       <Form.Item {...tailFormItemLayout}>
         <Button
-          data-cy="eventcategoryform-button-create"
+          data-cy="eventcategoryform-button-submit"
           disabled={selectedLanguages.length === 0 ? true : false}
           htmlType="submit"
           loading={formSubmitting}

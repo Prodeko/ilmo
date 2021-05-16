@@ -24,7 +24,7 @@ context("Create event", () => {
     cy.get("@createEventDataResult").then(() => {
       cy.getCy("layout-dropdown-user").click()
       cy.getCy("layout-link-admin").click()
-      cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin")
+      cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
       cy.getCy("admin-sider-events").click()
       cy.getCy("admin-sider-create-event").click()
       cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/create")

@@ -15,25 +15,29 @@ beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
 
-const deleteEventMutation = `
-mutation DeleteEvent($eventId: UUID!) {
-  deleteEvent(input: { id: $eventId }) {
+const deleteEventCategoryMutation = `
+mutation DeleteEventCategory($categoryId: UUID!) {
+  deleteEventCategory(input: { id: $categoryId }) {
     clientMutationId
   }
 }`
 
-describe("DeleteEvent", () => {
-  it("admin can delete an event", async () => {
-    const { events, session } = await createEventDataAndLogin({
+describe("DeleteEventCategory", () => {
+  it("admin can delete an event category", async () => {
+    const { eventCategory, session } = await createEventDataAndLogin({
+      eventOptions: { create: false },
+      quotaOptions: { create: false },
+      registrationOptions: { create: false },
+      registrationSecretOptions: { create: false },
       userOptions: { create: true, isAdmin: true },
     })
-    const eventId = events[0].id
+    const categoryId = eventCategory.id
 
     await runGraphQLQuery(
-      deleteEventMutation,
+      deleteEventCategoryMutation,
 
       // GraphQL variables:
-      { eventId },
+      { categoryId },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
       {
@@ -46,13 +50,14 @@ describe("DeleteEvent", () => {
         expect(json.data).toBeTruthy()
 
         const { rows } = await asRoot(pgClient, () =>
-          pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
-            eventId,
-          ])
+          pgClient.query(
+            `SELECT * FROM app_public.event_categories WHERE id = $1`,
+            [categoryId]
+          )
         )
 
         if (rows.length !== 0) {
-          throw new Error("Event not deleted successfully!")
+          throw new Error("Event category not deleted successfully!")
         }
 
         expect(rows).toEqual([])
@@ -61,10 +66,10 @@ describe("DeleteEvent", () => {
   })
 
   it("users without the right permissions cannot delete events", async () => {
-    const { events } = await createEventDataAndLogin({
+    const { eventCategory } = await createEventDataAndLogin({
       userOptions: { create: true, amount: 1, isAdmin: true },
     })
-    const eventId = events[0].id
+    const categoryId = eventCategory.id
 
     const pool = poolFromUrl(TEST_DATABASE_URL)
     const client = await pool.connect()
@@ -79,10 +84,10 @@ describe("DeleteEvent", () => {
     await client.release()
 
     await runGraphQLQuery(
-      deleteEventMutation,
+      deleteEventCategoryMutation,
 
       // GraphQL variables:
-      { eventId },
+      { categoryId },
 
       // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
       {
@@ -95,7 +100,7 @@ describe("DeleteEvent", () => {
         const message = json.errors![0].message
 
         expect(message).toEqual(
-          "No values were deleted in collection 'events' because no values you can delete were found matching these criteria."
+          "No values were deleted in collection 'event_categories' because no values you can delete were found matching these criteria."
         )
       }
     )

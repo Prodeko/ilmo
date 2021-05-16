@@ -46,22 +46,22 @@ mutation CreateRegistration(
 
 describe("CreateRegistration", () => {
   // A bit of background about the overall event registration setup. In order
-  // to register to an event the user first has to call a ClaimRegistrationToken
+  // to register to an event the user first has to call a claimRegistrationToken
   // mutation. This mutation provides the user with a registration token that
-  // must be passed to the CreateRegistration mutation. A row is inserted into
-  // app_public.registrations already when calling ClaimRegistrationToken. This
+  // must be passed to the createRegistration mutation. A row is inserted into
+  // app_public.registrations already when calling claimRegistrationToken. This
   // same row (identified by registration_token) is then updated with user info
-  // when the user calls the CreateRegistration mutation. We also have a server
-  // plugin called EventRegistrationPlugin that wraps the CreateRegistration
+  // when the user calls the createRegistration mutation. We also have a server
+  // plugin called EventRegistrationPlugin that wraps the createRegistration
   // mutation. This plugin is reponsible for dispatching a graphile-worker event
   // that deletes the rate limit key from redis after successful registration.
   //
   // This setup is designed to prevent people from claiming registration
-  // tokens by calling the API and then distributing registration tokens
-  // to their friends. By rate limiting the claimRegistrationToken
-  // endpoint we prevent this. After the registration is complete the rate
-  // limit key should be removed from redis. This enables multiple people to
-  // use the same computer for registering to an event.
+  // tokens by calling the API and then distributing the tokens to their friends.
+  // By rate limiting the claimRegistrationToken endpoint we prevent this. After
+  // the registration is complete the rate limit key should be removed from redis.
+  // This enables multiple people to use the same computer for registering to an
+  // event.
 
   it("can create registration", async () => {
     const { events, quotas } = await createEventDataAndLogin({
@@ -193,7 +193,7 @@ describe("CreateRegistration", () => {
         // the __start time of the current transaction__. This is a problem since
         // graphile-worker only executes a task if its run_at property is less than
         // now(). Our helper function runGraphQLQuery sets up a transaction by calling
-        // withPostGraphileContext. Next we run the CreateRegistration mutation that
+        // withPostGraphileContext. Next we run the createRegistration mutation that
         // we are testing. The mutation goes through EventRegistrationPlugin which schedules
         // a task called `registration_complete__delete_rate_limit_key`. Next we call
         // `runJobs` that executes a graphile-worker function called `runTaskListOnce`.

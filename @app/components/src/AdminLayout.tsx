@@ -115,6 +115,7 @@ export function AdminLayout({
         {
           key: "admin-menu-event-categories",
           title: t("sider.titles.eventCategories"),
+          cy: "admin-sider-event-categories",
           target: [
             {
               title: t("sider.titles.listEventCategories"),
@@ -125,6 +126,7 @@ export function AdminLayout({
               title: t("sider.titles.createEventCategory"),
               key: "/admin/event-category/create",
               target: "/admin/event-category/create",
+              cy: "admin-sider-create-event-category",
               icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
             },
           ],

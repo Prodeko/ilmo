@@ -11,7 +11,7 @@ context("Create organizations", () => {
     // Action
     cy.getCy("layout-dropdown-user").click()
     cy.getCy("layout-link-admin").click()
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin")
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
     cy.getCy("admin-sider-organizations").click()
     cy.getCy("admin-sider-create-organization").click()
     cy.url().should(
@@ -40,7 +40,7 @@ context("Create organizations", () => {
     // Action
     cy.getCy("layout-dropdown-user").click()
     cy.getCy("layout-link-admin").click()
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin")
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
     cy.getCy("admin-sider-organizations").click()
     cy.getCy("admin-sider-create-organization").click()
     cy.url().should(

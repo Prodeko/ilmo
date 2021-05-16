@@ -1,0 +1,51 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UpdateEventCategory can update an existing event 2`] = `
+Object {
+  "data": Object {
+    "updateEventCategory": Object {
+      "eventCategory": Object {
+        "createdAt": "[timestamp-1]",
+        "createdBy": "[id-3]",
+        "description": Object {
+          "en": "Updated test description",
+          "fi": "Päivitetty testikuvaus",
+        },
+        "id": "[id-1]",
+        "name": Object {
+          "en": "Updated test event category",
+          "fi": "Päivitetty testikategoria",
+        },
+        "ownerOrganizationId": "[id-2]",
+        "updatedAt": "[timestamp-2]",
+        "updatedBy": "[id-3]",
+      },
+    },
+  },
+}
+`;
+
+exports[`UpdateEventCategory can't update an event while logged out (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "updateEventCategory": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {},
+      },
+      "locations": Array [
+        Object {
+          "column": 9,
+          "line": 5,
+        },
+      ],
+      "message": "No values were updated in collection 'event_categories' because no values you can update were found matching these criteria.",
+      "path": Array [
+        "updateEventCategory",
+      ],
+    },
+  ],
+}
+`;
