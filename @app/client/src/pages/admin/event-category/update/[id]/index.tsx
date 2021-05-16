@@ -22,9 +22,11 @@ function constructInitialValues(values: any) {
     "name",
     "description",
   ]) as UpdateFormInitialValues;
+  const languages = Object.keys(filteredValues?.name || {})
 
   return {
     ...filteredValues,
+    languages,
     ownerOrganizationId: values?.ownerOrganization?.id,
   };
 }

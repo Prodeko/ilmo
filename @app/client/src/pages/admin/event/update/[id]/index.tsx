@@ -41,6 +41,7 @@ function constructInitialValues(values: any) {
   ]) as UpdateFormInitialValues;
 
   const {
+    name,
     eventStartTime,
     eventEndTime,
     registrationStartTime,
@@ -62,9 +63,11 @@ function constructInitialValues(values: any) {
       "registrations",
     ])
   );
+  const languages = Object.keys(name || {})
 
   return {
     ...filteredValues,
+    languages,
     ownerOrganizationId: values?.ownerOrganization?.id,
     categoryId: values?.category?.id,
     registrationTime,

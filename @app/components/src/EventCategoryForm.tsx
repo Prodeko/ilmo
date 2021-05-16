@@ -36,6 +36,7 @@ export const EventCategoryForm = ({
   categoryId,
   initialValues,
 }: EventCategoryFormProps) => {
+  const { languages } = initialValues
   const { supportedLanguages } = data?.languages || {};
   const { organizationMemberships } = data?.currentUser || {};
 
@@ -48,8 +49,8 @@ export const EventCategoryForm = ({
   const [form] = Form.useForm();
   const [formSubmitting, setFormSubmimtting] = useState(false);
   const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const [selectedLanguages, setSelectedLanguages] = useState(
-    supportedLanguages || []
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
+    languages || []
   );
 
   // Mutations
@@ -59,14 +60,13 @@ export const EventCategoryForm = ({
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
     form.setFieldsValue(initialValues);
-  }, [form, initialValues]);
 
-  useEffect(() => {
-    // Set selected languages if supportedLanguages change
-    if (supportedLanguages) {
-      setSelectedLanguages(supportedLanguages);
+    // setSelectedLanguages if languages from initialValues change
+    const { languages } = initialValues
+    if (languages) {
+      setSelectedLanguages(languages);
     }
-  }, [supportedLanguages]);
+  }, [form, initialValues]);
 
   const handleSubmit = useCallback(
     async (values) => {
