@@ -29,8 +29,10 @@ context("Create event category", () => {
         Cypress.env("ROOT_URL") + "/admin/event-category/create"
       )
 
+      // Both languages are selected by default. Click twice to make sure
+      // the select works.
       cy.getCy("eventcategoryform-select-language").click()
-      cy.getCy("eventcategoryform-select-language-option-fi").click()
+      cy.getCy("eventcategoryform-select-language-option-en").click()
       cy.getCy("eventcategoryform-select-language-option-en").click()
       cy.getCy("eventcategoryform-select-language").click()
 

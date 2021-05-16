@@ -116,8 +116,13 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     type,
     eventId,
   } = props
-  const { supportedLanguages } = data?.languages || {}
   const { languages } = initialValues || {}
+  const { supportedLanguages } = data?.languages || {}
+  const initialSelectedLanguages = useMemo(
+    () =>
+      type === "update" ? languages || {} : supportedLanguages,
+    [type, languages, supportedLanguages]
+  )
 
   // Translations, router, apollo
   const { t, lang } = useTranslation("events")
@@ -134,7 +139,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     type === "create" || initialValues.isDraft
   )
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
-    languages || []
+    initialSelectedLanguages || []
   )
 
   // Mutations
@@ -148,10 +153,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     form.setFieldsValue(initialValues)
 
     // setSelectedLanguages if languages from initialValues change
-    if (languages) {
-      setSelectedLanguages(languages)
+    if (initialSelectedLanguages) {
+      setSelectedLanguages(initialSelectedLanguages)
+      form.setFieldsValue({ languages: initialSelectedLanguages })
     }
-  }, [form, initialValues, languages])
+  }, [form, initialValues, initialSelectedLanguages])
 
   const code = getCodeFromError(formError)
 

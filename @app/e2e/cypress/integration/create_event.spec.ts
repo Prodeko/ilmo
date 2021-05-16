@@ -31,11 +31,11 @@ context("Create event", () => {
 
       cy.get(".ant-tabs-tab").as("tabs")
 
-      cy.getCy("eventform-select-language").click()
+      // General tab
+
       // Both languages are selected by default. Click twice to make sure
       // the select works.
-
-      // General tab
+      cy.getCy("eventform-select-language").click()
       cy.getCy("eventform-select-language-option-en").click()
       cy.getCy("eventform-select-language-option-en").click()
       cy.getCy("eventform-select-language").click()

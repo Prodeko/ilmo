@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   CreateEventCategoryPageQuery,
@@ -39,6 +39,11 @@ export const EventCategoryForm = ({
   const { languages } = initialValues || {}
   const { supportedLanguages } = data?.languages || {}
   const { organizationMemberships } = data?.currentUser || {}
+  const initialSelectedLanguages = useMemo(
+    () =>
+      type === "update" ? languages || {} : supportedLanguages,
+    [type, languages, supportedLanguages]
+  )
 
   // Translations, router, apollo
   const { t } = useTranslation("events")
@@ -50,7 +55,7 @@ export const EventCategoryForm = ({
   const [formSubmitting, setFormSubmimtting] = useState(false)
   const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
-    languages || []
+    initialSelectedLanguages || []
   )
 
   // Mutations
@@ -62,10 +67,11 @@ export const EventCategoryForm = ({
     form.setFieldsValue(initialValues)
 
     // setSelectedLanguages if languages from initialValues change
-    if (languages) {
-      setSelectedLanguages(languages)
+    if (initialSelectedLanguages) {
+      setSelectedLanguages(initialSelectedLanguages)
+      form.setFieldsValue({ languages: initialSelectedLanguages })
     }
-  }, [form, initialValues, languages])
+  }, [form, initialValues, initialSelectedLanguages])
 
   const handleSubmit = useCallback(
     async (values) => {
@@ -160,7 +166,11 @@ export const EventCategoryForm = ({
           placeholder={t("forms.placeholders.eventCategory.organizer")}
         >
           {organizationMemberships?.nodes?.map((o, i) => (
-            <Option key={o.organization?.id} data-cy={`eventcategoryform-select-organization-id-option-${i}`} value={o.organization?.id!}>
+            <Option
+              key={o.organization?.id}
+              data-cy={`eventcategoryform-select-organization-id-option-${i}`}
+              value={o.organization?.id!}
+            >
               {o.organization?.name}
             </Option>
           ))}
