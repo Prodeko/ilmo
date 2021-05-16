@@ -1,9 +1,9 @@
-import React from "react";
-import { Table } from "antd";
-import { TableProps } from "antd/lib/table";
+import React from "react"
+import { Table } from "antd"
+import { TableProps } from "antd/lib/table"
 
 interface Props extends TableProps<any> {
-  data?: any;
+  data?: any
 }
 
 export function SimpleTable({ data, columns, ...props }: Props) {
@@ -18,5 +18,5 @@ export function SimpleTable({ data, columns, ...props }: Props) {
       rowKey={(obj) => obj.id}
       {...props}
     />
-  );
+  )
 }

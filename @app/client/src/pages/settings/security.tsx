@@ -1,57 +1,57 @@
-import React, { useCallback, useState } from "react";
-import { ApolloError } from "@apollo/client";
+import React, { useCallback, useState } from "react"
+import { ApolloError } from "@apollo/client"
 import {
   ErrorAlert,
   P,
   PasswordStrength,
   SettingsLayout,
-} from "@app/components";
+} from "@app/components"
 import {
   useChangePasswordMutation,
   useForgotPasswordMutation,
   useSettingsPasswordQuery,
   useSharedQuery,
-} from "@app/graphql";
+} from "@app/graphql"
 import {
   extractError,
   formItemLayout,
   getCodeFromError,
   setPasswordInfo,
   tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, PageHeader } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import Link from "next/link";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input, PageHeader } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import Link from "next/link"
+import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Security: NextPage = () => {
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const [passwordStrength, setPasswordStrength] = useState<number>(0);
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
+  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const [passwordStrength, setPasswordStrength] = useState<number>(0)
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
 
-  const query = useSharedQuery();
+  const query = useSharedQuery()
 
-  const [form] = useForm();
-  const [changePassword] = useChangePasswordMutation();
-  const [success, setSuccess] = useState(false);
+  const [form] = useForm()
+  const [changePassword] = useChangePasswordMutation()
+  const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setSuccess(false);
-      setError(null);
+      setSuccess(false)
+      setError(null)
       try {
         await changePassword({
           variables: {
             oldPassword: values.oldPassword,
             newPassword: values.newPassword,
           },
-        });
-        setError(null);
-        setSuccess(true);
+        })
+        setError(null)
+        setSuccess(true)
       } catch (e) {
-        const errcode = getCodeFromError(e);
+        const errcode = getCodeFromError(e)
         if (errcode === "WEAKP") {
           form.setFields([
             {
@@ -61,7 +61,7 @@ const Settings_Security: NextPage = () => {
                 "The server believes this passphrase is too weak, please make it stronger",
               ],
             },
-          ]);
+          ])
         } else if (errcode === "CREDS") {
           form.setFields([
             {
@@ -69,70 +69,66 @@ const Settings_Security: NextPage = () => {
               value: form.getFieldValue("oldPassword"),
               errors: ["Incorrect old passphrase"],
             },
-          ]);
+          ])
         } else {
-          setError(e);
-          Sentry.captureException(e);
+          setError(e)
+          Sentry.captureException(e)
         }
       }
     },
     [changePassword, form, setError]
-  );
+  )
 
-  const {
-    data,
-    error: graphqlQueryError,
-    loading,
-  } = useSettingsPasswordQuery();
-  const [forgotPassword] = useForgotPasswordMutation();
-  const u = data && data.currentUser;
-  const email = u ? u.primaryEmail : null;
-  const [resetInProgress, setResetInProgress] = useState(false);
+  const { data, error: graphqlQueryError, loading } = useSettingsPasswordQuery()
+  const [forgotPassword] = useForgotPasswordMutation()
+  const u = data && data.currentUser
+  const email = u ? u.primaryEmail : null
+  const [resetInProgress, setResetInProgress] = useState(false)
 
-  const [resetError, setResetError] = useState(null);
+  const [resetError, setResetError] = useState(null)
   const handleResetPassword = useCallback(() => {
-    if (!email) return;
-    if (resetInProgress) return;
-    (async () => {
-      setResetInProgress(true);
+    if (!email) return
+    if (resetInProgress) return
+    ;(async () => {
+      setResetInProgress(true)
 
       try {
-        await forgotPassword({ variables: { email } });
+        await forgotPassword({ variables: { email } })
       } catch (e) {
-        setResetError(resetError);
-        Sentry.captureException(e);
+        setResetError(resetError)
+        Sentry.captureException(e)
       }
-      setResetInProgress(false);
-    })();
-  }, [email, forgotPassword, resetError, resetInProgress]);
+      setResetInProgress(false)
+    })()
+  }, [email, forgotPassword, resetError, resetInProgress])
 
-  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false);
+  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false)
   const setPasswordFocussed = useCallback(() => {
-    setPasswordIsFocussed(true);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(true)
+  }, [setPasswordIsFocussed])
 
   const setPasswordNotFocussed = useCallback(() => {
-    setPasswordIsFocussed(false);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(false)
+  }, [setPasswordIsFocussed])
 
-  const [passwordIsDirty, setPasswordIsDirty] = useState(false);
+  const [passwordIsDirty, setPasswordIsDirty] = useState(false)
   const handleValuesChange = useCallback(
     (changedValues) => {
       setPasswordInfo(
         { setPasswordStrength, setPasswordSuggestions },
         changedValues,
         "newPassword"
-      );
-      setPasswordIsDirty(form.isFieldTouched("password"));
+      )
+      setPasswordIsDirty(form.isFieldTouched("password"))
     },
     [form]
-  );
+  )
 
   const inner = () => {
     if (loading) {
       /* noop */
     } else if (graphqlQueryError) {
-      return <ErrorAlert error={graphqlQueryError} />;
+      return <ErrorAlert error={graphqlQueryError} />
     } else if (data && data.currentUser && !data.currentUser.hasPassword) {
       return (
         <div>
@@ -148,10 +144,10 @@ const Settings_Security: NextPage = () => {
             Reset passphrase
           </Button>
         </div>
-      );
+      )
     }
 
-    const code = getCodeFromError(error);
+    const code = getCodeFromError(error)
     return (
       <div>
         <PageHeader title="Change passphrase" />
@@ -224,13 +220,13 @@ const Settings_Security: NextPage = () => {
           </Form.Item>
         </Form>
       </div>
-    );
-  };
+    )
+  }
   return (
     <SettingsLayout href="/settings/security" query={query}>
       {inner()}
     </SettingsLayout>
-  );
-};
+  )
+}
 
-export default Settings_Security;
+export default Settings_Security

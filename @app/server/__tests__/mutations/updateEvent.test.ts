@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "dayjs"
 
 import {
   asRoot,
@@ -8,23 +8,19 @@ import {
   sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 describe("UpdateEvent", () => {
   it("can update an existing event", async () => {
-    const {
-      events,
-      organization,
-      eventCategory,
-      session,
-    } = await createEventDataAndLogin();
-    const event = events[0];
+    const { events, organization, eventCategory, session } =
+      await createEventDataAndLogin()
+    const event = events[0]
 
-    const day = dayjs("2021-02-20T12:00:00+02:00");
+    const day = dayjs("2021-02-20T12:00:00+02:00")
 
     await runGraphQLQuery(
       `mutation UpdateEvent(
@@ -103,13 +99,13 @@ describe("UpdateEvent", () => {
 
       // This function runs all your test assertions:
       async (json, { pgClient }) => {
-        expect(json.errors).toBeFalsy();
-        expect(json.data).toBeTruthy();
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
 
-        const updatedEvent = json.data!.updateEvent.event;
+        const updatedEvent = json.data!.updateEvent.event
 
-        expect(updatedEvent).toBeTruthy();
-        expect(updatedEvent.ownerOrganizationId).toEqual(organization.id);
+        expect(updatedEvent).toBeTruthy()
+        expect(updatedEvent.ownerOrganizationId).toEqual(organization.id)
 
         expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
           Object {
@@ -135,27 +131,27 @@ describe("UpdateEvent", () => {
             "updatedAt": "[timestamp-6]",
             "updatedBy": "[id-4]",
           }
-        `);
+        `)
 
         const { rows } = await asRoot(pgClient, () =>
           pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
             updatedEvent.id,
           ])
-        );
+        )
 
         if (rows.length !== 1) {
-          throw new Error("Event not found!");
+          throw new Error("Event not found!")
         }
-        expect(rows[0].id).toEqual(updatedEvent.id);
+        expect(rows[0].id).toEqual(updatedEvent.id)
       }
-    );
-  });
+    )
+  })
 
   it("can't update an event while logged out (RLS policy)", async () => {
     const { events } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
+    })
+    const eventId = events[0].id
 
     await runGraphQLQuery(
       `mutation UpdateEvent(
@@ -187,13 +183,13 @@ describe("UpdateEvent", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
+        const message = json.errors![0].message
         expect(message).toEqual(
           "No values were updated in collection 'events' because no values you can update were found matching these criteria."
-        );
+        )
       }
-    );
-  });
-});
+    )
+  })
+})

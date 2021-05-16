@@ -2,95 +2,95 @@ import {
   emailLegalText as legalText,
   fromEmail,
   projectName,
-} from "@app/config";
-import chalk from "chalk";
-import { Task } from "graphile-worker";
-import * as html2text from "html-to-text";
-import mjml2html from "mjml";
-import * as nodemailer from "nodemailer";
-import nunjucks from "nunjucks";
+} from "@app/config"
+import chalk from "chalk"
+import { Task } from "graphile-worker"
+import * as html2text from "html-to-text"
+import mjml2html from "mjml"
+import * as nodemailer from "nodemailer"
+import nunjucks from "nunjucks"
 
-import getTransport from "../transport";
+import getTransport from "../transport"
 
 declare module global {
-  let TEST_EMAILS: any[];
+  let TEST_EMAILS: any[]
 }
 
-global.TEST_EMAILS = [];
+global.TEST_EMAILS = []
 
 const njk = new nunjucks.Environment(
   new nunjucks.FileSystemLoader(`${__dirname}/../../../worker/templates/`)
-);
+)
 
-const isTest = process.env.NODE_ENV === "test";
-const isDev = process.env.NODE_ENV !== "production";
+const isTest = process.env.NODE_ENV === "test"
+const isDev = process.env.NODE_ENV !== "production"
 
 export interface SendEmailPayload {
   options: {
-    from?: string;
-    to: string | string[];
-    subject: string;
-  };
-  template: string;
+    from?: string
+    to: string | string[]
+    subject: string
+  }
+  template: string
   variables: {
-    [varName: string]: any;
-  };
+    [varName: string]: any
+  }
 }
 
 const task: Task = async (inPayload) => {
-  const payload: SendEmailPayload = inPayload as any;
-  const transport = await getTransport();
-  const { options: inOptions, template, variables } = payload;
+  const payload: SendEmailPayload = inPayload as any
+  const transport = await getTransport()
+  const { options: inOptions, template, variables } = payload
   const options = {
     from: fromEmail,
     ...inOptions,
-  };
+  }
   if (template) {
-    const templateFn = await loadTemplate(template);
-    const html = await templateFn(variables);
-    const html2textableHtml = html.replace(/(<\/?)div/g, "$1p");
+    const templateFn = await loadTemplate(template)
+    const html = await templateFn(variables)
+    const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
     const text = html2text
       .fromString(html2textableHtml, {
         wordwrap: 120,
         tags: { img: { format: "skip" } },
       })
-      .replace(/\n\s+\n/g, "\n\n");
-    Object.assign(options, { html, text });
+      .replace(/\n\s+\n/g, "\n\n")
+    Object.assign(options, { html, text })
   }
-  const info = await transport.sendMail(options);
+  const info = await transport.sendMail(options)
   if (isTest) {
-    global.TEST_EMAILS.push(info);
+    global.TEST_EMAILS.push(info)
   } else if (isDev) {
-    const url = nodemailer.getTestMessageUrl(info);
+    const url = nodemailer.getTestMessageUrl(info)
     if (url) {
-      console.log(`Development email preview: ${chalk.blue.underline(url)}`);
+      console.log(`Development email preview: ${chalk.blue.underline(url)}`)
     }
   }
-};
+}
 
-export default task;
+export default task
 
-const templatePromises = {};
+const templatePromises = {}
 export function loadTemplate(template: string) {
   if (isDev || !templatePromises[template]) {
     templatePromises[template] = (async () => {
       if (!template.match(/^[a-zA-Z0-9_.-]+$/)) {
-        throw new Error(`Disallowed template name '${template}'`);
+        throw new Error(`Disallowed template name '${template}'`)
       }
       return (variables: { [varName: string]: any }) => {
         const mjml = njk.render(template, {
           projectName,
           legalText,
           ...variables,
-        });
+        })
 
-        const { html, errors } = mjml2html(mjml);
+        const { html, errors } = mjml2html(mjml)
         if (errors && errors.length) {
-          console.error(errors);
+          console.error(errors)
         }
-        return html;
-      };
-    })();
+        return html
+      }
+    })()
   }
-  return templatePromises[template];
+  return templatePromises[template]
 }

@@ -1,12 +1,12 @@
-import React from "react";
-import { AdminLayout, ErrorAlert, Redirect, SpinPadded } from "@app/components";
-import { useSharedQuery } from "@app/graphql";
-import { PageHeader } from "antd";
-import { NextPage } from "next";
+import React from "react"
+import { AdminLayout, ErrorAlert, Redirect, SpinPadded } from "@app/components"
+import { useSharedQuery } from "@app/graphql"
+import { PageHeader } from "antd"
+import { NextPage } from "next"
 
 const Admin_Main: NextPage = () => {
-  const query = useSharedQuery();
-  const { data, loading, error } = query;
+  const query = useSharedQuery()
+  const { data, loading, error } = query
 
   return (
     <AdminLayout href="/admin" query={query}>
@@ -20,7 +20,7 @@ const Admin_Main: NextPage = () => {
         <Redirect href={`/login?next=${encodeURIComponent("/settings")}`} />
       )}
     </AdminLayout>
-  );
-};
+  )
+}
 
-export default Admin_Main;
+export default Admin_Main

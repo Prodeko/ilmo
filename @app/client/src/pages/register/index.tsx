@@ -4,16 +4,16 @@ import React, {
   useEffect,
   useRef,
   useState,
-} from "react";
-import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined";
-import { ApolloError, useApolloClient } from "@apollo/client";
+} from "react"
+import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined"
+import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   AuthRestrict,
   PasswordStrength,
   Redirect,
   SharedLayout,
-} from "@app/components";
-import { useRegisterMutation, useSharedQuery } from "@app/graphql";
+} from "@app/components"
+import { useRegisterMutation, useSharedQuery } from "@app/graphql"
 import {
   extractError,
   formItemLayout,
@@ -22,18 +22,18 @@ import {
   resetWebsocketConnection,
   setPasswordInfo,
   tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, Tooltip } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import Router from "next/router";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input, Tooltip } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import Router from "next/router"
+import { Store } from "rc-field-form/lib/interface"
 
-import { isSafe } from "../login";
+import { isSafe } from "../login"
 
 interface RegisterProps {
-  next: string | null;
+  next: string | null
 }
 
 /**
@@ -41,16 +41,16 @@ interface RegisterProps {
  * registration form.
  */
 const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const [passwordStrength, setPasswordStrength] = useState<number>(0);
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
-  const next: string = isSafe(rawNext) ? rawNext! : "/";
-  const query = useSharedQuery();
+  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const [passwordStrength, setPasswordStrength] = useState<number>(0)
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
+  const next: string = isSafe(rawNext) ? rawNext! : "/"
+  const query = useSharedQuery()
 
-  const [register] = useRegisterMutation({});
-  const client = useApolloClient();
-  const [confirmDirty, setConfirmDirty] = useState(false);
-  const [form] = useForm();
+  const [register] = useRegisterMutation({})
+  const client = useApolloClient()
+  const [confirmDirty, setConfirmDirty] = useState(false)
+  const [form] = useForm()
 
   const handleSubmit = useCallback(
     async (values: Store) => {
@@ -62,15 +62,15 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
             password: values.password,
             name: values.name,
           },
-        });
+        })
         // Success: refetch
-        resetWebsocketConnection();
-        client.resetStore();
-        Router.push(next);
+        resetWebsocketConnection()
+        client.resetStore()
+        Router.push(next)
       } catch (e) {
-        const code = getCodeFromError(e);
-        const exception = getExceptionFromError(e);
-        const fields: any = exception && exception["fields"];
+        const code = getCodeFromError(e)
+        const exception = getExceptionFromError(e)
+        const fields: any = exception && exception["fields"]
         if (code === "WEAKP") {
           form.setFields([
             {
@@ -80,7 +80,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                 "The server believes this passphrase is too weak, please make it stronger",
               ],
             },
-          ]);
+          ])
         } else if (code === "EMTKN") {
           form.setFields([
             {
@@ -90,7 +90,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                 "An account with this email address has already been registered, consider using the 'Forgot passphrase' function.",
               ],
             },
-          ]);
+          ])
         } else if (code === "NUNIQ" && fields && fields[0] === "username") {
           form.setFields([
             {
@@ -100,7 +100,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                 "An account with this username has already been registered, please try a different username.",
               ],
             },
-          ]);
+          ])
         } else if (code === "23514") {
           form.setFields([
             {
@@ -110,69 +110,69 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
                 "This username is not allowed; usernames must be between 2 and 24 characters long (inclusive), must start with a letter, and must contain only alphanumeric characters and underscores.",
               ],
             },
-          ]);
+          ])
         } else {
-          setError(e);
-          Sentry.captureException(e);
+          setError(e)
+          Sentry.captureException(e)
         }
       }
     },
     [form, register, client, next]
-  );
+  )
 
   const handleConfirmBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setConfirmDirty(confirmDirty || !!value);
+      const value = e.target.value
+      setConfirmDirty(confirmDirty || !!value)
     },
     [setConfirmDirty, confirmDirty]
-  );
+  )
 
   const compareToFirstPassword = useCallback(
     async (_rule: any, value: any) => {
       if (value && value !== form.getFieldValue("password")) {
-        throw "Make sure your passphrase is the same in both passphrase boxes.";
+        throw "Make sure your passphrase is the same in both passphrase boxes."
       }
     },
     [form]
-  );
+  )
 
-  const focusElement = useRef<Input>(null);
+  const focusElement = useRef<Input>(null)
   useEffect(
     () => void (focusElement.current && focusElement.current!.focus()),
     [focusElement]
-  );
+  )
 
-  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false);
-  const [passwordIsDirty, setPasswordIsDirty] = useState(false);
+  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false)
+  const [passwordIsDirty, setPasswordIsDirty] = useState(false)
   const setPasswordFocussed = useCallback(() => {
-    setPasswordIsFocussed(true);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(true)
+  }, [setPasswordIsFocussed])
   const setPasswordNotFocussed = useCallback(() => {
-    setPasswordIsFocussed(false);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(false)
+  }, [setPasswordIsFocussed])
 
   const handleValuesChange = useCallback(
     (changedValues) => {
       setPasswordInfo(
         { setPasswordStrength, setPasswordSuggestions },
         changedValues
-      );
-      setPasswordIsDirty(form.isFieldTouched("password"));
+      )
+      setPasswordIsDirty(form.isFieldTouched("password"))
       if (changedValues.confirm) {
         if (form.isFieldTouched("password")) {
-          form.validateFields(["password"]);
+          form.validateFields(["password"])
         }
       } else if (changedValues.password) {
         if (form.isFieldTouched("confirm")) {
-          form.validateFields(["confirm"]);
+          form.validateFields(["confirm"])
         }
       }
     },
     [form]
-  );
+  )
 
-  const code = getCodeFromError(error);
+  const code = getCodeFromError(error)
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
@@ -347,11 +347,11 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
         )
       }
     </SharedLayout>
-  );
-};
+  )
+}
 
 Register.getInitialProps = async ({ query }) => ({
   next: typeof query.next === "string" ? query.next : null,
-});
+})
 
-export default Register;
+export default Register

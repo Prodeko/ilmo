@@ -1,8 +1,8 @@
 /// <reference types="Cypress" />
 
 context("Organization page", () => {
-  beforeEach(() => cy.serverCommand("clearTestUsers"));
-  beforeEach(() => cy.serverCommand("clearTestOrganizations"));
+  beforeEach(() => cy.serverCommand("clearTestUsers"))
+  beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
   it("renders for owner", () => {
     // Setup
@@ -11,7 +11,7 @@ context("Organization page", () => {
       verified: true,
       isAdmin: true,
       orgs: [["Test Organization", "test-organization"]],
-    });
+    })
 
     // Action
 
@@ -19,6 +19,6 @@ context("Organization page", () => {
     cy.url().should(
       "equal",
       Cypress.env("ROOT_URL") + "/admin/organization/test-organization"
-    );
-  });
-});
+    )
+  })
+})

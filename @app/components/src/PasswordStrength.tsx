@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
-import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined";
-import { Col, Popover, Progress, Row } from "antd";
+import React, { useEffect, useState } from "react"
+import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined"
+import { Col, Popover, Progress, Row } from "antd"
 
 export interface PasswordStrengthProps {
-  passwordStrength: number;
-  suggestions: string[];
-  isDirty: boolean;
-  isFocussed: boolean;
+  passwordStrength: number
+  suggestions: string[]
+  isDirty: boolean
+  isFocussed: boolean
 }
 
 function strengthToPercent(strength: number): number {
   // passwordStrength is a value 0-4
-  return (strength + 1) * 2 * 10;
+  return (strength + 1) * 2 * 10
 }
 
 export function PasswordStrength({
@@ -23,39 +23,39 @@ export function PasswordStrength({
   isDirty = false,
   isFocussed = false,
 }: PasswordStrengthProps) {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     // Auto-display popup
     if (isFocussed && isDirty && suggestions.length > 0) {
-      setVisible(true);
+      setVisible(true)
     }
     // Auto-hide when there's no suggestions
     if (suggestions.length === 0) {
-      setVisible(false);
+      setVisible(false)
     }
-  }, [isDirty, isFocussed, suggestions]);
+  }, [isDirty, isFocussed, suggestions])
 
   // Blur on password field focus loss
   useEffect(() => {
     if (!isFocussed) {
-      setVisible(false);
+      setVisible(false)
     }
-  }, [isFocussed]);
+  }, [isFocussed])
 
-  if (!isDirty) return null;
+  if (!isDirty) return null
 
   const handleVisibleChange = (visible: boolean) => {
-    setVisible(visible);
-  };
+    setVisible(visible)
+  }
 
   const content = (
     <ul>
       {suggestions.map((suggestion, key) => {
-        return <li key={key}>{suggestion}</li>;
+        return <li key={key}>{suggestion}</li>
       })}
     </ul>
-  );
+  )
 
   return (
     <Row style={{ lineHeight: "2rem" }}>
@@ -88,5 +88,5 @@ export function PasswordStrength({
         </Popover>
       </Col>
     </Row>
-  );
+  )
 }

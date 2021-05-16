@@ -1,7 +1,7 @@
-import React from "react";
-import Link from "next/link";
+import React from "react"
+import Link from "next/link"
 
-import { H2, P } from "./Text";
+import { H2, P } from "./Text"
 
 export function ErrorOccurred() {
   return (
@@ -17,5 +17,5 @@ export function ErrorOccurred() {
         </Link>
       </P>
     </div>
-  );
+  )
 }

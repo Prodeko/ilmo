@@ -22,48 +22,42 @@
 
 /// <reference types="Cypress" />
 
-import "cypress-file-upload";
+import "cypress-file-upload"
 
-type Chainable<Subject = any> = Cypress.Chainable<Subject>;
+type Chainable<Subject = any> = Cypress.Chainable<Subject>
 
 type User = {
-  id: string;
-  username: string;
-  name: string;
-  is_admin: boolean;
-  is_verified: boolean;
-};
+  id: string
+  username: string
+  name: string
+  is_admin: boolean
+  is_verified: boolean
+}
 
 function getCy(cyName: string): Chainable<JQuery<HTMLElement>> {
-  return cy.get(`[data-cy=${cyName}]`);
+  return cy.get(`[data-cy=${cyName}]`)
 }
 
 /**
  * Deletes all users with username starting 'test'.
  */
-function serverCommand(
-  command: "clearTestUsers"
-): Chainable<{
-  success: true;
-}>;
+function serverCommand(command: "clearTestUsers"): Chainable<{
+  success: true
+}>
 
 /**
  * Deletes all organizations with slug starting 'test'.
  */
-function serverCommand(
-  command: "clearTestOrganizations"
-): Chainable<{
-  success: true;
-}>;
+function serverCommand(command: "clearTestOrganizations"): Chainable<{
+  success: true
+}>
 
 /**
  * Deletes all event data generated for e2e tests.
  */
-function serverCommand(
-  command: "clearTestEventData"
-): Chainable<{
-  success: true;
-}>;
+function serverCommand(command: "clearTestEventData"): Chainable<{
+  success: true
+}>
 
 /**
  * Generate event data for e2e tests.
@@ -72,8 +66,8 @@ function serverCommand(
   command: "createTestEventData",
   payload?: {}
 ): Chainable<{
-  success: true;
-}>;
+  success: true
+}>
 
 /**
  * Creates a verified or unverified user, bypassing all safety checks.
@@ -91,18 +85,18 @@ function serverCommand(
 function serverCommand(
   command: "createUser",
   payload: {
-    username?: string;
-    email?: string;
-    verified?: boolean;
-    name?: string;
-    password?: string;
-    next?: string;
+    username?: string
+    email?: string
+    verified?: boolean
+    name?: string
+    password?: string
+    next?: string
   }
 ): Chainable<{
-  user: User;
-  userEmailId: string;
-  verificationToken: string | null;
-}>;
+  user: User
+  userEmailId: string
+  verificationToken: string | null
+}>
 
 /**
  * Gets the secrets for the specified email, allowing Cypress to perform email
@@ -112,9 +106,9 @@ function serverCommand(
   command: "getEmailSecrets",
   payload?: { email?: string }
 ): Chainable<{
-  user_email_id: string;
-  verification_token: string | null;
-}>;
+  user_email_id: string
+  verification_token: string | null
+}>
 
 // The actual implementation of the 'serverCommand' function.
 function serverCommand(command: string, payload?: any): any {
@@ -122,41 +116,41 @@ function serverCommand(command: string, payload?: any): any {
     "ROOT_URL"
   )}/cypressServerCommand?command=${encodeURIComponent(command)}${
     payload ? `&payload=${encodeURIComponent(JSON.stringify(payload))}` : ""
-  }`;
+  }`
   // GET the url, and return the response body (JSON is parsed automatically)
-  return cy.request(url).its("body");
+  return cy.request(url).its("body")
 }
 
 function login(payload?: {
-  next?: string;
-  username?: string;
-  name?: string;
-  verified?: boolean;
-  isAdmin?: boolean;
-  password?: string;
-  orgs?: [[string, string] | [string, string, boolean]];
-  existingUser?: true;
+  next?: string
+  username?: string
+  name?: string
+  verified?: boolean
+  isAdmin?: boolean
+  password?: string
+  orgs?: [[string, string] | [string, string, boolean]]
+  existingUser?: true
 }): Chainable<Window> {
   return cy.visit(
     Cypress.env("ROOT_URL") +
       `/cypressServerCommand?command=login&payload=${encodeURIComponent(
         JSON.stringify(payload)
       )}`
-  );
+  )
 }
 
-Cypress.Commands.add("getCy", getCy);
-Cypress.Commands.add("serverCommand", serverCommand);
-Cypress.Commands.add("login", login);
+Cypress.Commands.add("getCy", getCy)
+Cypress.Commands.add("serverCommand", serverCommand)
+Cypress.Commands.add("login", login)
 
-export {}; // Make this a module so we can `declare global`
+export {} // Make this a module so we can `declare global`
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      getCy: typeof getCy;
-      serverCommand: typeof serverCommand;
-      login: typeof login;
+      getCy: typeof getCy
+      serverCommand: typeof serverCommand
+      login: typeof login
     }
   }
 }

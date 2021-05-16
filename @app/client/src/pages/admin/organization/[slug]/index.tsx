@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"
 import {
   AdminLayout,
   ORGANIZATION_RESULTS_PER_PAGE,
@@ -6,24 +6,24 @@ import {
   UpdateOrganizationForm,
   useOrganizationLoading,
   useQuerySlug,
-} from "@app/components";
+} from "@app/components"
 import {
   OrganizationPage_OrganizationFragment,
   useOrganizationPageQuery,
-} from "@app/graphql";
-import { Col, PageHeader, Row } from "antd";
-import { NextPage } from "next";
+} from "@app/graphql"
+import { Col, PageHeader, Row } from "antd"
+import { NextPage } from "next"
 
 const Admin_Organizations: NextPage = () => {
-  const slug = useQuerySlug();
-  const [page, setPage] = useState(1);
+  const slug = useQuerySlug()
+  const [page, setPage] = useState(1)
   const query = useOrganizationPageQuery({
     variables: { slug, offset: (page - 1) * ORGANIZATION_RESULTS_PER_PAGE },
-  });
-  const organizationLoadingElement = useOrganizationLoading(query);
-  const organization = query?.data?.organizationBySlug;
+  })
+  const organizationLoadingElement = useOrganizationLoading(query)
+  const organization = query?.data?.organizationBySlug
 
-  const props = { page, setPage };
+  const props = { page, setPage }
 
   return (
     <AdminLayout href="/admin/organization/[slug]" query={query}>
@@ -31,17 +31,17 @@ const Admin_Organizations: NextPage = () => {
         <OrganizationPageInner organization={organization!} {...props} />
       )}
     </AdminLayout>
-  );
-};
+  )
+}
 
 interface OrganizationPageInnerProps {
-  organization: OrganizationPage_OrganizationFragment;
-  page: number;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
+  organization: OrganizationPage_OrganizationFragment
+  page: number
+  setPage: React.Dispatch<React.SetStateAction<number>>
 }
 
 const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
-  const { organization, ...rest } = props;
+  const { organization, ...rest } = props
 
   return (
     <Row>
@@ -51,7 +51,7 @@ const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
         <OrganizationMembers organization={organization} {...rest} />
       </Col>
     </Row>
-  );
-};
+  )
+}
 
-export default Admin_Organizations;
+export default Admin_Organizations

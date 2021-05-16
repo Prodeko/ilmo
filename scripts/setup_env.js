@@ -8,13 +8,13 @@ const {
   updateDotenv,
   readDotenv,
   runSync,
-} = require("./_setup_utils");
-const inquirer = require("inquirer");
+} = require("./_setup_utils")
+const inquirer = require("inquirer")
 
 runMain(async () => {
-  await checkGit();
-  const config = (await readDotenv()) || {};
-  const mergeAnswers = (cb) => (answers) => cb({ ...config, ...answers });
+  await checkGit()
+  const config = (await readDotenv()) || {}
+  const mergeAnswers = (cb) => (answers) => cb({ ...config, ...answers })
   const questions = [
     {
       type: "input",
@@ -58,23 +58,23 @@ runMain(async () => {
       default: "redis://127.0.0.1:6379",
       when: !("REDIS_URL" in config),
     },
-  ];
-  const answers = await inquirer.prompt(questions);
+  ]
+  const answers = await inquirer.prompt(questions)
 
   await withDotenvUpdater(answers, (add) =>
     updateDotenv(add, {
       ...config,
       ...answers,
     })
-  );
+  )
 
   // And perform setup
-  runSync(yarnCmd, ["server", "build"]);
+  runSync(yarnCmd, ["server", "build"])
 
   if (process.argv[2] === "auto") {
     // We're advancing automatically
     console.log(`\
-✅ Environment file setup success`);
+✅ Environment file setup success`)
   } else {
     outro(`\
 ✅ Environment file setup success
@@ -83,6 +83,6 @@ runMain(async () => {
 
   ${yarnCmd} setup:db
 
-If you're not using graphile-migrate, then you should run your preferred migration framework now.  This step should also include creating the necessary schemas and roles.  Consult the generated .env file for what is needed.`);
+If you're not using graphile-migrate, then you should run your preferred migration framework now.  This step should also include creating the necessary schemas and roles.  Consult the generated .env file for what is needed.`)
   }
-});
+})

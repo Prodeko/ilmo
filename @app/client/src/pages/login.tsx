@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import LockOutlined from "@ant-design/icons/LockOutlined";
-import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
-import UserOutlined from "@ant-design/icons/UserOutlined";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import LockOutlined from "@ant-design/icons/LockOutlined"
+import UserAddOutlined from "@ant-design/icons/UserAddOutlined"
+import UserOutlined from "@ant-design/icons/UserOutlined"
+import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   AuthRestrict,
   ButtonLink,
@@ -12,41 +12,41 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
   SocialLoginOptions,
-} from "@app/components";
-import { useLoginMutation, useSharedQuery } from "@app/graphql";
+} from "@app/components"
+import { useLoginMutation, useSharedQuery } from "@app/graphql"
 import {
   extractError,
   getCodeFromError,
   resetWebsocketConnection,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import Link from "next/link";
-import Router from "next/router";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import Link from "next/link"
+import Router from "next/router"
+import { Store } from "rc-field-form/lib/interface"
 
 function hasErrors(fieldsError: Object) {
-  return Object.keys(fieldsError).some((field) => fieldsError[field]);
+  return Object.keys(fieldsError).some((field) => fieldsError[field])
 }
 
 interface LoginProps {
-  next: string | null;
+  next: string | null
 }
 
 export function isSafe(nextUrl: string | null) {
-  return (nextUrl && nextUrl[0] === "/") || false;
+  return (nextUrl && nextUrl[0] === "/") || false
 }
 
 /**
  * Login page just renders the standard layout and embeds the login form
  */
 const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const [showLogin, setShowLogin] = useState<boolean>(false);
-  const next: string = isSafe(rawNext) ? rawNext! : "/";
-  const query = useSharedQuery();
+  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const [showLogin, setShowLogin] = useState<boolean>(false)
+  const next: string = isSafe(rawNext) ? rawNext! : "/"
+  const query = useSharedQuery()
 
   return (
     <SharedLayout
@@ -111,20 +111,20 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
         )
       }
     </SharedLayout>
-  );
-};
+  )
+}
 
 Login.getInitialProps = async ({ query }) => ({
   next: typeof query.next === "string" ? query.next : null,
-});
+})
 
-export default Login;
+export default Login
 
 interface LoginFormProps {
-  onSuccessRedirectTo: string;
-  error: Error | ApolloError | null;
-  setError: (error: Error | ApolloError | null) => void;
-  onCancel: () => void;
+  onSuccessRedirectTo: string
+  error: Error | ApolloError | null
+  setError: (error: Error | ApolloError | null) => void
+  onCancel: () => void
 }
 
 function LoginForm({
@@ -133,27 +133,27 @@ function LoginForm({
   error,
   setError,
 }: LoginFormProps) {
-  const [form] = useForm();
-  const [login] = useLoginMutation({});
-  const client = useApolloClient();
+  const [form] = useForm()
+  const [login] = useLoginMutation({})
+  const client = useApolloClient()
 
-  const [submitDisabled, setSubmitDisabled] = useState(false);
+  const [submitDisabled, setSubmitDisabled] = useState(false)
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setError(null);
+      setError(null)
       try {
         await login({
           variables: {
             username: values.username,
             password: values.password,
           },
-        });
+        })
         // Success: refetch
-        resetWebsocketConnection();
-        client.resetStore();
-        Router.push(onSuccessRedirectTo);
+        resetWebsocketConnection()
+        client.resetStore()
+        Router.push(onSuccessRedirectTo)
       } catch (e) {
-        const code = getCodeFromError(e);
+        const code = getCodeFromError(e)
         if (code === "CREDS") {
           form.setFields([
             {
@@ -161,28 +161,28 @@ function LoginForm({
               value: form.getFieldValue("password"),
               errors: ["Incorrect username or passphrase"],
             },
-          ]);
-          setSubmitDisabled(true);
+          ])
+          setSubmitDisabled(true)
         } else {
-          setError(e);
-          Sentry.captureException(e);
+          setError(e)
+          Sentry.captureException(e)
         }
       }
     },
     [client, form, login, onSuccessRedirectTo, setError]
-  );
+  )
 
-  const focusElement = useRef<Input>(null);
+  const focusElement = useRef<Input>(null)
   useEffect(
     () => void (focusElement.current && focusElement.current!.focus()),
     [focusElement]
-  );
+  )
 
   const handleValuesChange = useCallback(() => {
-    setSubmitDisabled(hasErrors(form.getFieldsError().length !== 0));
-  }, [form]);
+    setSubmitDisabled(hasErrors(form.getFieldsError().length !== 0))
+  }, [form])
 
-  const code = getCodeFromError(error);
+  const code = getCodeFromError(error)
 
   return (
     <Form
@@ -255,5 +255,5 @@ function LoginForm({
         </a>
       </Form.Item>
     </Form>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { ImageLoader } from "next/image";
+import { ImageLoader } from "next/image"
 
 /**
  * next/image doesn't make it particularly easy to handle file uploads
@@ -7,5 +7,5 @@ import { ImageLoader } from "next/image";
  * Image component from next/image.
  */
 export const uploadsLoader: ImageLoader = ({ src }) => {
-  return src.startsWith("/") ? `${process.env.ROOT_URL}${src}` : src;
-};
+  return src.startsWith("/") ? `${process.env.ROOT_URL}${src}` : src
+}

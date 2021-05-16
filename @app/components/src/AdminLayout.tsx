@@ -1,49 +1,49 @@
-import * as qs from "querystring";
+import * as qs from "querystring"
 
-import React, { useState } from "react";
-import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone";
-import { QueryResult } from "@apollo/client";
-import { SharedLayout_QueryFragment } from "@app/graphql";
-import { Layout } from "antd";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+import React, { useState } from "react"
+import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
+import { QueryResult } from "@apollo/client"
+import { SharedLayout_QueryFragment } from "@app/graphql"
+import { Layout } from "antd"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
-import { AdminSideMenu, MenuItem } from "./AdminSideMenu";
-import { Redirect } from "./Redirect";
+import { AdminSideMenu, MenuItem } from "./AdminSideMenu"
+import { Redirect } from "./Redirect"
 import {
   AuthRestrict,
   contentMinHeight,
   SharedLayout,
   SharedLayoutChildProps,
-} from "./SharedLayout";
-import { StandardWidth } from "./StandardWidth";
+} from "./SharedLayout"
+import { StandardWidth } from "./StandardWidth"
 
-const { Sider, Content } = Layout;
+const { Sider, Content } = Layout
 
 const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
   if (items?.some((item) => item.key === key)) {
-    return items.find((item) => item.key === key);
+    return items.find((item) => item.key === key)
   }
   const itemsWithChildren = items.filter(
     (item) =>
       typeof item.target !== "string" && typeof item.target !== "function"
-  );
+  )
   for (let i = 0; i < itemsWithChildren.length; i++) {
-    const res = findPage(key, itemsWithChildren[i].target as MenuItem[]);
+    const res = findPage(key, itemsWithChildren[i].target as MenuItem[])
     if (res) {
-      return res;
+      return res
     }
   }
-  return undefined;
-};
+  return undefined
+}
 
 export interface AdminLayoutProps {
   query: Pick<
     QueryResult<SharedLayout_QueryFragment>,
     "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >;
-  href: string;
-  children: React.ReactNode;
+  >
+  href: string
+  children: React.ReactNode
 }
 
 export function AdminLayout({
@@ -51,8 +51,8 @@ export function AdminLayout({
   href: inHref,
   children,
 }: AdminLayoutProps) {
-  const { t } = useTranslation("admin");
-  const [siderCollapsed, setSiderCollapsed] = useState(false);
+  const { t } = useTranslation("admin")
+  const [siderCollapsed, setSiderCollapsed] = useState(false)
 
   const basicMenuItems = [
     {
@@ -65,10 +65,10 @@ export function AdminLayout({
       title: t("sider.titles.emails"),
       target: "/admin/emails",
     },
-  ];
+  ]
 
   const organizationMemberships =
-    query.data?.currentUser?.organizationMemberships.nodes;
+    query.data?.currentUser?.organizationMemberships.nodes
 
   const items: MenuItem[] = query.loading
     ? [...basicMenuItems]
@@ -80,17 +80,15 @@ export function AdminLayout({
           cy: "admin-sider-organizations",
           target: organizationMemberships
             ? [
-                ...organizationMemberships?.map(
-                  (organization): MenuItem => {
-                    const title = organization.organization?.name || "";
-                    const slug = organization.organization?.slug;
-                    return {
-                      title,
-                      key: `/admin/organization/${slug}`,
-                      target: `/admin/organization/${slug}`,
-                    };
+                ...organizationMemberships?.map((organization): MenuItem => {
+                  const title = organization.organization?.name || ""
+                  const slug = organization.organization?.slug
+                  return {
+                    title,
+                    key: `/admin/organization/${slug}`,
+                    target: `/admin/organization/${slug}`,
                   }
-                ),
+                }),
                 {
                   title: t("sider.titles.createOrganization"),
                   cy: "admin-sider-create-organization",
@@ -137,14 +135,14 @@ export function AdminLayout({
             },
           ],
         },
-      ];
+      ]
 
-  const page = findPage(String(inHref), items) || items[0];
-  const href = page.key;
+  const page = findPage(String(inHref), items) || items[0]
+  const href = page.key
 
-  const router = useRouter();
+  const router = useRouter()
   const fullHref =
-    href + (router && router.query ? `?${qs.stringify(router.query)}` : "");
+    href + (router && router.query ? `?${qs.stringify(router.query)}` : "")
 
   return (
     <SharedLayout
@@ -172,5 +170,5 @@ export function AdminLayout({
         )
       }
     </SharedLayout>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http"
 
 import {
   ApolloLink,
@@ -6,22 +6,22 @@ import {
   NextLink,
   Observable,
   Operation,
-} from "@apollo/client";
-import { execute, getOperationAST } from "graphql";
-import { HttpRequestHandler } from "postgraphile";
+} from "@apollo/client"
+import { execute, getOperationAST } from "graphql"
+import { HttpRequestHandler } from "postgraphile"
 
 export interface GraphileApolloLinkInterface {
   /** The request object. */
-  req: IncomingMessage;
+  req: IncomingMessage
 
   /** The response object. */
-  res: ServerResponse;
+  res: ServerResponse
 
   /** The instance of the middleware returned by calling `postgraphile()` */
-  postgraphileMiddleware: HttpRequestHandler;
+  postgraphileMiddleware: HttpRequestHandler
 
   /** An optional rootValue to use inside resolvers. */
-  rootValue?: any;
+  rootValue?: any
 }
 
 /**
@@ -30,52 +30,53 @@ export interface GraphileApolloLinkInterface {
  */
 export class GraphileApolloLink extends ApolloLink {
   constructor(private options: GraphileApolloLinkInterface) {
-    super();
+    super()
   }
 
   request(
     operation: Operation,
     _forward?: NextLink
   ): Observable<FetchResult> | null {
-    const { postgraphileMiddleware, req, res, rootValue } = this.options;
+    const { postgraphileMiddleware, req, res, rootValue } = this.options
     return new Observable((observer) => {
-      (async () => {
+      ;(async () => {
         try {
-          const op = getOperationAST(operation.query, operation.operationName);
+          const op = getOperationAST(operation.query, operation.operationName)
           if (!op || op.operation !== "query") {
             if (!observer.closed) {
               /* Only do queries (not subscriptions) on server side */
-              observer.complete();
+              observer.complete()
             }
-            return;
+            return
           }
-          const schema = await postgraphileMiddleware.getGraphQLSchema();
-          const data = await postgraphileMiddleware.withPostGraphileContextFromReqRes(
-            req,
-            res,
-            {},
-            (context) =>
-              execute(
-                schema,
-                operation.query,
-                rootValue || {},
-                context,
-                operation.variables,
-                operation.operationName
-              )
-          );
+          const schema = await postgraphileMiddleware.getGraphQLSchema()
+          const data =
+            await postgraphileMiddleware.withPostGraphileContextFromReqRes(
+              req,
+              res,
+              {},
+              (context) =>
+                execute(
+                  schema,
+                  operation.query,
+                  rootValue || {},
+                  context,
+                  operation.variables,
+                  operation.operationName
+                )
+            )
           if (!observer.closed) {
-            observer.next(data);
-            observer.complete();
+            observer.next(data)
+            observer.complete()
           }
         } catch (e) {
           if (!observer.closed) {
-            observer.error(e);
+            observer.error(e)
           } else {
-            console.error(e);
+            console.error(e)
           }
         }
-      })();
-    });
+      })()
+    })
   }
 }

@@ -7,7 +7,7 @@ speed. All components of this project are named `@app/*` so that we can
 reference them from each other in a straightforward manner, e.g.
 
 ```ts
-import { useAppQuery } from "@app/graphql";
+import { useAppQuery } from "@app/graphql"
 ```
 
 ## Packages

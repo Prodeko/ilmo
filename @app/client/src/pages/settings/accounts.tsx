@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react"
 import {
   ErrorAlert,
   ProdekoIcon,
@@ -6,15 +6,15 @@ import {
   SocialLoginOptions,
   SpinPadded,
   Strong,
-} from "@app/components";
+} from "@app/components"
 import {
   useCurrentUserAuthenticationsQuery,
   UserAuthentication,
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
-} from "@app/graphql";
-import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd";
-import { NextPage } from "next";
+} from "@app/graphql"
+import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd"
+import { NextPage } from "next"
 
 const AUTH_NAME_LOOKUP = {
   // Could add more login options in the future
@@ -22,16 +22,16 @@ const AUTH_NAME_LOOKUP = {
   // facebook: "Facebook",
   // twitter: "Twitter",
   oauth2: "Prodeko",
-};
+}
 function authName(service: string) {
-  return AUTH_NAME_LOOKUP[service] || service;
+  return AUTH_NAME_LOOKUP[service] || service
 }
 
 const AUTH_ICON_LOOKUP = {
   oauth2: <ProdekoIcon size="25px" />,
-};
+}
 function authAvatar(service: string) {
-  const icon = AUTH_ICON_LOOKUP[service] || null;
+  const icon = AUTH_ICON_LOOKUP[service] || null
   if (icon) {
     return (
       <Avatar
@@ -42,30 +42,30 @@ function authAvatar(service: string) {
           verticalAlign: "sub",
         }}
       />
-    );
+    )
   }
 }
 
 function UnlinkAccountButton({ id }: { id: string }) {
-  const [mutate] = useUnlinkUserAuthenticationMutation();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [mutate] = useUnlinkUserAuthenticationMutation()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const handleOpenModal = useCallback(() => {
-    setModalOpen(true);
-  }, [setModalOpen]);
+    setModalOpen(true)
+  }, [setModalOpen])
   const handleCloseModal = useCallback(() => {
-    setModalOpen(false);
-  }, [setModalOpen]);
+    setModalOpen(false)
+  }, [setModalOpen])
   const handleUnlink = useCallback(async () => {
-    setModalOpen(false);
-    setDeleting(true);
+    setModalOpen(false)
+    setDeleting(true)
     try {
-      await mutate({ variables: { id } });
+      await mutate({ variables: { id } })
     } catch (e) {
-      setDeleting(false);
+      setDeleting(false)
     }
-  }, [id, mutate]);
+  }, [id, mutate])
 
   return (
     <>
@@ -82,7 +82,7 @@ function UnlinkAccountButton({ id }: { id: string }) {
         {deleting ? <Spin /> : "Unlink"}
       </a>
     </>
-  );
+  )
 }
 
 function renderAuth(
@@ -101,11 +101,11 @@ function renderAuth(
         title={<Strong>{authName(auth.service)}</Strong>}
       />
     </List.Item>
-  );
+  )
 }
 
 const Settings_Accounts: NextPage = () => {
-  const { data, loading, error } = useCurrentUserAuthenticationsQuery();
+  const { data, loading, error } = useCurrentUserAuthenticationsQuery()
 
   const linkedAccounts =
     loading || !data || !data.currentUser ? (
@@ -117,9 +117,9 @@ const Settings_Accounts: NextPage = () => {
         size="large"
         bordered
       />
-    );
+    )
 
-  const query = useSharedQuery();
+  const query = useSharedQuery()
 
   return (
     <SettingsLayout href="/settings/accounts" query={query}>
@@ -132,7 +132,7 @@ const Settings_Accounts: NextPage = () => {
         />
       </Card>
     </SettingsLayout>
-  );
-};
+  )
+}
 
-export default Settings_Accounts;
+export default Settings_Accounts

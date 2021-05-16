@@ -1,18 +1,18 @@
-import React, { useCallback, useState } from "react";
-import { useApolloClient } from "@apollo/client";
-import { Event, EventCategory } from "@app/graphql";
-import * as Sentry from "@sentry/react";
-import { Button, message, Popconfirm, Space } from "antd";
-import useTranslation from "next-translate/useTranslation";
+import React, { useCallback, useState } from "react"
+import { useApolloClient } from "@apollo/client"
+import { Event, EventCategory } from "@app/graphql"
+import * as Sentry from "@sentry/react"
+import { Button, message, Popconfirm, Space } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
-import { ButtonLink, ErrorBanner } from ".";
+import { ButtonLink, ErrorBanner } from "."
 
 interface AdminTableActionsProps {
-  adminUrl: string;
-  bannerErrorText?: JSX.Element;
-  dataType: Event | EventCategory;
-  deleteMutation: any;
-  deleteConfirmTranslate: string;
+  adminUrl: string
+  bannerErrorText?: JSX.Element
+  dataType: Event | EventCategory
+  deleteMutation: any
+  deleteConfirmTranslate: string
 }
 
 export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
@@ -22,24 +22,24 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   deleteMutation,
   deleteConfirmTranslate,
 }) => {
-  const { t } = useTranslation("admin");
-  const client = useApolloClient();
-  const [deleteDataType] = deleteMutation();
-  const [error, setError] = useState<Error | null>(null);
+  const { t } = useTranslation("admin")
+  const client = useApolloClient()
+  const [deleteDataType] = deleteMutation()
+  const [error, setError] = useState<Error | null>(null)
 
   const doDelete = useCallback(async () => {
     try {
       await deleteDataType({
         variables: { id: dataType?.id },
-      });
+      })
       // Success: refetch
-      client.resetStore();
-      message.info(t("notifications.deleteSuccess"));
+      client.resetStore()
+      message.info(t("notifications.deleteSuccess"))
     } catch (e) {
-      Sentry.captureException(e);
-      setError(e);
+      Sentry.captureException(e)
+      setError(e)
     }
-  }, [client, deleteDataType, dataType, t]);
+  }, [client, deleteDataType, dataType, t])
 
   return (
     <>
@@ -73,5 +73,5 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
         </ErrorBanner>
       ) : null}
     </>
-  );
-};
+  )
+}

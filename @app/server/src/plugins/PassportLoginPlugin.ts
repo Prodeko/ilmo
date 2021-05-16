@@ -1,7 +1,7 @@
-import { gql, makeExtendSchemaPlugin } from "graphile-utils";
+import { gql, makeExtendSchemaPlugin } from "graphile-utils"
 
-import { OurGraphQLContext } from "../middleware/installPostGraphile";
-import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors";
+import { OurGraphQLContext } from "../middleware/installPostGraphile"
+import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors"
 
 const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
   typeDefs: gql`
@@ -88,9 +88,9 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
   resolvers: {
     Mutation: {
       async register(_mutation, args, context: OurGraphQLContext, resolveInfo) {
-        const { selectGraphQLResultFromTable } = resolveInfo.graphile;
-        const { username, password, email, name, avatarUrl } = args.input;
-        const { rootPgPool, login, pgClient } = context;
+        const { selectGraphQLResultFromTable } = resolveInfo.graphile
+        const { username, password, email, name, avatarUrl } = args.input
+        const { rootPgPool, login, pgClient } = context
         try {
           // Call our login function to find out if the username/password combination exists
           const {
@@ -114,12 +114,12 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
             select new_user.id as user_id, new_session.uuid as session_id
             from new_user, new_session`,
             [username, email, name, avatarUrl, password]
-          );
+          )
 
           if (!details || !details.user_id) {
-            const e = new Error("Registration failed");
-            e["code"] = "FFFFF";
-            throw e;
+            const e = new Error("Registration failed")
+            e["code"] = "FFFFF"
+            throw e
           }
 
           if (details.session_id) {
@@ -127,50 +127,50 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
             await pgClient.query(
               `select set_config('jwt.claims.session_id', $1, true)`,
               [details.session_id]
-            );
+            )
 
             // Tell Passport.js we're logged in
-            await login({ session_id: details.session_id });
+            await login({ session_id: details.session_id })
           }
 
           // Fetch the data that was requested from GraphQL, and return it
-          const sql = build.pgSql;
+          const sql = build.pgSql
           const [row] = await selectGraphQLResultFromTable(
             sql.fragment`app_public.users`,
             (tableAlias, sqlBuilder) => {
               sqlBuilder.where(
                 sql.fragment`${tableAlias}.id = ${sql.value(details.user_id)}`
-              );
+              )
             }
-          );
+          )
           return {
             data: row,
-          };
+          }
         } catch (e) {
-          const { code } = e;
+          const { code } = e
           const safeErrorCodes = [
             "WEAKP",
             "LOCKD",
             "EMTKN",
             ...Object.keys(ERROR_MESSAGE_OVERRIDES),
-          ];
+          ]
           if (safeErrorCodes.includes(code)) {
-            throw e;
+            throw e
           } else {
             console.error(
               "Unrecognised error in PassportLoginPlugin; replacing with sanitized version"
-            );
-            console.error(e);
-            const error = new Error("Registration failed");
-            error["code"] = code;
-            throw error;
+            )
+            console.error(e)
+            const error = new Error("Registration failed")
+            error["code"] = code
+            throw error
           }
         }
       },
       async login(_mutation, args, context: OurGraphQLContext, resolveInfo) {
-        const { selectGraphQLResultFromTable } = resolveInfo.graphile;
-        const { username, password } = args.input;
-        const { rootPgPool, login, pgClient } = context;
+        const { selectGraphQLResultFromTable } = resolveInfo.graphile
+        const { username, password } = args.input
+        const { rootPgPool, login, pgClient } = context
         try {
           // Call our login function to find out if the username/password combination exists
           const {
@@ -178,59 +178,59 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
           } = await rootPgPool.query(
             `select sessions.* from app_private.login($1, $2) sessions where not (sessions is null)`,
             [username, password]
-          );
+          )
 
           if (!session) {
-            const error = new Error("Incorrect username/password");
-            error["code"] = "CREDS";
-            throw error;
+            const error = new Error("Incorrect username/password")
+            error["code"] = "CREDS"
+            throw error
           }
 
           if (session.uuid) {
             // Tell Passport.js we're logged in
-            await login({ session_id: session.uuid });
+            await login({ session_id: session.uuid })
           }
 
           // Get session_id from PG
           await pgClient.query(
             `select set_config('jwt.claims.session_id', $1, true)`,
             [session.uuid]
-          );
+          )
 
           // Fetch the data that was requested from GraphQL, and return it
-          const sql = build.pgSql;
+          const sql = build.pgSql
           const [row] = await selectGraphQLResultFromTable(
             sql.fragment`app_public.users`,
             (tableAlias, sqlBuilder) => {
               sqlBuilder.where(
                 sql.fragment`${tableAlias}.id = app_public.current_user_id()`
-              );
+              )
             }
-          );
+          )
           return {
             data: row,
-          };
+          }
         } catch (e) {
-          const { code } = e;
-          const safeErrorCodes = ["LOCKD", "CREDS"];
+          const { code } = e
+          const safeErrorCodes = ["LOCKD", "CREDS"]
           if (safeErrorCodes.includes(code)) {
-            throw e;
+            throw e
           } else {
-            console.error(e);
-            const error = new Error("Login failed");
-            error["code"] = e.code;
-            throw error;
+            console.error(e)
+            const error = new Error("Login failed")
+            error["code"] = e.code
+            throw error
           }
         }
       },
 
       async logout(_mutation, _args, context: OurGraphQLContext, _resolveInfo) {
-        const { pgClient, logout } = context;
-        await pgClient.query("select app_public.logout();");
-        await logout();
+        const { pgClient, logout } = context
+        await pgClient.query("select app_public.logout();")
+        await logout()
         return {
           success: true,
-        };
+        }
       },
 
       async resetPassword(
@@ -239,13 +239,8 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
         context: OurGraphQLContext,
         _resolveInfo
       ) {
-        const { rootPgPool } = context;
-        const {
-          userId,
-          resetToken,
-          newPassword,
-          clientMutationId,
-        } = args.input;
+        const { rootPgPool } = context
+        const { userId, resetToken, newPassword, clientMutationId } = args.input
 
         // Since the `reset_password` function needs to keep track of attempts
         // for security, we cannot risk the transaction being rolled back by a
@@ -257,15 +252,15 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
         } = await rootPgPool.query(
           `select app_private.reset_password($1, $2, $3) as success`,
           [userId, resetToken, newPassword]
-        );
+        )
 
         return {
           clientMutationId,
           success: row?.success,
-        };
+        }
       },
     },
   },
-}));
+}))
 
-export default PassportLoginPlugin;
+export default PassportLoginPlugin

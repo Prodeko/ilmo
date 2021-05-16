@@ -1,8 +1,8 @@
-import { deleteTestData, runGraphQLQuery, setup, teardown } from "../helpers";
+import { deleteTestData, runGraphQLQuery, setup, teardown } from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 test("languages query", async () => {
   await runGraphQLQuery(
@@ -22,10 +22,10 @@ test("languages query", async () => {
 
     // This function runs all your test assertions:
     async (json) => {
-      expect(json.errors).toBeFalsy();
-      expect(json.data).toBeTruthy();
-      expect(json.data!.languages.defaultLanguage).toBe("fi");
-      expect(json.data!.languages.supportedLanguages).toEqual(["fi", "en"]);
+      expect(json.errors).toBeFalsy()
+      expect(json.data).toBeTruthy()
+      expect(json.data!.languages.defaultLanguage).toBe("fi")
+      expect(json.data!.languages.supportedLanguages).toEqual(["fi", "en"])
     }
-  );
-});
+  )
+})

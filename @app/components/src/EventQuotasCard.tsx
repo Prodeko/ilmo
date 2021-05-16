@@ -1,26 +1,24 @@
-import React from 'react'
-import { EventPage_EventFragment, Registration } from '@app/graphql';
-import { Button, Card } from 'antd';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
-import useTranslation from 'next-translate/useTranslation';
+import React from "react"
+import { EventPage_EventFragment, Registration } from "@app/graphql"
+import { Button, Card } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import useTranslation from "next-translate/useTranslation"
 
-import { Link, ProgressBar } from '.';
+import { Link, ProgressBar } from "."
 
 interface EventQuotasCardProps {
-  event: EventPage_EventFragment;
+  event: EventPage_EventFragment
   registrations: Registration[]
 }
 
-export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({ event, registrations }) => {
-  const { t, lang } = useTranslation("events");
-  const screens = useBreakpoint();
-  const isMobile = screens["xs"];
-  const {
-    id: eventId,
-    signupClosed,
-    signupUpcoming,
-    quotas,
-  } = event;
+export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
+  event,
+  registrations,
+}) => {
+  const { t, lang } = useTranslation("events")
+  const screens = useBreakpoint()
+  const isMobile = screens["xs"]
+  const { id: eventId, signupClosed, signupUpcoming, quotas } = event
 
   return (
     <Card
@@ -34,11 +32,11 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({ event, registr
       bordered
     >
       {quotas?.nodes.map((quota, i) => {
-        const { id: quotaId, title, size } = quota;
+        const { id: quotaId, title, size } = quota
         const totalCount = registrations.filter(
           (r) => r?.quota?.id === quotaId
-        ).length;
-        const percentageFilled = Math.round((totalCount / size) * 100);
+        ).length
+        const percentageFilled = Math.round((totalCount / size) * 100)
 
         return (
           <div key={quotaId} style={{ paddingBottom: 12 }}>
@@ -63,7 +61,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({ event, registr
               size={size}
             />
           </div>
-        );
+        )
       })}
     </Card>
   )

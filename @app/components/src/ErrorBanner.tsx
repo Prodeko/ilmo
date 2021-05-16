@@ -1,11 +1,11 @@
-import React from "react";
-import { extractError, getCodeFromError } from "@app/lib";
-import { Alert } from "antd";
-import useTranslation from "next-translate/useTranslation";
+import React from "react"
+import { extractError, getCodeFromError } from "@app/lib"
+import { Alert } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
 interface ErrorBannerProps {
-  error: Error;
-  setError: React.Dispatch<React.SetStateAction<Error | null>>;
+  error: Error
+  setError: React.Dispatch<React.SetStateAction<Error | null>>
 }
 
 export const ErrorBanner: React.FC<ErrorBannerProps> = ({
@@ -13,8 +13,8 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
   setError,
   children,
 }) => {
-  const { t } = useTranslation("admin");
-  const code = getCodeFromError(error);
+  const { t } = useTranslation("admin")
+  const code = getCodeFromError(error)
 
   return error ? (
     <div
@@ -44,5 +44,5 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
         onClose={() => setError(null)}
       />
     </div>
-  ) : null;
-};
+  ) : null
+}

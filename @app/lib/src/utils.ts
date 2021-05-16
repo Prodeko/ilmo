@@ -3,6 +3,6 @@ export const filterObjectByKeys = (raw: object, allowed: string[]) =>
   Object.keys(raw)
     .filter((key) => allowed.includes(key))
     .reduce((obj, key) => {
-      obj[key] = raw[key];
-      return obj;
-    }, {});
+      obj[key] = raw[key]
+      return obj
+    }, {})

@@ -9,11 +9,11 @@ import {
   sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 const createRegistrationMutation = `
 mutation CreateRegistration(
@@ -42,7 +42,7 @@ mutation CreateRegistration(
       quotaId
     }
   }
-}`;
+}`
 
 describe("CreateRegistration", () => {
   // A bit of background about the overall event registration setup. In order
@@ -66,12 +66,12 @@ describe("CreateRegistration", () => {
   it("can create registration", async () => {
     const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
-    const quotaId = quotas[0].id;
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
 
-    const rateLimitId = `${eventId}:${quotaId}`;
-    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`;
+    const rateLimitId = `${eventId}:${quotaId}`
+    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
 
     // In order to test the createRegistration mutation, we first need to run
     // claimRegistrationToken which creates a dummy registration.
@@ -90,17 +90,16 @@ describe("CreateRegistration", () => {
       },
       {},
       async (_json, { redisClient }) => {
-        const value = await redisClient.get(key);
+        const value = await redisClient.get(key)
         // Redis should contain rate limit value after calling
         // claimRegistrationToken mutation
-        expect(value).toEqual("1");
+        expect(value).toEqual("1")
       },
       // Don't rollback in order to use the result of this mutation
       false
-    );
-    const {
-      registrationToken,
-    } = result.data.claimRegistrationToken.claimRegistrationTokenOutput;
+    )
+    const { registrationToken } =
+      result.data.claimRegistrationToken.claimRegistrationTokenOutput
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -120,14 +119,14 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json, { pgClient, redisClient, req }) => {
-        expect(json.errors).toBeFalsy();
-        expect(json.data).toBeTruthy();
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
 
-        const registration = json.data!.createRegistration.registration;
+        const registration = json.data!.createRegistration.registration
 
-        expect(registration).toBeTruthy();
-        expect(registration.eventId).toEqual(eventId);
-        expect(registration.quotaId).toEqual(quotaId);
+        expect(registration).toBeTruthy()
+        expect(registration.eventId).toEqual(eventId)
+        expect(registration.quotaId).toEqual(quotaId)
 
         expect(sanitize(registration)).toMatchInlineSnapshot(`
           Object {
@@ -137,7 +136,7 @@ describe("CreateRegistration", () => {
             "lastName": "Testlastname",
             "quotaId": "[id-4]",
           }
-        `);
+        `)
 
         // Registration should exist in the database
         const { rows: registrations } = await asRoot(pgClient, () =>
@@ -145,11 +144,11 @@ describe("CreateRegistration", () => {
             `SELECT * FROM app_public.registrations WHERE id = $1`,
             [registration.id]
           )
-        );
+        )
         if (registrations.length !== 1) {
-          throw new Error("Registration not found!");
+          throw new Error("Registration not found!")
         }
-        expect(registrations[0].id).toEqual(registration.id);
+        expect(registrations[0].id).toEqual(registration.id)
 
         // Registration secrets table should be updated with the registration_id
         const { rows: registrationSecrets } = await asRoot(pgClient, () =>
@@ -157,36 +156,36 @@ describe("CreateRegistration", () => {
             `SELECT * FROM app_private.registration_secrets WHERE registration_id = $1`,
             [registration.id]
           )
-        );
+        )
 
         if (registrationSecrets.length !== 1) {
-          throw new Error("Registration secret not found!");
+          throw new Error("Registration secret not found!")
         }
-        expect(registrationSecrets[0].registration_id).toEqual(registration.id);
-        expect(registrationSecrets[0].registration_token).toEqual(null);
+        expect(registrationSecrets[0].registration_id).toEqual(registration.id)
+        expect(registrationSecrets[0].registration_token).toEqual(null)
 
         const rateLimitjobs = await getJobs(
           pgClient,
           "registration_complete__delete_rate_limit_key"
-        );
+        )
 
-        expect(rateLimitjobs).toHaveLength(1);
-        const [rateLimitJob] = rateLimitjobs;
+        expect(rateLimitjobs).toHaveLength(1)
+        const [rateLimitJob] = rateLimitjobs
         expect(rateLimitJob.payload).toMatchObject({
           eventId: eventId,
           ipAddress: req.ip,
-        });
+        })
 
         const confirmationEmailJobs = await getJobs(
           pgClient,
           "registration__send_confirmation_email"
-        );
+        )
 
-        expect(confirmationEmailJobs).toHaveLength(1);
-        const [confirmationEmailJob] = confirmationEmailJobs;
+        expect(confirmationEmailJobs).toHaveLength(1)
+        const [confirmationEmailJob] = confirmationEmailJobs
         expect(confirmationEmailJob.payload).toMatchObject({
           id: registration.id,
-        });
+        })
 
         // Escape transaction set by runGraphQLQuery.
         //
@@ -203,32 +202,32 @@ describe("CreateRegistration", () => {
         // inside a transaction and calls to now() return the timestamp of when the
         // transaction was created (which is before the mutation is run). Thus
         // run_at >= now() and the task is not executed if we don't end the transaction here.
-        await pgClient.query("commit");
+        await pgClient.query("commit")
 
         // Run the jobs and assert that the jobs run correctly
-        await runJobs(pgClient);
-        await assertJobComplete(pgClient, rateLimitJob);
-        await assertJobComplete(pgClient, confirmationEmailJob);
+        await runJobs(pgClient)
+        await assertJobComplete(pgClient, rateLimitJob)
+        await assertJobComplete(pgClient, confirmationEmailJob)
 
         // Redis should not contain a rate limiting key after
         // successful registration
-        const value = await redisClient.get(key);
-        expect(value).toEqual(null);
+        const value = await redisClient.get(key)
+        expect(value).toEqual(null)
 
         // TODO: Figure out a way to test gdpr__delete_event_registrations
         // graphile worker cron task.
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration token is not valid", async () => {
     const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
+    })
     // RegistrationSecret is claimed for event[0], try to use it to
     // register to another event which should not be allowed
-    const event = events[0];
-    const quota = quotas[0];
+    const event = events[0]
+    const quota = quotas[0]
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -249,24 +248,24 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
-        );
-        expect(code).toEqual("DNIED");
+        )
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if quotaId is invalid", async () => {
     const { events, registrationSecrets } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    })
+    const eventId = events[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -286,22 +285,22 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Quota not found.");
-        expect(code).toEqual("NTFND");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Quota not found.")
+        expect(code).toEqual("NTFND")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if eventId is invalid", async () => {
     const { quotas, registrationSecrets } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    })
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -321,28 +320,25 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Event not found.");
-        expect(code).toEqual("NTFND");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Event not found.")
+        expect(code).toEqual("NTFND")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration is not open", async () => {
-    const {
-      quotas,
-      events,
-      registrationSecrets,
-    } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 1, signupOpen: false },
-    });
-    const eventId = events[0].id;
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    const { quotas, events, registrationSecrets } =
+      await createEventDataAndLogin({
+        registrationOptions: { create: false },
+        eventOptions: { create: true, amount: 1, signupOpen: false },
+      })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -362,30 +358,27 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Event registration is not open.");
-        expect(code).toEqual("DNIED");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Event registration is not open.")
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration token is for another event", async () => {
-    const {
-      events,
-      quotas,
-      registrationSecrets,
-    } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 2, signupOpen: true },
-    });
+    const { events, quotas, registrationSecrets } =
+      await createEventDataAndLogin({
+        registrationOptions: { create: false },
+        eventOptions: { create: true, amount: 2, signupOpen: true },
+      })
     // RegistrationSecret is claimed for event[0], try to use it to
     // register to another event which is not allowed
-    const eventId = events[1].id;
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    const eventId = events[1].id
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -406,15 +399,15 @@ describe("CreateRegistration", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
-        );
-        expect(code).toEqual("DNIED");
+        )
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
-});
+    )
+  })
+})

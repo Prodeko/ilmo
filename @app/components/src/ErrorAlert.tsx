@@ -1,16 +1,16 @@
-import React from "react";
-import SyncOutlined from "@ant-design/icons/SyncOutlined";
-import { ApolloError } from "@apollo/client";
-import { Alert, Button, Result } from "antd";
-import Paragraph from "antd/lib/typography/Paragraph";
+import React from "react"
+import SyncOutlined from "@ant-design/icons/SyncOutlined"
+import { ApolloError } from "@apollo/client"
+import { Alert, Button, Result } from "antd"
+import Paragraph from "antd/lib/typography/Paragraph"
 
 export interface ErrorAlertProps {
-  error: ApolloError | Error;
+  error: ApolloError | Error
 }
 
 export function ErrorAlert({ error }: ErrorAlertProps) {
   const code: string | undefined = (error as any)?.networkError?.result
-    ?.errors?.[0]?.code;
+    ?.errors?.[0]?.code
   if (code === "EBADCSRFTOKEN") {
     return (
       <Result
@@ -34,7 +34,7 @@ export function ErrorAlert({ error }: ErrorAlertProps) {
         }
         title="Invalid CSRF token"
       />
-    );
+    )
   }
   return (
     <Result
@@ -49,5 +49,5 @@ export function ErrorAlert({ error }: ErrorAlertProps) {
     >
       <Alert message={error.message} type="error" />
     </Result>
-  );
+  )
 }

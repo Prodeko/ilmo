@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { AdminLayout, ErrorAlert } from "@app/components";
-import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql";
-import { Card, Col, PageHeader, Row, Switch, Typography } from "antd";
-import { capitalize } from "lodash";
-import { NextPage } from "next";
-import useTranslation from "next-translate/useTranslation";
+import React, { useState } from "react"
+import { AdminLayout, ErrorAlert } from "@app/components"
+import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql"
+import { Card, Col, PageHeader, Row, Switch, Typography } from "antd"
+import { capitalize } from "lodash"
+import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const Admin_Emails: NextPage = () => {
-  const { t } = useTranslation("admin");
-  const query = useSharedQuery();
-  const [showHtml, setShowHtml] = useState(true);
-  const { loading, data, error } = useRenderEmailTemplatesQuery();
+  const { t } = useTranslation("admin")
+  const query = useSharedQuery()
+  const [showHtml, setShowHtml] = useState(true)
+  const { loading, data, error } = useRenderEmailTemplatesQuery()
 
   return (
     <AdminLayout href="/admin/emails" query={query}>
@@ -52,7 +52,7 @@ const Admin_Emails: NextPage = () => {
         </>
       )}
     </AdminLayout>
-  );
-};
+  )
+}
 
-export default Admin_Emails;
+export default Admin_Emails

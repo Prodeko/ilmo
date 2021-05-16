@@ -1,70 +1,70 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import {
   OrganizationPage_OrganizationFragment,
   useDeleteOrganizationMutation,
   useUpdateOrganizationMutation,
-} from "@app/graphql";
-import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, message, Popconfirm } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import Router, { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/graphql"
+import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import Router, { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
+import { Store } from "rc-field-form/lib/interface"
 
-import { Redirect } from "./index";
+import { Redirect } from "./index"
 
 interface UpdateOrganizationFormProps {
-  organization: OrganizationPage_OrganizationFragment;
+  organization: OrganizationPage_OrganizationFragment
 }
 
 export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
   organization,
 }) => {
-  const { id: organizationId, name, slug } = organization;
+  const { id: organizationId, name, slug } = organization
   const initialValues = useMemo(
     () => ({
       slug,
       name,
     }),
     [name, slug]
-  );
+  )
 
-  const { t } = useTranslation("admin");
-  const [form] = useForm();
-  const router = useRouter();
-  const [updateOrganization] = useUpdateOrganizationMutation();
-  const [error, setError] = useState<Error | null>(null);
-  const [deleteOrganization] = useDeleteOrganizationMutation();
-  const [deleting, setDeleting] = useState(false);
+  const { t } = useTranslation("admin")
+  const [form] = useForm()
+  const router = useRouter()
+  const [updateOrganization] = useUpdateOrganizationMutation()
+  const [error, setError] = useState<Error | null>(null)
+  const [deleteOrganization] = useDeleteOrganizationMutation()
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
-    form.setFieldsValue(initialValues);
-  }, [form, initialValues]);
+    form.setFieldsValue(initialValues)
+  }, [form, initialValues])
 
   const handleDelete = useCallback(async () => {
     try {
-      setDeleting(true);
+      setDeleting(true)
       await deleteOrganization({
         variables: {
           organizationId,
         },
         refetchQueries: ["SharedLayout"],
-      });
-      message.info(`Organization '${name}' successfully deleted`);
-      router.push("/");
+      })
+      message.info(`Organization '${name}' successfully deleted`)
+      router.push("/")
     } catch (e) {
-      setError(e);
-      Sentry.captureException(e);
+      setError(e)
+      Sentry.captureException(e)
     }
-    setDeleting(false);
-  }, [deleteOrganization, organizationId, name, router]);
+    setDeleting(false)
+  }, [deleteOrganization, organizationId, name, router])
 
   const handleSubmit = useCallback(
     async (values: Store) => {
       try {
-        setError(null);
+        setError(null)
         const { data } = await updateOrganization({
           variables: {
             input: {
@@ -72,22 +72,22 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
               patch: { slug: values.slug, name: values.name },
             },
           },
-        });
-        message.success("Organization updated");
-        const newSlug = data?.updateOrganization?.organization?.slug;
+        })
+        message.success("Organization updated")
+        const newSlug = data?.updateOrganization?.organization?.slug
         if (newSlug && newSlug !== slug) {
           Router.push(
             "/admin/organization/[slug]/settings",
             `/admin/organization/${newSlug}/settings`
-          );
+          )
         }
       } catch (e) {
-        setError(e);
-        Sentry.captureException(e);
+        setError(e)
+        Sentry.captureException(e)
       }
     },
     [organizationId, slug, updateOrganization]
-  );
+  )
 
   if (!organization.currentUserIsOwner) {
     return (
@@ -95,7 +95,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         as={`/admin/organization/${slug}`}
         href="/admin/organization/[slug]"
       />
-    );
+    )
   }
 
   return (
@@ -155,5 +155,5 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         </Popconfirm>
       </Form.Item>
     </Form>
-  );
-};
+  )
+}

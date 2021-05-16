@@ -1,29 +1,29 @@
-import * as React from "react";
-import { useCallback } from "react";
-import DownOutlined from "@ant-design/icons/DownOutlined";
-import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
-import { companyName, projectName } from "@app/config";
+import * as React from "react"
+import { useCallback } from "react"
+import DownOutlined from "@ant-design/icons/DownOutlined"
+import { ApolloError, QueryResult, useApolloClient } from "@apollo/client"
+import { companyName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
   SharedLayout_UserFragment,
   useCurrentUserUpdatedSubscription,
   useLogoutMutation,
-} from "@app/graphql";
-import * as Sentry from "@sentry/react";
-import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
-import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import Router, { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import * as Sentry from "@sentry/react"
+import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import Head from "next/head"
+import Image from "next/image"
+import Link from "next/link"
+import Router, { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
-import { LocaleSelect } from "./LocaleSelect";
-import { Redirect } from "./Redirect";
-import { ErrorAlert, H3, StandardWidth, Warn } from ".";
+import { LocaleSelect } from "./LocaleSelect"
+import { Redirect } from "./Redirect"
+import { ErrorAlert, H3, StandardWidth, Warn } from "."
 
-const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
+const { Header, Content, Footer } = Layout
+const { Text } = Typography
 /*
  * For some reason, possibly related to the interaction between
  * `babel-plugin-import` and https://github.com/babel/babel/pull/9766, we can't
@@ -32,17 +32,17 @@ const { Text } = Typography;
  *
  * TODO: change back to `export { Row, Col, Link }` when this issue is fixed.
  */
-const _babelHackRow = Row;
-const _babelHackCol = Col;
-export { _babelHackCol as Col, Link, _babelHackRow as Row };
+const _babelHackRow = Row
+const _babelHackCol = Col
+export { _babelHackCol as Col, Link, _babelHackRow as Row }
 
-export const contentMinHeight = "calc(100vh - 64px - 70px)";
-export const contentMaxWidth = "64rem";
+export const contentMinHeight = "calc(100vh - 64px - 70px)"
+export const contentMaxWidth = "64rem"
 
 export interface SharedLayoutChildProps {
-  error?: ApolloError | Error;
-  loading: boolean;
-  currentUser?: SharedLayout_UserFragment | null;
+  error?: ApolloError | Error
+  loading: boolean
+  currentUser?: SharedLayout_UserFragment | null
 }
 
 export enum AuthRestrict {
@@ -66,17 +66,17 @@ export interface SharedLayoutProps {
   query: Pick<
     QueryResult<SharedLayout_QueryFragment>,
     "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >;
+  >
 
-  title: string;
-  titleHref?: string;
-  titleHrefAs?: string;
+  title: string
+  titleHref?: string
+  titleHrefAs?: string
   children:
     | React.ReactNode
-    | ((props: SharedLayoutChildProps) => React.ReactNode);
-  noPad?: boolean;
-  noHandleErrors?: boolean;
-  forbidWhen?: AuthRestrict;
+    | ((props: SharedLayoutChildProps) => React.ReactNode)
+  noPad?: boolean
+  noHandleErrors?: boolean
+  forbidWhen?: AuthRestrict
 }
 
 export function SharedLayout({
@@ -89,34 +89,34 @@ export function SharedLayout({
   forbidWhen = AuthRestrict.NEVER,
   children,
 }: SharedLayoutProps) {
-  const router = useRouter();
-  const currentUrl = router.asPath;
-  const client = useApolloClient();
-  const screens = useBreakpoint();
-  const [logout] = useLogoutMutation();
-  const { t } = useTranslation("common");
+  const router = useRouter()
+  const currentUrl = router.asPath
+  const client = useApolloClient()
+  const screens = useBreakpoint()
+  const [logout] = useLogoutMutation()
+  const { t } = useTranslation("common")
 
-  const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
-  const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
-  const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
+  const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
+  const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
+  const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
 
-  const isMobile = screens["xs"];
+  const isMobile = screens["xs"]
 
   const handleLogout = useCallback(() => {
     const reset = async () => {
-      Router.events.off("routeChangeComplete", reset);
+      Router.events.off("routeChangeComplete", reset)
       try {
-        await logout();
-        client.resetStore();
+        await logout()
+        client.resetStore()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
-        window.location.href = "/logout";
-        Sentry.captureException(e);
+        window.location.href = "/logout"
+        Sentry.captureException(e)
       }
-    };
-    Router.events.on("routeChangeComplete", reset);
-    Router.push("/");
-  }, [client, logout]);
+    }
+    Router.events.on("routeChangeComplete", reset)
+    Router.push("/")
+  }, [client, logout])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
@@ -130,7 +130,7 @@ export function SharedLayout({
         children(props)
       ) : (
         children
-      );
+      )
 
     if (
       data &&
@@ -141,7 +141,7 @@ export function SharedLayout({
         <StandardWidth>
           <Redirect href="/" />
         </StandardWidth>
-      );
+      )
     } else if (
       data &&
       data.currentUser === null &&
@@ -151,13 +151,13 @@ export function SharedLayout({
     ) {
       return (
         <Redirect href={`/login?next=${encodeURIComponent(router.asPath)}`} />
-      );
+      )
     }
 
-    return noPad ? inner : <StandardWidth>{inner}</StandardWidth>;
-  };
+    return noPad ? inner : <StandardWidth>{inner}</StandardWidth>
+  }
 
-  const { data, loading, error } = query;
+  const { data, loading, error } = query
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
@@ -170,7 +170,7 @@ export function SharedLayout({
     // Skip checking for changes to the current user if
     // current user does not exist
     skip: !data?.currentUser,
-  });
+  })
 
   return (
     <Layout>
@@ -314,5 +314,5 @@ export function SharedLayout({
         </div>
       </Footer>
     </Layout>
-  );
+  )
 }

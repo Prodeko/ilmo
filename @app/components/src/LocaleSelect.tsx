@@ -1,10 +1,10 @@
-import React from "react";
+import React from "react"
 // @ts-ignore
-import ReactCountryFlag from "react-country-flag";
-import { useRouter } from "next/router";
+import ReactCountryFlag from "react-country-flag"
+import { useRouter } from "next/router"
 
 export function LocaleSelect() {
-  const { locales, push, pathname, query, asPath } = useRouter();
+  const { locales, push, pathname, query, asPath } = useRouter()
 
   return (
     <>
@@ -23,5 +23,5 @@ export function LocaleSelect() {
         />
       ))}
     </>
-  );
+  )
 }

@@ -4,11 +4,11 @@ import {
   runGraphQLQuery,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 test("currentUser when logged out", async () => {
   await runGraphQLQuery(
@@ -29,15 +29,15 @@ test("currentUser when logged out", async () => {
 
     // This function runs all your test assertions:
     async (json) => {
-      expect(json.errors).toBeFalsy();
-      expect(json.data).toBeTruthy();
-      expect(json.data!.currentUser).toBe(null);
+      expect(json.errors).toBeFalsy()
+      expect(json.data).toBeTruthy()
+      expect(json.data!.currentUser).toBe(null)
     }
-  );
-});
+  )
+})
 
 test("currentUser when logged in", async () => {
-  const { user, session } = await createUserAndLogIn();
+  const { user, session } = await createUserAndLogIn()
   await runGraphQLQuery(
     // GraphQL query goes here:
     `{
@@ -56,11 +56,11 @@ test("currentUser when logged in", async () => {
 
     // This function runs all your test assertions:
     async (json) => {
-      expect(json.errors).toBeFalsy();
-      expect(json.data).toBeTruthy();
+      expect(json.errors).toBeFalsy()
+      expect(json.data).toBeTruthy()
       expect(json.data!.currentUser).toMatchObject({
         id: user.id,
-      });
+      })
     }
-  );
-});
+  )
+})

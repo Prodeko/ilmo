@@ -1,32 +1,32 @@
-require("@app/config");
-const compose = require("lodash/flowRight");
-const { locales, defaultLocale } = require("./i18n.js");
-const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin");
+require("@app/config")
+const compose = require("lodash/flowRight")
+const { locales, defaultLocale } = require("./i18n.js")
+const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin")
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck")) {
     /* NOOP */
   } else {
-    throw new Error("ROOT_URL is a required envvar");
+    throw new Error("ROOT_URL is a required envvar")
   }
 }
 
-const { NODE_ENV } = process.env;
-const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
+const { NODE_ENV } = process.env
+const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-(function (process = null) {
+;(function (process = null) {
   // You *must not* use `process.env` in here, because we need to check we have
   // those variables. To enforce this, we've deliberately shadowed process.
   module.exports = () => {
-    const path = require("path");
+    const path = require("path")
 
     const withTM = require("next-transpile-modules")([
       "@app/components",
       "@app/lib",
-    ]);
-    const withAntdLess = require("next-plugin-antd-less");
-    const withNextTranslate = require("next-translate");
+    ])
+    const withAntdLess = require("next-plugin-antd-less")
+    const withNextTranslate = require("next-translate")
 
     return compose(
       withTM,
@@ -58,20 +58,20 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
               if (typeof ext === "function") {
                 return (context, request, callback) => {
                   if (/^@app\//.test(request)) {
-                    callback();
+                    callback()
                   } else {
-                    return ext(context, request, callback);
+                    return ext(context, request, callback)
                   }
-                };
+                }
               } else {
-                return ext;
+                return ext
               }
-            });
+            })
           }
-        };
+        }
 
         const externals =
-          isServer && dev ? makeSafe(config.externals) : config.externals;
+          isServer && dev ? makeSafe(config.externals) : config.externals
 
         return {
           ...config,
@@ -102,8 +102,8 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test";
             ...(externals || []),
             isServer ? { "pg-native": "pg/lib/client" } : null,
           ].filter((_) => _),
-        };
+        }
       },
-    });
-  };
-})();
+    })
+  }
+})()

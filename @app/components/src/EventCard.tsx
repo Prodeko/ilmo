@@ -1,21 +1,21 @@
-import React from "react";
-import { Event } from "@app/graphql";
-import { Card } from "antd";
-import dayjs from "dayjs";
-import useTranslation from "next-translate/useTranslation";
+import React from "react"
+import { Event } from "@app/graphql"
+import { Card } from "antd"
+import dayjs from "dayjs"
+import useTranslation from "next-translate/useTranslation"
 
-import { ButtonLink, P } from ".";
+import { ButtonLink, P } from "."
 
-const { Meta } = Card;
+const { Meta } = Card
 interface EventCardProps {
-  event: Event;
+  event: Event
 }
 
 const cardEventDatesStyle = {
   fontSize: 12,
   whiteSpace: "nowrap",
   paddingBottom: "0.5rem",
-} as React.CSSProperties;
+} as React.CSSProperties
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const {
@@ -27,8 +27,8 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     registrationEndTime,
     headerImageFile,
     signupOpen,
-  } = event;
-  const { t, lang } = useTranslation("home");
+  } = event
+  const { t, lang } = useTranslation("home")
 
   return (
     <Card
@@ -75,5 +75,5 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         title={name[lang]}
       />
     </Card>
-  );
-};
+  )
+}

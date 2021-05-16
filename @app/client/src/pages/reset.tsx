@@ -1,23 +1,23 @@
-import React, { FocusEvent, useCallback, useState } from "react";
+import React, { FocusEvent, useCallback, useState } from "react"
 import {
   AuthRestrict,
   Col,
   PasswordStrength,
   Row,
   SharedLayout,
-} from "@app/components";
-import { useResetPasswordMutation, useSharedQuery } from "@app/graphql";
-import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { get } from "lodash";
-import { NextPage } from "next";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/components"
+import { useResetPasswordMutation, useSharedQuery } from "@app/graphql"
+import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { get } from "lodash"
+import { NextPage } from "next"
+import { Store } from "rc-field-form/lib/interface"
 
 interface Props {
-  userId: string | null;
-  token: string | null;
+  userId: string | null
+  token: string | null
 }
 
 enum State {
@@ -27,44 +27,44 @@ enum State {
 }
 
 const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
-  const [form] = useForm();
-  const query = useSharedQuery();
-  const [error, setError] = useState<Error | null>(null);
-  const [passwordStrength, setPasswordStrength] = useState<number>(0);
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([]);
-  const [state, setState] = useState<State>(State.PENDING);
+  const [form] = useForm()
+  const query = useSharedQuery()
+  const [error, setError] = useState<Error | null>(null)
+  const [passwordStrength, setPasswordStrength] = useState<number>(0)
+  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
+  const [state, setState] = useState<State>(State.PENDING)
   const [[userId, token], setIdAndToken] = useState<[string, string]>([
     rawUserId || "",
     rawToken || "",
-  ]);
+  ])
 
   const clearError = useCallback(() => {
-    setError(null);
-  }, [setError]);
+    setError(null)
+  }, [setError])
 
-  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false);
+  const [passwordIsFocussed, setPasswordIsFocussed] = useState(false)
   const setPasswordFocussed = useCallback(() => {
-    setPasswordIsFocussed(true);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(true)
+  }, [setPasswordIsFocussed])
   const setPasswordNotFocussed = useCallback(() => {
-    setPasswordIsFocussed(false);
-  }, [setPasswordIsFocussed]);
+    setPasswordIsFocussed(false)
+  }, [setPasswordIsFocussed])
 
-  const [confirmDirty, setConfirmDirty] = useState(false);
+  const [confirmDirty, setConfirmDirty] = useState(false)
   const handleConfirmBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setConfirmDirty(confirmDirty || !!value);
+      const value = e.target.value
+      setConfirmDirty(confirmDirty || !!value)
     },
     [confirmDirty]
-  );
+  )
 
-  const [resetPassword] = useResetPasswordMutation();
+  const [resetPassword] = useResetPasswordMutation()
   const handleSubmit = useCallback(
     (values: Store) => {
-      setState(State.SUBMITTING);
-      setError(null);
-      (async () => {
+      setState(State.SUBMITTING)
+      setError(null)
+      ;(async () => {
         try {
           const result = await resetPassword({
             variables: {
@@ -72,56 +72,56 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
               token,
               password: values.password,
             },
-          });
+          })
           if (get(result, "data.resetPassword.success")) {
-            setState(State.SUCCESS);
+            setState(State.SUCCESS)
           } else {
-            setState(State.PENDING);
-            setError(new Error("Incorrect token, please check and try again"));
+            setState(State.PENDING)
+            setError(new Error("Incorrect token, please check and try again"))
           }
         } catch (e) {
           if (e.message) {
-            setError(e);
+            setError(e)
           } else {
-            setError(new Error("Please check the errors above and try again"));
+            setError(new Error("Please check the errors above and try again"))
           }
-          setState(State.PENDING);
-          Sentry.captureException(e);
+          setState(State.PENDING)
+          Sentry.captureException(e)
         }
-      })();
+      })()
     },
     [resetPassword, token, userId]
-  );
+  )
 
-  const [passwordIsDirty, setPasswordIsDirty] = useState(false);
+  const [passwordIsDirty, setPasswordIsDirty] = useState(false)
   const handleValuesChange = useCallback(
     (changedValues) => {
       setPasswordInfo(
         { setPasswordStrength, setPasswordSuggestions },
         changedValues
-      );
-      setPasswordIsDirty(form.isFieldTouched("password"));
+      )
+      setPasswordIsDirty(form.isFieldTouched("password"))
       if (changedValues.confirm) {
         if (form.isFieldTouched("password")) {
-          form.validateFields(["password"]);
+          form.validateFields(["password"])
         }
       } else if (changedValues.password) {
         if (form.isFieldTouched("confirm")) {
-          form.validateFields(["confirm"]);
+          form.validateFields(["confirm"])
         }
       }
     },
     [form]
-  );
+  )
 
   const compareToFirstPassword = useCallback(
     async (_rule: any, value: any) => {
       if (value && value !== form.getFieldValue("password")) {
-        throw "Make sure your passphrase is the same in both passphrase boxes.";
+        throw "Make sure your passphrase is the same in both passphrase boxes."
       }
     },
     [form]
-  );
+  )
 
   return (
     <SharedLayout
@@ -231,12 +231,12 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
         </Col>
       </Row>
     </SharedLayout>
-  );
-};
+  )
+}
 
 ResetPage.getInitialProps = async ({ query: { user_id, token } = {} }) => ({
   userId: typeof user_id === "string" ? user_id : null,
   token: typeof token === "string" ? token : null,
-});
+})
 
-export default ResetPage;
+export default ResetPage

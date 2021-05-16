@@ -1,28 +1,28 @@
-import React from "react";
+import React from "react"
 import {
   EventCard,
   H3,
   ServerPaginatedTable,
   SharedLayout,
-} from "@app/components";
-import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql";
-import { Col, Divider, Empty, Space, Tag } from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
-import dayjs from "dayjs";
-import { NextPage } from "next";
-import Link from "next/link";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/components"
+import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql"
+import { Col, Divider, Empty, Space, Tag } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import dayjs from "dayjs"
+import { NextPage } from "next"
+import Link from "next/link"
+import useTranslation from "next-translate/useTranslation"
 
 const getColor = (org: string) => {
   // TODO: Store this info in db?
   if (org === "Prodeko") {
-    return "blue";
+    return "blue"
   } else if (org === "Pora") {
-    return "black";
+    return "black"
   } else {
-    return "red";
+    return "red"
   }
-};
+}
 
 const gridTemplateColumns = {
   xs: "1, 1fr",
@@ -31,31 +31,31 @@ const gridTemplateColumns = {
   lg: "3, 1fr",
   xl: "4, 1fr",
   xxl: "4, 1fr",
-};
+}
 
 const Home: NextPage = () => {
-  const { t, lang } = useTranslation("home");
+  const { t, lang } = useTranslation("home")
 
-  const query = useHomePageQuery();
-  const screens = useBreakpoint();
+  const query = useHomePageQuery()
+  const screens = useBreakpoint()
   const currentBreakPoint = Object.entries(screens)
     .filter((screen) => !!screen[1])
-    .slice(-1)[0] || ["xs", true];
-  const isMobile = screens["xs"];
+    .slice(-1)[0] || ["xs", true]
+  const isMobile = screens["xs"]
 
   const homeGridStyle = {
     display: "grid",
     gridTemplateColumns: `repeat(${gridTemplateColumns[currentBreakPoint[0]]})`,
     gridGap: 10,
-  };
+  }
 
   // TODO: use eventCategories and organizations to
   // add filtering to the table. Might not be needed on the
   // frontpage but might be nice for admin.
-  const eventCategories = query?.data?.eventCategories?.nodes;
-  const organizations = query?.data?.organizations?.nodes;
-  const signupsOpenEvents = query?.data?.signupOpenEvents?.nodes;
-  const signupsUpcomingEvents = query?.data?.signupUpcomingEvents?.nodes;
+  const eventCategories = query?.data?.eventCategories?.nodes
+  const organizations = query?.data?.organizations?.nodes
+  const signupsOpenEvents = query?.data?.signupOpenEvents?.nodes
+  const signupsUpcomingEvents = query?.data?.signupUpcomingEvents?.nodes
 
   const nameColumn = {
     title: t("events:eventName"),
@@ -74,14 +74,14 @@ const Home: NextPage = () => {
         <a>{name}</a>
       </Link>
     ),
-  };
+  }
 
   const endTimeColumn = {
     title: t("events:endTime"),
     dataIndex: "eventEndTime",
     key: "eventEndTime",
     render: (eventEndTime: string) => dayjs(eventEndTime).format("l LT"),
-  };
+  }
 
   const columns = !isMobile
     ? [
@@ -91,9 +91,9 @@ const Home: NextPage = () => {
           dataIndex: ["ownerOrganizationId", "name"],
           key: "organizationName",
           filters: [
-            ...Array.from(
-              new Set(organizations?.map((o) => o.name))
-            ).map((name) => ({ text: name, value: name })),
+            ...Array.from(new Set(organizations?.map((o) => o.name))).map(
+              (name) => ({ text: name, value: name })
+            ),
           ],
           onFilter: (value: string | number | boolean, record: Event) =>
             record?.ownerOrganizationId?.name.indexOf(value as string) === 0,
@@ -128,7 +128,7 @@ const Home: NextPage = () => {
         },
         endTimeColumn,
       ]
-    : [nameColumn, endTimeColumn];
+    : [nameColumn, endTimeColumn]
 
   return (
     <SharedLayout query={query} title="">
@@ -173,7 +173,7 @@ const Home: NextPage = () => {
         </Col>
       </Space>
     </SharedLayout>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

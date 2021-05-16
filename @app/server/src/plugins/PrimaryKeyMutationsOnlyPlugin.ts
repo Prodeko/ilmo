@@ -1,6 +1,6 @@
-import { Plugin } from "graphile-build";
+import { Plugin } from "graphile-build"
 
-type PgConstraint = any;
+type PgConstraint = any
 
 const PrimaryKeyMutationsOnlyPlugin: Plugin = (builder) => {
   builder.hook(
@@ -9,16 +9,16 @@ const PrimaryKeyMutationsOnlyPlugin: Plugin = (builder) => {
       build.pgIntrospectionResultsByKind.constraint.forEach(
         (constraint: PgConstraint) => {
           if (!constraint.tags.omit && constraint.type !== "p") {
-            constraint.tags.omit = ["update", "delete"];
+            constraint.tags.omit = ["update", "delete"]
           }
         }
-      );
-      return build;
+      )
+      return build
     },
     [],
     [],
     ["PgIntrospection"]
-  );
-};
+  )
+}
 
-export default PrimaryKeyMutationsOnlyPlugin;
+export default PrimaryKeyMutationsOnlyPlugin

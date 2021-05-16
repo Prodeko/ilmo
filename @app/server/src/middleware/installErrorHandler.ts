@@ -1,16 +1,16 @@
-import * as fs from "fs";
-import { resolve } from "path";
+import * as fs from "fs"
+import { resolve } from "path"
 
-import { FastifyError, FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
-import { template, TemplateExecutor } from "lodash";
+import { FastifyError, FastifyPluginAsync } from "fastify"
+import fp from "fastify-plugin"
+import { template, TemplateExecutor } from "lodash"
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development"
 
 interface ParsedError {
-  message: string;
-  status: number;
-  code?: string;
+  message: string
+  status: number
+  code?: string
 }
 
 function parseError(error: FastifyError): ParsedError {
@@ -25,53 +25,53 @@ function parseError(error: FastifyError): ParsedError {
       message: "Invalid CSRF token: please reload the page.",
       status: 403,
       code: error["code"],
-    };
+    }
   }
 
   // TODO: process certain errors
-  const code = error["statusCode"] || error["status"] || error["code"];
-  const codeAsFloat = parseInt(code, 10);
+  const code = error["statusCode"] || error["status"] || error["code"]
+  const codeAsFloat = parseInt(code, 10)
   const httpCode =
     isFinite(codeAsFloat) && codeAsFloat >= 400 && codeAsFloat < 600
       ? codeAsFloat
-      : 500;
+      : 500
 
   return {
     message: "An unknown error occurred",
     status: httpCode,
-  };
+  }
 }
 
-let errorPageTemplate: TemplateExecutor;
+let errorPageTemplate: TemplateExecutor
 function _getErrorPage({ message }: ParsedError) {
   if (!errorPageTemplate || isDev) {
     errorPageTemplate = template(
       fs.readFileSync(resolve(__dirname, "../../error.html"), "utf8")
-    );
+    )
   }
 
   return errorPageTemplate({
     message: message
       ? String(message)
       : "Something went wrong on the webpage you visited, please try again later",
-  });
+  })
 }
 
 const ErrorHandler: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error, _req, res): void => {
-    const parsedError = parseError(error);
-    const errorMessageString = `ERROR: ${parsedError.message}`;
+    const parsedError = parseError(error)
+    const errorMessageString = `ERROR: ${parsedError.message}`
 
     if (res.sent) {
-      console.error(errorMessageString);
-      return;
+      console.error(errorMessageString)
+      return
     }
 
-    res.status(parsedError.status);
+    res.status(parsedError.status)
     res.header("Content-Type", "application/json; charset=utf-8").send({
       errors: [{ message: errorMessageString, code: parsedError.code }],
-    });
-  });
-};
+    })
+  })
+}
 
-export default fp(ErrorHandler);
+export default fp(ErrorHandler)

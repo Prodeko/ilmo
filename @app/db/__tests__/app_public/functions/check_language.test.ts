@@ -1,11 +1,11 @@
-import { PoolClient } from "pg";
+import { PoolClient } from "pg"
 
-import { withUserDb } from "../../helpers";
+import { withUserDb } from "../../helpers"
 
 interface LanguageColumn {
-  fi?: string;
-  en?: string;
-  se?: string;
+  fi?: string
+  en?: string
+  se?: string
 }
 
 async function checkLanguage(
@@ -16,36 +16,36 @@ async function checkLanguage(
     rows: [row],
   } = await client.query(`select * from app_public.check_language($1) `, [
     JSON.stringify(languageColumn),
-  ]);
-  return row;
+  ])
+  return row
 }
 
 it("fi is a valid language", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { fi: "Testi" });
-    expect(languageCheck.check_language).toEqual(true);
-  }));
+    const languageCheck = await checkLanguage(client, { fi: "Testi" })
+    expect(languageCheck.check_language).toEqual(true)
+  }))
 
 it("en is a valid language", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { en: "Test" });
-    expect(languageCheck.check_language).toEqual(true);
-  }));
+    const languageCheck = await checkLanguage(client, { en: "Test" })
+    expect(languageCheck.check_language).toEqual(true)
+  }))
 
 it("fi and en are both valid languages", () =>
   withUserDb(async (client) => {
     const languageCheck = await checkLanguage(client, {
       fi: "Testi",
       en: "Test",
-    });
-    expect(languageCheck.check_language).toEqual(true);
-  }));
+    })
+    expect(languageCheck.check_language).toEqual(true)
+  }))
 
 it("se is not a valid language (yet...)", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { se: "Testa" });
-    expect(languageCheck.check_language).toEqual(false);
-  }));
+    const languageCheck = await checkLanguage(client, { se: "Testa" })
+    expect(languageCheck.check_language).toEqual(false)
+  }))
 
 it("se is not a valid language even when fi and en are provided", () =>
   withUserDb(async (client) => {
@@ -53,6 +53,6 @@ it("se is not a valid language even when fi and en are provided", () =>
       fi: "Testi",
       en: "Test",
       se: "Testa",
-    });
-    expect(languageCheck.check_language).toEqual(false);
-  }));
+    })
+    expect(languageCheck.check_language).toEqual(false)
+  }))

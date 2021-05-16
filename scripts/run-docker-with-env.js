@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-require("dotenv").config();
-const { runSync } = require("./lib/run");
+require("dotenv").config()
+const { runSync } = require("./lib/run")
 
 const {
   DATABASE_OWNER,
@@ -12,11 +12,11 @@ const {
   JWT_SECRET,
   DATABASE_NAME,
   GRAPHILE_LICENSE,
-} = process.env;
+} = process.env
 
-const DATABASE_HOST = "172.17.0.1";
-const DATABASE_URL = `postgres://${DATABASE_OWNER}:${DATABASE_OWNER_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`;
-const AUTH_DATABASE_URL = `postgres://${DATABASE_AUTHENTICATOR}:${DATABASE_AUTHENTICATOR_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`;
+const DATABASE_HOST = "172.17.0.1"
+const DATABASE_URL = `postgres://${DATABASE_OWNER}:${DATABASE_OWNER_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`
+const AUTH_DATABASE_URL = `postgres://${DATABASE_AUTHENTICATOR}:${DATABASE_AUTHENTICATOR_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}`
 
 runSync("docker", [
   "run",
@@ -39,4 +39,4 @@ runSync("docker", [
   `AUTH_DATABASE_URL=${AUTH_DATABASE_URL}`,
   "-e",
   process.argv[2],
-]);
+])

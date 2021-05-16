@@ -1,38 +1,38 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ApolloError } from "@apollo/client";
-import { AdminLayout, Loading, Redirect } from "@app/components";
+import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { ApolloError } from "@apollo/client"
+import { AdminLayout, Loading, Redirect } from "@app/components"
 import {
   CreatedOrganizationFragment,
   useCreateOrganizationMutation,
   useOrganizationBySlugLazyQuery,
   useSharedQuery,
-} from "@app/graphql";
+} from "@app/graphql"
 import {
   extractError,
   formItemLayout,
   getCodeFromError,
   tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import Text from "antd/lib/typography/Text";
-import { debounce } from "lodash";
-import { NextPage } from "next";
-import { Store } from "rc-field-form/lib/interface";
-import slugify from "slugify";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import Text from "antd/lib/typography/Text"
+import { debounce } from "lodash"
+import { NextPage } from "next"
+import { Store } from "rc-field-form/lib/interface"
+import slugify from "slugify"
 
 const Admin_CreateOrganization: NextPage = () => {
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useSharedQuery();
-  const [form] = useForm();
-  const [slug, setSlug] = useState("");
+  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
+  const query = useSharedQuery()
+  const [form] = useForm()
+  const [slug, setSlug] = useState("")
   const [
     lookupOrganizationBySlug,
     { data: existingOrganizationData, loading: slugLoading, error: slugError },
-  ] = useOrganizationBySlugLazyQuery();
+  ] = useOrganizationBySlugLazyQuery()
 
-  const [slugCheckIsValid, setSlugCheckIsValid] = useState(false);
+  const [slugCheckIsValid, setSlugCheckIsValid] = useState(false)
   const checkSlug = useMemo(
     () =>
       debounce(async (slug: string) => {
@@ -42,52 +42,50 @@ const Admin_CreateOrganization: NextPage = () => {
               variables: {
                 slug,
               },
-            });
+            })
           }
         } catch (e) {
           /* NOOP */
         } finally {
-          setSlugCheckIsValid(true);
+          setSlugCheckIsValid(true)
         }
       }, 500),
     [lookupOrganizationBySlug]
-  );
+  )
 
   useEffect(() => {
-    setSlugCheckIsValid(false);
-    checkSlug(slug);
-  }, [checkSlug, slug]);
+    setSlugCheckIsValid(false)
+    checkSlug(slug)
+  }, [checkSlug, slug])
 
-  const code = getCodeFromError(formError);
-  const [
-    organization,
-    setOrganization,
-  ] = useState<null | CreatedOrganizationFragment>(null);
-  const [createOrganization] = useCreateOrganizationMutation();
+  const code = getCodeFromError(formError)
+  const [organization, setOrganization] =
+    useState<null | CreatedOrganizationFragment>(null)
+  const [createOrganization] = useCreateOrganizationMutation()
 
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setFormError(null);
+      setFormError(null)
       try {
-        const { name } = values;
+        const { name } = values
         const slug = slugify(name || "", {
           lower: true,
-        });
+        })
         const { data } = await createOrganization({
           variables: {
             name,
             slug,
           },
-        });
-        setFormError(null);
-        setOrganization(data?.createOrganization?.organization || null);
+        })
+        setFormError(null)
+        setOrganization(data?.createOrganization?.organization || null)
       } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
+        setFormError(e)
+        Sentry.captureException(e)
       }
     },
     [createOrganization]
-  );
+  )
 
   const handleValuesChange = useCallback((values: Store) => {
     if ("name" in values) {
@@ -95,9 +93,9 @@ const Admin_CreateOrganization: NextPage = () => {
         slugify(values.name, {
           lower: true,
         })
-      );
+      )
     }
-  }, []);
+  }, [])
 
   if (organization) {
     return (
@@ -106,7 +104,7 @@ const Admin_CreateOrganization: NextPage = () => {
         href={`/admin/organization/[slug]`}
         layout
       />
-    );
+    )
   }
 
   return (
@@ -194,7 +192,7 @@ const Admin_CreateOrganization: NextPage = () => {
         </Col>
       </Row>
     </AdminLayout>
-  );
-};
+  )
+}
 
-export default Admin_CreateOrganization;
+export default Admin_CreateOrganization

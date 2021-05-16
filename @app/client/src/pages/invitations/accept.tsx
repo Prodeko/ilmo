@@ -1,7 +1,7 @@
-import * as qs from "querystring";
+import * as qs from "querystring"
 
-import React, { useCallback, useState } from "react";
-import { QueryResult } from "@apollo/client";
+import React, { useCallback, useState } from "react"
+import { QueryResult } from "@apollo/client"
 import {
   AuthRestrict,
   ButtonLink,
@@ -9,22 +9,22 @@ import {
   Loading,
   Redirect,
   SharedLayout,
-} from "@app/components";
+} from "@app/components"
 import {
   InvitationDetailQuery,
   InvitationDetailQueryVariables,
   SharedLayout_UserFragment,
   useAcceptOrganizationInviteMutation,
   useInvitationDetailQuery,
-} from "@app/graphql";
-import { getCodeFromError } from "@app/lib";
-import { Button, Col, Result, Row, Skeleton } from "antd";
-import { NextPage } from "next";
-import Router, { useRouter } from "next/router";
+} from "@app/graphql"
+import { getCodeFromError } from "@app/lib"
+import { Button, Col, Result, Row, Skeleton } from "antd"
+import { NextPage } from "next"
+import Router, { useRouter } from "next/router"
 
 interface Props {
-  id: string | null;
-  code: string | null;
+  id: string | null
+  code: string | null
 }
 
 enum Status {
@@ -33,12 +33,12 @@ enum Status {
 }
 
 const InvitationAccept: NextPage<Props> = (props) => {
-  const router = useRouter();
+  const router = useRouter()
   const fullHref =
     router.pathname +
-    (router && router.query ? `?${qs.stringify(router.query)}` : "");
-  const { id: rawId, code } = props;
-  const id = rawId || "";
+    (router && router.query ? `?${qs.stringify(router.query)}` : "")
+  const { id: rawId, code } = props
+  const id = rawId || ""
 
   const query = useInvitationDetailQuery({
     variables: {
@@ -47,7 +47,7 @@ const InvitationAccept: NextPage<Props> = (props) => {
     },
     skip: !id,
     fetchPolicy: "network-only",
-  });
+  })
 
   return (
     <SharedLayout
@@ -73,30 +73,30 @@ const InvitationAccept: NextPage<Props> = (props) => {
         )
       }
     </SharedLayout>
-  );
-};
+  )
+}
 
 interface InvitationAcceptInnerProps extends Props {
-  currentUser?: SharedLayout_UserFragment | null;
-  query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>;
+  currentUser?: SharedLayout_UserFragment | null
+  query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>
 }
 
 const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
-  const { id, code, query } = props;
-  const router = useRouter();
+  const { id, code, query } = props
+  const router = useRouter()
 
-  const { data, loading, error } = query;
-  const [acceptInvite] = useAcceptOrganizationInviteMutation();
+  const { data, loading, error } = query
+  const [acceptInvite] = useAcceptOrganizationInviteMutation()
 
-  const [status, setStatus] = useState(Status.PENDING);
-  const [acceptError, setAcceptError] = useState<Error | null>(null);
+  const [status, setStatus] = useState(Status.PENDING)
+  const [acceptError, setAcceptError] = useState<Error | null>(null)
 
-  const organization = data?.organizationForInvitation;
+  const organization = data?.organizationForInvitation
   const handleAccept = useCallback(() => {
     if (!organization) {
-      return;
+      return
     }
-    setStatus(Status.ACCEPTING);
+    setStatus(Status.ACCEPTING)
     // Call mutation
     acceptInvite({
       variables: {
@@ -109,20 +109,20 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         Router.push(
           `/admin/organization/[slug]`,
           `/admin/organization/${organization.slug}`
-        );
+        )
       },
       (e) => {
-        setStatus(Status.PENDING);
-        setAcceptError(e);
+        setStatus(Status.PENDING)
+        setAcceptError(e)
       }
-    );
-  }, [acceptInvite, code, id, organization]);
+    )
+  }, [acceptInvite, code, id, organization])
 
-  let child: JSX.Element | null = null;
+  let child: JSX.Element | null = null
   if (status === Status.ACCEPTING) {
-    child = <Loading />;
+    child = <Loading />
   } else if (error || acceptError) {
-    const code = getCodeFromError(error || acceptError);
+    const code = getCodeFromError(error || acceptError)
     if (code === "NTFND") {
       child = (
         <Result
@@ -130,7 +130,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
           subTitle="Perhaps you have already accepted it?"
           title="That invitation could not be found"
         />
-      );
+      )
     } else if (code === "DNIED") {
       child = (
         <Result
@@ -138,7 +138,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
           subTitle="Perhaps you should log out and log in with a different account?"
           title="That invitation is not for you"
         />
-      );
+      )
     } else if (code === "LOGIN") {
       child = (
         <Result
@@ -152,9 +152,9 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
           status="403"
           title="Log in to accept invitation"
         />
-      );
+      )
     } else {
-      child = <ErrorAlert error={error || acceptError!} />;
+      child = <ErrorAlert error={error || acceptError!} />
     }
   } else if (organization) {
     child = (
@@ -167,9 +167,9 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         status="success"
         title={`You were invited to ${organization.name}`}
       />
-    );
+    )
   } else if (loading) {
-    child = <Skeleton />;
+    child = <Skeleton />
   } else {
     child = (
       <Result
@@ -177,14 +177,14 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         subTitle="We couldn't find details about this invite, please try again later"
         title="Something went wrong"
       />
-    );
+    )
   }
-  return child;
-};
+  return child
+}
 
 InvitationAccept.getInitialProps = async ({ query: { id, code } }) => ({
   id: typeof id === "string" ? id : null,
   code: typeof code === "string" ? code : null,
-});
+})
 
-export default InvitationAccept;
+export default InvitationAccept

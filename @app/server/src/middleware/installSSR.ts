@@ -1,21 +1,21 @@
-import { parse } from "url";
+import { parse } from "url"
 
-import { FastifyPluginCallback } from "fastify";
-import fp from "fastify-plugin";
-import Next from "next";
-import { HttpRequestHandler } from "postgraphile";
+import { FastifyPluginCallback } from "fastify"
+import fp from "fastify-plugin"
+import Next from "next"
+import { HttpRequestHandler } from "postgraphile"
 
 declare module "http" {
   export interface IncomingMessage {
-    postgraphileMiddleware: HttpRequestHandler<IncomingMessage, ServerResponse>;
+    postgraphileMiddleware: HttpRequestHandler<IncomingMessage, ServerResponse>
   }
 }
 
 if (!process.env.NODE_ENV) {
-  throw new Error("No NODE_ENV envvar! Try `export NODE_ENV=development`");
+  throw new Error("No NODE_ENV envvar! Try `export NODE_ENV=development`")
 }
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development"
 
 const SSR: FastifyPluginCallback = (fastify, _options, next) => {
   const nextApp = Next({
@@ -23,14 +23,14 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
     dir: `${__dirname}/../../../client`,
     quiet: !isDev,
     // Don't specify 'conf' key
-  });
-  const handle = nextApp.getRequestHandler();
+  })
+  const handle = nextApp.getRequestHandler()
 
   nextApp
     .prepare()
     .then(() => {
       fastify.all("/*", async (req, reply) => {
-        const parsedUrl = parse(req.url, true);
+        const parsedUrl = parse(req.url, true)
         await handle(req.raw, reply.raw, {
           ...parsedUrl,
           query: {
@@ -41,18 +41,18 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
             T_AND_C_URL: process.env.T_AND_C_URL,
             SENTRY_DSN: process.env.SENTRY_DSN,
           },
-        });
-        reply.sent = true;
-      });
+        })
+        reply.sent = true
+      })
 
       fastify.setNotFoundHandler(async (request, reply) => {
-        await nextApp.render404(request.raw, reply.raw);
-        reply.sent = true;
-      });
+        await nextApp.render404(request.raw, reply.raw)
+        reply.sent = true
+      })
 
-      next();
+      next()
     })
-    .catch((err) => next(err));
-};
+    .catch((err) => next(err))
+}
 
-export default fp(SSR);
+export default fp(SSR)

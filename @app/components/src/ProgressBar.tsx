@@ -1,21 +1,21 @@
-import React, { CSSProperties, useEffect, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react"
 
 interface Props {
-  percentageFilled: number;
-  filled: number;
-  size: number;
+  percentageFilled: number
+  filled: number
+  size: number
 }
 
 export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
-  const [color, setColor] = useState("#5eb95e");
+  const [color, setColor] = useState("#5eb95e")
 
   useEffect(() => {
     if (percentageFilled >= 100) {
-      setColor("#dd514c");
+      setColor("#dd514c")
     } else if (percentageFilled >= 75) {
-      setColor("#faa732");
+      setColor("#faa732")
     }
-  }, [percentageFilled]);
+  }, [percentageFilled])
 
   const containerStyles: CSSProperties = {
     height: 20,
@@ -24,20 +24,20 @@ export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
     alignItems: "center",
     margin: "5px 0",
     position: "relative",
-  };
+  }
 
   const progressBackgroundStyles: CSSProperties = {
     height: 20,
     width: "100%",
     backgroundColor: "#c1c1c1",
     position: "relative",
-  };
+  }
 
   const fillerStyles: CSSProperties = {
     height: "100%",
     width: `${percentageFilled > 100 ? "100%" : percentageFilled.toString()}%`,
     backgroundColor: color,
-  };
+  }
 
   const labelStyles: CSSProperties = {
     flexShrink: 0,
@@ -49,7 +49,7 @@ export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
     marginRight: "auto",
     textAlign: "center",
     whiteSpace: "nowrap",
-  };
+  }
 
   return (
     <div style={containerStyles}>
@@ -60,5 +60,5 @@ export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
         filled <= size ? filled.toString() : size
       } / ${size}`}</span>
     </div>
-  );
-};
+  )
+}

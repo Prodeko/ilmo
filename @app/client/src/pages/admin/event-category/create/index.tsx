@@ -1,21 +1,21 @@
-import React from "react";
-import { AdminLayout, EventCategoryForm, Redirect } from "@app/components";
-import { useCreateEventCategoryPageQuery } from "@app/graphql";
-import { Col, PageHeader, Row } from "antd";
-import { NextPage } from "next";
-import { useRouter } from "next/dist/client/router";
-import useTranslation from "next-translate/useTranslation";
+import React from "react"
+import { AdminLayout, EventCategoryForm, Redirect } from "@app/components"
+import { useCreateEventCategoryPageQuery } from "@app/graphql"
+import { Col, PageHeader, Row } from "antd"
+import { NextPage } from "next"
+import { useRouter } from "next/dist/client/router"
+import useTranslation from "next-translate/useTranslation"
 
 const Admin_CreateEventCategory: NextPage = () => {
-  const query = useCreateEventCategoryPageQuery();
-  const { t } = useTranslation("events");
-  const router = useRouter();
+  const query = useCreateEventCategoryPageQuery()
+  const { t } = useTranslation("events")
+  const router = useRouter()
 
   // Redirect to index if the user is not part of any organization
   const organizationMemberships =
-    query?.data?.currentUser?.organizationMemberships?.totalCount;
+    query?.data?.currentUser?.organizationMemberships?.totalCount
   if (organizationMemberships <= 0) {
-    return <Redirect href="/" layout />;
+    return <Redirect href="/" layout />
   }
 
   return (
@@ -34,7 +34,7 @@ const Admin_CreateEventCategory: NextPage = () => {
         </Col>
       </Row>
     </AdminLayout>
-  );
-};
+  )
+}
 
-export default Admin_CreateEventCategory;
+export default Admin_CreateEventCategory

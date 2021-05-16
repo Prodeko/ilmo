@@ -1,34 +1,34 @@
-import React from "react";
+import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
   ServerPaginatedTable,
-} from "@app/components";
+} from "@app/components"
 import {
   EventCategory,
   ListEventCategoriesDocument,
   useDeleteEventCategoryMutation,
   useSharedQuery,
-} from "@app/graphql";
-import { Col, PageHeader, Row } from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
-import { NextPage } from "next";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import { Col, PageHeader, Row } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
 const Admin_ListEventCategories: NextPage = () => {
-  const query = useSharedQuery();
+  const query = useSharedQuery()
 
   return (
     <AdminLayout href="/admin/event-category/list" query={query}>
       <AdminListEventCategoriesInner />
     </AdminLayout>
-  );
-};
+  )
+}
 
 const AdminListEventCategoriesInner: React.FC = () => {
-  const { t, lang } = useTranslation("admin");
-  const screens = useBreakpoint();
-  const isMobile = screens["xs"];
+  const { t, lang } = useTranslation("admin")
+  const screens = useBreakpoint()
+  const isMobile = screens["xs"]
 
   const actionsColumn = {
     title: "",
@@ -38,7 +38,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
         <span data-cy="eventcategory-delete-failed-bannertext">
           {t("eventCategories.delete.deleteFailedBADFK")}
         </span>
-      );
+      )
       return (
         <AdminTableActions
           adminUrl="event-category"
@@ -47,15 +47,15 @@ const AdminListEventCategoriesInner: React.FC = () => {
           deleteConfirmTranslate={t("eventCategories.delete.confirmText")}
           deleteMutation={useDeleteEventCategoryMutation}
         />
-      );
+      )
     },
-  };
+  }
 
   const nameColumn = {
     title: t("common:name"),
     dataIndex: ["name", lang],
     key: "name",
-  };
+  }
 
   const columns = !isMobile
     ? [
@@ -74,7 +74,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
           ellipsis: true,
         },
       ]
-    : [actionsColumn, nameColumn];
+    : [actionsColumn, nameColumn]
 
   return (
     <Row>
@@ -90,7 +90,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
         />
       </Col>
     </Row>
-  );
-};
+  )
+}
 
-export default Admin_ListEventCategories;
+export default Admin_ListEventCategories

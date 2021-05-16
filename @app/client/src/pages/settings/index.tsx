@@ -1,29 +1,29 @@
-import React, { useCallback, useState } from "react";
-import { ApolloError } from "@apollo/client";
-import { ErrorAlert, Redirect, SettingsLayout } from "@app/components";
+import React, { useCallback, useState } from "react"
+import { ApolloError } from "@apollo/client"
+import { ErrorAlert, Redirect, SettingsLayout } from "@app/components"
 import {
   ProfileSettingsForm_UserFragment,
   useSettingsProfileQuery,
   useUpdateUserMutation,
-} from "@app/graphql";
+} from "@app/graphql"
 import {
   extractError,
   formItemLayout,
   getCodeFromError,
   tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, PageHeader } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import useTranslation from "next-translate/useTranslation";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input, PageHeader } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
+import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Profile: NextPage = () => {
-  const { t } = useTranslation();
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const query = useSettingsProfileQuery();
-  const { data, loading, error } = query;
+  const { t } = useTranslation()
+  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
+  const query = useSettingsProfileQuery()
+  const { data, loading, error } = query
 
   return (
     <SettingsLayout href="/settings" query={query}>
@@ -41,15 +41,15 @@ const Settings_Profile: NextPage = () => {
         <Redirect href={`/login?next=${encodeURIComponent("/settings")}`} />
       )}
     </SettingsLayout>
-  );
-};
+  )
+}
 
-export default Settings_Profile;
+export default Settings_Profile
 
 interface ProfileSettingsFormProps {
-  user: ProfileSettingsForm_UserFragment;
-  error: Error | ApolloError | null;
-  setError: (error: Error | ApolloError | null) => void;
+  user: ProfileSettingsForm_UserFragment
+  error: Error | ApolloError | null
+  setError: (error: Error | ApolloError | null) => void
 }
 
 function ProfileSettingsForm({
@@ -57,14 +57,14 @@ function ProfileSettingsForm({
   error,
   setError,
 }: ProfileSettingsFormProps) {
-  const [form] = useForm();
-  const [updateUser] = useUpdateUserMutation();
-  const [success, setSuccess] = useState(false);
+  const [form] = useForm()
+  const [updateUser] = useUpdateUserMutation()
+  const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setSuccess(false);
-      setError(null);
+      setSuccess(false)
+      setError(null)
       try {
         await updateUser({
           variables: {
@@ -74,11 +74,11 @@ function ProfileSettingsForm({
               name: values.name,
             },
           },
-        });
-        setError(null);
-        setSuccess(true);
+        })
+        setError(null)
+        setSuccess(true)
       } catch (e) {
-        const errcode = getCodeFromError(e);
+        const errcode = getCodeFromError(e)
         if (errcode === "23505") {
           form.setFields([
             {
@@ -88,17 +88,17 @@ function ProfileSettingsForm({
                 "This username is already in use, please pick a different name",
               ],
             },
-          ]);
+          ])
         } else {
-          setError(e);
-          Sentry.captureException(e);
+          setError(e)
+          Sentry.captureException(e)
         }
       }
     },
     [setError, updateUser, user.id, form]
-  );
+  )
 
-  const code = getCodeFromError(error);
+  const code = getCodeFromError(error)
   return (
     <div>
       <PageHeader title="Edit profile" />
@@ -159,5 +159,5 @@ function ProfileSettingsForm({
         </Form.Item>
       </Form>
     </div>
-  );
+  )
 }

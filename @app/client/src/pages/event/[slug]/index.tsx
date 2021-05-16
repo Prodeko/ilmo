@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import {
   EventQuotasCard,
   EventRegistrationsTable,
@@ -7,27 +7,27 @@ import {
   SharedLayout,
   useEventLoading,
   useEventRegistrations,
-  useQuerySlug
-} from "@app/components";
+  useQuerySlug,
+} from "@app/components"
 import {
   EventPage_EventFragment,
   Registration,
   useEventPageQuery,
-} from "@app/graphql";
-import { uploadsLoader } from "@app/lib";
-import { Col, PageHeader, Row } from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
-import { NextPage } from "next";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import { uploadsLoader } from "@app/lib"
+import { Col, PageHeader, Row } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import { NextPage } from "next"
+import Image from "next/image"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
 const EventPage: NextPage = () => {
-  const slug = useQuerySlug();
-  const { t, lang } = useTranslation("events");
-  const query = useEventPageQuery({ variables: { slug } });
-  const eventLoadingElement = useEventLoading(query);
-  const event = query?.data?.eventBySlug;
+  const slug = useQuerySlug()
+  const { t, lang } = useTranslation("events")
+  const query = useEventPageQuery({ variables: { slug } })
+  const eventLoadingElement = useEventLoading(query)
+  const event = query?.data?.eventBySlug
 
   return (
     <SharedLayout
@@ -38,18 +38,18 @@ const EventPage: NextPage = () => {
     >
       {eventLoadingElement || <EventPageInner event={event!} />}
     </SharedLayout>
-  );
-};
+  )
+}
 
 interface EventPageInnerProps {
-  event: EventPage_EventFragment;
+  event: EventPage_EventFragment
 }
 
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
-  const router = useRouter();
-  const { t, lang } = useTranslation("events");
-  const screens = useBreakpoint();
-  const isMobile = screens["xs"];
+  const router = useRouter()
+  const { t, lang } = useTranslation("events")
+  const screens = useBreakpoint()
+  const isMobile = screens["xs"]
   const {
     id: eventId,
     name,
@@ -57,12 +57,16 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
     headerImageFile,
     createdAt,
     registrations: eventRegistrations,
-  } = event;
+  } = event
 
   // Set registrations initially from EventPage_Query data
   // Use a subscription to fetch event registrations in real time
   const initialRegistrations = eventRegistrations.nodes as Registration[]
-  const registrations = useEventRegistrations(eventId as string, createdAt, initialRegistrations)
+  const registrations = useEventRegistrations(
+    eventId as string,
+    createdAt,
+    initialRegistrations
+  )
 
   return (
     <>
@@ -106,7 +110,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         </Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
-export default EventPage;
+export default EventPage

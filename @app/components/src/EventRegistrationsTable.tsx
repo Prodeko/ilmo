@@ -1,41 +1,41 @@
-import React, { useMemo } from "react";
-import { Registration } from "@app/graphql";
-import { Skeleton } from "antd";
-import dayjs from "dayjs";
-import useTranslation from "next-translate/useTranslation";
+import React, { useMemo } from "react"
+import { Registration } from "@app/graphql"
+import { Skeleton } from "antd"
+import dayjs from "dayjs"
+import useTranslation from "next-translate/useTranslation"
 
-import { H4 } from "./Text";
-import { SimpleTable } from ".";
+import { H4 } from "./Text"
+import { SimpleTable } from "."
 
 interface EventRegistrationsTable {
-  registrations: Registration[];
+  registrations: Registration[]
 }
 
 const getRegistrationsByQuotaPosition = (arr: any[]) => {
   return arr.reduce((a, x) => {
-    const key = x?.quota?.position;
-    (a[key] || (a[key] = [] || [])).push(x);
-    return a;
-  }, {});
-};
+    const key = x?.quota?.position
+    ;(a[key] || (a[key] = [] || [])).push(x)
+    return a
+  }, {})
+}
 
 const getQueuedRegistrations = (arr: any[]) => {
-  return arr.filter((x) => x.isQueued);
-};
+  return arr.filter((x) => x.isQueued)
+}
 
 const getQuotaNameByQuotaPosition = (arr: any[]) => {
   return arr
     .map((x) => x.quota)
     .reduce((a, x) => {
-      a[x.position] = x;
-      return a;
-    }, {});
-};
+      a[x.position] = x
+      return a
+    }, {})
+}
 
 export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
   registrations,
 }) => {
-  const { t, lang } = useTranslation("events");
+  const { t, lang } = useTranslation("events")
 
   const commonColumns = [
     {
@@ -55,8 +55,8 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       key: "createdAt",
       render: (createdAt: string) => dayjs(createdAt).format("l LT"),
     },
-  ];
-  const quotaColumns = [...commonColumns];
+  ]
+  const quotaColumns = [...commonColumns]
   const queuedColumns = [
     {
       title: t("quota"),
@@ -64,30 +64,31 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       key: "quota",
     },
     ...commonColumns,
-  ];
+  ]
 
   const registrationsByQuotaPosition = useMemo(
     () => getRegistrationsByQuotaPosition(registrations),
     [registrations]
-  );
-  const quotaNamesByPosition = useMemo(() => getQuotaNameByQuotaPosition(registrations), [
-    registrations,
-  ]);
+  )
+  const quotaNamesByPosition = useMemo(
+    () => getQuotaNameByQuotaPosition(registrations),
+    [registrations]
+  )
   const queuedRegistrations = useMemo(
     () => getQueuedRegistrations(registrations),
     [registrations]
-  );
+  )
 
   return (
     <>
       {Object.keys(registrationsByQuotaPosition)
         .sort()
         .map((position) => {
-          const quotaTitle = quotaNamesByPosition[position].title[lang];
-          const quotaSize = quotaNamesByPosition[position].size;
-          const quotaRegistrations = registrationsByQuotaPosition[position].filter(
-            (r: Registration) => !r.isQueued
-          );
+          const quotaTitle = quotaNamesByPosition[position].title[lang]
+          const quotaSize = quotaNamesByPosition[position].size
+          const quotaRegistrations = registrationsByQuotaPosition[
+            position
+          ].filter((r: Registration) => !r.isQueued)
           return (
             <div key={position}>
               <H4 style={{ marginTop: "1.5rem" }}>
@@ -103,7 +104,7 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
                 }}
               />
             </div>
-          );
+          )
         })}
       <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
       <SimpleTable
@@ -116,5 +117,5 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
         }}
       />
     </>
-  );
-};
+  )
+}

@@ -1,6 +1,6 @@
-import { PoolClient } from "pg";
+import { PoolClient } from "pg"
 
-import { snapshotSafe, withRootDb } from "../../helpers";
+import { snapshotSafe, withRootDb } from "../../helpers"
 
 export async function reallyCreateUser(
   client: PoolClient,
@@ -27,8 +27,8 @@ export async function reallyCreateUser(
       ) new_user
       `,
     [username, email, name, avatarUrl, password, emailIsVerified, isAdmin]
-  );
-  return row;
+  )
+  return row
 }
 
 test("can register user with a password", () =>
@@ -41,8 +41,8 @@ test("can register user with a password", () =>
       "Test One",
       "http://example.com",
       "SuperSecurePassword1"
-    );
-    expect(user).not.toBeNull();
+    )
+    expect(user).not.toBeNull()
     expect(snapshotSafe(user)).toMatchInlineSnapshot(`
       Object {
         "avatar_url": "http://example.com",
@@ -54,8 +54,8 @@ test("can register user with a password", () =>
         "updated_at": "[DATE]",
         "username": "testuser",
       }
-    `);
-  }));
+    `)
+  }))
 
 test("cannot register with a weak password", () =>
   withRootDb(async (client) => {
@@ -66,12 +66,12 @@ test("cannot register with a weak password", () =>
       "Test One",
       "http://example.com",
       "WEAK"
-    );
+    )
     await expect(promise).rejects.toMatchInlineSnapshot(
       `[error: Password is too weak]`
-    );
-    await expect(promise).rejects.toHaveProperty("code", "WEAKP");
-  }));
+    )
+    await expect(promise).rejects.toHaveProperty("code", "WEAKP")
+  }))
 
 test("can register user with just a username and email", () =>
   withRootDb(async (client) => {
@@ -83,8 +83,8 @@ test("can register user with just a username and email", () =>
       null,
       null,
       null
-    );
-    expect(user).not.toBeNull();
+    )
+    expect(user).not.toBeNull()
     expect(snapshotSafe(user)).toMatchInlineSnapshot(`
       Object {
         "avatar_url": null,
@@ -96,17 +96,17 @@ test("can register user with just a username and email", () =>
         "updated_at": "[DATE]",
         "username": "testuser",
       }
-    `);
-  }));
+    `)
+  }))
 
 test("cannot register user without email", () =>
   withRootDb(async (client) => {
     // Normally PassportLoginPlugin will call this SQL function directly.
-    const promise = reallyCreateUser(client, null, null, null, null, null);
+    const promise = reallyCreateUser(client, null, null, null, null, null)
     await expect(promise).rejects.toMatchInlineSnapshot(
       `[error: Email is required]`
-    );
+    )
     await expect(promise).rejects.toMatchObject({
       code: "MODAT",
-    });
-  }));
+    })
+  }))

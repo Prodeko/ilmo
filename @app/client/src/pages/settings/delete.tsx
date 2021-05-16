@@ -1,79 +1,79 @@
-import React, { useCallback, useState } from "react";
-import { ApolloError } from "@apollo/client";
-import { ErrorAlert, P, SettingsLayout } from "@app/components";
+import React, { useCallback, useState } from "react"
+import { ApolloError } from "@apollo/client"
+import { ErrorAlert, P, SettingsLayout } from "@app/components"
 import {
   useConfirmAccountDeletionMutation,
   useRequestAccountDeletionMutation,
   useSharedQuery,
-} from "@app/graphql";
-import { getCodeFromError } from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Modal, PageHeader, Typography } from "antd";
-import { NextPage } from "next";
-import { useRouter } from "next/router";
+} from "@app/graphql"
+import { getCodeFromError } from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Modal, PageHeader, Typography } from "antd"
+import { NextPage } from "next"
+import { useRouter } from "next/router"
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const Settings_Accounts: NextPage = () => {
-  const router = useRouter();
+  const router = useRouter()
   const token: string | null =
     (router && router.query && !Array.isArray(router.query.token)
       ? router.query.token
-      : null) || null;
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [itIsDone, setItIsDone] = useState(false);
-  const [doingIt, setDoingIt] = useState(false);
-  const openModal = useCallback(() => setConfirmOpen(true), []);
-  const closeModal = useCallback(() => setConfirmOpen(false), []);
+      : null) || null
+  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [itIsDone, setItIsDone] = useState(false)
+  const [doingIt, setDoingIt] = useState(false)
+  const openModal = useCallback(() => setConfirmOpen(true), [])
+  const closeModal = useCallback(() => setConfirmOpen(false), [])
 
-  const [requestAccountDeletion] = useRequestAccountDeletionMutation();
+  const [requestAccountDeletion] = useRequestAccountDeletionMutation()
   const doIt = useCallback(() => {
-    setError(null);
-    setDoingIt(true);
-    (async () => {
+    setError(null)
+    setDoingIt(true)
+    ;(async () => {
       try {
-        const result = await requestAccountDeletion();
+        const result = await requestAccountDeletion()
         if (!result) {
-          throw new Error("Result expected");
+          throw new Error("Result expected")
         }
-        const { data } = result;
+        const { data } = result
         if (!data?.requestAccountDeletion?.success) {
-          throw new Error("Requesting deletion failed");
+          throw new Error("Requesting deletion failed")
         }
-        setItIsDone(true);
+        setItIsDone(true)
       } catch (e) {
-        setError(e);
-        Sentry.captureException(e);
+        setError(e)
+        Sentry.captureException(e)
       }
-      setDoingIt(false);
-      setConfirmOpen(false);
-    })();
-  }, [requestAccountDeletion]);
+      setDoingIt(false)
+      setConfirmOpen(false)
+    })()
+  }, [requestAccountDeletion])
 
-  const [deleting, setDeleting] = useState(false);
-  const [deleted, setDeleted] = useState(false);
-  const [confirmAccountDeletion] = useConfirmAccountDeletionMutation();
+  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
+  const [confirmAccountDeletion] = useConfirmAccountDeletionMutation()
   const confirmDeletion = useCallback(() => {
     if (deleting || !token) {
-      return;
+      return
     }
-    setError(null);
-    setDeleting(true);
-    (async () => {
+    setError(null)
+    setDeleting(true)
+    ;(async () => {
       try {
-        await confirmAccountDeletion({ variables: { token } });
+        await confirmAccountDeletion({ variables: { token } })
         // Display confirmation
-        setDeleted(true);
+        setDeleted(true)
       } catch (e) {
-        setError(e);
-        Sentry.captureException(e);
+        setError(e)
+        Sentry.captureException(e)
       }
-      setDeleting(false);
-    })();
-  }, [confirmAccountDeletion, deleting, token]);
+      setDeleting(false)
+    })()
+  }, [confirmAccountDeletion, deleting, token])
 
-  const query = useSharedQuery();
+  const query = useSharedQuery()
 
   return (
     <SettingsLayout href="/settings/delete" query={query}>
@@ -189,7 +189,7 @@ const Settings_Accounts: NextPage = () => {
             <Button
               type="primary"
               onClick={() => {
-                window.location.href = "/";
+                window.location.href = "/"
               }}
             >
               Return to homepage
@@ -202,7 +202,7 @@ const Settings_Accounts: NextPage = () => {
         Your account has been successfully deleted. We wish you all the best.
       </Modal>
     </SettingsLayout>
-  );
-};
+  )
+}
 
-export default Settings_Accounts;
+export default Settings_Accounts

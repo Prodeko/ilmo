@@ -9,5 +9,5 @@ from the GraphQL files found inside `@app/client`. You can import them like:
  * e.g. if you have `mutation DoTheThing { ... }`, then you can import the
  * Apollo React Hook via:
  */
-import { useDoTheThingMutation } from "@app/graphql";
+import { useDoTheThingMutation } from "@app/graphql"
 ```

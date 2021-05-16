@@ -1,6 +1,6 @@
-import csrf from "csurf";
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
+import csrf from "csurf"
+import { FastifyPluginAsync } from "fastify"
+import fp from "fastify-plugin"
 
 declare module "http" {
   interface IncomingMessage {
@@ -9,7 +9,7 @@ declare module "http" {
      * there was no 'Origin' header (in which case we must give the benefit of
      * the doubt; for example for normal resource GETs).
      */
-    csrfToken: () => string;
+    csrfToken: () => string
   }
 }
 
@@ -20,10 +20,10 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
 
     // Extract the CSRF Token from the `CSRF-Token` header.
     value(req) {
-      const csrfToken = req.headers["csrf-token"];
-      return typeof csrfToken === "string" ? csrfToken : "";
+      const csrfToken = req.headers["csrf-token"]
+      return typeof csrfToken === "string" ? csrfToken : ""
     },
-  });
+  })
 
   app.use((req, res, next) => {
     if (
@@ -33,11 +33,11 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
         req.headers.origin === process.env.ROOT_URL)
     ) {
       // Bypass CSRF for GraphiQL
-      next();
+      next()
     } else {
-      csrfProtection(req, res, next);
+      csrfProtection(req, res, next)
     }
-  });
-};
+  })
+}
 
-export default fp(CSRFProtection);
+export default fp(CSRFProtection)

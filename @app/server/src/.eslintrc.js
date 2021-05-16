@@ -9,4 +9,4 @@ module.exports = {
     "graphql/named-operations": 0,
     "graphql/required-fields": 0,
   },
-};
+}

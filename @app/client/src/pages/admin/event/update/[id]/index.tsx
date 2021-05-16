@@ -1,30 +1,30 @@
-import React from "react";
-import { AdminLayout, EventForm, Redirect, useQueryId } from "@app/components";
+import React from "react"
+import { AdminLayout, EventForm, Redirect, useQueryId } from "@app/components"
 import {
   QuotasConnection,
   UpdateEventDocument,
   UpdateEventQuotasDocument,
   useUpdateEventPageQuery,
-} from "@app/graphql";
-import { filterObjectByKeys } from "@app/lib";
-import { Col, PageHeader, Row } from "antd";
-import dayjs from "dayjs";
-import { NextPage } from "next";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import { filterObjectByKeys } from "@app/lib"
+import { Col, PageHeader, Row } from "antd"
+import dayjs from "dayjs"
+import { NextPage } from "next"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
 type UpdateFormInitialValues = {
-  name: string;
-  description: string;
-  eventStartTime: string;
-  eventEndTime: string;
-  registrationStartTime: string;
-  registrationEndTime: string;
-  isHighlighted: boolean;
-  isDraft: boolean;
-  headerImageFile: string;
-  quotas: QuotasConnection;
-};
+  name: string
+  description: string
+  eventStartTime: string
+  eventEndTime: string
+  registrationStartTime: string
+  registrationEndTime: string
+  isHighlighted: boolean
+  isDraft: boolean
+  headerImageFile: string
+  quotas: QuotasConnection
+}
 
 function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
@@ -38,7 +38,7 @@ function constructInitialValues(values: any) {
     "isDraft",
     "headerImageFile",
     "quotas",
-  ]) as UpdateFormInitialValues;
+  ]) as UpdateFormInitialValues
 
   const {
     name,
@@ -47,13 +47,13 @@ function constructInitialValues(values: any) {
     registrationStartTime,
     registrationEndTime,
     quotas: quotasConnection,
-  } = filteredValues || {};
+  } = filteredValues || {}
 
-  const eventTime = [dayjs(eventStartTime), dayjs(eventEndTime)];
+  const eventTime = [dayjs(eventStartTime), dayjs(eventEndTime)]
   const registrationTime = [
     dayjs(registrationStartTime),
     dayjs(registrationEndTime),
-  ];
+  ]
   const quotas = quotasConnection?.nodes.map((quota) =>
     filterObjectByKeys(quota, [
       "id",
@@ -62,7 +62,7 @@ function constructInitialValues(values: any) {
       "size",
       "registrations",
     ])
-  );
+  )
   const languages = Object.keys(name || {})
 
   return {
@@ -73,29 +73,29 @@ function constructInitialValues(values: any) {
     registrationTime,
     eventTime,
     quotas,
-  };
+  }
 }
 
 const Admin_UpdateEvent: NextPage = () => {
-  const { t } = useTranslation("events");
-  const router = useRouter();
-  const eventId = useQueryId();
+  const { t } = useTranslation("events")
+  const router = useRouter()
+  const eventId = useQueryId()
   const query = useUpdateEventPageQuery({
     variables: { id: eventId },
-  });
-  const { loading, error } = query;
-  const event = query?.data?.event;
+  })
+  const { loading, error } = query
+  const event = query?.data?.event
 
   // If event is not found redirect to index
   if (!loading && !error && !event) {
-    return <Redirect href="/" layout />;
+    return <Redirect href="/" layout />
   }
 
   // Redirect to index if the user is not part of any organization
   const organizationMemberships =
-    query?.data?.currentUser?.organizationMemberships?.totalCount;
+    query?.data?.currentUser?.organizationMemberships?.totalCount
   if (organizationMemberships <= 0) {
-    return <Redirect href="/" layout />;
+    return <Redirect href="/" layout />
   }
 
   return (
@@ -118,7 +118,7 @@ const Admin_UpdateEvent: NextPage = () => {
         </Col>
       </Row>
     </AdminLayout>
-  );
-};
+  )
+}
 
-export default Admin_UpdateEvent;
+export default Admin_UpdateEvent

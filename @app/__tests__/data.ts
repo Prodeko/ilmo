@@ -1,22 +1,22 @@
-import dayjs from "dayjs";
-import * as faker from "faker";
-import { PoolClient } from "pg";
-import slugify from "slugify";
+import dayjs from "dayjs"
+import * as faker from "faker"
+import { PoolClient } from "pg"
+import slugify from "slugify"
 
 export type User = {
-  id: string;
-  username: string;
-  _email: string;
-  _password: string;
-};
+  id: string
+  username: string
+  _email: string
+  _password: string
+}
 
-let userCreationCounter = 0;
+let userCreationCounter = 0
 if (process.env.IN_TESTS) {
   // Enables multiple calls to `createUsers` within the same test to still have
   // deterministic results without conflicts.
   beforeEach(() => {
-    userCreationCounter = 0;
-  });
+    userCreationCounter = 0
+  })
 }
 
 /**
@@ -30,15 +30,15 @@ export const createUsers = async (
   verified: boolean = true,
   isAdmin: boolean = false
 ) => {
-  const users = [];
+  const users = []
   if (userCreationCounter > 25) {
-    throw new Error("Too many users created!");
+    throw new Error("Too many users created!")
   }
   for (let i = 0; i < count; i++) {
-    const userLetter = "abcdefghijklmnopqrstuvwxyz"[userCreationCounter];
-    userCreationCounter++;
-    const password = userLetter.repeat(12);
-    const email = `${userLetter}${i || ""}@b.c`;
+    const userLetter = "abcdefghijklmnopqrstuvwxyz"[userCreationCounter]
+    userCreationCounter++
+    const password = userLetter.repeat(12)
+    const email = `${userLetter}${i || ""}@b.c`
     const user = (
       await client.query(
         `select * from app_private.really_create_user(
@@ -60,13 +60,13 @@ export const createUsers = async (
           isAdmin,
         ]
       )
-    ).rows[0];
-    user._email = email;
-    user._password = password;
-    users.push(user);
+    ).rows[0]
+    user._email = email
+    user._password = password
+    users.push(user)
   }
-  return users;
-};
+  return users
+}
 
 /******************************************************************************/
 // Organizations
@@ -75,22 +75,22 @@ export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
 ) => {
-  const organizations = [];
+  const organizations = []
   for (let i = 0; i < count; i++) {
-    const random = faker.lorem.word();
-    const slug = `organization-${random}`;
-    const name = `Organization ${random}`;
+    const random = faker.lorem.word()
+    const slug = `organization-${random}`
+    const name = `Organization ${random}`
     const {
       rows: [organization],
     } = await client.query(
       `select * from app_public.create_organization($1, $2)`,
       [slug, name]
-    );
-    organizations.push(organization);
+    )
+    organizations.push(organization)
   }
 
-  return organizations;
-};
+  return organizations
+}
 
 /******************************************************************************/
 // Sessions
@@ -107,9 +107,9 @@ export const createSession = async (
       returning *
     `,
     [userId]
-  );
-  return session;
-};
+  )
+  return session
+}
 
 /******************************************************************************/
 // Events
@@ -119,13 +119,13 @@ export const createEventCategories = async (
   count: number = 1,
   organizationId: string
 ) => {
-  const categories = [];
+  const categories = []
   for (let i = 0; i < count; i++) {
-    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
+    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
     const description = {
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
-    };
+    }
     const {
       rows: [category],
     } = await client.query(
@@ -134,12 +134,12 @@ export const createEventCategories = async (
         returning *
       `,
       [name, description, organizationId]
-    );
-    categories.push(category);
+    )
+    categories.push(category)
   }
 
-  return categories;
-};
+  return categories
+}
 
 export const createEvents = async (
   client: PoolClient,
@@ -148,46 +148,46 @@ export const createEvents = async (
   categoryId: string,
   signupOpen: boolean = true
 ) => {
-  const events = [];
+  const events = []
   for (let i = 0; i < count; i++) {
     const name = {
       fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
       en: `Event ${faker.lorem.words()} ${i}`,
-    };
+    }
     const description = {
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
-    };
+    }
 
-    const now = new Date();
-    const dayAdjustment = signupOpen ? -1 : 1;
-    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate();
+    const now = new Date()
+    const dayAdjustment = signupOpen ? -1 : 1
+    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
     const registrationEndTime = faker.date.between(
       dayjs(registrationStartTime).add(1, "day").toDate(),
       dayjs(registrationStartTime).add(7, "day").toDate()
-    );
+    )
 
     const eventStartTime = faker.date.between(
       registrationEndTime,
       dayjs(registrationEndTime).add(7, "day").toDate()
-    );
+    )
     const eventEndTime = faker.date.between(
       eventStartTime,
       dayjs(eventStartTime).add(1, "day").toDate()
-    );
+    )
 
-    const eventCategoryId = categoryId;
+    const eventCategoryId = categoryId
     const headerImageFile = faker.image.imageUrl(
       851,
       315,
       `nature?random=${Math.round(Math.random() * 1000)}`
-    );
+    )
 
-    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
-    });
-    const isDraft = false;
+    })
+    const isDraft = false
 
     const {
       rows: [event],
@@ -221,12 +221,12 @@ export const createEvents = async (
         organizationId,
         eventCategoryId,
       ]
-    );
-    events.push(event);
+    )
+    events.push(event)
   }
 
-  return events;
-};
+  return events
+}
 
 /******************************************************************************/
 // Quotas
@@ -236,13 +236,13 @@ export const createQuotas = async (
   count: number = 1,
   eventId: string
 ) => {
-  const quotas = [];
+  const quotas = []
   for (let i = 0; i < count; i++) {
-    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
+    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const size = faker.datatype.number({
       min: 1,
       max: 20,
-    });
+    })
     const {
       rows: [quota],
     } = await client.query(
@@ -251,12 +251,12 @@ export const createQuotas = async (
         returning *
       `,
       [eventId, i, title, size]
-    );
-    quotas.push(quota);
+    )
+    quotas.push(quota)
   }
 
-  return quotas;
-};
+  return quotas
+}
 
 /******************************************************************************/
 // Registration secrets
@@ -268,7 +268,7 @@ export const createRegistrationSecrets = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrationSecrets = [];
+  const registrationSecrets = []
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
@@ -278,12 +278,12 @@ export const createRegistrationSecrets = async (
         returning *
       `,
       [eventId, quotaId, registrationId]
-    );
-    registrationSecrets.push(secret);
+    )
+    registrationSecrets.push(secret)
   }
 
-  return registrationSecrets;
-};
+  return registrationSecrets
+}
 
 /******************************************************************************/
 // Registrations
@@ -294,11 +294,11 @@ export const createRegistrations = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrations = [];
+  const registrations = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const email = faker.internet.email();
+    const firstName = faker.name.firstName()
+    const lastName = faker.name.lastName()
+    const email = faker.internet.email()
     const {
       rows: [registration],
     } = await client.query(
@@ -307,9 +307,9 @@ export const createRegistrations = async (
         returning *
       `,
       [eventId, quotaId, firstName, lastName, email]
-    );
-    registrations.push(registration);
+    )
+    registrations.push(registration)
   }
 
-  return registrations;
-};
+  return registrations
+}

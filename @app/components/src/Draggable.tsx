@@ -1,28 +1,28 @@
-import React, { DragEventHandler, useRef } from "react";
-import { useDrag, useDrop } from "react-dnd";
+import React, { DragEventHandler, useRef } from "react"
+import { useDrag, useDrop } from "react-dnd"
 
 type DragWithIndex = {
-  index: number;
-};
+  index: number
+}
 
 interface DraggableProps {
-  id: string | number;
-  index: number;
-  move: (from: number, to: number) => void;
+  id: string | number
+  index: number
+  move: (from: number, to: number) => void
 }
 
 interface DisableDraggableProps {
-  onDragStart: DragEventHandler<HTMLInputElement>;
-  draggable: boolean;
+  onDragStart: DragEventHandler<HTMLInputElement>
+  draggable: boolean
 }
 
 export const DisableDraggable: DisableDraggableProps = {
   onDragStart(event) {
-    event.stopPropagation();
-    event.preventDefault();
+    event.stopPropagation()
+    event.preventDefault()
   },
   draggable: true,
-};
+}
 
 export const Draggable: React.FC<DraggableProps> = ({
   id,
@@ -30,7 +30,7 @@ export const Draggable: React.FC<DraggableProps> = ({
   move,
   children,
 }) => {
-  const { ref, isDragging } = useDraggable("list-draggable", id, index, move);
+  const { ref, isDragging } = useDraggable("list-draggable", id, index, move)
   return (
     <div
       ref={ref}
@@ -40,8 +40,8 @@ export const Draggable: React.FC<DraggableProps> = ({
     >
       {children}
     </div>
-  );
-};
+  )
+}
 
 export function useDraggable(
   type: string,
@@ -49,37 +49,37 @@ export function useDraggable(
   index: number,
   move: (from: number, to: number) => void
 ) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
   const [, drop] = useDrop({
     accept: type,
     hover(item: DragWithIndex, monitor) {
       if (!ref.current) {
-        return;
+        return
       }
-      const dragIndex = item.index;
-      if (dragIndex === undefined || dragIndex === null) return;
-      const hoverIndex = index;
+      const dragIndex = item.index
+      if (dragIndex === undefined || dragIndex === null) return
+      const hoverIndex = index
 
       // Don't replace items with themselves
       if (dragIndex === hoverIndex) {
-        return;
+        return
       }
 
       // Determine rectangle on screen
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverBoundingRect = ref.current.getBoundingClientRect()
 
       // Get vertical middle
       const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
       const hoverMiddleX =
-        (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
+        (hoverBoundingRect.right - hoverBoundingRect.left) / 2
 
       // Determine mouse position
-      const clientOffset = monitor.getClientOffset()!;
+      const clientOffset = monitor.getClientOffset()!
 
       // Get pixels to the top
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      const hoverClientX = clientOffset.x - hoverBoundingRect.left;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      const hoverClientX = clientOffset.x - hoverBoundingRect.left
 
       // Only perform the move when the mouse has crossed half of the items height
       // When dragging downwards, only move when the cursor is below 50%
@@ -91,7 +91,7 @@ export function useDraggable(
         hoverClientY < hoverMiddleY &&
         hoverClientX < hoverMiddleX
       ) {
-        return;
+        return
       }
 
       // Dragging upwards
@@ -100,29 +100,29 @@ export function useDraggable(
         hoverClientY > hoverMiddleY &&
         hoverClientX > hoverMiddleX
       ) {
-        return;
+        return
       }
 
       // Time to actually perform the action
-      move(dragIndex, hoverIndex);
+      move(dragIndex, hoverIndex)
 
       // Note: we're mutating the monitor item here!
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
       // to avoid expensive index searches.
-      item.index = hoverIndex;
+      item.index = hoverIndex
     },
-  });
+  })
   const [{ isDragging }, drag] = useDrag({
     type: "list-draggable",
     item: { type, id, index },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  });
-  drag(drop(ref));
+  })
+  drag(drop(ref))
   return {
     ref,
     isDragging,
-  };
+  }
 }

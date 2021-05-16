@@ -1,52 +1,52 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import UserOutlined from "@ant-design/icons/UserOutlined";
-import { ApolloError } from "@apollo/client";
-import { AuthRestrict, SharedLayout } from "@app/components";
-import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql";
-import { extractError, getCodeFromError } from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import Link from "next/link";
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import UserOutlined from "@ant-design/icons/UserOutlined"
+import { ApolloError } from "@apollo/client"
+import { AuthRestrict, SharedLayout } from "@app/components"
+import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
+import { extractError, getCodeFromError } from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import Link from "next/link"
 
 const ForgotPassword: NextPage = () => {
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const query = useSharedQuery();
+  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const query = useSharedQuery()
 
-  const [form] = useForm();
-  const [forgotPassword] = useForgotPasswordMutation();
-  const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null);
+  const [form] = useForm()
+  const [forgotPassword] = useForgotPasswordMutation()
+  const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null)
 
   const handleSubmit = useCallback(
     (values): void => {
-      setError(null);
-      (async () => {
+      setError(null)
+      ;(async () => {
         try {
-          const email = values.email;
+          const email = values.email
           await forgotPassword({
             variables: {
               email,
             },
-          });
+          })
           // Success: refetch
-          setSuccessfulEmail(email);
+          setSuccessfulEmail(email)
         } catch (e) {
-          setError(e);
-          Sentry.captureException(e);
+          setError(e)
+          Sentry.captureException(e)
         }
-      })();
+      })()
     },
     [forgotPassword, setError]
-  );
+  )
 
-  const focusElement = useRef<Input>(null);
+  const focusElement = useRef<Input>(null)
   useEffect(
     () => void (focusElement.current && focusElement.current!.focus()),
     [focusElement]
-  );
+  )
 
-  const code = getCodeFromError(error);
+  const code = getCodeFromError(error)
 
   if (successfulEmail != null) {
     return (
@@ -57,7 +57,7 @@ const ForgotPassword: NextPage = () => {
           type="success"
         />
       </SharedLayout>
-    );
+    )
   }
 
   return (
@@ -116,7 +116,7 @@ const ForgotPassword: NextPage = () => {
         </Form.Item>
       </Form>
     </SharedLayout>
-  );
-};
+  )
+}
 
-export default ForgotPassword;
+export default ForgotPassword

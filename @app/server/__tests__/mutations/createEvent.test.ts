@@ -1,5 +1,5 @@
-import dayjs from "dayjs";
-import slugify from "slugify";
+import dayjs from "dayjs"
+import slugify from "slugify"
 
 import {
   asRoot,
@@ -9,11 +9,11 @@ import {
   sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 const createEventMutation = `
 mutation CreateEvent(
@@ -61,21 +61,18 @@ mutation CreateEvent(
       updatedAt
     }
   }
-}`;
+}`
 
 describe("CreateEvent", () => {
   it("can create event while logged in", async () => {
-    const {
-      organization,
-      eventCategory,
-      session,
-    } = await createEventDataAndLogin();
+    const { organization, eventCategory, session } =
+      await createEventDataAndLogin()
 
-    const day = dayjs("2021-02-20");
-    const daySlug = day.format("YYYY-M-D");
+    const day = dayjs("2021-02-20")
+    const daySlug = day.format("YYYY-M-D")
     const slug = slugify(`${daySlug}-testitapahtuma`, {
       lower: true,
-    });
+    })
 
     await runGraphQLQuery(
       createEventMutation,
@@ -102,14 +99,14 @@ describe("CreateEvent", () => {
 
       // This function runs all your test assertions:
       async (json, { pgClient }) => {
-        expect(json.errors).toBeFalsy();
-        expect(json.data).toBeTruthy();
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
 
-        const event = json.data!.createEvent.event;
+        const event = json.data!.createEvent.event
 
-        expect(event).toBeTruthy();
-        expect(event.ownerOrganizationId).toEqual(organization.id);
-        expect(event.categoryId).toEqual(eventCategory.id);
+        expect(event).toBeTruthy()
+        expect(event.ownerOrganizationId).toEqual(organization.id)
+        expect(event.categoryId).toEqual(eventCategory.id)
 
         expect(sanitize(event)).toMatchInlineSnapshot(`
           Object {
@@ -132,30 +129,30 @@ describe("CreateEvent", () => {
             "updatedAt": "[timestamp-1]",
             "updatedBy": "[id-5]",
           }
-        `);
+        `)
 
         const { rows } = await asRoot(pgClient, () =>
           pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
             event.id,
           ])
-        );
+        )
 
         if (rows.length !== 1) {
-          throw new Error("Event not found!");
+          throw new Error("Event not found!")
         }
-        expect(rows[0].id).toEqual(event.id);
+        expect(rows[0].id).toEqual(event.id)
       }
-    );
-  });
+    )
+  })
 
   it("can't create quotas while logged out", async () => {
-    const { organization, eventCategory } = await createEventDataAndLogin();
+    const { organization, eventCategory } = await createEventDataAndLogin()
 
-    const day = dayjs("2021-02-20");
-    const daySlug = day.format("YYYY-M-D");
+    const day = dayjs("2021-02-20")
+    const daySlug = day.format("YYYY-M-D")
     const slug = slugify(`${daySlug}-testitapahtuma`, {
       lower: true,
-    });
+    })
 
     await runGraphQLQuery(
       createEventMutation,
@@ -179,11 +176,11 @@ describe("CreateEvent", () => {
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        expect(message).toEqual("Permission denied (by RLS)");
+        const message = json.errors![0].message
+        expect(message).toEqual("Permission denied (by RLS)")
       }
-    );
-  });
-});
+    )
+  })
+})

@@ -1,15 +1,15 @@
-const { spawn } = require("child_process");
+const { spawn } = require("child_process")
 
 if (process.env.IN_TESTS === "1") {
-  process.exit(0);
+  process.exit(0)
 }
 
-const connectionString = process.env.GM_DBURL;
+const connectionString = process.env.GM_DBURL
 if (!connectionString) {
   console.error(
     "This script should only be called from a graphile-migrate action."
-  );
-  process.exit(1);
+  )
+  process.exit(1)
 }
 
 spawn(
@@ -27,4 +27,4 @@ spawn(
     stdio: "inherit",
     shell: true,
   }
-);
+)

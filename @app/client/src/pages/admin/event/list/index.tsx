@@ -1,37 +1,37 @@
-import React from "react";
+import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
   ServerPaginatedTable,
-} from "@app/components";
+} from "@app/components"
 import {
   Event,
   ListEventsDocument,
   useDeleteEventMutation,
   useSharedQuery,
-} from "@app/graphql";
-import { Col, PageHeader, Popover, Progress, Row, Typography } from "antd";
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint";
-import dayjs from "dayjs";
-import { reduce } from "lodash";
-import { NextPage } from "next";
-import Link from "next/link";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import { Col, PageHeader, Popover, Progress, Row, Typography } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import dayjs from "dayjs"
+import { reduce } from "lodash"
+import { NextPage } from "next"
+import Link from "next/link"
+import useTranslation from "next-translate/useTranslation"
 
 const Admin_ListEvents: NextPage = () => {
-  const query = useSharedQuery();
+  const query = useSharedQuery()
 
   return (
     <AdminLayout href="/admin/event/list" query={query}>
       <AdminListEventsInner />
     </AdminLayout>
-  );
-};
+  )
+}
 
 const AdminListEventsInner: React.FC = () => {
-  const { t, lang } = useTranslation("admin");
-  const screens = useBreakpoint();
-  const isMobile = screens["xs"];
+  const { t, lang } = useTranslation("admin")
+  const screens = useBreakpoint()
+  const isMobile = screens["xs"]
 
   const actionsColumn = {
     title: "",
@@ -44,9 +44,9 @@ const AdminListEventsInner: React.FC = () => {
           deleteConfirmTranslate={t("events.delete.confirmText")}
           deleteMutation={useDeleteEventMutation}
         />
-      );
+      )
     },
-  };
+  }
   const nameColumn = {
     title: t("common:name"),
     dataIndex: ["name", lang],
@@ -64,7 +64,7 @@ const AdminListEventsInner: React.FC = () => {
         <a>{name}</a>
       </Link>
     ),
-  };
+  }
 
   const columns = !isMobile
     ? [
@@ -82,7 +82,7 @@ const AdminListEventsInner: React.FC = () => {
             const popoverContent = (
               <>
                 {event.quotas.nodes.map((quota) => {
-                  const quotaRegistrations = quota.registrations.totalCount;
+                  const quotaRegistrations = quota.registrations.totalCount
                   return (
                     <Row key={quota.id} style={{ minWidth: "20rem" }}>
                       <Col span={5}>{quota.title[lang]}</Col>
@@ -96,17 +96,17 @@ const AdminListEventsInner: React.FC = () => {
                         {quotaRegistrations} / {quota.size}
                       </Col>
                     </Row>
-                  );
+                  )
                 })}
               </>
-            );
+            )
 
-            const numRegistrations = event.registrations.totalCount;
+            const numRegistrations = event.registrations.totalCount
             const totalSize = reduce(
               event.quotas.nodes,
               (acc: number, quota) => acc + quota.size,
               0
-            );
+            )
             return (
               <Popover
                 content={popoverContent}
@@ -127,7 +127,7 @@ const AdminListEventsInner: React.FC = () => {
                   </Col>
                 </Row>
               </Popover>
-            );
+            )
           },
         },
         {
@@ -136,7 +136,7 @@ const AdminListEventsInner: React.FC = () => {
           render: (startTime: string) => dayjs(startTime).format("l LTS"),
         },
       ]
-    : [actionsColumn, nameColumn];
+    : [actionsColumn, nameColumn]
 
   return (
     <Row>
@@ -152,7 +152,7 @@ const AdminListEventsInner: React.FC = () => {
         />
       </Col>
     </Row>
-  );
-};
+  )
+}
 
-export default Admin_ListEvents;
+export default Admin_ListEvents

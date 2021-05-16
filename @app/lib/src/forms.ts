@@ -7,7 +7,7 @@ export const formItemLayout = {
     xs: { span: 24 },
     sm: { span: 18 },
   },
-};
+}
 
 export const tailFormItemLayout = {
   wrapperCol: {
@@ -20,4 +20,4 @@ export const tailFormItemLayout = {
       offset: 6,
     },
   },
-};
+}

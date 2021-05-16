@@ -1,23 +1,23 @@
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { ParsedUrlQuery } from "querystring";
+import { IncomingMessage, Server, ServerResponse } from "http"
+import { ParsedUrlQuery } from "querystring"
 
-import dayjs from "dayjs";
-import * as faker from "faker";
+import dayjs from "dayjs"
+import * as faker from "faker"
 import {
   FastifyPluginAsync,
   FastifyReply,
   FastifyRequest,
   RouteHandlerMethod,
-} from "fastify";
-import { RouteGenericInterface } from "fastify/types/route";
-import fp from "fastify-plugin";
-import { Pool, PoolClient } from "pg";
-import slugify from "slugify";
+} from "fastify"
+import { RouteGenericInterface } from "fastify/types/route"
+import fp from "fastify-plugin"
+import { Pool, PoolClient } from "pg"
+import slugify from "slugify"
 
 const CypressServerCommands: FastifyPluginAsync = async (app) => {
   // Only enable this in test/development mode
   if (!["test", "development"].includes(process.env.NODE_ENV || "")) {
-    throw new Error("This code must not run in production");
+    throw new Error("This code must not run in production")
   }
 
   /*
@@ -25,8 +25,8 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
    * to be set; this gives us extra protection against accidental XSS/CSRF
    * attacks.
    */
-  const safeToRun = process.env.ENABLE_CYPRESS_COMMANDS === "1";
-  const rootPgPool = app.rootPgPool;
+  const safeToRun = process.env.ENABLE_CYPRESS_COMMANDS === "1"
+  const rootPgPool = app.rootPgPool
 
   /*
    * This function is invoked for the /cypressServerCommand route and is
@@ -47,31 +47,29 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
     if (!safeToRun) {
       console.error(
         "/cypressServerCommand denied because ENABLE_CYPRESS_COMMANDS is not set."
-      );
+      )
       // Pretend like nothing happened
-      return null;
+      return null
     }
 
     try {
       // Try to read and parse the commands from the request.
-      const { query } = req;
+      const { query } = req
       if (!query) {
-        throw new Error("Query not specified");
+        throw new Error("Query not specified")
       }
 
-      const {
-        command: rawCommand,
-        payload: rawPayload,
-      } = query as ParsedUrlQuery;
+      const { command: rawCommand, payload: rawPayload } =
+        query as ParsedUrlQuery
       if (!rawCommand) {
-        throw new Error("Command not specified");
+        throw new Error("Command not specified")
       }
 
-      const command = String(rawCommand);
-      const payload = rawPayload ? JSON.parse(String(rawPayload)) : {};
+      const command = String(rawCommand)
+      const payload = rawPayload ? JSON.parse(String(rawPayload)) : {}
 
       // Now run the actual command:
-      const result = await runCommand(req, res, rootPgPool, command, payload);
+      const result = await runCommand(req, res, rootPgPool, command, payload)
 
       if (result === null) {
         /*
@@ -86,25 +84,25 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
         res
           .code(200)
           .header("Content-Type", "application/json; charset=utf-8")
-          .send(result);
+          .send(result)
       }
     } catch (e) {
       /*
        * If anything goes wrong, let the test runner know so that it can fail
        * the test.
        */
-      console.error("cypressServerCommand failed!");
-      console.error(e);
+      console.error("cypressServerCommand failed!")
+      console.error(e)
       res.status(500).serialize({
         error: {
           message: e.message,
           stack: e.stack,
         },
-      });
+      })
     }
-  };
-  app.get("/cypressServerCommand", {}, handleCypressServerCommand);
-};
+  }
+  app.get("/cypressServerCommand", {}, handleCypressServerCommand)
+}
 
 async function runCommand(
   req: FastifyRequest,
@@ -116,13 +114,13 @@ async function runCommand(
   if (command === "clearTestUsers") {
     await rootPgPool.query(
       "delete from app_public.users where username like 'testuser%'"
-    );
-    return { success: true };
+    )
+    return { success: true }
   } else if (command === "clearTestOrganizations") {
     await rootPgPool.query(
       "delete from app_public.organizations where slug like 'test%'"
-    );
-    return { success: true };
+    )
+    return { success: true }
   } else if (command === "clearTestEventData") {
     await rootPgPool.query(
       `
@@ -137,11 +135,11 @@ async function runCommand(
       -- Delete graphile worker jobs
       delete from graphile_worker.jobs;
       `
-    );
-    return { success: true };
+    )
+    return { success: true }
   } else if (command === "createUser") {
     if (!payload) {
-      throw new Error("Payload required");
+      throw new Error("Payload required")
     }
 
     const {
@@ -152,10 +150,10 @@ async function runCommand(
       password = "TestUserPassword",
       verified = false,
       isAdmin = false,
-    } = payload;
+    } = payload
 
     if (!username.startsWith("testuser")) {
-      throw new Error("Test user usernames may only start with 'testuser'");
+      throw new Error("Test user usernames may only start with 'testuser'")
     }
 
     const user = await reallyCreateUser(rootPgPool, {
@@ -166,17 +164,17 @@ async function runCommand(
       password,
       verified,
       isAdmin,
-    });
+    })
 
-    let verificationToken: string | null = null;
-    const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email);
-    const userEmailId: string = userEmailSecrets.user_email_id;
+    let verificationToken: string | null = null
+    const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email)
+    const userEmailId: string = userEmailSecrets.user_email_id
 
     if (!verified) {
-      verificationToken = userEmailSecrets.verification_token;
+      verificationToken = userEmailSecrets.verification_token
     }
 
-    return { user, userEmailId, verificationToken };
+    return { user, userEmailId, verificationToken }
   } else if (command === "login") {
     const {
       username = "testuser",
@@ -189,19 +187,17 @@ async function runCommand(
       verified = false,
       isAdmin = false,
       existingUser = false,
-    } = payload;
-    const client = await rootPgPool.connect();
+    } = payload
+    const client = await rootPgPool.connect()
 
-    let user: any, otherUser: any, session: any, otherSession: any;
+    let user: any, otherUser: any, session: any, otherSession: any
 
     if (existingUser) {
-      const {
-        rows,
-      } = await client.query("select * from app_private.login($1, $2)", [
-        username,
-        password,
-      ]);
-      [session] = rows;
+      const { rows } = await client.query(
+        "select * from app_private.login($1, $2)",
+        [username, password]
+      )
+      ;[session] = rows
     } else {
       user = await reallyCreateUser(rootPgPool, {
         username,
@@ -211,7 +207,7 @@ async function runCommand(
         password,
         verified,
         isAdmin,
-      });
+      })
       otherUser = await reallyCreateUser(rootPgPool, {
         username: "testuser_other",
         email: "testuser_other@example.com",
@@ -219,58 +215,58 @@ async function runCommand(
         password: "DOESNT MATTER",
         verified: true,
         isAdmin: false,
-      });
-      session = await createSession(rootPgPool, user.id);
-      otherSession = await createSession(rootPgPool, otherUser.id);
+      })
+      session = await createSession(rootPgPool, user.id)
+      otherSession = await createSession(rootPgPool, otherUser.id)
     }
 
     try {
-      await client.query("begin");
+      await client.query("begin")
       try {
-        await setSession(client, session);
+        await setSession(client, session)
         await Promise.all(
           orgs.map(
             async ([name, slug, owner = true]: [string, string, boolean?]) => {
               if (!owner) {
-                await setSession(client, otherSession);
+                await setSession(client, otherSession)
               }
               const {
                 rows: [organization],
               } = await client.query(
                 "select * from app_public.create_organization($1, $2)",
                 [slug, name]
-              );
+              )
               if (!owner) {
                 await client.query(
                   "select app_public.invite_to_organization($1::uuid, $2::citext, null::citext)",
                   [organization.id, user.username]
-                );
-                await setSession(client, session);
+                )
+                await setSession(client, session)
                 await client.query(
                   `select app_public.accept_invitation_to_organization(organization_invitations.id)
                    from app_public.organization_invitations
                    where user_id = $1`,
                   [user.id]
-                );
+                )
               }
             }
           )
-        );
+        )
       } finally {
-        await client.query("commit");
+        await client.query("commit")
       }
     } finally {
-      await client.release();
+      await client.release()
     }
 
     req.raw.login({ session_id: session.uuid }, () => {
       setTimeout(() => {
         // This 500ms delay is required to keep GitHub actions happy. 200ms wasn't enough.
-        res.redirect(next || "/");
-      }, 500);
-    });
+        res.redirect(next || "/")
+      }, 500)
+    })
 
-    return null;
+    return null
   } else if (command === "createTestEventData") {
     const {
       user,
@@ -280,7 +276,7 @@ async function runCommand(
       quota,
       registration,
       registrationSecret,
-    } = await createEventData(rootPgPool, payload);
+    } = await createEventData(rootPgPool, payload)
 
     return {
       user,
@@ -290,20 +286,20 @@ async function runCommand(
       quota,
       registration,
       registrationSecret,
-    };
+    }
   } else if (command === "getEmailSecrets") {
-    const { email = "test.user@example.com" } = payload;
-    const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email);
-    return userEmailSecrets;
+    const { email = "test.user@example.com" } = payload
+    const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email)
+    return userEmailSecrets
   } else {
-    throw new Error(`Command '${command}' not understood.`);
+    throw new Error(`Command '${command}' not understood.`)
   }
 }
 
 async function setSession(client: PoolClient, sess: any) {
   await client.query("select set_config('jwt.claims.session_id', $1, true)", [
     sess.uuid,
-  ]);
+  ])
 }
 
 async function reallyCreateUser(
@@ -317,13 +313,13 @@ async function reallyCreateUser(
     verified,
     isAdmin,
   }: {
-    username?: string;
-    email?: string;
-    name?: string;
-    avatarUrl?: string;
-    password?: string;
-    verified?: boolean;
-    isAdmin?: boolean;
+    username?: string
+    email?: string
+    name?: string
+    avatarUrl?: string
+    password?: string
+    verified?: boolean
+    isAdmin?: boolean
   }
 ) {
   const {
@@ -339,23 +335,23 @@ async function reallyCreateUser(
       is_admin := $7
     )`,
     [username, email, name, avatarUrl, password, verified, isAdmin]
-  );
-  return user;
+  )
+  return user
 }
 
 async function createEventData(
   rootPgPool: Pool,
   payload: { [key: string]: any }
 ) {
-  const client = await rootPgPool.connect();
+  const client = await rootPgPool.connect()
   const {
     eventSignupUpcoming = false,
     eventSignupClosed = false,
     userIsAdmin = false,
-  } = payload;
+  } = payload
 
   try {
-    await client.query("begin");
+    await client.query("begin")
 
     const user = await reallyCreateUser(rootPgPool, {
       username: "testuser_events",
@@ -364,17 +360,17 @@ async function createEventData(
       password: "DOESNT MATTER",
       verified: true,
       isAdmin: userIsAdmin,
-    });
-    const session = await createSession(rootPgPool, user.id);
+    })
+    const session = await createSession(rootPgPool, user.id)
 
-    await setSession(client, session);
+    await setSession(client, session)
 
-    const [organization] = await createOrganizations(client, 1);
+    const [organization] = await createOrganizations(client, 1)
     const [eventCategory] = await createEventCategories(
       client,
       1,
       organization.id
-    );
+    )
     const [event] = await createEvents(
       client,
       1,
@@ -382,23 +378,23 @@ async function createEventData(
       eventCategory.id,
       eventSignupUpcoming,
       eventSignupClosed
-    );
-    const [quota] = await createQuotas(client, 1, event.id);
-    let registration, registrationSecret;
+    )
+    const [quota] = await createQuotas(client, 1, event.id)
+    let registration, registrationSecret
     if (!eventSignupClosed && !eventSignupUpcoming) {
       // Database trigger prevents creating registrations for events that are
       // closed or their signup is upcoming
-      [registration] = await createRegistrations(client, 1, event.id, quota.id);
-      [registrationSecret] = await createRegistrationSecrets(
+      ;[registration] = await createRegistrations(client, 1, event.id, quota.id)
+      ;[registrationSecret] = await createRegistrationSecrets(
         client,
         1,
         registration.id,
         event.id,
         quota.id
-      );
+      )
     }
 
-    await client.query("commit");
+    await client.query("commit")
     return {
       user,
       organization,
@@ -407,9 +403,9 @@ async function createEventData(
       quota,
       registration,
       registrationSecret,
-    };
+    }
   } finally {
-    await client.release();
+    await client.release()
   }
 }
 
@@ -420,22 +416,22 @@ export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
 ) => {
-  const organizations = [];
+  const organizations = []
   for (let i = 0; i < count; i++) {
-    const random = faker.lorem.word();
-    const slug = `organization-${random}`;
-    const name = `Organization ${random}`;
+    const random = faker.lorem.word()
+    const slug = `organization-${random}`
+    const name = `Organization ${random}`
     const {
       rows: [organization],
     } = await client.query(
       `select * from app_public.create_organization($1, $2)`,
       [slug, name]
-    );
-    organizations.push(organization);
+    )
+    organizations.push(organization)
   }
 
-  return organizations;
-};
+  return organizations
+}
 
 /******************************************************************************/
 // Events
@@ -445,13 +441,13 @@ export const createEventCategories = async (
   count: number = 1,
   organizationId: string
 ) => {
-  const categories = [];
+  const categories = []
   for (let i = 0; i < count; i++) {
-    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
+    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
     const description = {
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
-    };
+    }
     const {
       rows: [category],
     } = await client.query(
@@ -460,12 +456,12 @@ export const createEventCategories = async (
         returning *
       `,
       [name, description, organizationId]
-    );
-    categories.push(category);
+    )
+    categories.push(category)
   }
 
-  return categories;
-};
+  return categories
+}
 
 export const createEvents = async (
   client: PoolClient,
@@ -475,46 +471,40 @@ export const createEvents = async (
   eventSignupUpcoming: boolean,
   eventSignupClosed: boolean
 ) => {
-  const events = [];
+  const events = []
   for (let i = 0; i < count; i++) {
     const name = {
       fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
       en: `Event ${faker.lorem.words()} ${i}`,
-    };
+    }
     const description = {
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
-    };
+    }
 
     // By default create events that are open to registration (-1)
-    const now = new Date();
-    const dateAdjustment = eventSignupUpcoming
-      ? 1
-      : eventSignupClosed
-      ? -8
-      : -1;
-    const registrationStartTime = dayjs(now)
-      .add(dateAdjustment, "day")
-      .toDate();
+    const now = new Date()
+    const dateAdjustment = eventSignupUpcoming ? 1 : eventSignupClosed ? -8 : -1
+    const registrationStartTime = dayjs(now).add(dateAdjustment, "day").toDate()
     const registrationEndTime = dayjs(registrationStartTime)
       .add(7, "day")
-      .toDate();
+      .toDate()
 
-    const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate();
-    const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate();
+    const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate()
+    const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate()
 
-    const eventCategoryId = categoryId;
+    const eventCategoryId = categoryId
     const headerImageFile = faker.image.imageUrl(
       851,
       315,
       `nature?random=${Math.round(Math.random() * 1000)}`
-    );
+    )
 
-    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
-    });
-    const isDraft = false;
+    })
+    const isDraft = false
 
     const {
       rows: [event],
@@ -548,12 +538,12 @@ export const createEvents = async (
         organizationId,
         eventCategoryId,
       ]
-    );
-    events.push(event);
+    )
+    events.push(event)
   }
 
-  return events;
-};
+  return events
+}
 
 /******************************************************************************/
 // Quotas
@@ -563,13 +553,13 @@ export const createQuotas = async (
   count: number = 1,
   eventId: string
 ) => {
-  const quotas = [];
+  const quotas = []
   for (let i = 0; i < count; i++) {
-    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
+    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const size = faker.datatype.number({
       min: 1,
       max: 20,
-    });
+    })
     const {
       rows: [quota],
     } = await client.query(
@@ -578,12 +568,12 @@ export const createQuotas = async (
         returning *
       `,
       [eventId, i, title, size]
-    );
-    quotas.push(quota);
+    )
+    quotas.push(quota)
   }
 
-  return quotas;
-};
+  return quotas
+}
 
 export const createRegistrationSecrets = async (
   client: PoolClient,
@@ -592,7 +582,7 @@ export const createRegistrationSecrets = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrationSecrets = [];
+  const registrationSecrets = []
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
@@ -602,12 +592,12 @@ export const createRegistrationSecrets = async (
         returning *
       `,
       [eventId, quotaId, registrationId]
-    );
-    registrationSecrets.push(secret);
+    )
+    registrationSecrets.push(secret)
   }
 
-  return registrationSecrets;
-};
+  return registrationSecrets
+}
 
 /******************************************************************************/
 // Registrations
@@ -618,11 +608,11 @@ export const createRegistrations = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrations = [];
+  const registrations = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const email = faker.internet.email();
+    const firstName = faker.name.firstName()
+    const lastName = faker.name.lastName()
+    const email = faker.internet.email()
     const {
       rows: [registration],
     } = await client.query(
@@ -631,12 +621,12 @@ export const createRegistrations = async (
         returning *
       `,
       [eventId, quotaId, firstName, lastName, email]
-    );
-    registrations.push(registration);
+    )
+    registrations.push(registration)
   }
 
-  return registrations;
-};
+  return registrations
+}
 
 async function createSession(rootPgPool: Pool, userId: string) {
   const {
@@ -647,8 +637,8 @@ async function createSession(rootPgPool: Pool, userId: string) {
       returning *
     `,
     [userId]
-  );
-  return session;
+  )
+  return session
 }
 
 async function getUserEmailSecrets(rootPgPool: Pool, email: string) {
@@ -666,8 +656,8 @@ async function getUserEmailSecrets(rootPgPool: Pool, email: string) {
       )
     `,
     [email]
-  );
-  return userEmailSecrets;
+  )
+  return userEmailSecrets
 }
 
-export default fp(CypressServerCommands);
+export default fp(CypressServerCommands)

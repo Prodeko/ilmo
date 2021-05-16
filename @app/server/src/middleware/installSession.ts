@@ -1,29 +1,29 @@
-import ConnectRedis from "connect-redis";
-import { RequestHandler } from "express";
-import session from "express-session";
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
+import ConnectRedis from "connect-redis"
+import { RequestHandler } from "express"
+import session from "express-session"
+import { FastifyPluginAsync } from "fastify"
+import fp from "fastify-plugin"
 
-const RedisStore = ConnectRedis(session);
+const RedisStore = ConnectRedis(session)
 
-const MILLISECOND = 1;
-const SECOND = 1000 * MILLISECOND;
-const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
+const MILLISECOND = 1
+const SECOND = 1000 * MILLISECOND
+const MINUTE = 60 * SECOND
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
 
-const { SECRET } = process.env;
+const { SECRET } = process.env
 if (!SECRET) {
-  throw new Error("Server misconfigured");
+  throw new Error("Server misconfigured")
 }
 const MAXIMUM_SESSION_DURATION_IN_MILLISECONDS =
   parseInt(process.env.MAXIMUM_SESSION_DURATION_IN_MILLISECONDS || "", 10) ||
-  3 * DAY;
+  3 * DAY
 
 const Session: FastifyPluginAsync = async (app) => {
   const store = new RedisStore({
     client: app.redis,
-  });
+  })
 
   const sessionMiddleware = session({
     rolling: true,
@@ -37,7 +37,7 @@ const Session: FastifyPluginAsync = async (app) => {
     },
     store,
     secret: SECRET,
-  });
+  })
 
   /**
    * For security reasons we only enable sessions for requests within our
@@ -46,14 +46,14 @@ const Session: FastifyPluginAsync = async (app) => {
    */
   const wrappedSessionMiddleware: RequestHandler = (req, res, next) => {
     if (req.isSameOrigin) {
-      sessionMiddleware(req, res, next);
+      sessionMiddleware(req, res, next)
     } else {
-      next();
+      next()
     }
-  };
+  }
 
-  app.use(wrappedSessionMiddleware);
-  app.websocketMiddlewares.push(wrappedSessionMiddleware);
-};
+  app.use(wrappedSessionMiddleware)
+  app.websocketMiddlewares.push(wrappedSessionMiddleware)
+}
 
-export default fp(Session);
+export default fp(Session)

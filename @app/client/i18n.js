@@ -12,4 +12,4 @@ module.exports = {
   },
   loadLocaleFrom: (lang, ns) =>
     import(`./src/translations/${lang}/${ns}.json`).then((m) => m.default),
-};
+}

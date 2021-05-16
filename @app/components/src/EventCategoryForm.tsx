@@ -1,32 +1,32 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import React, { useCallback, useEffect, useState } from "react"
+import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   CreateEventCategoryPageQuery,
   UpdateEventCategoryPageQuery,
   useCreateEventCategoryMutation,
   useUpdateEventCategoryMutation,
-} from "@app/graphql";
+} from "@app/graphql"
 import {
   extractError,
   formItemLayout,
   getCodeFromError,
   tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, Select } from "antd";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Alert, Button, Form, Input, Select } from "antd"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
-const { Option } = Select;
+const { Option } = Select
 
 interface EventCategoryFormProps {
-  type: "update" | "create";
-  data: CreateEventCategoryPageQuery | UpdateEventCategoryPageQuery;
-  formRedirect: { pathname: string; query: { [key: string]: string } } | string;
+  type: "update" | "create"
+  data: CreateEventCategoryPageQuery | UpdateEventCategoryPageQuery
+  formRedirect: { pathname: string; query: { [key: string]: string } } | string
   // categoryId and initialValues are used when type is "update"
   // i.e. we are updating an existing event category
-  categoryId?: string;
-  initialValues?: any;
+  categoryId?: string
+  initialValues?: any
 }
 
 export const EventCategoryForm = ({
@@ -37,65 +37,65 @@ export const EventCategoryForm = ({
   initialValues,
 }: EventCategoryFormProps) => {
   const { languages } = initialValues
-  const { supportedLanguages } = data?.languages || {};
-  const { organizationMemberships } = data?.currentUser || {};
+  const { supportedLanguages } = data?.languages || {}
+  const { organizationMemberships } = data?.currentUser || {}
 
   // Translations, router, apollo
-  const { t } = useTranslation("events");
-  const router = useRouter();
-  const client = useApolloClient();
+  const { t } = useTranslation("events")
+  const router = useRouter()
+  const client = useApolloClient()
 
   // Handling form values, errors and submission
-  const [form] = Form.useForm();
-  const [formSubmitting, setFormSubmimtting] = useState(false);
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
+  const [form] = Form.useForm()
+  const [formSubmitting, setFormSubmimtting] = useState(false)
+  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     languages || []
-  );
+  )
 
   // Mutations
-  const [updateEventCategory] = useUpdateEventCategoryMutation();
-  const [createEventCategory] = useCreateEventCategoryMutation();
+  const [updateEventCategory] = useUpdateEventCategoryMutation()
+  const [createEventCategory] = useCreateEventCategoryMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
-    form.setFieldsValue(initialValues);
+    form.setFieldsValue(initialValues)
 
     // setSelectedLanguages if languages from initialValues change
     const { languages } = initialValues
     if (languages) {
-      setSelectedLanguages(languages);
+      setSelectedLanguages(languages)
     }
-  }, [form, initialValues]);
+  }, [form, initialValues])
 
   const handleSubmit = useCallback(
     async (values) => {
-      setFormSubmimtting(true);
-      setFormError(null);
+      setFormSubmimtting(true)
+      setFormError(null)
       try {
         if (type === "create") {
           await createEventCategory({
             variables: {
               ...values,
             },
-          });
+          })
         } else if (type === "update") {
           await updateEventCategory({
             variables: {
               ...values,
               id: categoryId,
             },
-          });
+          })
         }
 
-        client.resetStore();
-        setFormError(null);
-        router.push(formRedirect, formRedirect);
+        client.resetStore()
+        setFormError(null)
+        router.push(formRedirect, formRedirect)
       } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
+        setFormError(e)
+        Sentry.captureException(e)
       }
-      setFormSubmimtting(false);
+      setFormSubmimtting(false)
     },
     [
       createEventCategory,
@@ -106,9 +106,9 @@ export const EventCategoryForm = ({
       router,
       type,
     ]
-  );
+  )
 
-  const code = getCodeFromError(formError);
+  const code = getCodeFromError(formError)
 
   return (
     <Form
@@ -255,5 +255,5 @@ export const EventCategoryForm = ({
         </Button>
       </Form.Item>
     </Form>
-  );
-};
+  )
+}

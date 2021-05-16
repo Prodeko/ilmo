@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react"
 import {
   OrganizationPage_MembershipFragment,
   OrganizationPage_OrganizationFragment,
@@ -6,9 +6,9 @@ import {
   useInviteToOrganizationMutation,
   useRemoveFromOrganizationMutation,
   useTransferOrganizationOwnershipMutation,
-} from "@app/graphql";
-import { formItemLayout, tailFormItemLayout } from "@app/lib";
-import * as Sentry from "@sentry/react";
+} from "@app/graphql"
+import { formItemLayout, tailFormItemLayout } from "@app/lib"
+import * as Sentry from "@sentry/react"
 import {
   Button,
   Card,
@@ -18,33 +18,33 @@ import {
   message,
   Popconfirm,
   Typography,
-} from "antd";
-import Text from "antd/lib/typography/Text";
-import useTranslation from "next-translate/useTranslation";
-import { Store } from "rc-field-form/lib/interface";
+} from "antd"
+import Text from "antd/lib/typography/Text"
+import useTranslation from "next-translate/useTranslation"
+import { Store } from "rc-field-form/lib/interface"
 
-import { Redirect } from "./index";
+import { Redirect } from "./index"
 
 interface OrganizationMembersProps {
-  currentUser?: SharedLayout_UserFragment | null;
-  organization: OrganizationPage_OrganizationFragment;
-  page: number;
-  setPage: (newPage: number) => void;
+  currentUser?: SharedLayout_UserFragment | null
+  organization: OrganizationPage_OrganizationFragment
+  page: number
+  setPage: (newPage: number) => void
 }
 
-export const ORGANIZATION_RESULTS_PER_PAGE = 10;
+export const ORGANIZATION_RESULTS_PER_PAGE = 10
 
 export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
   props
 ) => {
-  const { organization, currentUser, page, setPage } = props;
+  const { organization, currentUser, page, setPage } = props
 
   const handlePaginationChange = (
     page: number
     //pageSize?: number | undefined
   ) => {
-    setPage(page);
-  };
+    setPage(page)
+  }
 
   const renderItem = useCallback(
     (node: OrganizationPage_MembershipFragment) => (
@@ -55,19 +55,19 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
       />
     ),
     [currentUser, organization]
-  );
+  )
 
-  const [inviteToOrganization] = useInviteToOrganizationMutation();
-  const [inviteInProgress, setInviteInProgress] = useState(false);
-  const [form] = Form.useForm();
+  const [inviteToOrganization] = useInviteToOrganizationMutation()
+  const [inviteInProgress, setInviteInProgress] = useState(false)
+  const [form] = Form.useForm()
   const handleInviteSubmit = useCallback(
     async (values: Store) => {
       if (inviteInProgress) {
-        return;
+        return
       }
-      const { inviteText } = values;
-      setInviteInProgress(true);
-      const isEmail = inviteText.includes("@");
+      const { inviteText } = values
+      setInviteInProgress(true)
+      const isEmail = inviteText.includes("@")
       try {
         await inviteToOrganization({
           variables: {
@@ -75,22 +75,22 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
             email: isEmail ? inviteText : null,
             username: isEmail ? null : inviteText,
           },
-        });
-        message.success(`'${inviteText}' invited.`);
-        form.setFieldsValue({ inviteText: "" });
+        })
+        message.success(`'${inviteText}' invited.`)
+        form.setFieldsValue({ inviteText: "" })
       } catch (e) {
         // TODO: handle this through the interface
         message.error(
           "Could not invite to organization: " +
             e.message.replace(/^GraphQL Error:/i, "")
-        );
-        Sentry.captureException(e);
+        )
+        Sentry.captureException(e)
       } finally {
-        setInviteInProgress(false);
+        setInviteInProgress(false)
       }
     },
     [form, inviteInProgress, inviteToOrganization, organization.id]
-  );
+  )
 
   if (!organization.currentUserIsOwner) {
     return (
@@ -98,7 +98,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
         as={`/admin/organization/${organization.slug}`}
         href="/admin/organization/[slug]"
       />
-    );
+    )
   }
 
   return (
@@ -137,22 +137,22 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
         bordered
       />
     </>
-  );
-};
+  )
+}
 
 interface OrganizationMemberListItemProps {
-  node: OrganizationPage_MembershipFragment;
-  organization: OrganizationPage_OrganizationFragment;
-  currentUser?: SharedLayout_UserFragment | null;
+  node: OrganizationPage_MembershipFragment
+  organization: OrganizationPage_OrganizationFragment
+  currentUser?: SharedLayout_UserFragment | null
 }
 
 const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   props
 ) => {
-  const { node, organization, currentUser } = props;
+  const { node, organization, currentUser } = props
 
-  const { t } = useTranslation("admin");
-  const [removeMember] = useRemoveFromOrganizationMutation();
+  const { t } = useTranslation("admin")
+  const [removeMember] = useRemoveFromOrganizationMutation()
   const handleRemove = useCallback(async () => {
     try {
       await removeMember({
@@ -161,14 +161,14 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
           userId: node.user?.id ?? 0,
         },
         refetchQueries: ["OrganizationMembers"],
-      });
+      })
     } catch (e) {
-      message.error("Error occurred when removing member: " + e.message);
-      Sentry.captureException(e);
+      message.error("Error occurred when removing member: " + e.message)
+      Sentry.captureException(e)
     }
-  }, [node.user, organization.id, removeMember]);
+  }, [node.user, organization.id, removeMember])
 
-  const [transferOwnership] = useTransferOrganizationOwnershipMutation();
+  const [transferOwnership] = useTransferOrganizationOwnershipMutation()
   const handleTransfer = useCallback(async () => {
     try {
       await transferOwnership({
@@ -177,14 +177,14 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
           userId: node.user?.id ?? 0,
         },
         refetchQueries: ["OrganizationMembers"],
-      });
+      })
     } catch (e) {
-      message.error("Error occurred when transferring ownership: " + e.message);
-      Sentry.captureException(e);
+      message.error("Error occurred when transferring ownership: " + e.message)
+      Sentry.captureException(e)
     }
-  }, [node.user, organization.id, transferOwnership]);
+  }, [node.user, organization.id, transferOwnership])
 
-  const roles = [node.isOwner ? "owner" : null].filter(Boolean).join(" and ");
+  const roles = [node.isOwner ? "owner" : null].filter(Boolean).join(" and ")
   return (
     <List.Item
       actions={[
@@ -227,5 +227,5 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         title={node.user?.name}
       />
     </List.Item>
-  );
-};
+  )
+}

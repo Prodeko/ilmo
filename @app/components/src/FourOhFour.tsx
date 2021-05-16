@@ -1,17 +1,17 @@
-import React from "react";
-import { User } from "@app/graphql";
-import { Result } from "antd";
-import useTranslation from "next-translate/useTranslation";
+import React from "react"
+import { User } from "@app/graphql"
+import { Result } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
-import { ButtonLink } from "./ButtonLink";
+import { ButtonLink } from "./ButtonLink"
 
 interface FourOhFourProps {
-  currentUser?: Pick<User, "id"> | null;
+  currentUser?: Pick<User, "id"> | null
 }
 
 export function FourOhFour(props: FourOhFourProps) {
-  const { currentUser } = props;
-  const { t } = useTranslation();
+  const { currentUser } = props
+  const { t } = useTranslation()
   return (
     <div data-cy="fourohfour-div">
       <Result
@@ -27,5 +27,5 @@ export function FourOhFour(props: FourOhFourProps) {
         title="404"
       />
     </div>
-  );
+  )
 }

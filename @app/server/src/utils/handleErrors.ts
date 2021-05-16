@@ -1,8 +1,8 @@
-import { GraphQLError } from "graphql";
-import { camelCase } from "lodash";
+import { GraphQLError } from "graphql"
+import { camelCase } from "lodash"
 
-const isDev = process.env.NODE_ENV === "development";
-const isTest = process.env.NODE_ENV === "test";
+const isDev = process.env.NODE_ENV === "development"
+const isTest = process.env.NODE_ENV === "test"
 
 const ERROR_PROPERTIES_TO_EXPOSE =
   isDev || isTest
@@ -21,7 +21,7 @@ const ERROR_PROPERTIES_TO_EXPOSE =
         "dataType",
         "constraint",
       ]
-    : ["code"];
+    : ["code"]
 
 // This would be better as a macro...
 const pluck = (err: any): { [key: string]: any } => {
@@ -30,13 +30,13 @@ const pluck = (err: any): { [key: string]: any } => {
       key === "code"
         ? // err.errcode is equivalent to err.code; replace it
           err.code || err.errcode
-        : err[key];
+        : err[key]
     if (value != null) {
-      memo[key] = value;
+      memo[key] = value
     }
-    return memo;
-  }, {});
-};
+    return memo
+  }, {})
+}
 
 /**
  * This map allows you to override the error object output to users from
@@ -64,38 +64,38 @@ export const ERROR_MESSAGE_OVERRIDES: { [code: string]: typeof pluck } = {
     fields: conflictFieldsFromError(err),
     code: "BADFK",
   }),
-};
+}
 
 function conflictFieldsFromError(err: any) {
-  const { table, constraint } = err;
+  const { table, constraint } = err
   // TODO: extract a list of constraints from the DB
   if (constraint && table) {
-    const PREFIX = `${table}_`;
-    const SUFFIX_LIST = [`_key`, `_fkey`];
+    const PREFIX = `${table}_`
+    const SUFFIX_LIST = [`_key`, `_fkey`]
     if (constraint.startsWith(PREFIX)) {
       const matchingSuffix = SUFFIX_LIST.find((SUFFIX) =>
         constraint.endsWith(SUFFIX)
-      );
+      )
       if (matchingSuffix) {
         const maybeColumnNames = constraint.substr(
           PREFIX.length,
           constraint.length - PREFIX.length - matchingSuffix.length
-        );
-        return [camelCase(maybeColumnNames)];
+        )
+        return [camelCase(maybeColumnNames)]
       }
     }
   }
-  return undefined;
+  return undefined
 }
 
 export default function handleErrors(
   errors: readonly GraphQLError[]
 ): Array<any> {
   return errors.map((error) => {
-    const { message: rawMessage, locations, path, originalError } = error;
-    const code = originalError ? originalError["code"] : null;
-    const localPluck = ERROR_MESSAGE_OVERRIDES[code] || pluck;
-    const exception = localPluck(originalError || error);
+    const { message: rawMessage, locations, path, originalError } = error
+    const code = originalError ? originalError["code"] : null
+    const localPluck = ERROR_MESSAGE_OVERRIDES[code] || pluck
+    const exception = localPluck(originalError || error)
     return {
       message: exception.message || rawMessage,
       locations,
@@ -103,6 +103,6 @@ export default function handleErrors(
       extensions: {
         exception,
       },
-    };
-  });
+    }
+  })
 }

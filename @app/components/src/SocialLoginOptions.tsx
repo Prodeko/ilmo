@@ -1,15 +1,15 @@
-import React from "react";
-import { Button } from "antd";
+import React from "react"
+import { Button } from "antd"
 
-import { ProdekoIcon } from "./ProdekoIcon";
+import { ProdekoIcon } from "./ProdekoIcon"
 
 export interface SocialLoginOptionsProps {
-  next: string;
-  buttonTextFromService?: (service: string) => string;
+  next: string
+  buttonTextFromService?: (service: string) => string
 }
 
 function defaultButtonTextFromService(service: string) {
-  return `Sign in with ${service}`;
+  return `Sign in with ${service}`
 }
 
 export function SocialLoginOptions({
@@ -26,5 +26,5 @@ export function SocialLoginOptions({
     >
       {buttonTextFromService("Prodeko")}
     </Button>
-  );
+  )
 }
