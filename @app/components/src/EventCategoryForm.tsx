@@ -148,7 +148,7 @@ export const EventCategoryForm = ({
       </Form.Item>
       <Form.Item
         label={t("organizer")}
-        name="ownerOrganization"
+        name="ownerOrganizationId"
         rules={[
           {
             required: true,

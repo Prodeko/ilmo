@@ -63,7 +63,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
         nameColumn,
         {
           title: t("events:organizer"),
-          dataIndex: ["ownerOrganization", "name"],
+          dataIndex: ["ownerOrganizationId", "name"],
           key: "organizationName",
           ellipsis: true,
         },
