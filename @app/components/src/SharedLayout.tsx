@@ -72,8 +72,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-    | React.ReactNode
-    | ((props: SharedLayoutChildProps) => React.ReactNode)
+  | React.ReactNode
+  | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
@@ -228,7 +228,7 @@ export function SharedLayout({
                 overlay={
                   <Menu>
                     <Menu.Item>
-                      <Link href="/admin">
+                      <Link href="/admin/event/list">
                         <a data-cy="layout-link-admin">
                           {t("headerMenu.admin")}
                         </a>

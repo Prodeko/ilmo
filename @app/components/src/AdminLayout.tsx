@@ -56,11 +56,6 @@ export function AdminLayout({
 
   const basicMenuItems = [
     {
-      key: "/admin",
-      title: t("sider.titles.main"),
-      target: "/admin",
-    },
-    {
       key: "/admin/emails",
       title: t("sider.titles.emails"),
       target: "/admin/emails",
@@ -73,7 +68,6 @@ export function AdminLayout({
   const items: MenuItem[] = query.loading
     ? [...basicMenuItems]
     : [
-        ...basicMenuItems,
         {
           key: "admin-menu-organizations",
           title: t("sider.titles.organizations"),
@@ -135,6 +129,7 @@ export function AdminLayout({
             },
           ],
         },
+        ...basicMenuItems,
       ]
 
   const page = findPage(String(inHref), items) || items[0]
