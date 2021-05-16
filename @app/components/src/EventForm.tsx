@@ -117,7 +117,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     eventId,
   } = props
   const { supportedLanguages } = data?.languages || {}
-  const { languages } = initialValues
+  const { languages } = initialValues || {}
 
   // Translations, router, apollo
   const { t, lang } = useTranslation("events")
@@ -148,11 +148,10 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     form.setFieldsValue(initialValues)
 
     // setSelectedLanguages if languages from initialValues change
-    const { languages } = initialValues
     if (languages) {
       setSelectedLanguages(languages)
     }
-  }, [form, initialValues])
+  }, [form, initialValues, languages])
 
   const code = getCodeFromError(formError)
 

@@ -36,7 +36,7 @@ export const EventCategoryForm = ({
   categoryId,
   initialValues,
 }: EventCategoryFormProps) => {
-  const { languages } = initialValues
+  const { languages } = initialValues || {}
   const { supportedLanguages } = data?.languages || {}
   const { organizationMemberships } = data?.currentUser || {}
 
@@ -62,11 +62,10 @@ export const EventCategoryForm = ({
     form.setFieldsValue(initialValues)
 
     // setSelectedLanguages if languages from initialValues change
-    const { languages } = initialValues
     if (languages) {
       setSelectedLanguages(languages)
     }
-  }, [form, initialValues])
+  }, [form, initialValues, languages])
 
   const handleSubmit = useCallback(
     async (values) => {
