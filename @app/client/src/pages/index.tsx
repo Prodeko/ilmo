@@ -88,7 +88,7 @@ const Home: NextPage = () => {
         nameColumn,
         {
           title: t("events:organizer"),
-          dataIndex: ["ownerOrganizationId", "name"],
+          dataIndex: ["ownerOrganization", "name"],
           key: "organizationName",
           filters: [
             ...Array.from(new Set(organizations?.map((o) => o.name))).map(
@@ -96,10 +96,10 @@ const Home: NextPage = () => {
             ),
           ],
           onFilter: (value: string | number | boolean, record: Event) =>
-            record?.ownerOrganizationId?.name.indexOf(value as string) === 0,
+            record?.ownerOrganization?.name.indexOf(value as string) === 0,
           sorter: (a: Event, b: Event) =>
-            a?.ownerOrganizationId?.name?.localeCompare(
-              b?.ownerOrganizationId?.name || ""
+            a?.ownerOrganization?.name?.localeCompare(
+              b?.ownerOrganization?.name || ""
             ),
           render: (name: string, record: Event, index: number) => (
             <Tag key={`${record.id}-${index}`} color={getColor(name)}>
