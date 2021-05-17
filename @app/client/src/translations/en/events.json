@@ -8,6 +8,7 @@
     "title": "Create event category"
   },
   "createdAt": "Time",
+  "endTime": "End time",
   "errors": {
     "eventCategoryCreationFailed": "Creating event category failed",
     "eventCreationFailed": "Creating event failed",
@@ -16,6 +17,7 @@
   },
   "eventName": "Event",
   "eventNotFound": "Event not found",
+  "eventSignupNotOpen": "Event signup is not open",
   "forms": {
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
@@ -76,7 +78,6 @@
   "registerToAnEvent": "Signup",
   "removeQuota": "Remove quota",
   "startTime": "Start time",
-  "endTime": "End time",
   "updateEvent": {
     "title": "Update event"
   }

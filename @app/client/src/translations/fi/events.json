@@ -8,6 +8,7 @@
     "title": "Luo tapahtumakategoria"
   },
   "createdAt": "Aika",
+  "endTime": "Loppumisaika",
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
     "eventCreationFailed": "Tapahtuman luonti epäonnistui",
@@ -16,6 +17,7 @@
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
+  "eventSignupNotOpen": "Tapahtuman ilmoittautuminen ei ole auki",
   "forms": {
     "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
@@ -76,7 +78,6 @@
   "registerToAnEvent": "Ilmoittaudu",
   "removeQuota": "Poista kiintiö",
   "startTime": "Alkamisaika",
-  "endTime": "Loppumisaika",
   "updateEvent": {
     "title": "Päivitä tapahtuma"
   }

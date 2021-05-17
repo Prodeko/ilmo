@@ -1,6 +1,6 @@
 import React from "react"
 import { EventPage_EventFragment, Registration } from "@app/graphql"
-import { Button, Card } from "antd"
+import { Button, Card, Popover } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import useTranslation from "next-translate/useTranslation"
 
@@ -37,6 +37,17 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
           (r) => r?.quota?.id === quotaId
         ).length
         const percentageFilled = Math.round((totalCount / size) * 100)
+        const signupNotOpen = signupClosed! || signupUpcoming!
+        const quotaButton = (
+          <Button
+            data-cy={`eventpage-quotas-link-${i}`}
+            disabled={signupNotOpen}
+            target="a"
+            block
+          >
+            {title[lang]}
+          </Button>
+        )
 
         return (
           <div key={quotaId} style={{ paddingBottom: 12 }}>
@@ -46,14 +57,11 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
                 query: { eventId, quotaId },
               }}
             >
-              <Button
-                data-cy={`eventpage-quotas-link-${i}`}
-                disabled={signupClosed! || signupUpcoming!}
-                target="a"
-                block
-              >
-                {title[lang]}
-              </Button>
+              {signupNotOpen ? (<Popover content={t("eventSignupNotOpen")}>
+                {quotaButton}
+              </Popover>) : (
+                quotaButton
+              )}
             </Link>
             <ProgressBar
               filled={totalCount}
