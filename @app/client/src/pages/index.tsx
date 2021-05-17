@@ -120,11 +120,14 @@ const Home: NextPage = () => {
             record?.category?.name[lang].indexOf(value) === 0,
           sorter: (a: Event, b: Event) =>
             a?.name[lang]?.localeCompare(b?.name[lang] || ""),
-          render: (name: string, record: Event, index: number) => (
-            <Tag key={`${record.id}-${index}`} color={getColor(name)}>
-              {name?.toUpperCase()}
-            </Tag>
-          ),
+          render: (name: string, record: Event, index: number) => {
+            console.log(record)
+            return (
+              <Tag key={`${record.id}-${index}`} color={record.category.color}>
+                {name?.toUpperCase()}
+              </Tag>
+            )
+          },
         },
         endTimeColumn,
       ]

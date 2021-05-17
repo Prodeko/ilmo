@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:317310f28be820cbe36ff05361c762c1aa969880
+--! Hash: sha1:2f7c98be378bfff9b856e38acd88dd601c43af87
 
 --! split: 0001-computed-columns.sql
 /*
@@ -81,6 +81,7 @@ create table app_public.event_categories(
   name jsonb not null,
   description jsonb not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
+  color text,
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
@@ -89,6 +90,7 @@ create table app_public.event_categories(
 
   constraint _cnstr_check_name_language check(check_language(name))
   constraint _cnstr_check_description_language check(check_language(description))
+  constraint _cnstr_check_color_hex check (color ~* '^#[a-f0-9]{6}$')
 );
 alter table app_public.event_categories enable row level security;
 
@@ -116,6 +118,8 @@ comment on column app_public.event_categories.name is
   E'Name of the event category.';
 comment on column app_public.event_categories.description is
   E'Short description of the event category.';
+  comment on column app_public.event_categories.color is
+  E'Color of the event category.';
 comment on column app_public.event_categories.owner_organization_id is
   E'Identifier of the organizer.';
 
@@ -126,8 +130,8 @@ create policy manage_organization on app_public.event_categories for all using(a
 
 grant
   select,
-  insert (name, description, owner_organization_id),
-  update (name, description, owner_organization_id),
+  insert (name, description, color, owner_organization_id),
+  update (name, description, color, owner_organization_id),
   delete
 on app_public.event_categories to :DATABASE_VISITOR;
 

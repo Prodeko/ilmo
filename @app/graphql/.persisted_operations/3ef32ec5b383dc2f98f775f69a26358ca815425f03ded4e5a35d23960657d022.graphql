@@ -1,0 +1,9 @@
+mutation CreateEventCategory($input: CreateEventCategoryInput!) {
+  createEventCategory(input: $input) {
+    eventCategory {
+      id
+      __typename
+    }
+    __typename
+  }
+}

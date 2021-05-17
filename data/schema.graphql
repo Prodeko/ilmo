@@ -972,6 +972,8 @@ enum EventCategoriesOrderBy {
 
 """Table for event categories."""
 type EventCategory {
+  """Color of the event category."""
+  color: String
   createdAt: Datetime!
   createdBy: UUID
 
@@ -1085,6 +1087,9 @@ input EventCategoryFilter {
 
 """An input for mutations affecting `EventCategory`"""
 input EventCategoryInput {
+  """Color of the event category."""
+  color: String
+
   """Short description of the event category."""
   description: JSON!
 
@@ -1099,6 +1104,9 @@ input EventCategoryInput {
 Represents an update to a `EventCategory`. Fields that are set will be updated.
 """
 input EventCategoryPatch {
+  """Color of the event category."""
+  color: String
+
   """Short description of the event category."""
   description: JSON
 

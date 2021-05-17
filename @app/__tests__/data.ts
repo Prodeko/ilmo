@@ -126,14 +126,15 @@ export const createEventCategories = async (
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     }
+    const color = faker.internet.color()
     const {
       rows: [category],
     } = await client.query(
-      `insert into app_public.event_categories(name, description, owner_organization_id)
-        values ($1, $2, $3)
+      `insert into app_public.event_categories(name, description, color, owner_organization_id)
+        values ($1, $2, $3, $4)
         returning *
       `,
-      [name, description, organizationId]
+      [name, description, color, organizationId]
     )
     categories.push(category)
   }

@@ -21,6 +21,7 @@ function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "name",
     "description",
+    "color",
   ]) as UpdateFormInitialValues
   const languages = Object.keys(filteredValues?.name || {})
 

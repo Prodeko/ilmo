@@ -37,6 +37,13 @@ export function ServerPaginatedTable({
       first: pagination.pageSize || 10,
       offset: offset,
     },
+    // For some reason apollo-client is not able to update useQuery results
+    // after cache changes if we don't specify fetchPolicy: "no-cache".
+    //
+    // Related issues:
+    //   - https://github.com/apollographql/apollo-client/issues/5659
+    //   - https://github.com/apollographql/react-apollo/issues/3816
+    fetchPolicy: "no-cache",
     onCompleted: () =>
       setPagination({
         ...pagination,

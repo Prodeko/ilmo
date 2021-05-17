@@ -4,12 +4,7 @@ import { HTML5Backend } from "react-dnd-html5-backend"
 import DragOutlined from "@ant-design/icons/DragOutlined"
 import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone"
 import PlusOutlined from "@ant-design/icons/PlusOutlined"
-import {
-  ApolloError,
-  DocumentNode,
-  useApolloClient,
-  useMutation,
-} from "@apollo/client"
+import { ApolloError, DocumentNode, useMutation } from "@apollo/client"
 import {
   CreateEventPageQuery,
   Quota,
@@ -126,11 +121,10 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   // Translations, router, apollo
   const { t, lang } = useTranslation("events")
   const router = useRouter()
-  const client = useApolloClient()
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
-  const [formSubmitting, setFormSubmimtting] = useState(false)
+  const [formSubmitting, setFormSubmitting] = useState(false)
   const [formValues, setFormValues] = useState<FormValues | undefined>()
   const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [quotaErrors, setQuotaErrors] = useState<any[] | null>(null)
@@ -182,7 +176,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
 
   const handleSubmit = useCallback(
     async (values) => {
-      setFormSubmimtting(true)
+      setFormSubmitting(true)
       setFormError(null)
       setQuotaErrors(null)
       try {
@@ -232,16 +226,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           variables: { input: { eventId: createdEventId, quotas } },
         })
 
-        client.resetStore()
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
         setFormError(e)
         Sentry.captureException(e)
       }
-      setFormSubmimtting(false)
+      setFormSubmitting(false)
     },
-    [eventQuery, quotasQuery, client, formRedirect, router, t, type, eventId]
+    [eventQuery, quotasQuery, formRedirect, router, t, type, eventId]
   )
 
   const debouncedSetFormValues = useMemo(

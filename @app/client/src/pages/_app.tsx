@@ -16,6 +16,7 @@ import "dayjs/locale/en-gb"
 import "../styles/styles.less"
 
 import "nprogress/nprogress.css"
+import "react-color-palette/lib/css/styles.css"
 
 declare global {
   interface Window {

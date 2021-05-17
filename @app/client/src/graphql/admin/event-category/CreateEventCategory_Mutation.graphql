@@ -1,6 +1,7 @@
 mutation CreateEventCategory(
   $name: JSON!
   $description: JSON!
+  $color: String!
   $ownerOrganizationId: UUID!
 ) {
   createEventCategory(
@@ -8,12 +9,13 @@ mutation CreateEventCategory(
       eventCategory: {
         name: $name
         description: $description
+        color: $color
         ownerOrganizationId: $ownerOrganizationId
       }
     }
   ) {
     eventCategory {
-      id
+      ...EventPage_EventCategory
     }
   }
 }

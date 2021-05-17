@@ -1,5 +1,5 @@
 fragment ListEventCategories on EventCategory {
-  ...UpdateEventCategoryPage_EventCategory
+  ...EventPage_EventCategory
 }
 
 fragment ListEventCategories_Query on Query {

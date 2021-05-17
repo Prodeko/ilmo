@@ -2743,10 +2743,12 @@ CREATE TABLE app_public.event_categories (
     name jsonb NOT NULL,
     description jsonb NOT NULL,
     owner_organization_id uuid NOT NULL,
+    color text,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text)),
     CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
     CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name))
 );
@@ -2785,6 +2787,13 @@ COMMENT ON COLUMN app_public.event_categories.description IS 'Short description 
 --
 
 COMMENT ON COLUMN app_public.event_categories.owner_organization_id IS 'Identifier of the organizer.';
+
+
+--
+-- Name: COLUMN event_categories.color; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_categories.color IS 'Color of the event category.';
 
 
 --
@@ -4753,6 +4762,13 @@ GRANT INSERT(description),UPDATE(description) ON TABLE app_public.event_categori
 --
 
 GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN event_categories.color; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(color),UPDATE(color) ON TABLE app_public.event_categories TO ilmo_visitor;
 
 
 --

@@ -31,7 +31,7 @@ mutation UpdateEvent(
     }
   ) {
     event {
-      id
+      ...EventFields
     }
   }
 }

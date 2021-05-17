@@ -1,15 +1,3 @@
-fragment CreateEventCategoryPage_EventCategory on EventCategory {
-  ownerOrganization {
-    name
-    id
-    slug
-  }
-  updatedAt
-  name
-  description
-  id
-}
-
 fragment CreateEventCategoryPage_Query on Query {
   ...SharedLayout_Query
 }

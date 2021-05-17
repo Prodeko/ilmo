@@ -13,3 +13,5 @@ dist
 .ethereal
 yarn-error.log
 .DS_Store
+.yarnrc
+.yarn

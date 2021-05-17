@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { ApolloError, useApolloClient } from "@apollo/client"
+import { ApolloError } from "@apollo/client"
 import {
   CreateEventCategoryPageQuery,
   UpdateEventCategoryPageQuery,
@@ -16,6 +16,8 @@ import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, Select } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+
+import { ColorPicker } from "./ColorPicker"
 
 const { Option } = Select
 
@@ -47,11 +49,10 @@ export const EventCategoryForm = ({
   // Translations, router, apollo
   const { t } = useTranslation("events")
   const router = useRouter()
-  const client = useApolloClient()
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
-  const [formSubmitting, setFormSubmimtting] = useState(false)
+  const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     initialSelectedLanguages || []
@@ -74,7 +75,7 @@ export const EventCategoryForm = ({
 
   const handleSubmit = useCallback(
     async (values) => {
-      setFormSubmimtting(true)
+      setFormSubmitting(true)
       setFormError(null)
       try {
         if (type === "create") {
@@ -91,21 +92,18 @@ export const EventCategoryForm = ({
             },
           })
         }
-
-        client.resetStore()
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
         setFormError(e)
         Sentry.captureException(e)
       }
-      setFormSubmimtting(false)
+      setFormSubmitting(false)
     },
     [
       createEventCategory,
       updateEventCategory,
       categoryId,
-      client,
       formRedirect,
       router,
       type,
@@ -232,6 +230,9 @@ export const EventCategoryForm = ({
             ))
           )}
         </Input.Group>
+      </Form.Item>
+      <Form.Item label={t("common:color")} name="color">
+        <ColorPicker />
       </Form.Item>
       {formError && (
         <Form.Item {...tailFormItemLayout}>
