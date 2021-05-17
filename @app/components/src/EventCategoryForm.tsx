@@ -40,8 +40,7 @@ export const EventCategoryForm = ({
   const { supportedLanguages } = data?.languages || {}
   const { organizationMemberships } = data?.currentUser || {}
   const initialSelectedLanguages = useMemo(
-    () =>
-      type === "update" ? languages || {} : supportedLanguages,
+    () => (type === "update" ? languages || {} : supportedLanguages),
     [type, languages, supportedLanguages]
   )
 

@@ -119,8 +119,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const { languages } = initialValues || {}
   const { supportedLanguages } = data?.languages || {}
   const initialSelectedLanguages = useMemo(
-    () =>
-      type === "update" ? languages || {} : supportedLanguages,
+    () => (type === "update" ? languages || {} : supportedLanguages),
     [type, languages, supportedLanguages]
   )
 
