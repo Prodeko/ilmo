@@ -10,14 +10,17 @@ beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
 
+const currentUserQuery = `
+{
+  currentUser {
+    id
+  }
+}`
+
 test("currentUser when logged out", async () => {
   await runGraphQLQuery(
     // GraphQL query goes here:
-    `{
-      currentUser {
-        id
-      }
-    }`,
+    currentUserQuery,
 
     // GraphQL variables:
     {},
@@ -40,11 +43,7 @@ test("currentUser when logged in", async () => {
   const { user, session } = await createUserAndLogIn()
   await runGraphQLQuery(
     // GraphQL query goes here:
-    `{
-      currentUser {
-        id
-      }
-    }`,
+    currentUserQuery,
 
     // GraphQL variables:
     {},

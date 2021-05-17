@@ -146,7 +146,8 @@ export const createEvents = async (
   count: number = 1,
   organizationId: string,
   categoryId: string,
-  signupOpen: boolean = true
+  signupOpen: boolean = true,
+  isDraft: boolean = false
 ) => {
   const events = []
   for (let i = 0; i < count; i++) {
@@ -187,7 +188,6 @@ export const createEvents = async (
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
     })
-    const isDraft = false
 
     const {
       rows: [event],

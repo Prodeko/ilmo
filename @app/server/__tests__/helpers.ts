@@ -28,11 +28,16 @@ export * from "../../__tests__/helpers"
 
 const MockReq = require("mock-req")
 
-export async function createUserAndLogIn() {
+interface CreateUserAndLogInArgs {
+  isAdmin?: boolean
+}
+
+export async function createUserAndLogIn(args?: CreateUserAndLogInArgs) {
+  const { isAdmin = false } = args || {}
   const pool = poolFromUrl(TEST_DATABASE_URL!)
   const client = await pool.connect()
   try {
-    const [user] = await createUsers(client, 1, true)
+    const [user] = await createUsers(client, 1, true, isAdmin)
     const session = await createSession(client, user.id)
 
     return { user, session }
@@ -52,6 +57,7 @@ interface CreateEventDataAndLogin {
     create: boolean
     amount?: number
     signupOpen?: boolean
+    isDraft?: boolean
   }
   quotaOptions?: { create: boolean; amount?: number }
   registrationOptions?: { create: boolean; amount?: number }
@@ -66,7 +72,12 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       isVerified: false,
       isAdmin: false,
     },
-    eventOptions = { create: true, amount: 1, signupOpen: true },
+    eventOptions = {
+      create: true,
+      amount: 1,
+      signupOpen: true,
+      isDraft: false,
+    },
     quotaOptions = { create: true, amount: 1 },
     registrationOptions = { create: true, amount: 1 },
     registrationSecretOptions = { create: true, amount: 1 },
@@ -108,7 +119,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         eventOptions.amount,
         organization.id,
         eventCategory.id,
-        eventOptions.signupOpen
+        eventOptions.signupOpen,
+        eventOptions.isDraft
       )
     }
 

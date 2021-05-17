@@ -1,0 +1,73 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`events when logged in, IS admin, NOT a member of the owner organization (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "events": Object {
+      "nodes": Array [
+        Object {
+          "id": "[id-1]",
+        },
+        Object {
+          "id": "[id-2]",
+        },
+        Object {
+          "id": "[id-3]",
+        },
+        Object {
+          "id": "[id-4]",
+        },
+        Object {
+          "id": "[id-5]",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`events when logged in, NOT admin and IS member of the owner organization (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "events": Object {
+      "nodes": Array [
+        Object {
+          "id": "[id-1]",
+        },
+        Object {
+          "id": "[id-2]",
+        },
+        Object {
+          "id": "[id-3]",
+        },
+        Object {
+          "id": "[id-4]",
+        },
+        Object {
+          "id": "[id-5]",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`events when logged in, NOT admin and NOT member of the owner organization (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "events": Object {
+      "nodes": Array [],
+    },
+  },
+}
+`;
+
+exports[`events when logged out (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "events": Object {
+      "nodes": Array [],
+    },
+  },
+}
+`;

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DeleteEventCategory admin can delete an event category 1`] = `
+exports[`DeleteEventCategory admin can delete an event category (RLS policy) 1`] = `
 Object {
   "data": Object {
     "deleteEventCategory": Object {
@@ -10,7 +10,17 @@ Object {
 }
 `;
 
-exports[`DeleteEventCategory users without the right permissions cannot delete events 1`] = `
+exports[`DeleteEventCategory member of the owner organization for the related event can delete an event category (RLS policy) 1`] = `
+Object {
+  "data": Object {
+    "deleteEventCategory": Object {
+      "clientMutationId": null,
+    },
+  },
+}
+`;
+
+exports[`DeleteEventCategory users without the right permissions cannot delete event categories (RLS policy) 1`] = `
 Object {
   "data": Object {
     "deleteEventCategory": null,
