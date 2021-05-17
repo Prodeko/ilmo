@@ -17,6 +17,15 @@ const cardEventDatesStyle = {
   paddingBottom: "0.5rem",
 } as React.CSSProperties
 
+const highlightedStyle = {
+  // Prodeko rainbow colors
+  background:
+    "linear-gradient(-45deg, #90000c, #e83d09, #fbe867, #005244, #16288c)",
+  backgroundSize: "400% 400%",
+  animation: "gradient 10s ease infinite",
+  border: "none",
+} as React.CSSProperties
+
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const {
     id,
@@ -27,6 +36,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     registrationEndTime,
     headerImageFile,
     signupOpen,
+    isHighlighted,
   } = event
   const { t, lang } = useTranslation("home")
 
@@ -63,6 +73,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               data-cy={`eventcard-eventpage-link-${event.slug}`}
               href={`/event/${slug}`}
               size="middle"
+              style={isHighlighted ? highlightedStyle : undefined}
               type={signupOpen ? "success" : "default"}
               block
             >

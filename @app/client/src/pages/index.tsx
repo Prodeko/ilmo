@@ -29,8 +29,8 @@ const gridTemplateColumns = {
   sm: "2, 1fr",
   md: "2, 1fr",
   lg: "3, 1fr",
-  xl: "4, 1fr",
-  xxl: "4, 1fr",
+  xl: "3, 1fr",
+  xxl: "3, 1fr",
 }
 
 const Home: NextPage = () => {

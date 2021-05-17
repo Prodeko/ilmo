@@ -57,9 +57,11 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
                 query: { eventId, quotaId },
               }}
             >
-              {signupNotOpen ? (<Popover content={t("eventSignupNotOpen")}>
-                {quotaButton}
-              </Popover>) : (
+              {signupNotOpen ? (
+                <Popover content={t("eventSignupNotOpen")}>
+                  {quotaButton}
+                </Popover>
+              ) : (
                 quotaButton
               )}
             </Link>
