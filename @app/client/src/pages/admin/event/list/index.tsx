@@ -10,7 +10,15 @@ import {
   useDeleteEventMutation,
   useSharedQuery,
 } from "@app/graphql"
-import { Col, PageHeader, Popover, Progress, Row, Typography } from "antd"
+import {
+  Badge,
+  Col,
+  PageHeader,
+  Popover,
+  Progress,
+  Row,
+  Typography,
+} from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import dayjs from "dayjs"
 import { reduce } from "lodash"
@@ -65,10 +73,24 @@ const AdminListEventsInner: React.FC = () => {
       </Link>
     ),
   }
+  const isDraftColumn = {
+    title: t("events:forms.isDraft"),
+    dataIndex: ["isDraft"],
+    key: "isDraft",
+    render: (isDraft: string) => (
+      <Badge
+        color={isDraft ? "yellow" : "green"}
+        text={
+          isDraft ? t("events:forms.isDraft") : t("events:forms.isNotDraft")
+        }
+      />
+    ),
+  }
 
   const columns = !isMobile
     ? [
         actionsColumn,
+        isDraftColumn,
         nameColumn,
         {
           title: t("events:category"),

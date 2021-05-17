@@ -22,7 +22,7 @@
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
     "isDraft": "Draft",
-    "isNotDraft": "Julkaistu",
+    "isNotDraft": "Published",
     "placeholders": {
       "en": "In English",
       "event": {
