@@ -12,9 +12,6 @@ export function SimpleTable({ data, columns, ...props }: Props) {
       columns={columns}
       dataSource={data}
       pagination={{ defaultPageSize: 10, hideOnSinglePage: true }}
-      rowClassName={(record, _index) =>
-        record?.isHighlighted ? "table-row-highlight" : ""
-      }
       rowKey={(obj) => obj.id}
       {...props}
     />

@@ -68,9 +68,6 @@ export function ServerPaginatedTable({
       dataSource={get(data, dataField)?.nodes || []}
       loading={loading && { indicator: <Loading /> }}
       pagination={showPagination && pagination}
-      rowClassName={(record, _index) =>
-        record?.isHighlighted ? "table-row-highlight" : ""
-      }
       rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}
       onChange={handleTableChange}
