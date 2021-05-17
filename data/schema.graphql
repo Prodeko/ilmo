@@ -2307,8 +2307,6 @@ type PageInfo {
 type Query {
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
-  currentUserIsAdmin: Boolean
-  currentUserIsOwnerOrganizationMember(ownerOrganizationId: UUID!): Boolean
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 

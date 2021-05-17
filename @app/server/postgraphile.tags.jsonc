@@ -152,6 +152,21 @@
           "omit": true
         }
       },
+      "app_public.current_user_has_event_permissions": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.current_user_is_admin": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.current_user_is_owner_organization_member": {
+        "tags": {
+          "omit": true
+        }
+      },
       "app_public.logout": {
         "tags": {
           // We add our own logout method, so we don't want to expose this via GraphQL

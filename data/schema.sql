@@ -1357,6 +1357,35 @@ COMMENT ON FUNCTION app_public."current_user"() IS 'The currently logged in user
 
 
 --
+-- Name: current_user_has_event_permissions(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_user_has_event_permissions(event_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (
+    select 1
+    from app_public.organization_memberships
+    where
+      user_id = app_public.current_user_id()
+      and organization_id = (
+        select owner_organization_id
+        from app_public.events
+        where events.id = event_id
+      )
+  )
+$$;
+
+
+--
+-- Name: FUNCTION current_user_has_event_permissions(event_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.current_user_has_event_permissions(event_id uuid) IS 'Returns true if the current user is a member of the owner organization for the event with the id passed as input, false otherwise.';
+
+
+--
 -- Name: current_user_id(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1396,12 +1425,20 @@ CREATE FUNCTION app_public.current_user_is_admin() RETURNS boolean
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
-  select exists (select 1
+  select exists (
+    select 1
     from app_public.users
     where
       id = app_public.current_user_id()
       and is_admin = true)
 $$;
+
+
+--
+-- Name: FUNCTION current_user_is_admin(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.current_user_is_admin() IS 'Returns true if the current user is admin, false otherwise.';
 
 
 --
@@ -1412,13 +1449,17 @@ CREATE FUNCTION app_public.current_user_is_owner_organization_member(owner_organ
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
-  select exists (select 1
-    from
-      app_public.organization_memberships
-    where
-      user_id = app_public.current_user_id()
-      and owner_organization_id = organization_id)
+  select owner_organization_id in (
+    select app_public.current_user_member_organization_ids()
+  )
 $$;
+
+
+--
+-- Name: FUNCTION current_user_is_owner_organization_member(owner_organization_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.current_user_is_owner_organization_member(owner_organization_id uuid) IS 'Returns true if the current user is a member of the organization id passed as input, false otherwise.';
 
 
 --
@@ -3770,86 +3811,66 @@ CREATE POLICY insert_own ON app_public.user_emails FOR INSERT WITH CHECK ((user_
 
 
 --
+-- Name: event_categories manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.event_categories USING (app_public.current_user_is_admin());
+
+
+--
+-- Name: event_questions manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.event_questions USING (app_public.current_user_is_admin());
+
+
+--
 -- Name: events manage_admin; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin()) WITH CHECK (app_public.current_user_is_admin());
+CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin());
 
 
 --
--- Name: event_questions manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+-- Name: quotas manage_admin; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_as_admin ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+CREATE POLICY manage_admin ON app_public.quotas USING (app_public.current_user_is_admin());
 
 
 --
--- Name: quotas manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+-- Name: registrations manage_admin; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_as_admin ON app_public.quotas USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+CREATE POLICY manage_admin ON app_public.registrations USING (app_public.current_user_is_admin());
 
 
 --
--- Name: registrations manage_as_admin; Type: POLICY; Schema: app_public; Owner: -
+-- Name: event_questions manage_event; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_as_admin ON app_public.registrations USING ((EXISTS ( SELECT 1
-   FROM app_public.users
-  WHERE ((users.is_admin IS TRUE) AND (users.id = app_public.current_user_id())))));
+CREATE POLICY manage_event ON app_public.event_questions USING (app_public.current_user_has_event_permissions(event_id));
 
 
 --
--- Name: event_categories manage_member; Type: POLICY; Schema: app_public; Owner: -
+-- Name: quotas manage_event; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_member ON app_public.event_categories USING ((owner_organization_id IN ( SELECT app_public.current_user_member_organization_ids() AS current_user_member_organization_ids)));
+CREATE POLICY manage_event ON app_public.quotas USING (app_public.current_user_has_event_permissions(event_id));
+
+
+--
+-- Name: event_categories manage_organization; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_organization ON app_public.event_categories USING (app_public.current_user_is_owner_organization_member(owner_organization_id));
 
 
 --
 -- Name: events manage_organization; Type: POLICY; Schema: app_public; Owner: -
 --
 
-CREATE POLICY manage_organization ON app_public.events USING (app_public.current_user_is_owner_organization_member(owner_organization_id)) WITH CHECK (app_public.current_user_is_owner_organization_member(owner_organization_id));
-
-
---
--- Name: event_questions manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
-           FROM app_public.events
-          WHERE (events.id = event_questions.event_id)))))));
-
-
---
--- Name: quotas manage_own; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own ON app_public.quotas USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT events.owner_organization_id
-           FROM app_public.events
-          WHERE (events.id = quotas.event_id)))))));
-
-
---
--- Name: event_questions manage_own_category; Type: POLICY; Schema: app_public; Owner: -
---
-
-CREATE POLICY manage_own_category ON app_public.event_questions USING ((EXISTS ( SELECT 1
-   FROM app_public.organization_memberships
-  WHERE ((organization_memberships.user_id = app_public.current_user_id()) AND (organization_memberships.organization_id = ( SELECT event_categories.owner_organization_id
-           FROM app_public.event_categories
-          WHERE (event_categories.id = ( SELECT events.category_id
-                   FROM app_public.events
-                  WHERE (events.id = event_questions.event_id)))))))));
+CREATE POLICY manage_organization ON app_public.events USING (app_public.current_user_is_owner_organization_member(owner_organization_id));
 
 
 --
@@ -4319,6 +4340,14 @@ GRANT ALL ON FUNCTION app_public.current_session_id() TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public."current_user"() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public."current_user"() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_user_has_event_permissions(event_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_user_has_event_permissions(event_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_user_has_event_permissions(event_id uuid) TO ilmo_visitor;
 
 
 --

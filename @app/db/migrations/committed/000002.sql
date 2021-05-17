@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:9f7e4b5a22a4a4ac93d4b8d2e49fb97b5b3a2fad
+--! Hash: sha1:317310f28be820cbe36ff05361c762c1aa969880
 
 --! split: 0001-computed-columns.sql
 /*
@@ -18,27 +18,36 @@ $$ language sql stable security definer set search_path to pg_catalog, public, p
 comment on function app_public.users_primary_email(u app_public.users) is
   E'Users primary email.';
 
---! split: 0002-rls-functions.sql
+--! split: 0002-rls-helpers-1.sql
 drop function if exists app_public.current_user_is_admin cascade;
+drop function if exists app_public.current_user_is_owner_organization_member cascade;
+
+/*
+ * Helpers for defining RLS policies.
+ *
+ * Examples:
+ *  create policy manage_admin on app_public.events for all using(app_public.current_user_is_admin());
+ *  create policy manage_organization on app_public.events for all using(app_public.current_user_is_owner_organization_member(owner_organization_id));
+ */
 
 create function app_public.current_user_is_admin() returns boolean as $$
-  select exists (select 1
+  select exists (
+    select 1
     from app_public.users
     where
       id = app_public.current_user_id()
       and is_admin = true)
 $$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
-
-drop function if exists app_public.current_user_is_owner_organization_member cascade;
+comment on function app_public.current_user_is_admin() is
+  E'Returns true if the current user is admin, false otherwise.';
 
 create function app_public.current_user_is_owner_organization_member(owner_organization_id uuid) returns boolean as $$
-  select exists (select 1
-    from
-      app_public.organization_memberships
-    where
-      user_id = app_public.current_user_id()
-      and owner_organization_id = organization_id)
+  select owner_organization_id in (
+    select app_public.current_user_member_organization_ids()
+  )
 $$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.current_user_is_owner_organization_member(owner_organization_id uuid) is
+  E'Returns true if the current user is a member of the organization id passed as input, false otherwise.';
 
 --! split: 0003-triggers.sql
 /*
@@ -111,18 +120,16 @@ comment on column app_public.event_categories.owner_organization_id is
   E'Identifier of the organizer.';
 
 -- RLS policies and grants
+create policy select_all on app_public.event_categories for select using (true);
+create policy manage_admin on app_public.event_categories for all using(app_public.current_user_is_admin());
+create policy manage_organization on app_public.event_categories for all using(app_public.current_user_is_owner_organization_member(owner_organization_id));
+
 grant
   select,
   insert (name, description, owner_organization_id),
   update (name, description, owner_organization_id),
   delete
 on app_public.event_categories to :DATABASE_VISITOR;
-
-create policy select_all on app_public.event_categories
-  for select using (true);
-
-create policy manage_member on app_public.event_categories
-  for all using (owner_organization_id in (select app_public.current_user_member_organization_ids()));
 
 --! split: 0011-events.sql
 /*
@@ -232,6 +239,11 @@ comment on column app_public.events.category_id is
   E'Id of the event category.';
 
 -- RLS policies and grants
+-- Don't allow querying draft events
+create policy select_all on app_public.events for select using (is_draft is false);
+create policy manage_admin on app_public.events for all using(app_public.current_user_is_admin());
+create policy manage_organization on app_public.events for all using(app_public.current_user_is_owner_organization_member(owner_organization_id));
+
 grant
   select,
   insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
@@ -239,11 +251,31 @@ grant
   delete
 on app_public.events to :DATABASE_VISITOR;
 
-create policy select_all on app_public.events for select using (is_draft is false);
-create policy manage_admin on app_public.events for all using(app_public.current_user_is_admin()) with check(app_public.current_user_is_admin());
-create policy manage_organization on app_public.events for all using(app_public.current_user_is_owner_organization_member(owner_organization_id)) with check(app_public.current_user_is_owner_organization_member(owner_organization_id));
+--! split: 0012-rls-helpers-2.sql
+drop function if exists app_public.current_user_has_event_permissions cascade;
 
---! split: 0012-event_questions.sql
+/*
+ * We have to define this RLS policy helper function here since it uses the
+ * events table. This function takes as input an event id and check that
+ * the current user is a member of the owner organization id of the event.
+ */
+create function app_public.current_user_has_event_permissions(event_id uuid) returns boolean as $$
+  select exists (
+    select 1
+    from app_public.organization_memberships
+    where
+      user_id = app_public.current_user_id()
+      and organization_id = (
+        select owner_organization_id
+        from app_public.events
+        where events.id = event_id
+      )
+  )
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.current_user_has_event_permissions(event_id uuid) is
+  E'Returns true if the current user is a member of the owner organization for the event with the id passed as input, false otherwise.';
+
+--! split: 0013-event_questions.sql
 /*
  * The events_questions table stores questions that can be asked during event
  * registration. TODO: not implemented yet.
@@ -286,50 +318,16 @@ create trigger _200_ownership_info
   execute procedure app_private.tg__ownership_info();
 
 -- RLS policies and grants
+create policy select_all on app_public.event_questions for select using (true);
+create policy manage_admin on app_public.event_questions for all using(app_public.current_user_is_admin());
+create policy manage_event on app_public.event_questions for all using(app_public.current_user_has_event_permissions(event_id));
+
 grant
   select,
   insert (event_id, type, options),
   update (event_id, type, options),
   delete
 on app_public.event_questions to :DATABASE_VISITOR;
-
-create policy select_all on app_public.event_questions for select using (true);
-
-create policy manage_own on app_public.event_questions
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and organization_id = (select owner_organization_id
-    from
-      app_public.events
-    where
-      events.id = event_questions.event_id)));
-
-create policy manage_own_category on app_public.event_questions
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and organization_id = (select owner_organization_id
-    from
-      app_public.event_categories
-    where
-      event_categories.id = (select category_id
-      from
-        app_public.events
-      where
-        events.id = event_questions.event_id))));
-
-create policy manage_as_admin on app_public.event_questions
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
 
 --! split: 0020-quotas.sql
 /*
@@ -392,6 +390,10 @@ comment on column app_public.quotas.questions_private is
   E'Private questions related to the quota.';
 
 -- RLS policies and grants
+create policy select_all on app_public.quotas for select using (true);
+create policy manage_admin on app_public.quotas for all using(app_public.current_user_is_admin());
+create policy manage_event on app_public.quotas for all using(app_public.current_user_has_event_permissions(event_id));
+
 grant
   select,
   -- Allow update only on position, title and size. This means that once
@@ -400,30 +402,6 @@ grant
   update (position, title, size),
   delete
 on app_public.quotas to :DATABASE_VISITOR;
-
-create policy select_all on app_public.quotas
-  for select
-    using (true);
-
-create policy manage_own on app_public.quotas
-  for all
-  using (exists (select 1
-  from
-    app_public.organization_memberships
-  where
-    user_id = app_public.current_user_id() and organization_id = (select owner_organization_id
-    from
-      app_public.events
-    where
-      events.id = quotas.event_id)));
-
-create policy manage_as_admin on app_public.quotas
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
 
 --! split: 0021-quotas-crud-functions.sql
 /*
@@ -684,6 +662,10 @@ comment on column app_public.registrations.email is
   E'@omit\nEmail address of the person registering to an event.';
 
 -- RLS policies and grants
+create policy select_all on app_public.registrations for select using (true);
+create policy update_all on app_public.registrations for update using (true);
+create policy manage_admin on app_public.registrations for all using(app_public.current_user_is_admin());
+
 grant
   select,
   insert (event_id, quota_id, first_name, last_name, email),
@@ -692,22 +674,6 @@ grant
   update (first_name, last_name),
   delete
 on app_public.registrations to :DATABASE_VISITOR;
-
-create policy update_all on app_public.registrations
-  for update
-    using (true);
-
-create policy select_all on app_public.registrations
-  for select
-    using (true);
-
-create policy manage_as_admin on app_public.registrations
-  for all
-  using (exists (select 1
-  from
-    app_public.users
-  where
-    is_admin is true and id = app_public.current_user_id()));
 
 --! split: 0032-registration_secrets.sql
 /*
