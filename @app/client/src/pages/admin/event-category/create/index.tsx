@@ -8,7 +8,7 @@ import useTranslation from "next-translate/useTranslation"
 
 const Admin_CreateEventCategory: NextPage = () => {
   const query = useCreateEventCategoryPageQuery()
-  const { t } = useTranslation("events")
+  const { t } = useTranslation("admin")
   const router = useRouter()
 
   // Redirect to index if the user is not part of any organization
@@ -23,7 +23,7 @@ const Admin_CreateEventCategory: NextPage = () => {
       <Row>
         <Col flex={1}>
           <PageHeader
-            title={t("createEventCategory.title")}
+            title={t("pageTitle.createEventCategory")}
             onBack={() => router.push("/admin/event-category/list")}
           />
           <EventCategoryForm

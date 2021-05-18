@@ -11,7 +11,7 @@ import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 const Admin_CreateEvent: NextPage = () => {
-  const { t } = useTranslation("events")
+  const { t } = useTranslation("admin")
   const router = useRouter()
   const query = useCreateEventPageQuery()
 
@@ -27,7 +27,7 @@ const Admin_CreateEvent: NextPage = () => {
       <Row>
         <Col flex={1}>
           <PageHeader
-            title={t("createEvent.title")}
+            title={t("pageTitle.createEvent")}
             onBack={() => router.push("/admin/event/list")}
           />
           <EventForm

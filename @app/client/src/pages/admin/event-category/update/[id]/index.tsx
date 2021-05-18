@@ -33,7 +33,7 @@ function constructInitialValues(values: any) {
 }
 
 const Admin_UpdateEventCategory: NextPage = () => {
-  const { t } = useTranslation("events")
+  const { t } = useTranslation("admin")
   const router = useRouter()
   const categoryId = useQueryId()
   const query = useUpdateEventCategoryPageQuery({
@@ -59,7 +59,7 @@ const Admin_UpdateEventCategory: NextPage = () => {
       <Row>
         <Col flex={1}>
           <PageHeader
-            title={t("createEventCategory.title")}
+            title={t("pageTitle.updateEventCategory")}
             onBack={() => router.push("/admin/event-category/list")}
           />
           <EventCategoryForm

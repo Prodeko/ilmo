@@ -1,12 +1,6 @@
 {
   "addQuota": "Lisää kiintiö",
   "category": "Kategoria",
-  "createEvent": {
-    "title": "Luo tapahtuma"
-  },
-  "createEventCategory": {
-    "title": "Luo tapahtumakategoria"
-  },
   "createdAt": "Aika",
   "endTime": "Loppumisaika",
   "errors": {
@@ -77,8 +71,5 @@
   "quota": "Kiintiö",
   "registerToAnEvent": "Ilmoittaudu",
   "removeQuota": "Poista kiintiö",
-  "startTime": "Alkamisaika",
-  "updateEvent": {
-    "title": "Päivitä tapahtuma"
-  }
+  "startTime": "Alkamisaika"
 }

@@ -77,7 +77,7 @@ function constructInitialValues(values: any) {
 }
 
 const Admin_UpdateEvent: NextPage = () => {
-  const { t } = useTranslation("events")
+  const { t } = useTranslation("admin")
   const router = useRouter()
   const eventId = useQueryId()
   const query = useUpdateEventPageQuery({
@@ -103,7 +103,7 @@ const Admin_UpdateEvent: NextPage = () => {
       <Row>
         <Col flex={1}>
           <PageHeader
-            title={t("updateEvent.title")}
+            title={t("pageTitle.updateEvent")}
             onBack={() => router.push("/admin/event/list")}
           />
           <EventForm

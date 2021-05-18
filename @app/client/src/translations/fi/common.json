@@ -1,4 +1,5 @@
 {
+  "admin": "Hallintapaneeli",
   "backHome": "Takaisin etusivulle",
   "color": "Väri",
   "create": "Luo",
@@ -8,12 +9,6 @@
   "emailSwitchLabel": "Näytä html-versio",
   "en": "Englanti",
   "fi": "Suomi",
-  "headerMenu": {
-    "admin": "Hallintapaneeli",
-    "createEvent": "Luo tapahtuma",
-    "createEventCategory": "Luo tapahtumakategoria",
-    "createOrganization": "Luo organisaatio"
-  },
   "imgCropTitle": "Muokkaa kuvaa",
   "loading": "Ladataan...",
   "logout": "Kirjaudu ulos",

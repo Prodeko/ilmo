@@ -1,4 +1,5 @@
 {
+  "admin": "Admin",
   "backHome": "Go to homepage",
   "color": "Color",
   "create": "Create",
@@ -8,12 +9,6 @@
   "emailSwitchLabel": "Show html version",
   "en": "English",
   "fi": "Finnish",
-  "headerMenu": {
-    "admin": "Admin",
-    "createEvent": "Create event",
-    "createEventCategory": "Create event category",
-    "createOrganization": "Create organization"
-  },
   "imgCropTitle": "Edit image",
   "loading": "Loading...",
   "logout": "Logout",

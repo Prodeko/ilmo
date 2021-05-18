@@ -19,13 +19,15 @@ import { useForm } from "antd/lib/form/Form"
 import Text from "antd/lib/typography/Text"
 import { debounce } from "lodash"
 import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 import { Store } from "rc-field-form/lib/interface"
 import slugify from "slugify"
 
 const Admin_CreateOrganization: NextPage = () => {
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const query = useSharedQuery()
+  const { t } = useTranslation("admin")
   const [form] = useForm()
+  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [slug, setSlug] = useState("")
   const [
     lookupOrganizationBySlug,
@@ -111,7 +113,7 @@ const Admin_CreateOrganization: NextPage = () => {
     <AdminLayout href="/admin/organization/create" query={query}>
       <Row>
         <Col flex={1}>
-          <PageHeader title="Create Organization" />
+          <PageHeader title={t("pageTitle.createOrganization")} />
           <div>
             <Form
               {...formItemLayout}

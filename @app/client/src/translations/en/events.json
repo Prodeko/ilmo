@@ -1,12 +1,6 @@
 {
   "addQuota": "Add quota",
   "category": "Category",
-  "createEvent": {
-    "title": "Create event"
-  },
-  "createEventCategory": {
-    "title": "Create event category"
-  },
   "createdAt": "Time",
   "endTime": "End time",
   "errors": {
@@ -77,8 +71,5 @@
   "quota": "Quota",
   "registerToAnEvent": "Signup",
   "removeQuota": "Remove quota",
-  "startTime": "Start time",
-  "updateEvent": {
-    "title": "Update event"
-  }
+  "startTime": "Start time"
 }

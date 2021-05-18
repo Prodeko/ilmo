@@ -1,5 +1,4 @@
 {
-  "admin": "Hallintapaneeli",
   "createNewCategory": "Luo uusi kategoria",
   "createNewOrganization": "Luo uusi organisaatio",
   "eventCategories": {
@@ -32,6 +31,15 @@
     },
     "siderTitle": "Organisaatiot",
     "updateOrganization": "Päivitä organisaatio"
+  },
+  "pageTitle": {
+    "createEvent": "Luo tapahtuma",
+    "createEventCategory": "Luo tapahtumakategoria",
+    "createOrganization": "Luo organisaatio",
+    "listEvent": "Tapahtumat",
+    "listEventCategory": "Tapahtumakategoriat",
+    "updateEvent": "Päivitä tapahtuma",
+    "updateEventCategory": "Päivitä tapahtumakategoria"
   },
   "sider": {
     "titles": {

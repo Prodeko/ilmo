@@ -145,7 +145,7 @@ export function AdminLayout({
     <SharedLayout
       forbidWhen={AuthRestrict.NOT_ADMIN}
       query={query}
-      title={`${t("admin")}`}
+      title={`${t("common:admin")}`}
       noPad
     >
       {({ currentUser, error, loading }: SharedLayoutChildProps) =>

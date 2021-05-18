@@ -163,7 +163,7 @@ const AdminListEventsInner: React.FC = () => {
   return (
     <Row>
       <Col flex={1}>
-        <PageHeader title={"Admin events"} />
+        <PageHeader title={t("pageTitle.listEvent")} />
         <ServerPaginatedTable
           columns={columns}
           data-cy="adminpage-events"

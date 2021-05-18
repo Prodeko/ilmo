@@ -1,5 +1,4 @@
 {
-  "admin": "Admin",
   "createNewCategory": "Create a new event category",
   "createNewOrganization": "Create a new organization",
   "eventCategories": {
@@ -31,6 +30,15 @@
       }
     },
     "updateOrganization": "Update organization"
+  },
+  "pageTitle": {
+    "createEvent": "Create event",
+    "createEventCategory": "Create event category",
+    "createOrganization": "Create organization",
+    "listEvent": "Events",
+    "listEventCategory": "Event categories",
+    "updateEvent": "Update event",
+    "updateEventCategory": "Update event category"
   },
   "sider": {
     "titles": {
