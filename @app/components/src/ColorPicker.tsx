@@ -35,13 +35,13 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   return (
     <Space direction="vertical">
       <Tag color={color?.hex}>{color?.hex}</Tag>
-      {/* @ts-ignore */}
       <ReactColorPalettePicker
         color={color}
         height={120}
         width={isMobile ? 250 : 320}
         hideHSB
         hideRGB
+        // @ts-ignore
         onChange={handleChange}
       />
     </Space>
