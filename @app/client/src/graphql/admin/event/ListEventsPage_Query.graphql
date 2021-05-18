@@ -1,0 +1,12 @@
+fragment ListEventsPage_Query on Query {
+  ...SharedLayout_Query
+  eventCategories {
+    nodes {
+      ...EventPage_EventCategory
+    }
+  }
+}
+
+query ListEventsPage {
+  ...ListEventsPage_Query
+}

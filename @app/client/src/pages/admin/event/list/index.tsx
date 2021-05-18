@@ -8,7 +8,7 @@ import {
   Event,
   ListEventsDocument,
   useDeleteEventMutation,
-  useSharedQuery,
+  useListEventsPageQuery,
 } from "@app/graphql"
 import {
   Badge,
@@ -17,6 +17,7 @@ import {
   Popover,
   Progress,
   Row,
+  Tag,
   Typography,
 } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
@@ -27,19 +28,12 @@ import Link from "next/link"
 import useTranslation from "next-translate/useTranslation"
 
 const Admin_ListEvents: NextPage = () => {
-  const query = useSharedQuery()
-
-  return (
-    <AdminLayout href="/admin/event/list" query={query}>
-      <AdminListEventsInner />
-    </AdminLayout>
-  )
-}
-
-const AdminListEventsInner: React.FC = () => {
   const { t, lang } = useTranslation("admin")
+  const query = useListEventsPageQuery()
   const screens = useBreakpoint()
   const isMobile = screens["xs"]
+
+  const eventCategories = query?.data?.eventCategories?.nodes
 
   const actionsColumn = {
     title: "",
@@ -96,6 +90,23 @@ const AdminListEventsInner: React.FC = () => {
           title: t("events:category"),
           dataIndex: ["category", "name", lang],
           key: "categoryName",
+          filters: [
+            ...Array.from(
+              new Set(eventCategories?.map((o) => o.name[lang]))
+            ).map((name) => ({ text: name, value: name })),
+          ],
+          onFilter: (value: string | number | boolean, record: Event) =>
+            record?.category?.name[lang].indexOf(value) === 0,
+          sorter: (a: Event, b: Event) =>
+            a?.name[lang]?.localeCompare(b?.name[lang] || ""),
+          render: (name: string, record: Event, index: number) => {
+            console.log(record)
+            return (
+              <Tag key={`${record.id}-${index}`} color={record.category.color}>
+                {name?.toUpperCase()}
+              </Tag>
+            )
+          },
         },
         {
           title: t("events.list.registrations"),
@@ -161,19 +172,21 @@ const AdminListEventsInner: React.FC = () => {
     : [actionsColumn, nameColumn]
 
   return (
-    <Row>
-      <Col flex={1}>
-        <PageHeader title={t("pageTitle.listEvent")} />
-        <ServerPaginatedTable
-          columns={columns}
-          data-cy="adminpage-events"
-          dataField="events"
-          queryDocument={ListEventsDocument}
-          showPagination={true}
-          size="middle"
-        />
-      </Col>
-    </Row>
+    <AdminLayout href="/admin/event/list" query={query}>
+      <Row>
+        <Col flex={1}>
+          <PageHeader title={t("pageTitle.listEvent")} />
+          <ServerPaginatedTable
+            columns={columns}
+            data-cy="adminpage-events"
+            dataField="events"
+            queryDocument={ListEventsDocument}
+            showPagination={true}
+            size="middle"
+          />
+        </Col>
+      </Row>
+    </AdminLayout>
   )
 }
 

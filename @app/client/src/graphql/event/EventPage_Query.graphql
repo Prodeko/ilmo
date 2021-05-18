@@ -2,18 +2,21 @@ fragment EventFields on Event {
   id
   name
   slug
+  description
   eventStartTime
   eventEndTime
   registrationStartTime
   registrationEndTime
-  description
-  createdAt
   isHighlighted
   isDraft
   headerImageFile
   signupOpen
   signupUpcoming
   signupClosed
+  createdBy
+  updatedBy
+  createdAt
+  updatedAt
 }
 
 fragment EventPage_EventCategory on EventCategory {
