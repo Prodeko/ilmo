@@ -37,7 +37,7 @@ const _babelHackCol = Col
 export { _babelHackCol as Col, Link, _babelHackRow as Row }
 
 export const contentMinHeight = "calc(100vh - 64px - 70px)"
-export const contentMaxWidth = "64rem"
+export const contentMaxWidth = "75rem"
 
 export interface SharedLayoutChildProps {
   error?: ApolloError | Error

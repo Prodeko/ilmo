@@ -30,7 +30,7 @@ const gridTemplateColumns = {
   md: "2, 1fr",
   lg: "3, 1fr",
   xl: "3, 1fr",
-  xxl: "3, 1fr",
+  xxl: "4, 1fr",
 }
 
 const Home: NextPage = () => {
@@ -85,52 +85,52 @@ const Home: NextPage = () => {
 
   const columns = !isMobile
     ? [
-        nameColumn,
-        {
-          title: t("events:organizer"),
-          dataIndex: ["ownerOrganization", "name"],
-          key: "organizationName",
-          filters: [
-            ...Array.from(new Set(organizations?.map((o) => o.name))).map(
-              (name) => ({ text: name, value: name })
-            ),
-          ],
-          onFilter: (value: string | number | boolean, record: Event) =>
-            record?.ownerOrganization?.name.indexOf(value as string) === 0,
-          sorter: (a: Event, b: Event) =>
-            a?.ownerOrganization?.name?.localeCompare(
-              b?.ownerOrganization?.name || ""
-            ),
-          render: (name: string, record: Event, index: number) => (
-            <Tag key={`${record.id}-${index}`} color={getColor(name)}>
+      nameColumn,
+      {
+        title: t("events:organizer"),
+        dataIndex: ["ownerOrganization", "name"],
+        key: "organizationName",
+        filters: [
+          ...Array.from(new Set(organizations?.map((o) => o.name))).map(
+            (name) => ({ text: name, value: name })
+          ),
+        ],
+        onFilter: (value: string | number | boolean, record: Event) =>
+          record?.ownerOrganization?.name.indexOf(value as string) === 0,
+        sorter: (a: Event, b: Event) =>
+          a?.ownerOrganization?.name?.localeCompare(
+            b?.ownerOrganization?.name || ""
+          ),
+        render: (name: string, record: Event, index: number) => (
+          <Tag key={`${record.id}-${index}`} color={getColor(name)}>
+            {name?.toUpperCase()}
+          </Tag>
+        ),
+      },
+      {
+        title: t("events:category"),
+        dataIndex: ["category", "name", lang],
+        key: "categoryName",
+        filters: [
+          ...Array.from(
+            new Set(eventCategories?.map((o) => o.name[lang]))
+          ).map((name) => ({ text: name, value: name })),
+        ],
+        onFilter: (value: string | number | boolean, record: Event) =>
+          record?.category?.name[lang].indexOf(value) === 0,
+        sorter: (a: Event, b: Event) =>
+          a?.name[lang]?.localeCompare(b?.name[lang] || ""),
+        render: (name: string, record: Event, index: number) => {
+          console.log(record)
+          return (
+            <Tag key={`${record.id}-${index}`} color={record.category.color}>
               {name?.toUpperCase()}
             </Tag>
-          ),
+          )
         },
-        {
-          title: t("events:category"),
-          dataIndex: ["category", "name", lang],
-          key: "categoryName",
-          filters: [
-            ...Array.from(
-              new Set(eventCategories?.map((o) => o.name[lang]))
-            ).map((name) => ({ text: name, value: name })),
-          ],
-          onFilter: (value: string | number | boolean, record: Event) =>
-            record?.category?.name[lang].indexOf(value) === 0,
-          sorter: (a: Event, b: Event) =>
-            a?.name[lang]?.localeCompare(b?.name[lang] || ""),
-          render: (name: string, record: Event, index: number) => {
-            console.log(record)
-            return (
-              <Tag key={`${record.id}-${index}`} color={record.category.color}>
-                {name?.toUpperCase()}
-              </Tag>
-            )
-          },
-        },
-        endTimeColumn,
-      ]
+      },
+      endTimeColumn,
+    ]
     : [nameColumn, endTimeColumn]
 
   return (
