@@ -100,7 +100,6 @@ const Admin_ListEvents: NextPage = () => {
           sorter: (a: Event, b: Event) =>
             a?.name[lang]?.localeCompare(b?.name[lang] || ""),
           render: (name: string, record: Event, index: number) => {
-            console.log(record)
             return (
               <Tag key={`${record.id}-${index}`} color={record.category.color}>
                 {name?.toUpperCase()}

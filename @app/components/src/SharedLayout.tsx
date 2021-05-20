@@ -72,8 +72,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-  | React.ReactNode
-  | ((props: SharedLayoutChildProps) => React.ReactNode)
+    | React.ReactNode
+    | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict

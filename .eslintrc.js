@@ -9,6 +9,12 @@ module.exports = {
     },
     {
       files: ["*.graphql"],
+      rules: {
+        "prettier/prettier": 0,
+      },
+    },
+    {
+      files: ["*.graphql"],
       parser: "@graphql-eslint/eslint-plugin",
       plugins: ["@graphql-eslint"],
       rules: {
@@ -32,7 +38,6 @@ module.exports = {
         "@graphql-eslint/avoid-duplicate-fields": ["error"],
         // "@graphql-eslint/naming-convention": 0,
         "@graphql-eslint/input-name": ["error", { checkInputType: true }],
-        "@graphql-eslint/prettier": ["error"],
         "@graphql-eslint/executable-definitions": ["error"],
         "@graphql-eslint/fields-on-correct-type": ["error"],
         "@graphql-eslint/fragments-on-composite-type": ["error"],
