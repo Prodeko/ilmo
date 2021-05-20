@@ -10,7 +10,7 @@ import {
   useDeleteEventCategoryMutation,
   useSharedQuery,
 } from "@app/graphql"
-import { Col, PageHeader, Row } from "antd"
+import { Col, PageHeader, Row, Tag } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
@@ -55,6 +55,13 @@ const AdminListEventCategoriesInner: React.FC = () => {
     title: t("common:name"),
     dataIndex: ["name", lang],
     key: "name",
+    render: (name: string, record: EventCategory, index: number) => {
+      return (
+        <Tag key={`${record.id}-${index}`} color={record.color}>
+          {name?.toUpperCase()}
+        </Tag>
+      )
+    },
   }
 
   const columns = !isMobile

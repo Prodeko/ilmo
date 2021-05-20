@@ -13,7 +13,8 @@
     },
     "list": {
       "registrations": "Rekisteröityneitä",
-      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
+      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin",
+      "linkUpdateEventCategory": "Muokkaa kategoriaa"
     }
   },
   "notifications": {

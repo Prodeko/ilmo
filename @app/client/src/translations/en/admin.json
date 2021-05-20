@@ -13,7 +13,8 @@
     },
     "list": {
       "registrations": "Registrations",
-      "registrationsPerQuota": "Registrations by quota"
+      "registrationsPerQuota": "Registrations by quota",
+      "linkUpdateEventCategory": "Edit category"
     }
   },
   "notifications": {

@@ -101,9 +101,25 @@ const Admin_ListEvents: NextPage = () => {
             a?.name[lang]?.localeCompare(b?.name[lang] || ""),
           render: (name: string, record: Event, index: number) => {
             return (
-              <Tag key={`${record.id}-${index}`} color={record.category.color}>
-                {name?.toUpperCase()}
-              </Tag>
+              <Link
+                as={`/admin/event-category/update/${record?.category?.id}`}
+                href={{
+                  pathname: "/admin/event-category/update/[id]",
+                  query: {
+                    id: record?.category?.id,
+                  },
+                }}
+              >
+                <Popover content={t("events.list.linkUpdateEventCategory")}>
+                  <Tag
+                    key={`${record.id}-${index}`}
+                    color={record.category.color}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {name?.toUpperCase()}
+                  </Tag>
+                </Popover>
+              </Link>
             )
           },
         },
