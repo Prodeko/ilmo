@@ -77,7 +77,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
       }
 
       type EventRegistrationsSubscriptionPayload {
-        registrations(after: Datetime!): [Registration]
+        registrations(after: Datetime): [Registration]
         event: String
       }
 
@@ -87,7 +87,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
           currentUserTopicFromContext
         )})
 
-        """Triggered when new event registrations are created. Each event has its own subscription topic."""
+        """Triggered when new event registrations are created or updated. Each event has its own subscription topic."""
         eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload @pgSubscription(topic: ${embed(
           eventRegistrationsTopicFromContext
         )})

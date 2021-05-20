@@ -9,11 +9,7 @@ import {
   useEventRegistrations,
   useQuerySlug,
 } from "@app/components"
-import {
-  EventPage_EventFragment,
-  Registration,
-  useEventPageQuery,
-} from "@app/graphql"
+import { EventPage_EventFragment, useEventPageQuery } from "@app/graphql"
 import { uploadsLoader } from "@app/lib"
 import { Col, PageHeader, Row } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
@@ -61,7 +57,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
 
   // Set registrations initially from EventPage_Query data
   // Use a subscription to fetch event registrations in real time
-  const initialRegistrations = eventRegistrations.nodes as Registration[]
+  const initialRegistrations = eventRegistrations.nodes
   const registrations = useEventRegistrations(
     eventId as string,
     createdAt,

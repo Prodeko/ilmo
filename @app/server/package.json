@@ -70,7 +70,7 @@
     "@types/nunjucks": "^3.1.4",
     "@types/passport": "^1.0.6",
     "@types/passport-oauth2": "^1.4.10",
-    "@types/pg": "^8.6.0",
+    "@types/pg": "^7.14.11",
     "faker": "^5.5.3",
     "graphql": "^15.5.0",
     "jest": "^26.6.3",

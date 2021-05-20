@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { ApolloError, useApolloClient } from "@apollo/client"
+import { ApolloError } from "@apollo/client"
 import {
+  EventPageDocument,
   useClaimRegistrationTokenMutation,
   useCreateEventRegistrationMutation,
   useDeleteEventRegistrationMutation,
+  useEventSlugByIdQuery,
   useUpdateEventRegistrationMutation,
 } from "@app/graphql"
 import {
@@ -43,8 +45,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   } = props
 
   const { t } = useTranslation("register")
-  const client = useApolloClient()
   const router = useRouter()
+
+  // Get event slug for refetchQueries
+  const { data: eventSlugByIdData } = useEventSlugByIdQuery({
+    variables: { id: eventId },
+  })
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
@@ -95,18 +101,18 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     setDeleting(true)
     try {
       if (updateToken) {
-        const result = await deleteRegistration({
+        // No need to update apollo cache manually with the delete mutation
+        // since /event/[slug] page calls useEventRegistrations subscription
+        // and gets the up-to-date list of registrations that way.
+        const { data, errors } = await deleteRegistration({
           variables: { updateToken },
         })
-        if (!result) {
+        if (!data) {
           throw new Error("Result expected")
         }
-        const { data } = result
-        if (!data?.deleteRegistration?.success) {
+        if (!data?.deleteRegistration?.success || errors) {
           throw new Error(t("deleteRegistrationFailed"))
         }
-        // Success: refetch
-        client.resetStore()
         router.push(formRedirect)
         message.success(t("registrationDeleteComplete"))
       }
@@ -115,7 +121,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       Sentry.captureException(e)
     }
     setDeleting(false)
-  }, [deleteRegistration, updateToken, client, formRedirect, router, t])
+  }, [deleteRegistration, updateToken, formRedirect, router, t])
 
   const handleSubmit = useCallback(
     async (values) => {
@@ -129,6 +135,22 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
               quotaId,
               registrationToken,
             },
+            // Refetch the event page query to get the up-to-date list of
+            // registrations. Apollo can't manually update the results when new
+            // records are added. Using refetchQueries is more efficient than
+            // doing client.resetStore() which clears the entire cache. Even
+            // more efficient solution would be to update the cache manually.
+            // However, that turned out to be __very__ involved with our current
+            // setup. This is due to the fact that we fetch event registrations
+            // with subscriptions and normal queries.  Manual cache updating can
+            // be done but it would result in many changes across seemingly
+            // unrelated files thus increasing complexity.
+            refetchQueries: [
+              {
+                query: EventPageDocument,
+                variables: { slug: eventSlugByIdData?.event?.slug },
+              },
+            ],
           })
         } else if (type === "update") {
           await updateRegistration({
@@ -139,8 +161,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           })
         }
 
-        // Success: refetch
-        client.resetStore()
         router.push(formRedirect)
         type === "create"
           ? message.success(t("eventSignupComplete"))
@@ -153,8 +173,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     [
       createRegistration,
       updateRegistration,
-      client,
       registrationToken,
+      eventSlugByIdData,
       updateToken,
       formRedirect,
       router,

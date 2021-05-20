@@ -24,11 +24,11 @@ const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
   if (items?.some((item) => item.key === key)) {
     return items.find((item) => item.key === key)
   }
-  const itemsWithChildren = items.filter(
+  const itemsWithChildren = items?.filter(
     (item) =>
       typeof item.target !== "string" && typeof item.target !== "function"
   )
-  for (let i = 0; i < itemsWithChildren.length; i++) {
+  for (let i = 0; i < itemsWithChildren?.length; i++) {
     const res = findPage(key, itemsWithChildren[i].target as MenuItem[])
     if (res) {
       return res

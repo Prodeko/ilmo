@@ -66,14 +66,13 @@ const EventRegistrationPage: NextPage = () => {
     return <Redirect href="/" layout />
   }
 
+  const eventName = event?.name[lang] || t("common:loading")
+  const quotaName = quota?.title[lang] || t("common:loading")
+  const title = `${t("title")} ${eventName} - ${quotaName}`
+
   return (
     <SharedLayout query={query} title="">
-      <PageHeader
-        title={`${t("title")} ${event?.name[lang] || t("common:loading")} - ${
-          quota?.title[lang] || t("common:loading")
-        }`}
-        onBack={handleGoBack}
-      />
+      <PageHeader title={title} onBack={handleGoBack} />
       <EventRegistrationForm
         eventId={event?.id}
         formRedirect={{

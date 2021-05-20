@@ -19,15 +19,19 @@ fragment EventFields on Event {
   updatedAt
 }
 
+fragment EventPage_OwnerOrganization on Organization {
+  name
+  id
+  slug
+}
+
 fragment EventPage_EventCategory on EventCategory {
   id
   description
   name
   color
   ownerOrganization {
-    name
-    id
-    slug
+    ...EventPage_OwnerOrganization
   }
   updatedAt
 }
@@ -46,15 +50,20 @@ fragment EventPage_Registration on Registration {
   createdAt
 }
 
+fragment EventPage_Registrations on Registration {
+  ...EventPage_Registration
+  quota {
+    ...EventPage_Quota
+  }
+}
+
 fragment EventPage_Event on Event {
   ...EventFields
-  id
   category {
     ...EventPage_EventCategory
   }
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {
@@ -63,10 +72,7 @@ fragment EventPage_Event on Event {
   }
   registrations(orderBy: CREATED_AT_ASC) {
     nodes {
-      ...EventPage_Registration
-      quota {
-        ...EventPage_Quota
-      }
+      ...EventPage_Registrations
     }
   }
 }

@@ -1,6 +1,11 @@
 import React, { useCallback, useState } from "react"
-import { useApolloClient } from "@apollo/client"
-import { Event, EventCategory } from "@app/graphql"
+import { ApolloCache } from "@apollo/client"
+import {
+  Event,
+  EventCategory,
+  useDeleteEventCategoryMutation,
+  useDeleteEventMutation,
+} from "@app/graphql"
 import * as Sentry from "@sentry/react"
 import { Button, message, Popconfirm, Space } from "antd"
 import useTranslation from "next-translate/useTranslation"
@@ -11,7 +16,9 @@ interface AdminTableActionsProps {
   adminUrl: string
   bannerErrorText?: JSX.Element
   dataType: Event | EventCategory
-  deleteMutation: any
+  deleteMutation:
+    | typeof useDeleteEventMutation
+    | typeof useDeleteEventCategoryMutation
   deleteConfirmTranslate: string
 }
 
@@ -23,8 +30,19 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   deleteConfirmTranslate,
 }) => {
   const { t } = useTranslation("admin")
-  const client = useApolloClient()
-  const [deleteDataType] = deleteMutation()
+  const [deleteDataType] = deleteMutation({
+    update(cache: ApolloCache<any>) {
+      // Update Apollo cache after the delete mutation. Mutations don't
+      // automatically update the cache. More information:
+      // https://www.apollographql.com/docs/react/data/mutations/#making-all-other-cache-updates
+      const normalizedId = cache.identify({
+        id: dataType?.id,
+        __typename: dataType.__typename,
+      })
+      cache.evict({ id: normalizedId })
+      cache.gc()
+    },
+  })
   const [error, setError] = useState<Error | null>(null)
 
   const doDelete = useCallback(async () => {
@@ -32,14 +50,12 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
       await deleteDataType({
         variables: { id: dataType?.id },
       })
-      // Success: refetch
-      client.resetStore()
       message.info(t("notifications.deleteSuccess"))
     } catch (e) {
       Sentry.captureException(e)
       setError(e)
     }
-  }, [client, deleteDataType, dataType, t])
+  }, [deleteDataType, dataType, t])
 
   return (
     <>

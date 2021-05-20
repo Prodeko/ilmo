@@ -17,7 +17,7 @@ mutation CreateEventRegistration(
     }
   ) {
     registration {
-      id
+      ...EventPage_Registration
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "deleteRegistration": "Poista ilmoittautuminen",
-  "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautummisesi?",
+  "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautumisesi?",
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
   "errors": {
     "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui",

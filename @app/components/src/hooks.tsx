@@ -1,9 +1,9 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { QueryResult } from "@apollo/client"
 import {
   EventPage_QueryFragment,
+  EventPage_RegistrationsFragment,
   OrganizationPage_QueryFragment,
-  Registration,
   useEventRegistrationsSubscription,
 } from "@app/graphql"
 import { Col, Row } from "antd"
@@ -81,19 +81,24 @@ export function useOrganizationLoading(
 
 export function useEventRegistrations(
   eventId: string,
-  after: string,
-  initialRegistrations: Registration[] = []
+  after: string = new Date().toISOString(),
+  initialRegistrations: EventPage_RegistrationsFragment[] = []
 ) {
-  const [registrations, setRegistrations] =
-    useState<Registration[] | null | undefined>(initialRegistrations)
+  const [registrations, setRegistrations] = useState(initialRegistrations)
+
+  useEffect(() => {
+    if (initialRegistrations?.[0]) {
+      setRegistrations(initialRegistrations)
+    }
+  }, [initialRegistrations])
+
   useEventRegistrationsSubscription({
     variables: { eventId, after },
     skip: !eventId,
-    onSubscriptionData: ({ subscriptionData }) =>
-      setRegistrations(
-        subscriptionData?.data?.eventRegistrations
-          ?.registrations as Registration[]
-      ),
+    onSubscriptionData: ({ subscriptionData: { data } }) => {
+      const registrations = data?.eventRegistrations?.registrations
+      setRegistrations(registrations as EventPage_RegistrationsFragment[])
+    },
   })
 
   return registrations

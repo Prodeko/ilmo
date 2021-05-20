@@ -1,5 +1,8 @@
 import React from "react"
-import { EventPage_EventFragment, Registration } from "@app/graphql"
+import {
+  EventPage_EventFragment,
+  EventPage_RegistrationsFragment,
+} from "@app/graphql"
 import { Button, Card, Popover } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import useTranslation from "next-translate/useTranslation"
@@ -8,7 +11,7 @@ import { Link, ProgressBar } from "."
 
 interface EventQuotasCardProps {
   event: EventPage_EventFragment
-  registrations: Registration[]
+  registrations: EventPage_RegistrationsFragment[]
 }
 
 export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
