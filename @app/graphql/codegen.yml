@@ -17,6 +17,7 @@ config:
   withComponent: false
   withHooks: true
   reactApolloVersion: 3
+  preResolveTypes: true
 generates:
   index.tsx:
     plugins:
