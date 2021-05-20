@@ -1,9 +1,0 @@
-mutation UpdateEventCategory($input: UpdateEventCategoryInput!) {
-  updateEventCategory(input: $input) {
-    eventCategory {
-      id
-      __typename
-    }
-    __typename
-  }
-}

@@ -1,0 +1,29 @@
+fragment EventPage_EventCategory on EventCategory {
+  id
+  description
+  name
+  color
+  ownerOrganization {
+    ...EventPage_OwnerOrganization
+    __typename
+  }
+  updatedAt
+  __typename
+}
+fragment EventPage_OwnerOrganization on Organization {
+  name
+  id
+  slug
+  __typename
+}
+mutation UpdateEventCategory($name: JSON!, $description: JSON!, $color: String!, $ownerOrganizationId: UUID!, $id: UUID!) {
+  updateEventCategory(
+    input: {patch: {name: $name, description: $description, color: $color, ownerOrganizationId: $ownerOrganizationId}, id: $id}
+  ) {
+    eventCategory {
+      ...EventPage_EventCategory
+      __typename
+    }
+    __typename
+  }
+}
