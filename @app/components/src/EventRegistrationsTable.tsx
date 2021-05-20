@@ -1,5 +1,8 @@
 import React, { useMemo } from "react"
-import { Registration } from "@app/graphql"
+import {
+  EventPage_QuotaFragment,
+  EventPage_RegistrationsFragment,
+} from "@app/graphql"
 import { Skeleton } from "antd"
 import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
@@ -8,28 +11,35 @@ import { H4 } from "./Text"
 import { SimpleTable } from "."
 
 interface EventRegistrationsTable {
-  registrations: Registration[]
+  registrations: EventPage_RegistrationsFragment[]
 }
 
-const getRegistrationsByQuotaPosition = (arr: any[]) => {
+const getRegistrationsByQuotaPosition = (
+  arr: EventPage_RegistrationsFragment[]
+) => {
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
+    // @ts-ignore
     ;(a[key] || (a[key] = [] || [])).push(x)
     return a
-  }, {})
+  }, {} as { [key: number]: EventPage_RegistrationsFragment })
 }
 
-const getQueuedRegistrations = (arr: any[]) => {
-  return arr.filter((x) => x.isQueued)
-}
-
-const getQuotaNameByQuotaPosition = (arr: any[]) => {
+const getQuotaNameByQuotaPosition = (
+  arr: EventPage_RegistrationsFragment[]
+) => {
   return arr
     .map((x) => x.quota)
     .reduce((a, x) => {
-      a[x.position] = x
+      if (x) {
+        a[x.position] = x
+      }
       return a
-    }, {})
+    }, {} as { [key: number]: EventPage_QuotaFragment })
+}
+
+const getQueuedRegistrations = (arr: EventPage_RegistrationsFragment[]) => {
+  return arr.filter((x) => x.isQueued)
 }
 
 export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
@@ -84,11 +94,13 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       {Object.keys(registrationsByQuotaPosition)
         .sort()
         .map((position) => {
-          const quotaTitle = quotaNamesByPosition[position].title[lang]
-          const quotaSize = quotaNamesByPosition[position].size
+          const quotaTitle = quotaNamesByPosition[position].title[
+            lang
+          ] as string
+          const quotaSize = quotaNamesByPosition[position].size as number
           const quotaRegistrations = registrationsByQuotaPosition[
             position
-          ].filter((r: Registration) => !r.isQueued)
+          ].filter((r: EventPage_RegistrationsFragment) => !r.isQueued)
           return (
             <div key={position}>
               <H4 style={{ marginTop: "1.5rem" }}>
