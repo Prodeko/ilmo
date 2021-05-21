@@ -5,6 +5,7 @@ fragment ListEvents_Query on Query {
       ...Events_Event
       __typename
     }
+    totalCount
     __typename
   }
   __typename

@@ -25,6 +25,7 @@ fragment ListEvents_Query on Query {
       id
       ...Events_Event
     }
+    totalCount
   }
 }
 

@@ -40,6 +40,8 @@ export function ServerPaginatedTable({
     onCompleted: () =>
       setPagination({
         ...pagination,
+        // Remember to query the totalCount field for the records you wish
+        // to display with this component
         total: get(data, dataField)?.totalCount,
       }),
   })

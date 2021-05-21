@@ -8,6 +8,7 @@ fragment ListEventCategories_Query on Query {
       id
       ...ListEventCategories
     }
+    totalCount
   }
 }
 

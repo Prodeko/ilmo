@@ -62,7 +62,9 @@ const Admin_ListEvents: NextPage = () => {
           },
         }}
       >
-        <a>{name}</a>
+        <Popover content={t("events.list.linkToEvent")}>
+          <a>{name}</a>
+        </Popover>
       </Link>
     ),
   }

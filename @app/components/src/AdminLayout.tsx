@@ -1,6 +1,9 @@
 import * as qs from "querystring"
 
 import React from "react"
+import { AiOutlineMail, AiOutlineTag } from "react-icons/ai"
+import { MdEvent } from "react-icons/md"
+import { VscOrganization } from "react-icons/vsc"
 import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
 import { QueryResult } from "@apollo/client"
 import { SharedLayout_QueryFragment } from "@app/graphql"
@@ -56,6 +59,7 @@ export function AdminLayout({
     {
       key: "/admin/emails",
       title: t("sider.titles.emails"),
+      icon: <AiOutlineMail className="anticon" />,
       target: "/admin/emails",
     },
   ]
@@ -69,6 +73,7 @@ export function AdminLayout({
         {
           key: "admin-menu-organizations",
           title: t("sider.titles.organizations"),
+          icon: <VscOrganization className="anticon" />,
           cy: "admin-sider-organizations",
           target: organizationMemberships
             ? [
@@ -82,11 +87,11 @@ export function AdminLayout({
                   }
                 }),
                 {
-                  title: t("sider.titles.createOrganization"),
-                  cy: "admin-sider-create-organization",
                   key: "/admin/organization/create",
-                  target: "/admin/organization/create",
+                  title: t("sider.titles.createOrganization"),
                   icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
+                  target: "/admin/organization/create",
+                  cy: "admin-sider-create-organization",
                 },
               ]
             : null,
@@ -94,38 +99,40 @@ export function AdminLayout({
         {
           key: "admin-menu-events",
           title: t("sider.titles.events"),
+          icon: <MdEvent className="anticon" />,
           cy: "admin-sider-events",
           target: [
             {
-              title: t("sider.titles.listEvents"),
               key: "/admin/event/list",
+              title: t("sider.titles.listEvents"),
               target: "/admin/event/list",
             },
             {
-              title: t("sider.titles.createEvent"),
               key: "/admin/event/create",
+              title: t("sider.titles.createEvent"),
+              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
               target: "/admin/event/create",
               cy: "admin-sider-create-event",
-              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
             },
           ],
         },
         {
           key: "admin-menu-event-categories",
           title: t("sider.titles.eventCategories"),
+          icon: <AiOutlineTag className="anticon" />,
           cy: "admin-sider-event-categories",
           target: [
             {
-              title: t("sider.titles.listEventCategories"),
               key: "/admin/event-category/list",
+              title: t("sider.titles.listEventCategories"),
               target: "/admin/event-category/list",
             },
             {
-              title: t("sider.titles.createEventCategory"),
               key: "/admin/event-category/create",
+              title: t("sider.titles.createEventCategory"),
+              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
               target: "/admin/event-category/create",
               cy: "admin-sider-create-event-category",
-              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
             },
           ],
         },

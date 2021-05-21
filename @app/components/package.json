@@ -26,6 +26,7 @@
     "react-country-flag": "^2.3.0",
     "react-dnd": "^14.0.2",
     "react-dnd-html5-backend": "^14.0.0",
+    "react-icons": "^4.2.0",
     "slugify": "^1.5.3",
     "tslib": "^2.2.0"
   },
