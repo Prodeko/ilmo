@@ -3,6 +3,7 @@ import {
   AdminLayout,
   AdminTableActions,
   ServerPaginatedTable,
+  useIsMobile,
 } from "@app/components"
 import {
   EventCategory,
@@ -11,7 +12,6 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { Col, PageHeader, Row, Tag } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
 
@@ -27,8 +27,7 @@ const Admin_ListEventCategories: NextPage = () => {
 
 const AdminListEventCategoriesInner: React.FC = () => {
   const { t, lang } = useTranslation("admin")
-  const screens = useBreakpoint()
-  const isMobile = screens["xs"]
+  const isMobile = useIsMobile()
 
   const actionsColumn = {
     title: "",

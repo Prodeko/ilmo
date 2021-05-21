@@ -3,6 +3,7 @@ import {
   AdminLayout,
   AdminTableActions,
   ServerPaginatedTable,
+  useIsMobile,
 } from "@app/components"
 import {
   Event,
@@ -20,7 +21,6 @@ import {
   Tag,
   Typography,
 } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import dayjs from "dayjs"
 import { reduce } from "lodash"
 import { NextPage } from "next"
@@ -30,8 +30,7 @@ import useTranslation from "next-translate/useTranslation"
 const Admin_ListEvents: NextPage = () => {
   const { t, lang } = useTranslation("admin")
   const query = useListEventsPageQuery()
-  const screens = useBreakpoint()
-  const isMobile = screens["xs"]
+  const isMobile = useIsMobile()
 
   const eventCategories = query?.data?.eventCategories?.nodes
 

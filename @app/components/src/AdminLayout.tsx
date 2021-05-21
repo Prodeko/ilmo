@@ -1,6 +1,6 @@
 import * as qs from "querystring"
 
-import React, { useState } from "react"
+import React from "react"
 import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
 import { QueryResult } from "@apollo/client"
 import { SharedLayout_QueryFragment } from "@app/graphql"
@@ -12,13 +12,11 @@ import { AdminSideMenu, MenuItem } from "./AdminSideMenu"
 import { Redirect } from "./Redirect"
 import {
   AuthRestrict,
-  contentMinHeight,
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout"
-import { StandardWidth } from "./StandardWidth"
 
-const { Sider, Content } = Layout
+const { Sider } = Layout
 
 const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
   if (items?.some((item) => item.key === key)) {
@@ -52,7 +50,7 @@ export function AdminLayout({
   children,
 }: AdminLayoutProps) {
   const { t } = useTranslation("admin")
-  const [siderCollapsed, setSiderCollapsed] = useState(false)
+  const router = useRouter()
 
   const basicMenuItems = [
     {
@@ -137,33 +135,27 @@ export function AdminLayout({
   const page = findPage(String(inHref), items) || items[0]
   const href = page.key
 
-  const router = useRouter()
-  const fullHref =
-    href + (router && router.query ? `?${qs.stringify(router.query)}` : "")
+  const routerQuery = router?.query
+  const fullHref = href + (routerQuery ? `?${qs.stringify(routerQuery)}` : "")
+
+  const layoutSider = (
+    <Sider breakpoint="md" collapsedWidth="0">
+      <AdminSideMenu initialKey={href} items={items} />
+    </Sider>
+  )
 
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.NOT_ADMIN}
       query={query}
+      sider={layoutSider}
       title={`${t("common:admin")}`}
-      noPad
     >
       {({ currentUser, error, loading }: SharedLayoutChildProps) =>
         !currentUser && !error && !loading ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
-          <Layout style={{ minHeight: contentMinHeight }} hasSider>
-            <Sider
-              collapsed={siderCollapsed}
-              collapsible
-              onCollapse={(collapsed) => setSiderCollapsed(collapsed)}
-            >
-              <AdminSideMenu initialKey={href} items={items} />
-            </Sider>
-            <Content>
-              <StandardWidth>{children}</StandardWidth>
-            </Content>
-          </Layout>
+          children
         )
       }
     </SharedLayout>

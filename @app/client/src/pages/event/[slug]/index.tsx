@@ -7,12 +7,12 @@ import {
   SharedLayout,
   useEventLoading,
   useEventRegistrations,
+  useIsMobile,
   useQuerySlug,
 } from "@app/components"
 import { EventPage_EventFragment, useEventPageQuery } from "@app/graphql"
 import { uploadsLoader } from "@app/lib"
 import { Col, PageHeader, Row } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import { NextPage } from "next"
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -44,8 +44,8 @@ interface EventPageInnerProps {
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter()
   const { t, lang } = useTranslation("events")
-  const screens = useBreakpoint()
-  const isMobile = screens["xs"]
+  const isMobile = useIsMobile()
+
   const {
     id: eventId,
     name,

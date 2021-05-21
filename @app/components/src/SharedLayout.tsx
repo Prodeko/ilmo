@@ -11,13 +11,13 @@ import {
 } from "@app/graphql"
 import * as Sentry from "@sentry/react"
 import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
 import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
+import { useIsMobile } from "./hooks"
 import { LocaleSelect } from "./LocaleSelect"
 import { Redirect } from "./Redirect"
 import { ErrorAlert, H3, StandardWidth, Warn } from "."
@@ -77,6 +77,7 @@ export interface SharedLayoutProps {
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
+  sider?: React.ReactNode
 }
 
 export function SharedLayout({
@@ -87,20 +88,19 @@ export function SharedLayout({
   noHandleErrors = false,
   query,
   forbidWhen = AuthRestrict.NEVER,
+  sider,
   children,
 }: SharedLayoutProps) {
   const router = useRouter()
   const currentUrl = router.asPath
   const client = useApolloClient()
-  const screens = useBreakpoint()
   const [logout] = useLogoutMutation()
   const { t } = useTranslation("common")
+  const isMobile = useIsMobile()
 
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
   const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
-
-  const isMobile = screens["xs"]
 
   const handleLogout = useCallback(() => {
     const reset = async () => {
@@ -271,13 +271,17 @@ export function SharedLayout({
           </Col>
         </Row>
       </Header>
-      <Content style={{ minHeight: contentMinHeight }}>
-        {renderChildren({
-          error,
-          loading,
-          currentUser: data && data.currentUser,
-        })}
-      </Content>
+      <Layout>
+        {sider ? sider : null}
+        <Content style={{ minHeight: contentMinHeight }}>
+          {renderChildren({
+            error,
+            loading,
+            currentUser: data && data.currentUser,
+          })}
+        </Content>
+      </Layout>
+
       <Footer>
         <div
           style={{

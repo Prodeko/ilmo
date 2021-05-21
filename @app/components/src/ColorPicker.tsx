@@ -5,7 +5,8 @@ import {
   useColor,
 } from "react-color-palette"
 import { Space, Tag } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+
+import { useIsMobile } from "./hooks"
 
 interface ColorPickerProps {
   // These come from antd Form.Item, value is currently unused
@@ -19,8 +20,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 }) => {
   const initialColor = "#002e7d"
   const [color, setColor] = useColor("hex", value ?? initialColor)
-  const screens = useBreakpoint()
-  const isMobile = screens["xs"]
+  const isMobile = useIsMobile()
 
   const handleChange = useCallback(
     (color: Color) => {

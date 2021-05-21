@@ -7,6 +7,7 @@ import {
   useEventRegistrationsSubscription,
 } from "@app/graphql"
 import { Col, Row } from "antd"
+import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import { useRouter } from "next/router"
 
 import { ErrorAlert, FourOhFour, LoadingPadded } from "./"
@@ -102,4 +103,10 @@ export function useEventRegistrations(
   })
 
   return registrations
+}
+
+export function useIsMobile() {
+  const screens = useBreakpoint()
+  const isMobile = screens["xs"]
+  return isMobile!
 }

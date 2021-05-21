@@ -4,9 +4,9 @@ import {
   EventPage_RegistrationsFragment,
 } from "@app/graphql"
 import { Button, Card, Popover } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import useTranslation from "next-translate/useTranslation"
 
+import { useIsMobile } from "./hooks"
 import { Link, ProgressBar } from "."
 
 interface EventQuotasCardProps {
@@ -19,8 +19,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
   registrations,
 }) => {
   const { t, lang } = useTranslation("events")
-  const screens = useBreakpoint()
-  const isMobile = screens["xs"]
+  const isMobile = useIsMobile()
   const { id: eventId, signupClosed, signupUpcoming, quotas } = event
 
   return (
