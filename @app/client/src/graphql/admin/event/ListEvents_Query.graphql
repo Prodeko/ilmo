@@ -11,7 +11,7 @@ fragment Events_Event on Event {
       }
     }
   }
-  registrations(orderBy: CREATED_AT_ASC) {
+  registrations {
     totalCount
     nodes {
       ...EventPage_Registration
@@ -20,9 +20,29 @@ fragment Events_Event on Event {
 }
 
 fragment ListEvents_Query on Query {
-  events(first: $first, offset: $offset, orderBy: EVENT_END_TIME_ASC) {
+  signupOpenEvents: events(
+    filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
     nodes {
-      id
+      ...Events_Event
+    }
+  }
+  signupUpcomingEvents: events(
+    filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+  }
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: { signupClosed: { equalTo: true } }
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
       ...Events_Event
     }
     totalCount

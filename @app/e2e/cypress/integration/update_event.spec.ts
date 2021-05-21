@@ -5,25 +5,6 @@ context("Update event", () => {
   beforeEach(() => cy.serverCommand("clearTestEventData"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
-  it("redirects to index if user is not admin", () => {
-    // Setup
-    cy.serverCommand("createTestEventData", {
-      eventSignupUpcoming: true,
-      eventSignupClosed: false,
-    }).as("createEventDataResult")
-
-    // Action
-    cy.get("@createEventDataResult").then(({ event }: any) => {
-      cy.login({
-        verified: true,
-      })
-      cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
-    })
-
-    // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
-  })
-
   it("admin can user update an existing event", () => {
     // Setup
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
@@ -115,7 +96,7 @@ context("Update event", () => {
 
         // Assertion
         cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
-        cy.getCy("adminpage-events").should(
+        cy.getCy("adminpage-events-open").should(
           "contain",
           "Päivitetty testitapahtuma"
         )
@@ -152,6 +133,25 @@ context("Update event", () => {
         event.name["fi"]
       )
     })
+  })
+
+  it("redirects to index if user is not admin", () => {
+    // Setup
+    cy.serverCommand("createTestEventData", {
+      eventSignupUpcoming: true,
+      eventSignupClosed: false,
+    }).as("createEventDataResult")
+
+    // Action
+    cy.get("@createEventDataResult").then(({ event }: any) => {
+      cy.login({
+        verified: true,
+      })
+      cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
+    })
+
+    // Assertion
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
   })
 
   it("redirects to index if user is not part of any organization", () => {

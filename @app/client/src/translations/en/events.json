@@ -70,6 +70,5 @@
   "queued": "Queue",
   "quota": "Quota",
   "registerToAnEvent": "Signup",
-  "removeQuota": "Remove quota",
-  "startTime": "Start time"
+  "removeQuota": "Remove quota"
 }

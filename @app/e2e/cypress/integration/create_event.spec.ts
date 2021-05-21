@@ -123,7 +123,7 @@ context("Create event", () => {
 
       // Assertion
       cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
-      cy.getCy("adminpage-events").should("contain", "Testitapahtuma")
+      cy.getCy("adminpage-events-open").should("contain", "Testitapahtuma")
       cy.visit(Cypress.env("ROOT_URL"))
       cy.getCy("homepage-signup-open-events").should(
         "contain",

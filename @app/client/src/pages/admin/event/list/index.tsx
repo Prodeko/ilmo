@@ -2,6 +2,7 @@ import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
+  H3,
   ServerPaginatedTable,
   useIsMobile,
 } from "@app/components"
@@ -11,16 +12,7 @@ import {
   useDeleteEventMutation,
   useListEventsPageQuery,
 } from "@app/graphql"
-import {
-  Badge,
-  Col,
-  PageHeader,
-  Popover,
-  Progress,
-  Row,
-  Tag,
-  Typography,
-} from "antd"
+import { Badge, Col, Popover, Progress, Row, Tag, Typography } from "antd"
 import dayjs from "dayjs"
 import { reduce } from "lodash"
 import { NextPage } from "next"
@@ -180,9 +172,14 @@ const Admin_ListEvents: NextPage = () => {
           },
         },
         {
-          title: t("events:startTime"),
+          title: t("events.list.registrationStartTime"),
+          dataIndex: "registrationStartTime",
+          render: (startTime: string) => dayjs(startTime).format("l LT"),
+        },
+        {
+          title: t("events.list.eventStartTime"),
           dataIndex: "eventStartTime",
-          render: (startTime: string) => dayjs(startTime).format("l LTS"),
+          render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
       ]
     : [actionsColumn, nameColumn]
@@ -191,11 +188,29 @@ const Admin_ListEvents: NextPage = () => {
     <AdminLayout href="/admin/event/list" query={query}>
       <Row>
         <Col flex={1}>
-          <PageHeader title={t("pageTitle.listEvent")} />
+          <H3>{t("home:events.signupsUpcomingEvents")}</H3>
           <ServerPaginatedTable
             columns={columns}
-            data-cy="adminpage-events"
-            dataField="events"
+            data-cy="adminpage-events-upcoming"
+            dataField="signupUpcomingEvents"
+            queryDocument={ListEventsDocument}
+            showPagination={true}
+            size="middle"
+          />
+          <H3>{t("home:events.signupsOpenEvents")}</H3>
+          <ServerPaginatedTable
+            columns={columns}
+            data-cy="adminpage-events-open"
+            dataField="signupOpenEvents"
+            queryDocument={ListEventsDocument}
+            showPagination={true}
+            size="middle"
+          />
+          <H3>{t("home:events.signupsClosedEvents")}</H3>
+          <ServerPaginatedTable
+            columns={columns}
+            data-cy="adminpage-events-closed"
+            dataField="signupClosedEvents"
             queryDocument={ListEventsDocument}
             showPagination={true}
             size="middle"

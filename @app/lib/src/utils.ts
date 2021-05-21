@@ -6,3 +6,7 @@ export const filterObjectByKeys = (raw: object, allowed: string[]) =>
       obj[key] = raw[key]
       return obj
     }, {})
+
+export function randomIntFromInterval(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}

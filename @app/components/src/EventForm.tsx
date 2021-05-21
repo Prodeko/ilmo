@@ -7,6 +7,7 @@ import PlusOutlined from "@ant-design/icons/PlusOutlined"
 import { ApolloError, DocumentNode, useMutation } from "@apollo/client"
 import {
   CreateEventPageQuery,
+  ListEventsDocument,
   Quota,
   UpdateEventPageQuery,
   useRenderEmailTemplateQuery,
@@ -213,6 +214,12 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             headerImageFile,
             eventId,
           },
+          refetchQueries: [
+            {
+              query: ListEventsDocument,
+              variables: { offset: 0, first: 10 },
+            },
+          ],
         })
         const accessor = type === "create" ? "createEvent" : "updateEvent"
         const createdEventId = data[accessor].event.id

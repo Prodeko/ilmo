@@ -1,3 +1,4 @@
+import { randomIntFromInterval } from "@app/lib"
 import dayjs from "dayjs"
 import * as faker from "faker"
 import { PoolClient } from "pg"
@@ -161,7 +162,8 @@ export const createEvents = async (
       en: faker.lorem.paragraph(),
     }
 
-    const now = new Date()
+    const randomHours = randomIntFromInterval(-3, -1)
+    const now = dayjs().add(randomHours, "hour")
     const dayAdjustment = signupOpen ? -1 : 1
     const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
     const registrationEndTime = faker.date.between(

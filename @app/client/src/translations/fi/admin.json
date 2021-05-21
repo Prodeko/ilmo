@@ -12,10 +12,12 @@
       "confirmText": "Haluatko varmasti poistaa tämän tapahtuman?"
     },
     "list": {
-      "registrations": "Rekisteröityneitä",
-      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin",
+      "eventStartTime": "Tapahtuma alkaa",
       "linkToEvent": "Näytä tapahtumasivu",
-      "linkUpdateEventCategory": "Muokkaa kategoriaa"
+      "linkUpdateEventCategory": "Muokkaa kategoriaa",
+      "registrationStartTime": "Ilmo aukeaa",
+      "registrations": "Rekisteröityneitä",
+      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
     }
   },
   "notifications": {

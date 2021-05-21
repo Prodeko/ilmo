@@ -12,10 +12,12 @@
       "confirmText": "Are you sure you want to delete this event?"
     },
     "list": {
-      "registrations": "Registrations",
-      "registrationsPerQuota": "Registrations by quota",
+      "eventStartTime": "Event time",
       "linkToEvent": "Show event",
-      "linkUpdateEventCategory": "Edit category"
+      "linkUpdateEventCategory": "Edit category",
+      "registrationStartTime": "Registration time",
+      "registrations": "Registrations",
+      "registrationsPerQuota": "Registrations by quota"
     }
   },
   "notifications": {
