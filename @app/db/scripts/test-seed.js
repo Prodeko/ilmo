@@ -15,7 +15,7 @@ async function main() {
     await pgPool.query("delete from graphile_worker.jobs;")
     await writeFile(
       `${__dirname}/../__tests__/jest.watch.hack.ts`,
-      `export const ts = ${Date.now()};\n`
+      `export const ts = ${Date.now()}\n`
     )
   } finally {
     await pgPool.end()
