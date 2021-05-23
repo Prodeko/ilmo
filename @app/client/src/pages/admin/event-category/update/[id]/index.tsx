@@ -47,13 +47,6 @@ const Admin_UpdateEventCategory: NextPage = () => {
     return <Redirect href="/" layout />
   }
 
-  // Redirect to index if the user is not part of any organization
-  const organizationMemberships =
-    query?.data?.currentUser?.organizationMemberships?.totalCount
-  if (organizationMemberships <= 0) {
-    return <Redirect href="/" layout />
-  }
-
   return (
     <AdminLayout href={`/admin/event-category/${categoryId}`} query={query}>
       <Row>

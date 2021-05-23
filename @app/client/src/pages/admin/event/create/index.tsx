@@ -1,5 +1,5 @@
 import React from "react"
-import { AdminLayout, EventForm, Redirect } from "@app/components"
+import { AdminLayout, EventForm } from "@app/components"
 import {
   CreateEventDocument,
   CreateEventQuotasDocument,
@@ -14,13 +14,6 @@ const Admin_CreateEvent: NextPage = () => {
   const { t } = useTranslation("admin")
   const router = useRouter()
   const query = useCreateEventPageQuery()
-
-  // Redirect to index if the user is not part of any organization
-  const organizationMemberships =
-    query?.data?.currentUser?.organizationMemberships?.totalCount
-  if (organizationMemberships <= 0) {
-    return <Redirect href="/" layout />
-  }
 
   return (
     <AdminLayout href="/admin/event/create" query={query}>

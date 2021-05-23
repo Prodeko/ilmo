@@ -135,42 +135,6 @@ context("Update event", () => {
     })
   })
 
-  it("redirects to index if user is not admin", () => {
-    // Setup
-    cy.serverCommand("createTestEventData", {
-      eventSignupUpcoming: true,
-      eventSignupClosed: false,
-    }).as("createEventDataResult")
-
-    // Action
-    cy.get("@createEventDataResult").then(({ event }: any) => {
-      cy.login({
-        verified: true,
-      })
-      cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
-    })
-
-    // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
-  })
-
-  it("redirects to index if user is not part of any organization", () => {
-    // Setup
-    cy.serverCommand("createTestEventData").as("createEventDataResult")
-    cy.login({
-      verified: true,
-      isAdmin: true,
-    })
-
-    // Action
-    cy.get("@createEventDataResult").then(({ event }: any) => {
-      cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
-    })
-
-    // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
-  })
-
   it("redirects to index if event is not found", () => {
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult")

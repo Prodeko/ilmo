@@ -54,6 +54,7 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const { t } = useTranslation("admin")
   const router = useRouter()
+  const { data, loading, error } = query
 
   const basicMenuItems = [
     {
@@ -65,79 +66,83 @@ export function AdminLayout({
   ]
 
   const organizationMemberships =
-    query.data?.currentUser?.organizationMemberships.nodes
+    data?.currentUser?.organizationMemberships.nodes
+  // Redirect to index if the user is not part of any organization
+  if (!error && !loading && organizationMemberships?.length === 0) {
+    return <Redirect href="/" layout />
+  }
 
-  const items: MenuItem[] = query.loading
+  const items: MenuItem[] = loading
     ? [...basicMenuItems]
     : [
-        {
-          key: "admin-menu-organizations",
-          title: t("sider.titles.organizations"),
-          icon: <VscOrganization className="anticon" />,
-          cy: "admin-sider-organizations",
-          target: organizationMemberships
-            ? [
-                ...organizationMemberships?.map((organization): MenuItem => {
-                  const title = organization.organization?.name || ""
-                  const slug = organization.organization?.slug
-                  return {
-                    title,
-                    key: `/admin/organization/${slug}`,
-                    target: `/admin/organization/${slug}`,
-                  }
-                }),
-                {
-                  key: "/admin/organization/create",
-                  title: t("sider.titles.createOrganization"),
-                  icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
-                  target: "/admin/organization/create",
-                  cy: "admin-sider-create-organization",
-                },
-              ]
-            : null,
-        },
-        {
-          key: "admin-menu-events",
-          title: t("sider.titles.events"),
-          icon: <MdEvent className="anticon" />,
-          cy: "admin-sider-events",
-          target: [
+      {
+        key: "admin-menu-organizations",
+        title: t("sider.titles.organizations"),
+        icon: <VscOrganization className="anticon" />,
+        cy: "admin-sider-organizations",
+        target: organizationMemberships
+          ? [
+            ...organizationMemberships?.map((organization): MenuItem => {
+              const title = organization.organization?.name || ""
+              const slug = organization.organization?.slug
+              return {
+                title,
+                key: `/admin/organization/${slug}`,
+                target: `/admin/organization/${slug}`,
+              }
+            }),
             {
-              key: "/admin/event/list",
-              title: t("sider.titles.listEvents"),
-              target: "/admin/event/list",
-            },
-            {
-              key: "/admin/event/create",
-              title: t("sider.titles.createEvent"),
+              key: "/admin/organization/create",
+              title: t("sider.titles.createOrganization"),
               icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
-              target: "/admin/event/create",
-              cy: "admin-sider-create-event",
+              target: "/admin/organization/create",
+              cy: "admin-sider-create-organization",
             },
-          ],
-        },
-        {
-          key: "admin-menu-event-categories",
-          title: t("sider.titles.eventCategories"),
-          icon: <AiOutlineTag className="anticon" />,
-          cy: "admin-sider-event-categories",
-          target: [
-            {
-              key: "/admin/event-category/list",
-              title: t("sider.titles.listEventCategories"),
-              target: "/admin/event-category/list",
-            },
-            {
-              key: "/admin/event-category/create",
-              title: t("sider.titles.createEventCategory"),
-              icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
-              target: "/admin/event-category/create",
-              cy: "admin-sider-create-event-category",
-            },
-          ],
-        },
-        ...basicMenuItems,
-      ]
+          ]
+          : null,
+      },
+      {
+        key: "admin-menu-events",
+        title: t("sider.titles.events"),
+        icon: <MdEvent className="anticon" />,
+        cy: "admin-sider-events",
+        target: [
+          {
+            key: "/admin/event/list",
+            title: t("sider.titles.listEvents"),
+            target: "/admin/event/list",
+          },
+          {
+            key: "/admin/event/create",
+            title: t("sider.titles.createEvent"),
+            icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
+            target: "/admin/event/create",
+            cy: "admin-sider-create-event",
+          },
+        ],
+      },
+      {
+        key: "admin-menu-event-categories",
+        title: t("sider.titles.eventCategories"),
+        icon: <AiOutlineTag className="anticon" />,
+        cy: "admin-sider-event-categories",
+        target: [
+          {
+            key: "/admin/event-category/list",
+            title: t("sider.titles.listEventCategories"),
+            target: "/admin/event-category/list",
+          },
+          {
+            key: "/admin/event-category/create",
+            title: t("sider.titles.createEventCategory"),
+            icon: <PlusCircleTwoTone twoToneColor="#52c41a" />,
+            target: "/admin/event-category/create",
+            cy: "admin-sider-create-event-category",
+          },
+        ],
+      },
+      ...basicMenuItems,
+    ]
 
   const page = findPage(String(inHref), items) || items[0]
   const href = page.key

@@ -1,5 +1,5 @@
 import React from "react"
-import { AdminLayout, EventCategoryForm, Redirect } from "@app/components"
+import { AdminLayout, EventCategoryForm } from "@app/components"
 import { useCreateEventCategoryPageQuery } from "@app/graphql"
 import { Col, PageHeader, Row } from "antd"
 import { NextPage } from "next"
@@ -10,13 +10,6 @@ const Admin_CreateEventCategory: NextPage = () => {
   const query = useCreateEventCategoryPageQuery()
   const { t } = useTranslation("admin")
   const router = useRouter()
-
-  // Redirect to index if the user is not part of any organization
-  const organizationMemberships =
-    query?.data?.currentUser?.organizationMemberships?.totalCount
-  if (organizationMemberships <= 0) {
-    return <Redirect href="/" layout />
-  }
 
   return (
     <AdminLayout href={"/admin/event-category/create"} query={query}>
