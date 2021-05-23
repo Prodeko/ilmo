@@ -100,6 +100,14 @@ CREATE TYPE app_public.claim_registration_token_output AS (
 
 
 --
+-- Name: constrained_name; Type: DOMAIN; Schema: app_public; Owner: -
+--
+
+CREATE DOMAIN app_public.constrained_name AS text
+	CONSTRAINT constrained_name_check CHECK ((VALUE !~ '\s'::text));
+
+
+--
 -- Name: create_event_quotas; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -741,7 +749,7 @@ declare
   v_event_signup_open boolean;
 begin
   select * into v_event from app_public.events where id = NEW.event_id;
-  select app_public.events_signup_open(v_event) into v_event_signup_open;
+  v_event_signup_open := (select app_public.events_signup_open(v_event));
 
   if v_event_signup_open is false then
     raise exception 'Event registration is not open.' using errcode = 'DNIED';
@@ -1187,8 +1195,8 @@ CREATE TABLE app_public.registrations (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     quota_id uuid NOT NULL,
-    first_name text,
-    last_name text,
+    first_name app_public.constrained_name,
+    last_name app_public.constrained_name,
     email public.citext,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -1273,7 +1281,8 @@ begin
     raise exception 'Event not found.' using errcode = 'NTFND';
   end if;
 
-  -- If the registration is not open yet, prevent event registration
+  -- If the registration is not open yet, prevent event registration.
+  -- This is double validated with the _200_registration_is_valid trigger.
   v_event_signup_open := (select app_public.events_signup_open(v_event));
   if not v_event_signup_open then
     raise exception 'Event registration is not open.' using errcode = 'DNIED';

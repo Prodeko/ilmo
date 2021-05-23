@@ -18,6 +18,7 @@ import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+import { Rule } from "rc-field-form/lib/interface"
 
 interface EventRegistrationFormProps {
   type: "update" | "create"
@@ -185,6 +186,16 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     ]
   )
 
+  const validateName: Rule = () => ({
+    validator(_, value) {
+      // firstName and lastName are not allowed to contain spaces
+      if (/\s/.test(value)) {
+        return Promise.reject(new Error(t("forms.rules.nameContainsSpace")))
+      }
+      return Promise.resolve()
+    },
+  })
+
   return (
     <Form
       {...formItemLayout}
@@ -200,7 +211,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             required: true,
             message: t("forms.rules.provideFirstName"),
           },
+          validateName,
         ]}
+        hasFeedback
       >
         <Input data-cy="eventregistrationform-input-firstname" />
       </Form.Item>
@@ -212,7 +225,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             required: true,
             message: t("forms.rules.provideLastName"),
           },
+          validateName,
         ]}
+        hasFeedback
       >
         <Input data-cy="eventregistrationform-input-lastname" />
       </Form.Item>
@@ -230,6 +245,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
               message: t("forms.rules.emailEmpty"),
             },
           ]}
+          hasFeedback
         >
           <Input data-cy="eventregistrationform-input-email" />
         </Form.Item>

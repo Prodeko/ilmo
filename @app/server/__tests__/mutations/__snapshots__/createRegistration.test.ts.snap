@@ -24,6 +24,88 @@ Object {
 }
 `;
 
+exports[`CreateRegistration can't create a registration if first or last name contains spaces 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create a registration if first or last name contains spaces 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "23514",
+          "constraint": "constrained_name_check",
+          "dataType": "constrained_name",
+          "schema": "app_public",
+          "severity": "ERROR",
+          "where": "SQL statement \\"update app_public.registrations
+    set first_name = \\"firstName\\", last_name = \\"lastName\\", email = create_registration.email
+    where id = v_registration_id
+  returning
+    *\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 42 at SQL statement",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 10,
+        },
+      ],
+      "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create a registration if first or last name contains spaces 3`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "23514",
+          "constraint": "constrained_name_check",
+          "dataType": "constrained_name",
+          "schema": "app_public",
+          "severity": "ERROR",
+          "where": "SQL statement \\"update app_public.registrations
+    set first_name = \\"firstName\\", last_name = \\"lastName\\", email = create_registration.email
+    where id = v_registration_id
+  returning
+    *\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 42 at SQL statement",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 10,
+        },
+      ],
+      "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
 exports[`CreateRegistration can't create registration if eventId is invalid 1`] = `
 Object {
   "data": Object {
@@ -93,7 +175,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 24 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 25 at RAISE",
         },
       },
       "locations": Array [
@@ -122,7 +204,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 38 at RAISE",
         },
       },
       "locations": Array [
@@ -151,7 +233,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 37 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 38 at RAISE",
         },
       },
       "locations": Array [

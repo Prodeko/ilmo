@@ -12,8 +12,9 @@
     "firstName": "First name",
     "lastName": "Last name",
     "rules": {
-      "emailEmpty": "Please input your E-mail.",
-      "emailValid": "The input is not valid E-mail.",
+      "emailEmpty": "Please input your E-mail",
+      "emailValid": "The input is not valid E-mail",
+      "nameContainsSpace": "Name cannot contain spaces",
       "provideFirstName": "Please enter your first name",
       "provideLastName": "Please enter your last name"
     }

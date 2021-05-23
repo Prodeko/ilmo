@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:2f7c98be378bfff9b856e38acd88dd601c43af87
+--! Hash: sha1:bf040e2e17c64a5894dd1c4b3e90d37769f144a3
 
 --! split: 0001-computed-columns.sql
 /*
@@ -549,7 +549,7 @@ declare
   v_event_signup_open boolean;
 begin
   select * into v_event from app_public.events where id = NEW.event_id;
-  select app_public.events_signup_open(v_event) into v_event_signup_open;
+  v_event_signup_open := (select app_public.events_signup_open(v_event));
 
   if v_event_signup_open is false then
     raise exception 'Event registration is not open.' using errcode = 'DNIED';
@@ -566,13 +566,20 @@ comment on function app_private.tg__registration_is_valid() is
  * The registrations table stores event registrations.
  */
 
+-- Custom domain for name columns (first and last) to check that they don't
+-- contain a space. This is to prevent registrations where you effectively don't
+-- provide your name by entering spaces.  Can be null since claimRegistrationToken
+-- mutation creates a registration where the names are null.
+drop domain if exists constrained_name cascade;
+create domain constrained_name as text null check (value !~ '\s');
+
 drop table if exists app_public.registrations cascade;
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
   quota_id uuid not null references app_public.quotas on delete no action,
-  first_name text null,
-  last_name text null,
+  first_name constrained_name,
+  last_name constrained_name,
   email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -765,7 +772,8 @@ begin
     raise exception 'Event not found.' using errcode = 'NTFND';
   end if;
 
-  -- If the registration is not open yet, prevent event registration
+  -- If the registration is not open yet, prevent event registration.
+  -- This is double validated with the _200_registration_is_valid trigger.
   v_event_signup_open := (select app_public.events_signup_open(v_event));
   if not v_event_signup_open then
     raise exception 'Event registration is not open.' using errcode = 'DNIED';

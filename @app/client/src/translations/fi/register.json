@@ -14,6 +14,7 @@
     "rules": {
       "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
       "emailValid": "Tarkista sähköpostiosoite",
+      "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
       "provideFirstName": "Anna etunimi",
       "provideLastName": "Anna sukunimi"
     }

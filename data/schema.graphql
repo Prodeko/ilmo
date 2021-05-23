@@ -153,6 +153,8 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
+scalar ConstrainedName
+
 """All input for the create `EventCategory` mutation."""
 input CreateEventCategoryInput {
   """
@@ -2742,7 +2744,7 @@ type Registration {
   eventId: UUID!
 
   """First name of the person registering to an event."""
-  firstName: String
+  firstName: ConstrainedName
 
   """Returns the full name of a registered person."""
   fullName: String
@@ -2754,7 +2756,7 @@ type Registration {
   isQueued: Boolean
 
   """Last name of the person registering to an event."""
-  lastName: String
+  lastName: ConstrainedName
 
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota

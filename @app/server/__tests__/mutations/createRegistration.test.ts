@@ -75,7 +75,7 @@ describe("CreateRegistration", () => {
 
     // In order to test the createRegistration mutation, we first need to run
     // claimRegistrationToken which creates a dummy registration.
-    const result = await runGraphQLQuery(
+    const { data } = await runGraphQLQuery(
       `mutation ClaimRegistrationToken($eventId: UUID!, $quotaId: UUID!) {
         claimRegistrationToken(input: { eventId: $eventId, quotaId: $quotaId }) {
           claimRegistrationTokenOutput {
@@ -99,7 +99,7 @@ describe("CreateRegistration", () => {
       false
     )
     const { registrationToken } =
-      result.data.claimRegistrationToken.claimRegistrationTokenOutput
+      data.claimRegistrationToken.claimRegistrationTokenOutput
 
     await runGraphQLQuery(
       createRegistrationMutation,
@@ -224,8 +224,6 @@ describe("CreateRegistration", () => {
     const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     })
-    // RegistrationSecret is claimed for event[0], try to use it to
-    // register to another event which should not be allowed
     const event = events[0]
     const quota = quotas[0]
 
@@ -407,6 +405,101 @@ describe("CreateRegistration", () => {
           "Registration token was not valid. Please reload the page."
         )
         expect(code).toEqual("DNIED")
+      }
+    )
+  })
+
+  it("can't create a registration if first or last name contains spaces", async () => {
+    const { quotas, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      eventOptions: { create: true, amount: 1, signupOpen: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // First claim a registration token
+    const { data } = await runGraphQLQuery(
+      `mutation ClaimRegistrationToken($eventId: UUID!, $quotaId: UUID!) {
+        claimRegistrationToken(input: { eventId: $eventId, quotaId: $quotaId }) {
+          claimRegistrationTokenOutput {
+            registrationToken
+            updateToken
+          }
+        }
+      }`,
+
+      // GraphQL variables:
+      {
+        eventId,
+        quotaId,
+      },
+
+      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      {},
+      async () => {},
+      // Don't rollback in order to use the result of this mutation
+      false
+    )
+    const { registrationToken } =
+      data?.claimRegistrationToken?.claimRegistrationTokenOutput
+
+    // Test first name
+    await runGraphQLQuery(
+      createRegistrationMutation,
+
+      // GraphQL variables:
+      {
+        eventId,
+        quotaId,
+        registrationToken,
+        firstName: " ",
+        lastName: "Testlastname",
+        email: "testuser@example.com",
+      },
+
+      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          'value for domain app_public.constrained_name violates check constraint "constrained_name_check"'
+        )
+        expect(code).toEqual("23514")
+      }
+    )
+
+    // Test last name
+    await runGraphQLQuery(
+      createRegistrationMutation,
+
+      // GraphQL variables:
+      {
+        eventId,
+        quotaId,
+        registrationToken,
+        firstName: "Testname",
+        lastName: "Last name",
+        email: "testuser@example.com",
+      },
+
+      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          'value for domain app_public.constrained_name violates check constraint "constrained_name_check"'
+        )
+        expect(code).toEqual("23514")
       }
     )
   })

@@ -17,6 +17,7 @@ function constructRateLimitKey(
 ) {
   return `rate-limit:${fieldName}:${id}:${ipAddress}`
 }
+
 class RateLimitException extends Error {
   code: string
   constructor(message: string) {
