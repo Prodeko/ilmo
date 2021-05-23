@@ -6,7 +6,11 @@ context("Create organizations", () => {
 
   it("can create an organization", () => {
     // Setup
-    cy.login({ verified: true, isAdmin: true })
+    cy.login({
+      verified: true,
+      isAdmin: true,
+      orgs: [["Test Organization 1", "test-organization-1"]],
+    })
 
     // Action
     cy.getCy("layout-dropdown-user").click()
@@ -18,14 +22,14 @@ context("Create organizations", () => {
       "equal",
       Cypress.env("ROOT_URL") + "/admin/organization/create"
     )
-    cy.getCy("createorganization-input-name").type("Test Organization")
-    cy.getCy("createorganization-slug-value").contains("test-organization")
+    cy.getCy("createorganization-input-name").type("Test Organization 2")
+    cy.getCy("createorganization-slug-value").contains("test-organization-2")
     cy.getCy("createorganization-button-create").click()
 
     // Assertion
     cy.url().should(
       "equal",
-      Cypress.env("ROOT_URL") + "/admin/organization/test-organization"
+      Cypress.env("ROOT_URL") + "/admin/organization/test-organization-2"
     )
   })
 

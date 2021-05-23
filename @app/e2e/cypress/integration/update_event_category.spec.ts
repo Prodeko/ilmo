@@ -5,7 +5,7 @@ context("Update event category", () => {
   beforeEach(() => cy.serverCommand("clearTestEventData"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
-  it("admin can user update an existing event category", () => {
+  it("admin can update an existing event category", () => {
     // Setup
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
       "createEventDataResult"

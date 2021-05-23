@@ -52,21 +52,26 @@ context("Update event registration", () => {
     cy.serverCommand("createTestEventData").as("createEventDataResult")
 
     // Action
-    cy.get("@createEventDataResult").then(({ registrationSecret }: any) => {
-      cy.visit(
-        Cypress.env("ROOT_URL") +
-          `/update-registration/${registrationSecret.update_token}`
-      )
+    cy.get("@createEventDataResult").then(
+      ({ event, registrationSecret }: any) => {
+        cy.visit(
+          Cypress.env("ROOT_URL") +
+            `/update-registration/${registrationSecret.update_token}`
+        )
 
-      cy.getCy("eventregistrationform-button-delete-registration").click()
+        cy.getCy("eventregistrationform-button-delete-registration").click()
 
-      // Assertion
-      cy.get(".ant-popover-buttons button").contains("Kyllä").click()
-      cy.get(".ant-message").contains(
-        "Ilmoittautuminen poistettu onnistuneesti"
-      )
-      cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
-    })
+        // Assertion
+        cy.get(".ant-popover-buttons button").contains("Kyllä").click()
+        cy.get(".ant-message").contains(
+          "Ilmoittautuminen poistettu onnistuneesti"
+        )
+        cy.url().should(
+          "equal",
+          Cypress.env("ROOT_URL") + `/event/${event.slug}`
+        )
+      }
+    )
   })
 
   it("redirects to index if registration is not found", () => {
