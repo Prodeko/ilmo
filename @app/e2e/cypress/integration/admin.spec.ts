@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-context("Create event category", () => {
+context("Admin", () => {
   beforeEach(() => cy.serverCommand("clearTestUsers"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 

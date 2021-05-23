@@ -47,6 +47,8 @@ context("Create event category", () => {
         "Test description"
       )
 
+      cy.get(".rcp-fields-element-input").clear().type("#ffffff")
+
       cy.getCy("eventcategoryform-button-submit").click()
 
       // Assertion
@@ -54,7 +56,10 @@ context("Create event category", () => {
         "equal",
         Cypress.env("ROOT_URL") + "/admin/event-category/list"
       )
-      cy.getCy("adminpage-eventcategories").should("contain", "Testikategoria")
+      cy.getCy("adminpage-eventcategories").should("contain", "TESTIKATEGORIA")
+      cy.getCy("adminpage-eventcategories")
+        .contains("TESTIKATEGORIA")
+        .should("have.css", "background-color", "rgb(255, 255, 255)")
     })
   })
 })

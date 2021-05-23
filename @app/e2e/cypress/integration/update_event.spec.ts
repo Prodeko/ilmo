@@ -137,10 +137,18 @@ context("Update event", () => {
 
   it("redirects to index if event is not found", () => {
     // Setup
-    cy.serverCommand("createTestEventData").as("createEventDataResult")
+    cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
+      "createEventDataResult"
+    )
 
     // Action
     cy.get("@createEventDataResult").then(() => {
+      cy.login({
+        username: "testuser_events",
+        password: "DOESNT MATTER",
+        existingUser: true,
+      })
+
       // Invalid event id
       cy.visit(
         Cypress.env("ROOT_URL") +

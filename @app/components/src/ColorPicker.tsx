@@ -12,12 +12,11 @@ interface ColorPickerProps {
   // These come from antd Form.Item, value is currently unused
   value?: string
   onChange?: (value: string) => void
+  "data-cy"?: string
 }
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({
-  value,
-  onChange,
-}) => {
+export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
+  const { value, onChange } = props
   const initialColor = "#002e7d"
   const [color, setColor] = useColor("hex", value ?? initialColor)
   const isMobile = useIsMobile()
@@ -37,6 +36,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
       <Tag color={color?.hex}>{color?.hex}</Tag>
       <ReactColorPalettePicker
         color={color}
+        data-cy={props["data-cy"]}
         height={120}
         width={isMobile ? 250 : 320}
         hideHSB

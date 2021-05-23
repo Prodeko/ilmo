@@ -14,13 +14,13 @@ const { Dragger } = Upload
 interface FileUploadProps {
   accept: string
   cropAspect: number
-  "data-cy": string
+  "data-cy"?: string
   id?: string
   maxCount?: number
   onChange?: () => any
 }
 
-export function FileUpload(props: FileUploadProps) {
+export const FileUpload: React.FC<FileUploadProps> = (props) => {
   const { accept, cropAspect, id, onChange: parentOnChange, maxCount } = props
   const { t } = useTranslation()
 
