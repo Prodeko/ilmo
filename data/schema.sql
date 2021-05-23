@@ -1549,6 +1549,7 @@ CREATE TABLE app_public.events (
     slug public.citext NOT NULL,
     name jsonb NOT NULL,
     description jsonb NOT NULL,
+    location text NOT NULL,
     event_start_time timestamp with time zone NOT NULL,
     event_end_time timestamp with time zone NOT NULL,
     registration_start_time timestamp with time zone NOT NULL,
@@ -1603,6 +1604,13 @@ COMMENT ON COLUMN app_public.events.name IS 'Name of the event.';
 --
 
 COMMENT ON COLUMN app_public.events.description IS 'Description of the event.';
+
+
+--
+-- Name: COLUMN events.location; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.location IS 'Event location.';
 
 
 --
@@ -4450,6 +4458,13 @@ GRANT INSERT(name),UPDATE(name) ON TABLE app_public.events TO ilmo_visitor;
 --
 
 GRANT INSERT(description),UPDATE(description) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.location; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(location),UPDATE(location) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

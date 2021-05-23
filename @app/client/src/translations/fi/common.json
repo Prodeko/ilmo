@@ -5,6 +5,7 @@
   "create": "Luo",
   "delete": "Poista",
   "description": "Kuvaus",
+  "location": "Sijainti",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",
   "en": "Englanti",

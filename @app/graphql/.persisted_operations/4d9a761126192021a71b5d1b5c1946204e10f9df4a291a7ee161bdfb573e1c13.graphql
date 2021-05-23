@@ -1,72 +1,60 @@
-fragment EventPage_Query on Query {
-  ...SharedLayout_Query
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
-    __typename
-  }
-  __typename
-}
-fragment SharedLayout_Query on Query {
-  currentUser {
-    ...SharedLayout_User
-    __typename
-  }
-  languages {
-    ...SharedLayout_Languages
-    __typename
-  }
-  __typename
-}
-fragment SharedLayout_User on User {
-  id
-  name
-  username
-  avatarUrl
-  isAdmin
-  isVerified
-  primaryEmail
-  organizationMemberships(first: 20) {
-    totalCount
+fragment ListEvents_Query on Query {
+  signupOpenEvents: events(
+    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
     nodes {
-      id
-      isOwner
-      organization {
-        id
-        name
-        slug
+      ...Events_Event
+      __typename
+    }
+    __typename
+  }
+  signupUpcomingEvents: events(
+    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+      __typename
+    }
+    __typename
+  }
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: {signupClosed: {equalTo: true}}
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+      __typename
+    }
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment Events_Event on Event {
+  ...EventFields
+  category {
+    ...EventPage_EventCategory
+    __typename
+  }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
         __typename
       }
       __typename
     }
     __typename
   }
-  __typename
-}
-fragment SharedLayout_Languages on AppLanguage {
-  supportedLanguages
-  defaultLanguage
-  __typename
-}
-fragment EventPage_Event on Event {
-  ...EventFields
-  category {
-    ...EventPage_EventCategory
-    __typename
-  }
-  ownerOrganization {
-    ...EventPage_OwnerOrganization
-    __typename
-  }
-  quotas(orderBy: POSITION_ASC) {
+  registrations {
+    totalCount
     nodes {
-      ...EventPage_Quota
-      __typename
-    }
-    __typename
-  }
-  registrations(orderBy: CREATED_AT_ASC) {
-    nodes {
-      ...EventPage_Registrations
+      ...EventPage_Registration
       __typename
     }
     __typename
@@ -78,6 +66,7 @@ fragment EventFields on Event {
   name
   slug
   description
+  location
   eventStartTime
   eventEndTime
   registrationStartTime
@@ -119,14 +108,6 @@ fragment EventPage_Quota on Quota {
   size
   __typename
 }
-fragment EventPage_Registrations on Registration {
-  ...EventPage_Registration
-  quota {
-    ...EventPage_Quota
-    __typename
-  }
-  __typename
-}
 fragment EventPage_Registration on Registration {
   id
   fullName
@@ -134,6 +115,6 @@ fragment EventPage_Registration on Registration {
   createdAt
   __typename
 }
-query EventPage($slug: String!) {
-  ...EventPage_Query
+query ListEvents($offset: Int!, $first: Int!) {
+  ...ListEvents_Query
 }

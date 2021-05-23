@@ -482,6 +482,7 @@ export const createEvents = async (
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     }
+    const location = faker.address.streetAddress()
 
     // By default create events that are open to registration (-1)
     const now = new Date()
@@ -510,10 +511,11 @@ export const createEvents = async (
     const {
       rows: [event],
     } = await client.query(
-      `insert into app_public.events  (
+      `insert into app_public.events(
         name,
         slug,
         description,
+        location,
         event_start_time,
         event_end_time,
         registration_start_time,
@@ -523,13 +525,14 @@ export const createEvents = async (
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       returning *
       `,
       [
         name,
         slug,
         description,
+        location,
         eventStartTime,
         eventEndTime,
         registrationStartTime,

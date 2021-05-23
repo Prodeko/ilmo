@@ -33,6 +33,7 @@ fragment EventFields on Event {
   name
   slug
   description
+  location
   eventStartTime
   eventEndTime
   registrationStartTime

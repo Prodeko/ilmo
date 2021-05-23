@@ -825,6 +825,9 @@ type Event {
   """A highlighted event."""
   isHighlighted: Boolean!
 
+  """Event location."""
+  location: String!
+
   """Name of the event."""
   name: JSON!
 
@@ -1236,6 +1239,9 @@ input EventInput {
   """A highlighted event."""
   isHighlighted: Boolean
 
+  """Event location."""
+  location: String!
+
   """Name of the event."""
   name: JSON!
 
@@ -1276,6 +1282,9 @@ input EventPatch {
 
   """A highlighted event."""
   isHighlighted: Boolean
+
+  """Event location."""
+  location: String
 
   """Name of the event."""
   name: JSON

@@ -52,6 +52,8 @@ context("Create event", () => {
       cy.getCy("eventform-input-description-fi").type("Testikuvaus")
       cy.getCy("eventform-input-description-en").type("Test description")
 
+      cy.getCy("eventform-input-location").type("Testikatu 123")
+
       const format = "YYYY-MM-DD HH:MM"
       const today = dayjs()
 

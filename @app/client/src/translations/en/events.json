@@ -38,6 +38,7 @@
       "event": {
         "provideCategory": "Please choose a category for the event",
         "provideDescription": "Please provide a description of the event",
+        "provideLocation": "Please provide a location for the event",
         "provideEventTime": "Please select event time",
         "provideName": "Please choose a name for the event",
         "provideOrganizer": "Please choose an organizer for the event",

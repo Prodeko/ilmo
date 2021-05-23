@@ -15,11 +15,12 @@ function getEventValues(eventStartTime: Dayjs) {
     fi: "Testi",
     en: "Test",
   }
+  const location = "Testikatu 123"
 
   const daySlug = eventStartTime.format("YYYY-M-D")
   const slug = `${daySlug}-${name["fi"].toLowerCase()}`
 
-  return [name, slug, description]
+  return [name, slug, description, location]
 }
 
 const today = dayjs()
@@ -32,6 +33,7 @@ describe("Test app_public.events table", () => {
       name,
       slug,
       description,
+      location,
       event_start_time,
       event_end_time,
       registration_start_time,
@@ -39,7 +41,7 @@ describe("Test app_public.events table", () => {
       owner_organization_id,
       category_id
     )
-    values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     returning *
   `
 

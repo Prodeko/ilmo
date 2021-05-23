@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:bf040e2e17c64a5894dd1c4b3e90d37769f144a3
+--! Hash: sha1:c91002080905bb2c744e67941cbf10f7989a8c71
 
 --! split: 0001-computed-columns.sql
 /*
@@ -147,6 +147,7 @@ create table app_public.events(
   slug citext not null unique,
   name jsonb not null,
   description jsonb not null,
+  location text not null,
   event_start_time timestamptz not null,
   event_end_time timestamptz not null,
   registration_start_time timestamptz not null,
@@ -223,6 +224,8 @@ comment on column app_public.events.slug is
   E'Slug for the event.';
 comment on column app_public.events.description is
   E'Description of the event.';
+comment on column app_public.events.location is
+  E'Event location.';
 comment on column app_public.events.event_start_time is
   E'Starting time of the event.';
 comment on column app_public.events.event_end_time is
@@ -250,8 +253,8 @@ create policy manage_organization on app_public.events for all using(app_public.
 
 grant
   select,
-  insert (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
-  update (name, slug, description, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
+  insert (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
+  update (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
   delete
 on app_public.events to :DATABASE_VISITOR;
 

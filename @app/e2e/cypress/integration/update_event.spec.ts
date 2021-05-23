@@ -45,6 +45,10 @@ context("Update event", () => {
           "have.value",
           event.description["en"]
         )
+        cy.getCy("eventform-input-location").should(
+          "have.value",
+          event.location
+        )
 
         // Quotas tab
         cy.get("@tabs").eq(1).click()

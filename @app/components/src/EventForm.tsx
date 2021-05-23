@@ -64,6 +64,7 @@ type FormValues = {
   categoryId: string
   name: TranslatedFormValue
   description: TranslatedFormValue
+  location: string
   eventTime: Date[]
   registrationTime: Date[]
   isHighlighted: boolean
@@ -442,6 +443,18 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                 ))
               )}
             </Group>
+          </Form.Item>
+          <Form.Item
+            label={t("common:location")}
+            name="location"
+            rules={[
+              {
+                required: true,
+                message: t("forms.rules.event.provideLocation"),
+              },
+            ]}
+          >
+            <Input data-cy="eventform-input-location" />
           </Form.Item>
           <Form.Item
             label={t("forms.eventTime")}

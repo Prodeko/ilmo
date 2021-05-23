@@ -20,6 +20,7 @@ mutation CreateEvent(
   $slug: String!
   $name: JSON!
   $description: JSON!
+  $location: String!
   $ownerOrganizationId: UUID!
   $categoryId: UUID!
   $isHighlighted: Boolean
@@ -35,6 +36,7 @@ mutation CreateEvent(
         slug: $slug
         name: $name
         description: $description
+        location: $location
         ownerOrganizationId: $ownerOrganizationId
         categoryId: $categoryId
         isHighlighted: $isHighlighted
@@ -82,6 +84,7 @@ describe("CreateEvent", () => {
         slug: slug,
         name: { fi: "Testitapahtuma", en: "Test event" },
         description: { fi: "Testikuvaus", en: "Test description" },
+        location: "Testikatu 123",
         ownerOrganizationId: organization.id,
         categoryId: eventCategory.id,
         isHighlighted: true,
@@ -161,6 +164,7 @@ describe("CreateEvent", () => {
         slug: slug,
         name: { fi: "Testitapahtuma", en: "Test event" },
         description: { fi: "Testikuvaus", en: "Test description" },
+        location: "Testikatu 123",
         ownerOrganizationId: organization.id,
         categoryId: eventCategory.id,
         isHighlighted: true,

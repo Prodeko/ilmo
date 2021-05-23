@@ -30,6 +30,7 @@ function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "name",
     "description",
+    "location",
     "eventStartTime",
     "eventEndTime",
     "registrationStartTime",

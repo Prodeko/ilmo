@@ -161,6 +161,7 @@ export const createEvents = async (
       fi: faker.lorem.paragraph(),
       en: faker.lorem.paragraph(),
     }
+    const location = faker.address.streetAddress()
 
     const randomHours = randomIntFromInterval(-3, -1)
     const now = dayjs().add(randomHours, "hour")
@@ -199,6 +200,7 @@ export const createEvents = async (
         name,
         slug,
         description,
+        location,
         event_start_time,
         event_end_time,
         registration_start_time,
@@ -208,13 +210,14 @@ export const createEvents = async (
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       returning *
       `,
       [
         name,
         slug,
         description,
+        location,
         eventStartTime,
         eventEndTime,
         registrationStartTime,

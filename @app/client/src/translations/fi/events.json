@@ -38,6 +38,7 @@
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",
         "provideDescription": "Anna tapahtuman kuvaus",
+        "provideLocation": "Anna tapahtuman sijainti",
         "provideEventTime": "Aseta tapahtuman ajankohta",
         "provideName": "Anna tapahtuman nimi",
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",

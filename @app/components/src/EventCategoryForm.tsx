@@ -232,7 +232,7 @@ export const EventCategoryForm = ({
         </Input.Group>
       </Form.Item>
       <Form.Item label={t("common:color")} name="color">
-        <ColorPicker data-cy="eventcategoryform-color-picker" />
+        <ColorPicker data-cy="eventcategoryform-color" />
       </Form.Item>
       {formError && (
         <Form.Item {...tailFormItemLayout}>
