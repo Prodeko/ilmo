@@ -1,6 +1,7 @@
 {
   "events": {
     "eventTime": "Tapahtuma",
+    "registerToAnEvent": "Ilmoittaudu",
     "registrationTime": "Ilmo",
     "signupsClosedEvents": "Ilmoittautuminen päättynyt",
     "signupsOpenEvents": "Ilmoittautuminen auki",
