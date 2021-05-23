@@ -1,15 +1,25 @@
 import React, { useCallback, useState } from "react"
 import { DocumentNode, useQuery } from "@apollo/client"
+import { Sorter, ValueOf } from "@app/lib"
 import { Table } from "antd"
-import { TablePaginationConfig, TableProps } from "antd/lib/table"
+import { ColumnsType, TablePaginationConfig, TableProps } from "antd/lib/table"
 import { get } from "lodash"
 
 import { ErrorAlert } from "./ErrorAlert"
 import { Loading } from "./Loading"
 
-interface Props extends TableProps<any> {
+type RecordType = any
+
+interface CustomColumnType extends ColumnsType {
+  sorter: {
+    compare: ValueOf<typeof Sorter>
+  }
+  dataIndex: string | string[]
+}
+
+interface Props extends TableProps<RecordType> {
   queryDocument: DocumentNode
-  variables?: any
+  variables?: Record<string, any>
   dataField: string
   showPagination?: boolean
 }
@@ -41,7 +51,7 @@ export function ServerPaginatedTable({
       setPagination({
         ...pagination,
         // Remember to query the totalCount field for the records you wish
-        // to display with this component
+        // to display with this component. Otherwise pagination won't
         total: get(data, dataField)?.totalCount,
       }),
   })
@@ -62,11 +72,35 @@ export function ServerPaginatedTable({
     [fetchMore]
   )
 
+  const sortableColumns =
+    (columns?.map((column) => {
+      const { sorter, dataIndex, ...otherColumnProps } =
+        column as CustomColumnType
+
+      if (sorter) {
+        const { compare, ...otherSorterProps } = sorter
+
+        return {
+          ...otherColumnProps,
+          dataIndex,
+          sorter: {
+            compare: (rowA: RecordType, rowB: RecordType) => {
+              // @ts-ignore
+              return compare(get(rowA, dataIndex), get(rowB, dataIndex))
+            },
+            ...otherSorterProps,
+          },
+        }
+      }
+
+      return column
+    }) as ColumnsType<RecordType>) || []
+
   return error ? (
     <ErrorAlert error={error} />
   ) : (
     <Table
-      columns={columns}
+      columns={sortableColumns}
       dataSource={get(data, dataField)?.nodes || []}
       loading={loading && { indicator: <Loading /> }}
       pagination={showPagination && pagination}

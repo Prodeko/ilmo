@@ -6,6 +6,7 @@ import {
   SharedLayout,
 } from "@app/components"
 import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql"
+import { Sorter } from "@app/lib"
 import { Col, Divider, Empty, Space, Tag } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import dayjs from "dayjs"
@@ -61,6 +62,9 @@ const Home: NextPage = () => {
     title: t("events:eventName"),
     dataIndex: ["name", lang],
     key: "name",
+    sorter: {
+      compare: Sorter.TEXT,
+    },
     render: (name: string, event: Event) => (
       <Link
         as={`/event/${event.slug}`}
@@ -80,6 +84,9 @@ const Home: NextPage = () => {
     title: t("events:endTime"),
     dataIndex: "eventEndTime",
     key: "eventEndTime",
+    sorter: {
+      compare: Sorter.DATE,
+    },
     render: (eventEndTime: string) => dayjs(eventEndTime).format("l LT"),
   }
 
@@ -95,12 +102,11 @@ const Home: NextPage = () => {
               (name) => ({ text: name, value: name })
             ),
           ],
+          sorter: {
+            compare: Sorter.TEXT,
+          },
           onFilter: (value: string | number | boolean, record: Event) =>
             record?.ownerOrganization?.name.indexOf(value as string) === 0,
-          sorter: (a: Event, b: Event) =>
-            a?.ownerOrganization?.name?.localeCompare(
-              b?.ownerOrganization?.name || ""
-            ),
           render: (name: string, record: Event, index: number) => (
             <Tag key={`${record.id}-${index}`} color={getColor(name)}>
               {name?.toUpperCase()}
@@ -118,8 +124,9 @@ const Home: NextPage = () => {
           ],
           onFilter: (value: string | number | boolean, record: Event) =>
             record?.category?.name[lang].indexOf(value) === 0,
-          sorter: (a: Event, b: Event) =>
-            a?.name[lang]?.localeCompare(b?.name[lang] || ""),
+          sorter: {
+            compare: Sorter.TEXT,
+          },
           render: (name: string, record: Event, index: number) => {
             return (
               <Tag key={`${record.id}-${index}`} color={record.category.color}>

@@ -12,6 +12,7 @@ import {
   useDeleteEventMutation,
   useListEventsPageQuery,
 } from "@app/graphql"
+import { Sorter } from "@app/lib"
 import { Badge, Col, Popover, Progress, Row, Tag, Typography } from "antd"
 import dayjs from "dayjs"
 import { reduce } from "lodash"
@@ -44,6 +45,9 @@ const Admin_ListEvents: NextPage = () => {
     title: t("common:name"),
     dataIndex: ["name", lang],
     key: "name",
+    sorter: {
+      compare: Sorter.TEXT,
+    },
     render: (name: string, event: Event) => (
       <Link
         as={`/event/${event.slug}`}
@@ -90,8 +94,9 @@ const Admin_ListEvents: NextPage = () => {
           ],
           onFilter: (value: string | number | boolean, record: Event) =>
             record?.category?.name[lang].indexOf(value) === 0,
-          sorter: (a: Event, b: Event) =>
-            a?.name[lang]?.localeCompare(b?.name[lang] || ""),
+          sorter: {
+            compare: Sorter.TEXT,
+          },
           render: (name: string, record: Event, index: number) => {
             return (
               <Link
@@ -174,11 +179,17 @@ const Admin_ListEvents: NextPage = () => {
         {
           title: t("events.list.registrationStartTime"),
           dataIndex: "registrationStartTime",
+          sorter: {
+            compare: Sorter.DATE,
+          },
           render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
         {
           title: t("events.list.eventStartTime"),
           dataIndex: "eventStartTime",
+          sorter: {
+            compare: Sorter.DATE,
+          },
           render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
       ]

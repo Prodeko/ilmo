@@ -11,6 +11,7 @@ import {
   useDeleteEventCategoryMutation,
   useSharedQuery,
 } from "@app/graphql"
+import { Sorter } from "@app/lib"
 import { Col, PageHeader, Row, Tag } from "antd"
 import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
@@ -54,6 +55,9 @@ const AdminListEventCategoriesInner: React.FC = () => {
     title: t("common:name"),
     dataIndex: ["name", lang],
     key: "name",
+    sorter: {
+      compare: Sorter.TEXT,
+    },
     render: (name: string, record: EventCategory, index: number) => {
       return (
         <Tag key={`${record.id}-${index}`} color={record.color}>
@@ -72,6 +76,9 @@ const AdminListEventCategoriesInner: React.FC = () => {
           dataIndex: ["ownerOrganization", "name"],
           key: "organizationName",
           ellipsis: true,
+          sorter: {
+            compare: Sorter.TEXT,
+          },
         },
         {
           title: t("common:description"),

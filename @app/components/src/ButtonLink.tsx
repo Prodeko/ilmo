@@ -1,4 +1,5 @@
 import React from "react"
+import { ValueOf } from "@app/lib"
 import { ButtonProps } from "antd/lib/button"
 import Button from "antd-button-color"
 import Link, { LinkProps } from "next/link"
@@ -12,7 +13,6 @@ const customTypeArray = [
   "danger",
 ] as const
 
-type ValueOf<T> = T[keyof T]
 type ExtendedButtonType = {
   type?: ValueOf<Pick<ButtonProps, "type">> | typeof customTypeArray[number]
 }
