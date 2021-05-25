@@ -4,9 +4,7 @@ import { Skeleton } from "antd"
 import Router from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
-import { SharedLayout } from "./SharedLayout"
-import { StandardWidth } from "./StandardWidth"
-import { H3 } from "./Text"
+import { H3, SharedLayout, StandardWidth } from "."
 
 export interface RedirectProps {
   href: string
@@ -14,8 +12,30 @@ export interface RedirectProps {
   layout?: boolean
 }
 
-export function Redirect({ href, as, layout }: RedirectProps) {
+export const DummyPage: React.FC = ({ children }) => {
   const client = useApolloClient()
+  const { t } = useTranslation("common")
+
+  return (
+    <SharedLayout
+      query={{
+        loading: true,
+        data: undefined,
+        error: undefined,
+        networkStatus: 0,
+        client,
+        refetch: (async () => {
+          throw new Error(t("redirect"))
+        }) as any,
+      }}
+      title={t("redirect")}
+    >
+      {children}
+    </SharedLayout>
+  )
+}
+
+export function Redirect({ href, as, layout }: RedirectProps) {
   const { t } = useTranslation("common")
 
   useEffect(() => {
@@ -24,26 +44,14 @@ export function Redirect({ href, as, layout }: RedirectProps) {
 
   if (layout) {
     return (
-      <SharedLayout
-        query={{
-          loading: true,
-          data: undefined,
-          error: undefined,
-          networkStatus: 0,
-          client,
-          refetch: (async () => {
-            throw new Error(t("redirect"))
-          }) as any,
-        }}
-        title={t("redirect")}
-      >
+      <DummyPage>
         <Skeleton />
-      </SharedLayout>
+      </DummyPage>
     )
   } else {
     return (
       <StandardWidth>
-        <H3>{t("common:redirect")}</H3>
+        <H3>{t("redirect")}</H3>
         <Skeleton />
       </StandardWidth>
     )

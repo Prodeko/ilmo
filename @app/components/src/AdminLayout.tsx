@@ -18,6 +18,7 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout"
+import { PageLoading } from "."
 
 const { Sider } = Layout
 
@@ -65,10 +66,22 @@ export function AdminLayout({
     },
   ]
 
+  if (loading) {
+    return <PageLoading />
+  }
+
+  const { currentUser } = data || {}
   const organizationMemberships =
-    data?.currentUser?.organizationMemberships.nodes
-  // Redirect to index if the user is not part of any organization
-  if (!error && !loading && organizationMemberships?.length === 0) {
+    currentUser?.organizationMemberships.nodes || []
+  // Redirect to index if the user is not part of any organization or if
+  // the user is not logged in
+  if (
+    !error &&
+    !loading &&
+    (organizationMemberships?.length === 0 || !currentUser)
+  ) {
+    console.log("Hereee")
+    message.error(t("notifications.adminAccessDenied"))
     return <Redirect href="/" layout />
   }
 
