@@ -28,7 +28,7 @@ if (ts) {
    */
   require("fs").writeFileSync(
     `${__dirname}/jest.watch.hack.ts`,
-    "export const ts = null;\n"
+    "export const ts = null\n"
   )
   /*
    * This will trigger Jest's file watching again, but the second time

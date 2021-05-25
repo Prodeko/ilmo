@@ -34,8 +34,7 @@ async function getRegistration(client: PoolClient, id: string) {
 
 it("can claim registration token and token expires", () =>
   withUserDb(async (client) => {
-    // "modern" can be removed in Jest 27, it is opt-in in version 26
-    jest.useFakeTimers("modern")
+    jest.useFakeTimers()
     const { event, quota } = await createEventData(client)
 
     // Action

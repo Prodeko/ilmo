@@ -302,7 +302,7 @@ export const teardown = async () => {
     ctx = null
     rootPgPool.end()
     workerUtils.release()
-    // Flush redis after testa have run
+    // Flush redis after tests have run
     await redisClient.flushdb()
     redisClient.quit()
     return null

@@ -7,7 +7,7 @@ import { VscOrganization } from "react-icons/vsc"
 import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
 import { QueryResult } from "@apollo/client"
 import { SharedLayout_QueryFragment } from "@app/graphql"
-import { Layout } from "antd"
+import { Layout, message } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
@@ -60,7 +60,7 @@ export function AdminLayout({
     {
       key: "/admin/emails",
       title: t("sider.titles.emails"),
-      icon: <AiOutlineMail className="anticon" />,
+      icon: <AiOutlineMail />,
       target: "/admin/emails",
     },
   ]
@@ -78,7 +78,7 @@ export function AdminLayout({
         {
           key: "admin-menu-organizations",
           title: t("sider.titles.organizations"),
-          icon: <VscOrganization className="anticon" />,
+          icon: <VscOrganization />,
           cy: "admin-sider-organizations",
           target: organizationMemberships
             ? [
@@ -104,7 +104,7 @@ export function AdminLayout({
         {
           key: "admin-menu-events",
           title: t("sider.titles.events"),
-          icon: <MdEvent className="anticon" />,
+          icon: <MdEvent />,
           cy: "admin-sider-events",
           target: [
             {
@@ -124,7 +124,7 @@ export function AdminLayout({
         {
           key: "admin-menu-event-categories",
           title: t("sider.titles.eventCategories"),
-          icon: <AiOutlineTag className="anticon" />,
+          icon: <AiOutlineTag />,
           cy: "admin-sider-event-categories",
           target: [
             {

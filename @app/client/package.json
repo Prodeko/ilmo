@@ -16,17 +16,17 @@
     "@sentry/react": "^6.4.1",
     "@sentry/tracing": "^6.4.1",
     "@types/lodash": "^4.14.170",
-    "@types/node": "^15.6.0",
+    "@types/node": "^15.6.1",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^17.0.6",
-    "antd": "4.15.6",
+    "@types/react": "^17.0.7",
+    "antd": "4.16.0",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "1.10.4",
     "graphql": "^15.5.0",
     "less": "^4.1.1",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
-    "next": "^10.2.2",
+    "next": "^10.2.3",
     "next-plugin-antd-less": "^1.2.1",
     "next-translate": "^1.0.7",
     "next-transpile-modules": "^7.2.0",
@@ -42,6 +42,6 @@
   "devDependencies": {
     "babel-plugin-import": "^1.13.3",
     "cross-env": "^7.0.3",
-    "jest": "^26.6.3"
+    "jest": "^27.0.1"
   }
 }
