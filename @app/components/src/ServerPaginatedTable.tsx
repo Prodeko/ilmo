@@ -72,6 +72,9 @@ export function ServerPaginatedTable({
     [fetchMore]
   )
 
+
+  // See @app/client/src/pages/index.tsx and @app/lib/src/utils to understand
+  // how our table sorting setup works.
   const sortableColumns =
     (columns?.map((column) => {
       const { sorter, dataIndex, ...otherColumnProps } =
