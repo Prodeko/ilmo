@@ -7,6 +7,9 @@ import useTranslation from "next-translate/useTranslation"
 import { ButtonLink, P } from "."
 
 const { Meta } = Card
+
+const DEFAULT_HEADER_IMAGE = "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
+
 interface EventCardProps {
   event: Event
 }
@@ -43,11 +46,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return (
     <Card
       key={id}
-      cover={
-        headerImageFile ? (
-          <img alt={t("events:headerImage")} src={headerImageFile} />
-        ) : null
-      }
+      cover={<img alt={t("events:headerImage")} src={headerImageFile ?? DEFAULT_HEADER_IMAGE} />}
       style={{ overflow: "hidden", minWidth: 0 }}
     >
       <Meta
