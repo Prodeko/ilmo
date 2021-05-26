@@ -27,7 +27,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "faker": "^5.5.3",
-    "fastify": "^3.16.1",
+    "fastify": "^3.16.2",
     "fastify-express": "^0.3.2",
     "fastify-helmet": "^5.3.1",
     "fastify-plugin": "^3.0.0",

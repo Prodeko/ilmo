@@ -23,7 +23,7 @@
     "licenses": "yarn --silent licenses generate-disclaimer > LICENSES.md",
     "clean": "node ./scripts/clean.js",
     "reset": "yarn clean && node ./scripts/delete-env-file.js",
-    "upgrade-packages": "lerna exec ncu",
+    "upgrade-packages": "lerna exec ncu -- -u",
     "--shortcuts to run commands in workspaces--": "",
     "client": "yarn workspace @app/client",
     "components": "yarn workspace @app/components",
