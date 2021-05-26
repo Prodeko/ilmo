@@ -36,21 +36,20 @@
     lodash "^4.17.21"
     resize-observer-polyfill "^1.5.0"
 
-"@apollo/client@3.4.0-beta.22":
-  version "3.4.0-beta.22"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.4.0-beta.22.tgz#eeba003929e1036829e936643b1a3a335183ae93"
-  integrity sha512-xUr8sRj1B5G/TYA9WiyWsZRpUg+Ir6klpX1NIVvtwVRUXgWKqGLNFpZt+nx04o2DcaGbuCIZ+8mBmxK3uByVbg==
+"@apollo/client@3.4.0-rc.1":
+  version "3.4.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.4.0-rc.1.tgz#2fab67c6ff3a13029af32bea42ccf11e4569bd71"
+  integrity sha512-pCK6KZhMs5bioFU93AmxPsBwCuxTQ1u+ytFBaMGjxXYlUgfueD9R+VKBBp59XVGDcBOhRPiWARjui4HozMiMkw==
   dependencies:
     "@graphql-typed-document-node/core" "^3.0.0"
     "@wry/context" "^0.6.0"
     "@wry/equality" "^0.4.0"
     "@wry/trie" "^0.3.0"
-    fast-json-stable-stringify "^2.0.0"
     graphql-tag "^2.12.3"
     hoist-non-react-statics "^3.3.2"
-    optimism "^0.15.0"
+    optimism "^0.16.1"
     prop-types "^15.7.2"
-    symbol-observable "^2.0.0"
+    symbol-observable "^4.0.0"
     ts-invariant "^0.7.3"
     tslib "^2.1.0"
     zen-observable-ts "^1.0.0"
@@ -12064,15 +12063,7 @@ onetime@^5.1.0, onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-optimism@^0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/optimism/-/optimism-0.15.0.tgz#c65e694bec7ce439f41e9cb8fc261a72d798125b"
-  integrity sha512-KLKl3Kb7hH++s9ewRcBhmfpXgXF0xQ+JZ3xQFuPjnoT6ib2TDmYyVkKENmGxivsN2G3VRxpXuauCkB4GYOhtPw==
-  dependencies:
-    "@wry/context" "^0.6.0"
-    "@wry/trie" "^0.3.0"
-
-optimism@^0.16.0:
+optimism@^0.16.0, optimism@^0.16.1:
   version "0.16.1"
   resolved "https://registry.yarnpkg.com/optimism/-/optimism-0.16.1.tgz#7c8efc1f3179f18307b887e18c15c5b7133f6e7d"
   integrity sha512-64i+Uw3otrndfq5kaoGNoY7pvOhSsjFEN4bdEFh80MWVk/dbgJfMv7VFDeCT8LxNAlEVhQmdVEbfE7X2nWNIIg==
@@ -15225,6 +15216,11 @@ symbol-observable@^2.0.0:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/symbol-observable/-/symbol-observable-2.0.3.tgz#5b521d3d07a43c351055fa43b8355b62d33fd16a"
   integrity sha512-sQV7phh2WCYAn81oAkakC5qjq2Ml0g8ozqz03wOGnx9dDlG1de6yrF+0RAzSJD8fPUow3PTSMf2SAbOGxb93BA==
+
+symbol-observable@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/symbol-observable/-/symbol-observable-4.0.0.tgz#5b425f192279e87f2f9b937ac8540d1984b39205"
+  integrity sha512-b19dMThMV4HVFynSAM1++gBHAbk2Tc/osgLIBZMKsyqh34jb2e8Os7T6ZW/Bt3pJFdBTd2JwAnAAEQV7rSNvcQ==
 
 symbol-tree@^3.2.4:
   version "3.2.4"
