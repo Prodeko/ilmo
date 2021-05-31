@@ -23,8 +23,8 @@ const numberSort = (a: number, b: number) => {
   return 0
 }
 
-const textSort = (a?: string, b?: string) => {
-  return a?.localeCompare(b || "")
+const textSort = (a: string, b: string) => {
+  return a.localeCompare(b || "")
 }
 
 const dateSort = (dateA: Date, dateB: Date) => dayjs(dateA).diff(dayjs(dateB))

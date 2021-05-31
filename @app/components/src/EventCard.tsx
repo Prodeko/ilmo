@@ -8,7 +8,8 @@ import { ButtonLink, P } from "."
 
 const { Meta } = Card
 
-const DEFAULT_HEADER_IMAGE = "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
+const DEFAULT_HEADER_IMAGE =
+  "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
 
 interface EventCardProps {
   event: Event
@@ -46,7 +47,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return (
     <Card
       key={id}
-      cover={<img alt={t("events:headerImage")} src={headerImageFile ?? DEFAULT_HEADER_IMAGE} />}
+      cover={
+        <img
+          alt={t("events:headerImage")}
+          src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+        />
+      }
       style={{ overflow: "hidden", minWidth: 0 }}
     >
       <Meta

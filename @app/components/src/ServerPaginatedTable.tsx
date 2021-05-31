@@ -2,7 +2,12 @@ import React, { useCallback, useState } from "react"
 import { DocumentNode, useQuery } from "@apollo/client"
 import { Sorter, ValueOf } from "@app/lib"
 import { Table } from "antd"
-import { ColumnsType, TablePaginationConfig, TableProps } from "antd/lib/table"
+import {
+  ColumnsType,
+  ColumnType,
+  TablePaginationConfig,
+  TableProps,
+} from "antd/lib/table"
 import { get } from "lodash"
 
 import { ErrorAlert } from "./ErrorAlert"
@@ -10,28 +15,28 @@ import { Loading } from "./Loading"
 
 type RecordType = any
 
-interface CustomColumnType extends ColumnsType {
-  sorter: {
+interface CustomColumnType extends ColumnType<RecordType> {
+  sorter?: {
     compare: ValueOf<typeof Sorter>
   }
-  dataIndex: string | string[]
 }
 
-interface Props extends TableProps<RecordType> {
+interface ServerPaginatedTableProps extends TableProps<RecordType> {
+  columns: CustomColumnType[]
+  dataField: string
   queryDocument: DocumentNode
   variables?: Record<string, any>
-  dataField: string
   showPagination?: boolean
 }
 
 export function ServerPaginatedTable({
-  queryDocument,
-  variables,
   columns,
   dataField,
+  queryDocument,
+  variables,
   showPagination = true,
   ...props
-}: Props) {
+}: ServerPaginatedTableProps) {
   const [offset, setOffset] = useState(0)
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
@@ -72,18 +77,18 @@ export function ServerPaginatedTable({
     [fetchMore]
   )
 
-
   // See @app/client/src/pages/index.tsx and @app/lib/src/utils to understand
-  // how our table sorting setup works.
-  const sortableColumns =
-    (columns?.map((column) => {
-      const { sorter, dataIndex, ...otherColumnProps } =
-        column as CustomColumnType
+  // how our table sorting setup works. When the 'filters' key is specified for
+  // a column, we automatically add the onFilter property to the column.
+  const transformedColumns =
+    columns?.map((column) => {
+      const { sorter, filters, dataIndex, ...otherColumnProps } = column
+      let ret = column
 
       if (sorter) {
         const { compare, ...otherSorterProps } = sorter
 
-        return {
+        ret = {
           ...otherColumnProps,
           dataIndex,
           sorter: {
@@ -96,14 +101,24 @@ export function ServerPaginatedTable({
         }
       }
 
-      return column
-    }) as ColumnsType<RecordType>) || []
+      if (filters) {
+        ret = {
+          ...otherColumnProps,
+          filters,
+          dataIndex,
+          onFilter: (value: string | number | boolean, record: RecordType) =>
+            get(record, dataIndex!).indexOf(value) === 0,
+        }
+      }
+
+      return ret
+    }) || []
 
   return error ? (
     <ErrorAlert error={error} />
   ) : (
     <Table
-      columns={sortableColumns}
+      columns={transformedColumns as ColumnsType}
       dataSource={get(data, dataField)?.nodes || []}
       loading={loading && { indicator: <Loading /> }}
       pagination={showPagination && pagination}

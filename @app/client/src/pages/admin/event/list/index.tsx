@@ -92,8 +92,6 @@ const Admin_ListEvents: NextPage = () => {
               new Set(eventCategories?.map((o) => o.name[lang]))
             ).map((name) => ({ text: name, value: name })),
           ],
-          onFilter: (value: string | number | boolean, record: Event) =>
-            record?.category?.name[lang].indexOf(value) === 0,
           sorter: {
             compare: Sorter.TEXT,
           },

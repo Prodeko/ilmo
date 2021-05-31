@@ -105,8 +105,6 @@ const Home: NextPage = () => {
           sorter: {
             compare: Sorter.TEXT,
           },
-          onFilter: (value: string | number | boolean, record: Event) =>
-            record?.ownerOrganization?.name.indexOf(value as string) === 0,
           render: (name: string, record: Event, index: number) => (
             <Tag key={`${record.id}-${index}`} color={getColor(name)}>
               {name?.toUpperCase()}
@@ -122,8 +120,6 @@ const Home: NextPage = () => {
               new Set(eventCategories?.map((o) => o.name[lang]))
             ).map((name) => ({ text: name, value: name })),
           ],
-          onFilter: (value: string | number | boolean, record: Event) =>
-            record?.category?.name[lang].indexOf(value) === 0,
           sorter: {
             compare: Sorter.TEXT,
           },

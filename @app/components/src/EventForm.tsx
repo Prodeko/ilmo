@@ -454,7 +454,10 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               },
             ]}
           >
-            <Input data-cy="eventform-input-location" placeholder={t("common:location")} />
+            <Input
+              data-cy="eventform-input-location"
+              placeholder={t("common:location")}
+            />
           </Form.Item>
           <Form.Item
             label={t("forms.eventTime")}
