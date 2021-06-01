@@ -17,9 +17,13 @@
   "name": "Name",
   "no": "No",
   "redirect": "Redirecting...",
+  "registrationClosed": "Signup closed",
+  "registrationOpen": "Signup open",
+  "registrationUpcoming": "Signup upcoming",
   "settings": "Settings",
   "shortDescription": "Short description",
   "signin": "Sign in",
+  "status": "Status",
   "update": "Update",
   "yes": "Yes"
 }

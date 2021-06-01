@@ -197,7 +197,7 @@ const Admin_ListEvents: NextPage = () => {
     <AdminLayout href="/admin/event/list" query={query}>
       <Row>
         <Col flex={1}>
-          <H3>{t("home:events.signupsUpcomingEvents")}</H3>
+          <H3>{t("common:registrationUpcoming")}</H3>
           <ServerPaginatedTable
             columns={columns}
             data-cy="adminpage-events-upcoming"
@@ -206,7 +206,7 @@ const Admin_ListEvents: NextPage = () => {
             showPagination={true}
             size="middle"
           />
-          <H3>{t("home:events.signupsOpenEvents")}</H3>
+          <H3>{t("common:registrationOpen")}</H3>
           <ServerPaginatedTable
             columns={columns}
             data-cy="adminpage-events-open"
@@ -215,7 +215,7 @@ const Admin_ListEvents: NextPage = () => {
             showPagination={true}
             size="middle"
           />
-          <H3>{t("home:events.signupsClosedEvents")}</H3>
+          <H3>{t("common:registrationClosed")}</H3>
           <ServerPaginatedTable
             columns={columns}
             data-cy="adminpage-events-closed"

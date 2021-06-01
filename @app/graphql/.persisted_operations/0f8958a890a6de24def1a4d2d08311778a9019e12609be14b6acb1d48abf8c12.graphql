@@ -80,7 +80,6 @@ fragment SharedLayout_Languages on AppLanguage {
 }
 fragment HomePage_Event on Event {
   ...EventFields
-  id
   ownerOrganization {
     id
     name

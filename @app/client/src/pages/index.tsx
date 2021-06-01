@@ -137,7 +137,7 @@ const Home: NextPage = () => {
 
   return (
     <SharedLayout query={query} title="">
-      <H3>{t("events.signupsOpenEvents")}</H3>
+      <H3>{t("common:registrationOpen")}</H3>
       <Space direction="vertical" style={{ width: "100%" }}>
         {signupsOpenEvents?.length > 0 ? (
           <div data-cy="homepage-signup-open-events" style={homeGridStyle}>
@@ -151,7 +151,7 @@ const Home: NextPage = () => {
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         )}
-        <H3>{t("events.signupsUpcomingEvents")}</H3>
+        <H3>{t("common:registrationUpcoming")}</H3>
         {signupsUpcomingEvents?.length > 0 ? (
           <div data-cy="homepage-signup-upcoming-events" style={homeGridStyle}>
             {signupsUpcomingEvents?.map((event) => (
@@ -166,7 +166,7 @@ const Home: NextPage = () => {
         )}
         <Divider dashed />
         <Col xs={24}>
-          <H3>{t("events.signupsClosedEvents")}</H3>
+          <H3>{t("common:registrationClosed")}</H3>
           <ServerPaginatedTable
             columns={columns}
             data-cy="homepage-signup-closed-events"

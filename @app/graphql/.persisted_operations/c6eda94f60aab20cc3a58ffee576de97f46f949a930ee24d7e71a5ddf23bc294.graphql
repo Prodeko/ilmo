@@ -16,7 +16,6 @@ fragment HomePageEvents_Query on Query {
 }
 fragment HomePage_Event on Event {
   ...EventFields
-  id
   ownerOrganization {
     id
     name

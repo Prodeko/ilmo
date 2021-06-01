@@ -1,9 +1,8 @@
 import React from "react"
 import {
+  EventDescription,
   EventQuotasCard,
   EventRegistrationsTable,
-  H2,
-  P,
   SharedLayout,
   useEventLoading,
   useEventRegistrations,
@@ -43,13 +42,11 @@ interface EventPageInnerProps {
 
 const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const router = useRouter()
-  const { t, lang } = useTranslation("events")
+  const { t } = useTranslation("events")
   const isMobile = useIsMobile()
 
   const {
     id: eventId,
-    name,
-    description,
     headerImageFile,
     createdAt,
     registrations: eventRegistrations,
@@ -97,8 +94,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           <EventQuotasCard event={event} registrations={registrations} />
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
-          <H2>{name[lang]}</H2>
-          <P>{description[lang]}</P>
+          <EventDescription event={event} />
           <EventRegistrationsTable
             data-cy="eventpage-signups-table"
             registrations={registrations}

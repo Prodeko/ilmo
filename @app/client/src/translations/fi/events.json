@@ -33,7 +33,7 @@
         "title": "Otsikko"
       }
     },
-    "registrationTime": "Ilmoittautumisen aukiolo",
+    "registrationTime": "Ilmoittautumisaika",
     "rules": {
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",

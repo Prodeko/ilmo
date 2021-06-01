@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
-    "@apollo/client": "3.4.0-rc.1",
+    "@apollo/client": "3.3.19",
     "@app/graphql": "0.0.0",
     "@app/lib": "0.0.0",
     "@babel/runtime": "^7.14.0",

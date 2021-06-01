@@ -33,7 +33,7 @@
         "title": "Title"
       }
     },
-    "registrationTime": "Registration time",
+    "registrationTime": "Registration period",
     "rules": {
       "event": {
         "provideCategory": "Please choose a category for the event",

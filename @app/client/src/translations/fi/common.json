@@ -17,9 +17,13 @@
   "name": "Nimi",
   "no": "Ei",
   "redirect": "Uudelleenohjataan...",
+  "registrationClosed": "Ilmoittautuminen päättynyt",
+  "registrationOpen": "Ilmoittautuminen auki",
+  "registrationUpcoming": "Ilmoittautuminen tulossa",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
   "signin": "Kirjaudu",
+  "status": "Status",
   "update": "Päivitä",
   "yes": "Kyllä"
 }

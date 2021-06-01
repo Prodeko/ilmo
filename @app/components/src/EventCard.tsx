@@ -59,7 +59,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         description={
           <>
             <div style={cardEventDatesStyle}>
-              {t("events.registrationTime")}:
+              {t("registrationTime")}:
               <br />
               {dayjs(registrationStartTime).format("LLL")}
               <br />
@@ -82,9 +82,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               type={signupOpen ? "success" : "default"}
               block
             >
-              {signupOpen
-                ? t("events.registerToAnEvent")
-                : t("common:moreInfo")}
+              {signupOpen ? t("registerToAnEvent") : t("common:moreInfo")}
             </ButtonLink>
           </>
         }

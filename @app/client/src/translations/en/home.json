@@ -1,11 +1,6 @@
 {
-  "events": {
-    "eventTime": "Event",
-    "registerToAnEvent": "Signup",
-    "registrationTime": "Signup",
-    "signupsClosedEvents": "Signup closed",
-    "signupsOpenEvents": "Signup open",
-    "signupsUpcomingEvents": "Signup upcoming"
-  },
-  "noEvents": "No events"
+  "eventTime": "Event",
+  "noEvents": "No events",
+  "registerToAnEvent": "Signup",
+  "registrationTime": "Signup"
 }
