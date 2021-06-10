@@ -53,20 +53,21 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
 
         return (
           <div key={quotaId} style={{ paddingBottom: 12 }}>
-            <Link
-              href={{
-                pathname: "/event/register/[eventId]/q/[quotaId]",
-                query: { eventId, quotaId },
-              }}
-            >
-              {signupNotOpen ? (
-                <Popover content={t("eventSignupNotOpen")}>
-                  {quotaButton}
-                </Popover>
-              ) : (
-                quotaButton
-              )}
-            </Link>
+
+            {signupNotOpen ? (
+              <Popover content={t("eventSignupNotOpen")}>
+                {quotaButton}
+              </Popover>
+            ) : (
+              <Link
+                href={{
+                  pathname: "/event/register/[eventId]/q/[quotaId]",
+                  query: { eventId, quotaId },
+                }}
+              >
+                {quotaButton}
+              </Link>
+            )}
             <ProgressBar
               filled={totalCount}
               percentageFilled={percentageFilled}
@@ -75,6 +76,6 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
           </div>
         )
       })}
-    </Card>
+    </Card >
   )
 }
