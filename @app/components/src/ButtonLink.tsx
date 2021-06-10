@@ -23,7 +23,7 @@ export const ButtonLink: React.FC<
   const { href, as, locale, ...rest } = props
   return (
     <Link as={as} href={href} locale={locale} passHref>
-      <Button {...rest} />
+      <Button role="link" {...rest} />
     </Link>
   )
 }
