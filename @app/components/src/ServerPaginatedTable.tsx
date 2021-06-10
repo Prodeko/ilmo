@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useCallback, useState } from "react"
 import { DocumentNode, useQuery } from "@apollo/client"
 import { Sorter, ValueOf } from "@app/lib"
