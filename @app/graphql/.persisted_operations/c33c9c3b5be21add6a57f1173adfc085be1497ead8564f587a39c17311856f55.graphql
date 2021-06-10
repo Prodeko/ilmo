@@ -108,8 +108,8 @@ fragment EventPage_EventCategory on EventCategory {
   __typename
 }
 fragment EventPage_OwnerOrganization on Organization {
-  name
   id
+  name
   slug
   __typename
 }

@@ -21,8 +21,8 @@ fragment EventFields on Event {
 }
 
 fragment EventPage_OwnerOrganization on Organization {
-  name
   id
+  name
   slug
 }
 

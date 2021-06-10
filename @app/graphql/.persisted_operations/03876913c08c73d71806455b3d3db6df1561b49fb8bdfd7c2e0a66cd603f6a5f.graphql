@@ -1,6 +1,6 @@
-fragment ListEventsPage_Query on Query {
+fragment CreateEventPage_Query on Query {
   ...SharedLayout_Query
-  eventCategories {
+  eventCategories(orderBy: NAME_ASC) {
     nodes {
       ...EventPage_EventCategory
       __typename
@@ -63,11 +63,11 @@ fragment EventPage_EventCategory on EventCategory {
   __typename
 }
 fragment EventPage_OwnerOrganization on Organization {
-  name
   id
+  name
   slug
   __typename
 }
-query ListEventsPage {
-  ...ListEventsPage_Query
+query CreateEventPage {
+  ...CreateEventPage_Query
 }

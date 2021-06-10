@@ -1,69 +1,43 @@
-fragment UpdateEventPage_Query on Query {
-  ...SharedLayout_Query
-  event(id: $id) {
-    ...UpdateEventPage_Event
-    __typename
-  }
-  eventCategories(orderBy: NAME_ASC) {
+fragment ListEvents_Query on Query {
+  signupOpenEvents: events(
+    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
     nodes {
-      ...EventPage_EventCategory
+      ...Events_Event
       __typename
     }
     __typename
   }
-  __typename
-}
-fragment SharedLayout_Query on Query {
-  currentUser {
-    ...SharedLayout_User
+  signupUpcomingEvents: events(
+    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+      __typename
+    }
     __typename
   }
-  languages {
-    ...SharedLayout_Languages
-    __typename
-  }
-  __typename
-}
-fragment SharedLayout_User on User {
-  id
-  name
-  username
-  avatarUrl
-  isAdmin
-  isVerified
-  primaryEmail
-  organizationMemberships(first: 20) {
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: {signupClosed: {equalTo: true}}
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+      __typename
+    }
     totalCount
-    nodes {
-      id
-      isOwner
-      organization {
-        id
-        name
-        slug
-        __typename
-      }
-      __typename
-    }
     __typename
   }
   __typename
 }
-fragment SharedLayout_Languages on AppLanguage {
-  supportedLanguages
-  defaultLanguage
-  __typename
-}
-fragment UpdateEventPage_Event on Event {
+fragment Events_Event on Event {
   ...EventFields
-  id
   category {
     ...EventPage_EventCategory
-    __typename
-  }
-  ownerOrganization {
-    id
-    name
     __typename
   }
   quotas(orderBy: POSITION_ASC) {
@@ -73,6 +47,14 @@ fragment UpdateEventPage_Event on Event {
         totalCount
         __typename
       }
+      __typename
+    }
+    __typename
+  }
+  registrations {
+    totalCount
+    nodes {
+      ...EventPage_Registration
       __typename
     }
     __typename
@@ -114,8 +96,8 @@ fragment EventPage_EventCategory on EventCategory {
   __typename
 }
 fragment EventPage_OwnerOrganization on Organization {
-  name
   id
+  name
   slug
   __typename
 }
@@ -126,6 +108,13 @@ fragment EventPage_Quota on Quota {
   size
   __typename
 }
-query UpdateEventPage($id: UUID!) {
-  ...UpdateEventPage_Query
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  isQueued
+  createdAt
+  __typename
+}
+query ListEvents($offset: Int!, $first: Int!) {
+  ...ListEvents_Query
 }
