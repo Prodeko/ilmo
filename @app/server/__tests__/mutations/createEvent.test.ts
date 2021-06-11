@@ -148,7 +148,7 @@ describe("CreateEvent", () => {
     )
   })
 
-  it("can't create quotas while logged out", async () => {
+  it("can't create an event while logged out", async () => {
     const { organization, eventCategory } = await createEventDataAndLogin()
 
     const day = dayjs("2021-02-20")
