@@ -1092,7 +1092,7 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.1", "@babel/runtime@^7.10.2", "@babel/runtime@^7.10.4", "@babel/runtime@^7.11.1", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.4", "@babel/runtime@^7.14.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.1", "@babel/runtime@^7.10.2", "@babel/runtime@^7.10.4", "@babel/runtime@^7.11.1", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.14.5", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.14.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.14.5.tgz#665450911c6031af38f81db530f387ec04cd9a98"
   integrity sha512-121rumjddw9c3NCQ55KGkyE1h/nzWhU/owjhw0l4mQrkzz4x9SGS1X8gFLraHwX7td3Yo4QTL+qj0NcIzN87BA==
@@ -3375,7 +3375,7 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node@*", "@types/node@^15.6.1":
+"@types/node@*", "@types/node@^15.12.2":
   version "15.12.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-15.12.2.tgz#1f2b42c4be7156ff4a6f914b2fb03d05fa84e38d"
   integrity sha512-zjQ69G564OCIWIOHSXyQEEDpdpGl+G348RAKY0XXy9Z5kU9Vzv1GMNnkar/ZJ8dzXB3COzD9Mo9NtRZ4xfgUww==
@@ -4102,13 +4102,13 @@ antd-dayjs-webpack-plugin@^1.0.6:
   resolved "https://registry.yarnpkg.com/antd-dayjs-webpack-plugin/-/antd-dayjs-webpack-plugin-1.0.6.tgz#7d98bcb51422248b8cd4a32e352a0425a3bffa3a"
   integrity sha512-UlK3BfA0iE2c5+Zz/Bd2iPAkT6cICtrKG4/swSik5MZweBHtgmu1aUQCHvICdiv39EAShdZy/edfP6mlkS/xXg==
 
-antd-img-crop@^3.14.1:
-  version "3.14.1"
-  resolved "https://registry.yarnpkg.com/antd-img-crop/-/antd-img-crop-3.14.1.tgz#4e824425defea29fb1913b2460e5c2382a247c68"
-  integrity sha512-m9znzbghh+e9K4//CaNGYfuSM/aUGsX+sByCc/Qo8jDmQSWpg05onNvbOHFVtxht1DfyGypgyEQ11JDikS7ERg==
+antd-img-crop@^3.14.2:
+  version "3.14.2"
+  resolved "https://registry.yarnpkg.com/antd-img-crop/-/antd-img-crop-3.14.2.tgz#cb367928fd825a0f34bd5d3b0bcbdc9a7510bf9a"
+  integrity sha512-jzhMNxuTFkMifaCA/hM2TDhp99o0HTmo0qxv8xlA0xTVA3Lj2RPTsa71kSujAAHJm7Ox4gyXx9v3KVakZaHY3A==
   dependencies:
-    "@babel/runtime" "^7.13.4"
-    react-easy-crop "^3.3.1"
+    "@babel/runtime" "^7.14.5"
+    react-easy-crop "^3.5.1"
 
 antd@4.16.2, antd@^4.16.2:
   version "4.16.2"
@@ -4187,12 +4187,12 @@ apollo-link-sentry@^3.0.2:
     deepmerge "^4.2.2"
     dot-prop "^6.0.0"
 
-apollo-upload-client@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/apollo-upload-client/-/apollo-upload-client-15.0.0.tgz#02ad5a156c146c13f3a93b9658196e5d73a73fca"
-  integrity sha512-7kyBwflLTqRhfsNIIBc94z1Row3WVWOgLm77izAuG3YJEzUbpy8k4775G40j3xlToSey5c7CR/9NOdoDcQw/xg==
+apollo-upload-client@^16.0.0:
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/apollo-upload-client/-/apollo-upload-client-16.0.0.tgz#704c9bc21e12bd4687172876eb927cf756b2e524"
+  integrity sha512-aLhYucyA0T8aBEQ5g+p13qnR9RUyL8xqb8FSZ7e/Kw2KUOsotLUlFluLobqaE7JSUFwc6sKfXIcwB7y4yEjbZg==
   dependencies:
-    extract-files "^10.0.0"
+    extract-files "^11.0.0"
 
 aproba@^1.0.3, aproba@^1.1.1:
   version "1.2.0"
@@ -7315,10 +7315,10 @@ extract-files@9.0.0, extract-files@^9.0.0:
   resolved "https://registry.yarnpkg.com/extract-files/-/extract-files-9.0.0.tgz#8a7744f2437f81f5ed3250ed9f1550de902fe54a"
   integrity sha512-CvdFfHkC95B4bBBk36hcEmvdR2awOdhhVUYH6S/zrVj3477zven/fJMYg7121h4T1xHZC+tetUpubpAhxwI7hQ==
 
-extract-files@^10.0.0:
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/extract-files/-/extract-files-10.0.0.tgz#228b1da1d910971cf8d7f1ed259653c6001ba5ad"
-  integrity sha512-4KXYOSf8SlMlQCj94Ygy89xIZU2GTs0HU2Nz9mG2/F5TKsHyq/3sDWGjHgHmfw9RhXF3hO+pBKyC6JfIHD52bw==
+extract-files@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/extract-files/-/extract-files-11.0.0.tgz#b72d428712f787eef1f5193aff8ab5351ca8469a"
+  integrity sha512-FuoE1qtbJ4bBVvv94CC7s0oTnKUGvQs+Rjf1L2SJFfS+HTVVjhPFtehPdQ0JiGPqVNfSSZvL5yzHHQq2Z4WNhQ==
 
 extract-zip@2.0.1:
   version "2.0.1"
@@ -13683,7 +13683,7 @@ react-dom@^17.0.2:
     object-assign "^4.1.1"
     scheduler "^0.20.2"
 
-react-easy-crop@^3.3.1:
+react-easy-crop@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/react-easy-crop/-/react-easy-crop-3.5.1.tgz#d32113de9c87f9009d4ae0b223922ad60433ea69"
   integrity sha512-VWTYAwRcapguZcYHTSKOcaO2QoNPA57KlS6J0DUrl6dPMV/KrmnPl++LSe/fjN/5vak2PJFKFA4js6Lkwwuy2g==

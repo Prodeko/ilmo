@@ -16,7 +16,7 @@
     "@sentry/react": "^6.6.0",
     "antd": "^4.16.2",
     "antd-button-color": "^1.0.4",
-    "antd-img-crop": "^3.14.1",
+    "antd-img-crop": "^3.14.2",
     "lodash": "^4.17.21",
     "next": "^10.2.3",
     "next-translate": "^1.0.7",
