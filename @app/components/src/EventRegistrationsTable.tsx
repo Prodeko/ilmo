@@ -19,8 +19,8 @@ const getRegistrationsByQuotaPosition = (
 ) => {
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
-    // @ts-ignore
-    ;(a[key] || (a[key] = [] || [])).push(x)
+      // @ts-ignore
+      ; (a[key] || (a[key] = [] || [])).push(x)
     return a
   }, {} as { [key: number]: EventPage_RegistrationsFragment })
 }
@@ -118,16 +118,20 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
             </div>
           )
         })}
-      <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
-      <SimpleTable
-        columns={queuedColumns}
-        data={queuedRegistrations}
-        data-cy="eventpage-signups-table"
-        size="small"
-        style={{
-          margin: "1rem 0",
-        }}
-      />
+      {queuedRegistrations.length > 0 &&
+        <>
+          <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
+          <SimpleTable
+            columns={queuedColumns}
+            data={queuedRegistrations}
+            data-cy="eventpage-signups-table"
+            size="small"
+            style={{
+              margin: "1rem 0",
+            }}
+          />
+        </>
+      }
     </>
   )
 }
