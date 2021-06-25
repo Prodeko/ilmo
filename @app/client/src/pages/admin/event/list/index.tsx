@@ -13,15 +13,7 @@ import {
   useListEventsPageQuery,
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
-import {
-  Badge,
-  Col,
-  Popover,
-  Progress,
-  Row,
-  Tag,
-  Typography,
-} from "antd"
+import { Badge, Col, Popover, Progress, Row, Tag, Typography } from "antd"
 import dayjs from "dayjs"
 import { reduce } from "lodash"
 import { NextPage } from "next"
@@ -88,117 +80,117 @@ const Admin_ListEvents: NextPage = () => {
 
   const columns = !isMobile
     ? [
-      actionsColumn,
-      isDraftColumn,
-      nameColumn,
-      {
-        title: t("events:category"),
-        dataIndex: ["category", "name", lang],
-        key: "categoryName",
-        filters: [
-          ...Array.from(
-            new Set(eventCategories?.map((o) => o.name[lang]))
-          ).map((name) => ({ text: name, value: name })),
-        ],
-        sorter: {
-          compare: Sorter.TEXT,
+        actionsColumn,
+        isDraftColumn,
+        nameColumn,
+        {
+          title: t("events:category"),
+          dataIndex: ["category", "name", lang],
+          key: "categoryName",
+          filters: [
+            ...Array.from(
+              new Set(eventCategories?.map((o) => o.name[lang]))
+            ).map((name) => ({ text: name, value: name })),
+          ],
+          sorter: {
+            compare: Sorter.TEXT,
+          },
+          render: (name: string, record: Event, index: number) => {
+            return (
+              <Link
+                as={`/admin/event-category/update/${record?.category?.id}`}
+                href={{
+                  pathname: "/admin/event-category/update/[id]",
+                  query: {
+                    id: record?.category?.id,
+                  },
+                }}
+              >
+                <Popover content={t("events.list.linkUpdateEventCategory")}>
+                  <Tag
+                    key={`${record.id}-${index}`}
+                    color={record.category.color}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {name?.toUpperCase()}
+                  </Tag>
+                </Popover>
+              </Link>
+            )
+          },
         },
-        render: (name: string, record: Event, index: number) => {
-          return (
-            <Link
-              as={`/admin/event-category/update/${record?.category?.id}`}
-              href={{
-                pathname: "/admin/event-category/update/[id]",
-                query: {
-                  id: record?.category?.id,
-                },
-              }}
-            >
-              <Popover content={t("events.list.linkUpdateEventCategory")}>
-                <Tag
-                  key={`${record.id}-${index}`}
-                  color={record.category.color}
-                  style={{ cursor: "pointer" }}
-                >
-                  {name?.toUpperCase()}
-                </Tag>
-              </Popover>
-            </Link>
-          )
-        },
-      },
-      {
-        title: t("events.list.registrations"),
-        key: "registrations",
-        render: (event: Event) => {
-          const popoverContent = (
-            <>
-              {event.quotas.nodes.map((quota) => {
-                const quotaRegistrations = quota.registrations.totalCount
-                return (
-                  <Row key={quota.id} style={{ minWidth: "20rem" }}>
-                    <Col span={5}>{quota.title[lang]}</Col>
-                    <Col span={12} style={{ marginRight: "10px" }}>
-                      <Progress
-                        percent={(quotaRegistrations * 100) / quota.size}
-                        showInfo={false}
-                      />
-                    </Col>
-                    <Col flex="auto" style={{ whiteSpace: "nowrap" }}>
-                      {quotaRegistrations} / {quota.size}
-                    </Col>
-                  </Row>
-                )
-              })}
-            </>
-          )
+        {
+          title: t("events.list.registrations"),
+          key: "registrations",
+          render: (event: Event) => {
+            const popoverContent = (
+              <>
+                {event.quotas.nodes.map((quota) => {
+                  const quotaRegistrations = quota.registrations.totalCount
+                  return (
+                    <Row key={quota.id} style={{ minWidth: "20rem" }}>
+                      <Col span={5}>{quota.title[lang]}</Col>
+                      <Col span={12} style={{ marginRight: "10px" }}>
+                        <Progress
+                          percent={(quotaRegistrations * 100) / quota.size}
+                          showInfo={false}
+                        />
+                      </Col>
+                      <Col flex="auto" style={{ whiteSpace: "nowrap" }}>
+                        {quotaRegistrations} / {quota.size}
+                      </Col>
+                    </Row>
+                  )
+                })}
+              </>
+            )
 
-          const numRegistrations = event.registrations.totalCount
-          const totalSize = reduce(
-            event.quotas.nodes,
-            (acc: number, quota) => acc + quota.size,
-            0
-          )
-          return (
-            <Popover
-              content={popoverContent}
-              title={t("events.list.registrationsPerQuota")}
-            >
-              <Row gutter={12}>
-                <Col span={8}>
-                  <Typography.Text style={{ whiteSpace: "nowrap" }}>
-                    {numRegistrations} / {totalSize}
-                  </Typography.Text>
-                </Col>
-                <Col span={12}>
-                  <Progress
-                    percent={(numRegistrations * 100) / totalSize}
-                    showInfo={false}
-                    style={{ marginLeft: "12px" }}
-                  />
-                </Col>
-              </Row>
-            </Popover>
-          )
+            const numRegistrations = event.registrations.totalCount
+            const totalSize = reduce(
+              event.quotas.nodes,
+              (acc: number, quota) => acc + quota.size,
+              0
+            )
+            return (
+              <Popover
+                content={popoverContent}
+                title={t("events.list.registrationsPerQuota")}
+              >
+                <Row gutter={12}>
+                  <Col span={8}>
+                    <Typography.Text style={{ whiteSpace: "nowrap" }}>
+                      {numRegistrations} / {totalSize}
+                    </Typography.Text>
+                  </Col>
+                  <Col span={12}>
+                    <Progress
+                      percent={(numRegistrations * 100) / totalSize}
+                      showInfo={false}
+                      style={{ marginLeft: "12px" }}
+                    />
+                  </Col>
+                </Row>
+              </Popover>
+            )
+          },
         },
-      },
-      {
-        title: t("events.list.registrationStartTime"),
-        dataIndex: "registrationStartTime",
-        sorter: {
-          compare: Sorter.DATE,
+        {
+          title: t("events.list.registrationStartTime"),
+          dataIndex: "registrationStartTime",
+          sorter: {
+            compare: Sorter.DATE,
+          },
+          render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
-        render: (startTime: string) => dayjs(startTime).format("l LT"),
-      },
-      {
-        title: t("events.list.eventStartTime"),
-        dataIndex: "eventStartTime",
-        sorter: {
-          compare: Sorter.DATE,
+        {
+          title: t("events.list.eventStartTime"),
+          dataIndex: "eventStartTime",
+          sorter: {
+            compare: Sorter.DATE,
+          },
+          render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
-        render: (startTime: string) => dayjs(startTime).format("l LT"),
-      },
-    ]
+      ]
     : [actionsColumn, nameColumn]
 
   return (

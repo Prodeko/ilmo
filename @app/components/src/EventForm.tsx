@@ -372,17 +372,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               data-cy="eventform-select-category-id"
               placeholder={t("forms.placeholders.event.category")}
             >
-              {
-                data?.eventCategories?.nodes?.map((a, i) => (
-                  <Option
-                    key={a.id}
-                    data-cy={`eventform-select-category-id-option-${i}`}
-                    value={a.id}
-                  >
-                    {a.name[lang]}
-                  </Option>
-                ))
-              }
+              {data?.eventCategories?.nodes?.map((a, i) => (
+                <Option
+                  key={a.id}
+                  data-cy={`eventform-select-category-id-option-${i}`}
+                  value={a.id}
+                >
+                  {a.name[lang]}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item label={t("common:name")}>
