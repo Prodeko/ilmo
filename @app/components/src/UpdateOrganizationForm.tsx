@@ -144,11 +144,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
           title={t("organizations.deleteOrganizationConfirmText")}
           onConfirm={handleDelete}
         >
-          <Button
-            loading={deleting}
-            style={{ marginLeft: 5 }}
-            danger
-          >
+          <Button loading={deleting} style={{ marginLeft: 5 }} danger>
             {t("organizations.deleteOrganization")}
           </Button>
         </Popconfirm>

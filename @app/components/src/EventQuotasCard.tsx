@@ -53,11 +53,8 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
 
         return (
           <div key={quotaId} style={{ paddingBottom: 12 }}>
-
             {signupNotOpen ? (
-              <Popover content={t("eventSignupNotOpen")}>
-                {quotaButton}
-              </Popover>
+              <Popover content={t("eventSignupNotOpen")}>{quotaButton}</Popover>
             ) : (
               <Link
                 href={{
@@ -76,6 +73,6 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
           </div>
         )
       })}
-    </Card >
+    </Card>
   )
 }

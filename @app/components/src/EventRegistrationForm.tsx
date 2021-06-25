@@ -8,10 +8,7 @@ import {
   useEventSlugByIdQuery,
   useUpdateEventRegistrationMutation,
 } from "@app/graphql"
-import {
-  extractError,
-  getCodeFromError,
-} from "@app/lib"
+import { extractError, getCodeFromError } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
 import { Rule } from "antd/lib/form"
@@ -56,7 +53,6 @@ const tailFormItemLayout = {
   },
 }
 
-
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   props
 ) => {
@@ -86,8 +82,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const [updateRegistration] = useUpdateEventRegistrationMutation()
   const [claimRegistratioToken] = useClaimRegistrationTokenMutation()
   const [deleting, setDeleting] = useState(false)
-  const [registrationToken, setRegistrationToken] =
-    useState<string | undefined>(undefined)
+  const [registrationToken, setRegistrationToken] = useState<
+    string | undefined
+  >(undefined)
 
   const code = getCodeFromError(formError)
 
@@ -304,10 +301,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           disabled={!!formError}
           htmlType="submit"
           loading={
-            formError ? false :
-              (type === "create" && !!registrationToken) || type === "update"
-                ? false
-                : true
+            formError
+              ? false
+              : (type === "create" && !!registrationToken) || type === "update"
+              ? false
+              : true
           }
           type="primary"
         >
