@@ -16,9 +16,9 @@ import {
 } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
+import { Rule } from "antd/lib/form"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
-import { Rule } from "rc-field-form/lib/interface"
 
 interface EventRegistrationFormProps {
   type: "update" | "create"
