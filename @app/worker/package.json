@@ -12,22 +12,22 @@
   },
   "dependencies": {
     "@app/config": "0.0.0",
-    "@types/html-to-text": "^6.0.0",
+    "@types/html-to-text": "^8.0.0",
     "@types/mjml": "^4.7.0",
     "@types/nodemailer": "^6.4.2",
     "chalk": "^4.1.1",
     "cross-env": "^7.0.3",
     "graphile-worker": "^0.11.3",
     "html-to-text": "^8.0.0",
-    "ioredis": "^4.27.5",
-    "mjml": "^4.9.3",
-    "nodemailer": "^6.6.1",
+    "ioredis": "^4.27.6",
+    "mjml": "^4.10.1",
+    "nodemailer": "^6.6.2",
     "nunjucks": "^3.2.3",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@types/nunjucks": "^3.1.4",
-    "jest": "^27.0.4",
+    "jest": "^27.0.5",
     "mkdirp": "^1.0.4"
   }
 }

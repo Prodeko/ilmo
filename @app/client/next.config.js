@@ -33,6 +33,7 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
       withAntdLess,
       withNextTranslate
     )({
+      webpack5: false,
       useFileSystemPublicRoutes: true,
       poweredByHeader: false,
       trailingSlash: false,
