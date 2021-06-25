@@ -373,7 +373,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               placeholder={t("forms.placeholders.event.category")}
             >
               {
-                // @ts-ignore
                 data?.eventCategories?.nodes?.map((a, i) => (
                   <Option
                     key={a.id}

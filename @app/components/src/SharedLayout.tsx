@@ -271,7 +271,7 @@ export function SharedLayout({
           </Col>
         </Row>
       </Header>
-      <Layout>
+      <Layout hasSider={!!sider}>
         {sider ? sider : null}
         <Content style={{ minHeight: contentMinHeight }}>
           {renderChildren({
@@ -303,15 +303,6 @@ export function SharedLayout({
                 </a>
               </span>
             )}
-          </Text>
-          <Text>
-            Powered by{" "}
-            <a
-              href="https://graphile.org/postgraphile"
-              style={{ textDecoration: "underline" }}
-            >
-              PostGraphile
-            </a>
           </Text>
         </div>
       </Footer>

@@ -164,7 +164,7 @@ export function AdminLayout({
   const fullHref = href + (routerQuery ? `?${qs.stringify(routerQuery)}` : "")
 
   const layoutSider = (
-    <Sider breakpoint="md" collapsedWidth="0">
+    <Sider breakpoint="md">
       <AdminSideMenu initialKey={href} items={items} />
     </Sider>
   )
