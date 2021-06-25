@@ -145,7 +145,6 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
           onConfirm={handleDelete}
         >
           <Button
-            data-cy="eventregistrationform-button-delete-registration"
             loading={deleting}
             style={{ marginLeft: 5 }}
             danger

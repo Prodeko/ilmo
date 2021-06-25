@@ -10,9 +10,7 @@ import {
 } from "@app/graphql"
 import {
   extractError,
-  formItemLayout,
   getCodeFromError,
-  tailFormItemLayout,
 } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
@@ -29,8 +27,35 @@ interface EventRegistrationFormProps {
   // updateToken and initialValues are used when type is "update"
   updateToken?: string
   initialValues?: any
-  setUpdateToken: React.Dispatch<React.SetStateAction<string>>
+  // Used to delete an unfinished registration
+  setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
 }
+
+// Use narrower form items for the registration form
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 6 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 12 },
+  },
+}
+
+const tailFormItemLayout = {
+  wrapperCol: {
+    xs: {
+      span: 24,
+      offset: 0,
+    },
+    sm: {
+      span: 12,
+      offset: 6,
+    },
+  },
+}
+
 
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   props
@@ -88,7 +113,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             )
           }
           setRegistrationToken(registrationToken)
-          setUpdateToken(updateToken)
+          setUpdateToken!(updateToken)
         } catch (e) {
           setFormError(e)
           Sentry.captureException(e)
@@ -143,7 +168,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             // more efficient solution would be to update the cache manually.
             // However, that turned out to be __very__ involved with our current
             // setup. This is due to the fact that we fetch event registrations
-            // with subscriptions and normal queries.  Manual cache updating can
+            // with subscriptions and normal queries. Manual cache updating can
             // be done but it would result in many changes across seemingly
             // unrelated files thus increasing complexity.
             refetchQueries: [
@@ -276,11 +301,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       <Form.Item {...tailFormItemLayout}>
         <Button
           data-cy="eventregistrationform-button-submit"
+          disabled={!!formError}
           htmlType="submit"
           loading={
-            (type === "create" && !!registrationToken) || type === "update"
-              ? false
-              : true
+            formError ? false :
+              (type === "create" && !!registrationToken) || type === "update"
+                ? false
+                : true
           }
           type="primary"
         >

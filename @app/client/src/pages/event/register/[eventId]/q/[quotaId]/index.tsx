@@ -9,7 +9,7 @@ import {
   useDeleteEventRegistrationMutation,
   useEventRegistrationPageQuery,
 } from "@app/graphql"
-import { List, PageHeader, Typography } from "antd"
+import { Col, List, PageHeader, Row, Typography } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
@@ -72,7 +72,11 @@ const EventRegistrationPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title="">
-      <PageHeader title={title} onBack={handleGoBack} />
+      <Row align="top" justify="center">
+        <Col sm={12} xs={24}>
+          <PageHeader title={title} onBack={handleGoBack} />
+        </Col>
+      </Row>
       <EventRegistrationForm
         eventId={event?.id}
         formRedirect={{
@@ -85,26 +89,30 @@ const EventRegistrationPage: NextPage = () => {
         setUpdateToken={setUpdateToken}
         type="create"
       />
-      {recentRegistrations && (
-        <List
-          data-cy="eventregistrationpage-recent-registrations-list"
-          dataSource={recentRegistrations}
-          header={<div>{t("recentlyRegisteredHeader")}</div>}
-          renderItem={(item, i) => {
-            const name = item?.fullName
-            const quota = item?.quota?.title[lang]
-            return i === 0 || name ? (
-              <List.Item>
-                <Typography.Text>
-                  {i === 0
-                    ? t("you")
-                    : `${name} ${t("recentlyRegisteredListItem")} ${quota}`}
-                </Typography.Text>
-              </List.Item>
-            ) : null
-          }}
-          bordered
-        />
+      {recentRegistrations.length > 0 && (
+        <Row align="top" justify="center">
+          <Col sm={12} xs={24}>
+            <List
+              data-cy="eventregistrationpage-recent-registrations-list"
+              dataSource={recentRegistrations}
+              header={<div>{t("recentlyRegisteredHeader")}</div>}
+              renderItem={(item, i) => {
+                const name = item?.fullName
+                const quota = item?.quota?.title[lang]
+                return i === 0 || name ? (
+                  <List.Item>
+                    <Typography.Text>
+                      {i === 0
+                        ? t("you")
+                        : `${name} ${t("recentlyRegisteredListItem")} ${quota}`}
+                    </Typography.Text>
+                  </List.Item>
+                ) : null
+              }}
+              bordered
+            />
+          </Col>
+        </Row>
       )}
     </SharedLayout>
   )
