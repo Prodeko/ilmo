@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { ErrorResult, P, SettingsLayout } from "@app/components"
+import { ErrorAlert, P, SettingsLayout } from "@app/components"
 import {
   useConfirmAccountDeletionMutation,
   useRequestAccountDeletionMutation,
@@ -17,7 +17,7 @@ const { Text } = Typography
 const Settings_Accounts: NextPage = () => {
   const router = useRouter()
   const token: string | null =
-    (router && router.query && !Array.isArray(router.query.token)
+    (router?.query?.token && !Array.isArray(router?.query?.token)
       ? router.query.token
       : null) || null
   const [error, setError] = useState<Error | CombinedError | null>(null)
@@ -160,7 +160,7 @@ const Settings_Accounts: NextPage = () => {
             showIcon
           />
         ) : (
-          <ErrorResult error={error} />
+          <ErrorAlert error={error} style={{ marginTop: "12px" }} />
         ))}
 
       <Modal

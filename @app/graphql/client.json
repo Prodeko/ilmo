@@ -47,7 +47,6 @@
    "Login": "07b9497235afa4016a486e034a9d91c9cb9c322e91393cec998f25fa6e98426a",
    "Logout": "83b38cbc6a69d6bab5320022c9afa11c0bb734c2998e00c75444421dc874719d",
    "MakeEmailPrimary": "585b5baf970ccdcfc9031b3063524111fb24c972b41b6902e0b97c26eed8407d",
-   "Register": "dcbde1d565e29bfd0f92394c44c1343ad70b736f402cdbdae0c5e51b7266be09",
    "RequestAccountDeletion": "a15c749947f08c4c76e36aaa48042537e7f011318cb0424a67cceb336b8f1f7d",
    "ResendEmailVerification": "91c3f0e452f0295520ee02ffbb79759b6a96cac6fc9ccaa514ffaa4e1ca8deba",
    "ResetPassword": "0c6997c5a3b8b971a99c59a3ec6bd05d7fd24ff1aa3d7bbcc8a4bb0808de0ad7",

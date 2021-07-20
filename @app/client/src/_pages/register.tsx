@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { FocusEvent, useCallback, useEffect, useRef, useState } from "react"
 import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined"
 import {

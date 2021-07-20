@@ -1,3 +1,5 @@
+# Originally in graphql/user
+# Original file extension: .graphql
 mutation Register(
   $username: String!
   $password: String!

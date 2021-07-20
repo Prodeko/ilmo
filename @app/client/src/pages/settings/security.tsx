@@ -117,7 +117,7 @@ const Settings_Security: NextPage = () => {
       /* noop */
     } else if (graphqlQueryError) {
       return <ErrorResult error={graphqlQueryError} />
-    } else if (data && data.currentUser && !data.currentUser.hasPassword) {
+    } else if (!data?.currentUser?.hasPassword) {
       return (
         <div>
           <PageHeader title="Change passphrase" />

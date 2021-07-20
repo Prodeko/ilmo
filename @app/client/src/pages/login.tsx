@@ -206,13 +206,11 @@ function LoginForm({
           type="password"
         />
       </Form.Item>
-      {process.env.ENABLE_ACCOUNT_REGISTER && (
-        <Form.Item>
-          <Link href="/forgot">
-            <a>Forgotten passphrase?</a>
-          </Link>
-        </Form.Item>
-      )}
+      <Form.Item>
+        <Link href="/forgot">
+          <a>Forgotten passphrase?</a>
+        </Link>
+      </Form.Item>
       {error && code !== "CREDS" && (
         <Form.Item>
           <ErrorAlert error={error} />

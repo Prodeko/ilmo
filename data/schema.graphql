@@ -1843,16 +1843,6 @@ type Mutation {
   ): MakeEmailPrimaryPayload
 
   """
-  Use this mutation to create an account on our system. This may only be used if you are logged out.
-  """
-  register(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: RegisterInput!
-  ): RegisterPayload
-
-  """
   The owner of an `Organization` may remove an `OrganizationMember` with this mutation.
   """
   removeFromOrganization(
@@ -2393,7 +2383,6 @@ type Query {
   Given an invitation UUID (and, if required, the code that was emailed to you), retrieves the `Organization` that you were invited to.
   """
   organizationForInvitation(code: String, invitationId: UUID!): Organization
-  organizationMembership(id: UUID!): OrganizationMembership
 
   """Reads and enables pagination through a set of `Organization`."""
   organizations(
@@ -2668,18 +2657,6 @@ enum QuotasOrderBy {
   PRIMARY_KEY_DESC
   UPDATED_BY_ASC
   UPDATED_BY_DESC
-}
-
-input RegisterInput {
-  avatarUrl: String
-  email: String!
-  name: String
-  password: String!
-  username: String!
-}
-
-type RegisterPayload {
-  user: User!
 }
 
 """Main table for registrations."""

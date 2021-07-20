@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import UserOutlined from "@ant-design/icons/UserOutlined"
-import {
-  AuthRestrict,
-  ErrorAlert,
-  Redirect,
-  SharedLayout,
-} from "@app/components"
+import { AuthRestrict, ErrorAlert, SharedLayout } from "@app/components"
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Col, Form, Input, Row } from "antd"
@@ -43,11 +38,6 @@ const ForgotPassword: NextPage = () => {
     () => void (focusElement.current && focusElement.current!.focus()),
     [focusElement]
   )
-
-  // If account registration is not enabled, redirect to index
-  if (!process.env.ENABLE_ACCOUNT_REGISTER) {
-    return <Redirect href="/" layout />
-  }
 
   if (successfulEmail != null) {
     return (

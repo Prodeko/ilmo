@@ -7,6 +7,7 @@ interface ErrorAlertProps {
   message?: string
   banner?: boolean
   setError?: React.Dispatch<React.SetStateAction<Error | null>>
+  style?: React.CSSProperties
 }
 
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({

@@ -63,6 +63,11 @@
           "omit": "all"
         },
         "constraint": {
+          "organization_memberships_pkey": {
+            "tags": {
+              "omit": true
+            }
+          },
           "organization_memberships_organization_id_user_id_key": {
             "tags": {
               "omit": true

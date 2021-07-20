@@ -27,6 +27,7 @@ import OrdersPlugin from "../plugins/Orders"
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin"
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin"
 import RateLimitPlugin from "../plugins/RateLimitPlugin"
+import RemoveAccountRegistrationFields from "../plugins/RemoveAccountRegistrationFields"
 import RemoveOwnershipInfoForeignKeyConnections from "../plugins/RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin"
@@ -224,10 +225,6 @@ export function getPostGraphileOptions({
       // compatibility. We don't need that.
       RemoveQueryQueryPlugin,
 
-      // Remove connections based on ownership information from the schema.
-      // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
-      RemoveOwnershipInfoForeignKeyConnections,
-
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
 
@@ -245,6 +242,14 @@ export function getPostGraphileOptions({
 
       // Adds the `login` mutation to enable users to log in
       PassportLoginPlugin,
+
+      // Remove connections based on ownership information from the schema.
+      // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
+      RemoveOwnershipInfoForeignKeyConnections,
+
+      // If process.env.ENABLE_REGISTRATION=0, remove fields related to account
+      // registration. Must be below PassportLoginPlugin.
+      RemoveAccountRegistrationFields,
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
