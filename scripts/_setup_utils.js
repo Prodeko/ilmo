@@ -159,9 +159,9 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add(
     "SENTRY_DSN",
-    "https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6",
+    "",
     `\
-# Specify Sentry error tracking Data Source Name`
+# Specify Sentry error tracking Data Source Name and CSP report uri`
   )
 
   add(
@@ -175,7 +175,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "ENABLE_REGISTRATION",
     0,
     `\
-    # Enable account registrations`
+    # Enable / disable account registrations (0 = don't allow users to register new accounts)`
   )
 
   if (projectName) {

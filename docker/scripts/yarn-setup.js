@@ -56,8 +56,9 @@ NEXT_TRANSLATE_PATH=../client
 # Redis is used for session storage and as a rate limiting store
 REDIS_URL=redis://redis:6379
 
-# Specify Sentry error tracking Data Source Name
-SENTRY_DSN=https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6
+# Specify Sentry error tracking Data Source Name and CSP report uri
+SENTRY_DSN=
+SENTRY_REPORT_URI=
 `
     await fsp.writeFile(DOCKER_DOTENV_PATH, data)
   }
