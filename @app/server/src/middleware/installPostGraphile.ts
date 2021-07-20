@@ -343,7 +343,7 @@ export function getPostGraphileOptions({
     ): Promise<Partial<OurGraphQLContext>> {
       const fastifyRequest = req._fastifyRequest as FastifyRequest
       const sessionId = uuidOrNull(fastifyRequest?.user?.session_id)
-      const ipAddress = fastifyRequest.ip
+      const ipAddress = fastifyRequest?.ip
 
       return {
         // The current session id
