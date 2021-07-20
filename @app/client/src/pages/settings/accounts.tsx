@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   ErrorAlert,
   ProdekoIcon,
@@ -47,7 +47,8 @@ function authAvatar(service: string) {
 }
 
 function UnlinkAccountButton({ id }: { id: string }) {
-  const [mutate] = useUnlinkUserAuthenticationMutation()
+  const [_res1, unlinkUserAuthentication] =
+    useUnlinkUserAuthenticationMutation()
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -61,11 +62,11 @@ function UnlinkAccountButton({ id }: { id: string }) {
     setModalOpen(false)
     setDeleting(true)
     try {
-      await mutate({ variables: { id } })
+      await unlinkUserAuthentication({ id })
     } catch (e) {
       setDeleting(false)
     }
-  }, [id, mutate])
+  }, [id, unlinkUserAuthentication])
 
   return (
     <>
@@ -105,10 +106,11 @@ function renderAuth(
 }
 
 const Settings_Accounts: NextPage = () => {
-  const { data, loading, error } = useCurrentUserAuthenticationsQuery()
+  const [query] = useSharedQuery()
+  const [{ data, fetching, error }] = useCurrentUserAuthenticationsQuery()
 
   const linkedAccounts =
-    loading || !data || !data.currentUser ? (
+    fetching || !data || !data.currentUser ? (
       <SpinPadded />
     ) : (
       <List
@@ -119,12 +121,10 @@ const Settings_Accounts: NextPage = () => {
       />
     )
 
-  const query = useSharedQuery()
-
   return (
     <SettingsLayout href="/settings/accounts" query={query}>
       <PageHeader title="Linked accounts" />
-      {error && !loading ? <ErrorAlert error={error} /> : linkedAccounts}
+      {error && !fetching ? <ErrorAlert error={error} /> : linkedAccounts}
       <Card style={{ marginTop: "2rem" }} title="Link another account">
         <SocialLoginOptions
           buttonTextFromService={(service) => `Link ${service} account`}

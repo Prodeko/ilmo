@@ -1,4 +1,3 @@
-import React from "react"
 import { Event } from "@app/graphql"
 import { Card } from "antd"
 import dayjs from "dayjs"

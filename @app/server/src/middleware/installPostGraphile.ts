@@ -2,11 +2,9 @@ import { resolve } from "path"
 
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
-import GraphilePro from "@graphile/pro"
 import _PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
-import { Request, Response } from "express"
-import { FastifyPluginAsync } from "fastify"
+import { FastifyPluginAsync, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
 import { WorkerUtils } from "graphile-worker"
@@ -29,6 +27,7 @@ import OrdersPlugin from "../plugins/Orders"
 import PassportLoginPlugin from "../plugins/PassportLoginPlugin"
 import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin"
 import RateLimitPlugin from "../plugins/RateLimitPlugin"
+import RemoveOwnershipInfoForeignKeyConnections from "../plugins/RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin"
 import { resolveUpload } from "../utils/fileUpload"
@@ -82,9 +81,6 @@ const pluginHook = makePluginHook([
   // Add the pub/sub realtime provider
   PgPubsub,
 
-  // If we have a Graphile Pro license, then enable the plugin
-  ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
-
   // Implements a query allowlist. Only queries in the allowlist can be executed
   // in production
   PersistedOperationsPlugin,
@@ -94,7 +90,7 @@ const pluginHook = makePluginHook([
 // in @app/server/scripts/schema-export.ts. For normal server startup it is required.
 // Same with workerUtils.
 interface PostGraphileOptionsOptions {
-  websocketMiddlewares?: Middleware<Request, Response>[]
+  websocketMiddlewares?: Middleware[]
   rootPgPool: Pool
   redisClient?: Redis
   workerUtils?: WorkerUtils
@@ -106,7 +102,7 @@ export function getPostGraphileOptions({
   redisClient,
   workerUtils,
 }: PostGraphileOptionsOptions) {
-  const options: PostGraphileOptions<Request, Response> = {
+  const options: PostGraphileOptions = {
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
     pluginHook,
 
@@ -127,8 +123,8 @@ export function getPostGraphileOptions({
     // @graphile/subscriptions-lds
     live: false,
 
-    // enableQueryBatching: On the client side, use something like @apollo/client/link/batch-http to make use of this
-    enableQueryBatching: true,
+    // We don't enable query batching since urql doesn't support it, and we don't really need it
+    enableQueryBatching: false,
 
     // dynamicJson: instead of inputting/outputting JSON as strings, input/output raw JSON objects
     dynamicJson: true,
@@ -197,6 +193,14 @@ export function getPostGraphileOptions({
       `${__dirname}../../../../graphql/.persisted_operations/`
     ),
     allowUnpersistedOperation(req) {
+      const query = req?.body?.query
+      // urql doesn't support persisted mutations: https://github.com/FormidableLabs/urql/issues/1287.
+      const isMutation = query?.startsWith("mutation")
+      const isIntroSpectionQuery = query?.startsWith("query IntrospectionQuery")
+
+      if (isMutation || isIntroSpectionQuery) {
+        return true
+      }
       // Allow arbitrary requests to be made via GraphiQL in development
       return (process.env.NODE_ENV === "development" &&
         req.headers.referer?.endsWith("/graphiql"))!
@@ -219,6 +223,10 @@ export function getPostGraphileOptions({
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
       RemoveQueryQueryPlugin,
+
+      // Remove connections based on ownership information from the schema.
+      // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
+      RemoveOwnershipInfoForeignKeyConnections,
 
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
@@ -297,7 +305,8 @@ export function getPostGraphileOptions({
      * whether or not you're using JWTs.
      */
     async pgSettings(req) {
-      const sessionId = uuidOrNull(req?.user?.session_id)
+      const fastifyRequest = req._fastifyRequest as FastifyRequest
+      const sessionId = uuidOrNull(fastifyRequest?.user?.session_id)
       if (sessionId) {
         // Update the last_active timestamp (but only do it at most once every 15 seconds to avoid too much churn).
         await rootPgPool.query(
@@ -327,14 +336,15 @@ export function getPostGraphileOptions({
     async additionalGraphQLContextFromRequest(
       req
     ): Promise<Partial<OurGraphQLContext>> {
+      const fastifyRequest = req._fastifyRequest as FastifyRequest
+      const sessionId = uuidOrNull(fastifyRequest?.user?.session_id)
+      const ipAddress = fastifyRequest.ip
+
       return {
         // The current session id
-        sessionId: uuidOrNull(req?.user?.session_id),
+        sessionId,
 
-        // IP address from request. Compatability middleware fastify-express
-        // modifies the raw request object to include the ip. Could also use
-        // req._fastifyRequest.ip but that would break in tests.
-        ipAddress: req.ip,
+        ipAddress,
 
         // Needed by RateLimitPlugin
         redisClient,
@@ -346,28 +356,11 @@ export function getPostGraphileOptions({
         // Needed so passport can write to the database
         rootPgPool,
 
-        // Use this to tell Passport.js we're logged in
-        login: (user: any) =>
-          new Promise((resolve, reject) => {
-            req.login(user, (err) => (err ? reject(err) : resolve()))
-          }),
-
-        logout: () => {
-          req.logout()
-          return Promise.resolve()
-        },
+        // Use these to tell Passport.js we're logged in / out
+        login: async (user: any) => await fastifyRequest.logIn(user),
+        logout: () => fastifyRequest.logOut(),
       }
     },
-    // Pro plugin options (requires process.env.GRAPHILE_LICENSE)
-    defaultPaginationCap:
-      parseInt(process.env.GRAPHQL_PAGINATION_CAP || "", 10) || 50,
-    graphqlDepthLimit:
-      parseInt(process.env.GRAPHQL_DEPTH_LIMIT || "", 10) || 12,
-    graphqlCostLimit:
-      parseInt(process.env.GRAPHQL_COST_LIMIT || "", 10) || 30000,
-    exposeGraphQLCost:
-      (parseInt(process.env.HIDE_QUERY_COST || "", 10) || 0) < 1,
-    // readReplicaPgPool ...,
   }
   return options
 }
@@ -391,13 +384,6 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       workerUtils,
     })
   )
-
-  // Add 'postgraphileMiddleware' to the raw request object.
-  // Used in makeServerSideLink in @app/lib/src/withApollo.tsx
-  app.decorateRequest("postgraphileMiddleware", null)
-  app.addHook("onRequest", async (req, _res) => {
-    req.raw.postgraphileMiddleware = middleware
-  })
 
   app.options(
     middleware.graphqlRoute,

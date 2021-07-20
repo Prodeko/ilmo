@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.2
--- Dumped by pg_dump version 13.2
+-- Dumped from database version 13.3
+-- Dumped by pg_dump version 13.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1049,8 +1049,6 @@ CREATE TABLE app_public.quotas (
     "position" smallint NOT NULL,
     title jsonb NOT NULL,
     size smallint NOT NULL,
-    questions_public json,
-    questions_private json,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -1093,20 +1091,6 @@ COMMENT ON COLUMN app_public.quotas.title IS 'Title for the quota.';
 --
 
 COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
-
-
---
--- Name: COLUMN quotas.questions_public; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.questions_public IS 'Public questions related to the quota.';
-
-
---
--- Name: COLUMN quotas.questions_private; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.quotas.questions_private IS 'Private questions related to the quota.';
 
 
 --
@@ -4065,7 +4049,7 @@ GRANT USAGE ON SCHEMA app_public TO ilmo_visitor;
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: -
 --
 
-REVOKE ALL ON SCHEMA public FROM timo;
+REVOKE ALL ON SCHEMA public FROM riski;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO ilmo;
 GRANT USAGE ON SCHEMA public TO ilmo_visitor;

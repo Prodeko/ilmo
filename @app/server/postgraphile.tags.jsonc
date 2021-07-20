@@ -26,6 +26,13 @@
            */
           "omit": "all"
         },
+        "constraint": {
+          "users_username_key": {
+            "tags": {
+              "omit": true
+            }
+          }
+        },
         "description": "A user who can log in to the application."
       },
       "app_public.organizations": {

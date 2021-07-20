@@ -1,7 +1,0 @@
-query EventSlugById($id: UUID!) {
-  event(id: $id) {
-    id
-    slug
-    __typename
-  }
-}

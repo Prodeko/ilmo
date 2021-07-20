@@ -1,43 +1,41 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import UserOutlined from "@ant-design/icons/UserOutlined"
-import { ApolloError } from "@apollo/client"
-import { AuthRestrict, SharedLayout } from "@app/components"
+import {
+  AuthRestrict,
+  ErrorAlert,
+  Redirect,
+  SharedLayout,
+} from "@app/components"
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
-import { extractError, getCodeFromError } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Alert, Button, Form, Input } from "antd"
+import { Alert, Button, Col, Form, Input, Row } from "antd"
 import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Link from "next/link"
 
 const ForgotPassword: NextPage = () => {
-  const [error, setError] = useState<Error | ApolloError | null>(null)
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
   const [form] = useForm()
-  const [forgotPassword] = useForgotPasswordMutation()
+  const [{ error }, forgotPassword] = useForgotPasswordMutation()
   const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null)
 
   const handleSubmit = useCallback(
     (values): void => {
-      setError(null)
       ;(async () => {
         try {
           const email = values.email
-          await forgotPassword({
-            variables: {
-              email,
-            },
+          const { error } = await forgotPassword({
+            email,
           })
-          // Success: refetch
+          if (error) throw error
           setSuccessfulEmail(email)
         } catch (e) {
-          setError(e)
           Sentry.captureException(e)
         }
       })()
     },
-    [forgotPassword, setError]
+    [forgotPassword]
   )
 
   const focusElement = useRef<Input>(null)
@@ -46,7 +44,10 @@ const ForgotPassword: NextPage = () => {
     [focusElement]
   )
 
-  const code = getCodeFromError(error)
+  // If account registration is not enabled, redirect to index
+  if (!process.env.ENABLE_ACCOUNT_REGISTER) {
+    return <Redirect href="/" layout />
+  }
 
   if (successfulEmail != null) {
     return (
@@ -66,55 +67,51 @@ const ForgotPassword: NextPage = () => {
       query={query}
       title="Forgot Password"
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item
-          name="email"
-          rules={[
-            {
-              type: "email",
-              message: "The input is not valid E-mail",
-            },
-            { required: true, message: "Please input your email" },
-          ]}
-        >
-          <Input
-            ref={focusElement}
-            placeholder="Email"
-            prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
-          />
-        </Form.Item>
+      <Row justify="center" style={{ marginTop: 32 }}>
+        <Col sm={12} xs={24}>
+          <Form
+            form={form}
+            layout="vertical"
+            style={{ width: "100%" }}
+            onFinish={handleSubmit}
+          >
+            <Form.Item
+              name="email"
+              rules={[
+                {
+                  type: "email",
+                  message: "The input is not valid E-mail",
+                },
+                { required: true, message: "Please input your email" },
+              ]}
+            >
+              <Input
+                ref={focusElement}
+                placeholder="Email"
+                prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+              />
+            </Form.Item>
 
-        {error && (
-          <Form.Item>
-            <Alert
-              description={
-                <span>
-                  {extractError(error).message}
-                  {code && (
-                    <span>
-                      (Error code: <code>ERR_{code}</code>)
-                    </span>
-                  )}
-                </span>
-              }
-              message={`Something went wrong`}
-              type="error"
-            />
-          </Form.Item>
-        )}
-        <Form.Item>
-          <Button htmlType="submit" type="primary">
-            Reset password
-          </Button>
-        </Form.Item>
-        <Form.Item>
-          <p>
-            <Link href="/login">
-              <a>Remembered your password? Log in.</a>
-            </Link>
-          </p>
-        </Form.Item>
-      </Form>
+            {error && (
+              <Form.Item>
+                <ErrorAlert error={error} message="Something went wrong" />
+              </Form.Item>
+            )}
+            <Form.Item>
+              <Button htmlType="submit" type="primary">
+                Reset password
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <p>
+                <Link href="/login">
+                  <a>Remembered your password? Log in.</a>
+                </Link>
+              </p>
+            </Form.Item>
+          </Form>
+        </Col>
+      </Row>
     </SharedLayout>
   )
 }

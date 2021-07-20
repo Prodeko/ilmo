@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react"
+import { CSSProperties } from "react"
 import Icon from "@ant-design/icons"
 
 interface SvgProps {

@@ -1,5 +1,4 @@
-import React, { useEffect } from "react"
-import { useApolloClient } from "@apollo/client"
+import { useEffect } from "react"
 import { Skeleton } from "antd"
 import Router from "next/router"
 import useTranslation from "next-translate/useTranslation"
@@ -13,20 +12,15 @@ export interface RedirectProps {
 }
 
 export const DummyPage: React.FC = ({ children }) => {
-  const client = useApolloClient()
   const { t } = useTranslation("common")
 
   return (
     <SharedLayout
       query={{
-        loading: true,
+        fetching: true,
         data: undefined,
         error: undefined,
-        networkStatus: 0,
-        client,
-        refetch: (async () => {
-          throw new Error(t("redirect"))
-        }) as any,
+        stale: false,
       }}
       title={t("redirect")}
     >

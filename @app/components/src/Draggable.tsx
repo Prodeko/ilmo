@@ -1,4 +1,4 @@
-import React, { DragEventHandler, useRef } from "react"
+import { DragEventHandler, useRef } from "react"
 import { useDrag, useDrop } from "react-dnd"
 
 type DragWithIndex = {

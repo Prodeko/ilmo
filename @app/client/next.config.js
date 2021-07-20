@@ -33,7 +33,6 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
       withAntdLess,
       withNextTranslate
     )({
-      webpack5: false,
       useFileSystemPublicRoutes: true,
       poweredByHeader: false,
       trailingSlash: false,
@@ -57,11 +56,11 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
           if (Array.isArray(externals)) {
             return externals.map((ext) => {
               if (typeof ext === "function") {
-                return (context, request, callback) => {
+                return ({ request, ...rest }, callback) => {
                   if (/^@app\//.test(request)) {
                     callback()
                   } else {
-                    return ext(context, request, callback)
+                    return ext({ request, ...rest }, callback)
                   }
                 }
               } else {
@@ -86,11 +85,13 @@ const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
                * server side when performing SSR.
                */
               "process.env.ROOT_URL":
-                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.ROOT_URL : process.env.ROOT_URL)",
+                "(typeof window !== 'undefined' ? window.__ILMO_APP__.ROOT_URL : process.env.ROOT_URL)",
               "process.env.T_AND_C_URL":
-                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.T_AND_C_URL : process.env.T_AND_C_URL)",
+                "(typeof window !== 'undefined' ? window.__ILMO_APP__.T_AND_C_URL : process.env.T_AND_C_URL)",
               "process.env.SENTRY_DSN":
-                "(typeof window !== 'undefined' ? window.__GRAPHILE_APP__.SENTRY_DSN : process.env.SENTRY_DSN)",
+                "(typeof window !== 'undefined' ? window.__ILMO_APP__.SENTRY_DSN : process.env.SENTRY_DSN)",
+              "process.env.ENABLE_REGISTRATION":
+                "(typeof window !== 'undefined' ? window.__ILMO_APP__.ENABLE_REGISTRATION : process.env.ENABLE_REGISTRATION)",
             }),
             new webpack.IgnorePlugin(
               // These modules are server-side only; we don't want webpack

@@ -26,9 +26,7 @@ test("currentUser when logged out", async () => {
     {},
 
     // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
-    {
-      user: null,
-    },
+    {},
 
     // This function runs all your test assertions:
     async (json) => {

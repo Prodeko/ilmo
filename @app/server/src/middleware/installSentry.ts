@@ -13,7 +13,7 @@ declare module "fastify" {
   }
 }
 
-// Adapted from https://docs.sentry.io/platforms/node/guides/koa/
+// Adapted from https://github.com/getsentry/sentry-javascript/blob/master/packages/nextjs/src/utils/handlers.ts
 const SentryRequestHandler: FastifyPluginAsync = async (app) => {
   app.decorate("__sentry_transaction", null)
   app.addHook("onRequest", async (req, res) => {
@@ -22,8 +22,10 @@ const SentryRequestHandler: FastifyPluginAsync = async (app) => {
 
     // connect to trace of upstream app
     let traceparentData
-    if (req["sentry-trace"]) {
-      traceparentData = extractTraceparentData(req["sentry-trace"])
+    if (req.headers["sentry-trace"]) {
+      traceparentData = extractTraceparentData(
+        req.headers["sentry-trace"] as string
+      )
     }
 
     const transaction = Sentry.startTransaction({
@@ -33,6 +35,11 @@ const SentryRequestHandler: FastifyPluginAsync = async (app) => {
     })
     app.__sentry_transaction = transaction
 
+    transaction.setHttpStatus(res.statusCode)
+  })
+
+  app.addHook("onResponse", async (req, res) => {
+    const transaction = app.__sentry_transaction
     transaction.setHttpStatus(res.statusCode)
     transaction.finish()
   })

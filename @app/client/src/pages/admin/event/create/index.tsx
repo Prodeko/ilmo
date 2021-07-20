@@ -1,4 +1,3 @@
-import React from "react"
 import { AdminLayout, EventForm } from "@app/components"
 import {
   CreateEventDocument,
@@ -13,7 +12,7 @@ import useTranslation from "next-translate/useTranslation"
 const Admin_CreateEvent: NextPage = () => {
   const { t } = useTranslation("admin")
   const router = useRouter()
-  const query = useCreateEventPageQuery()
+  const [query] = useCreateEventPageQuery()
 
   return (
     <AdminLayout href="/admin/event/create" query={query}>

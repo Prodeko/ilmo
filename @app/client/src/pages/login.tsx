@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import LockOutlined from "@ant-design/icons/LockOutlined"
 import UserAddOutlined from "@ant-design/icons/UserAddOutlined"
 import UserOutlined from "@ant-design/icons/UserOutlined"
-import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   AuthRestrict,
   ButtonLink,
   Col,
+  ErrorAlert,
   Redirect,
   Row,
   SharedLayout,
@@ -14,13 +14,9 @@ import {
   SocialLoginOptions,
 } from "@app/components"
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
-import {
-  extractError,
-  getCodeFromError,
-  resetWebsocketConnection,
-} from "@app/lib"
+import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Alert, Button, Form, Input } from "antd"
+import { Button, Form, Input } from "antd"
 import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Link from "next/link"
@@ -33,6 +29,8 @@ function hasErrors(fieldsError: Object) {
 
 interface LoginProps {
   next: string | null
+  // Comes from _app.tsx withUrql HOC
+  resetUrqlClient?: () => void
 }
 
 export function isSafe(nextUrl: string | null) {
@@ -42,11 +40,11 @@ export function isSafe(nextUrl: string | null) {
 /**
  * Login page just renders the standard layout and embeds the login form
  */
-const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
-  const [error, setError] = useState<Error | ApolloError | null>(null)
-  const [showLogin, setShowLogin] = useState<boolean>(false)
+const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
+  const [showLogin, setShowLogin] = useState(false)
+  const [query] = useSharedQuery()
+
   const next: string = isSafe(rawNext) ? rawNext! : "/"
-  const query = useSharedQuery()
 
   return (
     <SharedLayout
@@ -61,14 +59,11 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
           <Row justify="center" style={{ marginTop: 32 }}>
             {showLogin ? (
               <Col sm={12} xs={24}>
-                <Row>
-                  <LoginForm
-                    error={error}
-                    setError={setError}
-                    onCancel={() => setShowLogin(false)}
-                    onSuccessRedirectTo={next}
-                  />
-                </Row>
+                <LoginForm
+                  resetUrqlClient={resetUrqlClient}
+                  onCancel={() => setShowLogin(false)}
+                  onSuccessRedirectTo={next}
+                />
               </Col>
             ) : (
               <Col sm={12} xs={24}>
@@ -91,20 +86,22 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                     <SocialLoginOptions next={next} />
                   </Col>
                 </Row>
-                <Row justify="center">
-                  <Col flex={1}>
-                    <ButtonLink
-                      data-cy="loginpage-button-register"
-                      href={`/register?next=${encodeURIComponent(next)}`}
-                      icon={<UserAddOutlined />}
-                      size="large"
-                      type="default"
-                      block
-                    >
-                      Create an account
-                    </ButtonLink>
-                  </Col>
-                </Row>
+                {process.env.ENABLE_ACCOUNT_REGISTER && (
+                  <Row justify="center">
+                    <Col flex={1}>
+                      <ButtonLink
+                        data-cy="loginpage-button-register"
+                        href={`/register?next=${encodeURIComponent(next)}`}
+                        icon={<UserAddOutlined />}
+                        size="large"
+                        type="default"
+                        block
+                      >
+                        Create an account
+                      </ButtonLink>
+                    </Col>
+                  </Row>
+                )}
               </Col>
             )}
           </Row>
@@ -122,35 +119,30 @@ export default Login
 
 interface LoginFormProps {
   onSuccessRedirectTo: string
-  error: Error | ApolloError | null
-  setError: (error: Error | ApolloError | null) => void
   onCancel: () => void
+  resetUrqlClient: () => void
 }
 
 function LoginForm({
   onSuccessRedirectTo,
   onCancel,
-  error,
-  setError,
+  resetUrqlClient,
 }: LoginFormProps) {
   const [form] = useForm()
-  const [login] = useLoginMutation({})
-  const client = useApolloClient()
+  const [{ error }, login] = useLoginMutation()
 
   const [submitDisabled, setSubmitDisabled] = useState(false)
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setError(null)
       try {
-        await login({
-          variables: {
-            username: values.username,
-            password: values.password,
-          },
+        const { error } = await login({
+          username: values.username,
+          password: values.password,
         })
+        if (error) throw error
         // Success: refetch
         resetWebsocketConnection()
-        client.resetStore()
+        resetUrqlClient()
         Router.push(onSuccessRedirectTo)
       } catch (e) {
         const code = getCodeFromError(e)
@@ -164,19 +156,15 @@ function LoginForm({
           ])
           setSubmitDisabled(true)
         } else {
-          setError(e)
           Sentry.captureException(e)
         }
       }
     },
-    [client, form, login, onSuccessRedirectTo, setError]
+    [form, login, onSuccessRedirectTo, resetUrqlClient]
   )
 
   const focusElement = useRef<Input>(null)
-  useEffect(
-    () => void (focusElement.current && focusElement.current!.focus()),
-    [focusElement]
-  )
+  useEffect(() => void focusElement?.current!.focus(), [focusElement])
 
   const handleValuesChange = useCallback(() => {
     setSubmitDisabled(hasErrors(form.getFieldsError().length !== 0))
@@ -218,27 +206,16 @@ function LoginForm({
           type="password"
         />
       </Form.Item>
-      <Form.Item>
-        <Link href="/forgot">
-          <a>Forgotten passphrase?</a>
-        </Link>
-      </Form.Item>
-      {error && (
+      {process.env.ENABLE_ACCOUNT_REGISTER && (
         <Form.Item>
-          <Alert
-            description={
-              <span>
-                {extractError(error).message}
-                {code && (
-                  <span>
-                    (Error code: <code>ERR_{code}</code>)
-                  </span>
-                )}
-              </span>
-            }
-            message={`Sign in failed`}
-            type="error"
-          />
+          <Link href="/forgot">
+            <a>Forgotten passphrase?</a>
+          </Link>
+        </Form.Item>
+      )}
+      {error && code !== "CREDS" && (
+        <Form.Item>
+          <ErrorAlert error={error} />
         </Form.Item>
       )}
       <Form.Item>

@@ -10,7 +10,7 @@ const isDev = process.env.NODE_ENV === "development"
 interface ParsedError {
   message: string
   status: number
-  code?: string
+  extensions?: { code?: string }
 }
 
 function parseError(error: FastifyError): ParsedError {
@@ -20,11 +20,10 @@ function parseError(error: FastifyError): ParsedError {
    * You should override this for specific classes of errors below.
    */
 
-  if (error["code"] === "EBADCSRFTOKEN") {
+  if (error["message"].includes("csrf")) {
     return {
       message: "Invalid CSRF token: please reload the page.",
       status: 403,
-      code: error["code"],
     }
   }
 
@@ -59,6 +58,8 @@ function _getErrorPage({ message }: ParsedError) {
 
 const ErrorHandler: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error, _req, res): void => {
+    console.error(error)
+
     const parsedError = parseError(error)
     const errorMessageString = `ERROR: ${parsedError.message}`
 
@@ -69,7 +70,12 @@ const ErrorHandler: FastifyPluginAsync = async (app) => {
 
     res.status(parsedError.status)
     res.header("Content-Type", "application/json; charset=utf-8").send({
-      errors: [{ message: errorMessageString, code: parsedError.code }],
+      errors: [
+        {
+          message: errorMessageString,
+          extensions: { ...parsedError.extensions },
+        },
+      ],
     })
   })
 }

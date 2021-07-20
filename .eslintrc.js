@@ -150,7 +150,9 @@ module.exports = {
         ],
         "react/prop-types": 0,
         "react/no-multi-comp": 0,
-        "react/jsx-filename-extension": 0,
+        // Next.js automatically imports React
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-filename-extension": [1, { extensions: [".ts", ".tsx"] }],
         "react/no-unescaped-entities": 0,
 
         "import/no-extraneous-dependencies": 0,

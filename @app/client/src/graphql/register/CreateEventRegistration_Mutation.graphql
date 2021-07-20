@@ -18,6 +18,14 @@ mutation CreateEventRegistration(
   ) {
     registration {
       ...EventPage_Registration
+      quota {
+        ...EventPage_Quota
+      }
+      # Get the event name for cache updates. See withUrql.ts
+      # for more information.
+      event {
+        slug
+      }
     }
   }
 }

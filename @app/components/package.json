@@ -9,32 +9,31 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
-    "@apollo/client": "3.3.20",
     "@app/graphql": "0.0.0",
     "@app/lib": "0.0.0",
     "@babel/runtime": "^7.14.6",
-    "@sentry/react": "^6.7.2",
-    "antd": "^4.16.5",
+    "@sentry/react": "^6.9.0",
+    "antd": "^4.16.8",
     "antd-button-color": "^1.0.4",
-    "antd-img-crop": "^3.14.2",
+    "antd-img-crop": "^3.14.3",
     "lodash": "^4.17.21",
     "next": "^11.0.1",
     "next-translate": "^1.0.7",
     "rc-field-form": "^1.21.1",
     "react": "^17.0.2",
-    "react-color-palette": "^5.0.0",
-    "react-country-flag": "^2.3.0",
+    "react-color-palette": "^6.0.0",
+    "react-country-flag": "^2.3.1",
     "react-dnd": "^14.0.2",
     "react-dnd-html5-backend": "^14.0.0",
     "react-icons": "^4.2.0",
-    "slugify": "^1.5.3",
+    "slugify": "^1.6.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",
     "babel-plugin-import": "^1.13.3",
     "cross-env": "^7.0.3",
-    "jest": "^27.0.5",
-    "typescript": "^4.3.4"
+    "jest": "^27.0.6",
+    "typescript": "^4.3.5"
   }
 }

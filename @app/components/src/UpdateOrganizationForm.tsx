@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   OrganizationPage_OrganizationFragment,
   useDeleteOrganizationMutation,
@@ -33,10 +33,10 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
   const { t } = useTranslation("admin")
   const [form] = useForm()
   const router = useRouter()
-  const [updateOrganization] = useUpdateOrganizationMutation()
   const [error, setError] = useState<Error | null>(null)
-  const [deleteOrganization] = useDeleteOrganizationMutation()
   const [deleting, setDeleting] = useState(false)
+  const [_res1, updateOrganization] = useUpdateOrganizationMutation()
+  const [_res2, deleteOrganization] = useDeleteOrganizationMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -47,10 +47,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
     try {
       setDeleting(true)
       await deleteOrganization({
-        variables: {
-          organizationId,
-        },
-        refetchQueries: ["SharedLayout"],
+        organizationId,
       })
       message.info(`Organization '${name}' successfully deleted`)
       router.push("/")
@@ -66,11 +63,9 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
       try {
         setError(null)
         const { data } = await updateOrganization({
-          variables: {
-            input: {
-              id: organizationId,
-              patch: { slug: values.slug, name: values.name },
-            },
+          input: {
+            id: organizationId,
+            patch: { slug: values.slug, name: values.name },
           },
         })
         message.success("Organization updated")

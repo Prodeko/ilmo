@@ -1,21 +1,14 @@
-import React, {
-  FocusEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { FocusEvent, useCallback, useEffect, useRef, useState } from "react"
 import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined"
-import { ApolloError, useApolloClient } from "@apollo/client"
 import {
   AuthRestrict,
+  ErrorAlert,
   PasswordStrength,
   Redirect,
   SharedLayout,
 } from "@app/components"
 import { useRegisterMutation, useSharedQuery } from "@app/graphql"
 import {
-  extractError,
   formItemLayout,
   getCodeFromError,
   getExceptionFromError,
@@ -24,7 +17,7 @@ import {
   tailFormItemLayout,
 } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Alert, Button, Form, Input, Tooltip } from "antd"
+import { Button, Form, Input, Tooltip } from "antd"
 import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Router from "next/router"
@@ -34,38 +27,40 @@ import { isSafe } from "../login"
 
 interface RegisterProps {
   next: string | null
+  // Comes from _app.tsx withUrql HOC
+  resetUrqlClient?: () => void
 }
 
 /**
  * The registration page just renders the standard layout and embeds the
  * registration form.
  */
-const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
-  const [error, setError] = useState<Error | ApolloError | null>(null)
+const Register: NextPage<RegisterProps> = ({
+  next: rawNext,
+  resetUrqlClient,
+}) => {
   const [passwordStrength, setPasswordStrength] = useState<number>(0)
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
   const next: string = isSafe(rawNext) ? rawNext! : "/"
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
-  const [register] = useRegisterMutation({})
-  const client = useApolloClient()
+  const [{ error }, register] = useRegisterMutation()
   const [confirmDirty, setConfirmDirty] = useState(false)
   const [form] = useForm()
 
   const handleSubmit = useCallback(
     async (values: Store) => {
       try {
-        await register({
-          variables: {
-            username: values.username,
-            email: values.email,
-            password: values.password,
-            name: values.name,
-          },
+        const { error } = await register({
+          username: values.username,
+          email: values.email,
+          password: values.password,
+          name: values.name,
         })
+        if (error) throw error
         // Success: refetch
         resetWebsocketConnection()
-        client.resetStore()
+        resetUrqlClient()
         Router.push(next)
       } catch (e) {
         const code = getCodeFromError(e)
@@ -112,12 +107,11 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
             },
           ])
         } else {
-          setError(e)
           Sentry.captureException(e)
         }
       }
     },
-    [form, register, client, next]
+    [form, register, resetUrqlClient, next]
   )
 
   const handleConfirmBlur = useCallback(
@@ -172,7 +166,6 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
     [form]
   )
 
-  const code = getCodeFromError(error)
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
@@ -322,20 +315,7 @@ const Register: NextPage<RegisterProps> = ({ next: rawNext }) => {
             </Form.Item>
             {error && (
               <Form.Item label="Error">
-                <Alert
-                  description={
-                    <span>
-                      {extractError(error).message}
-                      {code && (
-                        <span>
-                          (Error code: <code>ERR_{code}</code>)
-                        </span>
-                      )}
-                    </span>
-                  }
-                  message={`Registration failed`}
-                  type="error"
-                />
+                <ErrorAlert error={error} message="Registration failed" />
               </Form.Item>
             )}
             <Form.Item {...tailFormItemLayout}>

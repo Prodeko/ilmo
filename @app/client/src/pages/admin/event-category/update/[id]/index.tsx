@@ -1,4 +1,3 @@
-import React from "react"
 import {
   AdminLayout,
   EventCategoryForm,
@@ -36,14 +35,14 @@ const Admin_UpdateEventCategory: NextPage = () => {
   const { t } = useTranslation("admin")
   const router = useRouter()
   const categoryId = useQueryId()
-  const query = useUpdateEventCategoryPageQuery({
+  const [query] = useUpdateEventCategoryPageQuery({
     variables: { id: categoryId },
   })
-  const { loading, error } = query
-  const eventCategory = query?.data?.eventCategory
+  const { data, fetching, error } = query
+  const eventCategory = data?.eventCategory
 
   // If event category is not found redirect to index
-  if (!loading && !error && !eventCategory) {
+  if (!fetching && !error && !eventCategory) {
     return <Redirect href="/" layout />
   }
 
@@ -57,7 +56,7 @@ const Admin_UpdateEventCategory: NextPage = () => {
           />
           <EventCategoryForm
             categoryId={categoryId}
-            data={query.data}
+            data={data}
             formRedirect="/admin/event-category/list"
             initialValues={constructInitialValues(eventCategory)}
             type="update"

@@ -3,7 +3,6 @@
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "eslint.enable": true,
   "eslint.lintTask.enable": true,
   "eslint.lintTask.options": "--ext .js,.jsx,.ts,.tsx,.graphql .",
   "eslint.validate": [
@@ -21,6 +20,8 @@
   "files.trimTrailingWhitespace": true,
 
   "prettier.disableLanguages": [],
+
+  "typescript.tsdk": "./node_modules/typescript/lib",
 
   "files.associations": {
     ".gmrc": "jsonc"

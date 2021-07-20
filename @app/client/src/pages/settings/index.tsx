@@ -1,17 +1,11 @@
-import React, { useCallback, useState } from "react"
-import { ApolloError } from "@apollo/client"
+import { useCallback, useState } from "react"
 import { ErrorAlert, Redirect, SettingsLayout } from "@app/components"
 import {
   ProfileSettingsForm_UserFragment,
   useSettingsProfileQuery,
   useUpdateUserMutation,
 } from "@app/graphql"
-import {
-  extractError,
-  formItemLayout,
-  getCodeFromError,
-  tailFormItemLayout,
-} from "@app/lib"
+import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
 import { useForm } from "antd/lib/form/Form"
@@ -21,19 +15,14 @@ import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Profile: NextPage = () => {
   const { t } = useTranslation()
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
-  const query = useSettingsProfileQuery()
-  const { data, loading, error } = query
+  const [query] = useSettingsProfileQuery()
+  const { data, fetching, error } = query
 
   return (
     <SettingsLayout href="/settings" query={query}>
       {data && data.currentUser ? (
-        <ProfileSettingsForm
-          error={formError}
-          setError={setFormError}
-          user={data.currentUser}
-        />
-      ) : loading ? (
+        <ProfileSettingsForm user={data.currentUser} />
+      ) : fetching ? (
         t("common:loading")
       ) : error ? (
         <ErrorAlert error={error} />
@@ -48,34 +37,25 @@ export default Settings_Profile
 
 interface ProfileSettingsFormProps {
   user: ProfileSettingsForm_UserFragment
-  error: Error | ApolloError | null
-  setError: (error: Error | ApolloError | null) => void
 }
 
-function ProfileSettingsForm({
-  user,
-  error,
-  setError,
-}: ProfileSettingsFormProps) {
+function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
   const [form] = useForm()
-  const [updateUser] = useUpdateUserMutation()
+  const [{ error }, updateUser] = useUpdateUserMutation()
   const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
     async (values: Store) => {
       setSuccess(false)
-      setError(null)
       try {
-        await updateUser({
-          variables: {
-            id: user.id,
-            patch: {
-              username: values.username,
-              name: values.name,
-            },
+        const { error } = await updateUser({
+          id: user.id,
+          patch: {
+            username: values.username,
+            name: values.name,
           },
         })
-        setError(null)
+        if (error) throw error
         setSuccess(true)
       } catch (e) {
         const errcode = getCodeFromError(e)
@@ -90,15 +70,13 @@ function ProfileSettingsForm({
             },
           ])
         } else {
-          setError(e)
           Sentry.captureException(e)
         }
       }
     },
-    [setError, updateUser, user.id, form]
+    [updateUser, user.id, form]
   )
 
-  const code = getCodeFromError(error)
   return (
     <div>
       <PageHeader title="Edit profile" />
@@ -134,20 +112,7 @@ function ProfileSettingsForm({
         </Form.Item>
         {error ? (
           <Form.Item>
-            <Alert
-              description={
-                <span>
-                  {extractError(error).message}
-                  {code && (
-                    <span>
-                      (Error code: <code>ERR_{code}</code>)
-                    </span>
-                  )}
-                </span>
-              }
-              message={`Updating username`}
-              type="error"
-            />
+            <ErrorAlert error={error} message="Updating username" />
           </Form.Item>
         ) : success ? (
           <Form.Item>

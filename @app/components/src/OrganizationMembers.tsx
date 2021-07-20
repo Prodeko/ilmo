@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   OrganizationPage_MembershipFragment,
   OrganizationPage_OrganizationFragment,
@@ -57,7 +57,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
     [currentUser, organization]
   )
 
-  const [inviteToOrganization] = useInviteToOrganizationMutation()
+  const [_res1, inviteToOrganization] = useInviteToOrganizationMutation()
   const [inviteInProgress, setInviteInProgress] = useState(false)
   const [form] = Form.useForm()
   const handleInviteSubmit = useCallback(
@@ -70,11 +70,9 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
       const isEmail = inviteText.includes("@")
       try {
         await inviteToOrganization({
-          variables: {
-            organizationId: organization.id,
-            email: isEmail ? inviteText : null,
-            username: isEmail ? null : inviteText,
-          },
+          organizationId: organization.id,
+          email: isEmail ? inviteText : null,
+          username: isEmail ? null : inviteText,
         })
         message.success(`'${inviteText}' invited.`)
         form.setFieldsValue({ inviteText: "" })
@@ -152,15 +150,12 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   const { node, organization, currentUser } = props
 
   const { t } = useTranslation("admin")
-  const [removeMember] = useRemoveFromOrganizationMutation()
+  const [_res1, removeMember] = useRemoveFromOrganizationMutation()
   const handleRemove = useCallback(async () => {
     try {
       await removeMember({
-        variables: {
-          organizationId: organization.id,
-          userId: node.user?.id ?? 0,
-        },
-        refetchQueries: ["OrganizationMembers"],
+        organizationId: organization.id,
+        userId: node.user?.id ?? 0,
       })
     } catch (e) {
       message.error("Error occurred when removing member: " + e.message)
@@ -168,15 +163,12 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
     }
   }, [node.user, organization.id, removeMember])
 
-  const [transferOwnership] = useTransferOrganizationOwnershipMutation()
+  const [_res2, transferOwnership] = useTransferOrganizationOwnershipMutation()
   const handleTransfer = useCallback(async () => {
     try {
       await transferOwnership({
-        variables: {
-          organizationId: organization.id,
-          userId: node.user?.id ?? 0,
-        },
-        refetchQueries: ["OrganizationMembers"],
+        organizationId: organization.id,
+        userId: node.user?.id ?? 0,
       })
     } catch (e) {
       message.error("Error occurred when transferring ownership: " + e.message)

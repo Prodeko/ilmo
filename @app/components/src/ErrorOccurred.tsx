@@ -1,4 +1,3 @@
-import React from "react"
 import Link from "next/link"
 
 import { H2, P } from "./Text"

@@ -25,5 +25,9 @@
   "signin": "Sign in",
   "status": "Status",
   "update": "Update",
-  "yes": "Yes"
+  "yes": "Yes",
+  "head": {
+    "title": "Prodeko event registration",
+    "description": "Prodeko event registration"
+  }
 }

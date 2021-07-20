@@ -1,23 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { ApolloError } from "@apollo/client"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   CreateEventCategoryPageQuery,
   UpdateEventCategoryPageQuery,
   useCreateEventCategoryMutation,
   useUpdateEventCategoryMutation,
 } from "@app/graphql"
-import {
-  extractError,
-  formItemLayout,
-  getCodeFromError,
-  tailFormItemLayout,
-} from "@app/lib"
-import * as Sentry from "@sentry/react"
-import { Alert, Button, Form, Input, Select } from "antd"
+import { formItemLayout, tailFormItemLayout } from "@app/lib"
+import { Button, Form, Input, Select } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+import { CombinedError } from "urql"
 
 import { ColorPicker } from "./ColorPicker"
+import { ErrorAlert } from "./ErrorAlert"
 
 const { Option } = Select
 
@@ -46,21 +41,21 @@ export const EventCategoryForm = ({
     [type, languages, supportedLanguages]
   )
 
-  // Translations, router, apollo
+  // Translations, router, urql
   const { t } = useTranslation("events")
   const router = useRouter()
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
   const [formSubmitting, setFormSubmitting] = useState(false)
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
+  const [formError, setFormError] = useState<Error | CombinedError | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     initialSelectedLanguages || []
   )
 
   // Mutations
-  const [updateEventCategory] = useUpdateEventCategoryMutation()
-  const [createEventCategory] = useCreateEventCategoryMutation()
+  const [_res1, updateEventCategory] = useUpdateEventCategoryMutation()
+  const [_res2, createEventCategory] = useCreateEventCategoryMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -79,24 +74,21 @@ export const EventCategoryForm = ({
       setFormError(null)
       try {
         if (type === "create") {
-          await createEventCategory({
-            variables: {
-              ...values,
-            },
+          const { error } = await createEventCategory({
+            ...values,
           })
+          if (error) throw error
         } else if (type === "update") {
-          await updateEventCategory({
-            variables: {
-              ...values,
-              id: categoryId,
-            },
+          const { error } = await updateEventCategory({
+            ...values,
+            id: categoryId,
           })
+          if (error) throw error
         }
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
         setFormError(e)
-        Sentry.captureException(e)
       }
       setFormSubmitting(false)
     },
@@ -109,8 +101,6 @@ export const EventCategoryForm = ({
       type,
     ]
   )
-
-  const code = getCodeFromError(formError)
 
   return (
     <Form
@@ -236,19 +226,9 @@ export const EventCategoryForm = ({
       </Form.Item>
       {formError && (
         <Form.Item {...tailFormItemLayout}>
-          <Alert
-            description={
-              <span>
-                {extractError(formError).message}
-                {code && (
-                  <span>
-                    ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                  </span>
-                )}
-              </span>
-            }
+          <ErrorAlert
+            error={formError}
             message={t("errors.eventCategoryCreationFailed")}
-            type="error"
           />
         </Form.Item>
       )}

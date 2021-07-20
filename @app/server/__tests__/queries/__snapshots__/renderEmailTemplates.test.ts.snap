@@ -79,11 +79,11 @@ Object {
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -125,7 +125,7 @@ Object {
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -143,7 +143,7 @@ Object {
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -153,7 +153,7 @@ Object {
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -218,7 +218,7 @@ Object {
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -227,7 +227,7 @@ Object {
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -381,11 +381,11 @@ necessary.
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -427,7 +427,7 @@ necessary.
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -445,7 +445,7 @@ necessary.
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -455,7 +455,7 @@ necessary.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -491,7 +491,7 @@ necessary.
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -500,7 +500,7 @@ necessary.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -651,11 +651,11 @@ necessary.
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -697,7 +697,7 @@ necessary.
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -715,7 +715,7 @@ necessary.
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -725,7 +725,7 @@ necessary.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -773,13 +773,15 @@ necessary.
                 <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
-        <tr>
-          <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
-            <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
-              Confirm intent
-            </p>
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
+              <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
+                Confirm intent
+              </p>
+            </td>
+          </tr>
+        </tbody>
       </table>
     
                 </td>
@@ -817,7 +819,7 @@ necessary.
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -826,7 +828,7 @@ necessary.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -981,11 +983,11 @@ Confirm intent
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -1027,7 +1029,7 @@ Confirm intent
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -1045,7 +1047,7 @@ Confirm intent
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -1055,7 +1057,7 @@ Confirm intent
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -1176,7 +1178,7 @@ Confirm intent
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -1185,7 +1187,7 @@ Confirm intent
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -1356,11 +1358,11 @@ You can update or delete your registration via this link:
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -1402,7 +1404,7 @@ You can update or delete your registration via this link:
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -1420,7 +1422,7 @@ You can update or delete your registration via this link:
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -1430,7 +1432,7 @@ You can update or delete your registration via this link:
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -1472,13 +1474,15 @@ You can update or delete your registration via this link:
                 <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
-        <tr>
-          <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
-            <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
-              Accept invitation
-            </p>
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
+              <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
+                Accept invitation
+              </p>
+            </td>
+          </tr>
+        </tbody>
       </table>
     
                 </td>
@@ -1516,7 +1520,7 @@ You can update or delete your registration via this link:
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -1525,7 +1529,7 @@ You can update or delete your registration via this link:
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -1681,11 +1685,11 @@ Accept invitation
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -1727,7 +1731,7 @@ Accept invitation
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -1765,7 +1769,7 @@ Accept invitation
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -1775,7 +1779,7 @@ Accept invitation
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -1823,13 +1827,15 @@ Accept invitation
                 <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
-        <tr>
-          <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
-            <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
-              Change Passphrase
-            </p>
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
+              <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
+                Change Passphrase
+              </p>
+            </td>
+          </tr>
+        </tbody>
       </table>
     
                 </td>
@@ -1867,7 +1873,7 @@ Accept invitation
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -1876,7 +1882,7 @@ Accept invitation
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -2033,11 +2039,11 @@ Change Passphrase
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -2079,7 +2085,7 @@ Change Passphrase
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -2097,7 +2103,7 @@ Change Passphrase
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -2107,7 +2113,7 @@ Change Passphrase
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -2172,7 +2178,7 @@ Change Passphrase
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -2181,7 +2187,7 @@ Change Passphrase
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -2337,11 +2343,11 @@ This message is purely for your information. No action is required.
       <div style=\\"background-color:#e7e7e7;\\">
         
       
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
           
-      <div style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
+      <div style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;margin:0px auto;max-width:600px;\\">
         <div style=\\"line-height:0;font-size:0;\\">
-        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url(https://static.prodeko.org/static/images/backgrounds/bg-white.jpg) center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
+        <table align=\\"center\\" background=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"background:url('https://static.prodeko.org/static/images/backgrounds/bg-white.jpg') center top / auto repeat;background-position:center top;background-repeat:repeat;background-size:auto;width:100%;\\">
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;text-align:center;\\">
@@ -2383,7 +2389,7 @@ This message is purely for your information. No action is required.
         </div>
       </div>
     
-        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+        <!--[if mso | IE]></v:textbox></v:rect></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#002e7d\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#002e7d;background-color:#002e7d;margin:0px auto;max-width:600px;\\">
@@ -2421,7 +2427,7 @@ This message is purely for your information. No action is required.
       </div>
     
       
-      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]></td></tr></table><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body-section-outlook\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div class=\\"body-section\\" style=\\"-webkit-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 1px 4px 11px 0px rgba(0, 0, 0, 0.15); box-shadow: 1px 4px
@@ -2431,7 +2437,7 @@ This message is purely for your information. No action is required.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0;padding-top:0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" bgcolor=\\"#ffffff\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;\\">
@@ -2479,13 +2485,15 @@ This message is purely for your information. No action is required.
                 <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
-        <tr>
-          <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
-            <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
-              Verify Email
-            </p>
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td align=\\"center\\" bgcolor=\\"#002e7d\\" role=\\"presentation\\" style=\\"border:none;border-radius:0px;cursor:auto;mso-padding-alt:10px 25px;background:#002e7d;\\" valign=\\"middle\\">
+              <p href style=\\"display:inline-block;background:#002e7d;color:#ffffff;font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:0px;\\">
+                Verify Email
+              </p>
+            </td>
+          </tr>
+        </tbody>
       </table>
     
                 </td>
@@ -2523,7 +2531,7 @@ This message is purely for your information. No action is required.
             <td>
               
         
-      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+      <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
         
       <div style=\\"margin:0px auto;max-width:600px;\\">
@@ -2532,7 +2540,7 @@ This message is purely for your information. No action is required.
           <tbody>
             <tr>
               <td style=\\"direction:ltr;font-size:0px;padding:20px 0;text-align:center;\\">
-                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
+                <!--[if mso | IE]><table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\"><tr><td class=\\"\\" width=\\"600px\\" ><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><![endif]-->
     
       
       <div style=\\"margin:0px auto;max-width:600px;\\">

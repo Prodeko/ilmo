@@ -1,4 +1,3 @@
-import React from "react"
 import {
   EventPage_EventFragment,
   EventPage_RegistrationsFragment,
@@ -25,6 +24,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
   return (
     <Card
       data-cy="eventpage-quotas-card"
+      size={!isMobile ? "default" : "small"}
       style={{
         marginLeft: !isMobile ? "1rem" : undefined,
         marginBottom: isMobile ? "1rem" : undefined,

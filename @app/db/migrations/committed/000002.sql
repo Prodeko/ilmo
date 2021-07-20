@@ -1,5 +1,5 @@
 --! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:c91002080905bb2c744e67941cbf10f7989a8c71
+--! Hash: sha1:128178bb03ff30b03d1587da6682b854f4cec845
 
 --! split: 0001-computed-columns.sql
 /*
@@ -263,8 +263,8 @@ drop function if exists app_public.current_user_has_event_permissions cascade;
 
 /*
  * We have to define this RLS policy helper function here since it uses the
- * events table. This function takes as input an event id and check that
- * the current user is a member of the owner organization id of the event.
+ * events table. This function checks that the current user is a member of an
+ * organization that has permissions to access information for a given event_id.
  */
 create function app_public.current_user_has_event_permissions(event_id uuid) returns boolean as $$
   select exists (
@@ -351,9 +351,6 @@ create table app_public.quotas(
   position smallint not null,
   title jsonb not null,
   size smallint not null check (size > 0),
-  -- TODO: Implement questions
-  questions_public json,
-  questions_private json,
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
@@ -391,10 +388,6 @@ comment on column app_public.quotas.title is
   E'Title for the quota.';
 comment on column app_public.quotas.size is
   E'Size of the quota.';
-comment on column app_public.quotas.questions_public is
-  E'Public questions related to the quota.';
-comment on column app_public.quotas.questions_private is
-  E'Private questions related to the quota.';
 
 -- RLS policies and grants
 create policy select_all on app_public.quotas for select using (true);

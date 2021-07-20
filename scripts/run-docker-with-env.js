@@ -11,7 +11,6 @@ const {
   SECRET,
   JWT_SECRET,
   DATABASE_NAME,
-  GRAPHILE_LICENSE,
 } = process.env
 
 const DATABASE_HOST = "172.17.0.1"
@@ -28,7 +27,6 @@ runSync("docker", [
   "-e",
   `DATABASE_VISITOR=${DATABASE_VISITOR}`,
   "-e",
-  `GRAPHILE_LICENSE=${GRAPHILE_LICENSE}`,
   "-e",
   `SECRET=${SECRET}`,
   "-e",

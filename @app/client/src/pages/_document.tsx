@@ -1,4 +1,3 @@
-import React from "react"
 import Document, {
   DocumentContext,
   Head,
@@ -16,9 +15,7 @@ class CustomDocument extends Document {
   render() {
     return (
       <Html>
-        <Head>
-          <link href="/favicon.png" rel="shortcut icon" type="image/x-icon" />
-        </Head>
+        <Head />
         <body>
           <Main />
           <NextScript />

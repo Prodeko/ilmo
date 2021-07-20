@@ -57,32 +57,3 @@ Object {
   ],
 }
 `;
-
-exports[`CreateEvent can't create quotas while logged out 1`] = `
-Object {
-  "data": Object {
-    "createEvent": null,
-  },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
-          "code": "42501",
-          "message": "Permission denied (by RLS)",
-          "severity": "ERROR",
-        },
-      },
-      "locations": Array [
-        Object {
-          "column": 3,
-          "line": 16,
-        },
-      ],
-      "message": "Permission denied (by RLS)",
-      "path": Array [
-        "createEvent",
-      ],
-    },
-  ],
-}
-`;

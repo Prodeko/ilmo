@@ -1,4 +1,3 @@
-import React from "react"
 import {
   EventCard,
   H3,
@@ -37,7 +36,7 @@ const gridTemplateColumns = {
 const Home: NextPage = () => {
   const { t, lang } = useTranslation("home")
 
-  const query = useHomePageQuery()
+  const [query] = useHomePageQuery()
   const screens = useBreakpoint()
   const currentBreakPoint = Object.entries(screens)
     .filter((screen) => !!screen[1])

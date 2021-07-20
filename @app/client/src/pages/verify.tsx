@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Col, Row, SharedLayout } from "@app/components"
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql"
 import { Alert } from "antd"
-import { get } from "lodash"
 import { NextPage } from "next"
 
 interface Props {
@@ -19,19 +18,17 @@ const VerifyPage: NextPage<Props> = (props) => {
     props.id && props.token ? "SUBMITTING" : "PENDING"
   )
   const [error, setError] = useState<Error | null>(null)
-  const [verifyEmail] = useVerifyEmailMutation()
+  const [_res1, verifyEmail] = useVerifyEmailMutation()
 
   useEffect(() => {
     if (state === "SUBMITTING") {
       setError(null)
       verifyEmail({
-        variables: {
-          id,
-          token,
-        },
+        id,
+        token,
       })
         .then((result) => {
-          if (get(result, "data.verifyEmail.success")) {
+          if (result?.data?.verifyEmail?.success) {
             setState("SUCCESS")
           } else {
             setState("PENDING")
@@ -60,7 +57,7 @@ const VerifyPage: NextPage<Props> = (props) => {
     )
   }
 
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
   return (
     <SharedLayout query={query} title="Verify Email Address">

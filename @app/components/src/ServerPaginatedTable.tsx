@@ -1,6 +1,5 @@
 // @ts-nocheck
-import React, { useCallback, useState } from "react"
-import { DocumentNode, useQuery } from "@apollo/client"
+import { useCallback, useState } from "react"
 import { Sorter, ValueOf } from "@app/lib"
 import { Table } from "antd"
 import {
@@ -9,9 +8,11 @@ import {
   TablePaginationConfig,
   TableProps,
 } from "antd/lib/table"
+import { DocumentNode } from "graphql"
 import { get } from "lodash"
+import { useQuery } from "urql"
 
-import { ErrorAlert } from "./ErrorAlert"
+import { ErrorResult } from "./ErrorResult"
 import { Loading } from "./Loading"
 
 type RecordType = any
@@ -43,40 +44,25 @@ export function ServerPaginatedTable({
     current: 1,
     pageSize: 10,
   })
-  const { error, loading, data, fetchMore } = useQuery<
+  const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
     typeof variables
-  >(queryDocument, {
+  >({
+    query: queryDocument,
     variables: {
       ...variables,
       // Pagination can be empty if table contains less than 10 elements
       first: pagination.pageSize || 10,
       offset: offset,
     },
-    onCompleted: () =>
-      setPagination({
-        ...pagination,
-        // Remember to query the totalCount field for the records you wish
-        // to display with this component. Otherwise pagination won't
-        total: get(data, dataField)?.totalCount,
-      }),
   })
 
-  const handleTableChange = useCallback(
-    async (pagination) => {
-      setPagination({ ...pagination })
-      const { current, pageSize } = pagination
-      const newOffset = (current - 1) * pageSize || 0
-
-      await fetchMore({
-        variables: {
-          offset: newOffset,
-        },
-      })
-      setOffset(newOffset)
-    },
-    [fetchMore]
-  )
+  const handleTableChange = useCallback(async (pagination) => {
+    const { current, pageSize } = pagination
+    const newOffset = (current - 1) * pageSize || 0
+    setPagination({ ...pagination })
+    setOffset(newOffset)
+  }, [])
 
   // See @app/client/src/pages/index.tsx and @app/lib/src/utils to understand
   // how our table sorting setup works. When the 'filters' key is specified for
@@ -116,12 +102,12 @@ export function ServerPaginatedTable({
     }) || []
 
   return error ? (
-    <ErrorAlert error={error} />
+    <ErrorResult error={error} />
   ) : (
     <Table
       columns={transformedColumns as ColumnsType}
       dataSource={get(data, dataField)?.nodes || []}
-      loading={loading && { indicator: <Loading /> }}
+      loading={fetching && { indicator: <Loading /> }}
       pagination={showPagination && pagination}
       rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}

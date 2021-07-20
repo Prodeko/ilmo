@@ -1,4 +1,4 @@
-import React, { FocusEvent, useCallback, useState } from "react"
+import { FocusEvent, useCallback, useState } from "react"
 import {
   AuthRestrict,
   Col,
@@ -11,7 +11,6 @@ import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input } from "antd"
 import { useForm } from "antd/lib/form/Form"
-import { get } from "lodash"
 import { NextPage } from "next"
 import { Store } from "rc-field-form/lib/interface"
 
@@ -28,7 +27,7 @@ enum State {
 
 const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
   const [form] = useForm()
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
   const [error, setError] = useState<Error | null>(null)
   const [passwordStrength, setPasswordStrength] = useState<number>(0)
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
@@ -59,7 +58,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
     [confirmDirty]
   )
 
-  const [resetPassword] = useResetPasswordMutation()
+  const [_res1, resetPassword] = useResetPasswordMutation()
   const handleSubmit = useCallback(
     (values: Store) => {
       setState(State.SUBMITTING)
@@ -67,13 +66,11 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
       ;(async () => {
         try {
           const result = await resetPassword({
-            variables: {
-              userId,
-              token,
-              password: values.password,
-            },
+            userId,
+            token,
+            password: values.password,
           })
-          if (get(result, "data.resetPassword.success")) {
+          if (result?.data?.resetPassword?.success) {
             setState(State.SUCCESS)
           } else {
             setState(State.PENDING)

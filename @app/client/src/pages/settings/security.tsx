@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from "react"
-import { ApolloError } from "@apollo/client"
+import { useCallback, useState } from "react"
 import {
   ErrorAlert,
+  ErrorResult,
   P,
   PasswordStrength,
   SettingsLayout,
@@ -13,7 +13,6 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import {
-  extractError,
   formItemLayout,
   getCodeFromError,
   setPasswordInfo,
@@ -27,28 +26,24 @@ import Link from "next/link"
 import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Security: NextPage = () => {
-  const [error, setError] = useState<Error | ApolloError | null>(null)
   const [passwordStrength, setPasswordStrength] = useState<number>(0)
   const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
 
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
   const [form] = useForm()
-  const [changePassword] = useChangePasswordMutation()
+  const [{ error }, changePassword] = useChangePasswordMutation()
   const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
     async (values: Store) => {
       setSuccess(false)
-      setError(null)
       try {
-        await changePassword({
-          variables: {
-            oldPassword: values.oldPassword,
-            newPassword: values.newPassword,
-          },
+        const { error } = await changePassword({
+          oldPassword: values.oldPassword,
+          newPassword: values.newPassword,
         })
-        setError(null)
+        if (error) throw error
         setSuccess(true)
       } catch (e) {
         const errcode = getCodeFromError(e)
@@ -71,36 +66,29 @@ const Settings_Security: NextPage = () => {
             },
           ])
         } else {
-          setError(e)
           Sentry.captureException(e)
         }
       }
     },
-    [changePassword, form, setError]
+    [changePassword, form]
   )
 
-  const { data, error: graphqlQueryError, loading } = useSettingsPasswordQuery()
-  const [forgotPassword] = useForgotPasswordMutation()
-  const u = data && data.currentUser
-  const email = u ? u.primaryEmail : null
+  const [{ data, error: graphqlQueryError, fetching }] =
+    useSettingsPasswordQuery()
+  const [_res2, forgotPassword] = useForgotPasswordMutation()
+  const user = data?.currentUser
+  const email = user ? user.primaryEmail : null
   const [resetInProgress, setResetInProgress] = useState(false)
 
-  const [resetError, setResetError] = useState(null)
   const handleResetPassword = useCallback(() => {
     if (!email) return
     if (resetInProgress) return
     ;(async () => {
       setResetInProgress(true)
-
-      try {
-        await forgotPassword({ variables: { email } })
-      } catch (e) {
-        setResetError(resetError)
-        Sentry.captureException(e)
-      }
+      await forgotPassword({ email })
       setResetInProgress(false)
     })()
-  }, [email, forgotPassword, resetError, resetInProgress])
+  }, [email, forgotPassword, resetInProgress])
 
   const [passwordIsFocussed, setPasswordIsFocussed] = useState(false)
   const setPasswordFocussed = useCallback(() => {
@@ -125,10 +113,10 @@ const Settings_Security: NextPage = () => {
   )
 
   const inner = () => {
-    if (loading) {
+    if (fetching) {
       /* noop */
     } else if (graphqlQueryError) {
-      return <ErrorAlert error={graphqlQueryError} />
+      return <ErrorResult error={graphqlQueryError} />
     } else if (data && data.currentUser && !data.currentUser.hasPassword) {
       return (
         <div>
@@ -147,7 +135,6 @@ const Settings_Security: NextPage = () => {
       )
     }
 
-    const code = getCodeFromError(error)
     return (
       <div>
         <PageHeader title="Change passphrase" />
@@ -195,24 +182,11 @@ const Settings_Security: NextPage = () => {
           </Form.Item>
           {error ? (
             <Form.Item>
-              <Alert
-                description={
-                  <span>
-                    {extractError(error).message}
-                    {code && (
-                      <span>
-                        (Error code: <code>ERR_{code}</code>)
-                      </span>
-                    )}
-                  </span>
-                }
-                message={`Changing passphrase failed`}
-                type="error"
-              />
+              <ErrorAlert error={error} message="Changing passphrase failed" />
             </Form.Item>
           ) : success ? (
             <Form.Item>
-              <Alert message={`Password changed!`} type="success" />
+              <Alert message="Password changed!" type="success" />
             </Form.Item>
           ) : null}
           <Form.Item {...tailFormItemLayout}>

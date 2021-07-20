@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { AdminLayout, ErrorAlert } from "@app/components"
+import { useState } from "react"
+import { AdminLayout, ErrorResult } from "@app/components"
 import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql"
 import { Card, Col, PageHeader, Row, Switch, Typography } from "antd"
 import { capitalize } from "lodash"
@@ -10,19 +10,19 @@ const { Text } = Typography
 
 const Admin_Emails: NextPage = () => {
   const { t } = useTranslation("admin")
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
   const [showHtml, setShowHtml] = useState(true)
-  const { loading, data, error } = useRenderEmailTemplatesQuery()
+  const [{ fetching, data, error }] = useRenderEmailTemplatesQuery()
 
   return (
     <AdminLayout href="/admin/emails" query={query}>
       <PageHeader title="Emails" />
       {error ? (
-        <ErrorAlert error={error} />
+        <ErrorResult error={error} />
       ) : (
         <>
           <Switch
-            loading={loading}
+            loading={fetching}
             style={{ marginRight: "1rem" }}
             defaultChecked
             onChange={(checked) => setShowHtml(checked)}
@@ -32,7 +32,7 @@ const Admin_Emails: NextPage = () => {
             {data?.renderEmailTemplates.templates.map((email, i) => (
               <Col key={i} sm={{ span: 12 }} xs={{ span: 24 }}>
                 <Card
-                  loading={loading}
+                  loading={fetching}
                   style={{ margin: "10px" }}
                   title={capitalize(email?.name)}
                 >

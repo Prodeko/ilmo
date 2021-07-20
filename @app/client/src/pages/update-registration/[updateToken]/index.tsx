@@ -1,4 +1,3 @@
-import React from "react"
 import { EventRegistrationForm, Redirect, SharedLayout } from "@app/components"
 import { useUpdateEventRegistrationPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
@@ -26,17 +25,17 @@ const UpdateEventRegistrationPage: NextPage = () => {
   const router = useRouter()
   const { updateToken } = router.query
 
-  const query = useUpdateEventRegistrationPageQuery({
+  const [query] = useUpdateEventRegistrationPageQuery({
     variables: { updateToken: updateToken as string },
   })
-  const { loading, error } = query
+  const { data, fetching, error } = query
 
-  const registration = query?.data?.registrationByUpdateToken
+  const registration = data?.registrationByUpdateToken
   const event = registration?.event
   const quota = registration?.quota
 
   // If registration is not found redirect to index
-  if (!loading && !error && !registration) {
+  if (!fetching && !error && !registration) {
     return <Redirect href="/" layout />
   }
 

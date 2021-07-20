@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react"
-import { QueryResult } from "@apollo/client"
+import { useEffect, useState } from "react"
 import {
   EventPage_QueryFragment,
   EventPage_RegistrationsFragment,
@@ -9,8 +8,9 @@ import {
 import { Col, Row } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import { useRouter } from "next/router"
+import { UseQueryState } from "urql"
 
-import { ErrorAlert, FourOhFour, LoadingPadded } from "./"
+import { ErrorResult, FourOhFour, LoadingPadded } from "./"
 
 export function useQuerySlug() {
   const router = useRouter()
@@ -24,21 +24,16 @@ export function useQueryId() {
   return String(rawId)
 }
 
-export function useEventLoading(
-  query: Pick<
-    QueryResult<EventPage_QueryFragment>,
-    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >
-) {
-  const { data, loading, error } = query
+export function useEventLoading(query: UseQueryState<EventPage_QueryFragment>) {
+  const { data, fetching, error } = query
 
   let child: JSX.Element | null = null
   const event = data?.eventBySlug
   if (event) {
-  } else if (loading) {
+  } else if (fetching) {
     child = <LoadingPadded size="huge" />
   } else if (error) {
-    child = <ErrorAlert error={error} />
+    child = <ErrorResult error={error} />
   } else {
     child = <FourOhFour currentUser={data?.currentUser} />
   }
@@ -53,20 +48,17 @@ export function useEventLoading(
 }
 
 export function useOrganizationLoading(
-  query: Pick<
-    QueryResult<OrganizationPage_QueryFragment>,
-    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >
+  query: UseQueryState<OrganizationPage_QueryFragment>
 ) {
-  const { data, loading, error } = query
+  const { data, fetching, error } = query
 
   let child: JSX.Element | null = null
   const organization = data?.organizationBySlug
   if (organization) {
-  } else if (loading) {
+  } else if (fetching) {
     child = <LoadingPadded size="large" />
   } else if (error) {
-    child = <ErrorAlert error={error} />
+    child = <ErrorResult error={error} />
   } else {
     child = <FourOhFour currentUser={data?.currentUser} />
   }
@@ -91,16 +83,21 @@ export function useEventRegistrations(
     if (initialRegistrations?.[0]) {
       setRegistrations(initialRegistrations)
     }
-  }, [initialRegistrations])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  useEventRegistrationsSubscription({
-    variables: { eventId, after },
-    skip: !eventId,
-    onSubscriptionData: ({ subscriptionData: { data } }) => {
-      const registrations = data?.eventRegistrations?.registrations
-      setRegistrations(registrations as EventPage_RegistrationsFragment[])
+  useEventRegistrationsSubscription(
+    {
+      variables: { eventId, after },
+      pause: !eventId,
     },
-  })
+    (prev, response) => {
+      const registrations = response?.eventRegistrations
+        ?.registrations as EventPage_RegistrationsFragment[]
+      setRegistrations(registrations)
+      return undefined as any
+    }
+  )
 
   return registrations
 }

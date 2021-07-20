@@ -1,4 +1,3 @@
-import React from "react"
 import { ValueOf } from "@app/lib"
 import { ButtonProps } from "antd/lib/button"
 import Button from "antd-button-color"

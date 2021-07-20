@@ -1,6 +1,6 @@
 import * as React from "react"
-import { ApolloClient, ApolloProvider } from "@apollo/client"
-import { withApollo } from "@app/lib"
+import { Head } from "@app/components"
+import { withUrql } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Integrations as TracingIntegrations } from "@sentry/tracing"
 import { ConfigProvider, notification } from "antd"
@@ -20,10 +20,11 @@ import "react-color-palette/lib/css/styles.css"
 
 declare global {
   interface Window {
-    __GRAPHILE_APP__: {
+    __ILMO_APP__: {
       ROOT_URL?: string
       T_AND_C_URL?: string
       SENTRY_DSN?: string
+      ENABLE_REGISTRATION?: number
     }
   }
 }
@@ -38,11 +39,12 @@ if (typeof window !== "undefined") {
     throw new Error("Cannot read from __NEXT_DATA__ element")
   }
   const data = JSON.parse(nextDataEl.textContent)
-  const { ROOT_URL, T_AND_C_URL, SENTRY_DSN } = data.query
-  window.__GRAPHILE_APP__ = {
+  const { ROOT_URL, T_AND_C_URL, SENTRY_DSN, ENABLE_REGISTRATION } = data.query
+  window.__ILMO_APP__ = {
     ROOT_URL,
     T_AND_C_URL,
     SENTRY_DSN,
+    ENABLE_REGISTRATION,
   }
 
   if (SENTRY_DSN) {
@@ -77,7 +79,6 @@ if (typeof window !== "undefined") {
 }
 
 interface Props {
-  apollo: ApolloClient<any>
   locale: string
 }
 
@@ -95,18 +96,19 @@ class Ilmo extends App<Props> {
   }
 
   render() {
-    const { Component, pageProps, apollo, locale } = this.props
+    // @ts-ignore
+    const { Component, pageProps, resetUrqlClient, locale } = this.props
 
     return (
       <Sentry.ErrorBoundary fallback={"An error has occurred"}>
-        <ApolloProvider client={apollo}>
-          <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
-            <Component {...pageProps} />
-          </ConfigProvider>
-        </ApolloProvider>
+        <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
+          <Head />
+          <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
+        </ConfigProvider>
       </Sentry.ErrorBoundary>
     )
   }
 }
 
-export default Sentry.withProfiler(withApollo(Ilmo))
+// @ts-ignore
+export default Sentry.withProfiler(withUrql(Ilmo))

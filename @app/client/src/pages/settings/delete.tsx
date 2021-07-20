@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from "react"
-import { ApolloError } from "@apollo/client"
-import { ErrorAlert, P, SettingsLayout } from "@app/components"
+import { useCallback, useState } from "react"
+import { ErrorResult, P, SettingsLayout } from "@app/components"
 import {
   useConfirmAccountDeletionMutation,
   useRequestAccountDeletionMutation,
@@ -11,6 +10,7 @@ import * as Sentry from "@sentry/react"
 import { Alert, Button, Modal, PageHeader, Typography } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
+import { CombinedError } from "urql"
 
 const { Text } = Typography
 
@@ -20,16 +20,15 @@ const Settings_Accounts: NextPage = () => {
     (router && router.query && !Array.isArray(router.query.token)
       ? router.query.token
       : null) || null
-  const [error, setError] = useState<Error | ApolloError | null>(null)
+  const [error, setError] = useState<Error | CombinedError | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [itIsDone, setItIsDone] = useState(false)
   const [doingIt, setDoingIt] = useState(false)
   const openModal = useCallback(() => setConfirmOpen(true), [])
   const closeModal = useCallback(() => setConfirmOpen(false), [])
 
-  const [requestAccountDeletion] = useRequestAccountDeletionMutation()
+  const [_res1, requestAccountDeletion] = useRequestAccountDeletionMutation()
   const doIt = useCallback(() => {
-    setError(null)
     setDoingIt(true)
     ;(async () => {
       try {
@@ -37,10 +36,11 @@ const Settings_Accounts: NextPage = () => {
         if (!result) {
           throw new Error("Result expected")
         }
-        const { data } = result
+        const { data, error } = result
         if (!data?.requestAccountDeletion?.success) {
           throw new Error("Requesting deletion failed")
         }
+        if (error) throw error
         setItIsDone(true)
       } catch (e) {
         setError(e)
@@ -53,7 +53,7 @@ const Settings_Accounts: NextPage = () => {
 
   const [deleting, setDeleting] = useState(false)
   const [deleted, setDeleted] = useState(false)
-  const [confirmAccountDeletion] = useConfirmAccountDeletionMutation()
+  const [_res2, confirmAccountDeletion] = useConfirmAccountDeletionMutation()
   const confirmDeletion = useCallback(() => {
     if (deleting || !token) {
       return
@@ -62,7 +62,8 @@ const Settings_Accounts: NextPage = () => {
     setDeleting(true)
     ;(async () => {
       try {
-        await confirmAccountDeletion({ variables: { token } })
+        const { error } = await confirmAccountDeletion({ token })
+        if (error) throw error
         // Display confirmation
         setDeleted(true)
       } catch (e) {
@@ -73,7 +74,7 @@ const Settings_Accounts: NextPage = () => {
     })()
   }, [confirmAccountDeletion, deleting, token])
 
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
   return (
     <SettingsLayout href="/settings/delete" query={query}>
@@ -159,7 +160,7 @@ const Settings_Accounts: NextPage = () => {
             showIcon
           />
         ) : (
-          <ErrorAlert error={error} />
+          <ErrorResult error={error} />
         ))}
 
       <Modal

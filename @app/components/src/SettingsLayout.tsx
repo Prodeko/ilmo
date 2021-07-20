@@ -1,6 +1,5 @@
 import * as qs from "querystring"
 
-import React from "react"
 import { Layout, Menu, Typography } from "antd"
 import { TextProps } from "antd/lib/typography/Text"
 import Link from "next/link"
@@ -82,8 +81,8 @@ export function SettingsLayout({
       title={`Settings: ${page.title}`}
       noPad
     >
-      {({ currentUser, error, loading }: SharedLayoutChildProps) =>
-        !currentUser && !error && !loading ? (
+      {({ currentUser, error, fetching }: SharedLayoutChildProps) =>
+        !currentUser && !error && !fetching ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
           <Layout style={{ minHeight: contentMinHeight }} hasSider>

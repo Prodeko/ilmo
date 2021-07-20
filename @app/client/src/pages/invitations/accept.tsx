@@ -1,18 +1,16 @@
 import * as qs from "querystring"
 
-import React, { useCallback, useState } from "react"
-import { QueryResult } from "@apollo/client"
+import { useCallback, useState } from "react"
 import {
   AuthRestrict,
   ButtonLink,
-  ErrorAlert,
+  ErrorResult,
   Loading,
   Redirect,
   SharedLayout,
 } from "@app/components"
 import {
   InvitationDetailQuery,
-  InvitationDetailQueryVariables,
   SharedLayout_UserFragment,
   useAcceptOrganizationInviteMutation,
   useInvitationDetailQuery,
@@ -21,6 +19,7 @@ import { getCodeFromError } from "@app/lib"
 import { Button, Col, Result, Row, Skeleton } from "antd"
 import { NextPage } from "next"
 import Router, { useRouter } from "next/router"
+import { UseQueryState } from "urql"
 
 interface Props {
   id: string | null
@@ -38,15 +37,15 @@ const InvitationAccept: NextPage<Props> = (props) => {
     router.pathname +
     (router && router.query ? `?${qs.stringify(router.query)}` : "")
   const { id: rawId, code } = props
-  const id = rawId || ""
+  const id = rawId || ("" as string)
 
-  const query = useInvitationDetailQuery({
+  const [query] = useInvitationDetailQuery({
     variables: {
       id,
       code,
     },
-    skip: !id,
-    fetchPolicy: "network-only",
+    pause: !id,
+    requestPolicy: "network-only",
   })
 
   return (
@@ -56,8 +55,8 @@ const InvitationAccept: NextPage<Props> = (props) => {
       title="Accept Invitation"
       noHandleErrors
     >
-      {({ currentUser, error, loading }) =>
-        !currentUser && !error && !loading ? (
+      {({ currentUser, error, fetching }) =>
+        !currentUser && !error && !fetching ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
           <Row>
@@ -78,15 +77,15 @@ const InvitationAccept: NextPage<Props> = (props) => {
 
 interface InvitationAcceptInnerProps extends Props {
   currentUser?: SharedLayout_UserFragment | null
-  query: QueryResult<InvitationDetailQuery, InvitationDetailQueryVariables>
+  query: UseQueryState<InvitationDetailQuery>
 }
 
 const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   const { id, code, query } = props
   const router = useRouter()
 
-  const { data, loading, error } = query
-  const [acceptInvite] = useAcceptOrganizationInviteMutation()
+  const { data, fetching, error } = query
+  const [_res1, acceptInvite] = useAcceptOrganizationInviteMutation()
 
   const [status, setStatus] = useState(Status.PENDING)
   const [acceptError, setAcceptError] = useState<Error | null>(null)
@@ -99,10 +98,8 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
     setStatus(Status.ACCEPTING)
     // Call mutation
     acceptInvite({
-      variables: {
-        id,
-        code,
-      },
+      id,
+      code,
     }).then(
       () => {
         // Redirect
@@ -154,7 +151,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         />
       )
     } else {
-      child = <ErrorAlert error={error || acceptError!} />
+      child = <ErrorResult error={error || acceptError!} />
     }
   } else if (organization) {
     child = (
@@ -168,7 +165,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         title={`You were invited to ${organization.name}`}
       />
     )
-  } else if (loading) {
+  } else if (fetching) {
     child = <Skeleton />
   } else {
     child = (

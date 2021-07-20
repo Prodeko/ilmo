@@ -1,4 +1,3 @@
-import React from "react"
 // @ts-ignore
 import ReactCountryFlag from "react-country-flag"
 import { useRouter } from "next/router"

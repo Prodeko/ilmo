@@ -7,14 +7,16 @@
       "name": "Attach to Node Server",
       "port": 9678,
       "restart": true,
-      "outFiles": ["${workspaceFolder}/@app/server/dist/**/*.js"]
+      "outFiles": ["${workspaceFolder}/@app/server/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**/*.js"]
     },
     {
       "type": "node",
       "request": "attach",
       "name": "Attach to Jest tests",
       "port": 9876,
-      "restart": true
+      "restart": true,
+      "skipFiles": ["<node_internals>/**/*.js"]
     },
     {
       "type": "node",
@@ -22,7 +24,8 @@
       "name": "Attach to Worker",
       "port": 9757,
       "restart": true,
-      "outFiles": ["${workspaceFolder}/@app/worker/dist/**/*.js"]
+      "outFiles": ["${workspaceFolder}/@app/worker/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**/*.js"]
     },
     {
       "type": "chrome",

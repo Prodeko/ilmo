@@ -1,5 +1,4 @@
-import React, { useCallback, useState } from "react"
-import { ApolloCache } from "@apollo/client"
+import { useCallback, useState } from "react"
 import {
   Event,
   EventCategory,
@@ -10,11 +9,11 @@ import * as Sentry from "@sentry/react"
 import { Button, message, Popconfirm, Space } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
-import { ButtonLink, ErrorBanner } from "."
+import { ButtonLink, ErrorAlert } from "."
 
 interface AdminTableActionsProps {
   adminUrl: string
-  bannerErrorText?: JSX.Element
+  bannerErrorText?: string
   dataType: Event | EventCategory
   deleteMutation:
     | typeof useDeleteEventMutation
@@ -30,25 +29,13 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   deleteConfirmTranslate,
 }) => {
   const { t } = useTranslation("admin")
-  const [deleteDataType] = deleteMutation({
-    update(cache: ApolloCache<any>) {
-      // Update Apollo cache after the delete mutation. Mutations don't
-      // automatically update the cache. More information:
-      // https://www.apollographql.com/docs/react/data/mutations/#making-all-other-cache-updates
-      const normalizedId = cache.identify({
-        id: dataType?.id,
-        __typename: dataType.__typename,
-      })
-      cache.evict({ id: normalizedId })
-      cache.gc()
-    },
-  })
+  const [_res1, deleteDataType] = deleteMutation()
   const [error, setError] = useState<Error | null>(null)
 
   const doDelete = useCallback(async () => {
     try {
       await deleteDataType({
-        variables: { id: dataType?.id },
+        id: dataType?.id,
       })
       message.info(t("notifications.deleteSuccess"))
     } catch (e) {
@@ -84,9 +71,11 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
         </Popconfirm>
       </Space>
       {error ? (
-        <ErrorBanner error={error} setError={setError}>
-          {bannerErrorText}
-        </ErrorBanner>
+        <ErrorAlert
+          error={error}
+          message={bannerErrorText ?? ""}
+          setError={setError}
+        />
       ) : null}
     </>
   )

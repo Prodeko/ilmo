@@ -1,4 +1,3 @@
-import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
@@ -17,7 +16,7 @@ import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
 
 const Admin_ListEventCategories: NextPage = () => {
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
 
   return (
     <AdminLayout href="/admin/event-category/list" query={query}>
@@ -34,11 +33,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
     title: "",
     key: "actions",
     render: (_name: string, eventCategory: EventCategory) => {
-      const bannerErrorText = (
-        <span data-cy="eventcategory-delete-failed-bannertext">
-          {t("eventCategories.delete.deleteFailedBADFK")}
-        </span>
-      )
+      const bannerErrorText = t("eventCategories.delete.deleteFailedBADFK")
       return (
         <AdminTableActions
           adminUrl="event-category"

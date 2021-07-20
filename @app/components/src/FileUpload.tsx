@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import InboxOutlined from "@ant-design/icons/InboxOutlined"
 import PictureOutlined from "@ant-design/icons/PictureOutlined"
 import { Upload } from "antd"

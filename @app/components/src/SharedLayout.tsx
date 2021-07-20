@@ -1,7 +1,6 @@
 import * as React from "react"
 import { useCallback } from "react"
 import DownOutlined from "@ant-design/icons/DownOutlined"
-import { ApolloError, QueryResult, useApolloClient } from "@apollo/client"
 import { companyName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
@@ -16,11 +15,12 @@ import Image from "next/image"
 import Link from "next/link"
 import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+import { CombinedError, UseQueryState } from "urql"
 
 import { useIsMobile } from "./hooks"
 import { LocaleSelect } from "./LocaleSelect"
 import { Redirect } from "./Redirect"
-import { ErrorAlert, H3, StandardWidth, Warn } from "."
+import { ErrorResult, H3, StandardWidth, Warn } from "."
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
@@ -40,8 +40,8 @@ export const contentMinHeight = "calc(100vh - 64px - 70px)"
 export const contentMaxWidth = "75rem"
 
 export interface SharedLayoutChildProps {
-  error?: ApolloError | Error
-  loading: boolean
+  error?: CombinedError | Error
+  fetching: boolean
   currentUser?: SharedLayout_UserFragment | null
 }
 
@@ -63,10 +63,7 @@ export interface SharedLayoutProps {
    * page to be fetchable via a single GraphQL query, rather than multiple
    * chained queries.
    */
-  query: Pick<
-    QueryResult<SharedLayout_QueryFragment>,
-    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >
+  query: UseQueryState<SharedLayout_QueryFragment>
 
   title: string
   titleHref?: string
@@ -93,8 +90,7 @@ export function SharedLayout({
 }: SharedLayoutProps) {
   const router = useRouter()
   const currentUrl = router.asPath
-  const client = useApolloClient()
-  const [logout] = useLogoutMutation()
+  const [_res1, logout] = useLogoutMutation()
   const { t } = useTranslation("common")
   const isMobile = useIsMobile()
 
@@ -107,7 +103,7 @@ export function SharedLayout({
       Router.events.off("routeChangeComplete", reset)
       try {
         await logout()
-        client.resetStore()
+        // client.resetStore()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
         window.location.href = "/logout"
@@ -116,14 +112,14 @@ export function SharedLayout({
     }
     Router.events.on("routeChangeComplete", reset)
     Router.push("/")
-  }, [client, logout])
+  }, [logout])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
-      props.error && !props.loading && !noHandleErrors ? (
+      props.error && !props.fetching && !noHandleErrors ? (
         <>
           {process.env.NODE_ENV === "development" && (
-            <ErrorAlert error={props.error} />
+            <ErrorResult error={props.error} />
           )}
         </>
       ) : typeof children === "function" ? (
@@ -145,7 +141,7 @@ export function SharedLayout({
     } else if (
       data &&
       data.currentUser === null &&
-      !loading &&
+      !fetching &&
       !error &&
       forbidsLoggedOut
     ) {
@@ -157,19 +153,19 @@ export function SharedLayout({
     return noPad ? inner : <StandardWidth>{inner}</StandardWidth>
   }
 
-  const { data, loading, error } = query
+  const { data, fetching, error } = query
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
    * current user. Interestingly we don't need to actually _do_ anything - no
    * rendering or similar - because the payload of this mutation will
-   * automatically update Apollo's cache which will cause the data to be
+   * automatically update Urql's cache which will cause the data to be
    * re-rendered wherever appropriate.
    */
   useCurrentUserUpdatedSubscription({
     // Skip checking for changes to the current user if
     // current user does not exist
-    skip: !data?.currentUser,
+    pause: !data?.currentUser,
   })
 
   return (
@@ -276,7 +272,7 @@ export function SharedLayout({
         <Content style={{ minHeight: contentMinHeight }}>
           {renderChildren({
             error,
-            loading,
+            fetching,
             currentUser: data && data.currentUser,
           })}
         </Content>

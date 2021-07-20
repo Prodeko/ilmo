@@ -1,5 +1,5 @@
-import { Application, Request, RequestHandler } from "express"
-import passport from "passport"
+import { FastifyInstance, FastifyRequest, preHandlerHookHandler } from "fastify"
+import fastifyPassport, { Strategy } from "fastify-passport"
 import { Pool } from "pg"
 
 interface DbSession {
@@ -27,11 +27,8 @@ export type GetUserInformationFunction = (
   req: Request
 ) => UserSpec | Promise<UserSpec>
 
-/*
- * Add returnTo property using [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
- */
-declare module "express-session" {
-  interface SessionData {
+declare module "fastify-secure-session" {
+  interface Session {
     returnTo?: string
   }
 }
@@ -40,15 +37,14 @@ declare module "express-session" {
  * Stores where to redirect the user to on authentication success.
  * Tries to avoid redirect loops or malicious redirects.
  */
-const setReturnTo: RequestHandler = (req, _res, next) => {
+const setReturnTo: preHandlerHookHandler = (req, _res, done) => {
   const BLOCKED_REDIRECT_PATHS = /^\/+(|auth.*|logout)(\?.*)?$/
   if (!req.session) {
-    next()
+    done()
     return
   }
-  const returnTo =
-    (req.query && req.query.next && String(req.query.next)) ||
-    req.session.returnTo
+  // @ts-ignore
+  const returnTo = String(req?.query!.next) || req.session.returnTo
   if (
     returnTo &&
     returnTo[0] === "/" &&
@@ -58,24 +54,20 @@ const setReturnTo: RequestHandler = (req, _res, next) => {
   } else {
     delete req.session.returnTo
   }
-  next()
+  done()
 }
 
 export default (
-  app: Application,
+  app: FastifyInstance,
   rootPgPool: Pool,
   service: string,
-  Strategy: new (...args: any) => passport.Strategy,
+  Strategy: new (...args: any) => Strategy,
   strategyConfig: any,
   authenticateConfig: any,
   getUserInformation: GetUserInformationFunction,
-  tokenNames = ["accessToken", "refreshToken"],
-  {
-    preRequest = (_req: Request) => {},
-    postRequest = (_req: Request) => {},
-  } = {}
+  tokenNames = ["accessToken", "refreshToken"]
 ) => {
-  passport.use(
+  fastifyPassport.use(
     new Strategy(
       {
         ...strategyConfig,
@@ -83,7 +75,7 @@ export default (
         passReqToCallback: true,
       },
       async (
-        req: Request,
+        req: FastifyRequest,
         accessToken: string,
         refreshToken: string,
         extra: any,
@@ -104,7 +96,7 @@ export default (
             )
           }
           let session: DbSession | null = null
-          if (req.user && req.user.session_id) {
+          if (req?.user?.session_id) {
             ;({
               rows: [session],
             } = await rootPgPool.query<DbSession>(
@@ -160,33 +152,23 @@ export default (
     )
   )
 
-  app.get(`/auth/${service}`, setReturnTo, async (req, res, next) => {
-    try {
-      await preRequest(req)
-    } catch (e) {
-      next(e)
-      return
-    }
-    const realAuthDetails =
-      typeof authenticateConfig === "function"
-        ? authenticateConfig(req)
-        : authenticateConfig
-    const step1Middleware = passport.authenticate(service, realAuthDetails)
-    step1Middleware(req, res, next)
-  })
+  app.get(
+    `/auth/${service}`,
+    {
+      preValidation: fastifyPassport.authenticate(service, authenticateConfig),
+      preHandler: setReturnTo,
+    },
+    async (_req, _res) => {}
+  )
 
-  const step2Middleware = passport.authenticate(service, {
-    failureRedirect: "/login",
-    successReturnToOrRedirect: "/",
-  })
-
-  app.get(`/auth/${service}/callback`, async (req, res, next) => {
-    try {
-      await postRequest(req)
-    } catch (e) {
-      next(e)
-      return
-    }
-    step2Middleware(req, res, next)
-  })
+  app.get(
+    `/auth/${service}/callback`,
+    {
+      preValidation: fastifyPassport.authenticate(service, {
+        failureRedirect: "/login",
+        successReturnToOrRedirect: "/",
+      }),
+    },
+    async (_req, _res) => {}
+  )
 }

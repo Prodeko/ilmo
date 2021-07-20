@@ -5,12 +5,27 @@ fragment EventPage_Registration on Registration {
   createdAt
   __typename
 }
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
 mutation CreateEventRegistration($registrationToken: String!, $eventId: UUID!, $quotaId: UUID!, $firstName: String!, $lastName: String!, $email: String!) {
   createRegistration(
     input: {registrationToken: $registrationToken, eventId: $eventId, quotaId: $quotaId, firstName: $firstName, lastName: $lastName, email: $email}
   ) {
     registration {
       ...EventPage_Registration
+      quota {
+        ...EventPage_Quota
+        __typename
+      }
+      event {
+        slug
+        __typename
+      }
       __typename
     }
     __typename

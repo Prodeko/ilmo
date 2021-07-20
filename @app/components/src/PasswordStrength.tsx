@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import InfoCircleOutlined from "@ant-design/icons/InfoCircleOutlined"
 import { Col, Popover, Progress, Row } from "antd"
 

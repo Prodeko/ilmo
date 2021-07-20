@@ -1,4 +1,3 @@
-import React from "react"
 import { Typography } from "antd"
 
 // Extract the type of a function's first argument

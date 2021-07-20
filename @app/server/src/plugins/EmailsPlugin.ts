@@ -8,7 +8,7 @@ import { OurGraphQLContext } from "../middleware/installPostGraphile"
 import { loadTemplate } from "../utils/emailUtils"
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors"
 
-const EMAIL_SEND_TEMPLATE_WHITELIST = ["event_registration.mjml.njk"]
+const EMAIL_SEND_TEMPLATE_ALLOWLIST = ["event_registration.mjml.njk"]
 
 const EmailsPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
@@ -47,24 +47,24 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
     """
     The output of our \`renderEmailTemplate\` query.
     """
-    type RenderEmailPayload {
+    type EmailTemplate {
       name: String
       html: String
       text: String
     }
 
     """
-    The output of our \`renderEmailTemplates\` query.
+    Reads through a set of \`EmailTemplate\`.
     """
     type EmailTemplatesConnection {
-      templates: [RenderEmailPayload!]!
+      templates: [EmailTemplate!]!
     }
 
     extend type Query {
       """
       Use this query to render server-side mjml templates to html and text.
       """
-      renderEmailTemplate(input: RenderEmailInput!): RenderEmailPayload
+      renderEmailTemplate(input: RenderEmailInput!): EmailTemplate
 
       """
       Use this query to render all server-side email templates to html and text.
@@ -83,7 +83,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
         const { template, variables } = args.input
 
         try {
-          if (!EMAIL_SEND_TEMPLATE_WHITELIST.includes(template)) {
+          if (!EMAIL_SEND_TEMPLATE_ALLOWLIST.includes(template)) {
             const e = new Error("Unallowed email template.")
             e["code"] = "DNIED"
             throw e

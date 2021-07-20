@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import {
   AdminLayout,
   ORGANIZATION_RESULTS_PER_PAGE,
@@ -17,11 +17,11 @@ import { NextPage } from "next"
 const Admin_Organizations: NextPage = () => {
   const slug = useQuerySlug()
   const [page, setPage] = useState(1)
-  const query = useOrganizationPageQuery({
+  const [query] = useOrganizationPageQuery({
     variables: { slug, offset: (page - 1) * ORGANIZATION_RESULTS_PER_PAGE },
   })
   const organizationLoadingElement = useOrganizationLoading(query)
-  const organization = query?.data?.organizationBySlug
+  const organization = query.data?.organizationBySlug
 
   const props = { page, setPage }
 

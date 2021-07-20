@@ -1,4 +1,3 @@
-import React from "react"
 import { AdminLayout, EventForm, Redirect, useQueryId } from "@app/components"
 import {
   QuotasConnection,
@@ -81,14 +80,14 @@ const Admin_UpdateEvent: NextPage = () => {
   const { t } = useTranslation("admin")
   const router = useRouter()
   const eventId = useQueryId()
-  const query = useUpdateEventPageQuery({
+  const [query] = useUpdateEventPageQuery({
     variables: { id: eventId },
   })
-  const { loading, error } = query
-  const event = query?.data?.event
+  const { data, fetching, error } = query
+  const event = data?.event
 
   // If event is not found redirect to index
-  if (!loading && !error && !event) {
+  if (!fetching && !error && !event) {
     return <Redirect href="/" layout />
   }
 
@@ -101,7 +100,7 @@ const Admin_UpdateEvent: NextPage = () => {
             onBack={() => router.push("/admin/event/list")}
           />
           <EventForm
-            data={query.data}
+            data={data}
             eventId={eventId}
             eventMutationDocument={UpdateEventDocument}
             formRedirect="/admin/event/list"

@@ -259,12 +259,11 @@ async function runCommand(
       await client.release()
     }
 
-    req.raw.login({ session_id: session.uuid }, () => {
-      setTimeout(() => {
-        // This 500ms delay is required to keep GitHub actions happy. 200ms wasn't enough.
-        res.redirect(next || "/")
-      }, 500)
-    })
+    req.logIn({ session_id: session.uuid })
+    setTimeout(() => {
+      // This 500ms delay is required to keep GitHub actions happy. 200ms wasn't enough.
+      res.redirect(next || "/")
+    }, 500)
 
     return null
   } else if (command === "createTestEventData") {

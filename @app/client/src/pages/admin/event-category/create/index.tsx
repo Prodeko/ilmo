@@ -1,4 +1,3 @@
-import React from "react"
 import { AdminLayout, EventCategoryForm } from "@app/components"
 import { useCreateEventCategoryPageQuery } from "@app/graphql"
 import { Col, PageHeader, Row } from "antd"
@@ -7,7 +6,7 @@ import { useRouter } from "next/dist/client/router"
 import useTranslation from "next-translate/useTranslation"
 
 const Admin_CreateEventCategory: NextPage = () => {
-  const query = useCreateEventCategoryPageQuery()
+  const [query] = useCreateEventCategoryPageQuery()
   const { t } = useTranslation("admin")
   const router = useRouter()
 

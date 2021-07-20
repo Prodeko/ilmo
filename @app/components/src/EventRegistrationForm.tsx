@@ -1,19 +1,18 @@
-import React, { useCallback, useEffect, useState } from "react"
-import { ApolloError } from "@apollo/client"
+import { useCallback, useEffect, useState } from "react"
 import {
-  EventPageDocument,
   useClaimRegistrationTokenMutation,
   useCreateEventRegistrationMutation,
   useDeleteEventRegistrationMutation,
-  useEventSlugByIdQuery,
   useUpdateEventRegistrationMutation,
 } from "@app/graphql"
-import { extractError, getCodeFromError } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
+import { Button, Form, Input, message, Popconfirm } from "antd"
 import { Rule } from "antd/lib/form"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+import { CombinedError } from "urql"
+
+import { ErrorAlert } from "."
 
 interface EventRegistrationFormProps {
   type: "update" | "create"
@@ -69,24 +68,17 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const { t } = useTranslation("register")
   const router = useRouter()
 
-  // Get event slug for refetchQueries
-  const { data: eventSlugByIdData } = useEventSlugByIdQuery({
-    variables: { id: eventId },
-  })
-
   // Handling form values, errors and submission
   const [form] = Form.useForm()
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
-  const [createRegistration] = useCreateEventRegistrationMutation()
-  const [deleteRegistration] = useDeleteEventRegistrationMutation()
-  const [updateRegistration] = useUpdateEventRegistrationMutation()
-  const [claimRegistratioToken] = useClaimRegistrationTokenMutation()
+  const [formError, setFormError] = useState<Error | CombinedError | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [registrationToken, setRegistrationToken] = useState<
     string | undefined
   >(undefined)
-
-  const code = getCodeFromError(formError)
+  const [_res1, createRegistration] = useCreateEventRegistrationMutation()
+  const [_res2, deleteRegistration] = useDeleteEventRegistrationMutation()
+  const [_res3, updateRegistration] = useUpdateEventRegistrationMutation()
+  const [_res4, claimRegistratioToken] = useClaimRegistrationTokenMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -99,9 +91,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     ;(async () => {
       if (type === "create" && eventId && quotaId) {
         try {
-          const { data } = await claimRegistratioToken({
-            variables: { eventId, quotaId },
+          const { data, error } = await claimRegistratioToken({
+            eventId,
+            quotaId,
           })
+          if (error) throw error
           const { registrationToken, updateToken } =
             data?.claimRegistrationToken?.claimRegistrationTokenOutput || {}
           if (!registrationToken || !updateToken) {
@@ -110,7 +104,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             )
           }
           setRegistrationToken(registrationToken)
-          setUpdateToken!(updateToken)
+          setUpdateToken?.(updateToken)
         } catch (e) {
           setFormError(e)
           Sentry.captureException(e)
@@ -127,13 +121,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         // No need to update apollo cache manually with the delete mutation
         // since /event/[slug] page calls useEventRegistrations subscription
         // and gets the up-to-date list of registrations that way.
-        const { data, errors } = await deleteRegistration({
-          variables: { updateToken },
+        const { data, error } = await deleteRegistration({
+          updateToken,
         })
-        if (!data) {
-          throw new Error("Result expected")
-        }
-        if (!data?.deleteRegistration?.success || errors) {
+        if (error) throw error
+        if (!data?.deleteRegistration?.success || error) {
           throw new Error(t("deleteRegistrationFailed"))
         }
         router.push(formRedirect)
@@ -151,37 +143,19 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       setFormError(null)
       try {
         if (type === "create") {
-          await createRegistration({
-            variables: {
-              ...values,
-              eventId,
-              quotaId,
-              registrationToken,
-            },
-            // Refetch the event page query to get the up-to-date list of
-            // registrations. Apollo can't manually update the results when new
-            // records are added. Using refetchQueries is more efficient than
-            // doing client.resetStore() which clears the entire cache. Even
-            // more efficient solution would be to update the cache manually.
-            // However, that turned out to be __very__ involved with our current
-            // setup. This is due to the fact that we fetch event registrations
-            // with subscriptions and normal queries. Manual cache updating can
-            // be done but it would result in many changes across seemingly
-            // unrelated files thus increasing complexity.
-            refetchQueries: [
-              {
-                query: EventPageDocument,
-                variables: { slug: eventSlugByIdData?.event?.slug },
-              },
-            ],
+          const { error } = await createRegistration({
+            ...values,
+            eventId,
+            quotaId,
+            registrationToken,
           })
+          if (error) throw error
         } else if (type === "update") {
-          await updateRegistration({
-            variables: {
-              ...values,
-              updateToken,
-            },
+          const { error } = await updateRegistration({
+            ...values,
+            updateToken,
           })
+          if (error) throw error
         }
 
         router.push(formRedirect)
@@ -197,7 +171,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       createRegistration,
       updateRegistration,
       registrationToken,
-      eventSlugByIdData,
       updateToken,
       formRedirect,
       router,
@@ -274,24 +247,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       )}
       {formError && (
         <Form.Item {...tailFormItemLayout}>
-          <Alert
+          <ErrorAlert
             data-cy="eventregistrationform-error-alert"
-            description={
-              <span>
-                {extractError(formError).message}{" "}
-                {code && (
-                  <span>
-                    ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                  </span>
-                )}
-              </span>
-            }
+            error={formError}
             message={
               type === "create"
                 ? t("errors.registrationFailed")
                 : t("errors.registrationUpdateFailed")
             }
-            type="error"
           />
         </Form.Item>
       )}

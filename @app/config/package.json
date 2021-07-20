@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "jest": "^27.0.5"
+    "jest": "^27.0.6"
   }
 }

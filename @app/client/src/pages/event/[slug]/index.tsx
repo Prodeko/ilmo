@@ -1,4 +1,3 @@
-import React from "react"
 import {
   EventDescription,
   EventQuotasCard,
@@ -20,14 +19,14 @@ import useTranslation from "next-translate/useTranslation"
 const EventPage: NextPage = () => {
   const slug = useQuerySlug()
   const { t, lang } = useTranslation("events")
-  const query = useEventPageQuery({ variables: { slug } })
+  const [query] = useEventPageQuery({ variables: { slug } })
   const eventLoadingElement = useEventLoading(query)
   const event = query?.data?.eventBySlug
 
   return (
     <SharedLayout
       query={query}
-      title={query.loading ? "" : `${event?.name[lang] ?? t("eventNotFound")}`}
+      title={query.fetching ? "" : `${event?.name[lang] ?? t("eventNotFound")}`}
       titleHref="/event/[slug]"
       titleHrefAs={`/event/${event?.slug}`}
     >
@@ -88,7 +87,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         </Col>
         <Col
           sm={{ span: 8 }}
-          style={{ maxHeight: isMobile ? "100%" : 0 }}
+          style={{
+            maxHeight: isMobile ? "100%" : 0,
+            position: !isMobile ? "sticky" : "initial",
+            top: !isMobile ? 24 : 0,
+          }}
           xs={{ span: 24 }}
         >
           <EventQuotasCard event={event} registrations={registrations} />

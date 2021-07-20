@@ -1,4 +1,3 @@
-import React from "react"
 import { EventPage_EventFragment } from "@app/graphql"
 import { Badge, Descriptions } from "antd"
 import dayjs from "dayjs"
@@ -29,8 +28,6 @@ export const EventDescription: React.FC<EventDescriptionProps> = ({
     registrationStartTime,
     registrationEndTime,
   } = event
-
-  console.log(event)
 
   return (
     <>

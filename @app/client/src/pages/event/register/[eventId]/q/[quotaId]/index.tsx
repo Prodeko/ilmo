@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   EventRegistrationForm,
   Redirect,
@@ -19,14 +19,14 @@ const EventRegistrationPage: NextPage = () => {
   const router = useRouter()
   const { eventId, quotaId } = router.query
 
-  const query = useEventRegistrationPageQuery({
+  const [query] = useEventRegistrationPageQuery({
     variables: { eventId, quotaId },
   })
-  const { loading, error } = query
+  const { data, fetching, error } = query
 
-  const currentUser = query?.data?.currentUser
-  const event = query?.data?.event
-  const quota = query?.data?.quota
+  const currentUser = data?.currentUser
+  const event = data?.event
+  const quota = data?.quota
   const { signupClosed, signupUpcoming } = event || {}
 
   const { name, primaryEmail } = currentUser || {}
@@ -43,14 +43,14 @@ const EventRegistrationPage: NextPage = () => {
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), [])
   const recentRegistrations = useEventRegistrations(eventId as string, after)
-  const [deleteRegistration] = useDeleteEventRegistrationMutation()
+  const [_res1, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
 
   const handleGoBack = useCallback(async () => {
     // Delete the pending registration if the user goes back to event page
     if (updateToken) {
       await deleteRegistration({
-        variables: { updateToken },
+        updateToken,
       })
     }
     router.push(`/event/${event.slug}`)
@@ -59,7 +59,7 @@ const EventRegistrationPage: NextPage = () => {
   // If event or quota is not found, or if event
   // registration is not open redirect to index
   if (
-    !loading &&
+    !fetching &&
     !error &&
     (!event || !quota || signupClosed || signupUpcoming)
   ) {

@@ -27,7 +27,7 @@ migration framework (for now at least, Graphile Migrate is still young...)
 
 ## Database Roles
 
-Graphile Starter uses three roles:
+Ilmo uses three roles:
 
 - `DATABASE_OWNER` - this is the role that owns the database (**not** the
   database cluster, just the individual database); i.e. it's the role that runs

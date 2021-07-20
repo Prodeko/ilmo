@@ -5,7 +5,7 @@ if (parseInt(process.version.split(".")[0], 10) < 10) {
 const fsp = require("fs").promises
 const { runSync } = require("./lib/run")
 const { withDotenvUpdater, readDotenv } = require("./lib/dotenv")
-const { safeRandomString } = require("./lib/random")
+const { safeRandomString, safeRandomHexString } = require("./lib/random")
 
 // fixes runSync not throwing ENOENT on windows
 const platform = require("os").platform()
@@ -21,15 +21,6 @@ exports.yarnCmd = yarnCmd
 exports.projectName = projectName
 
 exports.updateDotenv = function updateDotenv(add, answers) {
-  add(
-    "GRAPHILE_LICENSE",
-    null,
-    `\
-# If you're supporting PostGraphile's development via Patreon or Graphile
-# Store, add your license key from https://store.graphile.com here so you can
-# use the Pro plugin - thanks so much!`
-  )
-
   add(
     "NODE_ENV",
     "development",
@@ -75,7 +66,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add(
     "SECRET",
-    safeRandomString(30),
+    safeRandomHexString(64),
     `\
 # This secret is used for signing cookies`
   )
@@ -180,6 +171,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Azure blob storage connection string. If set, file uploads use the Azure backend, otherwise files are saved locally.`
   )
 
+  add(
+    "ENABLE_REGISTRATION",
+    0,
+    `\
+    # Enable account registrations`
+  )
+
   if (projectName) {
     add(
       "COMPOSE_PROJECT_NAME",
@@ -201,18 +199,12 @@ exports.checkGit = async function checkGit() {
     console.error()
     console.error()
     console.error(
-      "ERROR: Graphile Starter must run inside of a git versioned folder. Please run the following:"
+      "ERROR: Ilmo must run inside of a git versioned folder. Please run the following:"
     )
     console.error()
     console.error("  git init")
     console.error("  git add .")
-    console.error("  git commit -m 'Graphile Starter base'")
-    console.error()
-    console.error(
-      "For more information, read https://github.com/graphile/starter#making-it-yours"
-    )
-    console.error()
-    console.error()
+    console.error("  git commit -m 'Ilmo base'")
     console.error()
     process.exit(1)
   }
@@ -233,9 +225,6 @@ exports.outro = (message) => {
   console.log()
   console.log(message)
   console.log()
-  console.log()
-  console.log("🙏 Please support our Open Source work:")
-  console.log("     https://graphile.org/sponsor")
   console.log()
   console.log("____________________________________________________________")
   console.log()

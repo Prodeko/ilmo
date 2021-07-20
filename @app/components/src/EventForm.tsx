@@ -1,27 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import DragOutlined from "@ant-design/icons/DragOutlined"
 import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone"
 import PlusOutlined from "@ant-design/icons/PlusOutlined"
-import { ApolloError, DocumentNode, useMutation } from "@apollo/client"
 import {
   CreateEventPageQuery,
-  ListEventsDocument,
   Quota,
   UpdateEventPageQuery,
   useRenderEmailTemplateQuery,
 } from "@app/graphql"
 import {
-  extractError,
   filterObjectByKeys,
   formItemLayout,
-  getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import {
-  Alert,
   Badge,
   Button,
   Card,
@@ -39,12 +34,15 @@ import {
   Typography,
 } from "antd"
 import dayjs from "dayjs"
+import { DocumentNode } from "graphql"
 import { debounce, uniq } from "lodash"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
+import { CombinedError, useMutation } from "urql"
 
 import { DisableDraggable, Draggable } from "./Draggable"
+import { ErrorAlert } from "./ErrorAlert"
 import { FileUpload } from "./index"
 
 const { Text } = Typography
@@ -120,7 +118,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     [type, languages, supportedLanguages]
   )
 
-  // Translations, router, apollo
+  // Translations, router, urql
   const { t, lang } = useTranslation("events")
   const router = useRouter()
 
@@ -128,7 +126,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [form] = Form.useForm()
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formValues, setFormValues] = useState<FormValues | undefined>()
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
+  const [formError, setFormError] = useState<Error | CombinedError | null>(null)
   const [quotaErrors, setQuotaErrors] = useState<any[] | null>(null)
   const [isDraft, setIsDraft] = useState(
     type === "create" || initialValues.isDraft
@@ -138,10 +136,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   )
 
   // Mutations
-  const [eventQuery] = useMutation(eventMutationDocument, {
-    context: { hasUpload: true },
-  })
-  const [quotasQuery] = useMutation(quotasMutationDocument)
+  const [_res1, eventQuery] = useMutation(eventMutationDocument)
+  const [_res2, quotasQuery] = useMutation(quotasMutationDocument)
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -154,11 +150,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     }
   }, [form, initialValues, initialSelectedLanguages])
 
-  const code = getCodeFromError(formError)
-
   // For rendering email tab
   const [showHtml, setShowHtml] = useState(true)
-  const { loading: templatesLoading, data: emailTemplatesData } =
+  const [{ fetching: fetchingTemplates, data: emailTemplatesData }] =
     useRenderEmailTemplateQuery({
       variables: {
         template: "event_registration.mjml.njk",
@@ -205,22 +199,14 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
 
         // eventId is only used in update mutation
         const { data } = await eventQuery({
-          variables: {
-            ...values,
-            slug,
-            eventStartTime,
-            eventEndTime,
-            registrationStartTime,
-            registrationEndTime,
-            headerImageFile,
-            eventId,
-          },
-          refetchQueries: [
-            {
-              query: ListEventsDocument,
-              variables: { offset: 0, first: 10 },
-            },
-          ],
+          ...values,
+          slug,
+          eventStartTime,
+          eventEndTime,
+          registrationStartTime,
+          registrationEndTime,
+          headerImageFile,
+          eventId,
         })
         const accessor = type === "create" ? "createEvent" : "updateEvent"
         const createdEventId = data[accessor].event.id
@@ -231,7 +217,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         })
         // Run quotas query
         quotasQuery({
-          variables: { input: { eventId: createdEventId, quotas } },
+          input: { eventId: createdEventId, quotas },
         })
 
         setFormError(null)
@@ -523,19 +509,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           </Form.Item>
           {formError && (
             <Form.Item {...tailFormItemLayout}>
-              <Alert
-                description={
-                  <span>
-                    {extractError(formError).message}
-                    {code && (
-                      <span>
-                        ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                      </span>
-                    )}
-                  </span>
-                }
+              <ErrorAlert
+                error={formError}
                 message={t("errors.eventCreationFailed")}
-                type="error"
               />
             </Form.Item>
           )}
@@ -709,13 +685,13 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           <Row>
             <Col span={24}>
               <Switch
-                loading={templatesLoading}
+                loading={fetchingTemplates}
                 style={{ margin: 10 }}
                 defaultChecked
                 onChange={(checked) => setShowHtml(checked)}
               />
               <Text>{t("common:emailSwitchLabel")}</Text>
-              <Card loading={templatesLoading} style={{ marginLeft: 10 }}>
+              <Card loading={fetchingTemplates} style={{ marginLeft: 10 }}>
                 {showHtml ? (
                   <div
                     dangerouslySetInnerHTML={{

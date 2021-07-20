@@ -1,15 +1,14 @@
 import * as qs from "querystring"
 
-import React from "react"
 import { AiOutlineMail, AiOutlineTag } from "react-icons/ai"
 import { MdEvent } from "react-icons/md"
 import { VscOrganization } from "react-icons/vsc"
 import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
-import { QueryResult } from "@apollo/client"
 import { SharedLayout_QueryFragment } from "@app/graphql"
 import { Layout, message } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+import { UseQueryState } from "urql"
 
 import { AdminSideMenu, MenuItem } from "./AdminSideMenu"
 import { Redirect } from "./Redirect"
@@ -40,10 +39,7 @@ const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
 }
 
 export interface AdminLayoutProps {
-  query: Pick<
-    QueryResult<SharedLayout_QueryFragment>,
-    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >
+  query: UseQueryState<SharedLayout_QueryFragment>
   href: string
   children: React.ReactNode
 }
@@ -55,7 +51,7 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   const { t } = useTranslation("admin")
   const router = useRouter()
-  const { data, loading, error } = query
+  const { data, fetching, error } = query
 
   const basicMenuItems = [
     {
@@ -66,7 +62,7 @@ export function AdminLayout({
     },
   ]
 
-  if (loading) {
+  if (fetching) {
     return <PageLoading />
   }
 
@@ -77,15 +73,14 @@ export function AdminLayout({
   // the user is not logged in
   if (
     !error &&
-    !loading &&
+    !fetching &&
     (organizationMemberships?.length === 0 || !currentUser)
   ) {
-    console.log("Hereee")
     message.error(t("notifications.adminAccessDenied"))
     return <Redirect href="/" layout />
   }
 
-  const items: MenuItem[] = loading
+  const items: MenuItem[] = fetching
     ? [...basicMenuItems]
     : [
         {
@@ -176,8 +171,8 @@ export function AdminLayout({
       sider={layoutSider}
       title={`${t("common:admin")}`}
     >
-      {({ currentUser, error, loading }: SharedLayoutChildProps) =>
-        !currentUser && !error && !loading ? (
+      {({ currentUser, error, fetching }: SharedLayoutChildProps) =>
+        !currentUser && !error && !fetching ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
           children

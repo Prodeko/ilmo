@@ -1,4 +1,3 @@
-import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
@@ -22,7 +21,7 @@ import useTranslation from "next-translate/useTranslation"
 
 const Admin_ListEvents: NextPage = () => {
   const { t, lang } = useTranslation("admin")
-  const query = useListEventsPageQuery()
+  const [query] = useListEventsPageQuery()
   const isMobile = useIsMobile()
 
   const eventCategories = query?.data?.eventCategories?.nodes

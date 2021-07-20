@@ -329,14 +329,17 @@ export const runGraphQLQuery = async (
   if (!ctx) throw new Error("No ctx!")
   const { schema, rootPgPool, options } = ctx
   const req = new MockReq({
-    ip: "127.1.1.1",
-    url: options.graphqlRoute || "/graphql",
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+    _fastifyRequest: {
+      ip: "127.1.1.1",
+      url: options.graphqlRoute || "/graphql",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      logIn: () => null,
+      ...reqOptions,
     },
-    ...reqOptions,
   })
   const res: any = { req }
   req.res = res
@@ -389,7 +392,11 @@ export const runGraphQLQuery = async (
         // Expand errors
         if (result.errors) {
           if (options.handleErrors) {
-            result.errors = options.handleErrors(result.errors, req, res)
+            result.errors = options.handleErrors(
+              result.errors,
+              req._fastifyRequest,
+              res
+            )
           } else {
             // This does a similar transform that PostGraphile does to errors.
             // It's not the same. Sorry.
@@ -422,7 +429,7 @@ export const runGraphQLQuery = async (
         checkResult = await checker(result, {
           pgClient,
           redisClient,
-          req,
+          req: req._fastifyRequest,
         })
 
         // You don't have to keep this, I just like knowing when things change!

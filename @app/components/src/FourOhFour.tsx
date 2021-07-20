@@ -1,4 +1,3 @@
-import React from "react"
 import { User } from "@app/graphql"
 import { Result } from "antd"
 import useTranslation from "next-translate/useTranslation"

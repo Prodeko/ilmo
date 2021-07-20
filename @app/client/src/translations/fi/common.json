@@ -25,5 +25,9 @@
   "signin": "Kirjaudu",
   "status": "Status",
   "update": "Päivitä",
-  "yes": "Kyllä"
+  "yes": "Kyllä",
+  "head": {
+    "title": "Prodeko ilmo",
+    "description": "Prodeko ilmo"
+  }
 }

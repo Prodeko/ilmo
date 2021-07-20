@@ -1,13 +1,14 @@
 import { FastifyPluginAsync } from "fastify"
+import fastifyPassport from "fastify-passport"
 import fp from "fastify-plugin"
 import got from "got"
-import passport from "passport"
 import { Strategy as Oauth2Strategy } from "passport-oauth2"
 
 import installPassportStrategy from "./installPassportStrategy"
 
 const { NODE_ENV } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
+
 interface ProdekoUser {
   pk: string
   email: string
@@ -17,43 +18,31 @@ interface ProdekoUser {
   is_staff: boolean
   is_superuser: boolean
 }
-declare module "http" {
-  export interface IncomingMessage {
-    login(user: Express.User, done: (err: any) => void): void
-    logout(): void
-    user: { session_id: string }
+
+declare module "fastify" {
+  interface PassportUser {
+    session_id: string
   }
 }
 
-declare global {
-  namespace Express {
-    interface User {
-      session_id: string
-    }
-  }
-}
 const Passport: FastifyPluginAsync = async (app) => {
-  passport.serializeUser((sessionObject, done) => {
-    done(null, sessionObject.session_id)
+  fastifyPassport.registerUserSerializer<{ session_id: string }, string>(
+    async (user) => user?.session_id
+  )
+
+  fastifyPassport.registerUserDeserializer(async (id, _request) => {
+    return { session_id: id }
   })
 
-  passport.deserializeUser((session_id: string, done) => {
-    done(null, { session_id })
-  })
-
-  const passportInitializeMiddleware = passport.initialize()
-  app.use(passportInitializeMiddleware)
-  app.websocketMiddlewares.push(passportInitializeMiddleware)
-
-  const passportSessionMiddleware = passport.session()
-  app.use(passportSessionMiddleware)
-  app.websocketMiddlewares.push(passportSessionMiddleware)
+  app.register(fastifyPassport.initialize())
+  app.register(fastifyPassport.secureSession())
 
   if (process.env.PRODEKO_OAUTH_KEY) {
-    await installPassportStrategy(
-      app.express,
+    installPassportStrategy(
+      app,
       app.rootPgPool,
       "oauth2",
+      // @ts-ignore
       Oauth2Strategy,
       {
         clientID: process.env.PRODEKO_OAUTH_KEY,
@@ -110,7 +99,7 @@ and clicking 'I agree' on the displayed prompt.`.replace(/\n/g, " ")
   }
 
   app.get("/logout", (req, res) => {
-    req.raw.logout()
+    req.logout()
     res.redirect("/")
   })
 }

@@ -1,10 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { ApolloError } from "@apollo/client"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { AdminLayout, Loading, Redirect } from "@app/components"
 import {
-  CreatedOrganizationFragment,
   useCreateOrganizationMutation,
-  useOrganizationBySlugLazyQuery,
+  useOrganizationBySlugQuery,
   useSharedQuery,
 } from "@app/graphql"
 import {
@@ -13,7 +11,6 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd"
 import { useForm } from "antd/lib/form/Form"
 import Text from "antd/lib/typography/Text"
@@ -24,15 +21,18 @@ import { Store } from "rc-field-form/lib/interface"
 import slugify from "slugify"
 
 const Admin_CreateOrganization: NextPage = () => {
-  const query = useSharedQuery()
+  const [query] = useSharedQuery()
   const { t } = useTranslation("admin")
   const [form] = useForm()
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null)
   const [slug, setSlug] = useState("")
   const [
+    {
+      data: existingOrganizationData,
+      fetching: fetchingSlug,
+      error: slugError,
+    },
     lookupOrganizationBySlug,
-    { data: existingOrganizationData, loading: slugLoading, error: slugError },
-  ] = useOrganizationBySlugLazyQuery()
+  ] = useOrganizationBySlugQuery()
 
   const [slugCheckIsValid, setSlugCheckIsValid] = useState(false)
   const checkSlug = useMemo(
@@ -40,7 +40,7 @@ const Admin_CreateOrganization: NextPage = () => {
       debounce(async (slug: string) => {
         try {
           if (slug) {
-            await lookupOrganizationBySlug({
+            lookupOrganizationBySlug({
               variables: {
                 slug,
               },
@@ -60,31 +60,20 @@ const Admin_CreateOrganization: NextPage = () => {
     checkSlug(slug)
   }, [checkSlug, slug])
 
-  const code = getCodeFromError(formError)
-  const [organization, setOrganization] =
-    useState<null | CreatedOrganizationFragment>(null)
-  const [createOrganization] = useCreateOrganizationMutation()
+  const [{ data, error }, createOrganization] = useCreateOrganizationMutation()
+  const organization = data?.createOrganization?.organization || null
+  const code = getCodeFromError(error)
 
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setFormError(null)
-      try {
-        const { name } = values
-        const slug = slugify(name || "", {
-          lower: true,
-        })
-        const { data } = await createOrganization({
-          variables: {
-            name,
-            slug,
-          },
-        })
-        setFormError(null)
-        setOrganization(data?.createOrganization?.organization || null)
-      } catch (e) {
-        setFormError(e)
-        Sentry.captureException(e)
-      }
+      const { name } = values
+      const slug = slugify(name || "", {
+        lower: true,
+      })
+      await createOrganization({
+        name,
+        slug,
+      })
     },
     [createOrganization]
   )
@@ -137,7 +126,7 @@ const Admin_CreateOrganization: NextPage = () => {
                     Your organization URL will be{" "}
                     <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/admin/organization/${slug}`}</span>
                   </p>
-                  {!slug ? null : !slugCheckIsValid || slugLoading ? (
+                  {!slug ? null : !slugCheckIsValid || fetchingSlug ? (
                     <div>
                       <Loading /> Checking organization name
                     </div>
@@ -156,7 +145,7 @@ const Admin_CreateOrganization: NextPage = () => {
                   ) : null}
                 </div>
               </Form.Item>
-              {formError && (
+              {error && (
                 <Form.Item {...tailFormItemLayout}>
                   <Alert
                     description={
@@ -167,7 +156,7 @@ const Admin_CreateOrganization: NextPage = () => {
                             choose a different organization name.
                           </span>
                         ) : (
-                          extractError(formError).message
+                          extractError(error).message
                         )}
                         {code && (
                           <span>
@@ -176,7 +165,7 @@ const Admin_CreateOrganization: NextPage = () => {
                         )}
                       </span>
                     }
-                    message={`Creating organization failed`}
+                    message="Creating organization failed"
                     type="error"
                   />
                 </Form.Item>

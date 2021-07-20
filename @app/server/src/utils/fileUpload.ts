@@ -2,6 +2,7 @@ import { createWriteStream, ReadStream, unlinkSync } from "fs"
 import { join } from "path"
 
 import { BlobServiceClient } from "@azure/storage-blob"
+import * as Sentry from "@sentry/node"
 import { FileUpload } from "graphql-upload"
 
 declare module "fs" {
@@ -43,6 +44,7 @@ export async function saveAzure({
     return { id, filepath: `https://static.prodeko.org/media/${filepath}` }
   } catch (e) {
     console.error(e)
+    Sentry.captureException(e)
     throw e
   }
 }
