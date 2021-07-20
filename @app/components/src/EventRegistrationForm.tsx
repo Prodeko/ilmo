@@ -118,9 +118,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     setDeleting(true)
     try {
       if (updateToken) {
-        // No need to update apollo cache manually with the delete mutation
-        // since /event/[slug] page calls useEventRegistrations subscription
-        // and gets the up-to-date list of registrations that way.
         const { data, error } = await deleteRegistration({
           updateToken,
         })

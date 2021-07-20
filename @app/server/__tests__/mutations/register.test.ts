@@ -34,7 +34,8 @@ mutation Register($username: String!, $password: String!, $name: String!, $email
   }
 }`
 
-test("Register", async () => {
+// If process.env.ENABLE_REGISTRATION=1, remove skip
+test.skip("Register", async () => {
   await runGraphQLQuery(
     registerMutations,
 

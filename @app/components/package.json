@@ -16,6 +16,7 @@
     "antd": "^4.16.8",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^3.14.3",
+    "graphql": "^15.5.1",
     "lodash": "^4.17.21",
     "next": "^11.0.1",
     "next-translate": "^1.0.7",
@@ -27,7 +28,8 @@
     "react-dnd-html5-backend": "^14.0.0",
     "react-icons": "^4.2.0",
     "slugify": "^1.6.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "urql": "^2.0.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",
