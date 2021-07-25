@@ -1,10 +1,12 @@
+import { IncomingMessage } from "http"
 import { resolve } from "path"
 
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
 import _PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
-import { FastifyPluginAsync, FastifyRequest } from "fastify"
+import { parse } from "cookie"
+import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
 import { WorkerUtils } from "graphile-worker"
@@ -78,6 +80,16 @@ function uuidOrNull(input: string | number | null | undefined): UUID | null {
   }
 }
 
+function sessionIdFromRequest(
+  app: FastifyInstance,
+  req: IncomingMessage | FastifyRequest
+) {
+  const sessionCookie = parse(req.headers?.cookie || "")?.["session"]
+  const decodedSession = app.decodeSecureSession(sessionCookie)
+  const sessionId = uuidOrNull(decodedSession?.get("passport"))
+  return sessionId
+}
+
 const pluginHook = makePluginHook([
   // Add the pub/sub realtime provider
   PgPubsub,
@@ -91,6 +103,7 @@ const pluginHook = makePluginHook([
 // in @app/server/scripts/schema-export.ts. For normal server startup it is required.
 // Same with workerUtils.
 interface PostGraphileOptionsOptions {
+  app: FastifyInstance
   websocketMiddlewares?: Middleware[]
   rootPgPool: Pool
   redisClient?: Redis
@@ -98,6 +111,7 @@ interface PostGraphileOptionsOptions {
 }
 
 export function getPostGraphileOptions({
+  app,
   websocketMiddlewares,
   rootPgPool,
   redisClient,
@@ -310,8 +324,7 @@ export function getPostGraphileOptions({
      * whether or not you're using JWTs.
      */
     async pgSettings(req) {
-      const fastifyRequest = req._fastifyRequest as FastifyRequest
-      const sessionId = uuidOrNull(fastifyRequest?.user?.session_id)
+      const sessionId = sessionIdFromRequest(app, req)
       if (sessionId) {
         // Update the last_active timestamp (but only do it at most once every 15 seconds to avoid too much churn).
         await rootPgPool.query(
@@ -341,8 +354,8 @@ export function getPostGraphileOptions({
     async additionalGraphQLContextFromRequest(
       req
     ): Promise<Partial<OurGraphQLContext>> {
+      const sessionId = sessionIdFromRequest(app, req)
       const fastifyRequest = req._fastifyRequest as FastifyRequest
-      const sessionId = uuidOrNull(fastifyRequest?.user?.session_id)
       const ipAddress = fastifyRequest?.ip
 
       return {
@@ -383,6 +396,7 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
     authPgPool,
     "app_public",
     getPostGraphileOptions({
+      app,
       websocketMiddlewares,
       rootPgPool,
       redisClient,
