@@ -48,9 +48,10 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
     The output of our \`renderEmailTemplate\` query.
     """
     type EmailTemplate {
-      name: String
-      html: String
-      text: String
+      id: String!
+      name: String!
+      html: String!
+      text: String!
     }
 
     """
@@ -99,8 +100,12 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             wordwrap: 120,
             tags: { img: { format: "skip" } },
           })
+          // All templates end in .mjml.njk, remove the file extension
+          const name = template.slice(0, -9).replace(/_/g, " ")
 
           return {
+            id: name,
+            name: name,
             html,
             text,
           }
@@ -167,6 +172,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             const name = filename.slice(0, -9).replace(/_/g, " ")
 
             return {
+              id: name,
               name,
               html,
               text,

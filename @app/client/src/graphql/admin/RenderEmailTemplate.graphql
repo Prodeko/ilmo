@@ -3,6 +3,8 @@ query RenderEmailTemplate(
   $variables: EmailTemplateVariables!
 ) {
   renderEmailTemplate(input: { template: $template, variables: $variables }) {
+    id
+    name
     html
     text
   }
