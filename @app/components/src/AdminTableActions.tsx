@@ -52,7 +52,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
           href={`/admin/${adminUrl}/update/[id]`}
           type="primary"
         >
-          <a>{t("common:update")}</a>
+          {t("common:update")}
         </ButtonLink>
         <Popconfirm
           cancelText={t("common:no")}
