@@ -12,15 +12,17 @@
   },
   "dependencies": {
     "react": "^17.0.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@graphql-codegen/add": "^2.0.2",
-    "@graphql-codegen/cli": "^1.21.7",
-    "@graphql-codegen/typescript": "^1.23.0",
-    "@graphql-codegen/typescript-operations": "^1.18.4",
-    "@graphql-codegen/typescript-urql": "^2.0.11",
-    "@graphql-codegen/typescript-urql-graphcache": "^1.0.7",
+    "@graphql-codegen/add": "^3.0.0",
+    "@graphql-codegen/cli": "^2.0.1",
+    "@graphql-codegen/introspection": "^2.0.0",
+    "@graphql-codegen/typescript": "^2.0.0",
+    "@graphql-codegen/typescript-operations": "^2.0.1",
+    "@graphql-codegen/typescript-urql": "^3.0.0",
+    "@graphql-codegen/typescript-urql-graphcache": "^2.0.0",
+    "@graphql-codegen/urql-introspection": "^2.0.0",
     "cross-env": "^7.0.3",
     "graphql-codegen-persisted-query-ids": "^0.1.2",
     "jest": "^27.0.6",

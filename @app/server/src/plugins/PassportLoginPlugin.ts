@@ -131,7 +131,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
             )
 
             // Tell Passport.js we're logged in
-            await login({ session_id: details.session_id })
+            await login({ sessionId: details.session_id })
           }
 
           // Fetch the data that was requested from GraphQL, and return it
@@ -190,7 +190,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
 
           if (session.uuid) {
             // Tell Passport.js we're logged in
-            await login({ session_id: session.uuid })
+            await login({ sessionId: session.uuid })
           }
 
           // Get session_id from PG

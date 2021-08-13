@@ -27,7 +27,7 @@ const Settings_Accounts: NextPage = () => {
   const openModal = useCallback(() => setConfirmOpen(true), [])
   const closeModal = useCallback(() => setConfirmOpen(false), [])
 
-  const [_res1, requestAccountDeletion] = useRequestAccountDeletionMutation()
+  const [, requestAccountDeletion] = useRequestAccountDeletionMutation()
   const doIt = useCallback(() => {
     setDoingIt(true)
     ;(async () => {
@@ -53,7 +53,7 @@ const Settings_Accounts: NextPage = () => {
 
   const [deleting, setDeleting] = useState(false)
   const [deleted, setDeleted] = useState(false)
-  const [_res2, confirmAccountDeletion] = useConfirmAccountDeletionMutation()
+  const [, confirmAccountDeletion] = useConfirmAccountDeletionMutation()
   const confirmDeletion = useCallback(() => {
     if (deleting || !token) {
       return

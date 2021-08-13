@@ -2,6 +2,21 @@ fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   registrationByUpdateToken(updateToken: $updateToken) {
     ...UpdateEventRegistrationPage_Event
+    quota {
+      ...EventRegistrationPage_Quota
+      __typename
+    }
+    event {
+      ...EventRegistrationPage_Event
+      eventQuestions(orderBy: POSITION_ASC) {
+        nodes {
+          ...EventRegistrationPage_Question
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
     __typename
   }
   __typename
@@ -51,17 +66,28 @@ fragment UpdateEventRegistrationPage_Event on Registration {
   id
   firstName
   lastName
-  quota {
-    id
-    title
-    __typename
-  }
-  event {
-    id
-    name
-    slug
-    __typename
-  }
+  __typename
+}
+fragment EventRegistrationPage_Quota on Quota {
+  id
+  title
+  __typename
+}
+fragment EventRegistrationPage_Event on Event {
+  id
+  name
+  slug
+  signupUpcoming
+  signupClosed
+  __typename
+}
+fragment EventRegistrationPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
   __typename
 }
 query UpdateEventRegistrationPage($updateToken: String!) {

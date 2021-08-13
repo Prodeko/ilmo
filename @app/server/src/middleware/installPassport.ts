@@ -21,17 +21,17 @@ interface ProdekoUser {
 
 declare module "fastify" {
   interface PassportUser {
-    session_id: string
+    sessionId: string
   }
 }
 
 const Passport: FastifyPluginAsync = async (app) => {
-  fastifyPassport.registerUserSerializer<{ session_id: string }, string>(
-    async (user) => user?.session_id
+  fastifyPassport.registerUserSerializer<{ sessionId: string }, string>(
+    async (user) => user?.sessionId
   )
 
   fastifyPassport.registerUserDeserializer(async (id, _request) => {
-    return { session_id: id }
+    return { sessionId: id }
   })
 
   app.register(fastifyPassport.initialize())

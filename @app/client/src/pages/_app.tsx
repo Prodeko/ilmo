@@ -7,16 +7,25 @@ import { ConfigProvider, notification } from "antd"
 import enUS from "antd/lib/locale/en_US"
 import fiFI from "antd/lib/locale/fi_FI"
 import dayjs from "dayjs"
+import {
+  AnimatePresence,
+  AnimateSharedLayout,
+  domMax,
+  LazyMotion,
+} from "framer-motion"
 import App, { AppContext } from "next/app"
 import Router from "next/router"
 import NProgress from "nprogress"
 
 import "dayjs/locale/fi"
 import "dayjs/locale/en-gb"
-import "../styles/styles.less"
+
+import ErrorPage from "./_error"
 
 import "nprogress/nprogress.css"
 import "react-color-palette/lib/css/styles.css"
+
+require("../styles/styles.less")
 
 declare global {
   interface Window {
@@ -86,7 +95,7 @@ class Ilmo extends App<Props> {
   static async getInitialProps(appContext: AppContext) {
     const { router } = appContext
 
-    const locale = router.locale
+    const { locale } = router
     // TODO: Not sure if this is the best place for this..
     dayjs.locale(locale === "en" ? "en-gb" : "fi")
 
@@ -100,15 +109,23 @@ class Ilmo extends App<Props> {
     const { Component, pageProps, resetUrqlClient, locale } = this.props
 
     return (
-      <Sentry.ErrorBoundary fallback={"An error has occurred"}>
+      <Sentry.ErrorBoundary fallback={<ErrorPage statusCode={500} />}>
         <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
           <Head />
-          <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
+          <LazyMotion features={domMax} strict>
+            <AnimateSharedLayout>
+              <AnimatePresence
+                exitBeforeEnter
+                onExitComplete={() => window.scrollTo(0, 0)}
+              >
+                <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
+              </AnimatePresence>
+            </AnimateSharedLayout>
+          </LazyMotion>
         </ConfigProvider>
       </Sentry.ErrorBoundary>
     )
   }
 }
 
-// @ts-ignore
 export default Sentry.withProfiler(withUrql(Ilmo))

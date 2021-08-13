@@ -1,21 +1,5 @@
-mutation UpdateEventCategory(
-  $name: JSON!
-  $description: JSON!
-  $color: String!
-  $ownerOrganizationId: UUID!
-  $id: UUID!
-) {
-  updateEventCategory(
-    input: {
-      patch: {
-        name: $name
-        description: $description
-        color: $color
-        ownerOrganizationId: $ownerOrganizationId
-      }
-      id: $id
-    }
-  ) {
+mutation UpdateEventCategory($input: UpdateEventCategoryInput!) {
+  updateEventCategory(input: $input) {
     eventCategory {
       ...EventPage_EventCategory
     }

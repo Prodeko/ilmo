@@ -96,12 +96,12 @@ export default (
             )
           }
           let session: DbSession | null = null
-          if (req?.user?.session_id) {
+          if (req?.user?.sessionId) {
             ;({
               rows: [session],
             } = await rootPgPool.query<DbSession>(
               "select * from app_private.sessions where uuid = $1",
-              [req.user.session_id]
+              [req.user.sessionId]
             ))
           }
           const {
@@ -144,7 +144,7 @@ export default (
             e["code"] = "FFFFF"
             throw e
           }
-          done(null, { session_id: session.uuid })
+          done(null, { sessionId: session.uuid })
         } catch (e) {
           done(e)
         }

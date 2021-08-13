@@ -1,5 +1,16 @@
 {
+  "404": {
+    "errorPart1": "The page you attempted to load was not found.",
+    "errorPart2": "Maybe you need to log in?"
+  },
+  "csrfError": "Our security protections have failed to authenticate your request; to solve this you need to refresh the page:",
   "errorCode": "Error code",
   "errorOccurred": "An error occurred",
-  "pageNotFound": "Page not found"
+  "pageNotFound": "Page not found",
+  "refresh": "Refresh page",
+  "unknownError": "We're really sorry, but an unexpected error occurred. Please{\" \"} <a href=\"/\">return to the homepage</a> and try again.",
+  "ErrorOccurred": {
+    "somethingWentWrong": "Something went wrong",
+    "errorInfo": "We're not sure what happened there; how embarrassing! Please try again later, or if this keeps happening then let us know."
+  }
 }

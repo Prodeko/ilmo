@@ -11,10 +11,10 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.9.1",
     "cross-env": "^7.0.3",
-    "cypress": "^8.0.0",
+    "cypress": "^8.2.0",
     "cypress-file-upload": "^5.0.8",
     "jest": "^27.0.6",
     "slugify": "^1.6.0",
-    "webpack": "^5.46.0"
+    "webpack": "^5.50.0"
   }
 }

@@ -1,6 +1,7 @@
 /// <reference types="Cypress" />
 
-context("RegisterAccount", () => {
+// If process.env.ENABLE_REGISTRATION=1, remove skip
+context.skip("RegisterAccount", () => {
   it("can navigate to registration page", () => {
     // Setup
     cy.visit(Cypress.env("ROOT_URL"))

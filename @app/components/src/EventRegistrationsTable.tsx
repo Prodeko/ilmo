@@ -63,7 +63,7 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       title: t("createdAt"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string) => dayjs(createdAt).format("l LT"),
+      render: (createdAt: string) => dayjs(createdAt).format("l LT ss.SSS"),
     },
   ]
   const quotaColumns = [...commonColumns]

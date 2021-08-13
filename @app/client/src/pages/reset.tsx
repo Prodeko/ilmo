@@ -58,7 +58,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
     [confirmDirty]
   )
 
-  const [_res1, resetPassword] = useResetPasswordMutation()
+  const [, resetPassword] = useResetPasswordMutation()
   const handleSubmit = useCallback(
     (values: Store) => {
       setState(State.SUBMITTING)

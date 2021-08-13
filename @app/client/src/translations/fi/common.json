@@ -3,19 +3,28 @@
   "backHome": "Takaisin etusivulle",
   "color": "Väri",
   "create": "Luo",
+  "required": "Pakollinen",
+  "data": "Data",
   "delete": "Poista",
   "description": "Kuvaus",
+  "draft": "Luonnokset",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",
   "en": "Englanti",
   "fi": "Suomi",
+  "head": {
+    "description": "Prodeko ilmo",
+    "title": "Prodeko ilmo"
+  },
   "imgCropTitle": "Muokkaa kuvaa",
+  "label": "Otsikko",
   "loading": "Ladataan...",
-  "location": "Sijainti",
+  "location": "Paikka",
   "logout": "Kirjaudu ulos",
   "moreInfo": "Lisätietoja",
   "name": "Nimi",
   "no": "Ei",
+  "option": "Vaihtoehto",
   "redirect": "Uudelleenohjataan...",
   "registrationClosed": "Ilmoittautuminen päättynyt",
   "registrationOpen": "Ilmoittautuminen auki",
@@ -24,10 +33,7 @@
   "shortDescription": "Lyhyt kuvaus",
   "signin": "Kirjaudu",
   "status": "Status",
+  "type": "Tyyppi",
   "update": "Päivitä",
-  "yes": "Kyllä",
-  "head": {
-    "title": "Prodeko ilmo",
-    "description": "Prodeko ilmo"
-  }
+  "yes": "Kyllä"
 }

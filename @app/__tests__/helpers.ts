@@ -2,9 +2,11 @@ import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker"
 import { Pool, PoolClient } from "pg"
 
 export {
+  constructAnswersFromQuestions,
   createEventCategories,
   createEvents,
   createOrganizations,
+  createQuestions,
   createQuotas,
   createRegistrations,
   createRegistrationSecrets,

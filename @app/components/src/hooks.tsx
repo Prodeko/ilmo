@@ -25,14 +25,14 @@ export function useQueryId() {
 }
 
 export function useEventLoading(query: UseQueryState<EventPage_QueryFragment>) {
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
 
   let child: JSX.Element | null = null
   const event = data?.eventBySlug
   if (event) {
-  } else if (fetching) {
+  } else if (fetching || stale) {
     child = <LoadingPadded size="huge" />
-  } else if (error) {
+  } else if (error && !stale) {
     child = <ErrorResult error={error} />
   } else {
     child = <FourOhFour currentUser={data?.currentUser} />
@@ -50,12 +50,12 @@ export function useEventLoading(query: UseQueryState<EventPage_QueryFragment>) {
 export function useOrganizationLoading(
   query: UseQueryState<OrganizationPage_QueryFragment>
 ) {
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
 
   let child: JSX.Element | null = null
   const organization = data?.organizationBySlug
   if (organization) {
-  } else if (fetching) {
+  } else if (fetching || stale) {
     child = <LoadingPadded size="large" />
   } else if (error) {
     child = <ErrorResult error={error} />
@@ -91,7 +91,7 @@ export function useEventRegistrations(
       variables: { eventId, after },
       pause: !eventId,
     },
-    (prev, response) => {
+    (_prev, response) => {
       const registrations = response?.eventRegistrations
         ?.registrations as EventPage_RegistrationsFragment[]
       setRegistrations(registrations)

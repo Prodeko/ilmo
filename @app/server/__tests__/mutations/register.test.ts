@@ -1,11 +1,5 @@
 import { asRoot } from "../../../__tests__/helpers"
-import {
-  deleteTestData,
-  runGraphQLQuery,
-  sanitize,
-  setup,
-  teardown,
-} from "../helpers"
+import { deleteTestData, runGraphQLQuery, setup, teardown } from "../helpers"
 
 beforeEach(deleteTestData)
 beforeAll(setup)
@@ -47,7 +41,7 @@ test.skip("Register", async () => {
       email: "testuser@example.org",
     },
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {
       login: jest.fn((_user, cb) => process.nextTick(cb)),
     },
@@ -56,20 +50,7 @@ test.skip("Register", async () => {
     async (json, { pgClient }) => {
       expect(json.errors).toBeFalsy()
       expect(json.data).toBeTruthy()
-      expect(json.data!.register).toBeTruthy()
-      expect(json.data!.register.user).toBeTruthy()
-      expect(sanitize(json.data!.register.user)).toMatchInlineSnapshot(`
-        Object {
-          "avatarUrl": null,
-          "createdAt": "[timestamp-1]",
-          "id": "[id-1]",
-          "isAdmin": false,
-          "isVerified": false,
-          "name": "Test User",
-          "updatedAt": "[timestamp-1]",
-          "username": "[username-1]",
-        }
-      `)
+
       const id = json.data!.register.user.id
 
       // If you need to, you can query the DB within the context of this

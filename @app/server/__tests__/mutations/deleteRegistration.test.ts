@@ -1,3 +1,5 @@
+import { DeleteEventRegistrationDocument } from "@app/graphql"
+
 import {
   asRoot,
   createEventDataAndLogin,
@@ -11,13 +13,6 @@ beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
 
-const deleteEventRegistrationMutation = `
-mutation DeleteEventRegistration($updateToken: String!) {
-  deleteRegistration(input: { updateToken: $updateToken }) {
-    success
-  }
-}`
-
 describe("DeleteRegistration", () => {
   it("can delete a registration with a valid updateToken", async () => {
     const { registrationSecrets } = await createEventDataAndLogin()
@@ -25,12 +20,12 @@ describe("DeleteRegistration", () => {
       registrationSecrets[0]
 
     await runGraphQLQuery(
-      deleteEventRegistrationMutation,
+      DeleteEventRegistrationDocument,
 
       // GraphQL variables:
       { updateToken },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
         user: {},
       },
@@ -71,7 +66,7 @@ describe("DeleteRegistration", () => {
 
   it("can't update registration if registration token is not valid", async () => {
     await runGraphQLQuery(
-      deleteEventRegistrationMutation,
+      DeleteEventRegistrationDocument,
 
       // GraphQL variables:
       {
@@ -79,7 +74,7 @@ describe("DeleteRegistration", () => {
         updateToken: "e22951b1-d9b2-4a3c-a827-5c512b935be2",
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:

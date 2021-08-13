@@ -1,9 +1,9 @@
+import { UpdateEventCategoryDocument } from "../../../graphql"
 import {
   asRoot,
   createEventDataAndLogin,
   deleteTestData,
   runGraphQLQuery,
-  sanitize,
   setup,
   teardown,
 } from "../helpers"
@@ -13,54 +13,34 @@ beforeAll(setup)
 afterAll(teardown)
 
 describe("UpdateEventCategory", () => {
-  it("can update an existing event", async () => {
+  it("can update an existing event category", async () => {
     const { organization, eventCategory, session } =
       await createEventDataAndLogin()
-    const categoryId = eventCategory.id
 
     await runGraphQLQuery(
-      `mutation UpdateEventCategory(
-        $categoryId: UUID!
-        $patch: EventCategoryPatch!
-      ) {
-        updateEventCategory(
-          input: {
-            id: $categoryId
-            patch: $patch
-          }
-        ) {
-          eventCategory {
-            id
-            name
-            description
-            ownerOrganizationId
-            createdBy
-            updatedBy
-            createdAt
-            updatedAt
-          }
-        }
-      }`,
+      UpdateEventCategoryDocument,
 
       // GraphQL variables:
       {
-        categoryId,
-        patch: {
-          name: {
-            fi: "Päivitetty testikategoria",
-            en: "Updated test event category",
+        input: {
+          id: eventCategory.id,
+          patch: {
+            name: {
+              fi: "Päivitetty testikategoria",
+              en: "Updated test event category",
+            },
+            description: {
+              fi: "Päivitetty testikuvaus",
+              en: "Updated test description",
+            },
+            ownerOrganizationId: organization.id,
           },
-          description: {
-            fi: "Päivitetty testikuvaus",
-            en: "Updated test description",
-          },
-          ownerOrganizationId: organization.id,
         },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
@@ -70,30 +50,6 @@ describe("UpdateEventCategory", () => {
 
         const updatedEventCategory =
           json.data!.updateEventCategory.eventCategory
-
-        expect(updatedEventCategory).toBeTruthy()
-        expect(updatedEventCategory.ownerOrganizationId).toEqual(
-          organization.id
-        )
-
-        expect(sanitize(updatedEventCategory)).toMatchInlineSnapshot(`
-          Object {
-            "createdAt": "[timestamp-1]",
-            "createdBy": "[id-3]",
-            "description": Object {
-              "en": "Updated test description",
-              "fi": "Päivitetty testikuvaus",
-            },
-            "id": "[id-1]",
-            "name": Object {
-              "en": "Updated test event category",
-              "fi": "Päivitetty testikategoria",
-            },
-            "ownerOrganizationId": "[id-2]",
-            "updatedAt": "[timestamp-2]",
-            "updatedBy": "[id-3]",
-          }
-        `)
 
         const { rows } = await asRoot(pgClient, () =>
           pgClient.query(
@@ -111,38 +67,27 @@ describe("UpdateEventCategory", () => {
     )
   })
 
-  it("can't update an event while logged out (RLS policy)", async () => {
-    const { events } = await createEventDataAndLogin({
+  it("can't update an event category while logged out (RLS policy)", async () => {
+    const { eventCategory } = await createEventDataAndLogin({
       registrationOptions: { create: false },
     })
-    const categoryId = events[0].id
-
     await runGraphQLQuery(
-      `mutation UpdateEventCategory(
-        $categoryId: UUID!
-        $description: JSON!
-      ) {
-        updateEventCategory(
-          input: {
-            id: $categoryId
-            patch: {
-              description: $description
-            }
-          }
-        ) {
-          eventCategory {
-            id
-          }
-        }
-      }`,
+      UpdateEventCategoryDocument,
 
       // GraphQL variables:
       {
-        categoryId,
-        description: { fi: "Testi", en: "Test" },
+        input: {
+          id: eventCategory.id,
+          patch: {
+            description: {
+              fi: "Päivitetty testikuvaus",
+              en: "Updated test description",
+            },
+          },
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:

@@ -175,7 +175,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "ENABLE_REGISTRATION",
     0,
     `\
-    # Enable / disable account registrations (0 = don't allow users to register new accounts)`
+# Enable / disable account registrations (0 = don't allow users to register new accounts)`
   )
 
   if (projectName) {

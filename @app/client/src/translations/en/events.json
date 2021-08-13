@@ -1,13 +1,17 @@
 {
+  "addOption": "Add option",
+  "removeOption": "Remove option",
+  "addQuestion": "Add question",
   "addQuota": "Add quota",
   "category": "Category",
   "createdAt": "Time",
   "endTime": "End time",
   "errors": {
     "eventCategoryCreationFailed": "Creating event category failed",
-    "eventCreationFailed": "Creating event failed",
-    "mustProvideEventQuota": "Must provide at least one quota for the event",
-    "otherFormErrors": "Other errors"
+    "eventCreateFailed": "Creating event failed",
+    "eventUpdateFailed": "Updating event failed",
+    "formTabErrors": "Other errors",
+    "mustProvideEventQuota": "Must provide at least one quota for the event"
   },
   "eventName": "Event",
   "eventNotFound": "Event not found",
@@ -28,6 +32,10 @@
       },
       "fi": "In Finnish",
       "languages": "Please select languages",
+      "questions": {
+        "data": "Question",
+        "type": "Type"
+      },
       "quota": {
         "size": "Size",
         "title": "Title"
@@ -51,6 +59,11 @@
         "provideOrganizer": "Please choose a host organization for the category"
       },
       "provideLanguage": "Please select languages",
+      "questions": {
+        "provideQuestionData": "Please provide the question",
+        "provideQuestionLabel": "Please provide the question label",
+        "provideQuestionType": "Please provide a type for the question"
+      },
       "quota": {
         "provideQuotaSize": "Please provide a size for the quota",
         "provideQuotaTitle": "Please provide a description for the quota"
@@ -61,6 +74,7 @@
     "tabs": {
       "email": "Email",
       "generalInfo": "General",
+      "questions": "Questions",
       "quotas": "Quotas"
     }
   },
@@ -70,5 +84,6 @@
   "organizer": "Organizer",
   "queued": "Queue",
   "quota": "Quota",
+  "removeQuestion": "Remove question",
   "removeQuota": "Remove quota"
 }

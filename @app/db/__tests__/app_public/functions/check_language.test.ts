@@ -22,37 +22,37 @@ async function checkLanguage(
 
 it("fi is a valid language", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { fi: "Testi" })
-    expect(languageCheck.check_language).toEqual(true)
+    const { check_language } = await checkLanguage(client, { fi: "Testi" })
+    expect(check_language).toEqual(true)
   }))
 
 it("en is a valid language", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { en: "Test" })
-    expect(languageCheck.check_language).toEqual(true)
+    const { check_language } = await checkLanguage(client, { en: "Test" })
+    expect(check_language).toEqual(true)
   }))
 
 it("fi and en are both valid languages", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, {
+    const { check_language } = await checkLanguage(client, {
       fi: "Testi",
       en: "Test",
     })
-    expect(languageCheck.check_language).toEqual(true)
+    expect(check_language).toEqual(true)
   }))
 
 it("se is not a valid language (yet...)", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, { se: "Testa" })
-    expect(languageCheck.check_language).toEqual(false)
+    const { check_language } = await checkLanguage(client, { se: "Testa" })
+    expect(check_language).toEqual(false)
   }))
 
 it("se is not a valid language even when fi and en are provided", () =>
   withUserDb(async (client) => {
-    const languageCheck = await checkLanguage(client, {
+    const { check_language } = await checkLanguage(client, {
       fi: "Testi",
       en: "Test",
       se: "Testa",
     })
-    expect(languageCheck.check_language).toEqual(false)
+    expect(check_language).toEqual(false)
   }))

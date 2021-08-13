@@ -12,7 +12,7 @@ context("Create event category", () => {
       userIsAdmin: true,
     }).as("createEventDataResult")
     cy.login({
-      username: "testuser_events",
+      username: "testuser",
       password: "DOESNT MATTER",
       existingUser: true,
     })

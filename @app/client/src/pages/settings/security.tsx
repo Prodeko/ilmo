@@ -75,7 +75,7 @@ const Settings_Security: NextPage = () => {
 
   const [{ data, error: graphqlQueryError, fetching }] =
     useSettingsPasswordQuery()
-  const [_res2, forgotPassword] = useForgotPasswordMutation()
+  const [, forgotPassword] = useForgotPasswordMutation()
   const user = data?.currentUser
   const email = user ? user.primaryEmail : null
   const [resetInProgress, setResetInProgress] = useState(false)

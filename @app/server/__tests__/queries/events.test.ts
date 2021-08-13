@@ -32,7 +32,7 @@ test("events when logged out (RLS policy)", async () => {
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {},
 
     // This function runs all your test assertions:
@@ -60,9 +60,9 @@ test("events when logged in, NOT admin and NOT member of the owner organization 
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {
-      user: { session_id: session.uuid },
+      user: { sessionId: session.uuid },
     },
 
     // This function runs all your test assertions:
@@ -86,9 +86,9 @@ test("events when logged in, NOT admin and IS member of the owner organization (
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {
-      user: { session_id: session.uuid },
+      user: { sessionId: session.uuid },
     },
 
     // This function runs all your test assertions:
@@ -116,9 +116,9 @@ test("events when logged in, IS admin, NOT a member of the owner organization (R
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {
-      user: { session_id: session.uuid },
+      user: { sessionId: session.uuid },
     },
 
     // This function runs all your test assertions:

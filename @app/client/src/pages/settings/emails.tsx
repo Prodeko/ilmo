@@ -29,9 +29,9 @@ function Email({
   hasOtherEmails: boolean
 }) {
   const canDelete = !email.isPrimary && hasOtherEmails
-  const [_res1, deleteEmail] = useDeleteEmailMutation()
-  const [_res2, resendEmailVerification] = useResendEmailVerificationMutation()
-  const [_res3, makeEmailPrimary] = useMakeEmailPrimaryMutation()
+  const [, deleteEmail] = useDeleteEmailMutation()
+  const [, resendEmailVerification] = useResendEmailVerificationMutation()
+  const [, makeEmailPrimary] = useMakeEmailPrimaryMutation()
 
   return (
     <List.Item

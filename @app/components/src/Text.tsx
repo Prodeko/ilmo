@@ -18,6 +18,9 @@ export const H3: React.FC<TitleProps> = (props) => (
 export const H4: React.FC<TitleProps> = (props) => (
   <Typography.Title level={4} {...props} />
 )
+export const H5: React.FC<TitleProps> = (props) => (
+  <Typography.Title level={5} {...props} />
+)
 
 const Paragraph: typeof Typography.Paragraph = Typography.Paragraph
 export { Paragraph as P }

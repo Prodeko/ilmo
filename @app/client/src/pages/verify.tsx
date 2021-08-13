@@ -18,7 +18,7 @@ const VerifyPage: NextPage<Props> = (props) => {
     props.id && props.token ? "SUBMITTING" : "PENDING"
   )
   const [error, setError] = useState<Error | null>(null)
-  const [_res1, verifyEmail] = useVerifyEmailMutation()
+  const [, verifyEmail] = useVerifyEmailMutation()
 
   useEffect(() => {
     if (state === "SUBMITTING") {

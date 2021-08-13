@@ -15,7 +15,7 @@ context("Create event", () => {
       userIsAdmin: true,
     }).as("createEventDataResult")
     cy.login({
-      username: "testuser_events",
+      username: "testuser",
       password: "DOESNT MATTER",
       existingUser: true,
     })
@@ -95,7 +95,18 @@ context("Create event", () => {
 
       // Quotas tab
       cy.get("@tabs").eq(1).click()
+
+      // Test removing quota works
       cy.getCy("eventform-quotas-add-quota").click()
+      cy.getCy("eventform-input-quotas-title-fi-0").should("be.visible")
+      cy.getCy("eventform-input-quotas-title-en-0").should("be.visible")
+      cy.getCy("eventform-quotas-remove-quota").click()
+      cy.getCy("eventform-input-quotas-title-fi-0").should("not.exist")
+      cy.getCy("eventform-input-quotas-title-en-0").should("not.exist")
+
+      // Test adding quotas works
+      cy.getCy("eventform-quotas-add-quota").click()
+
       cy.getCy("eventform-input-quotas-title-fi-0").type("Testikiintiö 1")
       cy.getCy("eventform-input-quotas-title-en-0").type("Test quota 1")
       cy.getCy("eventform-input-quotas-size-0").type("0")
@@ -110,8 +121,56 @@ context("Create event", () => {
       cy.getCy("eventform-input-quotas-title-en-2").type("Test quota 3")
       cy.getCy("eventform-input-quotas-size-2").type("3")
 
-      // Email tab
+      // Questions tab
       cy.get("@tabs").eq(2).click()
+
+      // Test removing question works
+      cy.getCy("eventform-questions-add-question").click()
+      cy.getCy("eventform-select-questions-type-0").should("be.visible")
+      cy.getCy("eventform-questions-remove-question").click()
+      cy.getCy("eventform-select-questions-type-0").should("not.exist")
+
+      // Test adding questions works
+      cy.getCy("eventform-questions-add-question").click()
+      cy.getCy("eventform-select-questions-type-0").click()
+      // option-0 mean CHECKBOX question
+      cy.getCy("eventform-select-questions-type-0-option-0").click()
+      cy.getCy("eventform-input-questions-0-label").should("be.visible")
+      cy.getCy("eventform-input-questions-0-label").type("Test question 1")
+      cy.getCy("eventform-input-questions-0-data-0").should("be.visible")
+      cy.getCy("eventform-input-questions-0-data-0").type("a")
+      cy.getCy("eventform-questions-0-add-option").click()
+      cy.getCy("eventform-input-questions-0-data-1").should("be.visible")
+      cy.getCy("eventform-input-questions-0-data-1").type("b")
+      cy.getCy("eventform-questions-0-add-option").click()
+      cy.getCy("eventform-input-questions-0-data-2").should("be.visible")
+      cy.getCy("eventform-input-questions-0-data-2").type("c")
+
+      cy.getCy("eventform-questions-add-question").click()
+      cy.getCy("eventform-select-questions-type-1").click()
+      // option-1 mean RADIO question
+      cy.getCy("eventform-select-questions-type-1-option-1").click()
+      cy.getCy("eventform-input-questions-1-label").should("be.visible")
+      cy.getCy("eventform-input-questions-1-label").type("Test question 2")
+      cy.getCy("eventform-input-questions-1-data-0").should("be.visible")
+      cy.getCy("eventform-input-questions-1-data-0").type("1")
+      cy.getCy("eventform-questions-1-add-option").click()
+      cy.getCy("eventform-input-questions-1-data-1").should("be.visible")
+      cy.getCy("eventform-input-questions-1-data-1").type("2")
+      cy.getCy("eventform-questions-1-add-option").click()
+      cy.getCy("eventform-input-questions-1-data-2").should("be.visible")
+      cy.getCy("eventform-input-questions-1-data-2").type("3")
+
+      cy.getCy("eventform-questions-add-question").click()
+      cy.getCy("eventform-select-questions-type-2").click()
+      // option-2 mean TEXT question
+      cy.getCy("eventform-select-questions-type-2-option-2").click()
+      cy.getCy("eventform-input-questions-2-label").should("be.visible")
+      cy.getCy("eventform-input-questions-2-label").type("Test question 3")
+      cy.getCy("eventform-input-questions-2-data").should("be.visible")
+
+      // Email tab
+      cy.get("@tabs").eq(3).click()
 
       // Back to general tab
       cy.get("@tabs").eq(0).click()

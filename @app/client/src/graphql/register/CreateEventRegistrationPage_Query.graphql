@@ -1,0 +1,40 @@
+fragment EventRegistrationPage_Event on Event {
+  id
+  name
+  slug
+  signupUpcoming
+  signupClosed
+}
+
+fragment EventRegistrationPage_Quota on Quota {
+  id
+  title
+}
+
+fragment EventRegistrationPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+}
+
+fragment CreateEventRegistrationPage_Query on Query {
+  ...SharedLayout_Query
+  event(id: $eventId) {
+    ...EventRegistrationPage_Event
+    eventQuestions(orderBy: POSITION_ASC) {
+      nodes {
+        ...EventRegistrationPage_Question
+      }
+    }
+  }
+  quota(id: $quotaId) {
+    ...EventRegistrationPage_Quota
+  }
+}
+
+query CreateEventRegistrationPage($eventId: UUID!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
+}

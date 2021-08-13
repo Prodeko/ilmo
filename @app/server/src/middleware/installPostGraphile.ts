@@ -33,17 +33,12 @@ import RemoveAccountRegistrationFields from "../plugins/RemoveAccountRegistratio
 import RemoveOwnershipInfoForeignKeyConnections from "../plugins/RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin"
+import UploadsPlugin from "../plugins/UploadsPlugin"
 import { resolveUpload } from "../utils/fileUpload"
 import handleErrors from "../utils/handleErrors"
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
 
-declare module "postgraphile" {
-  export interface CompatFastifyRequest {
-    login: any
-    logout: any
-  }
-}
 export interface OurGraphQLContext {
   pgClient: PoolClient
   sessionId: string | null
@@ -84,6 +79,8 @@ function sessionIdFromRequest(
   app: FastifyInstance,
   req: IncomingMessage | FastifyRequest
 ) {
+  // @ts-ignore
+  if (isTest) return req?.user?.sessionId
   const sessionCookie = parse(req.headers?.cookie || "")?.["session"]
   const decodedSession = app.decodeSecureSession(sessionCookie)
   const sessionId = uuidOrNull(decodedSession?.get("passport"))
@@ -103,7 +100,7 @@ const pluginHook = makePluginHook([
 // in @app/server/scripts/schema-export.ts. For normal server startup it is required.
 // Same with workerUtils.
 interface PostGraphileOptionsOptions {
-  app: FastifyInstance
+  app?: FastifyInstance
   websocketMiddlewares?: Middleware[]
   rootPgPool: Pool
   redisClient?: Redis
@@ -235,6 +232,9 @@ export function getPostGraphileOptions({
       // Render email templates
       EmailsPlugin,
 
+      // Handle uploads for
+      UploadsPlugin,
+
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
       RemoveQueryQueryPlugin,
@@ -291,17 +291,6 @@ export function getPostGraphileOptions({
       pgStrictFunctions: true,
       uploadFieldDefinitions: [
         {
-          /**
-           * Add colums that should support file uploads here.
-           * In @app/client mark the mutations which use file fields
-           * with context: { hasUpload: true }. For example:
-           *
-           * const [createEvent] = useCreateEventMutation({
-           *   context: { hasUpload: true },
-           * });
-           *
-           */
-          //
           match: ({ column }: { column: string }) =>
             column === "header_image_file",
           resolve: resolveUpload,
@@ -324,7 +313,7 @@ export function getPostGraphileOptions({
      * whether or not you're using JWTs.
      */
     async pgSettings(req) {
-      const sessionId = sessionIdFromRequest(app, req)
+      const sessionId = sessionIdFromRequest(app!, req)
       if (sessionId) {
         // Update the last_active timestamp (but only do it at most once every 15 seconds to avoid too much churn).
         await rootPgPool.query(
@@ -354,7 +343,7 @@ export function getPostGraphileOptions({
     async additionalGraphQLContextFromRequest(
       req
     ): Promise<Partial<OurGraphQLContext>> {
-      const sessionId = sessionIdFromRequest(app, req)
+      const sessionId = sessionIdFromRequest(app!, req)
       const fastifyRequest = req._fastifyRequest as FastifyRequest
       const ipAddress = fastifyRequest?.ip
 

@@ -1,21 +1,34 @@
 import { useCallback, useEffect, useState } from "react"
 import {
+  CreateEventRegistrationDocument,
+  EventRegistrationPage_QuestionFragment,
+  QuestionType,
+  UpdateEventRegistrationDocument,
   useClaimRegistrationTokenMutation,
-  useCreateEventRegistrationMutation,
   useDeleteEventRegistrationMutation,
-  useUpdateEventRegistrationMutation,
 } from "@app/graphql"
+import { tailFormItemLayout } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Button, Form, Input, message, Popconfirm } from "antd"
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  message,
+  Popconfirm,
+  Radio,
+  Space,
+} from "antd"
 import { Rule } from "antd/lib/form"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
-import { CombinedError } from "urql"
+import { CombinedError, useMutation } from "urql"
 
 import { ErrorAlert } from "."
 
 interface EventRegistrationFormProps {
   type: "update" | "create"
+  questions: EventRegistrationPage_QuestionFragment[]
   formRedirect: { pathname: string; query: { [key: string]: string } } | string
   // eventId and quotaId are used when type is "create"
   eventId?: string
@@ -39,23 +52,11 @@ const formItemLayout = {
   },
 }
 
-const tailFormItemLayout = {
-  wrapperCol: {
-    xs: {
-      span: 24,
-      offset: 0,
-    },
-    sm: {
-      span: 12,
-      offset: 6,
-    },
-  },
-}
-
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   props
 ) => {
   const {
+    questions,
     type,
     eventId,
     quotaId,
@@ -75,10 +76,15 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const [registrationToken, setRegistrationToken] = useState<
     string | undefined
   >(undefined)
-  const [_res1, createRegistration] = useCreateEventRegistrationMutation()
-  const [_res2, deleteRegistration] = useDeleteEventRegistrationMutation()
-  const [_res3, updateRegistration] = useUpdateEventRegistrationMutation()
-  const [_res4, claimRegistratioToken] = useClaimRegistrationTokenMutation()
+
+  // Mutations
+  const mutation =
+    type === "update"
+      ? UpdateEventRegistrationDocument
+      : CreateEventRegistrationDocument
+  const [, formMutation] = useMutation(mutation)
+  const [, deleteRegistration] = useDeleteEventRegistrationMutation()
+  const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -91,7 +97,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     ;(async () => {
       if (type === "create" && eventId && quotaId) {
         try {
-          const { data, error } = await claimRegistratioToken({
+          const { data, error } = await claimRegistrationToken({
             eventId,
             quotaId,
           })
@@ -111,7 +117,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         }
       }
     })()
-  }, [claimRegistratioToken, setUpdateToken, eventId, quotaId, type])
+  }, [claimRegistrationToken, setUpdateToken, eventId, quotaId, type])
 
   const doDelete = useCallback(async () => {
     setFormError(null)
@@ -122,7 +128,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           updateToken,
         })
         if (error) throw error
-        if (!data?.deleteRegistration?.success || error) {
+        if (!data?.deleteRegistration?.success) {
           throw new Error(t("deleteRegistrationFailed"))
         }
         router.push(formRedirect)
@@ -139,21 +145,20 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     async (values) => {
       setFormError(null)
       try {
-        if (type === "create") {
-          const { error } = await createRegistration({
-            ...values,
-            eventId,
-            quotaId,
-            registrationToken,
-          })
-          if (error) throw error
-        } else if (type === "update") {
-          const { error } = await updateRegistration({
-            ...values,
-            updateToken,
-          })
-          if (error) throw error
-        }
+        const input =
+          type === "create"
+            ? {
+                ...values,
+                eventId,
+                quotaId,
+                registrationToken,
+              }
+            : {
+                ...values,
+                updateToken,
+              }
+        const { error } = await formMutation({ input })
+        if (error) throw error
 
         router.push(formRedirect)
         type === "create"
@@ -165,11 +170,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       }
     },
     [
-      createRegistration,
-      updateRegistration,
       registrationToken,
       updateToken,
       formRedirect,
+      formMutation,
       router,
       eventId,
       quotaId,
@@ -242,6 +246,52 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           <Input data-cy="eventregistrationform-input-email" />
         </Form.Item>
       )}
+      {questions?.map(({ id, type, data, label, isRequired }, i) => {
+        let input
+        if (type === QuestionType.Text) {
+          input = <Input />
+        } else if (type === QuestionType.Radio) {
+          input = (
+            <Radio.Group>
+              <Space direction="vertical">
+                {data?.map((val, i) => (
+                  <Radio key={i} value={val}>
+                    {val}
+                  </Radio>
+                ))}
+              </Space>
+            </Radio.Group>
+          )
+        } else if (type === QuestionType.Checkbox) {
+          input = (
+            <Checkbox.Group>
+              <Space direction="vertical">
+                {data?.map((val, i) => (
+                  <Checkbox key={i} value={val}>
+                    {val}
+                  </Checkbox>
+                ))}
+              </Space>
+            </Checkbox.Group>
+          )
+        }
+
+        return (
+          <Form.Item
+            key={i}
+            label={label}
+            name={["answers", id]}
+            rules={[
+              {
+                required: isRequired,
+                message: t("forms.rules.provideAnswer"),
+              },
+            ]}
+          >
+            {input}
+          </Form.Item>
+        )
+      })}
       {formError && (
         <Form.Item {...tailFormItemLayout}>
           <ErrorAlert

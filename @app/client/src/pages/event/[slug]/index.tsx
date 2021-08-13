@@ -9,8 +9,8 @@ import {
   useQuerySlug,
 } from "@app/components"
 import { EventPage_EventFragment, useEventPageQuery } from "@app/graphql"
-import { uploadsLoader } from "@app/lib"
 import { Col, PageHeader, Row } from "antd"
+import { m } from "framer-motion"
 import { NextPage } from "next"
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -22,11 +22,16 @@ const EventPage: NextPage = () => {
   const [query] = useEventPageQuery({ variables: { slug } })
   const eventLoadingElement = useEventLoading(query)
   const event = query?.data?.eventBySlug
+  const { fetching, stale } = query
 
   return (
     <SharedLayout
       query={query}
-      title={query.fetching ? "" : `${event?.name[lang] ?? t("eventNotFound")}`}
+      title={
+        fetching || stale
+          ? t("common:loading")
+          : `${event?.name[lang] ?? t("eventNotFound")}`
+      }
       titleHref="/event/[slug]"
       titleHrefAs={`/event/${event?.slug}`}
     >
@@ -45,7 +50,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   const isMobile = useIsMobile()
 
   const {
-    id: eventId,
+    id,
     headerImageFile,
     createdAt,
     registrations: eventRegistrations,
@@ -55,7 +60,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   // Use a subscription to fetch event registrations in real time
   const initialRegistrations = eventRegistrations.nodes
   const registrations = useEventRegistrations(
-    eventId as string,
+    id,
     createdAt,
     initialRegistrations
   )
@@ -73,16 +78,17 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
           xs={{ span: 24 }}
         >
           {headerImageFile && (
-            <Image
-              alt={t("headerImage")}
-              data-cy="eventpage-header-image"
-              height={315}
-              loader={uploadsLoader}
-              objectFit="cover"
-              src={headerImageFile}
-              width={851}
-              priority
-            />
+            <m.figure layoutId={`event-${id}-header-image`}>
+              <Image
+                alt={t("headerImage")}
+                data-cy="eventpage-header-image"
+                height={315}
+                objectFit="cover"
+                src={headerImageFile}
+                width={851}
+                priority
+              />
+            </m.figure>
           )}
         </Col>
         <Col

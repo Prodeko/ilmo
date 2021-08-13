@@ -1,9 +1,0 @@
-mutation UpdateEventQuotas($input: UpdateEventQuotasInput!) {
-  updateEventQuotas(input: $input) {
-    quotas {
-      id
-      __typename
-    }
-    __typename
-  }
-}

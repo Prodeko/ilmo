@@ -1,14 +1,10 @@
 import { DragEventHandler, useRef } from "react"
-import { useDrag, useDrop } from "react-dnd"
+import { useDrag, useDrop, XYCoord } from "react-dnd"
 
-type DragWithIndex = {
+interface DragItem {
   index: number
-}
-
-interface DraggableProps {
-  id: string | number
-  index: number
-  move: (from: number, to: number) => void
+  id: string
+  type: string
 }
 
 interface DisableDraggableProps {
@@ -24,18 +20,21 @@ export const DisableDraggable: DisableDraggableProps = {
   draggable: true,
 }
 
-export const Draggable: React.FC<DraggableProps> = ({
-  id,
-  index,
-  move,
-  children,
-}) => {
-  const { ref, isDragging } = useDraggable("list-draggable", id, index, move)
+interface DraggableProps {
+  id: string | number
+  index: number
+  move: (from: number, to: number) => void
+  onDrop?: (item: DragItem) => void
+}
+
+export const Draggable: React.FC<DraggableProps> = (props) => {
+  const { children } = props
+  const { ref, isDragging } = useDraggable({ type: "list-draggable", ...props })
   return (
     <div
       ref={ref}
       style={{
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0 : 1,
       }}
     >
       {children}
@@ -43,21 +42,26 @@ export const Draggable: React.FC<DraggableProps> = ({
   )
 }
 
-export function useDraggable(
-  type: string,
-  id: string | number,
-  index: number,
-  move: (from: number, to: number) => void
-) {
+interface UseDraggableProps extends DraggableProps {
+  type: string
+}
+
+export function useDraggable(props: UseDraggableProps) {
+  const { type, id, index, move, onDrop } = props
   const ref = useRef<HTMLDivElement>(null)
   const [, drop] = useDrop({
     accept: type,
-    hover(item: DragWithIndex, monitor) {
+    drop: (item: DragItem, _monitor) => {
+      if (onDrop && typeof onDrop === "function") {
+        onDrop(item)
+      }
+      return item
+    },
+    hover(item: DragItem, monitor) {
       if (!ref.current) {
         return
       }
       const dragIndex = item.index
-      if (dragIndex === undefined || dragIndex === null) return
       const hoverIndex = index
 
       // Don't replace items with themselves
@@ -66,40 +70,29 @@ export function useDraggable(
       }
 
       // Determine rectangle on screen
-      const hoverBoundingRect = ref.current.getBoundingClientRect()
+      const hoverBoundingRect = ref.current?.getBoundingClientRect()
 
       // Get vertical middle
       const hoverMiddleY =
         (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
-      const hoverMiddleX =
-        (hoverBoundingRect.right - hoverBoundingRect.left) / 2
 
       // Determine mouse position
-      const clientOffset = monitor.getClientOffset()!
+      const clientOffset = monitor.getClientOffset()
 
       // Get pixels to the top
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top
-      const hoverClientX = clientOffset.x - hoverBoundingRect.left
+      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top
 
       // Only perform the move when the mouse has crossed half of the items height
       // When dragging downwards, only move when the cursor is below 50%
       // When dragging upwards, only move when the cursor is above 50%
 
       // Dragging downwards
-      if (
-        dragIndex < hoverIndex &&
-        hoverClientY < hoverMiddleY &&
-        hoverClientX < hoverMiddleX
-      ) {
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return
       }
 
       // Dragging upwards
-      if (
-        dragIndex > hoverIndex &&
-        hoverClientY > hoverMiddleY &&
-        hoverClientX > hoverMiddleX
-      ) {
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
         return
       }
 

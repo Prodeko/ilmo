@@ -1,13 +1,17 @@
 {
+  "addOption": "Lisää vaihtoehto",
+  "removeOption": "Poista vaihtoehto",
+  "addQuestion": "Lisää kysymys",
   "addQuota": "Lisää kiintiö",
   "category": "Kategoria",
   "createdAt": "Aika",
   "endTime": "Loppumisaika",
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
-    "eventCreationFailed": "Tapahtuman luonti epäonnistui",
-    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö",
-    "otherFormErrors": "Muut virheet"
+    "eventCreateFailed": "Tapahtuman luonti epäonnistui",
+    "eventUpdateFailed": "Tapahtuman päivittäminen epäonnistui",
+    "formTabErrors": "Muut virheet",
+    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö"
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
@@ -28,6 +32,10 @@
       },
       "fi": "Suomeksi",
       "languages": "Valitse kielet",
+      "questions": {
+        "data": "Kysymys",
+        "type": "Tyyppi"
+      },
       "quota": {
         "size": "Koko",
         "title": "Otsikko"
@@ -37,23 +45,28 @@
     "rules": {
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",
-        "provideDescription": "Anna tapahtuman kuvaus",
+        "provideDescription": "Määritä tapahtuman kuvaus",
         "provideEventTime": "Aseta tapahtuman ajankohta",
-        "provideLocation": "Anna tapahtuman sijainti",
-        "provideName": "Anna tapahtuman nimi",
+        "provideLocation": "Määritä tapahtuman sijainti",
+        "provideName": "Määritä tapahtuman nimi",
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",
         "provideRegistrationTime": "Aseta tapahtumaan ilmoittautumisen ajankohta",
         "provideSignupEmail": "Ilmoittautumissähköposti vaaditaan"
       },
       "eventCategory": {
-        "provideDescription": "Anna kategorian kuvaus",
-        "provideName": "Anna kategorian nimi",
+        "provideDescription": "Määritä kategorian kuvaus",
+        "provideName": "Määritä kategorian nimi",
         "provideOrganizer": "Valitse järjestäjä kategorialle"
       },
       "provideLanguage": "Valitse kielet",
+      "questions": {
+        "provideQuestionData": "Määritä kysymys",
+        "provideQuestionLabel": "Määritä kysymyksen otsikko",
+        "provideQuestionType": "Määritä kysymystyyppi"
+      },
       "quota": {
-        "provideQuotaSize": "Anna kiintiön koko",
-        "provideQuotaTitle": "Anna kiintiön nimi"
+        "provideQuotaSize": "Määritä kiintiön koko",
+        "provideQuotaTitle": "Määritä kiintiön nimi"
       }
     },
     "saveAsDraft": "Tallenna luonnoksena",
@@ -61,6 +74,7 @@
     "tabs": {
       "email": "Sähköposti",
       "generalInfo": "Yleistä",
+      "questions": "Kysymykset",
       "quotas": "Kiintiöt"
     }
   },
@@ -70,5 +84,6 @@
   "organizer": "Järjestäjä",
   "queued": "Jonossa",
   "quota": "Kiintiö",
+  "removeQuestion": "Poista kysymys",
   "removeQuota": "Poista kiintiö"
 }

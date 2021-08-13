@@ -172,12 +172,3 @@ pages so you can see how to handle errors from the server.
 * **Docker development flow** — enables work on this project using Docker
   (rather than running the Postgres/etc. directly on your machine). See
   [docker/README.md](docker/README.md) for more info on running in Docker mode.
-
-## TODO
-
-Here's some more things we'd like to demonstrate that we've not got around to
-yet. (If you're interested in helping, reach out on Discord:
-http://discord.gg/graphile)
-
-- **File uploads** — user can change their avatar, but this approach can be
-  extended to other areas

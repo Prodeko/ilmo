@@ -1,34 +1,10 @@
-fragment HomePage_Query on Query {
+fragment UpdateEventPage_Query on Query {
   ...SharedLayout_Query
-  organizations {
-    nodes {
-      id
-      name
-      __typename
-    }
+  event(id: $id) {
+    ...UpdateEventPage_Event
     __typename
   }
-  signupOpenEvents: events(
-    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}}
-    orderBy: REGISTRATION_END_TIME_ASC
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
-    __typename
-  }
-  signupUpcomingEvents: events(
-    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}}
-    orderBy: REGISTRATION_END_TIME_ASC
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
-    __typename
-  }
-  eventCategories {
+  eventCategories(orderBy: NAME_ASC) {
     nodes {
       ...EventPage_EventCategory
       __typename
@@ -78,15 +54,34 @@ fragment SharedLayout_Languages on AppLanguage {
   defaultLanguage
   __typename
 }
-fragment HomePage_Event on Event {
+fragment UpdateEventPage_Event on Event {
   ...EventFields
+  id
+  category {
+    ...EventPage_EventCategory
+    __typename
+  }
   ownerOrganization {
     id
     name
     __typename
   }
-  category {
-    ...EventPage_EventCategory
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventRegistrationPage_Question
+      __typename
+    }
     __typename
   }
   __typename
@@ -131,6 +126,22 @@ fragment EventPage_OwnerOrganization on Organization {
   slug
   __typename
 }
-query HomePage {
-  ...HomePage_Query
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+fragment EventRegistrationPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+  __typename
+}
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
 }

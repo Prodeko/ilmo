@@ -1,4 +1,5 @@
 {
+  "confirmGoBack": "Haluatko varmasti mennä takaisin? Menetät paikkasi jonossa.",
   "deleteRegistration": "Poista ilmoittautuminen",
   "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautumisesi?",
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
@@ -16,7 +17,8 @@
       "emailValid": "Tarkista sähköpostiosoite",
       "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
       "provideFirstName": "Anna etunimi",
-      "provideLastName": "Anna sukunimi"
+      "provideLastName": "Anna sukunimi",
+      "provideAnswer": "Vastaa kysymykseen"
     }
   },
   "recentlyRegisteredHeader": "Äskettäin rekisteröityneet:",

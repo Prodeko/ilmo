@@ -1,9 +1,5 @@
 import { AdminLayout, EventForm } from "@app/components"
-import {
-  CreateEventDocument,
-  CreateEventQuotasDocument,
-  useCreateEventPageQuery,
-} from "@app/graphql"
+import { useCreateEventPageQuery } from "@app/graphql"
 import { Col, PageHeader, Row } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
@@ -24,9 +20,7 @@ const Admin_CreateEvent: NextPage = () => {
           />
           <EventForm
             data={query.data}
-            eventMutationDocument={CreateEventDocument}
             formRedirect="/admin/event/list"
-            quotasMutationDocument={CreateEventQuotasDocument}
             type="create"
           />
         </Col>

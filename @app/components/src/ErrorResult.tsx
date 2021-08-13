@@ -1,6 +1,7 @@
 import SyncOutlined from "@ant-design/icons/SyncOutlined"
 import { Alert, Button, Result } from "antd"
 import Paragraph from "antd/lib/typography/Paragraph"
+import useTranslation from "next-translate/useTranslation"
 import { CombinedError } from "urql"
 
 export interface ErrorResultProps {
@@ -8,6 +9,7 @@ export interface ErrorResultProps {
 }
 
 export function ErrorResult({ error }: ErrorResultProps) {
+  const { t } = useTranslation("error")
   const message: string | undefined = (error as any)?.graphQLErrors?.[0]
     ?.message
   if (message?.includes("CSRF")) {
@@ -16,17 +18,14 @@ export function ErrorResult({ error }: ErrorResultProps) {
         status="403"
         subTitle={
           <>
-            <Paragraph type="secondary">
-              Our security protections have failed to authenticate your request;
-              to solve this you need to refresh the page:
-            </Paragraph>
+            <Paragraph type="secondary">{t("csrfError")}</Paragraph>
             <Paragraph>
               <Button
                 icon={<SyncOutlined />}
                 type="primary"
                 onClick={() => window.location.reload()}
               >
-                Refresh page
+                {t("refresh")}
               </Button>
             </Paragraph>
           </>
@@ -38,12 +37,7 @@ export function ErrorResult({ error }: ErrorResultProps) {
   return (
     <Result
       status="error"
-      subTitle={
-        <span>
-          We're really sorry, but an unexpected error occurred. Please{" "}
-          <a href="/">return to the homepage</a> and try again.
-        </span>
-      }
+      subTitle={<span>{t("unknownError")}</span>}
       title="Unexpected error occurred"
     >
       <Alert message={error.message} type="error" />

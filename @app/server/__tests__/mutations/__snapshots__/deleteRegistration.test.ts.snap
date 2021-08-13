@@ -27,7 +27,7 @@ Object {
       "locations": Array [
         Object {
           "column": 3,
-          "line": 3,
+          "line": 2,
         },
       ],
       "message": "Registration matching token was not found.",

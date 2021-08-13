@@ -1,12 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UpdateRegistration can update a registration with a valid updateToken 2`] = `
+exports[`UpdateRegistration can update a registration with a valid updateToken 1`] = `
 Object {
   "data": Object {
     "updateRegistration": Object {
       "registration": Object {
+        "createdAt": "[timestamp-1]",
         "fullName": "Päivi Tetty",
         "id": "[id-1]",
+        "isQueued": false,
       },
     },
   },
@@ -24,16 +26,47 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_registration(text,text,text) line 11 at RAISE",
+          "where": "PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 12 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 7,
+          "line": 2,
         },
       ],
       "message": "Registration matching token was not found.",
+      "path": Array [
+        "updateRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`UpdateRegistration can't update registration if required answers are not provided 1`] = `
+Object {
+  "data": Object {
+    "updateRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 18 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
       "path": Array [
         "updateRegistration",
       ],

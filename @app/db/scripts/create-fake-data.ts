@@ -1,3 +1,4 @@
+import * as faker from "faker"
 import { random, sample } from "lodash"
 import { Pool, PoolClient } from "pg"
 
@@ -5,6 +6,7 @@ import {
   createEventCategories,
   createEvents,
   createOrganizations,
+  createQuestions,
   createQuotas,
   createRegistrations,
   createSession,
@@ -84,9 +86,15 @@ async function generateData(client: PoolClient) {
       sample(eventCategories).id
     )
     events.forEach(async (e) => {
+      const questions = await createQuestions(
+        client,
+        5,
+        e.id,
+        faker.datatype.boolean()
+      )
       const quotas = await createQuotas(client, 5, e.id)
       quotas.forEach(async (q) => {
-        await createRegistrations(client, random(0, 25), e.id, q.id)
+        await createRegistrations(client, random(0, 10), e.id, q.id, questions)
       })
     })
   })

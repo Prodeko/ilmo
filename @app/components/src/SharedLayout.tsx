@@ -90,7 +90,7 @@ export function SharedLayout({
 }: SharedLayoutProps) {
   const router = useRouter()
   const currentUrl = router.asPath
-  const [_res1, logout] = useLogoutMutation()
+  const [, logout] = useLogoutMutation()
   const { t } = useTranslation("common")
   const isMobile = useIsMobile()
 

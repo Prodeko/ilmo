@@ -1,4 +1,4 @@
-import * as fs from "fs"
+import { readFileSync } from "fs"
 import { resolve } from "path"
 
 import { FastifyError, FastifyPluginAsync } from "fastify"
@@ -45,7 +45,7 @@ let errorPageTemplate: TemplateExecutor
 function _getErrorPage({ message }: ParsedError) {
   if (!errorPageTemplate || isDev) {
     errorPageTemplate = template(
-      fs.readFileSync(resolve(__dirname, "../../error.html"), "utf8")
+      readFileSync(resolve(__dirname, "../../error.html"), "utf8")
     )
   }
 

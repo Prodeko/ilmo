@@ -12,10 +12,8 @@ fragment EventPage_Quota on Quota {
   size
   __typename
 }
-mutation CreateEventRegistration($registrationToken: String!, $eventId: UUID!, $quotaId: UUID!, $firstName: String!, $lastName: String!, $email: String!) {
-  createRegistration(
-    input: {registrationToken: $registrationToken, eventId: $eventId, quotaId: $quotaId, firstName: $firstName, lastName: $lastName, email: $email}
-  ) {
+mutation CreateEventRegistration($input: CreateRegistrationInput!) {
+  createRegistration(input: $input) {
     registration {
       ...EventPage_Registration
       quota {
@@ -23,6 +21,7 @@ mutation CreateEventRegistration($registrationToken: String!, $eventId: UUID!, $
         __typename
       }
       event {
+        id
         slug
         __typename
       }

@@ -40,6 +40,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
         height={120}
         width={isMobile ? 250 : 320}
         hideHSB
+        hideHSV
         hideRGB
         // @ts-ignore
         onChange={handleChange}

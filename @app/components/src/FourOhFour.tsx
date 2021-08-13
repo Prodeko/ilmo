@@ -10,9 +10,12 @@ interface FourOhFourProps {
 
 export function FourOhFour(props: FourOhFourProps) {
   const { currentUser } = props
-  const { t } = useTranslation()
+  const { t } = useTranslation("error")
+  const subtitle = `${t("404.errorPart1")} ${
+    currentUser ? "" : t("404.errorPart2")
+  }`
   return (
-    <div data-cy="fourohfour-div">
+    <div>
       <Result
         extra={
           <ButtonLink href="/" type="primary">
@@ -20,9 +23,7 @@ export function FourOhFour(props: FourOhFourProps) {
           </ButtonLink>
         }
         status="404"
-        subTitle={`The page you attempted to load was not found.${
-          currentUser ? "" : " Maybe you need to log in?"
-        }`}
+        subTitle={<>{subtitle}</>}
         title="404"
       />
     </div>

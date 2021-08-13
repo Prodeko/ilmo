@@ -2,21 +2,23 @@ fragment UpdateEventRegistrationPage_Event on Registration {
   id
   firstName
   lastName
-  quota {
-    id
-    title
-  }
-  event {
-    id
-    name
-    slug
-  }
 }
 
 fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   registrationByUpdateToken(updateToken: $updateToken) {
     ...UpdateEventRegistrationPage_Event
+    quota {
+      ...EventRegistrationPage_Quota
+    }
+    event {
+      ...EventRegistrationPage_Event
+      eventQuestions(orderBy: POSITION_ASC) {
+        nodes {
+          ...EventRegistrationPage_Question
+        }
+      }
+    }
   }
 }
 

@@ -1,11 +1,13 @@
 import { Event } from "@app/graphql"
-import { Card } from "antd"
+import { Card, Typography } from "antd"
 import dayjs from "dayjs"
+import Image from "next/image"
 import useTranslation from "next-translate/useTranslation"
 
+import { H5 } from "./Text"
 import { ButtonLink, P } from "."
 
-const { Meta } = Card
+const { Text } = Typography
 
 const DEFAULT_HEADER_IMAGE =
   "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
@@ -31,9 +33,9 @@ const highlightedStyle = {
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const {
-    id,
     slug,
     name,
+    location,
     description,
     registrationStartTime,
     registrationEndTime,
@@ -43,50 +45,56 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   } = event
   const { t, lang } = useTranslation("home")
 
+  const title = isHighlighted ? `🔥 ${name[lang]} 🔥 ` : name[lang]
+
   return (
     <Card
-      key={id}
+      // bodyStyle and style are used to position the signup button on the same row
+      // even if the description of some event would be very short.
+      bodyStyle={{ display: "flex", flexDirection: "column", flex: "1" }}
       cover={
-        <img
+        <Image
           alt={t("events:headerImage")}
+          height={315}
+          objectFit="cover"
           src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+          width={851}
         />
       }
-      style={{ overflow: "hidden", minWidth: 0 }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
-      <Meta
-        description={
-          <>
-            <div style={cardEventDatesStyle}>
-              {t("registrationTime")}:
-              <br />
-              {dayjs(registrationStartTime).format("LLL")}
-              <br />
-              {dayjs(registrationEndTime).format("LLL")}
-            </div>
-            <P
-              ellipsis={{
-                rows: 2,
-              }}
-              style={{ fontSize: 12 }}
-              type="secondary"
-            >
-              {description[lang]}
-            </P>
-            <ButtonLink
-              data-cy={`eventcard-eventpage-link-${event.slug}`}
-              href={`/event/${slug}`}
-              size="middle"
-              style={isHighlighted ? highlightedStyle : undefined}
-              type={signupOpen ? "success" : "default"}
-              block
-            >
-              {signupOpen ? t("registerToAnEvent") : t("common:moreInfo")}
-            </ButtonLink>
-          </>
-        }
-        title={name[lang]}
-      />
+      <H5 ellipsis={true}>{title}</H5>
+      <div style={cardEventDatesStyle}>
+        <Text strong>{t("registrationTime")}:</Text>
+        <br />
+        {dayjs(registrationStartTime).format("LLL")}
+        <br />
+        {dayjs(registrationEndTime).format("LLL")}
+      </div>
+      <div style={cardEventDatesStyle}>
+        <Text strong>{t("common:location")}: </Text>
+        <span>{location}</span>
+      </div>
+      <P
+        ellipsis={{
+          rows: 2,
+        }}
+        style={{ fontSize: 12, height: "100%" }}
+        type="secondary"
+      >
+        {description[lang]}
+      </P>
+
+      <ButtonLink
+        data-cy={`eventcard-eventpage-link-${event.slug}`}
+        href={`/event/${slug}`}
+        size="middle"
+        style={isHighlighted ? highlightedStyle : undefined}
+        type={signupOpen ? "success" : "default"}
+        block
+      >
+        {signupOpen ? t("registerToAnEvent") : t("common:moreInfo")}
+      </ButtonLink>
     </Card>
   )
 }

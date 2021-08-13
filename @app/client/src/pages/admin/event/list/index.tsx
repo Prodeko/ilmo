@@ -1,3 +1,4 @@
+import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
@@ -122,6 +123,11 @@ const Admin_ListEvents: NextPage = () => {
           title: t("events.list.registrations"),
           key: "registrations",
           render: (event: Event) => {
+            const numberStyle = {
+              whiteSpace: "nowrap",
+              letterSpacing: "-1px",
+              fontVariantNumeric: "slashed-zero",
+            } as React.CSSProperties
             const popoverContent = (
               <>
                 {event.quotas.nodes.map((quota) => {
@@ -136,7 +142,9 @@ const Admin_ListEvents: NextPage = () => {
                         />
                       </Col>
                       <Col flex="auto" style={{ whiteSpace: "nowrap" }}>
-                        {quotaRegistrations} / {quota.size}
+                        <span style={numberStyle}>
+                          {quotaRegistrations} / {quota.size}
+                        </span>
                       </Col>
                     </Row>
                   )
@@ -157,7 +165,7 @@ const Admin_ListEvents: NextPage = () => {
               >
                 <Row gutter={12}>
                   <Col span={8}>
-                    <Typography.Text style={{ whiteSpace: "nowrap" }}>
+                    <Typography.Text style={numberStyle}>
                       {numRegistrations} / {totalSize}
                     </Typography.Text>
                   </Col>
@@ -192,42 +200,44 @@ const Admin_ListEvents: NextPage = () => {
       ]
     : [actionsColumn, nameColumn]
 
+  const tables = [
+    {
+      kind: "draft",
+      translation: "common:draft",
+      dataField: "draftEvents",
+    },
+    {
+      kind: "upcoming",
+      translation: "common:registrationUpcoming",
+      dataField: "signupUpcomingEvents",
+    },
+    {
+      kind: "open",
+      translation: "common:registrationOpen",
+      dataField: "signupOpenEvents",
+    },
+    {
+      kind: "closed",
+      translation: "common:registrationClosed",
+      dataField: "signupClosedEvents",
+    },
+  ]
   return (
     <AdminLayout href="/admin/event/list" query={query}>
       <Row gutter={[0, 24]}>
-        <Col span={24} style={{ paddingTop: 24 }}>
-          <H3>{t("common:registrationUpcoming")}</H3>
-          <ServerPaginatedTable
-            columns={columns}
-            data-cy="adminpage-events-upcoming"
-            dataField="signupUpcomingEvents"
-            queryDocument={ListEventsDocument}
-            showPagination={true}
-            size="middle"
-          />
-        </Col>
-        <Col span={24}>
-          <H3>{t("common:registrationOpen")}</H3>
-          <ServerPaginatedTable
-            columns={columns}
-            data-cy="adminpage-events-open"
-            dataField="signupOpenEvents"
-            queryDocument={ListEventsDocument}
-            showPagination={true}
-            size="middle"
-          />
-        </Col>
-        <Col span={24}>
-          <H3>{t("common:registrationClosed")}</H3>
-          <ServerPaginatedTable
-            columns={columns}
-            data-cy="adminpage-events-closed"
-            dataField="signupClosedEvents"
-            queryDocument={ListEventsDocument}
-            showPagination={true}
-            size="middle"
-          />
-        </Col>
+        {tables.map(({ kind, translation, dataField }) => (
+          <Col key={kind} span={24} style={{ paddingTop: 24 }}>
+            <H3>{t(translation)}</H3>
+            <ServerPaginatedTable
+              columns={columns}
+              data-cy={`adminpage-events-${kind}`}
+              dataField={dataField}
+              queryDocument={ListEventsDocument}
+              showPagination={true}
+              size="middle"
+            />
+          </Col>
+        ))}
       </Row>
     </AdminLayout>
   )

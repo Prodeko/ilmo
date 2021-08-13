@@ -40,10 +40,6 @@ export function ServerPaginatedTable({
   ...props
 }: ServerPaginatedTableProps) {
   const [offset, setOffset] = useState(0)
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 10,
-  })
   const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
     typeof variables
@@ -52,9 +48,14 @@ export function ServerPaginatedTable({
     variables: {
       ...variables,
       // Pagination can be empty if table contains less than 10 elements
-      first: pagination.pageSize || 10,
+      first: 10,
       offset: offset,
     },
+  })
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: 10,
+    total: data?.[dataField]?.totalCount || 0,
   })
 
   const handleTableChange = useCallback(async (pagination) => {

@@ -102,6 +102,7 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
       registrationQuota: quota.title,
       eventTime: getFormattedEventTime(event),
       eventSlug: event.slug,
+      eventLocation: event.location,
       eventRegistrationUpdateLink: `${ROOT_URL}/update-registration/${registrationSecret.update_token}`,
     },
   }

@@ -3,19 +3,28 @@
   "backHome": "Go to homepage",
   "color": "Color",
   "create": "Create",
+  "data": "Data",
   "delete": "Delete",
   "description": "Description",
+  "draft": "Draft",
   "dragToUpload": "Click or drag file to this area to upload",
   "emailSwitchLabel": "Show html version",
   "en": "English",
   "fi": "Finnish",
+  "head": {
+    "description": "Prodeko event registration",
+    "title": "Prodeko event registration"
+  },
   "imgCropTitle": "Edit image",
+  "label": "Label",
+  "required": "Required",
   "loading": "Loading...",
   "location": "Location",
   "logout": "Logout",
   "moreInfo": "Show details",
   "name": "Name",
   "no": "No",
+  "option": "Option",
   "redirect": "Redirecting...",
   "registrationClosed": "Signup closed",
   "registrationOpen": "Signup open",
@@ -24,10 +33,7 @@
   "shortDescription": "Short description",
   "signin": "Sign in",
   "status": "Status",
+  "type": "Type",
   "update": "Update",
-  "yes": "Yes",
-  "head": {
-    "title": "Prodeko event registration",
-    "description": "Prodeko event registration"
-  }
+  "yes": "Yes"
 }

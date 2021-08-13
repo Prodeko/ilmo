@@ -27,6 +27,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       eventRegistrationUpdateLink: String
       eventSlug: String
       eventTime: String
+      eventLocation: String
       link: String
       organizationName: String
       registrationQuota: TranslatedInputField
@@ -149,6 +150,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               eventName: { fi: "Testitapahtuma", en: "Test event" },
               eventSlug: "2021-01-01-testitapahtuma",
               eventTime: "2021-01-01 12:00 - 2021-01-01 15:00",
+              eventLocation: "Testilokaatio",
               eventRegistrationUpdateLink: "",
               link: "",
               organizationName: "Webbitiimi",

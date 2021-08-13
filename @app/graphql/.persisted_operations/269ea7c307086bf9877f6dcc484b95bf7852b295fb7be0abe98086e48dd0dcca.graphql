@@ -1,0 +1,16 @@
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  isQueued
+  createdAt
+  __typename
+}
+mutation UpdateEventRegistration($input: UpdateRegistrationInput!) {
+  updateRegistration(input: $input) {
+    registration {
+      ...EventPage_Registration
+      __typename
+    }
+    __typename
+  }
+}

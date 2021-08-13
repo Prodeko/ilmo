@@ -47,8 +47,7 @@ function authAvatar(service: string) {
 }
 
 function UnlinkAccountButton({ id }: { id: string }) {
-  const [_res1, unlinkUserAuthentication] =
-    useUnlinkUserAuthenticationMutation()
+  const [, unlinkUserAuthentication] = useUnlinkUserAuthenticationMutation()
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
 

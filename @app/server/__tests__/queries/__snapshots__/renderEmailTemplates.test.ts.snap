@@ -297,7 +297,7 @@ Object {
       </body>
     </html>
   ",
-          "name": "account activity",
+          "name": "[random-1]",
           "text": "You changed your password.
 
 This email is purely for your information and security, if you performed the action above then no further action is
@@ -570,7 +570,7 @@ necessary.
       </body>
     </html>
   ",
-          "name": "base",
+          "name": "[random-2]",
           "text": "© Tuotantotalouden Kilta Prodeko ry.
 
 ",
@@ -898,7 +898,7 @@ necessary.
       </body>
     </html>
   ",
-          "name": "delete account",
+          "name": "[random-3]",
           "text": "Verification code:
 
 12345
@@ -1088,6 +1088,7 @@ Confirm intent
     - Kiintiö: N <br>
     - Tapahtuma: Testitapahtuma <br>
     - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
+    - Paikka: Testilokaatio <br>
     - Linkki tapahtumaan: <a href=\\"http://localhost:5678/fi/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/fi/event/2021-01-01-testitapahtuma</a>
     <br></div>
     
@@ -1131,6 +1132,7 @@ Confirm intent
     - Kiintiö: N <br>
     - Tapahtuma: Test event <br>
     - Event time: 2021-01-01 12:00 - 2021-01-01 15:00 <br>
+    - Event location: Testilokaatio <br>
     - Link to the event: <a href=\\"http://localhost:5678/en/event/2021-01-01-testitapahtuma\\" target=\\"_blank\\">http://localhost:5678/en/event/2021-01-01-testitapahtuma</a>
     <br></div>
     
@@ -1257,13 +1259,14 @@ Confirm intent
       </body>
     </html>
   ",
-          "name": "event registration",
+          "name": "[random-4]",
           "text": "Ilmoittautuminen tapahtumaan onnistui:
 
 - Nimi: Teppo Testinen
 - Kiintiö: N
 - Tapahtuma: Testitapahtuma
 - Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00
+- Paikka: Testilokaatio
 - Linkki tapahtumaan: http://localhost:5678/fi/event/2021-01-01-testitapahtuma
 [http://localhost:5678/fi/event/2021-01-01-testitapahtuma]
 
@@ -1275,6 +1278,7 @@ Successfully registered to the event:
 - Kiintiö: N
 - Tapahtuma: Test event
 - Event time: 2021-01-01 12:00 - 2021-01-01 15:00
+- Event location: Testilokaatio
 - Link to the event: http://localhost:5678/en/event/2021-01-01-testitapahtuma
 [http://localhost:5678/en/event/2021-01-01-testitapahtuma]
 
@@ -1599,7 +1603,7 @@ You can update or delete your registration via this link:
       </body>
     </html>
   ",
-          "name": "organization invite",
+          "name": "[random-5]",
           "text": "You have been invited to join Webbitiimi. Please click the button below to accept the invitation. If you do not wish to
 join this organization then no action is necessary.
 
@@ -1952,7 +1956,7 @@ Accept invitation
       </body>
     </html>
   ",
-          "name": "password reset",
+          "name": "[random-6]",
           "text": "Click below to reset your password.
 
 Verification code:
@@ -2257,7 +2261,7 @@ Change Passphrase
       </body>
     </html>
   ",
-          "name": "password reset unregistered",
+          "name": "[random-7]",
           "text": "Someone (hopefully you) tried to reset your password for http://localhost:5678, but no account is registered for this
 email address.
 
@@ -2610,7 +2614,7 @@ This message is purely for your information. No action is required.
       </body>
     </html>
   ",
-          "name": "verify email",
+          "name": "[random-8]",
           "text": "Please confirm your email by clicking the link below.
 
 Verification code:

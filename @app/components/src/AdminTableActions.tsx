@@ -29,7 +29,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   deleteConfirmTranslate,
 }) => {
   const { t } = useTranslation("admin")
-  const [_res1, deleteDataType] = deleteMutation()
+  const [, deleteDataType] = deleteMutation()
   const [error, setError] = useState<Error | null>(null)
 
   const doDelete = useCallback(async () => {

@@ -1,7 +1,14 @@
 import { IncomingMessage, ServerResponse } from "http"
 
+import { QuestionType } from "@app/graphql"
 import { makeWorkerUtils, WorkerUtils } from "graphile-worker"
-import { ExecutionResult, graphql, GraphQLSchema } from "graphql"
+import {
+  DocumentNode,
+  ExecutionResult,
+  graphql,
+  GraphQLSchema,
+  print,
+} from "graphql"
 import Redis from "ioredis"
 import { Pool, PoolClient } from "pg"
 import {
@@ -14,6 +21,7 @@ import {
   createEventCategories,
   createEvents,
   createOrganizations,
+  createQuestions,
   createQuotas,
   createRegistrations,
   createRegistrationSecrets,
@@ -60,6 +68,12 @@ interface CreateEventDataAndLogin {
     isDraft?: boolean
   }
   quotaOptions?: { create: boolean; amount?: number }
+  questionOptions?: {
+    create: boolean
+    amount?: number
+    required?: boolean
+    type?: QuestionType
+  }
   registrationOptions?: { create: boolean; amount?: number }
   registrationSecretOptions?: { create: boolean; amount?: number }
 }
@@ -79,6 +93,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       isDraft: false,
     },
     quotaOptions = { create: true, amount: 1 },
+    questionOptions = { create: true, amount: 1, required: true },
     registrationOptions = { create: true, amount: 1 },
     registrationSecretOptions = { create: true, amount: 1 },
   } = args || {}
@@ -128,12 +143,22 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // and app_public.quotas
     client.query("reset role")
 
-    // An existing quota should not exist for createQuotas.test.ts but
-    // other tests such as createRegistration.test.ts need an existing
-    // quota.
+    // A quota should not exist for createQuotas.test.ts but other tests such
+    // as createRegistration.test.ts need an existing quota.
     let quotas
     if (quotaOptions.create) {
       quotas = await createQuotas(client, quotaOptions.amount, events[0].id)
+    }
+
+    let questions
+    if (quotaOptions.create) {
+      questions = await createQuestions(
+        client,
+        questionOptions.amount,
+        events[0].id,
+        questionOptions.required ?? false,
+        questionOptions.type
+      )
     }
 
     // We need an existing registration for updateRegistration.test.ts but
@@ -146,7 +171,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         client,
         registrationOptions.amount,
         events[0].id,
-        quotas[0].id
+        quotas[0].id,
+        questions
       )
     }
 
@@ -169,6 +195,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       eventCategory,
       events,
       quotas,
+      questions,
       registrationSecrets,
       registrations,
     }
@@ -200,6 +227,16 @@ beforeEach(() => {
  * every time we run the tests because time has ticked on in it's inevitable
  * march toward the future.
  */
+const randomColumns = [
+  "name",
+  "slug",
+  "description",
+  "title",
+  "location",
+  "color",
+  "headerImageFile",
+  "size",
+]
 export function sanitize(json: any): any {
   /* This allows us to maintain stable references whilst dealing with variable values */
   function mask(value: unknown, type: string) {
@@ -244,6 +281,8 @@ export function sanitize(json: any): any {
         result[k] = mask(result[k], "email")
       } else if (k === "username" && typeof json[k] === "string") {
         result[k] = mask(result[k], "username")
+      } else if (randomColumns.includes(k)) {
+        result[k] = mask(result[k], "random")
       } else {
         result[k] = sanitize(json[k])
       }
@@ -313,7 +352,7 @@ export const teardown = async () => {
 }
 
 export const runGraphQLQuery = async (
-  query: string, // The GraphQL query string
+  query: string | DocumentNode, // The GraphQL query string or DocumentNode
   variables: { [key: string]: any } | null, // The GraphQL variables
   reqOptions: { [key: string]: any } | null, // Any additional items to set on `req` (e.g. `{user: {id: 17}}`)
   checker: (
@@ -338,8 +377,8 @@ export const runGraphQLQuery = async (
         "Content-Type": "application/json",
       },
       logIn: () => null,
-      ...reqOptions,
     },
+    ...reqOptions,
   })
   const res: any = { req }
   req.res = res
@@ -380,7 +419,7 @@ export const runGraphQLQuery = async (
         const { redisClient } = additionalContext
         const result = await graphql(
           schema,
-          query,
+          typeof query === "string" ? query : print(query),
           null,
           {
             ...context,

@@ -15,7 +15,7 @@ context("Update event", () => {
     cy.get("@createEventDataResult").then(
       ({ event, quota, organization, eventCategory }: any) => {
         cy.login({
-          username: "testuser_events",
+          username: "testuser",
           password: "DOESNT MATTER",
           existingUser: true,
         })
@@ -122,7 +122,7 @@ context("Update event", () => {
     // Action
     cy.get("@createEventDataResult").then(({ event }: any) => {
       cy.login({
-        username: "testuser_events",
+        username: "testuser",
         password: "DOESNT MATTER",
         existingUser: true,
       })
@@ -148,7 +148,7 @@ context("Update event", () => {
     // Action
     cy.get("@createEventDataResult").then(() => {
       cy.login({
-        username: "testuser_events",
+        username: "testuser",
         password: "DOESNT MATTER",
         existingUser: true,
       })

@@ -69,7 +69,7 @@ export async function makeApp({
    * Our FastifyInstance server
    */
   const app = Fastify({
-    pluginTimeout: isDev ? 30000 : 10000,
+    pluginTimeout: isDev ? 60000 : 10000,
     logger: false,
     serverFactory,
   })

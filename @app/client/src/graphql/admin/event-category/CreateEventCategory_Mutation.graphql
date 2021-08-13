@@ -1,19 +1,5 @@
-mutation CreateEventCategory(
-  $name: JSON!
-  $description: JSON!
-  $color: String!
-  $ownerOrganizationId: UUID!
-) {
-  createEventCategory(
-    input: {
-      eventCategory: {
-        name: $name
-        description: $description
-        color: $color
-        ownerOrganizationId: $ownerOrganizationId
-      }
-    }
-  ) {
+mutation CreateEventCategory($input: CreateEventCategoryInput!) {
+  createEventCategory(input: $input) {
     eventCategory {
       ...EventPage_EventCategory
     }

@@ -1,3 +1,5 @@
+import { DeleteEventDocument } from "@app/graphql"
+
 import {
   asRoot,
   createEventDataAndLogin,
@@ -12,13 +14,6 @@ beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
 
-const deleteEventMutation = `
-mutation DeleteEvent($eventId: UUID!) {
-  deleteEvent(input: { id: $eventId }) {
-    clientMutationId
-  }
-}`
-
 describe("DeleteEvent", () => {
   it("admin can delete an event (RLS policy)", async () => {
     const { events } = await createEventDataAndLogin({
@@ -31,14 +26,14 @@ describe("DeleteEvent", () => {
     const { session } = await createUserAndLogIn({ isAdmin: true })
 
     await runGraphQLQuery(
-      deleteEventMutation,
+      DeleteEventDocument,
 
       // GraphQL variables:
-      { eventId },
+      { id: eventId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
@@ -68,14 +63,14 @@ describe("DeleteEvent", () => {
     const eventId = events[0].id
 
     await runGraphQLQuery(
-      deleteEventMutation,
+      DeleteEventDocument,
 
       // GraphQL variables:
-      { eventId },
+      { id: eventId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
@@ -98,7 +93,7 @@ describe("DeleteEvent", () => {
     )
   })
 
-  it("users without the right permissions cannot delete events (RLS policy)", async () => {
+  it("users without permissions cannot delete events (RLS policy)", async () => {
     const { events } = await createEventDataAndLogin({
       userOptions: { create: true, amount: 1, isAdmin: true },
     })
@@ -109,14 +104,14 @@ describe("DeleteEvent", () => {
     const { session } = await createUserAndLogIn()
 
     await runGraphQLQuery(
-      deleteEventMutation,
+      DeleteEventDocument,
 
       // GraphQL variables:
-      { eventId },
+      { id: eventId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:

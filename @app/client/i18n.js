@@ -3,7 +3,6 @@ module.exports = {
   defaultLocale: "fi",
   pages: {
     "*": ["common", "error"],
-    "/404": ["error"],
     "/": ["home", "events"],
     "/create-event-category": ["events"],
     "/update-registration/[updateToken]": ["register"],

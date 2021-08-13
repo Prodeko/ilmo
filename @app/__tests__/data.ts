@@ -1,4 +1,4 @@
-import { randomIntFromInterval } from "@app/lib"
+import { EventQuestion, QuestionType } from "@app/graphql"
 import dayjs from "dayjs"
 import * as faker from "faker"
 import { PoolClient } from "pg"
@@ -78,7 +78,7 @@ export const createOrganizations = async (
 ) => {
   const organizations = []
   for (let i = 0; i < count; i++) {
-    const random = faker.lorem.word()
+    const random = faker.lorem.words()
     const slug = `organization-${random}`
     const name = `Organization ${random}`
     const {
@@ -163,8 +163,7 @@ export const createEvents = async (
     }
     const location = faker.address.streetAddress()
 
-    const randomHours = randomIntFromInterval(-3, -1)
-    const now = dayjs().add(randomHours, "hour")
+    const now = dayjs()
     const dayAdjustment = signupOpen ? -1 : 1
     const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
     const registrationEndTime = faker.date.between(
@@ -265,6 +264,44 @@ export const createQuotas = async (
 }
 
 /******************************************************************************/
+// Questions
+
+export const createQuestions = async (
+  client: PoolClient,
+  count: number = 1,
+  eventId: string,
+  isRequired?: boolean,
+  type?: QuestionType
+) => {
+  const questionTypes = Object.values(QuestionType)
+  const questions = []
+  for (let i = 0; i < count; i++) {
+    const t = type ? type : questionTypes[i % 3]
+    const label = faker.lorem.words()
+    let data
+    if (t === QuestionType.Checkbox) {
+      data = new Array(3).fill(null).map((_) => faker.lorem.word())
+    } else if (t === QuestionType.Radio) {
+      data = new Array(3).fill(null).map((_) => faker.lorem.word())
+    } else if (t === QuestionType.Text) {
+      data = null
+    }
+    const {
+      rows: [question],
+    } = await client.query(
+      `insert into app_public.event_questions(event_id, position, type, label, is_required, data)
+        values ($1, $2, $3, $4, $5, $6)
+        returning *
+      `,
+      [eventId, i, t, label, isRequired, data]
+    )
+    questions.push(question)
+  }
+
+  return questions
+}
+
+/******************************************************************************/
 // Registration secrets
 
 export const createRegistrationSecrets = async (
@@ -294,25 +331,43 @@ export const createRegistrationSecrets = async (
 /******************************************************************************/
 // Registrations
 
+export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
+  let i = 0
+  const answers = questions.reduce((acc, cur) => {
+    if (cur.type === QuestionType.Text) {
+      acc[cur.id] = `Answer ${i}`
+    } else if ([QuestionType.Checkbox, QuestionType.Radio].includes(cur.type)) {
+      acc[cur.id] = cur.data.map((option, i) => ({ [i]: option }))
+    }
+    i++
+
+    return acc
+  }, {})
+
+  return answers
+}
+
 export const createRegistrations = async (
   client: PoolClient,
   count: number = 1,
   eventId: string,
-  quotaId: string
+  quotaId: string,
+  questions: EventQuestion[]
 ) => {
   const registrations = []
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName()
     const lastName = faker.name.lastName()
     const email = faker.internet.email()
+    const answers = constructAnswersFromQuestions(questions)
     const {
       rows: [registration],
     } = await client.query(
-      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
-        values ($1, $2, $3, $4, $5)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers)
+        values ($1, $2, $3, $4, $5, $6)
         returning *
       `,
-      [eventId, quotaId, firstName, lastName, email]
+      [eventId, quotaId, firstName, lastName, email, answers]
     )
     registrations.push(registration)
   }

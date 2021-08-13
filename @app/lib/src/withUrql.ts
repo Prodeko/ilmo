@@ -1,18 +1,24 @@
 import {
+  Event,
   EventPageDocument,
   EventPageQuery,
   GraphCacheConfig,
+  ListEventsDocument,
+  ListEventsQuery,
 } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
-import { dedupExchange, fetchExchange, subscriptionExchange } from "@urql/core"
+import schema from "@app/graphql/introspection.json"
+import { dedupExchange, subscriptionExchange } from "@urql/core"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
+import { minifyIntrospectionQuery } from "@urql/introspection"
 import { serialize } from "cookie"
-import { OperationDefinitionNode } from "graphql"
+import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
-import { NextUrqlContext, SSRExchange, withUrqlClient } from "next-urql"
+import { NextPageContext } from "next"
+import { SSRExchange, withUrqlClient } from "next-urql"
 import { errorExchange, Exchange } from "urql"
 import ws from "ws"
 
@@ -41,7 +47,7 @@ export function resetWebsocketConnection(): void {
   wsClient = createWsClient()
 }
 
-function getCSRFToken(ctx: NextUrqlContext | undefined) {
+function getCSRFToken(ctx: NextPageContext | undefined) {
   let CSRF_TOKEN
   if (!isSSR) {
     // Read the CSRF_TOKEN from __NEXT_DATA__ on client side
@@ -59,7 +65,15 @@ function getCSRFToken(ctx: NextUrqlContext | undefined) {
   return CSRF_TOKEN
 }
 
-function getCookies(ctx: NextUrqlContext | undefined) {
+declare module "http" {
+  interface IncomingMessage {
+    cookies?: {
+      session?: string
+    }
+  }
+}
+
+function getCookies(ctx: NextPageContext | undefined) {
   let COOKIES
   if (!isSSR) {
     COOKIES = document.cookie
@@ -71,9 +85,9 @@ function getCookies(ctx: NextUrqlContext | undefined) {
     // "set-cookie" header and send that as the session cookie during SSR.
     COOKIES = sessionCookie
       ? serialize("session", sessionCookie)
-      : ctx?.res.getHeaders()?.["set-cookie"]
+      : ctx?.res?.getHeaders()?.["set-cookie"]
   }
-  return COOKIES
+  return COOKIES as string
 }
 
 export const withUrql = withUrqlClient(
@@ -92,13 +106,16 @@ export const withUrql = withUrqlClient(
         const COOKIES = getCookies(ctx)
         const CSRF_TOKEN = getCSRFToken(ctx)
         return {
-          headers: { "CSRF-Token": CSRF_TOKEN, cookie: COOKIES },
+          headers: { "CSRF-Token": CSRF_TOKEN ?? "", cookie: COOKIES ?? "" },
         }
       },
       exchanges: [
         isDev && devtoolsExchange,
         dedupExchange,
         cacheExchange<GraphCacheConfig>({
+          schema: minifyIntrospectionQuery(
+            schema as unknown as IntrospectionQuery
+          ),
           keys: {
             // AppLanguage type does not have an 'id' field and thus cannot be
             // cached. Here we define a new key which will be used for caching
@@ -121,6 +138,76 @@ export const withUrql = withUrqlClient(
                       cache.invalidate(key, field.fieldKey)
                     })
                 }
+              },
+              deleteEvent: (_result, { input: { id } }, cache, _info) => {
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "events")
+                  .forEach((field) => {
+                    cache.updateQuery<ListEventsQuery>(
+                      {
+                        query: ListEventsDocument,
+                        variables: { ...field.arguments },
+                      },
+                      (data) => {
+                        if (data) {
+                          Object.keys(data).map((key) => {
+                            if (data?.[key]?.nodes) {
+                              data[key].nodes = data[key].nodes.filter(
+                                (event: Event) => event.id !== id
+                              )
+                            }
+                            if (data?.[key]?.totalCount) {
+                              data[key].totalCount -= 1
+                            }
+                          })
+                        }
+                        return data
+                      }
+                    )
+                  })
+              },
+              createEvent(_result, _args, cache, _info) {
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "events")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              updateEvent: (_result, _args, cache, _info) => {
+                // Could do a complex cache updating function (such as the one for
+                // deleteEvent above) here to prevent a network request after
+                // updating an event but this is easier.  We would have to track
+                // which type of event (draft, signupUpcoming, signupOpen,
+                // signupClosed) was updated and if it's type changed
+                // (say from draft to signupUpcoming) we'd have to update the
+                // ListEvents query's return value sin the cache accordingly.
+                // By instead invalidating all 'events' fields from the cache
+                // we can instead issue a new HTTP request to fetch the events.
+                // This incurs the cost of a roundtrip.
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter(
+                    (field) =>
+                      field.fieldName === "events" ||
+                      field.fieldName === "event"
+                  )
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              createEventCategory(_result, _args, cache, _info) {
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "eventCategories")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              deleteEventCategory(_result, args, cache, _info) {
+                cache.invalidate({
+                  __typename: "EventCategory",
+                  id: args.input.id,
+                })
               },
               createRegistration(result, _args, cache, _info) {
                 // Update EventPageQuery results in the cache after createRegistration
@@ -148,7 +235,7 @@ export const withUrql = withUrqlClient(
         }),
         ssrExchange,
         persistedFetchExchange({
-          // Urql persisted queries support. We have pregenerated the  query hashes
+          // Urql persisted queries support. We have pregenerated the query hashes
           // with 'graphql-codegen-persisted-query-ids' graphql-codegen plugin.
           // More information: https://formidable.com/open-source/urql/docs/advanced/persistence-and-uploads/#customizing-hashing
           generateHash: async (_, document) => {
@@ -157,23 +244,17 @@ export const withUrql = withUrqlClient(
             return queryName ? hashes[queryName] : ""
           },
         }),
-        multipartFetchExchange,
         subscriptionExchange({
-          forwardSubscription(operation) {
-            return {
-              subscribe: (sink) => {
-                const dispose = wsClient!.subscribe(operation, sink)
-                return {
-                  unsubscribe: dispose,
-                }
-              },
-            }
-          },
+          forwardSubscription: (operation) => ({
+            subscribe: (sink) => ({
+              unsubscribe: wsClient!.subscribe(operation, sink),
+            }),
+          }),
         }),
         errorExchange({
           onError(_error) {},
         }),
-        fetchExchange,
+        multipartFetchExchange,
       ].filter(Boolean) as Exchange[],
     }
   },

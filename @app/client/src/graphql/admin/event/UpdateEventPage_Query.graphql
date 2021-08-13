@@ -16,6 +16,11 @@ fragment UpdateEventPage_Event on Event {
       }
     }
   }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventRegistrationPage_Question
+    }
+  }
 }
 
 fragment UpdateEventPage_Query on Query {

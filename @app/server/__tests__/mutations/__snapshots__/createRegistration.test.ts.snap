@@ -8,16 +8,25 @@ Object {
 }
 `;
 
-exports[`CreateRegistration can create registration 3`] = `
+exports[`CreateRegistration can create registration 2`] = `
 Object {
   "data": Object {
     "createRegistration": Object {
       "registration": Object {
-        "eventId": "[id-3]",
-        "firstName": "Testname",
+        "createdAt": "[timestamp-1]",
+        "event": Object {
+          "id": "[id-4]",
+          "slug": "[random-3]",
+        },
+        "fullName": "Testname Testlastname",
         "id": "[id-2]",
-        "lastName": "Testlastname",
-        "quotaId": "[id-4]",
+        "isQueued": false,
+        "quota": Object {
+          "id": "[id-3]",
+          "position": 0,
+          "size": "[random-2]",
+          "title": "[random-1]",
+        },
       },
     },
   },
@@ -47,17 +56,22 @@ Object {
           "schema": "app_public",
           "severity": "ERROR",
           "where": "SQL statement \\"update app_public.registrations
-    set first_name = \\"firstName\\", last_name = \\"lastName\\", email = create_registration.email
+    set
+      first_name = \\"firstName\\",
+      last_name = \\"lastName\\",
+      email = create_registration.email,
+      -- strip nulls just in case
+      answers = jsonb_strip_nulls(create_registration.answers)
     where id = v_registration_id
   returning
     *\\"
-PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 42 at SQL statement",
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 48 at SQL statement",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
@@ -84,17 +98,22 @@ Object {
           "schema": "app_public",
           "severity": "ERROR",
           "where": "SQL statement \\"update app_public.registrations
-    set first_name = \\"firstName\\", last_name = \\"lastName\\", email = create_registration.email
+    set
+      first_name = \\"firstName\\",
+      last_name = \\"lastName\\",
+      email = create_registration.email,
+      -- strip nulls just in case
+      answers = jsonb_strip_nulls(create_registration.answers)
     where id = v_registration_id
   returning
     *\\"
-PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 42 at SQL statement",
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 48 at SQL statement",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
@@ -117,13 +136,13 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 18 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 19 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "Event not found.",
@@ -146,13 +165,13 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 15 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "Quota not found.",
@@ -175,13 +194,13 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 25 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 26 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "Event registration is not open.",
@@ -204,13 +223,13 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 38 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 39 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "Registration token was not valid. Please reload the page.",
@@ -233,16 +252,640 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext) line 38 at RAISE",
+          "where": "PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 39 at RAISE",
         },
       },
       "locations": Array [
         Object {
           "column": 3,
-          "line": 10,
+          "line": 2,
         },
       ],
       "message": "Registration token was not valid. Please reload the page.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if required question is not answered 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if required question is not answered 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null, null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null, null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: null 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: null 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: undefined 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: undefined 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null, null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null, null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: null 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: null 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: undefined 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: RADIO and data is: undefined 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null, null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null, null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null] 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null] 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: null 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: null 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: undefined 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
+exports[`CreateRegistration can't create registration if type is: TEXT and data is: undefined 2`] = `
+Object {
+  "data": Object {
+    "createRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Required question not answered.",
       "path": Array [
         "createRegistration",
       ],

@@ -20,7 +20,7 @@ Object {
 }
 `;
 
-exports[`DeleteEvent users without the right permissions cannot delete events (RLS policy) 1`] = `
+exports[`DeleteEvent users without permissions cannot delete events (RLS policy) 1`] = `
 Object {
   "data": Object {
     "deleteEvent": null,
@@ -33,7 +33,7 @@ Object {
       "locations": Array [
         Object {
           "column": 3,
-          "line": 3,
+          "line": 2,
         },
       ],
       "message": "No values were deleted in collection 'events' because no values you can delete were found matching these criteria.",

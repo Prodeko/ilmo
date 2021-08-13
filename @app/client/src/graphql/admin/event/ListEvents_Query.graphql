@@ -20,6 +20,15 @@ fragment Events_Event on Event {
 }
 
 fragment ListEvents_Query on Query {
+  draftEvents: events(
+    filter: { isDraft: { equalTo: true } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+    totalCount
+  }
   signupOpenEvents: events(
     filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
     orderBy: REGISTRATION_END_TIME_ASC
@@ -27,6 +36,7 @@ fragment ListEvents_Query on Query {
     nodes {
       ...Events_Event
     }
+    totalCount
   }
   signupUpcomingEvents: events(
     filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
@@ -35,11 +45,12 @@ fragment ListEvents_Query on Query {
     nodes {
       ...Events_Event
     }
+    totalCount
   }
   signupClosedEvents: events(
     first: $first
     offset: $offset
-    filter: { signupClosed: { equalTo: true } }
+    filter: { signupClosed: { equalTo: true }, isDraft: { equalTo: false } }
     orderBy: EVENT_END_TIME_ASC
   ) {
     nodes {

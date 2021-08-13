@@ -193,19 +193,19 @@ type CreateEventCategoryPayload {
   query: Query
 }
 
-"""All input for the create `Event` mutation."""
+"""All input for the `createEvent` mutation."""
 input CreateEventInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-
-  """The `Event` to be created by this mutation."""
-  event: EventInput!
+  event: EventInputRecordInput!
+  questions: [CreateEventQuestionInput]
+  quotas: [CreateEventQuotaInput]!
 }
 
-"""The output of our create `Event` mutation."""
+"""The output of our `createEvent` mutation."""
 type CreateEventPayload {
   """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
@@ -215,8 +215,6 @@ type CreateEventPayload {
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
-
-  """The `Event` that was created by this mutation."""
   event: Event
 
   """An edge for our `Event`. May be used by Relay 1."""
@@ -234,42 +232,13 @@ type CreateEventPayload {
   query: Query
 }
 
-"""All input for the create `EventQuestion` mutation."""
+"""An input for mutations affecting `CreateEventQuestion`"""
 input CreateEventQuestionInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The `EventQuestion` to be created by this mutation."""
-  eventQuestion: EventQuestionInput!
-}
-
-"""The output of our create `EventQuestion` mutation."""
-type CreateEventQuestionPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """Reads a single `Event` that is related to this `EventQuestion`."""
-  event: Event
-
-  """The `EventQuestion` that was created by this mutation."""
-  eventQuestion: EventQuestion
-
-  """An edge for our `EventQuestion`. May be used by Relay 1."""
-  eventQuestionEdge(
-    """The method to use when ordering `EventQuestion`."""
-    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventQuestionsEdge
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
+  data: [String]
+  isRequired: Boolean
+  label: String
+  position: Int
+  type: QuestionType
 }
 
 """An input for mutations affecting `CreateEventQuota`"""
@@ -277,32 +246,6 @@ input CreateEventQuotaInput {
   position: Int
   size: Int
   title: JSON
-}
-
-"""All input for the `createEventQuotas` mutation."""
-input CreateEventQuotasInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  eventId: UUID!
-  quotas: [CreateEventQuotaInput]!
-}
-
-"""The output of our `createEventQuotas` mutation."""
-type CreateEventQuotasPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-  quotas: [Quota]
 }
 
 """All input for the `createOrganization` mutation."""
@@ -339,6 +282,8 @@ type CreateOrganizationPayload {
 
 """All input for the `createRegistration` mutation."""
 input CreateRegistrationInput {
+  answers: JSON
+
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -549,43 +494,6 @@ type DeleteEventPayload {
   query: Query
 }
 
-"""All input for the `deleteEventQuestion` mutation."""
-input DeleteEventQuestionInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  id: UUID!
-}
-
-"""The output of our delete `EventQuestion` mutation."""
-type DeleteEventQuestionPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-  deletedEventQuestionNodeId: ID
-
-  """Reads a single `Event` that is related to this `EventQuestion`."""
-  event: Event
-
-  """The `EventQuestion` that was deleted by this mutation."""
-  eventQuestion: EventQuestion
-
-  """An edge for our `EventQuestion`. May be used by Relay 1."""
-  eventQuestionEdge(
-    """The method to use when ordering `EventQuestion`."""
-    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventQuestionsEdge
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-}
-
 """All input for the `deleteOrganization` mutation."""
 input DeleteOrganizationInput {
   """
@@ -705,14 +613,16 @@ type DeleteUserEmailPayload {
 
 """The output of our `renderEmailTemplate` query."""
 type EmailTemplate {
-  html: String
-  name: String
-  text: String
+  html: String!
+  id: String!
+  name: String!
+  text: String!
 }
 
 input EmailTemplateVariables {
   actionDescription: String
   deleteAccountLink: String
+  eventLocation: String
   eventName: TranslatedInputField
   eventRegistrationUpdateLink: String
   eventSlug: String
@@ -736,7 +646,7 @@ type Event {
   """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
 
-  """Id of the event category."""
+  """Identifier of a related event category."""
   categoryId: UUID!
   createdAt: Datetime!
   createdBy: UUID
@@ -805,7 +715,7 @@ type Event {
   """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
-  """Id of the organizer."""
+  """Identifier of the event organizer"""
   ownerOrganizationId: UUID!
 
   """Reads and enables pagination through a set of `Quota`."""
@@ -1103,6 +1013,9 @@ input EventCondition {
   """Checks for equality with the object’s `isDraft` field."""
   isDraft: Boolean
 
+  """Checks for equality with the object’s `isHighlighted` field."""
+  isHighlighted: Boolean
+
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 
@@ -1144,6 +1057,9 @@ input EventFilter {
   """Filter by the object’s `isDraft` field."""
   isDraft: BooleanFilter
 
+  """Filter by the object’s `isHighlighted` field."""
+  isHighlighted: BooleanFilter
+
   """Negates the expression."""
   not: EventFilter
 
@@ -1175,101 +1091,50 @@ input EventFilter {
   updatedBy: UUIDFilter
 }
 
-"""An input for mutations affecting `Event`"""
-input EventInput {
-  """Id of the event category."""
-  categoryId: UUID!
-
-  """Description of the event."""
-  description: JSON!
-
-  """Ending time of the event."""
-  eventEndTime: Datetime!
-
-  """Starting time of the event."""
-  eventStartTime: Datetime!
-
-  """Header image for the event"""
-  headerImageFile: Upload
-
-  """A draft event that is not publicly visible."""
-  isDraft: Boolean
-
-  """A highlighted event."""
-  isHighlighted: Boolean
-
-  """Event location."""
-  location: String!
-
-  """Name of the event."""
-  name: JSON!
-
-  """Id of the organizer."""
-  ownerOrganizationId: UUID!
-
-  """Time of event registration end."""
-  registrationEndTime: Datetime!
-
-  """Time of event registration open."""
-  registrationStartTime: Datetime!
-
-  """Slug for the event."""
-  slug: String!
-}
-
-"""
-Represents an update to a `Event`. Fields that are set will be updated.
-"""
-input EventPatch {
-  """Id of the event category."""
+"""An input for mutations affecting `EventInputRecord`"""
+input EventInputRecordInput {
   categoryId: UUID
-
-  """Description of the event."""
   description: JSON
-
-  """Ending time of the event."""
   eventEndTime: Datetime
-
-  """Starting time of the event."""
   eventStartTime: Datetime
-
-  """Header image for the event"""
   headerImageFile: Upload
-
-  """A draft event that is not publicly visible."""
   isDraft: Boolean
-
-  """A highlighted event."""
   isHighlighted: Boolean
-
-  """Event location."""
   location: String
-
-  """Name of the event."""
   name: JSON
-
-  """Id of the organizer."""
   ownerOrganizationId: UUID
-
-  """Time of event registration end."""
   registrationEndTime: Datetime
-
-  """Time of event registration open."""
   registrationStartTime: Datetime
-
-  """Slug for the event."""
   slug: String
 }
 
+"""Main table for event questions."""
 type EventQuestion {
   createdAt: Datetime!
   createdBy: UUID
 
+  """Question data."""
+  data: [String]
+
   """Reads a single `Event` that is related to this `EventQuestion`."""
   event: Event
+
+  """Identifier of a related event."""
   eventId: UUID!
+
+  """Unique identifier for the event question."""
   id: UUID!
-  options: JSON
+
+  """If true, the question must be answered during event registration."""
+  isRequired: Boolean!
+
+  """Question label."""
+  label: String!
+
+  """Question position. Used to order question."""
+  position: Int!
+
+  """Question type (e.g. radio button, text, checkbox)."""
   type: QuestionType!
   updatedAt: Datetime!
   updatedBy: UUID
@@ -1288,6 +1153,9 @@ input EventQuestionCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+
+  """Checks for equality with the object’s `position` field."""
+  position: Int
 
   """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
@@ -1315,24 +1183,11 @@ input EventQuestionFilter {
   """Checks for any expressions in this list."""
   or: [EventQuestionFilter!]
 
+  """Filter by the object’s `position` field."""
+  position: IntFilter
+
   """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
-}
-
-"""An input for mutations affecting `EventQuestion`"""
-input EventQuestionInput {
-  eventId: UUID!
-  options: JSON
-  type: QuestionType!
-}
-
-"""
-Represents an update to a `EventQuestion`. Fields that are set will be updated.
-"""
-input EventQuestionPatch {
-  eventId: UUID
-  options: JSON
-  type: QuestionType
 }
 
 """A connection to a list of `EventQuestion` values."""
@@ -1370,6 +1225,8 @@ enum EventQuestionsOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
+  POSITION_ASC
+  POSITION_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
   UPDATED_BY_ASC
@@ -1421,6 +1278,8 @@ enum EventsOrderBy {
   ID_DESC
   IS_DRAFT_ASC
   IS_DRAFT_DESC
+  IS_HIGHLIGHTED_ASC
+  IS_HIGHLIGHTED_DESC
   NATURAL
   OWNER_ORGANIZATION_ID_ASC
   OWNER_ORGANIZATION_ID_DESC
@@ -1679,7 +1538,9 @@ type Mutation {
     input: ConfirmAccountDeletionInput!
   ): ConfirmAccountDeletionPayload
 
-  """Creates a single `Event`."""
+  """
+  Create an event as well as any related quotas and questions with one mutation.
+  """
   createEvent(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1694,22 +1555,6 @@ type Mutation {
     """
     input: CreateEventCategoryInput!
   ): CreateEventCategoryPayload
-
-  """Creates a single `EventQuestion`."""
-  createEventQuestion(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateEventQuestionInput!
-  ): CreateEventQuestionPayload
-
-  """Create multiple quotas at once."""
-  createEventQuotas(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateEventQuotasInput!
-  ): CreateEventQuotasPayload
 
   """
   An `Organization` is a great way of sharing access to resources between multiple users without compromising security. When you create an organization you will have the 'owner' role. You may invite other users and redistribute roles.
@@ -1754,14 +1599,6 @@ type Mutation {
     """
     input: DeleteEventCategoryInput!
   ): DeleteEventCategoryPayload
-
-  """Deletes a single `EventQuestion` using a unique key."""
-  deleteEventQuestion(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteEventQuestionInput!
-  ): DeleteEventQuestionPayload
 
   """
   Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend.
@@ -1890,7 +1727,9 @@ type Mutation {
     input: TransferOrganizationOwnershipInput!
   ): TransferOrganizationOwnershipPayload
 
-  """Updates a single `Event` using a unique key and a patch."""
+  """
+  Updates an event as well as any related quotas and questions with one mutation.
+  """
   updateEvent(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -1905,22 +1744,6 @@ type Mutation {
     """
     input: UpdateEventCategoryInput!
   ): UpdateEventCategoryPayload
-
-  """Updates a single `EventQuestion` using a unique key and a patch."""
-  updateEventQuestion(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateEventQuestionInput!
-  ): UpdateEventQuestionPayload
-
-  """Update multiple quotas at once."""
-  updateEventQuotas(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateEventQuotasInput!
-  ): UpdateEventQuotasPayload
 
   """Updates a single `Organization` using a unique key and a patch."""
   updateOrganization(
@@ -1947,6 +1770,14 @@ type Mutation {
     """
     input: UpdateUserInput!
   ): UpdateUserPayload
+
+  """Validate registration answers."""
+  validateRegistrationAnswers(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: ValidateRegistrationAnswersInput!
+  ): ValidateRegistrationAnswersPayload
 
   """
   Once you have received a verification token for your email, you may call this mutation with that token to make your email verified.
@@ -2267,6 +2098,8 @@ type PageInfo {
 
 """The root query type which gives access points into the data universe."""
 type Query {
+  checkQuestionData(data: [String]!, type: QuestionType!): Boolean
+
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
@@ -2504,9 +2337,9 @@ type Query {
 }
 
 enum QuestionType {
-  LONG_TEXT
-  OPTION
-  SHORT_TEXT
+  CHECKBOX
+  RADIO
+  TEXT
 }
 
 """Main table for registration quotas."""
@@ -2661,6 +2494,8 @@ enum QuotasOrderBy {
 
 """Main table for registrations."""
 type Registration {
+  """Answers to event questions."""
+  answers: JSON
   createdAt: Datetime!
 
   """Reads a single `Event` that is related to this `Registration`."""
@@ -3170,17 +3005,13 @@ input UpdateEventInput {
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-
-  """Unique identifier for the event."""
+  event: EventInputRecordInput!
   id: UUID!
-
-  """
-  An object where the defined keys will be set on the `Event` being updated.
-  """
-  patch: EventPatch!
+  questions: [UpdateEventQuestionInput]
+  quotas: [UpdateEventQuotaInput]!
 }
 
-"""The output of our update `Event` mutation."""
+"""The output of our `updateEvent` mutation."""
 type UpdateEventPayload {
   """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
@@ -3190,8 +3021,6 @@ type UpdateEventPayload {
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
-
-  """The `Event` that was updated by this mutation."""
   event: Event
 
   """An edge for our `Event`. May be used by Relay 1."""
@@ -3209,45 +3038,14 @@ type UpdateEventPayload {
   query: Query
 }
 
-"""All input for the `updateEventQuestion` mutation."""
+"""An input for mutations affecting `UpdateEventQuestion`"""
 input UpdateEventQuestionInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  id: UUID!
-
-  """
-  An object where the defined keys will be set on the `EventQuestion` being updated.
-  """
-  patch: EventQuestionPatch!
-}
-
-"""The output of our update `EventQuestion` mutation."""
-type UpdateEventQuestionPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """Reads a single `Event` that is related to this `EventQuestion`."""
-  event: Event
-
-  """The `EventQuestion` that was updated by this mutation."""
-  eventQuestion: EventQuestion
-
-  """An edge for our `EventQuestion`. May be used by Relay 1."""
-  eventQuestionEdge(
-    """The method to use when ordering `EventQuestion`."""
-    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventQuestionsEdge
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
+  data: [String]
+  id: UUID
+  isRequired: Boolean
+  label: String
+  position: Int
+  type: QuestionType
 }
 
 """An input for mutations affecting `UpdateEventQuota`"""
@@ -3256,32 +3054,6 @@ input UpdateEventQuotaInput {
   position: Int
   size: Int
   title: JSON
-}
-
-"""All input for the `updateEventQuotas` mutation."""
-input UpdateEventQuotasInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  eventId: UUID!
-  quotas: [UpdateEventQuotaInput]!
-}
-
-"""The output of our `updateEventQuotas` mutation."""
-type UpdateEventQuotasPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-  quotas: [Quota]
 }
 
 """All input for the `updateOrganization` mutation."""
@@ -3324,6 +3096,8 @@ type UpdateOrganizationPayload {
 
 """All input for the `updateRegistration` mutation."""
 input UpdateRegistrationInput {
+  answers: JSON
+
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -3729,6 +3503,32 @@ enum UsersOrderBy {
   PRIMARY_KEY_DESC
   USERNAME_ASC
   USERNAME_DESC
+}
+
+"""All input for the `validateRegistrationAnswers` mutation."""
+input ValidateRegistrationAnswersInput {
+  answers: JSON
+
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  requiredQuestionIds: [UUID]!
+}
+
+"""The output of our `validateRegistrationAnswers` mutation."""
+type ValidateRegistrationAnswersPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """All input for the `verifyEmail` mutation."""

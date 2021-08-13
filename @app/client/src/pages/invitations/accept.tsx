@@ -85,7 +85,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   const router = useRouter()
 
   const { data, fetching, error } = query
-  const [_res1, acceptInvite] = useAcceptOrganizationInviteMutation()
+  const [, acceptInvite] = useAcceptOrganizationInviteMutation()
 
   const [status, setStatus] = useState(Status.PENDING)
   const [acceptError, setAcceptError] = useState<Error | null>(null)

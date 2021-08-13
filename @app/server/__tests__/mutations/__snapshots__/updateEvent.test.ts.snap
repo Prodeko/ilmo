@@ -1,38 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UpdateEvent can update an existing event 2`] = `
+exports[`UpdateEvent can update an existing event 1`] = `
 Object {
   "data": Object {
     "updateEvent": Object {
       "event": Object {
-        "categoryId": "[id-3]",
         "createdAt": "[timestamp-5]",
-        "createdBy": "[id-4]",
-        "description": Object {
-          "en": "Updated test description",
-          "fi": "Päivitetty testikuvaus",
-        },
+        "createdBy": "[id-2]",
+        "description": "[random-3]",
         "eventEndTime": "[timestamp-2]",
         "eventStartTime": "[timestamp-1]",
+        "headerImageFile": "[random-5]",
         "id": "[id-1]",
         "isDraft": false,
-        "isHighlighted": true,
-        "name": Object {
-          "en": "Updated test event",
-          "fi": "Päivitetty testitapahtuma",
-        },
-        "ownerOrganizationId": "[id-2]",
+        "isHighlighted": false,
+        "location": "[random-4]",
+        "name": "[random-1]",
         "registrationEndTime": "[timestamp-4]",
         "registrationStartTime": "[timestamp-3]",
+        "signupClosed": false,
+        "signupOpen": true,
+        "signupUpcoming": false,
+        "slug": "[random-2]",
         "updatedAt": "[timestamp-6]",
-        "updatedBy": "[id-4]",
+        "updatedBy": "[id-2]",
       },
     },
   },
 }
 `;
 
-exports[`UpdateEvent can't update an event while logged out (RLS policy) 1`] = `
+exports[`UpdateEvent can't update an event while logged out 1`] = `
 Object {
   "data": Object {
     "updateEvent": null,
@@ -40,15 +38,50 @@ Object {
   "errors": Array [
     Object {
       "extensions": Object {
-        "exception": Object {},
+        "exception": Object {
+          "code": "LOGIN",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 8 at RAISE",
+        },
       },
       "locations": Array [
         Object {
-          "column": 9,
-          "line": 5,
+          "column": 3,
+          "line": 2,
         },
       ],
-      "message": "No values were updated in collection 'events' because no values you can update were found matching these criteria.",
+      "message": "You must log in to update an event",
+      "path": Array [
+        "updateEvent",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`UpdateEvent must specify at least one event quota 1`] = `
+Object {
+  "data": Object {
+    "updateEvent": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 16 at RAISE
+SQL statement \\"SELECT * from app_public.update_event_quotas(id, quotas)\\"
+PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 31 at PERFORM",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "You must specify at least one quota",
       "path": Array [
         "updateEvent",
       ],

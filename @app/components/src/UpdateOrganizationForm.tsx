@@ -35,8 +35,8 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
   const router = useRouter()
   const [error, setError] = useState<Error | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [_res1, updateOrganization] = useUpdateOrganizationMutation()
-  const [_res2, deleteOrganization] = useDeleteOrganizationMutation()
+  const [, updateOrganization] = useUpdateOrganizationMutation()
+  const [, deleteOrganization] = useDeleteOrganizationMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering

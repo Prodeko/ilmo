@@ -17,7 +17,7 @@ test("languages query", async () => {
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {},
 
     // This function runs all your test assertions:

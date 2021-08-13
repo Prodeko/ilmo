@@ -19,9 +19,10 @@
     "graphile-migrate": "^1.2.0"
   },
   "devDependencies": {
+    "@app/graphql": "0.0.0",
     "@types/pg": "^8.6.1",
     "jest": "^27.0.6",
     "lodash": "^4.17.21",
-    "pg": "^8.6.0"
+    "pg": "^8.7.1"
   }
 }

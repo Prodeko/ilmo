@@ -1,3 +1,4 @@
+import { DeleteEventCategoryDocument } from "../../../graphql"
 import {
   asRoot,
   createEventDataAndLogin,
@@ -11,13 +12,6 @@ import {
 beforeEach(deleteTestData)
 beforeAll(setup)
 afterAll(teardown)
-
-const deleteEventCategoryMutation = `
-mutation DeleteEventCategory($categoryId: UUID!) {
-  deleteEventCategory(input: { id: $categoryId }) {
-    clientMutationId
-  }
-}`
 
 describe("DeleteEventCategory", () => {
   it("admin can delete an event category (RLS policy)", async () => {
@@ -35,14 +29,14 @@ describe("DeleteEventCategory", () => {
     const { session } = await createUserAndLogIn({ isAdmin: true })
 
     await runGraphQLQuery(
-      deleteEventCategoryMutation,
+      DeleteEventCategoryDocument,
 
       // GraphQL variables:
-      { categoryId },
+      { id: categoryId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
@@ -77,14 +71,14 @@ describe("DeleteEventCategory", () => {
     const categoryId = eventCategory.id
 
     await runGraphQLQuery(
-      deleteEventCategoryMutation,
+      DeleteEventCategoryDocument,
 
       // GraphQL variables:
-      { categoryId },
+      { id: categoryId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
@@ -108,7 +102,7 @@ describe("DeleteEventCategory", () => {
     )
   })
 
-  it("users without the right permissions cannot delete event categories (RLS policy)", async () => {
+  it("users without permissions cannot delete event categories (RLS policy)", async () => {
     const { eventCategory } = await createEventDataAndLogin({
       userOptions: { create: true, amount: 1, isAdmin: true },
     })
@@ -119,14 +113,14 @@ describe("DeleteEventCategory", () => {
     const { session } = await createUserAndLogIn()
 
     await runGraphQLQuery(
-      deleteEventCategoryMutation,
+      DeleteEventCategoryDocument,
 
       // GraphQL variables:
-      { categoryId },
+      { id: categoryId },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:

@@ -9,15 +9,15 @@ config:
     field: true
     inputValue: false
     object: false
-  scalars:
-    Datetime: "string"
-    JSON: "{ [key: string]: any }"
   noGraphQLTag: false
   withHOC: false
   withComponent: false
   withHooks: true
   preResolveTypes: true
 generates:
+  introspection.json:
+    plugins:
+      - "urql-introspection"
   index.tsx:
     plugins:
       - add:

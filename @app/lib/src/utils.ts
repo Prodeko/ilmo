@@ -9,8 +9,9 @@ export const filterObjectByKeys = (raw: object, allowed: string[]) =>
       return obj
     }, {})
 
-export const randomIntFromInterval = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1) + min)
+export function removePropFromObject(obj: any, prop: string | number) {
+  const { [prop]: _, ...rest } = obj
+  return { ...rest }
 }
 
 /**

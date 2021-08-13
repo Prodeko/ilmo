@@ -57,7 +57,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
     [currentUser, organization]
   )
 
-  const [_res1, inviteToOrganization] = useInviteToOrganizationMutation()
+  const [, inviteToOrganization] = useInviteToOrganizationMutation()
   const [inviteInProgress, setInviteInProgress] = useState(false)
   const [form] = Form.useForm()
   const handleInviteSubmit = useCallback(
@@ -150,7 +150,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   const { node, organization, currentUser } = props
 
   const { t } = useTranslation("admin")
-  const [_res1, removeMember] = useRemoveFromOrganizationMutation()
+  const [, removeMember] = useRemoveFromOrganizationMutation()
   const handleRemove = useCallback(async () => {
     try {
       await removeMember({
@@ -163,7 +163,7 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
     }
   }, [node.user, organization.id, removeMember])
 
-  const [_res2, transferOwnership] = useTransferOrganizationOwnershipMutation()
+  const [, transferOwnership] = useTransferOrganizationOwnershipMutation()
   const handleTransfer = useCallback(async () => {
     try {
       await transferOwnership({

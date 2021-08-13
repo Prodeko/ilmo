@@ -6,23 +6,25 @@ import {
   useEventRegistrations,
 } from "@app/components"
 import {
+  useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
-  useEventRegistrationPageQuery,
 } from "@app/graphql"
-import { Col, List, PageHeader, Row, Typography } from "antd"
+import { Col, List, PageHeader, Popconfirm, Row, Typography } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 const EventRegistrationPage: NextPage = () => {
   const { t, lang } = useTranslation("register")
+  const [visible, setVisible] = useState(false)
+
   const router = useRouter()
   const { eventId, quotaId } = router.query
 
-  const [query] = useEventRegistrationPageQuery({
+  const [query] = useCreateEventRegistrationPageQuery({
     variables: { eventId, quotaId },
   })
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
 
   const currentUser = data?.currentUser
   const event = data?.event
@@ -43,7 +45,7 @@ const EventRegistrationPage: NextPage = () => {
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), [])
   const recentRegistrations = useEventRegistrations(eventId as string, after)
-  const [_res1, deleteRegistration] = useDeleteEventRegistrationMutation()
+  const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
 
   const handleGoBack = useCallback(async () => {
@@ -61,9 +63,19 @@ const EventRegistrationPage: NextPage = () => {
   if (
     !fetching &&
     !error &&
+    !stale &&
     (!event || !quota || signupClosed || signupUpcoming)
   ) {
     return <Redirect href="/" layout />
+  }
+
+  const showPopconfirm = (e?: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setVisible(true)
+  }
+
+  const hidePopconfirm = () => {
+    setVisible(false)
   }
 
   const eventName = event?.name[lang] || t("common:loading")
@@ -74,7 +86,15 @@ const EventRegistrationPage: NextPage = () => {
     <SharedLayout query={query} title="">
       <Row align="top" justify="center">
         <Col sm={12} xs={24}>
-          <PageHeader title={title} onBack={handleGoBack} />
+          <PageHeader title={title} onBack={showPopconfirm} />
+          <Popconfirm
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
+            title={t("confirmGoBack")}
+            visible={visible}
+            onCancel={hidePopconfirm}
+            onConfirm={handleGoBack}
+          />
         </Col>
       </Row>
       <EventRegistrationForm
@@ -84,6 +104,7 @@ const EventRegistrationPage: NextPage = () => {
           query: { slug: event?.slug },
         }}
         initialValues={formInitialValues}
+        questions={event?.eventQuestions?.nodes}
         quotaId={quota?.id}
         // Used to delete an unfinished registration
         setUpdateToken={setUpdateToken}

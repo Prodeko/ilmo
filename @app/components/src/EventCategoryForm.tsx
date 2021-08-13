@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
-  CreateEventCategoryPageQuery,
+  CreateEventCategoryDocument,
+  SharedQuery,
+  UpdateEventCategoryDocument,
   UpdateEventCategoryPageQuery,
-  useCreateEventCategoryMutation,
-  useUpdateEventCategoryMutation,
 } from "@app/graphql"
-import { formItemLayout, tailFormItemLayout } from "@app/lib"
+import {
+  filterObjectByKeys,
+  formItemLayout,
+  tailFormItemLayout,
+} from "@app/lib"
 import { Button, Form, Input, Select } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
-import { CombinedError } from "urql"
+import { CombinedError, useMutation } from "urql"
 
 import { ColorPicker } from "./ColorPicker"
 import { ErrorAlert } from "./ErrorAlert"
@@ -18,7 +22,7 @@ const { Option } = Select
 
 interface EventCategoryFormProps {
   type: "update" | "create"
-  data: CreateEventCategoryPageQuery | UpdateEventCategoryPageQuery
+  data: SharedQuery | UpdateEventCategoryPageQuery
   formRedirect: { pathname: string; query: { [key: string]: string } } | string
   // categoryId and initialValues are used when type is "update"
   // i.e. we are updating an existing event category
@@ -54,8 +58,11 @@ export const EventCategoryForm = ({
   )
 
   // Mutations
-  const [_res1, updateEventCategory] = useUpdateEventCategoryMutation()
-  const [_res2, createEventCategory] = useCreateEventCategoryMutation()
+  const mutation =
+    type === "update"
+      ? UpdateEventCategoryDocument
+      : CreateEventCategoryDocument
+  const [, formMutation] = useMutation(mutation)
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
@@ -73,18 +80,31 @@ export const EventCategoryForm = ({
       setFormSubmitting(true)
       setFormError(null)
       try {
-        if (type === "create") {
-          const { error } = await createEventCategory({
-            ...values,
-          })
-          if (error) throw error
-        } else if (type === "update") {
-          const { error } = await updateEventCategory({
-            ...values,
-            id: categoryId,
-          })
-          if (error) throw error
-        }
+        const input =
+          type === "create"
+            ? {
+                eventCategory: {
+                  ...filterObjectByKeys(values, [
+                    "ownerOrganizationId",
+                    "name",
+                    "description",
+                    "color",
+                  ]),
+                },
+              }
+            : {
+                patch: {
+                  ...filterObjectByKeys(values, [
+                    "ownerOrganizationId",
+                    "name",
+                    "description",
+                    "color",
+                  ]),
+                },
+                id: categoryId,
+              }
+        const { error } = await formMutation({ input })
+        if (error) throw error
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
@@ -92,14 +112,7 @@ export const EventCategoryForm = ({
       }
       setFormSubmitting(false)
     },
-    [
-      createEventCategory,
-      updateEventCategory,
-      categoryId,
-      formRedirect,
-      router,
-      type,
-    ]
+    [formMutation, categoryId, formRedirect, router, type]
   )
 
   return (

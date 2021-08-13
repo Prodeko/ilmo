@@ -25,7 +25,7 @@ test("currentUser when logged out", async () => {
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {},
 
     // This function runs all your test assertions:
@@ -46,9 +46,9 @@ test("currentUser when logged in", async () => {
     // GraphQL variables:
     {},
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
     {
-      user: { session_id: session.uuid },
+      user: { sessionId: session.uuid },
     },
 
     // This function runs all your test assertions:

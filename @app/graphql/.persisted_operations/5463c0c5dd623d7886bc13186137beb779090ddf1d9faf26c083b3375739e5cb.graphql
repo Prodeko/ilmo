@@ -1,7 +1,14 @@
-fragment EventRegistrationPage_Query on Query {
+fragment CreateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   event(id: $eventId) {
     ...EventRegistrationPage_Event
+    eventQuestions(orderBy: POSITION_ASC) {
+      nodes {
+        ...EventRegistrationPage_Question
+        __typename
+      }
+      __typename
+    }
     __typename
   }
   quota(id: $quotaId) {
@@ -59,11 +66,20 @@ fragment EventRegistrationPage_Event on Event {
   signupClosed
   __typename
 }
+fragment EventRegistrationPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+  __typename
+}
 fragment EventRegistrationPage_Quota on Quota {
   id
   title
   __typename
 }
-query EventRegistrationPage($eventId: UUID!, $quotaId: UUID!) {
-  ...EventRegistrationPage_Query
+query CreateEventRegistrationPage($eventId: UUID!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
 }

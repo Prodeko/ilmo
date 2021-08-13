@@ -28,14 +28,14 @@ const UpdateEventRegistrationPage: NextPage = () => {
   const [query] = useUpdateEventRegistrationPageQuery({
     variables: { updateToken: updateToken as string },
   })
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
 
   const registration = data?.registrationByUpdateToken
   const event = registration?.event
   const quota = registration?.quota
 
   // If registration is not found redirect to index
-  if (!fetching && !error && !registration) {
+  if (!fetching && !error && !registration && !stale) {
     return <Redirect href="/" layout />
   }
 
@@ -53,6 +53,7 @@ const UpdateEventRegistrationPage: NextPage = () => {
           query: { slug: event?.slug },
         }}
         initialValues={constructInitialValues(registration)}
+        questions={event.eventQuestions.nodes}
         type="update"
         updateToken={updateToken as string}
       />

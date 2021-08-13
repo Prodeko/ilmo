@@ -1,8 +1,7 @@
 import { AdminLayout, EventForm, Redirect, useQueryId } from "@app/components"
 import {
+  EventQuestionsConnection,
   QuotasConnection,
-  UpdateEventDocument,
-  UpdateEventQuotasDocument,
   useUpdateEventPageQuery,
 } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
@@ -23,6 +22,7 @@ type UpdateFormInitialValues = {
   isDraft: boolean
   headerImageFile: string
   quotas: QuotasConnection
+  eventQuestions: EventQuestionsConnection
 }
 
 function constructInitialValues(values: any) {
@@ -38,6 +38,7 @@ function constructInitialValues(values: any) {
     "isDraft",
     "headerImageFile",
     "quotas",
+    "eventQuestions",
   ]) as UpdateFormInitialValues
 
   const {
@@ -47,6 +48,7 @@ function constructInitialValues(values: any) {
     registrationStartTime,
     registrationEndTime,
     quotas: quotasConnection,
+    eventQuestions: questionsConnection,
   } = filteredValues || {}
 
   const eventTime = [dayjs(eventStartTime), dayjs(eventEndTime)]
@@ -63,6 +65,16 @@ function constructInitialValues(values: any) {
       "registrations",
     ])
   )
+  const questions = questionsConnection?.nodes.map((questions) =>
+    filterObjectByKeys(questions, [
+      "id",
+      "position",
+      "type",
+      "label",
+      "isRequired",
+      "data",
+    ])
+  )
   const languages = Object.keys(name || {})
 
   return {
@@ -73,6 +85,7 @@ function constructInitialValues(values: any) {
     registrationTime,
     eventTime,
     quotas,
+    questions,
   }
 }
 
@@ -83,11 +96,11 @@ const Admin_UpdateEvent: NextPage = () => {
   const [query] = useUpdateEventPageQuery({
     variables: { id: eventId },
   })
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
   const event = data?.event
 
   // If event is not found redirect to index
-  if (!fetching && !error && !event) {
+  if (!fetching && !error && !stale && !event) {
     return <Redirect href="/" layout />
   }
 
@@ -102,10 +115,8 @@ const Admin_UpdateEvent: NextPage = () => {
           <EventForm
             data={data}
             eventId={eventId}
-            eventMutationDocument={UpdateEventDocument}
             formRedirect="/admin/event/list"
             initialValues={constructInitialValues(event)}
-            quotasMutationDocument={UpdateEventQuotasDocument}
             type="update"
           />
         </Col>

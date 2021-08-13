@@ -52,6 +52,7 @@ export function AdminLayout({
   const { t } = useTranslation("admin")
   const router = useRouter()
   const { data, fetching, error } = query
+  const isSSR = typeof window === "undefined"
 
   const basicMenuItems = [
     {
@@ -76,7 +77,10 @@ export function AdminLayout({
     !fetching &&
     (organizationMemberships?.length === 0 || !currentUser)
   ) {
-    message.error(t("notifications.adminAccessDenied"))
+    if (!isSSR) {
+      // Antd notifications don't work with SSR
+      message.error(t("notifications.adminAccessDenied"))
+    }
     return <Redirect href="/" layout />
   }
 

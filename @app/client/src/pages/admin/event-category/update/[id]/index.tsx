@@ -38,11 +38,11 @@ const Admin_UpdateEventCategory: NextPage = () => {
   const [query] = useUpdateEventCategoryPageQuery({
     variables: { id: categoryId },
   })
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
   const eventCategory = data?.eventCategory
 
   // If event category is not found redirect to index
-  if (!fetching && !error && !eventCategory) {
+  if (!fetching && !error && !stale && !eventCategory) {
     return <Redirect href="/" layout />
   }
 
