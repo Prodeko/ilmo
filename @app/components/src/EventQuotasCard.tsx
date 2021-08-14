@@ -19,7 +19,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
 }) => {
   const { t, lang } = useTranslation("events")
   const isMobile = useIsMobile()
-  const { id: eventId, signupClosed, signupUpcoming, quotas } = event
+  const { slug, signupClosed, signupUpcoming, quotas } = event
 
   return (
     <Card
@@ -58,8 +58,8 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = ({
             ) : (
               <Link
                 href={{
-                  pathname: "/event/register/[eventId]/q/[quotaId]",
-                  query: { eventId, quotaId },
+                  pathname: "/event/[slug]/register/[quotaId]",
+                  query: { slug, quotaId },
                 }}
               >
                 {quotaButton}

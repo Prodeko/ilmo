@@ -41,6 +41,12 @@ it("fi and en are both valid languages", () =>
     expect(check_language).toEqual(true)
   }))
 
+it("empty json is not a valid language", () =>
+  withUserDb(async (client) => {
+    const { check_language } = await checkLanguage(client, {})
+    expect(check_language).toEqual(false)
+  }))
+
 it("se is not a valid language (yet...)", () =>
   withUserDb(async (client) => {
     const { check_language } = await checkLanguage(client, { se: "Testa" })

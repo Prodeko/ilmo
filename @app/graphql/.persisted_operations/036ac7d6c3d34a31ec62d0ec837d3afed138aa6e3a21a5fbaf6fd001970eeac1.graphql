@@ -1,7 +1,11 @@
-fragment EventPage_Query on Query {
+fragment CreateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   eventBySlug(slug: $slug) {
     ...EventPage_Event
+    __typename
+  }
+  quota(id: $quotaId) {
+    ...EventPage_Quota
     __typename
   }
   __typename
@@ -71,6 +75,13 @@ fragment EventPage_Event on Event {
     }
     __typename
   }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
+      __typename
+    }
+    __typename
+  }
   __typename
 }
 fragment EventFields on Event {
@@ -131,6 +142,15 @@ fragment EventPage_Registration on Registration {
   }
   __typename
 }
-query EventPage($slug: String!) {
-  ...EventPage_Query
+fragment EventPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+  __typename
+}
+query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
 }

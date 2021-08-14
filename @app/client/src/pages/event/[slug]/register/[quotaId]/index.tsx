@@ -19,15 +19,16 @@ const EventRegistrationPage: NextPage = () => {
   const [visible, setVisible] = useState(false)
 
   const router = useRouter()
-  const { eventId, quotaId } = router.query
+  const slug = router.query.slug as string
+  const quotaId = router.query.quotaId as string
 
   const [query] = useCreateEventRegistrationPageQuery({
-    variables: { eventId, quotaId },
+    variables: { slug, quotaId },
   })
   const { data, fetching, error, stale } = query
 
   const currentUser = data?.currentUser
-  const event = data?.event
+  const event = data?.eventBySlug
   const quota = data?.quota
   const { signupClosed, signupUpcoming } = event || {}
 
@@ -44,7 +45,7 @@ const EventRegistrationPage: NextPage = () => {
 
   // Subscribe to registrations created after this timestamp
   const after = useMemo(() => new Date().toISOString(), [])
-  const recentRegistrations = useEventRegistrations(eventId as string, after)
+  const recentRegistrations = useEventRegistrations(event?.id as string, after)
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
 

@@ -140,7 +140,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               >
                 <Input
                   data-cy={`eventform-input-name-${l}`}
-                  placeholder={t(`forms.placeholders.${l}`)}
+                  placeholder={t(`common:lang.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
@@ -169,7 +169,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               >
                 <TextArea
                   data-cy={`eventform-input-description-${l}`}
-                  placeholder={t(`forms.placeholders.${l}`)}
+                  placeholder={t(`common:lang.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>

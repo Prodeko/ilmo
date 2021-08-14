@@ -46,21 +46,38 @@ const questions = [
   {
     position: 0,
     type: "RADIO",
-    label: "Test question, choose option",
+    label: {
+      en: "Test question, choose option",
+      fi: "Testikysymys, valitse vaihtoehto",
+    },
     isRequired: false,
-    data: ["Radio 1", "Radio 2", "Radio 3"],
+    data: [
+      { fi: "Radio 1", en: "Radio 1" },
+      { fi: "Radio 2", en: "Radio 2" },
+      { fi: "Radio 3", en: "Radio 3" },
+    ],
   },
   {
     position: 0,
     type: "CHECKBOX",
-    label: "Test question, choose option",
+    label: {
+      en: "Test question, choose option",
+      fi: "Testikysymys, valitse vaihtoehto",
+    },
     isRequired: true,
-    data: ["Check 1", "Check 2", "Check 3"],
+    data: [
+      { fi: "Check 1", en: "Check 1" },
+      { fi: "Check 2", en: "Check 2" },
+      { fi: "Check 3", en: "Check 3" },
+    ],
   },
   {
     position: 0,
     type: "TEXT",
-    label: "Test question, please answer",
+    label: {
+      en: "Test question",
+      fi: "Testikysymys",
+    },
     isRequired: true,
     data: null,
   },

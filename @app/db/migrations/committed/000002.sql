@@ -1,24 +1,7 @@
---! Previous: sha1:0a25569004ac1791eb01a81be9db61570d6a4912
---! Hash: sha1:0bb7b214cc7aa6348ac2992eca76d9c09053e96d
+--! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
+--! Hash: sha1:d634b0d59742887d0e1682d72f3bfdcda8bfba5c
 
---! split: 0001-computed-columns.sql
-/*
- * Get the user primary email as a computed column.
- */
-drop function if exists app_public.users_primary_email;
-
-create function app_public.users_primary_email(u app_public.users) returns citext as $$
-  select email
-    from app_public.user_emails
-    where
-      user_emails.user_id = u.id
-      and u.id = app_public.current_user_id()
-      and user_emails.is_primary = true;
-$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
-comment on function app_public.users_primary_email(u app_public.users) is
-  E'Users primary email.';
-
---! split: 0002-rls-helpers-1.sql
+--! split: 0001-rls-helpers-1.sql
 /*
  * Helpers for defining RLS policies.
  *
@@ -49,7 +32,7 @@ $$ language sql stable security definer set search_path to pg_catalog, public, p
 comment on function app_public.current_user_is_owner_organization_member(owner_organization_id uuid) is
   E'Returns true if the current user is a member of the organization id passed as input, false otherwise.';
 
---! split: 0003-common-triggers.sql
+--! split: 0002-common-triggers.sql
 /*
  * This trigger is used on tables with created_by and updated_by to ensure that
  * they are valid (namely: `created_by` cannot be changed after initial INSERT,
@@ -67,6 +50,121 @@ $$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
 comment on function app_private.tg__ownership_info() is
   E'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
 
+--! split: 0003-common-functions.sql
+/*
+ * These functions are commonly used across many tables.
+ */
+
+-- Used as a check constraint to verify that a column contains
+-- the required languages. Language dependent columns are stored as
+-- jsonb.
+drop function if exists app_public.check_language(jsonb) cascade;
+drop function if exists app_public.validate_jsonb_no_nulls(anyelement) cascade;
+
+create function app_public.check_language(_column jsonb)
+  returns boolean
+  as $$
+declare
+  v_supported_languages text[];
+begin
+  select supported_languages into v_supported_languages from app_public.languages();
+
+  return (
+    -- Check that supported_languages exist as top level keys in _column
+    select _column ?| v_supported_languages
+    -- ...and that _column contains no other top level keys than supported_languages
+    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
+  );
+end;
+$$ language plpgsql stable security definer set search_path to pg_catalog, public, pg_temp;
+
+-- Used to validate that a given jsonb object does not contain null values
+-- We use anyelement here, since question data is defined as translated_field[]
+-- where translated_field is a custom domain whose underlying type is jsonb.
+-- Postgresql would not accept app_public.validate_jsonb_no_nulls(data translated_field[])
+-- function calls without anyelement. For the same reason to_jsonb is used
+-- to cast the input into jsonb.
+create function app_public.validate_jsonb_no_nulls(input anyelement)
+  returns void as $$
+declare
+  value jsonb;
+begin
+  -- SQL null and JSONB null's are different so we have to use jsonb_typeof()
+  -- More information: http://mbork.pl/2020-02-15_PostgreSQL_and_null_values_in_jsonb
+
+  if jsonb_typeof(to_jsonb(input)) = 'null' then
+    -- JSON null provided, invalid
+    raise exception 'Invalid json data' using errcode = 'NVLID';
+  elsif jsonb_typeof(to_jsonb(input)) = 'array' then
+    -- jsonb_strip_nulls omits all object fields that have null values
+    if jsonb_array_length(jsonb_strip_nulls(to_jsonb(input))) < 1 then
+      -- Empty json '{}' provided, invalid
+      raise exception 'Invalid json data' using errcode = 'NVLID';
+    else
+      -- Loop jsonb list to see if there are any JSON null's. If there are, raise exception.
+      for value in select jsonb_array_elements from jsonb_array_elements(to_jsonb(input)) loop
+        if jsonb_typeof(to_jsonb(value)) = 'null' then
+          -- JSON null found in list, invalid
+          raise exception 'Invalid json data' using errcode = 'NVLID';
+        end if;
+      end loop;
+    end if;
+  end if;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.validate_jsonb_no_nulls(input anyelement) is
+  E'Validate that provided jsonb does not contain nulls.';
+
+--! split: 0004-computed-columns.sql
+/*
+ * Get the user primary email as a computed column.
+ */
+drop function if exists app_public.users_primary_email;
+
+create function app_public.users_primary_email(u app_public.users) returns citext as $$
+  select email
+    from app_public.user_emails
+    where
+      user_emails.user_id = u.id
+      and u.id = app_public.current_user_id()
+      and user_emails.is_primary = true;
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.users_primary_email(u app_public.users) is
+  E'Users primary email.';
+
+--! split: 0005-domain-types.sql
+/*
+ * User-defined data type for easier handling of fields
+ * with language support. The check_language constraint makes
+ * sure that only valid data can can be inserted.
+ *
+ * Example usage:
+ *
+ * create table app_public.events(
+ *  ...
+ *  name translated_field,
+ *  description translated_field,
+ *  ...
+ */
+drop domain if exists translated_field cascade;
+drop domain if exists constrained_name cascade;
+
+create domain translated_field as jsonb check (check_language(value));
+comment on domain translated_field is
+  E'A translated field.';
+
+
+/*
+ * Custom domain for name columns (first and last) to check that they don't
+ * contain a space. This is to prevent registrations where you effectively don't
+ * provide your name by entering spaces.  Can be null since claimRegistrationToken
+ * mutation creates a registration where the names are null.
+ */
+
+create domain constrained_name as text null check (value !~ '\s');
+comment on domain translated_field is
+  E'A field which must not contain spaces';
+
 --! split: 0010-event_categories.sql
 /*
  * The event categories table is to categorize events and to enforce RLS policies
@@ -78,8 +176,8 @@ drop table if exists app_public.event_categories cascade;
 
 create table app_public.event_categories(
   id uuid primary key default gen_random_uuid(),
-  name jsonb not null,
-  description jsonb not null,
+  name translated_field not null,
+  description translated_field not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   color text,
 
@@ -88,8 +186,6 @@ create table app_public.event_categories(
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 
-  constraint _cnstr_check_name_language check(check_language(name))
-  constraint _cnstr_check_description_language check(check_language(description))
   constraint _cnstr_check_color_hex check (color ~* '^#[a-f0-9]{6}$')
 );
 alter table app_public.event_categories enable row level security;
@@ -148,8 +244,8 @@ create table app_public.events(
   -- Slug should be unique, but app_public.update_event custom mutation
   -- didn't work with the unique constraint. No idea why...
   slug citext not null unique,
-  name jsonb not null,
-  description jsonb not null,
+  name translated_field not null,
+  description translated_field not null,
   location text not null,
   event_start_time timestamptz not null,
   event_end_time timestamptz not null,
@@ -169,8 +265,6 @@ create table app_public.events(
   constraint _cnstr_check_event_time check(event_start_time < event_end_time)
   constraint _cnstr_check_event_registration_time check(registration_start_time < registration_end_time)
   constraint _cnstr_check_registration_end_before_event_start check(registration_end_time < event_start_time)
-  constraint _cnstr_check_name_language check(check_language(name))
-  constraint _cnstr_check_description_language check(check_language(description))
 );
 alter table app_public.events enable row level security;
 
@@ -299,15 +393,13 @@ create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
   position smallint not null,
-  title jsonb not null,
+  title translated_field not null,
   size smallint not null check (size > 0),
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-
-  constraint _cnstr_check_title_language check(check_language(title))
+  updated_at timestamptz not null default now()
 );
 alter table app_public.quotas enable row level security;
 
@@ -503,8 +595,10 @@ create type app_public.question_type as enum (
 -- Used as a check constraint to verify that a question is valid.
 -- When the type is TEXT, the data should be an array of length 1,
 -- otherwise data can contain multiple options.
-create function app_public.check_question_data(type app_public.question_type, data text[])
+create function app_public.check_question_data(type app_public.question_type, data translated_field[])
 returns boolean as $$
+declare
+  err_context text;
 begin
   if type = 'TEXT' then
     -- TEXT questions don't need to have any data associated with them
@@ -517,32 +611,37 @@ begin
     return false;
   else
 
-  -- If no question data is provided the question is invalid
-  if data is null or (select cardinality(data) = 0) then
-    return false;
-  end if;
+    -- RADIO and CHECKBOX must have data defined
+    if data is null then
+      return false;
+    end if;
 
-    -- RADIO and CHECKBOX can have multiple options
+    -- Check that the provided jsonb data contains no null values
+    perform app_public.validate_jsonb_no_nulls(data);
+
     return true;
   end if;
+-- If validate_jsonb_no_nulls raises an exception, return false
+exception when others then
+  return false;
 end;
-$$ language plpgsql stable security definer set search_path to pg_catalog, public, pg_temp;
+$$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
 
 create table app_public.event_questions(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events(id) on delete cascade,
   position smallint not null,
   type app_public.question_type not null,
-  label text not null,
+  label translated_field not null,
   is_required boolean not null default false,
-  data text[],
+  data translated_field[],
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  constraint _cnstr_check_question_data check(check_question_data(type, data))
+  constraint _cnstr_check_question_data check(app_public.check_question_data(type, data))
 );
 alter table app_public.event_questions enable row level security;
 
@@ -612,9 +711,9 @@ drop function if exists app_public.update_event_questions(event_id uuid, questio
 create type app_public.create_event_questions as (
   position smallint,
   type app_public.question_type,
-  label text,
+  label translated_field,
   is_required boolean,
-  data text[]
+  data translated_field[]
 );
 
 create function app_public.create_event_questions(
@@ -658,9 +757,9 @@ create type app_public.update_event_questions as (
   id uuid,
   position smallint,
   type app_public.question_type,
-  label text,
+  label translated_field,
   is_required boolean,
-  data text[]
+  data translated_field[]
 );
 
 create function app_public.update_event_questions(
@@ -739,7 +838,7 @@ declare
 begin
   -- Check that all required question id's are contained as top level keys in answers
   if not answers ?& required_question_ids::text[] then
-    raise exception 'Required question not answered.' using errcode = 'DNIED';
+    raise exception 'Required question not answered.' using errcode = 'NVLID';
   end if;
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
@@ -749,26 +848,14 @@ begin
       select * into v_question from app_public.event_questions where id = v_question_id;
 
       if v_question.is_required then
-        -- SQL and JSON null are different: http://mbork.pl/2020-02-15_PostgreSQL_and_null_values_in_jsonb
-        if jsonb_typeof(v_answers) = 'null' then
-          raise exception 'Required question not answered.' using errcode = 'DNIED';
-        elsif jsonb_typeof(v_answers) = 'array' then
-          if jsonb_array_length(jsonb_strip_nulls(v_answers)) < 1 then
-            raise exception 'Required question not answered.' using errcode = 'DNIED';
-          else
-            -- Loop answer list to see if there are any JSON null's. If there are, raise exception.
-            -- SQL null and JSONB null's are different so we have to use jsonb_typeof()
-            for v_answer in select jsonb_array_elements from jsonb_array_elements(v_answers) loop
-              if jsonb_typeof(v_answer) = 'null' then
-                raise exception 'Required question not answered.' using errcode = 'DNIED';
-              end if;
-            end loop;
-          end if;
-        end if;
+        perform app_public.validate_jsonb_no_nulls(v_answers);
       end if;
 
     end if;
   end loop;
+-- If validate_jsonb_no_nulls raises an exception, return a more suitable error message
+exception when others then
+  raise exception 'Required question not answered.' using errcode = 'NVLID';
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb) is
@@ -802,14 +889,9 @@ comment on function app_private.tg__registration_is_valid() is
  * The registrations table stores event registrations.
  */
 
--- Custom domain for name columns (first and last) to check that they don't
--- contain a space. This is to prevent registrations where you effectively don't
--- provide your name by entering spaces.  Can be null since claimRegistrationToken
--- mutation creates a registration where the names are null.
-drop domain if exists constrained_name cascade;
-create domain constrained_name as text null check (value !~ '\s');
 
 drop table if exists app_public.registrations cascade;
+
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
@@ -1253,8 +1335,8 @@ drop function if exists app_public.update_event(id uuid, event app_public.event_
 -- Input type for app_public.create_event
 create type app_public.event_input as (
   slug citext,
-  name jsonb,
-  description jsonb,
+  name translated_field,
+  description translated_field,
   location text,
   event_start_time timestamptz,
   event_end_time timestamptz,

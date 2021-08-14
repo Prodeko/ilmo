@@ -1,12 +1,13 @@
-fragment UpdateEventPage_Query on Query {
+fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  event(id: $id) {
-    ...UpdateEventPage_Event
-    __typename
-  }
-  eventCategories(orderBy: NAME_ASC) {
-    nodes {
-      ...EventPage_EventCategory
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Registration
+    quota {
+      ...EventPage_Quota
+      __typename
+    }
+    event {
+      ...EventPage_Event
       __typename
     }
     __typename
@@ -54,32 +55,47 @@ fragment SharedLayout_Languages on AppLanguage {
   defaultLanguage
   __typename
 }
-fragment UpdateEventPage_Event on Event {
-  ...EventFields
+fragment UpdateEventRegistrationPage_Registration on Registration {
   id
+  firstName
+  lastName
+  answers
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+fragment EventPage_Event on Event {
+  ...EventFields
   category {
     ...EventPage_EventCategory
     __typename
   }
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
     __typename
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      registrations {
-        totalCount
-        __typename
-      }
+      __typename
+    }
+    __typename
+  }
+  registrations(orderBy: CREATED_AT_ASC) {
+    nodes {
+      ...EventPage_Registration
       __typename
     }
     __typename
   }
   eventQuestions(orderBy: POSITION_ASC) {
     nodes {
-      ...EventRegistrationPage_Question
+      ...EventPage_Question
       __typename
     }
     __typename
@@ -126,14 +142,18 @@ fragment EventPage_OwnerOrganization on Organization {
   slug
   __typename
 }
-fragment EventPage_Quota on Quota {
+fragment EventPage_Registration on Registration {
   id
-  position
-  title
-  size
+  fullName
+  isQueued
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
   __typename
 }
-fragment EventRegistrationPage_Question on EventQuestion {
+fragment EventPage_Question on EventQuestion {
   id
   position
   type
@@ -142,6 +162,6 @@ fragment EventRegistrationPage_Question on EventQuestion {
   data
   __typename
 }
-query UpdateEventPage($id: UUID!) {
-  ...UpdateEventPage_Query
+query UpdateEventRegistrationPage($updateToken: String!) {
+  ...UpdateEventRegistrationPage_Query
 }

@@ -18,7 +18,7 @@ fragment UpdateEventPage_Event on Event {
   }
   eventQuestions(orderBy: POSITION_ASC) {
     nodes {
-      ...EventRegistrationPage_Question
+      ...EventPage_Question
     }
   }
 }

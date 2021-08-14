@@ -37,7 +37,6 @@ async function main() {
   try {
     await cleanData(client)
   } catch (e) {
-    // Error logging can be helpful:
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
       console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"))
     }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import {
   CreateEventRegistrationDocument,
-  EventRegistrationPage_QuestionFragment,
+  EventPage_QuestionFragment,
   QuestionType,
   UpdateEventRegistrationDocument,
   useClaimRegistrationTokenMutation,
@@ -28,7 +28,7 @@ import { ErrorAlert } from "."
 
 interface EventRegistrationFormProps {
   type: "update" | "create"
-  questions: EventRegistrationPage_QuestionFragment[]
+  questions: EventPage_QuestionFragment[]
   formRedirect: { pathname: string; query: { [key: string]: string } } | string
   // eventId and quotaId are used when type is "create"
   eventId?: string
@@ -66,7 +66,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     setUpdateToken,
   } = props
 
-  const { t } = useTranslation("register")
+  const { t, lang } = useTranslation("register")
   const router = useRouter()
 
   // Handling form values, errors and submission
@@ -255,8 +255,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             <Radio.Group>
               <Space direction="vertical">
                 {data?.map((val, i) => (
-                  <Radio key={i} value={val}>
-                    {val}
+                  <Radio key={i} value={val[lang]}>
+                    {val[lang]}
                   </Radio>
                 ))}
               </Space>
@@ -267,8 +267,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             <Checkbox.Group>
               <Space direction="vertical">
                 {data?.map((val, i) => (
-                  <Checkbox key={i} value={val}>
-                    {val}
+                  <Checkbox key={i} value={val[lang]}>
+                    {val[lang]}
                   </Checkbox>
                 ))}
               </Space>
@@ -279,7 +279,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         return (
           <Form.Item
             key={i}
-            label={label}
+            label={label[lang]}
             name={["answers", id]}
             rules={[
               {

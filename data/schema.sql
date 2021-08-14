@@ -119,15 +119,53 @@ CREATE TYPE app_public.question_type AS ENUM (
 
 
 --
+-- Name: check_language(jsonb); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_supported_languages text[];
+begin
+  select supported_languages into v_supported_languages from app_public.languages();
+
+  return (
+    -- Check that supported_languages exist as top level keys in _column
+    select _column ?| v_supported_languages
+    -- ...and that _column contains no other top level keys than supported_languages
+    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
+  );
+end;
+$$;
+
+
+--
+-- Name: translated_field; Type: DOMAIN; Schema: app_public; Owner: -
+--
+
+CREATE DOMAIN app_public.translated_field AS jsonb
+	CONSTRAINT translated_field_check CHECK (app_public.check_language(VALUE));
+
+
+--
+-- Name: DOMAIN translated_field; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON DOMAIN app_public.translated_field IS 'A field which must not contain spaces';
+
+
+--
 -- Name: create_event_questions; Type: TYPE; Schema: app_public; Owner: -
 --
 
 CREATE TYPE app_public.create_event_questions AS (
 	"position" smallint,
 	type app_public.question_type,
-	label text,
+	label app_public.translated_field,
 	is_required boolean,
-	data text[]
+	data app_public.translated_field[]
 );
 
 
@@ -148,8 +186,8 @@ CREATE TYPE app_public.create_event_quotas AS (
 
 CREATE TYPE app_public.event_input AS (
 	slug public.citext,
-	name jsonb,
-	description jsonb,
+	name app_public.translated_field,
+	description app_public.translated_field,
 	location text,
 	event_start_time timestamp with time zone,
 	event_end_time timestamp with time zone,
@@ -171,9 +209,9 @@ CREATE TYPE app_public.update_event_questions AS (
 	id uuid,
 	"position" smallint,
 	type app_public.question_type,
-	label text,
+	label app_public.translated_field,
 	is_required boolean,
-	data text[]
+	data app_public.translated_field[]
 );
 
 
@@ -969,36 +1007,15 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 
 
 --
--- Name: check_language(jsonb); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: check_question_data(app_public.question_type, app_public.translated_field[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
-    LANGUAGE plpgsql STABLE SECURITY DEFINER
+CREATE FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
-  v_supported_languages text[];
-begin
-  select supported_languages into v_supported_languages from app_public.languages();
-
-  return (
-    -- Check that supported_languages exist as top level keys in _column
-    select _column ?| v_supported_languages
-    -- ...and that _column contains no other top level keys than supported_languages
-    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
-  );
-end;
-$$;
-
-
---
--- Name: check_question_data(app_public.question_type, text[]); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.check_question_data(type app_public.question_type, data text[]) RETURNS boolean
-    LANGUAGE plpgsql STABLE SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
+  err_context text;
 begin
   if type = 'TEXT' then
     -- TEXT questions don't need to have any data associated with them
@@ -1011,14 +1028,19 @@ begin
     return false;
   else
 
-  -- If no question data is provided the question is invalid
-  if data is null or (select cardinality(data) = 0) then
-    return false;
-  end if;
+    -- RADIO and CHECKBOX must have data defined
+    if data is null then
+      return false;
+    end if;
 
-    -- RADIO and CHECKBOX can have multiple options
+    -- Check that the provided jsonb data contains no null values
+    perform app_public.validate_jsonb_no_nulls(data);
+
     return true;
   end if;
+-- If validate_jsonb_no_nulls raises an exception, return false
+exception when others then
+  return false;
 end;
 $$;
 
@@ -1151,8 +1173,8 @@ COMMENT ON FUNCTION app_public.confirm_account_deletion(token text) IS 'If you''
 CREATE TABLE app_public.events (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     slug public.citext NOT NULL,
-    name jsonb NOT NULL,
-    description jsonb NOT NULL,
+    name app_public.translated_field NOT NULL,
+    description app_public.translated_field NOT NULL,
     location text NOT NULL,
     event_start_time timestamp with time zone NOT NULL,
     event_end_time timestamp with time zone NOT NULL,
@@ -1167,10 +1189,8 @@ CREATE TABLE app_public.events (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
     CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
     CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
-    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name)),
     CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
 );
 
@@ -1356,9 +1376,9 @@ CREATE TABLE app_public.event_questions (
     event_id uuid NOT NULL,
     "position" smallint NOT NULL,
     type app_public.question_type NOT NULL,
-    label text NOT NULL,
+    label app_public.translated_field NOT NULL,
     is_required boolean DEFAULT false NOT NULL,
-    data text[],
+    data app_public.translated_field[],
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -1475,13 +1495,12 @@ CREATE TABLE app_public.quotas (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     "position" smallint NOT NULL,
-    title jsonb NOT NULL,
+    title app_public.translated_field NOT NULL,
     size smallint NOT NULL,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_title_language CHECK (app_public.check_language(title)),
     CONSTRAINT quotas_size_check CHECK ((size > 0))
 );
 
@@ -3025,6 +3044,49 @@ COMMENT ON FUNCTION app_public.users_primary_email(u app_public.users) IS 'Users
 
 
 --
+-- Name: validate_jsonb_no_nulls(anyelement); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  value jsonb;
+begin
+  -- SQL null and JSONB null's are different so we have to use jsonb_typeof()
+  -- More information: http://mbork.pl/2020-02-15_PostgreSQL_and_null_values_in_jsonb
+
+  if jsonb_typeof(to_jsonb(input)) = 'null' then
+    -- JSON null provided, invalid
+    raise exception 'Invalid json data' using errcode = 'NVLID';
+  elsif jsonb_typeof(to_jsonb(input)) = 'array' then
+    -- jsonb_strip_nulls omits all object fields that have null values
+    if jsonb_array_length(jsonb_strip_nulls(to_jsonb(input))) < 1 then
+      -- Empty json '{}' provided, invalid
+      raise exception 'Invalid json data' using errcode = 'NVLID';
+    else
+      -- Loop jsonb list to see if there are any JSON null's. If there are, raise exception.
+      for value in select jsonb_array_elements from jsonb_array_elements(to_jsonb(input)) loop
+        if jsonb_typeof(to_jsonb(value)) = 'null' then
+          -- JSON null found in list, invalid
+          raise exception 'Invalid json data' using errcode = 'NVLID';
+        end if;
+      end loop;
+    end if;
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION validate_jsonb_no_nulls(input anyelement); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) IS 'Validate that provided jsonb does not contain nulls.';
+
+
+--
 -- Name: validate_registration_answers(uuid[], jsonb); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -3040,7 +3102,7 @@ declare
 begin
   -- Check that all required question id's are contained as top level keys in answers
   if not answers ?& required_question_ids::text[] then
-    raise exception 'Required question not answered.' using errcode = 'DNIED';
+    raise exception 'Required question not answered.' using errcode = 'NVLID';
   end if;
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
@@ -3050,26 +3112,14 @@ begin
       select * into v_question from app_public.event_questions where id = v_question_id;
 
       if v_question.is_required then
-        -- SQL and JSON null are different: http://mbork.pl/2020-02-15_PostgreSQL_and_null_values_in_jsonb
-        if jsonb_typeof(v_answers) = 'null' then
-          raise exception 'Required question not answered.' using errcode = 'DNIED';
-        elsif jsonb_typeof(v_answers) = 'array' then
-          if jsonb_array_length(jsonb_strip_nulls(v_answers)) < 1 then
-            raise exception 'Required question not answered.' using errcode = 'DNIED';
-          else
-            -- Loop answer list to see if there are any JSON null's. If there are, raise exception.
-            -- SQL null and JSONB null's are different so we have to use jsonb_typeof()
-            for v_answer in select jsonb_array_elements from jsonb_array_elements(v_answers) loop
-              if jsonb_typeof(v_answer) = 'null' then
-                raise exception 'Required question not answered.' using errcode = 'DNIED';
-              end if;
-            end loop;
-          end if;
-        end if;
+        perform app_public.validate_jsonb_no_nulls(v_answers);
       end if;
 
     end if;
   end loop;
+-- If validate_jsonb_no_nulls raises an exception, return a more suitable error message
+exception when others then
+  raise exception 'Required question not answered.' using errcode = 'NVLID';
 end;
 $$;
 
@@ -3236,17 +3286,15 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 
 CREATE TABLE app_public.event_categories (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    name jsonb NOT NULL,
-    description jsonb NOT NULL,
+    name app_public.translated_field NOT NULL,
+    description app_public.translated_field NOT NULL,
     owner_organization_id uuid NOT NULL,
     color text,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text)),
-    CONSTRAINT _cnstr_check_description_language CHECK (app_public.check_language(description)),
-    CONSTRAINT _cnstr_check_name_language CHECK (app_public.check_language(name))
+    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text))
 );
 
 
@@ -4556,6 +4604,14 @@ GRANT USAGE ON SCHEMA public TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION check_language(_column jsonb); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.check_language(_column jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION assert_valid_password(new_password text); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -4691,19 +4747,11 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 
 --
--- Name: FUNCTION check_language(_column jsonb); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION check_question_data(type app_public.question_type, data app_public.translated_field[]); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.check_language(_column jsonb) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
-
-
---
--- Name: FUNCTION check_question_data(type app_public.question_type, data text[]); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data text[]) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data text[]) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) TO ilmo_visitor;
 
 
 --
@@ -5330,6 +5378,14 @@ GRANT ALL ON FUNCTION app_public.users_has_password(u app_public.users) TO ilmo_
 
 REVOKE ALL ON FUNCTION app_public.users_primary_email(u app_public.users) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.users_primary_email(u app_public.users) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION validate_jsonb_no_nulls(input anyelement); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) TO ilmo_visitor;
 
 
 --

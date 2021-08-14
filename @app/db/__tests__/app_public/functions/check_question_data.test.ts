@@ -6,7 +6,7 @@ import { withUserDb } from "../../helpers"
 async function checkQuestionData(
   client: PoolClient,
   type: QuestionType,
-  data: string[]
+  data?: any
 ) {
   const {
     rows: [row],
@@ -16,6 +16,20 @@ async function checkQuestionData(
   )
   return row
 }
+
+const questions = [
+  [
+    ['{ fi: "Kysymys 1", en: "Question 1" }'],
+    [{ fi: "Kysymys 1", en: "Question 1" }],
+  ],
+  [
+    '[{ fi: "Kysymys 2", en: "Question 2" }, { fi: "Kysymys 2", en: "Question 2" }]',
+    [
+      { fi: "Kysymys 1", en: "Question 1" },
+      { fi: "Kysymys 2", en: "Question 2" },
+    ],
+  ],
+]
 
 it("type: TEXT and data: null is valid", () =>
   withUserDb(async (client) => {
@@ -37,19 +51,24 @@ it("type: TEXT and data: [] is not valid", () =>
     expect(check_question_data).toEqual(false)
   }))
 
-it("type: TEXT and data: [question?] is not valid", () =>
+it("type: TEXT and data: [{ fi: 'Kysymys',  en: 'Question'}] is not valid", () =>
   withUserDb(async (client) => {
     const { check_question_data } = await checkQuestionData(
       client,
       QuestionType.Text,
-      ["question?"]
+      questions[0][1]
     )
     expect(check_question_data).toEqual(false)
   }))
 
+const possibleMissingData = [
+  ["null", null],
+  ["[]", []],
+  ["[null]", [null]],
+  ["[null, null]", [null, null]],
+]
 for (const type of [QuestionType.Radio, QuestionType.Checkbox]) {
-  for (const data of [null, []]) {
-    const repr = data?.length < 1 ? "[]" : data ?? "null"
+  for (const [repr, data] of possibleMissingData) {
     it(`type: ${type} and data: ${repr} is not valid`, () =>
       withUserDb(async (client) => {
         const { check_question_data } = await checkQuestionData(
@@ -60,9 +79,11 @@ for (const type of [QuestionType.Radio, QuestionType.Checkbox]) {
         expect(check_question_data).toEqual(false)
       }))
   }
+}
 
-  for (const data of [["question?"], ["question?", "another?"]]) {
-    it(`type: ${type} and data: [${data}] is valid`, () =>
+for (const type of [QuestionType.Radio, QuestionType.Checkbox]) {
+  for (const [repr, data] of questions) {
+    it(`type: ${type} and data: [${repr}] is valid`, () =>
       withUserDb(async (client) => {
         const { check_question_data } = await checkQuestionData(
           client,

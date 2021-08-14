@@ -9,6 +9,12 @@ Object {
         "fullName": "Päivi Tetty",
         "id": "[id-1]",
         "isQueued": false,
+        "quota": Object {
+          "id": "[id-2]",
+          "position": 0,
+          "size": "[random-2]",
+          "title": "[random-1]",
+        },
       },
     },
   },
@@ -53,9 +59,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 18 at PERFORM",
         },

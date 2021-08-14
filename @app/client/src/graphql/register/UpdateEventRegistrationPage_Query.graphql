@@ -1,4 +1,4 @@
-fragment UpdateEventRegistrationPage_Event on Registration {
+fragment UpdateEventRegistrationPage_Registration on Registration {
   id
   firstName
   lastName
@@ -8,17 +8,12 @@ fragment UpdateEventRegistrationPage_Event on Registration {
 fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
   registrationByUpdateToken(updateToken: $updateToken) {
-    ...UpdateEventRegistrationPage_Event
+    ...UpdateEventRegistrationPage_Registration
     quota {
-      ...EventRegistrationPage_Quota
+      ...EventPage_Quota
     }
     event {
-      ...EventRegistrationPage_Event
-      eventQuestions(orderBy: POSITION_ASC) {
-        nodes {
-          ...EventRegistrationPage_Question
-        }
-      }
+      ...EventPage_Event
     }
   }
 }

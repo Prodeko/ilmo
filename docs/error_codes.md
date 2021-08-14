@@ -31,6 +31,7 @@ Rewritten, the above rules state:
 
 - FFFFF: unknown error
 - DNIED: permission denied
+- NVLID: invalid data provided
 - NUNIQ: not unique (from PostgreSQL 23505)
 - NTFND: not found
 - RLMIT: request rate limited

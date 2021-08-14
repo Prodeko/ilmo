@@ -12,7 +12,7 @@ context("Create event registration", () => {
     // Action
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       cy.visit(
-        Cypress.env("ROOT_URL") + `/event/register/${event.id}/q/${quota.id}`
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
       cy.getCy("eventregistrationform-input-firstname").type("Etunimi")
       cy.getCy("eventregistrationform-input-lastname").type("Sukunimi")
@@ -41,7 +41,7 @@ context("Create event registration", () => {
     // Action
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       cy.visit(
-        Cypress.env("ROOT_URL") + `/event/register/${event.id}/q/${quota.id}`
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
       cy.getCy("eventregistrationform-input-firstname").should(
         "contain.value",
@@ -75,7 +75,7 @@ context("Create event registration", () => {
     // Action
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       cy.visit(
-        Cypress.env("ROOT_URL") + `/event/register/${event.id}/q/${quota.id}`
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
     })
 
@@ -93,7 +93,7 @@ context("Create event registration", () => {
     // Action
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       cy.visit(
-        Cypress.env("ROOT_URL") + `/event/register/${event.id}/q/${quota.id}`
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
     })
 
@@ -108,8 +108,7 @@ context("Create event registration", () => {
     // Action
     cy.get("@createEventDataResult").then(({ quota }: any) => {
       cy.visit(
-        Cypress.env("ROOT_URL") +
-          `/event/register/3a63c486-79e9-42db-8202-8113a75602c6/q/${quota.id}`
+        Cypress.env("ROOT_URL") + `/event/invalid-event/register/${quota.id}`
       )
     })
 
@@ -125,7 +124,7 @@ context("Create event registration", () => {
     cy.get("@createEventDataResult").then(({ event }: any) => {
       cy.visit(
         Cypress.env("ROOT_URL") +
-          `/event/register/${event.id}/q/8049c23c-a9cf-4027-8076-498bf90c012d`
+          `/event/${event.slug}/register/8049c23c-a9cf-4027-8076-498bf90c012d`
       )
     })
 

@@ -10,8 +10,10 @@
   "draft": "Luonnokset",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",
-  "en": "Englanti",
-  "fi": "Suomi",
+  "lang": {
+    "fi": "suomeksi",
+    "en": "englanniksi"
+  },
   "head": {
     "description": "Prodeko ilmo",
     "title": "Prodeko ilmo"
@@ -35,5 +37,6 @@
   "status": "Status",
   "type": "Tyyppi",
   "update": "Päivitä",
+  "question": "Kysymys",
   "yes": "Kyllä"
 }

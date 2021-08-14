@@ -165,8 +165,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         // Questions may be empty
         const questions = formQuestions?.map(
           (q: EventQuestion, index: number) => {
-            // Set question position
+            // Set question position and isRequired
             q.position = index
+            q.isRequired = q.isRequired ?? false
             return filterObjectByKeys(q, [
               "id",
               "position",
@@ -287,7 +288,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           tab={t("forms.tabs.questions")}
           forceRender
         >
-          <QuestionsTab form={form} formType={type} />
+          <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
         </TabPane>
         <TabPane
           key="email"

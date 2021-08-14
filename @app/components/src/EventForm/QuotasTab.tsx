@@ -89,7 +89,7 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                           data-cy={`eventform-input-quotas-title-${l}-${index}`}
                           placeholder={`${t(
                             "forms.placeholders.quota.title"
-                          )} ${t(`forms.placeholders.${l}`).toLowerCase()}`}
+                          )} ${t(`common:lang.${l}`)}`}
                           {...DisableDraggable}
                         />
                       </Form.Item>

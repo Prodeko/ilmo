@@ -69,29 +69,9 @@ export const createUsers = async (
   return users
 }
 
-/******************************************************************************/
-// Organizations
-
-export const createOrganizations = async (
-  client: PoolClient,
-  count: number = 1
-) => {
-  const organizations = []
-  for (let i = 0; i < count; i++) {
-    const random = faker.lorem.words()
-    const slug = `organization-${random}`
-    const name = `Organization ${random}`
-    const {
-      rows: [organization],
-    } = await client.query(
-      `select * from app_public.create_organization($1, $2)`,
-      [slug, name]
-    )
-    organizations.push(organization)
-  }
-
-  return organizations
-}
+const paragraph = () => faker.lorem.paragraph()
+const word = () => faker.lorem.word()
+const words = () => faker.lorem.words()
 
 /******************************************************************************/
 // Sessions
@@ -113,7 +93,31 @@ export const createSession = async (
 }
 
 /******************************************************************************/
-// Events
+// Organizations
+
+export const createOrganizations = async (
+  client: PoolClient,
+  count: number = 1
+) => {
+  const organizations = []
+  for (let i = 0; i < count; i++) {
+    const random = words()
+    const slug = `organization-${random}`
+    const name = `Organization ${random}`
+    const {
+      rows: [organization],
+    } = await client.query(
+      `select * from app_public.create_organization($1, $2)`,
+      [slug, name]
+    )
+    organizations.push(organization)
+  }
+
+  return organizations
+}
+
+/******************************************************************************/
+// Event categories
 
 export const createEventCategories = async (
   client: PoolClient,
@@ -124,8 +128,8 @@ export const createEventCategories = async (
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
     const description = {
-      fi: faker.lorem.paragraph(),
-      en: faker.lorem.paragraph(),
+      fi: paragraph(),
+      en: paragraph(),
     }
     const color = faker.internet.color()
     const {
@@ -143,6 +147,9 @@ export const createEventCategories = async (
   return categories
 }
 
+/******************************************************************************/
+// Events
+
 export const createEvents = async (
   client: PoolClient,
   count: number = 1,
@@ -154,12 +161,12 @@ export const createEvents = async (
   const events = []
   for (let i = 0; i < count; i++) {
     const name = {
-      fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
-      en: `Event ${faker.lorem.words()} ${i}`,
+      fi: `Tapahtuma ${words()} ${i}`,
+      en: `Event ${words()} ${i}`,
     }
     const description = {
-      fi: faker.lorem.paragraph(),
-      en: faker.lorem.paragraph(),
+      fi: paragraph(),
+      en: paragraph(),
     }
     const location = faker.address.streetAddress()
 
@@ -266,6 +273,11 @@ export const createQuotas = async (
 /******************************************************************************/
 // Questions
 
+const getRandomQuestionData = () => {
+  const number = faker.datatype.number({ min: 1, max: 5 })
+  return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
+}
+
 export const createQuestions = async (
   client: PoolClient,
   count: number = 1,
@@ -274,29 +286,37 @@ export const createQuestions = async (
   type?: QuestionType
 ) => {
   const questionTypes = Object.values(QuestionType)
-  const questions = []
+  let questions = []
   for (let i = 0; i < count; i++) {
     const t = type ? type : questionTypes[i % 3]
-    const label = faker.lorem.words()
+    const label = { fi: words(), en: words() }
     let data
     if (t === QuestionType.Checkbox) {
-      data = new Array(3).fill(null).map((_) => faker.lorem.word())
+      data = getRandomQuestionData()
     } else if (t === QuestionType.Radio) {
-      data = new Array(3).fill(null).map((_) => faker.lorem.word())
+      data = getRandomQuestionData()
     } else if (t === QuestionType.Text) {
       data = null
     }
     const {
       rows: [question],
     } = await client.query(
-      `insert into app_public.event_questions(event_id, position, type, label, is_required, data)
+      `with r1 as (
+        insert into app_public.event_questions(event_id, position, type, label, is_required, data)
         values ($1, $2, $3, $4, $5, $6)
         returning *
+      )
+      select r1.id, r1.*, data::text[] as data from r1
       `,
       [eventId, i, t, label, isRequired, data]
     )
     questions.push(question)
   }
+
+  questions = questions.map((q) => ({
+    ...q,
+    data: q?.data?.map((d) => JSON.parse(d)),
+  }))
 
   return questions
 }
@@ -333,7 +353,7 @@ export const createRegistrationSecrets = async (
 
 export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
   let i = 0
-  const answers = questions.reduce((acc, cur) => {
+  const answers = questions?.reduce((acc, cur) => {
     if (cur.type === QuestionType.Text) {
       acc[cur.id] = `Answer ${i}`
     } else if ([QuestionType.Checkbox, QuestionType.Radio].includes(cur.type)) {

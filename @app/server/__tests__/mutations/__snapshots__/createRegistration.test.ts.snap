@@ -287,9 +287,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -326,9 +326,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -365,9 +365,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -404,9 +404,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -443,9 +443,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -482,9 +482,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -521,9 +521,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -560,9 +560,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -599,9 +599,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -638,9 +638,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -677,9 +677,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -716,9 +716,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 25 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -755,9 +755,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -794,9 +794,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 31 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -833,9 +833,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 22 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },
@@ -872,9 +872,9 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "DNIED",
+          "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 10 at RAISE
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
 SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 45 at PERFORM",
         },

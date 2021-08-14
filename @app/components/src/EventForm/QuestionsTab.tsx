@@ -38,15 +38,15 @@ type QuestionData = {
 }
 
 interface QuestionsTabProps {
-  formType: "update" | "create"
   form: FormInstance
+  selectedLanguages: string[]
 }
 
 const colSpan = { md: { span: 6 }, sm: { span: 12 }, xs: { span: 24 } }
 
 export const QuestionsTab: React.FC<QuestionsTabProps> = ({
-  formType,
   form,
+  selectedLanguages,
 }) => {
   /**
    * This component is a bit of a mess... Nested dynamic form fields don't pair
@@ -62,7 +62,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
     if (val === "TEXT") {
       // If the type was changed to TEXT, reset question data
       let questions = getFieldValue("questions")
-      questions[index].data = [""]
+      questions[index].data = null
       setFieldsValue({
         questions,
       })
@@ -103,24 +103,32 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
   }
 
   function renderQuestionLabel(index: number) {
-    return (
-      <Form.Item
-        fieldKey={[index, "label"]}
-        name={[index, "label"]}
-        rules={[
-          {
-            required: true,
-            message: t("forms.rules.questions.provideQuestionLabel"),
-          },
-        ]}
-        noStyle
-      >
-        <Input
-          data-cy={`eventform-input-questions-${index}-label`}
-          style={isMobile ? { transform: "translateX(24px)" } : {}}
-        />
-      </Form.Item>
-    )
+    return selectedLanguages.map((l) => {
+      const inputPlaceholder =
+        t("forms.placeholders.quota.title") + " " + t(`common:lang.${l}`)
+      return (
+        <Form.Item
+          key={l}
+          fieldKey={[index, "label", l]}
+          name={[index, "label", l]}
+          rules={[
+            {
+              required: true,
+              message: t("forms.rules.questions.provideQuestionLabel"),
+            },
+          ]}
+          noStyle
+        >
+          <Input
+            data-cy={`eventform-input-questions-${index}-${l}-label`}
+            placeholder={inputPlaceholder}
+            // Align input with with TEXT and CHECKBOX data inputs
+            style={isMobile ? { transform: "translateX(24px)" } : {}}
+            {...DisableDraggable}
+          />
+        </Form.Item>
+      )
+    })
   }
 
   function renderQuestionDataField(index: number, i: number) {
@@ -146,33 +154,36 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       </Tooltip>
     )
 
-    return (
-      <Form.Item
-        fieldKey={[index, "data", i]}
-        name={[index, "data", i]}
-        rules={[
-          {
-            required: true,
-            message: t("forms.rules.questions.provideQuestionData"),
-          },
-        ]}
-        noStyle
-      >
-        <Input
-          data-cy={`eventform-input-questions-${index}-data-${i}`}
-          defaultValue={formType === "update" ? i : ""}
-          placeholder={
-            formType === "create" ? `${t("common:option")} ${i}` : ""
-          }
-          suffix={
-            <>
-              {i === 0 && addDataOption}
-              {i > 0 && removeDataOption(index, i)}
-            </>
-          }
-        />
-      </Form.Item>
-    )
+    const firstLanguage = selectedLanguages?.[0]
+
+    return selectedLanguages.map((l) => {
+      return (
+        <Form.Item
+          key={l}
+          fieldKey={[index, "data", i, l]}
+          name={[index, "data", i, l]}
+          rules={[
+            {
+              required: true,
+              message: t("forms.rules.questions.provideQuestionData"),
+            },
+          ]}
+          noStyle
+        >
+          <Input
+            data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
+            placeholder={`${t("common:option")} ${i} ${t(`common:lang.${l}`)}`}
+            suffix={
+              <>
+                {i === 0 && l === firstLanguage && addDataOption}
+                {i > 0 && l === firstLanguage && removeDataOption(index, i)}
+              </>
+            }
+            {...DisableDraggable}
+          />
+        </Form.Item>
+      )
+    })
   }
 
   function renderTextQuestion(index: number) {
@@ -181,7 +192,8 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <>
         <Col {...colSpan}>{questionLabel}</Col>
         <Col {...colSpan}>
-          {/* TEXT questions don't have any associated data with them. This Col is included for layout. */}
+          {/* TEXT questions don't have any data data with them.
+              This Col is included for layout. */}
         </Col>
       </>
     )
@@ -267,7 +279,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <DndProvider backend={HTML5Backend}>
         <Form.List name="questions">
           {(fields, { add, remove, move }) => (
-            <Space direction="vertical">
+            <>
               <Row gutter={[8, 8]} justify="start">
                 <Col {...colSpan}>
                   <H5>{t("common:type")}</H5>
@@ -290,7 +302,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                     index={index}
                     move={move}
                   >
-                    <Row gutter={[8, 8]}>
+                    <Row gutter={[8, 8]} style={{ marginBottom: "12px" }}>
                       <Form.Item
                         fieldKey={[fieldKey, "id"]}
                         name={[name, "id"]}
@@ -383,7 +395,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                   {t("addQuestion")}
                 </Button>
               </Form.Item>
-            </Space>
+            </>
           )}
         </Form.List>
       </DndProvider>

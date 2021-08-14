@@ -22,7 +22,6 @@
     "isDraft": "Draft",
     "isNotDraft": "Published",
     "placeholders": {
-      "en": "In English",
       "event": {
         "category": "Please select a category for the event",
         "organizer": "Please select an organizer for the event"
@@ -30,11 +29,11 @@
       "eventCategory": {
         "organizer": "Please select an organizer for the event category"
       },
-      "fi": "In Finnish",
       "languages": "Please select languages",
       "questions": {
         "data": "Question",
-        "type": "Type"
+        "type": "Type",
+        "label": "Label"
       },
       "quota": {
         "size": "Size",

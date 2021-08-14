@@ -19,15 +19,13 @@ const getRegistrationsByQuotaPosition = (
 ) => {
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
-      // @ts-ignore
-      ; (a[key] || (a[key] = [] || [])).push(x)
+    // @ts-ignore
+    ;(a[key] || (a[key] = [] || [])).push(x)
     return a
   }, {} as { [key: number]: EventPage_RegistrationFragment })
 }
 
-const getQuotaNameByQuotaPosition = (
-  arr: EventPage_RegistrationFragment[]
-) => {
+const getQuotaNameByQuotaPosition = (arr: EventPage_RegistrationFragment[]) => {
   return arr
     .map((x) => x.quota)
     .reduce((a, x) => {

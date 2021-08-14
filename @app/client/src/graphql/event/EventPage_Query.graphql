@@ -53,6 +53,14 @@ fragment EventPage_Registration on Registration {
     ...EventPage_Quota
   }
 }
+fragment EventPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+}
 
 fragment EventPage_Event on Event {
   ...EventFields
@@ -70,6 +78,11 @@ fragment EventPage_Event on Event {
   registrations(orderBy: CREATED_AT_ASC) {
     nodes {
       ...EventPage_Registration
+    }
+  }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
     }
   }
 }

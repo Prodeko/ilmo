@@ -129,7 +129,7 @@ describe("UpdateRegistration", () => {
         const message = json.errors![0].message
         const code = json.errors![0].extensions.exception.code
         expect(message).toEqual("Required question not answered.")
-        expect(code).toEqual("DNIED")
+        expect(code).toEqual("NVLID")
       }
     )
   })

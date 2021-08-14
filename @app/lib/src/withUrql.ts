@@ -226,7 +226,7 @@ export const withUrql = withUrqlClient(
                       )
                       return data
                     }
-                    return null
+                    return data
                   }
                 )
               },

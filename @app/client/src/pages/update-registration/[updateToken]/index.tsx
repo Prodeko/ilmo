@@ -15,7 +15,7 @@ function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "firstName",
     "lastName",
-    "answers"
+    "answers",
   ]) as UpdateFormInitialValues
 
   return filteredValues
@@ -54,7 +54,7 @@ const UpdateEventRegistrationPage: NextPage = () => {
           query: { slug: event?.slug },
         }}
         initialValues={constructInitialValues(registration)}
-        questions={event.eventQuestions.nodes}
+        questions={event?.eventQuestions?.nodes}
         type="update"
         updateToken={updateToken as string}
       />

@@ -56,9 +56,12 @@ describe("UpdateEvent", () => {
               // id is not specified
               position: 0,
               type: "CHECKBOX",
-              label: "Test question, choose option",
+              label: {
+                en: "Test question, choose option",
+                fi: "Testikysymys, valitse vaihtoehto",
+              },
               isRequired: false,
-              data: ["New 1", "New 2", "New 3"],
+              data: [{ fi: "New 1" }, { fi: "New 2" }, { fi: "New 3" }],
             },
           ],
         },

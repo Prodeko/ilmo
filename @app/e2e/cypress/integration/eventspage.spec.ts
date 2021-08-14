@@ -40,7 +40,7 @@ context("Events page", () => {
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/${event.slug}/register/${quota.id}`
       )
 
       // Create first registration
@@ -58,7 +58,7 @@ context("Events page", () => {
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/${event.slug}/register/${quota.id}`
       )
 
       // Create second registration
@@ -88,7 +88,7 @@ context("Events page", () => {
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",
-        `${Cypress.env("ROOT_URL")}/event/register/${event.id}/q/${quota.id}`
+        `${Cypress.env("ROOT_URL")}/event/${event.slug}/register/${quota.id}`
       )
 
       // Reload page, hit rate limit (3 requests from the same IP)

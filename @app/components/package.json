@@ -16,7 +16,6 @@
     "antd": "^4.16.11",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^3.14.3",
-    "framer-motion": "^4.1.17",
     "graphql": "^15.5.1",
     "lodash": "^4.17.21",
     "next": "^11.1.0",

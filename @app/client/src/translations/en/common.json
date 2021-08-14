@@ -15,6 +15,10 @@
     "description": "Prodeko event registration",
     "title": "Prodeko event registration"
   },
+  "lang": {
+    "fi": "in Finnish",
+    "en": "in English"
+  },
   "imgCropTitle": "Edit image",
   "label": "Label",
   "required": "Required",
@@ -35,5 +39,6 @@
   "status": "Status",
   "type": "Type",
   "update": "Update",
+  "question": "Question",
   "yes": "Yes"
 }

@@ -22,7 +22,6 @@
     "isDraft": "Luonnos",
     "isNotDraft": "Julkaistu",
     "placeholders": {
-      "en": "Englanniksi",
       "event": {
         "category": "Valitse tapahtuman kategoria",
         "organizer": "Valitse tapahtuman järjestäjä"
@@ -30,11 +29,11 @@
       "eventCategory": {
         "organizer": "Valitse kategorian järjestäjä"
       },
-      "fi": "Suomeksi",
       "languages": "Valitse kielet",
       "questions": {
         "data": "Kysymys",
-        "type": "Tyyppi"
+        "type": "Tyyppi",
+        "label": "Otsikko"
       },
       "quota": {
         "size": "Koko",
