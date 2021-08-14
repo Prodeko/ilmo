@@ -18,7 +18,7 @@
       "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
       "provideFirstName": "Anna etunimi",
       "provideLastName": "Anna sukunimi",
-      "provideAnswer": "Vastaa kysymykseen"
+      "provideAnswer": "Vastaus vaaditaan"
     }
   },
   "recentlyRegisteredHeader": "Äskettäin rekisteröityneet:",

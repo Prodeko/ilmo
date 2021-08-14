@@ -49,10 +49,6 @@ fragment EventPage_Registration on Registration {
   fullName
   isQueued
   createdAt
-}
-
-fragment EventPage_Registrations on Registration {
-  ...EventPage_Registration
   quota {
     ...EventPage_Quota
   }
@@ -73,7 +69,7 @@ fragment EventPage_Event on Event {
   }
   registrations(orderBy: CREATED_AT_ASC) {
     nodes {
-      ...EventPage_Registrations
+      ...EventPage_Registration
     }
   }
 }

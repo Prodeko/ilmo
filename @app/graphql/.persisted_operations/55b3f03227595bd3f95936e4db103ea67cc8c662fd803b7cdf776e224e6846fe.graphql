@@ -1,5 +1,10 @@
 fragment HomePageEvents_Query on Query {
-  signupClosedEvents: events(first: $first, offset: $offset, filter: {signupClosed: {equalTo: true}}, orderBy: EVENT_END_TIME_ASC) {
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: {signupClosed: {equalTo: true}}
+    orderBy: EVENT_END_TIME_ASC
+  ) {
     nodes {
       ...HomePage_Event
       __typename

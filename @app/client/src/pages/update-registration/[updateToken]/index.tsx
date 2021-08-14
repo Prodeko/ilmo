@@ -15,6 +15,7 @@ function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "firstName",
     "lastName",
+    "answers"
   ]) as UpdateFormInitialValues
 
   return filteredValues

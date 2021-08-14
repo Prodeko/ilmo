@@ -2,6 +2,7 @@ fragment UpdateEventRegistrationPage_Event on Registration {
   id
   firstName
   lastName
+  answers
 }
 
 fragment UpdateEventRegistrationPage_Query on Query {

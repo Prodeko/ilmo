@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import {
   EventPage_QueryFragment,
-  EventPage_RegistrationsFragment,
+  EventPage_RegistrationFragment,
   OrganizationPage_QueryFragment,
   useEventRegistrationsSubscription,
 } from "@app/graphql"
@@ -75,7 +75,7 @@ export function useOrganizationLoading(
 export function useEventRegistrations(
   eventId: string,
   after: string = new Date().toISOString(),
-  initialRegistrations: EventPage_RegistrationsFragment[] = []
+  initialRegistrations: EventPage_RegistrationFragment[] = []
 ) {
   const [registrations, setRegistrations] = useState(initialRegistrations)
 
@@ -93,7 +93,7 @@ export function useEventRegistrations(
     },
     (_prev, response) => {
       const registrations = response?.eventRegistrations
-        ?.registrations as EventPage_RegistrationsFragment[]
+        ?.registrations as EventPage_RegistrationFragment[]
       setRegistrations(registrations)
       return undefined as any
     }

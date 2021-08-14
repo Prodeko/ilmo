@@ -3,6 +3,10 @@ fragment EventPage_Registration on Registration {
   fullName
   isQueued
   createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
   __typename
 }
 fragment EventPage_Quota on Quota {

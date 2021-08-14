@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import {
   EventPage_QuotaFragment,
-  EventPage_RegistrationsFragment,
+  EventPage_RegistrationFragment,
 } from "@app/graphql"
 import { Skeleton } from "antd"
 import dayjs from "dayjs"
@@ -11,22 +11,22 @@ import { H4 } from "./Text"
 import { SimpleTable } from "."
 
 interface EventRegistrationsTable {
-  registrations: EventPage_RegistrationsFragment[]
+  registrations: EventPage_RegistrationFragment[]
 }
 
 const getRegistrationsByQuotaPosition = (
-  arr: EventPage_RegistrationsFragment[]
+  arr: EventPage_RegistrationFragment[]
 ) => {
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
-    // @ts-ignore
-    ;(a[key] || (a[key] = [] || [])).push(x)
+      // @ts-ignore
+      ; (a[key] || (a[key] = [] || [])).push(x)
     return a
-  }, {} as { [key: number]: EventPage_RegistrationsFragment })
+  }, {} as { [key: number]: EventPage_RegistrationFragment })
 }
 
 const getQuotaNameByQuotaPosition = (
-  arr: EventPage_RegistrationsFragment[]
+  arr: EventPage_RegistrationFragment[]
 ) => {
   return arr
     .map((x) => x.quota)
@@ -38,7 +38,7 @@ const getQuotaNameByQuotaPosition = (
     }, {} as { [key: number]: EventPage_QuotaFragment })
 }
 
-const getQueuedRegistrations = (arr: EventPage_RegistrationsFragment[]) => {
+const getQueuedRegistrations = (arr: EventPage_RegistrationFragment[]) => {
   return arr.filter((x) => x.isQueued)
 }
 
@@ -100,7 +100,7 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
           const quotaSize = quotaNamesByPosition[position].size as number
           const quotaRegistrations = registrationsByQuotaPosition[
             position
-          ].filter((r: EventPage_RegistrationsFragment) => !r.isQueued)
+          ].filter((r: EventPage_RegistrationFragment) => !r.isQueued)
           return (
             <div key={position}>
               <H4 style={{ marginTop: "1.5rem" }}>
