@@ -1,9 +1,21 @@
+import { useCookies } from "react-cookie"
 // @ts-ignore
 import ReactCountryFlag from "react-country-flag"
 import { useRouter } from "next/router"
 
 export function LocaleSelect() {
+  const [, setCookie] = useCookies(["NEXT_LOCALE"])
   const { locales, push, pathname, query, asPath } = useRouter()
+
+  function changeLocale(locale: string) {
+    setCookie("NEXT_LOCALE", locale, {
+      path: "/",
+      maxAge: 3600 * 60 * 60,
+      sameSite: true,
+      secure: true,
+    })
+    push({ pathname, query }, asPath, { locale })
+  }
 
   return (
     <>
@@ -18,7 +30,7 @@ export function LocaleSelect() {
             lineHeight: "2rem",
             marginRight: "12px",
           }}
-          onClick={() => push({ pathname, query }, asPath, { locale })}
+          onClick={() => changeLocale(locale)}
         />
       ))}
     </>
