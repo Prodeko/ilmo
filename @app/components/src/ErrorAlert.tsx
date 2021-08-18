@@ -19,6 +19,7 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
 }) => {
   const { t } = useTranslation()
   const code = getCodeFromError(error)
+
   const alert = (
     <Alert
       {...rest}
@@ -47,6 +48,8 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
           position: "fixed",
           top: "16px",
           left: "50%",
+          width: "100%",
+          maxWidth: "600px",
           transform: "translate(-50%, 0)",
           zIndex: 999,
         }}

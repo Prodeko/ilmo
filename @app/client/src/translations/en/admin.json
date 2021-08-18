@@ -18,6 +18,16 @@
       "registrationStartTime": "Registration time",
       "registrations": "Registrations",
       "registrationsPerQuota": "Registrations by quota"
+    },
+    "tabs": {
+      "email": "Email",
+      "generalInfo": "General",
+      "questions": "Questions",
+      "quotas": "Quotas",
+      "registrations": "Registrations"
+    },
+    "update": {
+      "showAnswers": "Show answers"
     }
   },
   "notifications": {
@@ -44,6 +54,12 @@
     "listEventCategory": "Event categories",
     "updateEvent": "Update event",
     "updateEventCategory": "Update event category"
+  },
+  "registrations": {
+    "delete": {
+      "confirmText": "Are you sure you want to delete this registration?",
+      "deleteFailed": "Failed to delete registration"
+    }
   },
   "sider": {
     "titles": {

@@ -34,9 +34,10 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
 
   const doDelete = useCallback(async () => {
     try {
-      await deleteDataType({
+      const { error } = await deleteDataType({
         id: dataType?.id,
       })
+      if (error) throw error
       message.info(t("notifications.deleteSuccess"))
     } catch (e) {
       Sentry.captureException(e)
@@ -75,6 +76,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
           error={error}
           message={bannerErrorText ?? ""}
           setError={setError}
+          banner
         />
       ) : null}
     </>

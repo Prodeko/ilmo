@@ -7,7 +7,7 @@ import {
   useClaimRegistrationTokenMutation,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
-import { tailFormItemLayout } from "@app/lib"
+import { registrationFormItemLayout, tailFormItemLayout } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import {
   Button,
@@ -38,18 +38,6 @@ interface EventRegistrationFormProps {
   initialValues?: any
   // Used to delete an unfinished registration
   setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
-}
-
-// Use narrower form items for the registration form
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 6 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 12 },
-  },
 }
 
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
@@ -98,8 +86,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       if (type === "create" && eventId && quotaId) {
         try {
           const { data, error } = await claimRegistrationToken({
-            eventId,
-            quotaId,
+            input: {
+              eventId,
+              quotaId,
+            },
           })
           if (error) throw error
           const { registrationToken, updateToken } =
@@ -194,11 +184,16 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
 
   return (
     <Form
-      {...formItemLayout}
+      {...registrationFormItemLayout}
       form={form}
       initialValues={initialValues}
       onFinish={handleSubmit}
     >
+      <Form.Item shouldUpdate>
+        {() => {
+          return <pre>{JSON.stringify(form.getFieldsValue(), null, 2)}</pre>
+        }}
+      </Form.Item>
       <Form.Item
         label={t("forms.firstName")}
         name="firstName"
@@ -308,7 +303,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       <Form.Item {...tailFormItemLayout}>
         <Button
           data-cy="eventregistrationform-button-submit"
-          disabled={!!formError}
           htmlType="submit"
           loading={
             formError

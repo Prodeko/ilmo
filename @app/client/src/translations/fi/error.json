@@ -3,14 +3,14 @@
     "errorPart1": "Sivua ei ole olemassa.",
     "errorPart2": "Yritä kirjautua sisään?"
   },
+  "ErrorOccurred": {
+    "errorInfo": "Tuntematon virhe. Yritä uudelleen myöhemmin, jos ongelma jatkoon olethan yhteydessä meihin.",
+    "somethingWentWrong": "Jotain meni pieleen"
+  },
   "csrfError": "Sivuston suojaus ei onnistunut todentamaan kyselyäsi. Yritä uudestaan päivittämällä sivu",
   "errorCode": "Virhekoodi",
   "errorOccurred": "Tapahtui virhe",
   "pageNotFound": "Sivua ei löytynyt",
   "refresh": "Päivitä sivu",
-  "unknownError": "Pahoittelut, tuntematon virhe. Palaa{\" \"} <a href=\"/\">etusivulle</a> ja yritä uudestaan.",
-  "ErrorOccurred": {
-    "somethingWentWrong": "Jotain meni pieleen",
-    "errorInfo": "Tuntematon virhe. Yritä uudelleen myöhemmin, jos ongelma jatkoon olethan yhteydessä meihin."
-  }
+  "unknownError": "Pahoittelut, tuntematon virhe. Palaa{\" \"} <a href=\"/\">etusivulle</a> ja yritä uudestaan."
 }

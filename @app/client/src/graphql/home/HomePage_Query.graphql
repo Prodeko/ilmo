@@ -1,8 +1,7 @@
 fragment HomePage_Event on Event {
   ...EventFields
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
   }
   category {
     ...EventPage_EventCategory

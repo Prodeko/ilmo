@@ -24,8 +24,10 @@ describe("ClaimRegistrationToken", () => {
 
       // GraphQL variables:
       {
-        eventId,
-        quotaId,
+        input: {
+          eventId,
+          quotaId,
+        },
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
@@ -92,9 +94,11 @@ describe("ClaimRegistrationToken", () => {
 
       // GraphQL variables:
       {
-        // Incorrect event id
-        eventId: "a3eb914e-90d8-4597-9852-67aad0623c64",
-        quotaId,
+        input: {
+          // Incorrect event id
+          eventId: "a3eb914e-90d8-4597-9852-67aad0623c64",
+          quotaId,
+        },
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
@@ -122,9 +126,11 @@ describe("ClaimRegistrationToken", () => {
 
       // GraphQL variables:
       {
-        // Incorrect event id
-        eventId,
-        quotaId: "e4ba8648-7e5a-4d6c-85ba-e668c3d5d3ae",
+        input: {
+          // Incorrect event id
+          eventId,
+          quotaId: "e4ba8648-7e5a-4d6c-85ba-e668c3d5d3ae",
+        },
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
@@ -155,9 +161,11 @@ describe("ClaimRegistrationToken", () => {
 
       // GraphQL variables:
       {
-        // Incorrect event id
-        eventId: anotherEventId,
-        quotaId,
+        input: {
+          // Incorrect event id
+          eventId: anotherEventId,
+          quotaId,
+        },
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)

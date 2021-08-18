@@ -105,7 +105,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
   function renderQuestionLabel(index: number) {
     return selectedLanguages.map((l) => {
       const inputPlaceholder =
-        t("forms.placeholders.quota.title") + " " + t(`common:lang.${l}`)
+        t("forms.placeholders.quota.title") + " " + t(`common:lang.in.${l}`)
       return (
         <Form.Item
           key={l}
@@ -172,7 +172,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
         >
           <Input
             data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
-            placeholder={`${t("common:option")} ${i} ${t(`common:lang.${l}`)}`}
+            placeholder={`${t("common:option")} ${i} ${t(
+              `common:lang.in.${l}`
+            )}`}
             suffix={
               <>
                 {i === 0 && l === firstLanguage && addDataOption}
@@ -357,10 +359,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                           fieldKey={[index, "isRequired"]}
                           label={t("common:required")}
                           labelAlign="left"
-                          labelCol={{ flex: 0 }}
+                          labelCol={{ flex: 1 }}
                           name={[index, "isRequired"]}
                           valuePropName="checked"
-                          wrapperCol={{ flex: 1 }}
+                          wrapperCol={{ flex: 20 }}
                         >
                           <Checkbox
                             data-cy={`eventform-input-questions-${index}-is-required`}

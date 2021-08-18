@@ -17,8 +17,7 @@ fragment HomePageEvents_Query on Query {
 fragment HomePage_Event on Event {
   ...EventFields
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
     __typename
   }
   category {
@@ -49,6 +48,12 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
+fragment EventPage_OwnerOrganization on Organization {
+  id
+  name
+  slug
+  __typename
+}
 fragment EventPage_EventCategory on EventCategory {
   id
   description
@@ -59,12 +64,6 @@ fragment EventPage_EventCategory on EventCategory {
     __typename
   }
   updatedAt
-  __typename
-}
-fragment EventPage_OwnerOrganization on Organization {
-  id
-  name
-  slug
   __typename
 }
 query HomePageEvents($offset: Int!, $first: Int!) {

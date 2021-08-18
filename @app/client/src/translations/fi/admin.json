@@ -18,6 +18,16 @@
       "registrationStartTime": "Ilmo aukeaa",
       "registrations": "Rekisteröityneitä",
       "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
+    },
+    "tabs": {
+      "email": "Sähköposti",
+      "generalInfo": "Yleistä",
+      "questions": "Kysymykset",
+      "quotas": "Kiintiöt",
+      "registrations": "Ilmoittautumiset"
+    },
+    "update": {
+      "showAnswers": "Näytä vastaukset"
     }
   },
   "notifications": {
@@ -45,6 +55,12 @@
     "listEventCategory": "Tapahtumakategoriat",
     "updateEvent": "Päivitä tapahtuma",
     "updateEventCategory": "Päivitä tapahtumakategoria"
+  },
+  "registrations": {
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän ilmoittautumisen?",
+      "deleteFailed": "Ilmoittautumisen poistaminen epäonnistui"
+    }
   },
   "sider": {
     "titles": {

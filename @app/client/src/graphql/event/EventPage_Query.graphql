@@ -53,6 +53,7 @@ fragment EventPage_Registration on Registration {
     ...EventPage_Quota
   }
 }
+
 fragment EventPage_Question on EventQuestion {
   id
   position

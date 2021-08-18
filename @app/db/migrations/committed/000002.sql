@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:d634b0d59742887d0e1682d72f3bfdcda8bfba5c
+--! Hash: sha1:209ad79eb6147943f85ec946f238bb1b29e39b93
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -94,18 +94,18 @@ begin
 
   if jsonb_typeof(to_jsonb(input)) = 'null' then
     -- JSON null provided, invalid
-    raise exception 'Invalid json data' using errcode = 'NVLID';
+    raise exception 'Invalid json data' using errcode = 'JSONN';
   elsif jsonb_typeof(to_jsonb(input)) = 'array' then
     -- jsonb_strip_nulls omits all object fields that have null values
     if jsonb_array_length(jsonb_strip_nulls(to_jsonb(input))) < 1 then
       -- Empty json '{}' provided, invalid
-      raise exception 'Invalid json data' using errcode = 'NVLID';
+      raise exception 'Invalid json data' using errcode = 'JSONN';
     else
       -- Loop jsonb list to see if there are any JSON null's. If there are, raise exception.
       for value in select jsonb_array_elements from jsonb_array_elements(to_jsonb(input)) loop
         if jsonb_typeof(to_jsonb(value)) = 'null' then
           -- JSON null found in list, invalid
-          raise exception 'Invalid json data' using errcode = 'NVLID';
+          raise exception 'Invalid json data' using errcode = 'JSONN';
         end if;
       end loop;
     end if;
@@ -583,7 +583,7 @@ comment on function app_public.update_event_quotas(event_id uuid, quotas app_pub
  */
 
 drop type if exists app_public.question_type cascade;
-drop function if exists app_public.check_question_data;
+drop function if exists app_public.validate_question_data;
 drop table if exists app_public.event_questions cascade;
 
 create type app_public.question_type as enum (
@@ -592,10 +592,14 @@ create type app_public.question_type as enum (
   'CHECKBOX'
 );
 
--- Used as a check constraint to verify that a question is valid.
--- When the type is TEXT, the data should be an array of length 1,
--- otherwise data can contain multiple options.
-create function app_public.check_question_data(type app_public.question_type, data translated_field[])
+/*
+ * Used as a check constraint to verify that a question is valid.
+ * - When the type is TEXT, data should be null
+ * - When the type is RADIO, the data should be an array of length 1
+ * - When the type is CHECKBOX, the data should be of length 1 or greater
+ * - Data should not contain nulls
+ */
+create function app_public.validate_question_data(type app_public.question_type, data translated_field[])
 returns boolean as $$
 declare
   err_context text;
@@ -611,13 +615,13 @@ begin
     return false;
   else
 
+    -- Check that the provided jsonb data contains no null values
+    perform app_public.validate_jsonb_no_nulls(data);
+
     -- RADIO and CHECKBOX must have data defined
     if data is null then
       return false;
     end if;
-
-    -- Check that the provided jsonb data contains no null values
-    perform app_public.validate_jsonb_no_nulls(data);
 
     return true;
   end if;
@@ -641,7 +645,7 @@ create table app_public.event_questions(
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
-  constraint _cnstr_check_question_data check(app_public.check_question_data(type, data))
+  constraint _cnstr_validate_question_data check(app_public.validate_question_data(type, data))
 );
 alter table app_public.event_questions enable row level security;
 
@@ -824,41 +828,73 @@ comment on function app_public.update_event_questions(event_id uuid, questions a
  * questions are answered.
  */
 
-drop function if exists validate_registration_answers(uuid[], jsonb);
+drop function if exists app_public.validate_registration_answers(uuid, uuid[], jsonb);
 drop function if exists tg__registration_is_valid() cascade;
 drop function if exists tg__registration_answers_are_valid() cascade;
 
-create function app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb default null)
+create function app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb default null)
   returns void as $$
 declare
   v_question app_public.event_questions;
   v_question_id uuid;
   v_answers jsonb;
-  v_answer jsonb;
 begin
   -- Check that all required question id's are contained as top level keys in answers
   if not answers ?& required_question_ids::text[] then
-    raise exception 'Required question not answered.' using errcode = 'NVLID';
+    raise exception '' using errcode = 'RQRED';
   end if;
+
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
+  -- We do this with the validate_jsonb_no_nulls funciton.
   for v_question_id, v_answers in select * from jsonb_each(answers) loop
-    if (select v_question_id = any(required_question_ids)) then
+    select * into v_question from app_public.event_questions where id = v_question_id;
 
-      select * into v_question from app_public.event_questions where id = v_question_id;
-
-      if v_question.is_required then
-        perform app_public.validate_jsonb_no_nulls(v_answers);
-      end if;
-
+    -- If provided questino id is invalid, raise an error
+    if v_question is null then
+      raise exception '' using errcode = 'NTFND';
     end if;
+
+    -- If provided answer is for a question
+    if v_question.event_id != event_id then
+      raise exception '' using errcode = 'EVTID';
+    end if;
+
+    -- Validate that the jsonb does not contain nulls
+    perform app_public.validate_jsonb_no_nulls(v_answers);
+
+    -- TEXT answers should be of type string
+    if v_question.type = 'TEXT' and jsonb_typeof(v_answers) != 'string' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
+    -- RADIO answers should be of type string
+    if v_question.type = 'RADIO' and jsonb_typeof(v_answers) != 'string' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
+    -- TEXT answers should be of type string
+    if v_question.type = 'CHECKBOX' and jsonb_typeof(v_answers) != 'array' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
   end loop;
 -- If validate_jsonb_no_nulls raises an exception, return a more suitable error message
 exception when others then
-  raise exception 'Required question not answered.' using errcode = 'NVLID';
+  if sqlstate = 'RQRED' then
+    raise exception 'Required question not answered.' using errcode = 'NVLID';
+  elsif sqlstate = 'NTFND' then
+    raise exception 'Invalid answer, related question not found.' using errcode = 'NVLID';
+  elsif sqlstate = 'EVTID' then
+    raise exception 'Invalid answer, question is for another event.' using errcode = 'NVLID';
+  elsif sqlstate = 'JSONN' or sqlstate = 'NVLID' then
+    raise exception 'Invalid answer data to question of type: %.', v_question.type using errcode = 'NVLID';
+  else
+    raise exception 'Unknown error. % %', sqlstate, sqlerrm using errcode = 'FFFFF';
+  end if;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
-comment on function app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb) is
+comment on function app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb) is
   E'Validate registration answers.';
 
 
@@ -876,7 +912,7 @@ begin
   end if;
 
   v_required_question_ids := array(select id from app_public.event_questions where event_id = NEW.event_id and is_required = TRUE);
-  perform app_public.validate_registration_answers(v_required_question_ids, NEW.answers);
+  perform app_public.validate_registration_answers(NEW.event_id, v_required_question_ids, NEW.answers);
 
   return NEW;
 end;
@@ -1129,7 +1165,7 @@ begin
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
   -- This is double validated in the _200_registration_is_valid trigger.
   v_required_question_ids := array(select id from app_public.event_questions where event_id = "eventId" and is_required = True);
-  perform app_public.validate_registration_answers(v_required_question_ids, answers);
+  perform app_public.validate_registration_answers("eventId", v_required_question_ids, answers);
 
   -- Update registration that was created by calling claim_registration_token
   update app_public.registrations
@@ -1181,7 +1217,7 @@ begin
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
   -- This is double validated in the _200_registration_is_valid trigger.
   v_required_question_ids := array(select id from app_public.event_questions where event_id = v_registration_secret.event_id and is_required = True);
-  perform app_public.validate_registration_answers(v_required_question_ids, answers);
+  perform app_public.validate_registration_answers(v_registration_secret.event_id, v_required_question_ids, answers);
 
   update app_public.registrations
     set first_name = "firstName", last_name = "lastName", answers = update_registration.answers

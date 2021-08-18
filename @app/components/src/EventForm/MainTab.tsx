@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react"
 import { CreateEventPageQuery, Maybe, UpdateEventPageQuery } from "@app/graphql"
 import { tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
+import { UploadFile } from "antd/lib/upload/interface"
 import useTranslation from "next-translate/useTranslation"
 
 import { ErrorAlert, FileUpload } from "../index"
@@ -38,6 +39,20 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   } = props
   const { t, lang } = useTranslation("events")
 
+  function getDefaultFileList(): Array<UploadFile> | undefined {
+    if (type === "update") {
+      const { headerImageFile } = (data as UpdateEventPageQuery).event || {}
+      const name = headerImageFile?.split("/")?.pop() ?? ""
+      const uploadFile = {
+        uid: "-1",
+        name,
+        status: "done",
+        url: headerImageFile,
+      } as UploadFile
+      return [uploadFile]
+    }
+  }
+
   return (
     <>
       <Form.Item
@@ -64,7 +79,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               data-cy={`eventform-select-language-option-${l}`}
               value={l ? l : ""}
             >
-              {t(`common:${l}`)}
+              {t(`common:lang.${l}`)}
             </Option>
           ))}
         </Select>
@@ -140,7 +155,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               >
                 <Input
                   data-cy={`eventform-input-name-${l}`}
-                  placeholder={t(`common:lang.${l}`)}
+                  placeholder={t(`common:lang.in.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
@@ -169,7 +184,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               >
                 <TextArea
                   data-cy={`eventform-input-description-${l}`}
-                  placeholder={t(`common:lang.${l}`)}
+                  placeholder={t(`common:lang.in.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
@@ -243,6 +258,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           accept="image/*"
           cropAspect={851 / 315}
           data-cy="eventform-header-image-upload"
+          defaultFileList={getDefaultFileList()}
           maxCount={1}
         />
       </Form.Item>

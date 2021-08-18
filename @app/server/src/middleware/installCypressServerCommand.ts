@@ -681,11 +681,15 @@ export const createRegistrationSecrets = async (
 
 export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
   let i = 0
-  const answers = questions.reduce((acc, cur) => {
+  // Choose random language to simulate finnish and english registrations
+  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const answers = questions?.reduce((acc, cur) => {
     if (cur.type === QuestionType.Text) {
-      acc[cur.id] = `Answer ${i}`
-    } else if ([QuestionType.Checkbox, QuestionType.Radio].includes(cur.type)) {
-      acc[cur.id] = cur!.data!.map((option, i) => ({ [i]: option }))
+      acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
+    } else if (cur.type === QuestionType.Checkbox) {
+      acc[cur.id] = cur?.data?.map((option) => option[chosenLanguage])
+    } else if (cur.type === QuestionType.Radio) {
+      acc[cur.id] = cur?.data?.[0][chosenLanguage]
     }
     i++
 

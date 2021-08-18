@@ -3,6 +3,8 @@ mutation ClaimRegistrationToken($input: ClaimRegistrationTokenInput!) {
     claimRegistrationTokenOutput {
       registrationToken
       updateToken
+      __typename
     }
+    __typename
   }
 }

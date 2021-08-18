@@ -21,6 +21,7 @@ import { EmailTab } from "./EmailTab"
 import { MainTab } from "./MainTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
+import { RegistrationsTab } from "./RegistrationsTab"
 
 const { TabPane } = Tabs
 
@@ -66,6 +67,14 @@ export function getEventSlug(name?: TranslatedFormValue, dates?: Date[]) {
   return name?.fi ? slug : ""
 }
 
+enum TAB {
+  General = "general",
+  Quotas = "quotas",
+  Questions = "questions",
+  Registrations = "registrations",
+  Email = "email",
+}
+
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages } = initialValues || {}
@@ -83,7 +92,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [form] = Form.useForm()
   const { setFieldsValue } = form
   const [formValues, setFormValues] = useState<FormValues>({})
-  const [activeTab, setActiveTab] = useState<string>("general")
+  const [activeTab, setActiveTab] = useState<TAB>(TAB.General)
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | CombinedError | null>(null)
   const [tabErrors, setTabErrors] = useState<any[] | null>(null)
@@ -232,13 +241,13 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const mainTabProps = {
     type,
     data,
-    selectedLanguages,
-    setSelectedLanguages,
     isDraft,
     setIsDraft,
     formError,
     tabErrors,
     formSubmitting,
+    selectedLanguages,
+    setSelectedLanguages,
     supportedLanguages,
   }
 
@@ -261,20 +270,20 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             />
           ),
         }}
-        onChange={(tab) => setActiveTab(tab)}
+        onChange={(tab) => setActiveTab(tab as TAB)}
       >
         <TabPane
-          key="general"
+          key={TAB.General}
           data-cy="eventform-tab-general"
-          tab={t("forms.tabs.generalInfo")}
+          tab={t("admin:events.tabs.generalInfo")}
           forceRender
         >
           <MainTab {...mainTabProps} />
         </TabPane>
         <TabPane
-          key="quotas"
+          key={TAB.Quotas}
           data-cy="eventform-tab-quotas"
-          tab={t("forms.tabs.quotas")}
+          tab={t("admin:events.tabs.quotas")}
           forceRender
         >
           <QuotasTab
@@ -283,17 +292,32 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           />
         </TabPane>
         <TabPane
-          key="questions"
+          key={TAB.Questions}
           data-cy="eventform-tab-questions"
-          tab={t("forms.tabs.questions")}
+          tab={t("admin:events.tabs.questions")}
           forceRender
         >
           <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
         </TabPane>
+        {type === "update" && (
+          <TabPane
+            key={TAB.Registrations}
+            data-cy="eventform-tab-registrations"
+            tab={t("admin:events.tabs.registrations")}
+            forceRender
+          >
+            <RegistrationsTab
+              eventId={(data as UpdateEventPageQuery)?.event?.id}
+              questions={
+                (data as UpdateEventPageQuery)?.event?.eventQuestions?.nodes
+              }
+            />
+          </TabPane>
+        )}
         <TabPane
-          key="email"
+          key={TAB.Email}
           data-cy="eventform-tab-email"
-          tab={t("forms.tabs.email")}
+          tab={t("admin:events.tabs.email")}
         >
           {/*
             Only display email tab when activeTab is 'email' to reduce
@@ -301,7 +325,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             query to show what the email looks like that gets sent to event
             attendees.
           */}
-          {activeTab === "email" && <EmailTab formValues={formValues} />}
+          {activeTab === TAB.Email && <EmailTab formValues={formValues} />}
         </TabPane>
       </Tabs>
     </Form>

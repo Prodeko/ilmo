@@ -2,6 +2,7 @@ import React from "react"
 import {
   AdminLayout,
   AdminTableActions,
+  EventQuotaPopover,
   H3,
   ServerPaginatedTable,
   useIsMobile,
@@ -13,9 +14,8 @@ import {
   useListEventsPageQuery,
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
-import { Badge, Col, Popover, Progress, Row, Tag, Typography } from "antd"
+import { Badge, Col, Popover, Row, Tag } from "antd"
 import dayjs from "dayjs"
-import { reduce } from "lodash"
 import { NextPage } from "next"
 import Link from "next/link"
 import useTranslation from "next-translate/useTranslation"
@@ -122,64 +122,7 @@ const Admin_ListEvents: NextPage = () => {
         {
           title: t("events.list.registrations"),
           key: "registrations",
-          render: (event: Event) => {
-            const numberStyle = {
-              whiteSpace: "nowrap",
-              letterSpacing: "-1px",
-              fontVariantNumeric: "slashed-zero",
-            } as React.CSSProperties
-            const popoverContent = (
-              <>
-                {event.quotas.nodes.map((quota) => {
-                  const quotaRegistrations = quota.registrations.totalCount
-                  return (
-                    <Row key={quota.id} style={{ minWidth: "20rem" }}>
-                      <Col span={5}>{quota.title[lang]}</Col>
-                      <Col span={12} style={{ marginRight: "10px" }}>
-                        <Progress
-                          percent={(quotaRegistrations * 100) / quota.size}
-                          showInfo={false}
-                        />
-                      </Col>
-                      <Col flex="auto" style={{ whiteSpace: "nowrap" }}>
-                        <span style={numberStyle}>
-                          {quotaRegistrations} / {quota.size}
-                        </span>
-                      </Col>
-                    </Row>
-                  )
-                })}
-              </>
-            )
-
-            const numRegistrations = event.registrations.totalCount
-            const totalSize = reduce(
-              event.quotas.nodes,
-              (acc: number, quota) => acc + quota.size,
-              0
-            )
-            return (
-              <Popover
-                content={popoverContent}
-                title={t("events.list.registrationsPerQuota")}
-              >
-                <Row gutter={12}>
-                  <Col span={8}>
-                    <Typography.Text style={numberStyle}>
-                      {numRegistrations} / {totalSize}
-                    </Typography.Text>
-                  </Col>
-                  <Col span={12}>
-                    <Progress
-                      percent={(numRegistrations * 100) / totalSize}
-                      showInfo={false}
-                      style={{ marginLeft: "12px" }}
-                    />
-                  </Col>
-                </Row>
-              </Popover>
-            )
-          },
+          render: (event: Event) => <EventQuotaPopover event={event} />,
         },
         {
           title: t("events.list.registrationStartTime"),
@@ -222,6 +165,7 @@ const Admin_ListEvents: NextPage = () => {
       dataField: "signupClosedEvents",
     },
   ]
+
   return (
     <AdminLayout href="/admin/event/list" query={query}>
       <Row gutter={[0, 24]}>

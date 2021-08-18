@@ -12,16 +12,24 @@ import "antd/lib/slider/style"
 const { Dragger } = Upload
 
 interface FileUploadProps {
+  id?: string
   accept: string
   cropAspect: number
   "data-cy"?: string
-  id?: string
   maxCount?: number
   onChange?: () => any
+  defaultFileList?: Array<UploadFile>
 }
 
 export const FileUpload: React.FC<FileUploadProps> = (props) => {
-  const { accept, cropAspect, id, onChange: parentOnChange, maxCount } = props
+  const {
+    id,
+    accept,
+    cropAspect,
+    defaultFileList,
+    onChange: parentOnChange,
+    maxCount,
+  } = props
   const { t } = useTranslation()
 
   const [fileList, setFileList] = useState<UploadFile[] | undefined>(undefined)
@@ -44,6 +52,7 @@ export const FileUpload: React.FC<FileUploadProps> = (props) => {
         }}
         customRequest={dummyRequest}
         data-cy={props["data-cy"]}
+        defaultFileList={defaultFileList}
         fileList={fileList}
         id={id}
         listType="picture-card"
@@ -51,9 +60,11 @@ export const FileUpload: React.FC<FileUploadProps> = (props) => {
         name="headerImageFile"
         onChange={({ fileList }) => {
           setFileList(fileList)
+
           // The parentOnChange comes from Form.Item somehow. A property called
           // getValueFromEvent on the Form.Item gets as input what is passed to
-          // parentOnChange
+          // parentOnChange.
+
           // @ts-ignore
           parentOnChange(fileList)
         }}

@@ -29,8 +29,10 @@ async function getRegistrationToken(eventId: string, quotaId: string) {
 
     // GraphQL variables:
     {
-      eventId,
-      quotaId,
+      input: {
+        eventId,
+        quotaId,
+      },
     },
 
     // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
@@ -75,6 +77,8 @@ describe("CreateRegistration", () => {
     const eventId = events[0].id
     const quotaId = quotas[0].id
     const answers = constructAnswersFromQuestions(questions)
+
+    console.log(answers)
 
     const rateLimitId = `${eventId}:${quotaId}`
     const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
@@ -196,13 +200,12 @@ describe("CreateRegistration", () => {
   })
 
   it("can't create registration if registration token is not valid", async () => {
-    const { events, quotas, questions } = await createEventDataAndLogin({
+    const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-      questionOptions: { create: true, amount: 3, required: false },
+      questionOptions: { create: false },
     })
     const event = events[0]
     const quota = quotas[0]
-    const answers = constructAnswersFromQuestions(questions)
 
     await runGraphQLQuery(
       CreateEventRegistrationDocument,
@@ -217,7 +220,6 @@ describe("CreateRegistration", () => {
           email: "testuser@example.com",
           // Invalid token
           registrationToken: "540f7d0f-7433-4657-bd98-3b405f913a15",
-          answers,
         },
       },
 
@@ -292,10 +294,10 @@ describe("CreateRegistration", () => {
         input: {
           eventId: "d24a4112-81e2-440a-a9fa-be2371944310",
           quotaId,
+          registrationToken,
           firstName: "Testname",
           lastName: "Testlastname",
           email: "testuser@example.com",
-          registrationToken,
         },
       },
 
@@ -405,7 +407,6 @@ describe("CreateRegistration", () => {
     const { quotas, events } = await createEventDataAndLogin({
       questionOptions: { create: false },
       registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 1, signupOpen: true },
     })
     const eventId = events[0].id
     const quotaId = quotas[0].id
@@ -482,7 +483,6 @@ describe("CreateRegistration", () => {
   it("can't create registration if required question is not answered", async () => {
     const { quotas, questions, events } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 1, signupOpen: true },
       questionOptions: { create: true, amount: 3, required: true },
     })
     const eventId = events[0].id
@@ -530,10 +530,169 @@ describe("CreateRegistration", () => {
     )
   })
 
+  it("can't create registration if more than one answer provided to a question type RADIO", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    const radioId = questions.find((q) => q.type === QuestionType.Radio).id
+    const answers = constructAnswersFromQuestions(questions)
+    const answersInvalidRadio = {
+      ...answers,
+      // Answer for a RADIO question should not be an array
+      [radioId]: [{ ...answers[radioId] }, { fi: "Väärin", en: "Invalid" }],
+    }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers: answersInvalidRadio,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          "Invalid answer data to question of type: RADIO."
+        )
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't create registration if invalid answer id provided", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    const answers = constructAnswersFromQuestions(questions)
+    const answersInvalid = {
+      ...answers,
+      // Invalid answer id
+      "3582a656-80a3-45af-a58a-ba2ae8d7ddb2": ["Vastaus"],
+    }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers: answersInvalid,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Invalid answer, related question not found.")
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't create registration if answer is to a question which is not related to this event", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    const { questions: otherQuestions } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    })
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    // Answers are for another event. We must include the correct answers also.
+    const correctAnswers = constructAnswersFromQuestions(questions)
+    const wrongAnswers = constructAnswersFromQuestions(otherQuestions)
+    const answers = { ...wrongAnswers, ...correctAnswers }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          "Invalid answer, question is for another event."
+        )
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
   const possibleMissingData = [
     ["null", null],
     ["[]", []],
-    ["undefined", undefined],
     ["[null]", [null]],
     ["[null, null]", [null, null]],
   ]
@@ -543,7 +702,7 @@ describe("CreateRegistration", () => {
       it(`can't create registration if type is: ${upper} and data is: ${repr}`, async () => {
         const { quotas, questions, events } = await createEventDataAndLogin({
           registrationOptions: { create: false },
-          eventOptions: { create: true, amount: 1, signupOpen: true },
+
           questionOptions: {
             create: true,
             amount: 1,
@@ -586,7 +745,10 @@ describe("CreateRegistration", () => {
 
             const message = json.errors![0].message
             const code = json.errors![0].extensions.exception.code
-            expect(message).toEqual("Required question not answered.")
+
+            expect(message).toEqual(
+              `Invalid answer data to question of type: ${upper}.`
+            )
             expect(code).toEqual("NVLID")
           }
         )

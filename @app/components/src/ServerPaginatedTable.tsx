@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Sorter, ValueOf } from "@app/lib"
 import { Table } from "antd"
 import {
@@ -58,6 +57,13 @@ export function ServerPaginatedTable({
     total: data?.[dataField]?.totalCount || 0,
   })
 
+  useEffect(() => {
+    const total = data?.[dataField]?.totalCount
+    if (total) {
+      setPagination((prev) => ({ ...prev, total }))
+    }
+  }, [data, dataField])
+
   const handleTableChange = useCallback(async (pagination) => {
     const { current, pageSize } = pagination
     const newOffset = (current - 1) * pageSize || 0
@@ -106,7 +112,7 @@ export function ServerPaginatedTable({
     <ErrorResult error={error} />
   ) : (
     <Table
-      columns={transformedColumns as ColumnsType}
+      columns={transformedColumns as ColumnsType<object>}
       dataSource={get(data, dataField)?.nodes || []}
       loading={fetching && { indicator: <Loading /> }}
       pagination={showPagination && pagination}

@@ -28,6 +28,6 @@ for (const [repr, json] of invalidJsonData) {
       await expect(promise).rejects.toMatchInlineSnapshot(
         `[error: Invalid json data]`
       )
-      await expect(promise).rejects.toHaveProperty("code", "NVLID")
+      await expect(promise).rejects.toHaveProperty("code", "JSONN")
     }))
 }

@@ -7,7 +7,7 @@
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
   },
   "dependencies": {
-    "@ant-design/icons": "^4.6.2",
+    "@ant-design/icons": "^4.6.3",
     "@app/components": "0.0.0",
     "@app/config": "0.0.0",
     "@app/graphql": "0.0.0",
@@ -18,7 +18,7 @@
     "@types/node": "^16.6.1",
     "@types/nprogress": "^0.2.0",
     "@types/react": "^17.0.18",
-    "antd": "4.16.11",
+    "antd": "4.16.12",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "1.10.6",
     "framer-motion": "^4.1.17",
@@ -31,7 +31,7 @@
     "next-translate": "^1.0.7",
     "next-transpile-modules": "^8.0.0",
     "nprogress": "^0.2.0",
-    "rc-field-form": "^1.21.1",
+    "rc-field-form": "^1.21.2",
     "react": "^17.0.2",
     "react-color-palette": "^6.1.0",
     "react-dom": "^17.0.2",

@@ -61,8 +61,8 @@ Object {
         "exception": Object {
           "code": "NVLID",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid[],jsonb) line 27 at RAISE
-SQL statement \\"SELECT app_public.validate_registration_answers(v_required_question_ids, answers)\\"
+          "where": "PL/pgSQL function app_public.validate_registration_answers(uuid,uuid[],jsonb) line 50 at RAISE
+SQL statement \\"SELECT app_public.validate_registration_answers(v_registration_secret.event_id, v_required_question_ids, answers)\\"
 PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 18 at PERFORM",
         },
       },

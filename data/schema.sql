@@ -843,7 +843,7 @@ begin
   end if;
 
   v_required_question_ids := array(select id from app_public.event_questions where event_id = NEW.event_id and is_required = TRUE);
-  perform app_public.validate_registration_answers(v_required_question_ids, NEW.answers);
+  perform app_public.validate_registration_answers(NEW.event_id, v_required_question_ids, NEW.answers);
 
   return NEW;
 end;
@@ -1004,45 +1004,6 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.change_password(old_password text, new_password text) IS 'Enter your old password and a new password to change your password.';
-
-
---
--- Name: check_question_data(app_public.question_type, app_public.translated_field[]); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) RETURNS boolean
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  err_context text;
-begin
-  if type = 'TEXT' then
-    -- TEXT questions don't need to have any data associated with them
-    -- since we simply render an input field. CHECKBOX and RADIO
-    -- should have data (the answer options) associated with them.
-    if data is null then
-      return true;
-    end if;
-
-    return false;
-  else
-
-    -- RADIO and CHECKBOX must have data defined
-    if data is null then
-      return false;
-    end if;
-
-    -- Check that the provided jsonb data contains no null values
-    perform app_public.validate_jsonb_no_nulls(data);
-
-    return true;
-  end if;
--- If validate_jsonb_no_nulls raises an exception, return false
-exception when others then
-  return false;
-end;
-$$;
 
 
 --
@@ -1368,6 +1329,45 @@ COMMENT ON FUNCTION app_public.create_event(event app_public.event_input, quotas
 
 
 --
+-- Name: validate_question_data(app_public.question_type, app_public.translated_field[]); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.validate_question_data(type app_public.question_type, data app_public.translated_field[]) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  err_context text;
+begin
+  if type = 'TEXT' then
+    -- TEXT questions don't need to have any data associated with them
+    -- since we simply render an input field. CHECKBOX and RADIO
+    -- should have data (the answer options) associated with them.
+    if data is null then
+      return true;
+    end if;
+
+    return false;
+  else
+
+    -- Check that the provided jsonb data contains no null values
+    perform app_public.validate_jsonb_no_nulls(data);
+
+    -- RADIO and CHECKBOX must have data defined
+    if data is null then
+      return false;
+    end if;
+
+    return true;
+  end if;
+-- If validate_jsonb_no_nulls raises an exception, return false
+exception when others then
+  return false;
+end;
+$$;
+
+
+--
 -- Name: event_questions; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -1383,7 +1383,7 @@ CREATE TABLE app_public.event_questions (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_question_data CHECK (app_public.check_question_data(type, data))
+    CONSTRAINT _cnstr_validate_question_data CHECK (app_public.validate_question_data(type, data))
 );
 
 
@@ -1745,7 +1745,7 @@ begin
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
   -- This is double validated in the _200_registration_is_valid trigger.
   v_required_question_ids := array(select id from app_public.event_questions where event_id = "eventId" and is_required = True);
-  perform app_public.validate_registration_answers(v_required_question_ids, answers);
+  perform app_public.validate_registration_answers("eventId", v_required_question_ids, answers);
 
   -- Update registration that was created by calling claim_registration_token
   update app_public.registrations
@@ -2987,7 +2987,7 @@ begin
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
   -- This is double validated in the _200_registration_is_valid trigger.
   v_required_question_ids := array(select id from app_public.event_questions where event_id = v_registration_secret.event_id and is_required = True);
-  perform app_public.validate_registration_answers(v_required_question_ids, answers);
+  perform app_public.validate_registration_answers(v_registration_secret.event_id, v_required_question_ids, answers);
 
   update app_public.registrations
     set first_name = "firstName", last_name = "lastName", answers = update_registration.answers
@@ -3059,18 +3059,18 @@ begin
 
   if jsonb_typeof(to_jsonb(input)) = 'null' then
     -- JSON null provided, invalid
-    raise exception 'Invalid json data' using errcode = 'NVLID';
+    raise exception 'Invalid json data' using errcode = 'JSONN';
   elsif jsonb_typeof(to_jsonb(input)) = 'array' then
     -- jsonb_strip_nulls omits all object fields that have null values
     if jsonb_array_length(jsonb_strip_nulls(to_jsonb(input))) < 1 then
       -- Empty json '{}' provided, invalid
-      raise exception 'Invalid json data' using errcode = 'NVLID';
+      raise exception 'Invalid json data' using errcode = 'JSONN';
     else
       -- Loop jsonb list to see if there are any JSON null's. If there are, raise exception.
       for value in select jsonb_array_elements from jsonb_array_elements(to_jsonb(input)) loop
         if jsonb_typeof(to_jsonb(value)) = 'null' then
           -- JSON null found in list, invalid
-          raise exception 'Invalid json data' using errcode = 'NVLID';
+          raise exception 'Invalid json data' using errcode = 'JSONN';
         end if;
       end loop;
     end if;
@@ -3087,10 +3087,10 @@ COMMENT ON FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) IS 'Val
 
 
 --
--- Name: validate_registration_answers(uuid[], jsonb); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: validate_registration_answers(uuid, uuid[], jsonb); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb DEFAULT NULL::jsonb) RETURNS void
+CREATE FUNCTION app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb DEFAULT NULL::jsonb) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
@@ -3098,37 +3098,69 @@ declare
   v_question app_public.event_questions;
   v_question_id uuid;
   v_answers jsonb;
-  v_answer jsonb;
 begin
   -- Check that all required question id's are contained as top level keys in answers
   if not answers ?& required_question_ids::text[] then
-    raise exception 'Required question not answered.' using errcode = 'NVLID';
+    raise exception '' using errcode = 'RQRED';
   end if;
+
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
+  -- We do this with the validate_jsonb_no_nulls funciton.
   for v_question_id, v_answers in select * from jsonb_each(answers) loop
-    if (select v_question_id = any(required_question_ids)) then
+    select * into v_question from app_public.event_questions where id = v_question_id;
 
-      select * into v_question from app_public.event_questions where id = v_question_id;
-
-      if v_question.is_required then
-        perform app_public.validate_jsonb_no_nulls(v_answers);
-      end if;
-
+    -- If provided questino id is invalid, raise an error
+    if v_question is null then
+      raise exception '' using errcode = 'NTFND';
     end if;
+
+    -- If provided answer is for a question
+    if v_question.event_id != event_id then
+      raise exception '' using errcode = 'EVTID';
+    end if;
+
+    -- Validate that the jsonb does not contain nulls
+    perform app_public.validate_jsonb_no_nulls(v_answers);
+
+    -- TEXT answers should be of type string
+    if v_question.type = 'TEXT' and jsonb_typeof(v_answers) != 'string' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
+    -- RADIO answers should be of type string
+    if v_question.type = 'RADIO' and jsonb_typeof(v_answers) != 'string' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
+    -- TEXT answers should be of type string
+    if v_question.type = 'CHECKBOX' and jsonb_typeof(v_answers) != 'array' then
+      raise exception '' using errcode = 'NVLID';
+    end if;
+
   end loop;
 -- If validate_jsonb_no_nulls raises an exception, return a more suitable error message
 exception when others then
-  raise exception 'Required question not answered.' using errcode = 'NVLID';
+  if sqlstate = 'RQRED' then
+    raise exception 'Required question not answered.' using errcode = 'NVLID';
+  elsif sqlstate = 'NTFND' then
+    raise exception 'Invalid answer, related question not found.' using errcode = 'NVLID';
+  elsif sqlstate = 'EVTID' then
+    raise exception 'Invalid answer, question is for another event.' using errcode = 'NVLID';
+  elsif sqlstate = 'JSONN' or sqlstate = 'NVLID' then
+    raise exception 'Invalid answer data to question of type: %.', v_question.type using errcode = 'NVLID';
+  else
+    raise exception 'Unknown error. % %', sqlstate, sqlerrm using errcode = 'FFFFF';
+  end if;
 end;
 $$;
 
 
 --
--- Name: FUNCTION validate_registration_answers(required_question_ids uuid[], answers jsonb); Type: COMMENT; Schema: app_public; Owner: -
+-- Name: FUNCTION validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb) IS 'Validate registration answers.';
+COMMENT ON FUNCTION app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb) IS 'Validate registration answers.';
 
 
 --
@@ -4747,14 +4779,6 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 
 --
--- Name: FUNCTION check_question_data(type app_public.question_type, data app_public.translated_field[]); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.check_question_data(type app_public.question_type, data app_public.translated_field[]) TO ilmo_visitor;
-
-
---
 -- Name: FUNCTION claim_registration_token(event_id uuid, quota_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -4874,6 +4898,14 @@ GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo
 
 REVOKE ALL ON FUNCTION app_public.create_event(event app_public.event_input, quotas app_public.create_event_quotas[], questions app_public.create_event_questions[]) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.create_event(event app_public.event_input, quotas app_public.create_event_quotas[], questions app_public.create_event_questions[]) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION validate_question_data(type app_public.question_type, data app_public.translated_field[]); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.validate_question_data(type app_public.question_type, data app_public.translated_field[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.validate_question_data(type app_public.question_type, data app_public.translated_field[]) TO ilmo_visitor;
 
 
 --
@@ -5389,11 +5421,11 @@ GRANT ALL ON FUNCTION app_public.validate_jsonb_no_nulls(input anyelement) TO il
 
 
 --
--- Name: FUNCTION validate_registration_answers(required_question_ids uuid[], answers jsonb); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.validate_registration_answers(required_question_ids uuid[], answers jsonb) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb) TO ilmo_visitor;
 
 
 --

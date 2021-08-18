@@ -197,7 +197,7 @@ export const EventCategoryForm = ({
               >
                 <Input
                   data-cy={`eventcategoryform-input-name-${l}`}
-                  placeholder={t(`common:lang.${l}`)}
+                  placeholder={t(`common:lang.in.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>
@@ -226,7 +226,7 @@ export const EventCategoryForm = ({
               >
                 <Input.TextArea
                   data-cy={`eventcategoryform-input-description-${l}`}
-                  placeholder={t(`common:lang.${l}`)}
+                  placeholder={t(`common:lang.in.${l}`)}
                   style={i > 0 ? { marginTop: 5 } : undefined}
                 />
               </Form.Item>

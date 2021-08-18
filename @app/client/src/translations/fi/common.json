@@ -1,25 +1,30 @@
 {
   "admin": "Hallintapaneeli",
+  "answers": "Vastaukset",
   "backHome": "Takaisin etusivulle",
   "color": "Väri",
   "create": "Luo",
-  "required": "Pakollinen",
+  "createdAt": "Luotu",
   "data": "Data",
   "delete": "Poista",
   "description": "Kuvaus",
   "draft": "Luonnokset",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",
-  "lang": {
-    "fi": "suomeksi",
-    "en": "englanniksi"
-  },
   "head": {
     "description": "Prodeko ilmo",
     "title": "Prodeko ilmo"
   },
   "imgCropTitle": "Muokkaa kuvaa",
   "label": "Otsikko",
+  "lang": {
+    "en": "Englanti",
+    "fi": "Suomi",
+    "in": {
+      "en": "englanniksi",
+      "fi": "suomeksi"
+    }
+  },
   "loading": "Ladataan...",
   "location": "Paikka",
   "logout": "Kirjaudu ulos",
@@ -27,16 +32,18 @@
   "name": "Nimi",
   "no": "Ei",
   "option": "Vaihtoehto",
+  "question": "Kysymys",
   "redirect": "Uudelleenohjataan...",
   "registrationClosed": "Ilmoittautuminen päättynyt",
   "registrationOpen": "Ilmoittautuminen auki",
   "registrationUpcoming": "Ilmoittautuminen tulossa",
+  "required": "Pakollinen",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
   "signin": "Kirjaudu",
   "status": "Status",
   "type": "Tyyppi",
   "update": "Päivitä",
-  "question": "Kysymys",
+  "updatedAt": "Päivitetty",
   "yes": "Kyllä"
 }

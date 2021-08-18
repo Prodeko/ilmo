@@ -1,6 +1,5 @@
 {
   "addOption": "Add option",
-  "removeOption": "Remove option",
   "addQuestion": "Add question",
   "addQuota": "Add quota",
   "category": "Category",
@@ -32,8 +31,8 @@
       "languages": "Please select languages",
       "questions": {
         "data": "Question",
-        "type": "Type",
-        "label": "Label"
+        "label": "Label",
+        "type": "Type"
       },
       "quota": {
         "size": "Size",
@@ -69,13 +68,7 @@
       }
     },
     "saveAsDraft": "Save as draft",
-    "signupEmail": "Event signup email",
-    "tabs": {
-      "email": "Email",
-      "generalInfo": "General",
-      "questions": "Questions",
-      "quotas": "Quotas"
-    }
+    "signupEmail": "Event signup email"
   },
   "headerImage": "Event header image",
   "languages": "Languages",
@@ -83,6 +76,7 @@
   "organizer": "Organizer",
   "queued": "Queue",
   "quota": "Quota",
+  "removeOption": "Remove option",
   "removeQuestion": "Remove question",
   "removeQuota": "Remove quota"
 }

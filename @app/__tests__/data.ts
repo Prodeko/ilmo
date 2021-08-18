@@ -291,9 +291,7 @@ export const createQuestions = async (
     const t = type ? type : questionTypes[i % 3]
     const label = { fi: words(), en: words() }
     let data
-    if (t === QuestionType.Checkbox) {
-      data = getRandomQuestionData()
-    } else if (t === QuestionType.Radio) {
+    if ([QuestionType.Radio, QuestionType.Checkbox].includes(t)) {
       data = getRandomQuestionData()
     } else if (t === QuestionType.Text) {
       data = null
@@ -353,11 +351,15 @@ export const createRegistrationSecrets = async (
 
 export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
   let i = 0
+  // Choose random language to simulate finnish and english registrations
+  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === QuestionType.Text) {
-      acc[cur.id] = `Answer ${i}`
-    } else if ([QuestionType.Checkbox, QuestionType.Radio].includes(cur.type)) {
-      acc[cur.id] = cur.data.map((option, i) => ({ [i]: option }))
+      acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
+    } else if (cur.type === QuestionType.Checkbox) {
+      acc[cur.id] = cur.data.map((option) => option[chosenLanguage])
+    } else if (cur.type === QuestionType.Radio) {
+      acc[cur.id] = cur.data[0][chosenLanguage]
     }
     i++
 

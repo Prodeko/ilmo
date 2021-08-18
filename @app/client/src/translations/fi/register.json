@@ -16,9 +16,9 @@
       "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
       "emailValid": "Tarkista sähköpostiosoite",
       "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
+      "provideAnswer": "Vastaus vaaditaan",
       "provideFirstName": "Anna etunimi",
-      "provideLastName": "Anna sukunimi",
-      "provideAnswer": "Vastaus vaaditaan"
+      "provideLastName": "Anna sukunimi"
     }
   },
   "recentlyRegisteredHeader": "Äskettäin rekisteröityneet:",

@@ -19,7 +19,7 @@
     "cross-env": "^7.0.3",
     "graphile-worker": "^0.11.3",
     "html-to-text": "^8.0.0",
-    "ioredis": "^4.27.7",
+    "ioredis": "^4.27.8",
     "mjml": "^4.10.2",
     "nodemailer": "^6.6.3",
     "nunjucks": "^3.2.3",
