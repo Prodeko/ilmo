@@ -7,15 +7,16 @@ import {
   ListEventsQuery,
 } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
-import schema from "@app/graphql/introspection.json"
+// import schema from "@app/graphql/introspection.json"
 import { dedupExchange, subscriptionExchange } from "@urql/core"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-import { minifyIntrospectionQuery } from "@urql/introspection"
+// import { minifyIntrospectionQuery } from "@urql/introspection"
 import { serialize } from "cookie"
-import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
+// import { IntrospectionQuery } from "graphql"
+import { OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
 import { NextPageContext } from "next"
 import { SSRExchange, withUrqlClient } from "next-urql"
@@ -113,9 +114,13 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         dedupExchange,
         cacheExchange<GraphCacheConfig>({
-          schema: minifyIntrospectionQuery(
-            schema as unknown as IntrospectionQuery
-          ),
+          // TODO: Schema awareness caused some issues with no data being returned.
+          // For example, on admin/evet/update, no data was being returned for the
+          // event field and the stale flag was always set to true
+
+          // schema: minifyIntrospectionQuery(
+          //   schema as unknown as IntrospectionQuery
+          // ),
           keys: {
             // AppLanguage type does not have an 'id' field and thus cannot be
             // cached. Here we define a new key which will be used for caching
