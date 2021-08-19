@@ -1,12 +1,12 @@
 import { Key, ReactNode, useState } from "react"
 import { Menu, Typography } from "antd"
-import SubMenu from "antd/lib/menu/SubMenu"
 import { TextProps } from "antd/lib/typography/Text"
 import Link from "next/link"
 
 import { Warn } from "."
 
 const { Text } = Typography
+const { SubMenu } = Menu
 
 export interface MenuItem {
   key: string
@@ -76,9 +76,10 @@ export const AdminSideMenu = ({ items, initialKey }: MenuProps) => {
 
   return (
     <Menu
-      mode="inline"
+      mode="vertical"
       openKeys={openKeys}
       selectedKeys={[initialKey]}
+      style={{ height: "100%" }}
       // @ts-ignore
       onOpenChange={onOpenChange}
     >

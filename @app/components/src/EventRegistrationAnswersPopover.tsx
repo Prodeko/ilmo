@@ -35,8 +35,6 @@ export const EventRegistrationAnswersPopover: React.FC<EventRegistrationAnswersP
           answer = answers?.[id]?.join(", ")
         }
 
-        console.log(label[lang], answer)
-
         return (
           <Row key={id} gutter={[16, 16]}>
             <Col span="8" style={{ textAlign: "right" }}>
@@ -53,10 +51,7 @@ export const EventRegistrationAnswersPopover: React.FC<EventRegistrationAnswersP
     }
 
     return (
-      <Popover
-        content={renderQuestions(questions)}
-        title={t("events.update.showAnswers")}
-      >
+      <Popover content={renderQuestions(questions)} title={t("common:answers")}>
         <Link>{t("events.update.showAnswers")}</Link>
       </Popover>
     )

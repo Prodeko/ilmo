@@ -14,6 +14,9 @@ export function removePropFromObject(obj: any, prop: string | number) {
   return { ...rest }
 }
 
+export const randomElementFromArray = (arr: any[]) =>
+  arr[Math.floor(Math.random() * arr.length)]
+
 /**
  * Table utils
  */

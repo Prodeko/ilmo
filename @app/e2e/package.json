@@ -15,6 +15,6 @@
     "cypress-file-upload": "^5.0.8",
     "jest": "^27.0.6",
     "slugify": "^1.6.0",
-    "webpack": "^5.50.0"
+    "webpack": "^5.51.1"
   }
 }

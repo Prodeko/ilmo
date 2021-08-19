@@ -15,9 +15,9 @@
     "@sentry/react": "^6.11.0",
     "@sentry/tracing": "^6.11.0",
     "@types/lodash": "^4.14.172",
-    "@types/node": "^16.6.1",
+    "@types/node": "^16.6.2",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^17.0.18",
+    "@types/react": "^17.0.19",
     "antd": "4.16.12",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "1.10.6",
@@ -38,7 +38,7 @@
     "slugify": "^1.6.0",
     "tls": "^0.0.1",
     "urql": "^2.0.4",
-    "webpack": "^5.50.0"
+    "webpack": "^5.51.1"
   },
   "devDependencies": {
     "babel-plugin-import": "^1.13.3",

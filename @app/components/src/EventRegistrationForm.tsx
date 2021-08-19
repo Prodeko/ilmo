@@ -189,11 +189,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       initialValues={initialValues}
       onFinish={handleSubmit}
     >
-      <Form.Item shouldUpdate>
-        {() => {
-          return <pre>{JSON.stringify(form.getFieldsValue(), null, 2)}</pre>
-        }}
-      </Form.Item>
       <Form.Item
         label={t("forms.firstName")}
         name="firstName"

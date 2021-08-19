@@ -1,5 +1,6 @@
 import { Event } from "@app/graphql"
-import { Card, Typography } from "antd"
+import { randomElementFromArray } from "@app/lib"
+import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
 import useTranslation from "next-translate/useTranslation"
@@ -8,6 +9,7 @@ import { H5 } from "./Text"
 import { ButtonLink, P } from "."
 
 const { Text } = Typography
+const { Ribbon } = Badge
 
 const DEFAULT_HEADER_IMAGE =
   "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
@@ -16,19 +18,12 @@ interface EventCardProps {
   event: Event
 }
 
+const rainbowColors = ["#d8353d", "#d8984f", "#1d8d4f", "#3877e4"]
+
 const cardEventDatesStyle = {
   fontSize: 12,
   whiteSpace: "nowrap",
   paddingBottom: "0.5rem",
-} as React.CSSProperties
-
-const highlightedStyle = {
-  // Prodeko rainbow colors
-  background:
-    "linear-gradient(-45deg, #90000c, #e83d09, #fbe867, #005244, #16288c)",
-  backgroundSize: "400% 400%",
-  animation: "gradient 10s ease infinite",
-  border: "none",
 } as React.CSSProperties
 
 export const EventCard: React.FC<EventCardProps> = ({ event }) => {
@@ -47,7 +42,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
   const title = isHighlighted ? `🔥 ${name[lang]} 🔥 ` : name[lang]
 
-  return (
+  const card = (
     <Card
       // bodyStyle and style are used to position the signup button on the same row
       // even if the description of some event would be very short.
@@ -89,12 +84,22 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         data-cy={`eventcard-eventpage-link-${event.slug}`}
         href={`/event/${slug}`}
         size="middle"
-        style={isHighlighted ? highlightedStyle : undefined}
         type={signupOpen ? "success" : "default"}
         block
       >
         {signupOpen ? t("registerToAnEvent") : t("common:moreInfo")}
       </ButtonLink>
     </Card>
+  )
+
+  return isHighlighted ? (
+    <Ribbon
+      color={randomElementFromArray(rainbowColors)}
+      text={t("highlightText")}
+    >
+      {card}
+    </Ribbon>
+  ) : (
+    card
   )
 }

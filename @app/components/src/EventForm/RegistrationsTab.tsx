@@ -7,7 +7,7 @@ import {
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
 import * as Sentry from "@sentry/react"
-import { Button, message, Popconfirm, Space, Typography } from "antd"
+import { Button, Col, message, Popconfirm, Row, Typography } from "antd"
 import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
 
@@ -39,30 +39,35 @@ export const RegistrationsTableActions: React.FC = () => {
 
   return (
     <>
-      <Space>
-        <ButtonLink
-          as={`/update-registration`}
-          href="/update-registration/[updatetoken]"
-          type="primary"
-        >
-          {t("common:update")}
-        </ButtonLink>
-        <Popconfirm
-          cancelText={t("common:no")}
-          okText={t("common:yes")}
-          placement="top"
-          title={t("registrations.delete.confirmText")}
-          onConfirm={doDelete}
-        >
-          <Button
-            data-cy="admin-table-delete-button"
-            style={{ marginLeft: 5 }}
-            danger
+      <Row gutter={[8, 8]}>
+        <Col flex="1 0 50%">
+          <ButtonLink
+            as={`/update-registration`}
+            href="/update-registration/[updatetoken]"
+            style={{ minWidth: "85px" }}
+            type="primary"
           >
-            {t("common:delete")}
-          </Button>
-        </Popconfirm>
-      </Space>
+            {t("common:update")}
+          </ButtonLink>
+        </Col>
+        <Col flex="1 0 50%">
+          <Popconfirm
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
+            placement="top"
+            title={t("registrations.delete.confirmText")}
+            onConfirm={doDelete}
+          >
+            <Button
+              data-cy="admin-table-delete-button"
+              style={{ minWidth: "85px" }}
+              danger
+            >
+              {t("common:delete")}
+            </Button>
+          </Popconfirm>
+        </Col>
+      </Row>
       {error ? (
         <ErrorAlert
           error={error}
@@ -87,26 +92,29 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
   const { t } = useTranslation("events")
   const isMobile = useIsMobile()
 
-  const actionsColumn = {
-    title: "",
-    key: "actions",
-    render: (_name: string) => {
-      return <RegistrationsTableActions />
+  const commonColumns = [
+    {
+      title: "",
+      key: "actions",
+      ellipsis: true,
+      render: (_name: string) => {
+        return <RegistrationsTableActions />
+      },
     },
-  }
+    {
+      title: t("common:name"),
+      dataIndex: ["fullName"],
+      key: "fullName",
+      ellipsis: true,
+      sorter: {
+        compare: Sorter.TEXT,
+      },
+    },
+  ]
 
   const columns = !isMobile
     ? [
-        actionsColumn,
-        {
-          title: t("common:name"),
-          dataIndex: ["fullName"],
-          key: "fullName",
-          ellipsis: true,
-          sorter: {
-            compare: Sorter.TEXT,
-          },
-        },
+        ...commonColumns,
         {
           title: t("events:queued"),
           dataIndex: ["isQueued"],
@@ -150,7 +158,7 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
               : t("common:no"),
         },
       ]
-    : [actionsColumn]
+    : commonColumns
 
   if (!eventId) return null
 
@@ -161,7 +169,6 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       dataField="registrations"
       queryDocument={ListEventRegistrationsDocument}
       showPagination={true}
-      size="middle"
       variables={{ eventId }}
     />
   )

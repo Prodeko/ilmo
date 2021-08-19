@@ -108,7 +108,6 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
                 columns={quotaColumns}
                 data={quotaRegistrations}
                 data-cy="eventpage-signups-table"
-                size="small"
                 style={{
                   margin: "1rem 0",
                 }}
@@ -123,7 +122,6 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
             columns={queuedColumns}
             data={queuedRegistrations}
             data-cy="eventpage-signups-table"
-            size="small"
             style={{
               margin: "1rem 0",
             }}

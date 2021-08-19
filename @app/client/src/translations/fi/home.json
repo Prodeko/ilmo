@@ -1,5 +1,6 @@
 {
   "eventTime": "Tapahtuma",
+  "highlightText": "Nätti tapahtuma!",
   "noEvents": "Ei tapahtumia",
   "registerToAnEvent": "Ilmoittaudu",
   "registrationTime": "Ilmo"

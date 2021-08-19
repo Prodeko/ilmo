@@ -13,6 +13,7 @@ import { useQuery } from "urql"
 
 import { ErrorResult } from "./ErrorResult"
 import { Loading } from "./Loading"
+import { useIsMobile } from "."
 
 type RecordType = any
 
@@ -38,6 +39,7 @@ export function ServerPaginatedTable({
   showPagination = true,
   ...props
 }: ServerPaginatedTableProps) {
+  const isMobile = useIsMobile()
   const [offset, setOffset] = useState(0)
   const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
@@ -118,6 +120,7 @@ export function ServerPaginatedTable({
       pagination={showPagination && pagination}
       rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}
+      size={isMobile ? "small" : "middle"}
       onChange={handleTableChange}
       {...props}
     />

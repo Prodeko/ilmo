@@ -78,8 +78,6 @@ describe("CreateRegistration", () => {
     const quotaId = quotas[0].id
     const answers = constructAnswersFromQuestions(questions)
 
-    console.log(answers)
-
     const rateLimitId = `${eventId}:${quotaId}`
     const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
 

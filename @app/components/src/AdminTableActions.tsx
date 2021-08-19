@@ -6,7 +6,7 @@ import {
   useDeleteEventMutation,
 } from "@app/graphql"
 import * as Sentry from "@sentry/react"
-import { Button, message, Popconfirm, Space } from "antd"
+import { Button, Col, message, Popconfirm, Row } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
 import { ButtonLink, ErrorAlert } from "."
@@ -47,30 +47,36 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
 
   return (
     <>
-      <Space>
-        <ButtonLink
-          as={`/admin/${adminUrl}/update/${dataType.id}`}
-          href={`/admin/${adminUrl}/update/[id]`}
-          type="primary"
-        >
-          {t("common:update")}
-        </ButtonLink>
-        <Popconfirm
-          cancelText={t("common:no")}
-          okText={t("common:yes")}
-          placement="top"
-          title={deleteConfirmTranslate}
-          onConfirm={doDelete}
-        >
-          <Button
-            data-cy="admin-table-delete-button"
-            style={{ marginLeft: 5 }}
-            danger
+      <Row gutter={[8, 8]}>
+        <Col flex="1 0 50%">
+          <ButtonLink
+            as={`/admin/${adminUrl}/update/${dataType.id}`}
+            href={`/admin/${adminUrl}/update/[id]`}
+            style={{ minWidth: "85px" }}
+            type="primary"
           >
-            {t("common:delete")}
-          </Button>
-        </Popconfirm>
-      </Space>
+            {t("common:update")}
+          </ButtonLink>
+        </Col>
+        <Col flex="1 0 50%">
+          {" "}
+          <Popconfirm
+            cancelText={t("common:no")}
+            okText={t("common:yes")}
+            placement="top"
+            title={deleteConfirmTranslate}
+            onConfirm={doDelete}
+          >
+            <Button
+              data-cy="admin-table-delete-button"
+              style={{ minWidth: "85px" }}
+              danger
+            >
+              {t("common:delete")}
+            </Button>
+          </Popconfirm>
+        </Col>
+      </Row>
       {error ? (
         <ErrorAlert
           error={error}
