@@ -44,7 +44,7 @@ function initSentry() {
       new Tracing.Integrations.Postgres(),
     ],
     tracesSampleRate: 0.3,
-  });
+  })
 }
 
 export async function makeApp({

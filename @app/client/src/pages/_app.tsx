@@ -62,7 +62,7 @@ if (typeof window !== "undefined") {
       dsn: SENTRY_DSN,
       integrations: [new TracingIntegrations.BrowserTracing()],
       tracesSampleRate: 0.3,
-    });
+    })
   }
 
   Router.events.on("routeChangeStart", () => {
