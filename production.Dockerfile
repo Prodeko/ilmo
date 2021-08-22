@@ -12,6 +12,10 @@ FROM node:14-alpine as builder
 ARG NODE_ENV
 ARG ROOT_URL
 
+# Some libs are needed for node-gyp
+RUN apk add --update libtool autoconf automake python make g++\
+   && rm -rf /var/cache/apk/*
+
 # Cache node_modules for as long as possible
 COPY lerna.json package.json yarn.lock /app/
 COPY @app/ /app/@app/
@@ -72,6 +76,10 @@ RUN rm -Rf /app/node_modules /app/@app/*/node_modules
 
 FROM node:14-alpine
 
+# Some libs are needed for node-gyp
+RUN apk add --no-cache --virtual .build-deps \
+   libtool autoconf automake python make g++
+
 EXPOSE $PORT
 WORKDIR /app/
 # Copy everything from stage 2, it's already been filtered
@@ -79,6 +87,8 @@ COPY --from=clean /app/ /app/
 
 # Install yarn ASAP because it's the slowest
 RUN yarn install --frozen-lockfile --production=true --no-progress
+
+RUN apk del .build-deps
 
 # Import our shared args
 ARG PORT
