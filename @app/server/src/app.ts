@@ -43,8 +43,8 @@ function initSentry() {
       // enable database query tracing
       new Tracing.Integrations.Postgres(),
     ],
-    tracesSampleRate: 1.0,
-  })
+    tracesSampleRate: 0.3,
+  });
 }
 
 export async function makeApp({

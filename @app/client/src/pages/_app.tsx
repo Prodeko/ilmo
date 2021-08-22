@@ -61,8 +61,8 @@ if (typeof window !== "undefined") {
       environment: process.env.NODE_ENV,
       dsn: SENTRY_DSN,
       integrations: [new TracingIntegrations.BrowserTracing()],
-      tracesSampleRate: 1,
-    })
+      tracesSampleRate: 0.3,
+    });
   }
 
   Router.events.on("routeChangeStart", () => {
