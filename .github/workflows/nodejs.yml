@@ -52,6 +52,8 @@ jobs:
       - name: yarn, lint, build and test
         run: |
           cp .env.ci .env
+          # TODO: remove yarn policies at some point...
+          yarn policies set-version 1.18.0
           yarn --frozen-lockfile
           CONFIRM_DROP=1 yarn setup
           yarn build

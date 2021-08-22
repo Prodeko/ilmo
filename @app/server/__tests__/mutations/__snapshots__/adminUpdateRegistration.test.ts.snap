@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AdminUpdateRegistration can get an updateToken related to a registration if the user is an admin 1`] = `
+Object {
+  "data": Object {
+    "adminUpdateRegistration": Object {
+      "updateToken": "[id-1]",
+    },
+  },
+}
+`;
+
+exports[`AdminUpdateRegistration can't get an updateToken related to a registration if the user is not an admin 1`] = `
+Object {
+  "data": Object {
+    "adminUpdateRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.admin_update_registration(uuid) line 7 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Acces denied. Only admins are allowed to use this mutation.",
+      "path": Array [
+        "adminUpdateRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`AdminUpdateRegistration returns an error if registration is not found 1`] = `
+Object {
+  "data": Object {
+    "adminUpdateRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.admin_update_registration(uuid) line 15 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Registration was not found.",
+      "path": Array [
+        "adminUpdateRegistration",
+      ],
+    },
+  ],
+}
+`;

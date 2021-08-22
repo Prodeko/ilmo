@@ -1,27 +1,27 @@
-import { Task } from "graphile-worker";
+import { Task } from "graphile-worker"
 
-import { SendEmailPayload } from "./send_email";
+import { SendEmailPayload } from "./send_email"
 
 interface UserForgotPasswordPayload {
   /**
    * user id
    */
-  id: string;
+  id: string
 
   /**
    * email address
    */
-  email: string;
+  email: string
 
   /**
    * secret token
    */
-  token: string;
+  token: string
 }
 
 const task: Task = async (inPayload, { addJob, withPgClient }) => {
-  const payload: UserForgotPasswordPayload = inPayload as any;
-  const { id: userId, email, token } = payload;
+  const payload: UserForgotPasswordPayload = inPayload as any
+  const { id: userId, email, token } = payload
   const {
     rows: [user],
   } = await withPgClient((pgClient) =>
@@ -33,10 +33,10 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
       `,
       [userId]
     )
-  );
+  )
   if (!user) {
-    console.error("User not found; aborting");
-    return;
+    console.error("User not found; aborting")
+    return
   }
   const sendEmailPayload: SendEmailPayload = {
     options: {
@@ -50,8 +50,8 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
         user.id
       )}&token=${encodeURIComponent(token)}`,
     },
-  };
-  await addJob("send_email", sendEmailPayload);
-};
+  }
+  await addJob("send_email", sendEmailPayload)
+}
 
-module.exports = task;
+module.exports = task

@@ -1,35 +1,34 @@
-import * as qs from "querystring";
+import * as qs from "querystring"
 
-import React from "react";
-import { Layout, Menu, Typography } from "antd";
-import { TextProps } from "antd/lib/typography/Text";
-import Link from "next/link";
-import { NextRouter, useRouter } from "next/router";
+import { Layout, Menu, Typography } from "antd"
+import { TextProps } from "antd/lib/typography/Text"
+import Link from "next/link"
+import { useRouter } from "next/router"
 
-import { Redirect } from "./Redirect";
+import { Redirect } from "./Redirect"
 import {
   AuthRestrict,
   contentMinHeight,
   SharedLayout,
   SharedLayoutChildProps,
   SharedLayoutProps,
-} from "./SharedLayout";
-import { StandardWidth } from "./StandardWidth";
-import { Warn } from "./Warn";
+} from "./SharedLayout"
+import { StandardWidth } from "./StandardWidth"
+import { Warn } from "./Warn"
 
-const { Text } = Typography;
-const { Sider, Content } = Layout;
+const { Text } = Typography
+const { Sider, Content } = Layout
 
 interface PageSpec {
-  title: string;
-  cy: string;
-  warnIfUnverified?: boolean;
-  titleProps?: TextProps;
+  title: string
+  cy: string
+  warnIfUnverified?: boolean
+  titleProps?: TextProps
 }
 
 // TypeScript shenanigans (so we can still use `keyof typeof pages` later)
 function page(spec: PageSpec): PageSpec {
-  return spec;
+  return spec
 }
 
 const pages = {
@@ -57,12 +56,12 @@ const pages = {
     },
     cy: "settingslayout-link-delete",
   }),
-};
+}
 
 export interface SettingsLayoutProps {
-  query: SharedLayoutProps["query"];
-  href: keyof typeof pages;
-  children: React.ReactNode;
+  query: SharedLayoutProps["query"]
+  href: keyof typeof pages
+  children: React.ReactNode
 }
 
 export function SettingsLayout({
@@ -70,12 +69,11 @@ export function SettingsLayout({
   href: inHref,
   children,
 }: SettingsLayoutProps) {
-  const href = pages[inHref] ? inHref : Object.keys(pages)[0];
-  const page = pages[href];
-  // `useRouter()` sometimes returns null
-  const router: NextRouter | null = useRouter();
+  const href = pages[inHref] ? inHref : Object.keys(pages)[0]
+  const page = pages[href]
+  const router = useRouter()
   const fullHref =
-    href + (router && router.query ? `?${qs.stringify(router.query)}` : "");
+    href + (router && router.query ? `?${qs.stringify(router.query)}` : "")
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_OUT}
@@ -83,8 +81,8 @@ export function SettingsLayout({
       title={`Settings: ${page.title}`}
       noPad
     >
-      {({ currentUser, error, loading }: SharedLayoutChildProps) =>
-        !currentUser && !error && !loading ? (
+      {({ currentUser, error, fetching }: SharedLayoutChildProps) =>
+        !currentUser && !error && !fetching ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
           <Layout style={{ minHeight: contentMinHeight }} hasSider>
@@ -118,5 +116,5 @@ export function SettingsLayout({
         )
       }
     </SharedLayout>
-  );
+  )
 }

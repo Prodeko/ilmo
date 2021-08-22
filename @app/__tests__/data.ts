@@ -1,22 +1,23 @@
-import dayjs from "dayjs";
-import * as faker from "faker";
-import { PoolClient } from "pg";
-import slugify from "slugify";
+import { EventQuestion, QuestionType } from "@app/graphql"
+import dayjs from "dayjs"
+import * as faker from "faker"
+import { PoolClient } from "pg"
+import slugify from "slugify"
 
 export type User = {
-  id: string;
-  username: string;
-  _email: string;
-  _password: string;
-};
+  id: string
+  username: string
+  _email: string
+  _password: string
+}
 
-let userCreationCounter = 0;
+let userCreationCounter = 0
 if (process.env.IN_TESTS) {
   // Enables multiple calls to `createUsers` within the same test to still have
   // deterministic results without conflicts.
   beforeEach(() => {
-    userCreationCounter = 0;
-  });
+    userCreationCounter = 0
+  })
 }
 
 /**
@@ -27,67 +28,50 @@ if (process.env.IN_TESTS) {
 export const createUsers = async (
   client: PoolClient,
   count: number = 1,
-  verified: boolean = true
+  verified: boolean = true,
+  isAdmin: boolean = false
 ) => {
-  const users = [];
+  const users = []
   if (userCreationCounter > 25) {
-    throw new Error("Too many users created!");
+    throw new Error("Too many users created!")
   }
   for (let i = 0; i < count; i++) {
-    const userLetter = "abcdefghijklmnopqrstuvwxyz"[userCreationCounter];
-    userCreationCounter++;
-    const password = userLetter.repeat(12);
-    const email = `${userLetter}${i || ""}@b.c`;
+    const userLetter = "abcdefghijklmnopqrstuvwxyz"[userCreationCounter]
+    userCreationCounter++
+    const password = userLetter.repeat(12)
+    const email = `${userLetter}${i || ""}@b.c`
     const user = (
       await client.query(
         `select * from app_private.really_create_user(
         username := $1,
         email := $2,
-        email_is_verified := $3,
-        name := $4,
-        avatar_url := $5,
-        password := $6
+        name := $3,
+        avatar_url := $4,
+        password := $5,
+        email_is_verified := $6,
+        is_admin := $7
       )`,
         [
           `testuser_${userLetter}`,
           email,
-          verified,
           `User ${userLetter}`,
           null,
           password,
+          verified,
+          isAdmin,
         ]
       )
-    ).rows[0];
-    user._email = email;
-    user._password = password;
-    users.push(user);
+    ).rows[0]
+    user._email = email
+    user._password = password
+    users.push(user)
   }
-  return users;
-};
+  return users
+}
 
-/******************************************************************************/
-// Organizations
-
-export const createOrganizations = async (
-  client: PoolClient,
-  count: number = 1
-) => {
-  const organizations = [];
-  for (let i = 0; i < count; i++) {
-    const random = faker.lorem.word();
-    const slug = `organization-${random}`;
-    const name = `Organization ${random}`;
-    const {
-      rows: [organization],
-    } = await client.query(
-      `select * from app_public.create_organization($1, $2)`,
-      [slug, name]
-    );
-    organizations.push(organization);
-  }
-
-  return organizations;
-};
+const paragraph = () => faker.lorem.paragraph()
+const word = () => faker.lorem.word()
+const words = () => faker.lorem.words()
 
 /******************************************************************************/
 // Sessions
@@ -104,87 +88,116 @@ export const createSession = async (
       returning *
     `,
     [userId]
-  );
-  return session;
-};
+  )
+  return session
+}
 
 /******************************************************************************/
-// Events
+// Organizations
+
+export const createOrganizations = async (
+  client: PoolClient,
+  count: number = 1
+) => {
+  const organizations = []
+  for (let i = 0; i < count; i++) {
+    const random = words()
+    const slug = `organization-${random}`
+    const name = `Organization ${random}`
+    const {
+      rows: [organization],
+    } = await client.query(
+      `select * from app_public.create_organization($1, $2)`,
+      [slug, name]
+    )
+    organizations.push(organization)
+  }
+
+  return organizations
+}
+
+/******************************************************************************/
+// Event categories
 
 export const createEventCategories = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string
 ) => {
-  const categories = [];
+  const categories = []
   for (let i = 0; i < count; i++) {
-    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` };
+    const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
     const description = {
-      fi: faker.lorem.paragraph(),
-      en: faker.lorem.paragraph(),
-    };
+      fi: paragraph(),
+      en: paragraph(),
+    }
+    const color = faker.internet.color()
     const {
       rows: [category],
     } = await client.query(
-      `insert into app_public.event_categories(name, description, owner_organization_id)
-        values ($1, $2, $3)
+      `insert into app_public.event_categories(name, description, color, owner_organization_id)
+        values ($1, $2, $3, $4)
         returning *
       `,
-      [name, description, organizationId]
-    );
-    categories.push(category);
+      [name, description, color, organizationId]
+    )
+    categories.push(category)
   }
 
-  return categories;
-};
+  return categories
+}
+
+/******************************************************************************/
+// Events
 
 export const createEvents = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string,
   categoryId: string,
-  signupOpen: boolean = true
+  signupOpen: boolean = true,
+  isDraft: boolean = false
 ) => {
-  const events = [];
+  const events = []
   for (let i = 0; i < count; i++) {
     const name = {
-      fi: `Tapahtuma ${faker.lorem.words()} ${i}`,
-      en: `Event ${faker.lorem.words()} ${i}`,
-    };
+      fi: `Tapahtuma ${words()} ${i}`,
+      en: `Event ${words()} ${i}`,
+    }
     const description = {
-      fi: faker.lorem.paragraph(),
-      en: faker.lorem.paragraph(),
-    };
+      fi: paragraph(),
+      en: paragraph(),
+    }
+    const location = faker.address.streetAddress()
 
-    const now = new Date();
-    const dayAdjustment = signupOpen ? -1 : 1;
-    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate();
+    const now = dayjs()
+    const dayAdjustment = signupOpen ? -1 : 1
+    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
     const registrationEndTime = faker.date.between(
       dayjs(registrationStartTime).add(1, "day").toDate(),
       dayjs(registrationStartTime).add(7, "day").toDate()
-    );
+    )
 
     const eventStartTime = faker.date.between(
       registrationEndTime,
       dayjs(registrationEndTime).add(7, "day").toDate()
-    );
+    )
     const eventEndTime = faker.date.between(
       eventStartTime,
       dayjs(eventStartTime).add(1, "day").toDate()
-    );
+    )
 
-    const eventCategoryId = categoryId;
+    const eventCategoryId = categoryId
     const headerImageFile = faker.image.imageUrl(
       851,
       315,
       `nature?random=${Math.round(Math.random() * 1000)}`
-    );
+    )
 
-    const daySlug = dayjs(eventStartTime).format("YYYY-M-D");
+    const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
       lower: true,
-    });
-    const isDraft = false;
+    })
 
     const {
       rows: [event],
@@ -193,6 +206,7 @@ export const createEvents = async (
         name,
         slug,
         description,
+        location,
         event_start_time,
         event_end_time,
         registration_start_time,
@@ -202,13 +216,14 @@ export const createEvents = async (
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       returning *
       `,
       [
         name,
         slug,
         description,
+        location,
         eventStartTime,
         eventEndTime,
         registrationStartTime,
@@ -218,12 +233,12 @@ export const createEvents = async (
         organizationId,
         eventCategoryId,
       ]
-    );
-    events.push(event);
+    )
+    events.push(event)
   }
 
-  return events;
-};
+  return events
+}
 
 /******************************************************************************/
 // Quotas
@@ -233,13 +248,13 @@ export const createQuotas = async (
   count: number = 1,
   eventId: string
 ) => {
-  const quotas = [];
+  const quotas = []
   for (let i = 0; i < count; i++) {
-    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` };
-    const size = faker.random.number({
-      min: 1,
+    const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
+    const size = faker.datatype.number({
+      min: 3,
       max: 20,
-    });
+    })
     const {
       rows: [quota],
     } = await client.query(
@@ -248,12 +263,61 @@ export const createQuotas = async (
         returning *
       `,
       [eventId, i, title, size]
-    );
-    quotas.push(quota);
+    )
+    quotas.push(quota)
   }
 
-  return quotas;
-};
+  return quotas
+}
+
+/******************************************************************************/
+// Questions
+
+const getRandomQuestionData = () => {
+  const number = faker.datatype.number({ min: 1, max: 5 })
+  return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
+}
+
+export const createQuestions = async (
+  client: PoolClient,
+  count: number = 1,
+  eventId: string,
+  isRequired?: boolean,
+  type?: QuestionType
+) => {
+  const questionTypes = Object.values(QuestionType)
+  let questions = []
+  for (let i = 0; i < count; i++) {
+    const t = type ? type : questionTypes[i % 3]
+    const label = { fi: words(), en: words() }
+    let data
+    if ([QuestionType.Radio, QuestionType.Checkbox].includes(t)) {
+      data = getRandomQuestionData()
+    } else if (t === QuestionType.Text) {
+      data = null
+    }
+    const {
+      rows: [question],
+    } = await client.query(
+      `with r1 as (
+        insert into app_public.event_questions(event_id, position, type, label, is_required, data)
+        values ($1, $2, $3, $4, $5, $6)
+        returning *
+      )
+      select r1.id, r1.*, data::text[] as data from r1
+      `,
+      [eventId, i, t, label, isRequired, data]
+    )
+    questions.push(question)
+  }
+
+  questions = questions.map((q) => ({
+    ...q,
+    data: q?.data?.map((d) => JSON.parse(d)),
+  }))
+
+  return questions
+}
 
 /******************************************************************************/
 // Registration secrets
@@ -265,7 +329,7 @@ export const createRegistrationSecrets = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrationSecrets = [];
+  const registrationSecrets = []
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
@@ -275,38 +339,60 @@ export const createRegistrationSecrets = async (
         returning *
       `,
       [eventId, quotaId, registrationId]
-    );
-    registrationSecrets.push(secret);
+    )
+    registrationSecrets.push(secret)
   }
 
-  return registrationSecrets;
-};
+  return registrationSecrets
+}
 
 /******************************************************************************/
 // Registrations
+
+export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
+  let i = 0
+  // Choose random language to simulate finnish and english registrations
+  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const answers = questions?.reduce((acc, cur) => {
+    if (cur.type === QuestionType.Text) {
+      acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
+    } else if (cur.type === QuestionType.Checkbox) {
+      acc[cur.id] = cur.data.map((option) => option[chosenLanguage])
+    } else if (cur.type === QuestionType.Radio) {
+      acc[cur.id] = cur.data[0][chosenLanguage]
+    }
+    i++
+
+    return acc
+  }, {})
+
+  return answers
+}
 
 export const createRegistrations = async (
   client: PoolClient,
   count: number = 1,
   eventId: string,
-  quotaId: string
+  quotaId: string,
+  questions: EventQuestion[]
 ) => {
-  const registrations = [];
+  const registrations = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const email = faker.internet.email();
+    const firstName = faker.name.firstName()
+    const lastName = faker.name.lastName()
+    const email = faker.internet.email()
+    const answers = constructAnswersFromQuestions(questions)
     const {
       rows: [registration],
     } = await client.query(
-      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email)
-        values ($1, $2, $3, $4, $5)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers)
+        values ($1, $2, $3, $4, $5, $6)
         returning *
       `,
-      [eventId, quotaId, firstName, lastName, email]
-    );
-    registrations.push(registration);
+      [eventId, quotaId, firstName, lastName, email, answers]
+    )
+    registrations.push(registration)
   }
 
-  return registrations;
-};
+  return registrations
+}

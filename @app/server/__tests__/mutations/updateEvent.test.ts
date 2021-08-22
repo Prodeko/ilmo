@@ -1,191 +1,202 @@
-import dayjs from "dayjs";
+import { pick } from "lodash"
 
+import { UpdateEventDocument } from "../../../graphql"
 import {
   asRoot,
   createEventDataAndLogin,
   deleteTestData,
   runGraphQLQuery,
-  sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
 describe("UpdateEvent", () => {
   it("can update an existing event", async () => {
-    const {
-      events,
-      organization,
-      eventCategory,
-      session,
-    } = await createEventDataAndLogin();
-    const event = events[0];
-
-    const day = dayjs("2021-02-20T12:00:00+02:00");
+    const { events, quotas, questions, session } =
+      await createEventDataAndLogin()
+    const event = events[0]
 
     await runGraphQLQuery(
-      `mutation UpdateEvent(
-        $eventId: UUID!
-        $name: JSON!
-        $description: JSON!
-        $organizationId: UUID!
-        $categoryId: UUID!
-        $isHighlighted: Boolean
-        $isDraft: Boolean
-        $eventStartTime: Datetime!
-        $eventEndTime: Datetime!
-        $registrationStartTime: Datetime!
-        $registrationEndTime: Datetime!
-      ) {
-        updateEvent(
-          input: {
-            id: $eventId
-            patch: {
-              name: $name
-              description: $description
-              ownerOrganizationId: $organizationId
-              categoryId: $categoryId
-              isHighlighted: $isHighlighted
-              isDraft: $isDraft
-              eventStartTime: $eventStartTime
-              eventEndTime: $eventEndTime
-              registrationStartTime: $registrationStartTime
-              registrationEndTime: $registrationEndTime
-            }
-          }
-        ) {
-          event {
-            id
-            name
-            description
-            ownerOrganizationId
-            categoryId
-            isHighlighted
-            isDraft
-            eventStartTime
-            eventEndTime
-            registrationStartTime
-            registrationEndTime
-          }
-        }
-      }`,
-
+      UpdateEventDocument,
       // GraphQL variables:
       {
-        eventId: event.id,
-        slug: event.slug,
-        name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
-        description: {
-          fi: "Päivitetty testikuvaus",
-          en: "Updated test description",
+        input: {
+          id: event.id,
+          event: {
+            name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
+            description: {
+              fi: "Päivitetty testikuvaus",
+              en: "Updated test description",
+            },
+          },
+          quotas: [
+            ...quotas.map((q) => pick(q, ["id", "position", "size", "title"])),
+            {
+              // Should also be able to create new quotas via this mutation if
+              // id is not specified
+              position: 2,
+              size: 2,
+              title: {
+                fi: "Testikiintiö 3",
+                en: "Test quota 3",
+              },
+            },
+          ],
+          questions: [
+            ...questions.map((q) => ({
+              ...pick(q, ["id", "position", "type", "label", "data"]),
+              isRequired: q.is_required,
+            })),
+            {
+              // Should also be able to create new questions via this mutation if
+              // id is not specified
+              position: 0,
+              type: "CHECKBOX",
+              label: {
+                en: "Test question, choose option",
+                fi: "Testikysymys, valitse vaihtoehto",
+              },
+              isRequired: false,
+              data: [{ fi: "New 1" }, { fi: "New 2" }, { fi: "New 3" }],
+            },
+          ],
         },
-        organizationId: organization.id,
-        categoryId: eventCategory.id,
-        isHighlighted: true,
-        isDraft: false,
-        eventStartTime: day.add(2, "hour").toISOString(),
-        eventEndTime: day.add(3, "hour").toISOString(),
-        registrationStartTime: day.toISOString(),
-        registrationEndTime: day.add(1, "hour").toISOString(),
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {
-        user: { session_id: session.uuid },
+        user: { sessionId: session.uuid },
       },
 
       // This function runs all your test assertions:
       async (json, { pgClient }) => {
-        expect(json.errors).toBeFalsy();
-        expect(json.data).toBeTruthy();
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
 
-        const updatedEvent = json.data!.updateEvent.event;
+        const updatedEvent = json.data!.updateEvent.event
 
-        expect(updatedEvent).toBeTruthy();
-        expect(updatedEvent.ownerOrganizationId).toEqual(organization.id);
-
-        expect(sanitize(updatedEvent)).toMatchInlineSnapshot(`
-          Object {
-            "categoryId": "[id-3]",
-            "description": Object {
-              "en": "Updated test description",
-              "fi": "Päivitetty testikuvaus",
-            },
-            "eventEndTime": "[timestamp-2]",
-            "eventStartTime": "[timestamp-1]",
-            "id": "[id-1]",
-            "isDraft": false,
-            "isHighlighted": true,
-            "name": Object {
-              "en": "Updated test event",
-              "fi": "Päivitetty testitapahtuma",
-            },
-            "ownerOrganizationId": "[id-2]",
-            "registrationEndTime": "[timestamp-4]",
-            "registrationStartTime": "[timestamp-3]",
-          }
-        `);
-
-        const { rows } = await asRoot(pgClient, () =>
+        const { rows: eventRows } = await asRoot(pgClient, () =>
           pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
-            updatedEvent.id,
+            event.id,
           ])
-        );
+        )
+        const { rows: quotaRows } = await asRoot(pgClient, () =>
+          pgClient.query(
+            `SELECT * FROM app_public.quotas WHERE event_id = $1`,
+            [event.id]
+          )
+        )
+        const { rows: questionRows } = await asRoot(pgClient, () =>
+          pgClient.query(
+            `SELECT * FROM app_public.event_questions WHERE event_id = $1`,
+            [event.id]
+          )
+        )
 
-        if (rows.length !== 1) {
-          throw new Error("Event not found!");
+        if (eventRows.length !== 1) {
+          throw new Error("Event not found!")
         }
-        expect(rows[0].id).toEqual(updatedEvent.id);
-      }
-    );
-  });
+        if (quotaRows.length !== quotas.length + 1) {
+          throw new Error("Wrong amount of quotas after mutation!")
+        }
+        if (questionRows.length !== questions.length + 1) {
+          throw new Error("Wrong amount of questions after mutation!")
+        }
 
-  it("can't update an event while logged out (RLS policy)", async () => {
-    const { events } = await createEventDataAndLogin({
+        expect(eventRows[0].id).toEqual(updatedEvent.id)
+        expect(eventRows[0].name.fi).toEqual("Päivitetty testitapahtuma")
+      }
+    )
+  })
+
+  it("must specify at least one event quota", async () => {
+    const { events, session } = await createEventDataAndLogin({
+      quotaOptions: { create: false },
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
+      registrationSecretOptions: { create: false },
+    })
+    const event = events[0]
 
     await runGraphQLQuery(
-      `mutation UpdateEvent(
-        $eventId: UUID!
-        $description: JSON!
-      ) {
-        updateEvent(
-          input: {
-            id: $eventId
-            patch: {
-              description: $description
-            }
-          }
-        ) {
-          event {
-            id
-          }
-        }
-      }`,
+      UpdateEventDocument,
+      // GraphQL variables:
+      {
+        input: {
+          id: event.id,
+          event: {
+            name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
+            description: {
+              fi: "Päivitetty testikuvaus",
+              en: "Updated test description",
+            },
+          },
+          quotas: [],
+          questions: [],
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: { sessionId: session.uuid },
+      },
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+
+        expect(message).toEqual("You must specify at least one quota")
+        expect(code).toEqual("DNIED")
+      }
+    )
+  })
+
+  it("can't update an event while logged out", async () => {
+    const { events, quotas, questions } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    })
+    const event = events[0]
+
+    await runGraphQLQuery(
+      UpdateEventDocument,
 
       // GraphQL variables:
       {
-        eventId,
-        description: "Test",
+        input: {
+          id: event.id,
+          event: {
+            description: {
+              fi: "Päivitetty testikuvaus",
+              en: "Updated test description",
+            },
+          },
+          quotas: [
+            ...quotas.map((q) => pick(q, ["id", "position", "size", "title"])),
+          ],
+          questions: [
+            ...questions.map((q) =>
+              pick(q, ["id", "position", "type", "label", "isRequired", "data"])
+            ),
+          ],
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        expect(message).toEqual(
-          "No values were updated in collection 'events' because no values you can update were found matching these criteria."
-        );
+        const message = json.errors![0].message
+        expect(message).toEqual("You must log in to update an event")
       }
-    );
-  });
-});
+    )
+  })
+})

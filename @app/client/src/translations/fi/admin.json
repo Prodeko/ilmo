@@ -1,0 +1,83 @@
+{
+  "createNewCategory": "Luo uusi kategoria",
+  "createNewOrganization": "Luo uusi organisaatio",
+  "eventCategories": {
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän tapahtumakategorian?",
+      "deleteFailedBADFK": "Tämä kategoria on yhä käytössä. Poista ensin kategoriaan liitetyt tapahtumat."
+    }
+  },
+  "events": {
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän tapahtuman?"
+    },
+    "list": {
+      "eventStartTime": "Tapahtuma alkaa",
+      "linkToEvent": "Näytä tapahtumasivu",
+      "linkUpdateEventCategory": "Muokkaa kategoriaa",
+      "registrationStartTime": "Ilmo aukeaa",
+      "registrations": "Rekisteröityneitä",
+      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
+    },
+    "tabs": {
+      "email": "Sähköposti",
+      "generalInfo": "Yleistä",
+      "questions": "Kysymykset",
+      "quotas": "Kiintiöt",
+      "registrations": "Ilmoittautumiset"
+    },
+    "update": {
+      "showAnswers": "Näytä vastaukset"
+    }
+  },
+  "notifications": {
+    "adminAccessDenied": "Pääsy hallintapaneeliin kielletty",
+    "deleteFailed": "Poisto epäonnistui",
+    "deleteSuccess": "Poistettu onnistuneesti",
+    "updateSuccess": "Päivitetty onnistuneesti"
+  },
+  "organizations": {
+    "deleteOrganization": "Poista organisaatio",
+    "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
+    "forms": {
+      "labels": {
+        "name": "Organisaation nimi",
+        "slug": "Nimi jota käytetään URL:ssa"
+      }
+    },
+    "siderTitle": "Organisaatiot",
+    "updateOrganization": "Päivitä organisaatio"
+  },
+  "pageTitle": {
+    "createEvent": "Luo tapahtuma",
+    "createEventCategory": "Luo tapahtumakategoria",
+    "createOrganization": "Luo organisaatio",
+    "listEvent": "Tapahtumat",
+    "listEventCategory": "Tapahtumakategoriat",
+    "updateEvent": "Päivitä tapahtuma",
+    "updateEventCategory": "Päivitä tapahtumakategoria"
+  },
+  "registrations": {
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän ilmoittautumisen?",
+      "deleteFailed": "Ilmoittautumisen poistaminen epäonnistui"
+    },
+    "update": {
+      "emptyAnswers": "Jos vastaukset näyttävät tyhjiltä, yritä vaihtaa kieltä."
+    }
+  },
+  "sider": {
+    "titles": {
+      "createEvent": "Luo tapahtuma",
+      "createEventCategory": "Luo tapahtumakategoria",
+      "createOrganization": "Luo organisaatio",
+      "emails": "Sähköpostit",
+      "eventCategories": "Tapahtumakategoriat",
+      "events": "Tapahtumat",
+      "listEventCategories": "Näytä tapahtumakategoriat",
+      "listEvents": "Näytä tapahtumat",
+      "main": "Dashboard",
+      "organizations": "Organsaatiot"
+    }
+  }
+}

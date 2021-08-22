@@ -1,0 +1,82 @@
+{
+  "createNewCategory": "Create a new event category",
+  "createNewOrganization": "Create a new organization",
+  "eventCategories": {
+    "delete": {
+      "confirmText": "Are you sure you want to delete this event?",
+      "deleteFailedBADFK": "This event category is still referenced by some events. Delete them first."
+    }
+  },
+  "events": {
+    "delete": {
+      "confirmText": "Are you sure you want to delete this event?"
+    },
+    "list": {
+      "eventStartTime": "Event time",
+      "linkToEvent": "Show event",
+      "linkUpdateEventCategory": "Edit category",
+      "registrationStartTime": "Registration time",
+      "registrations": "Registrations",
+      "registrationsPerQuota": "Registrations by quota"
+    },
+    "tabs": {
+      "email": "Email",
+      "generalInfo": "General",
+      "questions": "Questions",
+      "quotas": "Quotas",
+      "registrations": "Registrations"
+    },
+    "update": {
+      "showAnswers": "Show answers"
+    }
+  },
+  "notifications": {
+    "adminAccessDenied": "Access to admin panel denied",
+    "deleteFailed": "Failed to delete",
+    "deleteSuccess": "Deleted successfully",
+    "updateSuccess": "Updated successfully"
+  },
+  "organizations": {
+    "deleteOrganization": "Delete organization",
+    "deleteOrganizationConfirmText": "Are you sure you want to delete this organization? This action cannot be undone.",
+    "forms": {
+      "labels": {
+        "name": "Organization name",
+        "slug": "Slug"
+      }
+    },
+    "updateOrganization": "Update organization"
+  },
+  "pageTitle": {
+    "createEvent": "Create event",
+    "createEventCategory": "Create event category",
+    "createOrganization": "Create organization",
+    "listEvent": "Events",
+    "listEventCategory": "Event categories",
+    "updateEvent": "Update event",
+    "updateEventCategory": "Update event category"
+  },
+  "registrations": {
+    "delete": {
+      "confirmText": "Are you sure you want to delete this registration?",
+      "deleteFailed": "Failed to delete registration"
+    },
+    "update": {
+      "emptyAnswers": "If the answers look empty try another language."
+    }
+  },
+  "sider": {
+    "titles": {
+      "createEvent": "Create event",
+      "createEventCategory": "Create event category",
+      "createOrganization": "Create organization",
+      "emails": "Emails",
+      "eventCategories": "Event categories",
+      "events": "Events",
+      "listEventCategories": "List event categories",
+      "listEvents": "List events",
+      "main": "Dashboard",
+      "organizations": "Organizations"
+    }
+  }
+}

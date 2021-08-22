@@ -1,26 +1,47 @@
 {
+  "admin": "Admin",
+  "answers": "Answers",
   "backHome": "Go to homepage",
+  "color": "Color",
   "create": "Create",
+  "createdAt": "Created at",
+  "data": "Data",
+  "delete": "Delete",
   "description": "Description",
+  "draft": "Draft",
   "dragToUpload": "Click or drag file to this area to upload",
   "emailSwitchLabel": "Show html version",
   "en": "English",
   "fi": "Finnish",
-  "headerMenu": {
-    "createEvent": "Create event",
-    "createEventCategory": "Create event category",
-    "createOrganization": "Create organization"
+  "head": {
+    "description": "Prodeko event registration",
+    "title": "Prodeko event registration"
   },
   "imgCropTitle": "Edit image",
+  "label": "Label",
+  "lang": {
+    "en": "in English",
+    "fi": "in Finnish"
+  },
   "loading": "Loading...",
+  "location": "Location",
   "logout": "Logout",
   "moreInfo": "Show details",
   "name": "Name",
   "no": "No",
+  "option": "Option",
+  "question": "Question",
   "redirect": "Redirecting...",
+  "registrationClosed": "Signup closed",
+  "registrationOpen": "Signup open",
+  "registrationUpcoming": "Signup upcoming",
+  "required": "Required",
   "settings": "Settings",
   "shortDescription": "Short description",
   "signin": "Sign in",
+  "status": "Status",
+  "type": "Type",
   "update": "Update",
+  "updatedAt": "Updated at",
   "yes": "Yes"
 }

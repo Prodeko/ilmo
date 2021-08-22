@@ -1,17 +1,17 @@
-import { Task } from "graphile-worker";
+import { Task } from "graphile-worker"
 
 interface Payload {
   /**
    * Secret token used for event registration
    */
-  token: string;
+  token: string
 }
 
 // 10 minutes
-const EXPIRATION_TIMEOUT = 1000 * 10 * 60;
+const EXPIRATION_TIMEOUT = 1000 * 10 * 60
 
 const task: Task = async (inPayload, { withPgClient }) => {
-  const payload: Payload = inPayload as any;
+  const payload: Payload = inPayload as any
 
   // Delete unfinished registration and associated registration secret
   // after EXPIRATION_TIMEOUT has elapsed
@@ -29,20 +29,20 @@ const task: Task = async (inPayload, { withPgClient }) => {
         } = await client.query(
           "select * from app_private.registration_secrets where registration_token = $1",
           [payload.token]
-        );
+        )
 
         // Only delete a registration if secrets matching token were found
         if (row) {
           await client.query(
             "delete from app_public.registrations where id = $1",
             [row.registration_id]
-          );
+          )
         }
-      });
+      })
     } catch (e) {
-      console.error(e);
+      console.error(e)
     }
-  }, EXPIRATION_TIMEOUT);
-};
+  }, EXPIRATION_TIMEOUT)
+}
 
-module.exports = task;
+module.exports = task

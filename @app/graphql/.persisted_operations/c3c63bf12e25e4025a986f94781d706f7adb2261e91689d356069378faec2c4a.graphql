@@ -1,0 +1,10 @@
+mutation ClaimRegistrationToken($input: ClaimRegistrationTokenInput!) {
+  claimRegistrationToken(input: $input) {
+    claimRegistrationTokenOutput {
+      registrationToken
+      updateToken
+      __typename
+    }
+    __typename
+  }
+}

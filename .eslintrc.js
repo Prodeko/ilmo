@@ -9,6 +9,12 @@ module.exports = {
     },
     {
       files: ["*.graphql"],
+      rules: {
+        "prettier/prettier": 0,
+      },
+    },
+    {
+      files: ["*.graphql"],
       parser: "@graphql-eslint/eslint-plugin",
       plugins: ["@graphql-eslint"],
       rules: {
@@ -27,12 +33,12 @@ module.exports = {
         // "@graphql-eslint/selection-set-depth": 0,
         // "@graphql-eslint/no-case-insensitive-enum-values-duplicates": 0,
         // "@graphql-eslint/require-description": 0,
-        "@graphql-eslint/require-id-when-available": ["error"],
+        // The below rule would be useful if it worked with fragments...
+        // "@graphql-eslint/require-id-when-available": ["error"],
         // "@graphql-eslint/description-style": 0,
         "@graphql-eslint/avoid-duplicate-fields": ["error"],
         // "@graphql-eslint/naming-convention": 0,
         "@graphql-eslint/input-name": ["error", { checkInputType: true }],
-        "@graphql-eslint/prettier": ["error"],
         "@graphql-eslint/executable-definitions": ["error"],
         "@graphql-eslint/fields-on-correct-type": ["error"],
         "@graphql-eslint/fragments-on-composite-type": ["error"],
@@ -144,7 +150,9 @@ module.exports = {
         ],
         "react/prop-types": 0,
         "react/no-multi-comp": 0,
-        "react/jsx-filename-extension": 0,
+        // Next.js automatically imports React
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-filename-extension": [1, { extensions: [".ts", ".tsx"] }],
         "react/no-unescaped-entities": 0,
 
         "import/no-extraneous-dependencies": 0,
@@ -200,4 +208,4 @@ module.exports = {
       },
     },
   ],
-};
+}

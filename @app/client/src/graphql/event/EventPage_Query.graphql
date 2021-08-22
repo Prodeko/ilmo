@@ -2,24 +2,39 @@ fragment EventFields on Event {
   id
   name
   slug
+  description
+  location
   eventStartTime
   eventEndTime
   registrationStartTime
   registrationEndTime
-  description
-  createdAt
   isHighlighted
   isDraft
   headerImageFile
   signupOpen
   signupUpcoming
   signupClosed
+  createdBy
+  updatedBy
+  createdAt
+  updatedAt
+}
+
+fragment EventPage_OwnerOrganization on Organization {
+  id
+  name
+  slug
 }
 
 fragment EventPage_EventCategory on EventCategory {
   id
   description
   name
+  color
+  ownerOrganization {
+    ...EventPage_OwnerOrganization
+  }
+  updatedAt
 }
 
 fragment EventPage_Quota on Quota {
@@ -34,17 +49,27 @@ fragment EventPage_Registration on Registration {
   fullName
   isQueued
   createdAt
+  quota {
+    ...EventPage_Quota
+  }
+}
+
+fragment EventPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
 }
 
 fragment EventPage_Event on Event {
   ...EventFields
-  id
   category {
     ...EventPage_EventCategory
   }
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {
@@ -54,9 +79,11 @@ fragment EventPage_Event on Event {
   registrations(orderBy: CREATED_AT_ASC) {
     nodes {
       ...EventPage_Registration
-      quota {
-        ...EventPage_Quota
-      }
+    }
+  }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
     }
   }
 }

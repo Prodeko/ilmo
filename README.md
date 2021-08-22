@@ -1,4 +1,4 @@
-# Graphile Starter
+# Ilmo
 
 ## Requirements
 
@@ -7,22 +7,6 @@
 - Postgresql 11
 - Redis
 - (wal2json)
-
-## Take it for a spin!
-
-We're running the starter at:
-
-https://graphile-starter.herokuapp.com
-
-Feel free to register an account and have a poke around as you see fit.
-
-**NOTE**: emails are sent from Graphile Starter, so please only enter email
-addresses you control.
-
-**NOTE**: every time we merge to master, we ship a new version of Graphile
-Starter to Heroku and entirely wipe the database, so your data may not persist.
-If you wish to delete your data before this time you can do so via the delete
-account feature baked into the starter.
 
 ## NOT FOR BEGINNERS
 
@@ -37,7 +21,7 @@ you're comfortable with the various tools it uses
 [Graphile Migrate](https://github.com/graphile/migrate),
 [TypeScript](https://www.typescriptlang.org/docs/),
 [React](https://reactjs.org/docs/getting-started.html),
-[Apollo Client for React](https://www.apollographql.com/docs/react/),
+[Urql GraphQL client](https://formidable.com/open-source/urql/docs/basics/react-preact/),
 [GraphQL Code Generator](https://github.com/dotansimha/graphql-code-generator),
 [ESLint](https://eslint.org/),
 [Prettier](https://prettier.io/docs/en/index.html), [Jest](https://jestjs.io/),
@@ -58,140 +42,15 @@ and especially the
 This repository takes a slightly different approach to schema design than the
 aforementioned tutorial, but it's still an incredibly valuable resource.
 
-## Purpose
-
-Graphile Starter is an opinionated quick-start project for full-stack
-application development in React, Node.js, GraphQL and PostgreSQL. It includes
-the foundations of a modern web application, with a full user registration
-system, organizations (e.g. teams/companies/etc), session management, optimized
-job queue, a significant amount of pre-configured tooling, tests (both
-end-to-end and more granular) and much more.
-
-It is suitable for building projects both large and small, with a focus on
-productivity. You might use it:
-
-- to go from conception to launch of a web app during a hack day
-- as the foundation for client projects at your web agency
-- to build your side-hustle without spending lots of time on boilerplate
-- to build a SaaS project to help fund your open source work 😉
-
-However you use it, the project can be deployed to many platforms, and can be
-scaled to larger audiences both horizontally and vertically with very few
-changes.
-
-Please note that this software is not "complete," free of software defects, or
-free of security issues — it is not a "finished" solution, but rather the seed
-of a solution which you should review, customize, fix, and develop further.
-
-It is intended that you use a "point in time" version of this software ─ it is
-not intended that you can merge updates to this software into your own
-derivative in an automated fashion.
-
-<!-- SPONSORS_BEGIN -->
-
-## Crowd-funded open-source software
-
-**PLEASE DONATE.**
-
-Take this software and use it as the starting point to build your project. Go
-make some money, and [give something back](https://graphile.org/sponsor/) to
-support us building more tools and kits for the Node, GraphQL and PostgreSQL
-ecosystems. We have made this project available under the simple and liberal MIT
-license to give you to a huge amount of freedom in how you use it, but this
-isn't possible without the help of our wonderful sponsors.
-
-We need more people to join our sponsors so we can continue to bring about
-awesome projects like this. We'd love to spend more time on open source,
-building tools that will save you and others even more time and money ─ please
-sponsor our open source efforts:
-
-### [Click here to find out more about sponsors and sponsorship.](https://www.graphile.org/sponsor/)
-
-And please give some love to our featured sponsors 🤩:
-
-<table><tr>
-<td align="center"><a href="http://chads.website"><img src="https://graphile.org/images/sponsors/chadf.png" width="90" height="90" alt="Chad Furman" /><br />Chad Furman</a> *</td>
-<td align="center"><a href="https://storyscript.com/?utm_source=postgraphile"><img src="https://graphile.org/images/sponsors/storyscript.png" width="90" height="90" alt="Storyscript" /><br />Storyscript</a> *</td>
-<td align="center"><a href="https://surge.io/"><img src="https://graphile.org/images/sponsors/surge.png" width="90" height="90" alt="Surge.io" /><br />Surge.io</a> *</td>
-<td align="center"><a href="https://postlight.com/?utm_source=graphile"><img src="https://graphile.org/images/sponsors/postlight.jpg" width="90" height="90" alt="Postlight" /><br />Postlight</a> *</td>
-</tr></table>
-
-<em>\* Sponsors the entire Graphile suite</em>
-
-<!-- SPONSORS_END -->
-
 ## Table of contents
 
-- [Features](#features)
-- [Variants](#variants)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Running](#running)
-- [Making it yours](#making-it-yours)
 - [Docker development](#docker-development-1)
 - [Production build](#production-build-for-local-mode)
 - [Deploying to Heroku](#deploying-to-heroku)
 - [License](#mit-license)
-
-## Features
-
-Graphile Starter is a full-stack [GraphQL](https://graphql.org/learn/) and
-[React](https://reactjs.org/) project, with server-side rendering (SSR) and
-routing thanks to [Next.js](https://nextjs.org/). The backend is a beautiful
-pairing of Node.js and PostgreSQL running on Fastify, enabled by
-[PostGraphile](https://www.graphile.org/postgraphile/) in library mode. The
-frontend uses the [AntD](https://ant.design/) design framework to accelerate
-development. The entire stack is written in TypeScript, with auto-generated
-GraphQL types and operations thanks to
-[graphql-code-generator](https://github.com/dotansimha/graphql-code-generator).
-
-There are four tenets to Graphile Starter:
-
-- Speedy development
-- Batteries included
-- Type safety
-- Best practices
-
-Graphile Starter is easy to start and everything is pre-configured as much as
-possible.
-
-**Speedy development**: hot reloading, easy debugging, Graphile's
-[idempotent migration system](https://github.com/graphile/migrate),
-[job queue](/TECHNICAL_DECISIONS.md#job-queue) and server middleware ready to
-use; not to mention deep integration with VSCode should you use that editor:
-plugin recommendations, pre-configured settings, ESLint and Prettier integration
-and debugging profiles
-
-**Batteries included**: full user system, AntD design framework, Jest and
-[Cypress end-to-end](/TECHNICAL_DECISIONS.md#cypress-e2e-tests) testing,
-security, email templating and transport, pre-configured linting and code
-formatting, deployment instructions, and more
-
-**Type safety**: pre-configured type checking, strongly typed throughout with
-TypeScript
-
-**Best practices**: React, GraphQL, PostGraphile, Node, Jest and Cypress best
-practices
-
-See [TECHNICAL_DECISIONS.md](TECHNICAL_DECISIONS.md) for a more detailed list of
-features included and the technical decisions behind them.
-
-## Variants
-
-Since this is a highly opinionated starter; community members may have slightly
-different opinions and may choose to maintain forks of this project that apply
-their own opinions. A few of these are listed below; if you maintain a fork of
-this project please make a note at the top of your own README, and add it to
-this list:
-
-- [Nuxt.js variant](https://github.com/JoeSchr/graphile-starter) - replaces
-  Next.js for Vue users
-- [Create React App variant](https://github.com/alexk111/graphile-starter-cra) -
-  replaces Next.js for apps without Server Side Rendering
-
-**VARIANTS ARE NOT OFFICIALLY SUPPORTED** and may become out of date or
-unmaintained over time. If you have issues with variants, please submit issues
-or PRs to the projects in question, not to this project.
 
 ## Prerequisites
 
@@ -229,13 +88,6 @@ Requires:
 
 This software has been developed under Mac and Linux, and should work in a
 `bash` environment.
-
-**Windows users**: making a project like Graphile Starter run smoothly on
-Windows can be a challenge; `@JoeSchr` and `@hips` on the
-[Graphile Discord](http://discord.gg/graphile) have been working in improving
-this and they're pretty pleased with the result, but you may still get some
-teething problems. PRs to fix Windows compatibility issues are welcome (please
-keep them small!) Failing that, try the Docker mode :)
 
 ### Docker development
 
@@ -316,21 +168,6 @@ To shut everything down:
 | ---------- | :-: | ------------------------------ |
 | Ctrl-c     | or  | `export UID; yarn docker down` |
 
-## Making it yours
-
-1. Download and extract a zip of
-   [the latest release from GitHub](https://github.com/graphile/starter/releases)
-1. In that folder run:
-   - `git init`
-   - `git add .`
-   - `git commit -m "Graphile Starter base"`
-1. Change the project name in `package.json`
-1. Change the project settings in `@app/config/src/index.ts`
-1. Replace the `README.md` file
-1. Add your own copyright notices to the `LICENSE.md` file
-1. Commit as you usually would
-1. [Show your appreciation with sponsorship](https://www.graphile.org/sponsor/)
-
 ## Docker development
 
 Be sure to read [docker/README.md](docker/README.md).
@@ -358,7 +195,6 @@ for example:
 
 ```sh
 docker run --rm -it --init -p 5678:5678 \
-  -e GRAPHILE_LICENSE="$GRAPHILE_LICENSE" \
   -e SECRET="$SECRET" \
   -e JWT_SECRET="$JWT_SECRET" \
   -e DATABASE_VISITOR="$DATABASE_VISITOR" \

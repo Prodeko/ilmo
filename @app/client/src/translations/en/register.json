@@ -1,4 +1,5 @@
 {
+  "confirmGoBack": "Are you sure? You will lose your registration spot.",
   "deleteRegistration": "Delete registration",
   "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
   "deleteRegistrationFailed": "Deleting event registration failed",
@@ -12,8 +13,10 @@
     "firstName": "First name",
     "lastName": "Last name",
     "rules": {
-      "emailEmpty": "Please input your E-mail.",
-      "emailValid": "The input is not valid E-mail.",
+      "emailEmpty": "Please input your E-mail",
+      "emailValid": "The input is not valid E-mail",
+      "nameContainsSpace": "Name cannot contain spaces",
+      "provideAnswer": "Please answer the question",
       "provideFirstName": "Please enter your first name",
       "provideLastName": "Please enter your last name"
     }

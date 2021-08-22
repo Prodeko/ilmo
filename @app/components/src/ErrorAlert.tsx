@@ -1,53 +1,79 @@
-import React from "react";
-import SyncOutlined from "@ant-design/icons/SyncOutlined";
-import { ApolloError } from "@apollo/client";
-import { Alert, Button, Result } from "antd";
-import Paragraph from "antd/lib/typography/Paragraph";
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
+import { extractError, getCodeFromError } from "@app/lib"
+import { Alert } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
-export interface ErrorAlertProps {
-  error: ApolloError | Error;
+interface ErrorAlertProps {
+  error: Error
+  message?: string
+  banner?: boolean
+  setError?: React.Dispatch<React.SetStateAction<Error | null>>
+  style?: React.CSSProperties
 }
 
-export function ErrorAlert({ error }: ErrorAlertProps) {
-  const code: string | undefined = (error as any)?.networkError?.result
-    ?.errors?.[0]?.code;
-  if (code === "EBADCSRFTOKEN") {
-    return (
-      <Result
-        status="403"
-        subTitle={
-          <>
-            <Paragraph type="secondary">
-              Our security protections have failed to authenticate your request;
-              to solve this you need to refresh the page:
-            </Paragraph>
-            <Paragraph>
-              <Button
-                icon={<SyncOutlined />}
-                type="primary"
-                onClick={() => window.location.reload()}
-              >
-                Refresh page
-              </Button>
-            </Paragraph>
-          </>
-        }
-        title="Invalid CSRF token"
-      />
-    );
-  }
-  return (
-    <Result
-      status="error"
-      subTitle={
-        <span>
-          We're really sorry, but an unexpected error occurred. Please{" "}
-          <a href="/">return to the homepage</a> and try again.
+export const ErrorAlert: React.FC<ErrorAlertProps> = ({
+  banner = false,
+  error,
+  message,
+  setError,
+  ...rest
+}) => {
+  const [mounted, setMounted] = useState(false)
+  const { t } = useTranslation()
+  const code = getCodeFromError(error)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  const alertInner = (
+    <Alert
+      {...rest}
+      banner={banner}
+      closable={banner}
+      description={
+        <span
+          style={{
+            wordBreak: "break-word",
+            border: "1px solib black",
+            display: "block",
+          }}
+        >
+          {extractError(error).message}{" "}
+          {code && (
+            <span>
+              ({t("error:errorCode")}: <code>ERR_{code}</code>)
+            </span>
+          )}
         </span>
       }
-      title="Unexpected error occurred"
+      message={message}
+      type="error"
+      onClose={() => setError?.(null)}
+    />
+  )
+  const alertContent = banner ? (
+    <div
+      style={{
+        position: "fixed",
+        top: "16px",
+        left: "50%",
+        width: "100%",
+        maxWidth: "600px",
+        transform: "translate(-50%, 0)",
+        zIndex: 999,
+      }}
     >
-      <Alert message={error.message} type="error" />
-    </Result>
-  );
+      {alertInner}
+    </div>
+  ) : (
+    alertInner
+  )
+  const alertPortal = mounted
+    ? createPortal(alertContent, document?.querySelector("#alert")!)
+    : null
+
+  return error ? alertPortal : null
 }

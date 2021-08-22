@@ -1,80 +1,128 @@
-import React, { useCallback, useState } from "react";
-import { DocumentNode, useQuery } from "@apollo/client";
-import { Table } from "antd";
-import { TablePaginationConfig, TableProps } from "antd/lib/table";
-import { get } from "lodash";
+import { useCallback, useEffect, useState } from "react"
+import { Sorter, ValueOf } from "@app/lib"
+import { Table } from "antd"
+import {
+  ColumnsType,
+  ColumnType,
+  TablePaginationConfig,
+  TableProps,
+} from "antd/lib/table"
+import { DocumentNode } from "graphql"
+import { get } from "lodash"
+import { useQuery } from "urql"
 
-import { ErrorAlert } from "./ErrorAlert";
-import { Loading } from "./Loading";
+import { ErrorResult } from "./ErrorResult"
+import { Loading } from "./Loading"
+import { useIsMobile } from "."
 
-interface Props extends TableProps<any> {
-  queryDocument: DocumentNode;
-  variables?: any;
-  dataField: string;
-  showPagination?: boolean;
+type RecordType = any
+
+interface CustomColumnType extends ColumnType<RecordType> {
+  sorter?: {
+    compare: ValueOf<typeof Sorter>
+  }
+}
+
+interface ServerPaginatedTableProps extends TableProps<RecordType> {
+  columns: CustomColumnType[]
+  dataField: string
+  queryDocument: DocumentNode
+  variables?: Record<string, any>
+  showPagination?: boolean
 }
 
 export function ServerPaginatedTable({
-  queryDocument,
-  variables,
   columns,
   dataField,
+  queryDocument,
+  variables,
   showPagination = true,
   ...props
-}: Props) {
-  const [offset, setOffset] = useState(0);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 10,
-  });
-  const { error, loading, data, fetchMore } = useQuery<
+}: ServerPaginatedTableProps) {
+  const isMobile = useIsMobile()
+  const [offset, setOffset] = useState(0)
+  const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
     typeof variables
-  >(queryDocument, {
+  >({
+    query: queryDocument,
     variables: {
       ...variables,
       // Pagination can be empty if table contains less than 10 elements
-      first: pagination.pageSize || 10,
+      first: 10,
       offset: offset,
     },
-    onCompleted: () =>
-      setPagination({
-        ...pagination,
-        total: get(data, dataField)?.totalCount,
-      }),
-  });
+  })
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: 10,
+    total: data?.[dataField]?.totalCount || 0,
+  })
 
-  const handleTableChange = useCallback(
-    async (pagination) => {
-      setPagination({ ...pagination });
-      const { current, pageSize } = pagination;
-      const newOffset = (current - 1) * pageSize || 0;
+  useEffect(() => {
+    const total = data?.[dataField]?.totalCount
+    if (total) {
+      setPagination((prev) => ({ ...prev, total }))
+    }
+  }, [data, dataField])
 
-      await fetchMore({
-        variables: {
-          offset: newOffset,
-        },
-      });
-      setOffset(newOffset);
-    },
-    [fetchMore]
-  );
+  const handleTableChange = useCallback(async (pagination) => {
+    const { current, pageSize } = pagination
+    const newOffset = (current - 1) * pageSize || 0
+    setPagination({ ...pagination })
+    setOffset(newOffset)
+  }, [])
+
+  // See @app/client/src/pages/index.tsx and @app/lib/src/utils to understand
+  // how our table sorting setup works. When the 'filters' key is specified for
+  // a column, we automatically add the onFilter property to the column.
+  const transformedColumns =
+    columns?.map((column) => {
+      const { sorter, filters, dataIndex, ...otherColumnProps } = column
+      let ret = column
+
+      if (sorter) {
+        const { compare, ...otherSorterProps } = sorter
+
+        ret = {
+          ...otherColumnProps,
+          dataIndex,
+          sorter: {
+            compare: (rowA: RecordType, rowB: RecordType) => {
+              // @ts-ignore
+              return compare(get(rowA, dataIndex), get(rowB, dataIndex))
+            },
+            ...otherSorterProps,
+          },
+        }
+      }
+
+      if (filters) {
+        ret = {
+          ...otherColumnProps,
+          filters,
+          dataIndex,
+          onFilter: (value: string | number | boolean, record: RecordType) =>
+            get(record, dataIndex!).indexOf(value) === 0,
+        }
+      }
+
+      return ret
+    }) || []
 
   return error ? (
-    <ErrorAlert error={error} />
+    <ErrorResult error={error} />
   ) : (
     <Table
-      columns={columns}
+      columns={transformedColumns as ColumnsType<object>}
       dataSource={get(data, dataField)?.nodes || []}
-      loading={loading && { indicator: <Loading /> }}
+      loading={fetching && { indicator: <Loading /> }}
       pagination={showPagination && pagination}
-      rowClassName={(record, _index) =>
-        record?.isHighlighted ? "table-row-highlight" : ""
-      }
       rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}
+      size={isMobile ? "small" : "middle"}
       onChange={handleTableChange}
       {...props}
     />
-  );
+  )
 }

@@ -26,6 +26,13 @@
            */
           "omit": "all"
         },
+        "constraint": {
+          "users_username_key": {
+            "tags": {
+              "omit": true
+            }
+          }
+        },
         "description": "A user who can log in to the application."
       },
       "app_public.organizations": {
@@ -56,6 +63,11 @@
           "omit": "all"
         },
         "constraint": {
+          "organization_memberships_pkey": {
+            "tags": {
+              "omit": true
+            }
+          },
           "organization_memberships_organization_id_user_id_key": {
             "tags": {
               "omit": true
@@ -116,10 +128,20 @@
           "omit": "create,insert,update,delete"
         }
       },
-      // Omit all quota CRUD operations. We define custom mutations that create or update
-      // quotas related to events. See app_public.create_event_quotas and
-      // app_public.update_event_quotas.
+      // Omit all quota and event question CRUD operations. We define custom
+      // mutations that create or update quotas related to events. See
+      // app_public.create_event_quotas and app_public.update_event_quotas.
+      "app_public.events": {
+        "tags": {
+          "omit": "create,insert,update"
+        }
+      },
       "app_public.quotas": {
+        "tags": {
+          "omit": "create,insert,update,delete"
+        }
+      },
+      "app_public.event_questions": {
         "tags": {
           "omit": "create,insert,update,delete"
         }
@@ -127,6 +149,16 @@
     },
     "procedure": {
       "app_public.check_language": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.validate_jsonb_no_nulls": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.validate_question_data": {
         "tags": {
           "omit": true
         }
@@ -148,6 +180,21 @@
         }
       },
       "app_public.current_user_member_organization_ids": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.current_user_has_event_permissions": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.current_user_is_admin": {
+        "tags": {
+          "omit": true
+        }
+      },
+      "app_public.current_user_is_owner_organization_member": {
         "tags": {
           "omit": true
         }
@@ -188,9 +235,14 @@
           "resultFieldName": "success"
         }
       },
-      "app_public.claim_registration_token": {
+      "app_public.admin_delete_registration": {
         "tags": {
-          "resultFieldName": "registrationToken"
+          "resultFieldName": "success"
+        }
+      },
+      "app_public.admin_update_registration": {
+        "tags": {
+          "resultFieldName": "updateToken"
         }
       },
       "app_public.create_organization": {

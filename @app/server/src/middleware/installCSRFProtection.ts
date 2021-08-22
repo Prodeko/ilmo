@@ -1,43 +1,27 @@
-import csrf from "csurf";
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
+import { FastifyPluginAsync } from "fastify"
+import fastifyCSRF from "fastify-csrf"
+import fp from "fastify-plugin"
 
-declare module "http" {
-  interface IncomingMessage {
-    /**
-     * True if either the request 'Origin' header matches our ROOT_URL, or if
-     * there was no 'Origin' header (in which case we must give the benefit of
-     * the doubt; for example for normal resource GETs).
-     */
-    csrfToken: () => string;
-  }
-}
+const { ROOT_URL } = process.env
 
 const CSRFProtection: FastifyPluginAsync = async (app) => {
-  const csrfProtection = csrf({
-    // Store to the session rather than a Cookie
-    cookie: false,
+  await app.register(fastifyCSRF, { sessionPlugin: "fastify-secure-session" })
 
-    // Extract the CSRF Token from the `CSRF-Token` header.
-    value(req) {
-      const csrfToken = req.headers["csrf-token"];
-      return typeof csrfToken === "string" ? csrfToken : "";
-    },
-  });
-
-  app.use((req, res, next) => {
+  app.addHook("onRequest", (request, reply, done) => {
     if (
-      req.method === "POST" &&
-      req.path === "/graphql" &&
-      (req.headers.referer === `${process.env.ROOT_URL}/graphiql` ||
-        req.headers.origin === process.env.ROOT_URL)
+      request.method === "POST" &&
+      request.url === "/graphql" &&
+      request.headers.referer === `${ROOT_URL}/graphiql`
     ) {
       // Bypass CSRF for GraphiQL
-      next();
+      done()
+    } else if (request.method === "POST") {
+      // Add CSRF protection to POST requests
+      app.csrfProtection(request, reply, done)
     } else {
-      csrfProtection(req, res, next);
+      done()
     }
-  });
-};
+  })
+}
 
-export default fp(CSRFProtection);
+export default fp(CSRFProtection)

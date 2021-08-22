@@ -1,15 +1,18 @@
-const map = require("./server.json");
-const { promises: fsp } = require("fs");
+const map = require("./server.json")
+const { promises: fsp } = require("fs")
 
 async function main() {
+  const persistedOperationsDir = `${__dirname}/.persisted_operations/`
+  await fsp.rmdir(persistedOperationsDir, { recursive: true })
+  await fsp.mkdir(persistedOperationsDir)
   await Promise.all(
     Object.entries(map).map(([hash, query]) =>
-      fsp.writeFile(`${__dirname}/.persisted_operations/${hash}.graphql`, query)
+      fsp.writeFile(`${persistedOperationsDir}/${hash}.graphql`, query)
     )
-  );
+  )
 }
 
 main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+  console.error(e)
+  process.exit(1)
+})

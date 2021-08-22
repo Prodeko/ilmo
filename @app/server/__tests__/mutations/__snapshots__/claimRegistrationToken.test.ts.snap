@@ -1,11 +1,96 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ClaimRegistrationToken 2`] = `
+exports[`ClaimRegistrationToken can claim a registration token 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": Object {
-      "registrationToken": "[id-1]",
-    },
+    "claimRegistrationToken": "[id-1]",
   },
+}
+`;
+
+exports[`ClaimRegistrationToken can't claim a token when eventId and quotaId don't match 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 24 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Invalid event or quota id.",
+      "path": Array [
+        "claimRegistrationToken",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`ClaimRegistrationToken can't claim a token when eventId is incorrect 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 13 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Invalid event id.",
+      "path": Array [
+        "claimRegistrationToken",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`ClaimRegistrationToken can't claim a token when quotaId is incorrect 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "NTFND",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 24 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Invalid event or quota id.",
+      "path": Array [
+        "claimRegistrationToken",
+      ],
+    },
+  ],
 }
 `;

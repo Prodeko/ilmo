@@ -1,43 +1,44 @@
-import React from "react";
-import { EventRegistrationForm, Redirect, SharedLayout } from "@app/components";
-import { useUpdateEventRegistrationPageQuery } from "@app/graphql";
-import { filterObjectByKeys } from "@app/lib";
-import { Col, PageHeader, Row } from "antd";
-import { NextPage } from "next";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+import { EventRegistrationForm, Redirect, SharedLayout } from "@app/components"
+import { useUpdateEventRegistrationPageQuery } from "@app/graphql"
+import { filterObjectByKeys } from "@app/lib"
+import { Col, PageHeader, Row } from "antd"
+import { NextPage } from "next"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
 type UpdateFormInitialValues = {
-  firstName: string;
-  lastName: string;
-};
+  firstName: string
+  lastName: string
+  answers: any
+}
 
 function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "firstName",
     "lastName",
-  ]) as UpdateFormInitialValues;
+    "answers",
+  ]) as UpdateFormInitialValues
 
-  return filteredValues;
+  return filteredValues
 }
 
 const UpdateEventRegistrationPage: NextPage = () => {
-  const { t, lang } = useTranslation("register");
-  const router = useRouter();
-  const { updateToken } = router.query;
+  const { t, lang } = useTranslation("register")
+  const router = useRouter()
+  const { updateToken } = router.query
 
-  const query = useUpdateEventRegistrationPageQuery({
+  const [query] = useUpdateEventRegistrationPageQuery({
     variables: { updateToken: updateToken as string },
-  });
-  const { loading, error } = query;
+  })
+  const { data, fetching, error, stale } = query
 
-  const registration = query?.data?.registrationByUpdateToken;
-  const event = registration?.event;
-  const quota = registration?.quota;
+  const registration = data?.registrationByUpdateToken
+  const event = registration?.event
+  const quota = registration?.quota
 
   // If registration is not found redirect to index
-  if (!loading && !error && !registration) {
-    return <Redirect href="/" layout />;
+  if (!fetching && !error && !registration && !stale) {
+    return <Redirect href="/" layout />
   }
 
   return (
@@ -54,11 +55,12 @@ const UpdateEventRegistrationPage: NextPage = () => {
           query: { slug: event?.slug },
         }}
         initialValues={constructInitialValues(registration)}
+        questions={event?.eventQuestions?.nodes}
         type="update"
         updateToken={updateToken as string}
       />
     </SharedLayout>
-  );
-};
+  )
+}
 
-export default UpdateEventRegistrationPage;
+export default UpdateEventRegistrationPage

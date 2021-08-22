@@ -1,6 +1,4 @@
-import React from "react";
-
-import { Loading } from "./Loading";
+import { Loading } from "./Loading"
 
 export const SpinPadded: React.FC = () => (
   <div
@@ -13,4 +11,4 @@ export const SpinPadded: React.FC = () => (
   >
     <Loading />
   </div>
-);
+)

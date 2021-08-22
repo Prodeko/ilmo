@@ -1,52 +1,50 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import LockOutlined from "@ant-design/icons/LockOutlined";
-import UserAddOutlined from "@ant-design/icons/UserAddOutlined";
-import UserOutlined from "@ant-design/icons/UserOutlined";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import { useCallback, useEffect, useRef, useState } from "react"
+import LockOutlined from "@ant-design/icons/LockOutlined"
+import UserAddOutlined from "@ant-design/icons/UserAddOutlined"
+import UserOutlined from "@ant-design/icons/UserOutlined"
 import {
   AuthRestrict,
   ButtonLink,
   Col,
+  ErrorAlert,
   Redirect,
   Row,
   SharedLayout,
   SharedLayoutChildProps,
   SocialLoginOptions,
-} from "@app/components";
-import { useLoginMutation, useSharedQuery } from "@app/graphql";
-import {
-  extractError,
-  getCodeFromError,
-  resetWebsocketConnection,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input } from "antd";
-import { useForm } from "antd/lib/form/Form";
-import { NextPage } from "next";
-import Link from "next/link";
-import Router from "next/router";
-import { Store } from "rc-field-form/lib/interface";
+} from "@app/components"
+import { useLoginMutation, useSharedQuery } from "@app/graphql"
+import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
+import * as Sentry from "@sentry/react"
+import { Button, Form, Input } from "antd"
+import { useForm } from "antd/lib/form/Form"
+import { NextPage } from "next"
+import Link from "next/link"
+import Router from "next/router"
+import { Store } from "rc-field-form/lib/interface"
 
 function hasErrors(fieldsError: Object) {
-  return Object.keys(fieldsError).some((field) => fieldsError[field]);
+  return Object.keys(fieldsError).some((field) => fieldsError[field])
 }
 
 interface LoginProps {
-  next: string | null;
+  next: string | null
+  // Comes from _app.tsx withUrql HOC
+  resetUrqlClient?: () => void
 }
 
 export function isSafe(nextUrl: string | null) {
-  return (nextUrl && nextUrl[0] === "/") || false;
+  return (nextUrl && nextUrl[0] === "/") || false
 }
 
 /**
  * Login page just renders the standard layout and embeds the login form
  */
-const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
-  const [error, setError] = useState<Error | ApolloError | null>(null);
-  const [showLogin, setShowLogin] = useState<boolean>(false);
-  const next: string = isSafe(rawNext) ? rawNext! : "/";
-  const query = useSharedQuery();
+const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
+  const [showLogin, setShowLogin] = useState(false)
+  const [query] = useSharedQuery()
+
+  const next: string = isSafe(rawNext) ? rawNext! : "/"
 
   return (
     <SharedLayout
@@ -61,14 +59,11 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
           <Row justify="center" style={{ marginTop: 32 }}>
             {showLogin ? (
               <Col sm={12} xs={24}>
-                <Row>
-                  <LoginForm
-                    error={error}
-                    setError={setError}
-                    onCancel={() => setShowLogin(false)}
-                    onSuccessRedirectTo={next}
-                  />
-                </Row>
+                <LoginForm
+                  resetUrqlClient={resetUrqlClient}
+                  onCancel={() => setShowLogin(false)}
+                  onSuccessRedirectTo={next}
+                />
               </Col>
             ) : (
               <Col sm={12} xs={24}>
@@ -91,69 +86,66 @@ const Login: NextPage<LoginProps> = ({ next: rawNext }) => {
                     <SocialLoginOptions next={next} />
                   </Col>
                 </Row>
-                <Row justify="center">
-                  <Col flex={1}>
-                    <ButtonLink
-                      data-cy="loginpage-button-register"
-                      href={`/register?next=${encodeURIComponent(next)}`}
-                      icon={<UserAddOutlined />}
-                      size="large"
-                      type="default"
-                      block
-                    >
-                      Create an account
-                    </ButtonLink>
-                  </Col>
-                </Row>
+                {process.env.ENABLE_ACCOUNT_REGISTER && (
+                  <Row justify="center">
+                    <Col flex={1}>
+                      <ButtonLink
+                        data-cy="loginpage-button-register"
+                        href={`/register?next=${encodeURIComponent(next)}`}
+                        icon={<UserAddOutlined />}
+                        size="large"
+                        type="default"
+                        block
+                      >
+                        Create an account
+                      </ButtonLink>
+                    </Col>
+                  </Row>
+                )}
               </Col>
             )}
           </Row>
         )
       }
     </SharedLayout>
-  );
-};
+  )
+}
 
 Login.getInitialProps = async ({ query }) => ({
   next: typeof query.next === "string" ? query.next : null,
-});
+})
 
-export default Login;
+export default Login
 
 interface LoginFormProps {
-  onSuccessRedirectTo: string;
-  error: Error | ApolloError | null;
-  setError: (error: Error | ApolloError | null) => void;
-  onCancel: () => void;
+  onSuccessRedirectTo: string
+  onCancel: () => void
+  resetUrqlClient: () => void
 }
 
 function LoginForm({
   onSuccessRedirectTo,
   onCancel,
-  error,
-  setError,
+  resetUrqlClient,
 }: LoginFormProps) {
-  const [form] = useForm();
-  const [login] = useLoginMutation({});
-  const client = useApolloClient();
+  const [form] = useForm()
+  const [{ error }, login] = useLoginMutation()
 
-  const [submitDisabled, setSubmitDisabled] = useState(false);
+  const [submitDisabled, setSubmitDisabled] = useState(false)
   const handleSubmit = useCallback(
     async (values: Store) => {
-      setError(null);
       try {
-        await login({
-          variables: {
-            username: values.username,
-            password: values.password,
-          },
-        });
+        const { error } = await login({
+          username: values.username,
+          password: values.password,
+        })
+        if (error) throw error
         // Success: refetch
-        resetWebsocketConnection();
-        client.resetStore();
-        Router.push(onSuccessRedirectTo);
+        resetWebsocketConnection()
+        resetUrqlClient()
+        Router.push(onSuccessRedirectTo)
       } catch (e) {
-        const code = getCodeFromError(e);
+        const code = getCodeFromError(e)
         if (code === "CREDS") {
           form.setFields([
             {
@@ -161,28 +153,24 @@ function LoginForm({
               value: form.getFieldValue("password"),
               errors: ["Incorrect username or passphrase"],
             },
-          ]);
-          setSubmitDisabled(true);
+          ])
+          setSubmitDisabled(true)
         } else {
-          setError(e);
-          Sentry.captureException(e);
+          Sentry.captureException(e)
         }
       }
     },
-    [client, form, login, onSuccessRedirectTo, setError]
-  );
+    [form, login, onSuccessRedirectTo, resetUrqlClient]
+  )
 
-  const focusElement = useRef<Input>(null);
-  useEffect(
-    () => void (focusElement.current && focusElement.current!.focus()),
-    [focusElement]
-  );
+  const focusElement = useRef<Input>(null)
+  useEffect(() => void focusElement?.current!.focus(), [focusElement])
 
   const handleValuesChange = useCallback(() => {
-    setSubmitDisabled(hasErrors(form.getFieldsError().length !== 0));
-  }, [form]);
+    setSubmitDisabled(hasErrors(form.getFieldsError().length !== 0))
+  }, [form])
 
-  const code = getCodeFromError(error);
+  const code = getCodeFromError(error)
 
   return (
     <Form
@@ -223,22 +211,9 @@ function LoginForm({
           <a>Forgotten passphrase?</a>
         </Link>
       </Form.Item>
-      {error && (
+      {error && code !== "CREDS" && (
         <Form.Item>
-          <Alert
-            description={
-              <span>
-                {extractError(error).message}
-                {code && (
-                  <span>
-                    (Error code: <code>ERR_{code}</code>)
-                  </span>
-                )}
-              </span>
-            }
-            message={`Sign in failed`}
-            type="error"
-          />
+          <ErrorAlert error={error} />
         </Form.Item>
       )}
       <Form.Item>
@@ -255,5 +230,5 @@ function LoginForm({
         </a>
       </Form.Item>
     </Form>
-  );
+  )
 }

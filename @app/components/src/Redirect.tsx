@@ -1,51 +1,53 @@
-import React, { useEffect } from "react";
-import { useApolloClient } from "@apollo/client";
-import { Skeleton } from "antd";
-import Router from "next/router";
-import useTranslation from "next-translate/useTranslation";
+import { useEffect } from "react"
+import { Skeleton } from "antd"
+import Router from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
-import { SharedLayout } from "./SharedLayout";
-import { StandardWidth } from "./StandardWidth";
-import { H3 } from "./Text";
+import { H3, SharedLayout, StandardWidth } from "."
 
 export interface RedirectProps {
-  href: string;
-  as?: string;
-  layout?: boolean;
+  href: string
+  as?: string
+  layout?: boolean
+}
+
+export const DummyPage: React.FC = ({ children }) => {
+  const { t } = useTranslation("common")
+
+  return (
+    <SharedLayout
+      query={{
+        fetching: true,
+        data: undefined,
+        error: undefined,
+        stale: false,
+      }}
+      title={t("redirect")}
+    >
+      {children}
+    </SharedLayout>
+  )
 }
 
 export function Redirect({ href, as, layout }: RedirectProps) {
-  const client = useApolloClient();
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("common")
 
   useEffect(() => {
-    Router.push(href, as);
-  }, [as, href]);
+    Router.push(href, as)
+  }, [as, href])
 
   if (layout) {
     return (
-      <SharedLayout
-        query={{
-          loading: true,
-          data: undefined,
-          error: undefined,
-          networkStatus: 0,
-          client,
-          refetch: (async () => {
-            throw new Error(t("redirect"));
-          }) as any,
-        }}
-        title={t("redirect")}
-      >
+      <DummyPage>
         <Skeleton />
-      </SharedLayout>
-    );
+      </DummyPage>
+    )
   } else {
     return (
       <StandardWidth>
-        <H3>{t("common:redirect")}</H3>
+        <H3>{t("redirect")}</H3>
         <Skeleton />
       </StandardWidth>
-    );
+    )
   }
 }

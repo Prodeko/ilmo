@@ -1,28 +1,26 @@
 {
+  "addOption": "Lisää vaihtoehto",
+  "addQuestion": "Lisää kysymys",
   "addQuota": "Lisää kiintiö",
   "category": "Kategoria",
-  "createEvent": {
-    "title": "Luo tapahtuma"
-  },
-  "createEventCategory": {
-    "title": "Luo tapahtumakategoria"
-  },
   "createdAt": "Aika",
+  "endTime": "Loppumisaika",
   "errors": {
     "eventCategoryCreationFailed": "Tapahtumakategorian luonti epäonnistui",
-    "eventCreationFailed": "Tapahtuman luonti epäonnistui",
-    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö",
-    "otherFormErrors": "Muut virheet"
+    "eventCreateFailed": "Tapahtuman luonti epäonnistui",
+    "eventUpdateFailed": "Tapahtuman päivittäminen epäonnistui",
+    "formTabErrors": "Muut virheet",
+    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö"
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
+  "eventSignupNotOpen": "Tapahtuman ilmoittautuminen ei ole auki",
   "forms": {
     "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
     "isDraft": "Luonnos",
     "isNotDraft": "Julkaistu",
     "placeholders": {
-      "en": "Englanniksi",
       "event": {
         "category": "Valitse tapahtuman kategoria",
         "organizer": "Valitse tapahtuman järjestäjä"
@@ -30,42 +28,47 @@
       "eventCategory": {
         "organizer": "Valitse kategorian järjestäjä"
       },
-      "fi": "Suomeksi",
       "languages": "Valitse kielet",
+      "questions": {
+        "data": "Kysymys",
+        "label": "Otsikko",
+        "type": "Tyyppi"
+      },
       "quota": {
         "size": "Koko",
         "title": "Otsikko"
       }
     },
-    "registrationTime": "Ilmoittautumisen aukiolo",
+    "registrationTime": "Ilmoittautumisaika",
     "rules": {
       "event": {
         "provideCategory": "Valitse tapahtuman kategoria",
-        "provideDescription": "Anna tapahtuman kuvaus",
+        "provideDescription": "Määritä tapahtuman kuvaus",
         "provideEventTime": "Aseta tapahtuman ajankohta",
-        "provideName": "Anna tapahtuman nimi",
+        "provideLocation": "Määritä tapahtuman sijainti",
+        "provideName": "Määritä tapahtuman nimi",
         "provideOrganizer": "Valitse järjestäjä tapahtumalle",
         "provideRegistrationTime": "Aseta tapahtumaan ilmoittautumisen ajankohta",
         "provideSignupEmail": "Ilmoittautumissähköposti vaaditaan"
       },
       "eventCategory": {
-        "provideDescription": "Anna kategorian kuvaus",
-        "provideName": "Anna kategorian nimi",
+        "provideDescription": "Määritä kategorian kuvaus",
+        "provideName": "Määritä kategorian nimi",
         "provideOrganizer": "Valitse järjestäjä kategorialle"
       },
       "provideLanguage": "Valitse kielet",
+      "questions": {
+        "provideQuestionData": "Määritä kysymys",
+        "provideQuestionLabel": "Määritä kysymyksen otsikko",
+        "provideQuestionType": "Määritä kysymystyyppi"
+      },
       "quota": {
-        "provideQuotaSize": "Anna kiintiön koko",
-        "provideQuotaTitle": "Anna kiintiön nimi"
+        "provideQuotaSize": "Määritä kiintiön koko",
+        "provideQuotaTitle": "Määritä kiintiön nimi"
       }
     },
     "saveAsDraft": "Tallenna luonnoksena",
-    "signupEmail": "Sähköposti",
-    "tabs": {
-      "email": "Sähköposti",
-      "generalInfo": "Yleistä",
-      "quotas": "Kiintiöt"
-    }
+    "signupEmail": "Sähköposti"
   },
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
@@ -73,10 +76,7 @@
   "organizer": "Järjestäjä",
   "queued": "Jonossa",
   "quota": "Kiintiö",
-  "registerToAnEvent": "Ilmoittaudu",
-  "removeQuota": "Poista kiintiö",
-  "time": "Aika",
-  "updateEvent": {
-    "title": "Päivitä tapahtuma"
-  }
+  "removeOption": "Poista vaihtoehto",
+  "removeQuestion": "Poista kysymys",
+  "removeQuota": "Poista kiintiö"
 }

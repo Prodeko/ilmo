@@ -1,0 +1,41 @@
+fragment ListEventRegistrations_Query on Query {
+  registrations(
+    filter: {eventId: {equalTo: $eventId}}
+    first: $first
+    offset: $offset
+    orderBy: CREATED_AT_DESC
+  ) {
+    nodes {
+      ...ListEventRegistrations_Registration
+      __typename
+    }
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment ListEventRegistrations_Registration on Registration {
+  id
+  fullName
+  firstName
+  lastName
+  isQueued
+  answers
+  createdAt
+  updatedAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+query ListEventRegistrations($eventId: UUID!, $offset: Int!, $first: Int!) {
+  ...ListEventRegistrations_Query
+}

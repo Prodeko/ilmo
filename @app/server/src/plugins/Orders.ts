@@ -1,10 +1,10 @@
-import { makeAddPgTableOrderByPlugin, orderByAscDesc } from "graphile-utils";
+import { makeAddPgTableOrderByPlugin, orderByAscDesc } from "graphile-utils"
 
 export default makeAddPgTableOrderByPlugin(
   "app_public",
   "organization_memberships",
   ({ pgSql: sql }) => {
-    const sqlIdentifier = sql.identifier(Symbol("member"));
+    const sqlIdentifier = sql.identifier(Symbol("member"))
     return orderByAscDesc(
       "MEMBER_NAME",
       ({ queryBuilder }) => sql.fragment`(
@@ -13,6 +13,6 @@ export default makeAddPgTableOrderByPlugin(
         where ${sqlIdentifier}.id = ${queryBuilder.getTableAlias()}.user_id
         limit 1
       )`
-    );
+    )
   }
-);
+)

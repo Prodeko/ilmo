@@ -1,0 +1,9 @@
+query RenderEmailTemplate($template: String!, $variables: EmailTemplateVariables!) {
+  renderEmailTemplate(input: {template: $template, variables: $variables}) {
+    id
+    name
+    html
+    text
+    __typename
+  }
+}

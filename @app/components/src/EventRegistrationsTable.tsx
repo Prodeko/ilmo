@@ -1,41 +1,49 @@
-import React, { useMemo } from "react";
-import { Registration } from "@app/graphql";
-import { Skeleton } from "antd";
-import dayjs from "dayjs";
-import useTranslation from "next-translate/useTranslation";
+import { useMemo } from "react"
+import {
+  EventPage_QuotaFragment,
+  EventPage_RegistrationFragment,
+} from "@app/graphql"
+import { Skeleton } from "antd"
+import dayjs from "dayjs"
+import useTranslation from "next-translate/useTranslation"
 
-import { H4 } from "./Text";
-import { SimpleTable } from ".";
+import { H4 } from "./Text"
+import { SimpleTable } from "."
 
 interface EventRegistrationsTable {
-  registrations: Registration[];
+  registrations: EventPage_RegistrationFragment[]
 }
 
-const getRegistrationsByQuotaId = (arr: any[]) => {
+const getRegistrationsByQuotaPosition = (
+  arr: EventPage_RegistrationFragment[]
+) => {
   return arr.reduce((a, x) => {
-    const key = x?.quota?.id;
-    (a[key] || (a[key] = [] || [])).push(x);
-    return a;
-  }, {});
-};
+    const key = x?.quota?.position
+    // @ts-ignore
+    ;(a[key] || (a[key] = [] || [])).push(x)
+    return a
+  }, {} as { [key: number]: EventPage_RegistrationFragment })
+}
 
-const getQueuedRegistrations = (arr: any[]) => {
-  return arr.filter((x) => x.isQueued);
-};
-
-const getQuotaNameByQuotaId = (arr: any[]) => {
+const getQuotaNameByQuotaPosition = (arr: EventPage_RegistrationFragment[]) => {
   return arr
     .map((x) => x.quota)
     .reduce((a, x) => {
-      a[x.id] = x;
-      return a;
-    }, {});
-};
+      if (x) {
+        a[x.position] = x
+      }
+      return a
+    }, {} as { [key: number]: EventPage_QuotaFragment })
+}
+
+const getQueuedRegistrations = (arr: EventPage_RegistrationFragment[]) => {
+  return arr.filter((x) => x.isQueued)
+}
 
 export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
   registrations,
 }) => {
-  const { t, lang } = useTranslation("events");
+  const { t, lang } = useTranslation("events")
 
   const commonColumns = [
     {
@@ -53,10 +61,10 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       title: t("createdAt"),
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt: string) => dayjs(createdAt).format("l LT"),
+      render: (createdAt: string) => dayjs(createdAt).format("l LT ss.SSS"),
     },
-  ];
-  const quotaColumns = [...commonColumns];
+  ]
+  const quotaColumns = [...commonColumns]
   const queuedColumns = [
     {
       title: t("quota"),
@@ -64,32 +72,35 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
       key: "quota",
     },
     ...commonColumns,
-  ];
+  ]
 
-  const registrationsByQuotaId = useMemo(
-    () => getRegistrationsByQuotaId(registrations),
+  const registrationsByQuotaPosition = useMemo(
+    () => getRegistrationsByQuotaPosition(registrations),
     [registrations]
-  );
-  const quotaNamesById = useMemo(() => getQuotaNameByQuotaId(registrations), [
-    registrations,
-  ]);
+  )
+  const quotaNamesByPosition = useMemo(
+    () => getQuotaNameByQuotaPosition(registrations),
+    [registrations]
+  )
   const queuedRegistrations = useMemo(
     () => getQueuedRegistrations(registrations),
     [registrations]
-  );
+  )
 
   return (
     <>
-      {Object.keys(registrationsByQuotaId)
+      {Object.keys(registrationsByQuotaPosition)
         .sort()
-        .map((quotaId) => {
-          const quotaTitle = quotaNamesById[quotaId].title[lang];
-          const quotaSize = quotaNamesById[quotaId].size;
-          const quotaRegistrations = registrationsByQuotaId[quotaId].filter(
-            (r: Registration) => !r.isQueued
-          );
+        .map((position) => {
+          const quotaTitle = quotaNamesByPosition[position].title[
+            lang
+          ] as string
+          const quotaSize = quotaNamesByPosition[position].size as number
+          const quotaRegistrations = registrationsByQuotaPosition[
+            position
+          ].filter((r: EventPage_RegistrationFragment) => !r.isQueued)
           return (
-            <div key={quotaId}>
+            <div key={position}>
               <H4 style={{ marginTop: "1.5rem" }}>
                 {quotaTitle} – {quotaRegistrations?.length} / {quotaSize}
               </H4>
@@ -97,24 +108,26 @@ export const EventRegistrationsTable: React.FC<EventRegistrationsTable> = ({
                 columns={quotaColumns}
                 data={quotaRegistrations}
                 data-cy="eventpage-signups-table"
-                size="small"
                 style={{
                   margin: "1rem 0",
                 }}
               />
             </div>
-          );
+          )
         })}
-      <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
-      <SimpleTable
-        columns={queuedColumns}
-        data={queuedRegistrations}
-        data-cy="eventpage-signups-table"
-        size="small"
-        style={{
-          margin: "1rem 0",
-        }}
-      />
+      {queuedRegistrations.length > 0 && (
+        <>
+          <H4 style={{ marginTop: "1.5rem" }}>{t("queued")}</H4>
+          <SimpleTable
+            columns={queuedColumns}
+            data={queuedRegistrations}
+            data-cy="eventpage-signups-table"
+            style={{
+              margin: "1rem 0",
+            }}
+          />
+        </>
+      )}
     </>
-  );
-};
+  )
+}

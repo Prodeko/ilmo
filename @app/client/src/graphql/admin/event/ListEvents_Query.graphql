@@ -1,0 +1,65 @@
+fragment Events_Event on Event {
+  ...EventFields
+  category {
+    ...EventPage_EventCategory
+  }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+      }
+    }
+  }
+  registrations {
+    totalCount
+    nodes {
+      ...EventPage_Registration
+    }
+  }
+}
+
+fragment ListEvents_Query on Query {
+  draftEvents: events(
+    filter: { isDraft: { equalTo: true } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+    totalCount
+  }
+  signupOpenEvents: events(
+    filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+    totalCount
+  }
+  signupUpcomingEvents: events(
+    filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: REGISTRATION_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+    totalCount
+  }
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: { signupClosed: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
+      ...Events_Event
+    }
+    totalCount
+  }
+}
+
+query ListEvents($offset: Int!, $first: Int!) {
+  ...ListEvents_Query
+}

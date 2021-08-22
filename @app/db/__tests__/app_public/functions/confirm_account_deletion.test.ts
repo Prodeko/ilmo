@@ -4,73 +4,69 @@ import {
   getJobs,
   withRootDb,
   withUserDb,
-} from "../../helpers";
+} from "../../helpers"
 
 it("can delete account with verified emails", () =>
   withUserDb(async (client, user) => {
-    await client.query("select * from app_public.request_account_deletion()");
-    const jobs = await getJobs(client, "user__send_delete_account_email");
-    expect(jobs).toHaveLength(1);
-    const { token, email } = jobs[0].payload;
-    expect(email).toEqual(user._email);
-    expect(token).toBeTruthy();
-    const {
-      rows,
-    } = await client.query(
+    await client.query("select * from app_public.request_account_deletion()")
+    const jobs = await getJobs(client, "user__send_delete_account_email")
+    expect(jobs).toHaveLength(1)
+    const { token, email } = jobs[0].payload
+    expect(email).toEqual(user._email)
+    expect(token).toBeTruthy()
+    const { rows } = await client.query(
       "select app_public.confirm_account_deletion($1) as deleted",
       [token]
-    );
-    expect(rows).toHaveLength(1);
-    expect(rows[0].deleted).toBe(true);
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0].deleted).toBe(true)
     const {
       rows: [{ current_user_id }],
-    } = await client.query("select app_public.current_user_id()");
-    expect(current_user_id).toBe(null);
-  }));
+    } = await client.query("select app_public.current_user_id()")
+    expect(current_user_id).toBe(null)
+  }))
 
 it("can delete account with no verified emails", () =>
   withRootDb(async (client) => {
-    const [user] = await createUsers(client, 1, false);
-    await becomeUser(client, user.id);
-    await client.query("select * from app_public.request_account_deletion()");
-    const jobs = await getJobs(client, "user__send_delete_account_email");
-    expect(jobs).toHaveLength(1);
-    const { token, email } = jobs[0].payload;
-    expect(email).toEqual(user._email);
-    expect(token).toBeTruthy();
-    const {
-      rows,
-    } = await client.query(
+    const [user] = await createUsers(client, 1, false)
+    await becomeUser(client, user.id)
+    await client.query("select * from app_public.request_account_deletion()")
+    const jobs = await getJobs(client, "user__send_delete_account_email")
+    expect(jobs).toHaveLength(1)
+    const { token, email } = jobs[0].payload
+    expect(email).toEqual(user._email)
+    expect(token).toBeTruthy()
+    const { rows } = await client.query(
       "select app_public.confirm_account_deletion($1) as deleted",
       [token]
-    );
-    expect(rows).toHaveLength(1);
-    expect(rows[0].deleted).toBe(true);
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0].deleted).toBe(true)
     const {
       rows: [{ current_user_id }],
-    } = await client.query("select app_public.current_user_id()");
-    expect(current_user_id).toBe(null);
-  }));
+    } = await client.query("select app_public.current_user_id()")
+    expect(current_user_id).toBe(null)
+  }))
 
 it("cannot delete account if organization owner", () =>
   withRootDb(async (client) => {
-    const [user] = await createUsers(client, 1);
-    await becomeUser(client, user.id);
+    const [user] = await createUsers(client, 1)
+    await becomeUser(client, user.id)
     await client.query("select * from app_public.create_organization($1, $2)", [
       "myorg",
       "My Organization",
-    ]);
-    await client.query("select * from app_public.request_account_deletion()");
-    const jobs = await getJobs(client, "user__send_delete_account_email");
-    expect(jobs).toHaveLength(1);
-    const { token, email } = jobs[0].payload;
-    expect(email).toEqual(user._email);
-    expect(token).toBeTruthy();
+    ])
+    await client.query("select * from app_public.request_account_deletion()")
+    const jobs = await getJobs(client, "user__send_delete_account_email")
+    expect(jobs).toHaveLength(1)
+    const { token, email } = jobs[0].payload
+    expect(email).toEqual(user._email)
+    expect(token).toBeTruthy()
     const promise = client.query(
       "select app_public.confirm_account_deletion($1) as deleted",
       [token]
-    );
+    )
     expect(promise).rejects.toMatchObject({
       code: "OWNER",
-    });
-  }));
+    })
+  }))

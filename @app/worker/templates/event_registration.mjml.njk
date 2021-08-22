@@ -8,12 +8,13 @@
     - Kiintiö: {{ registrationQuota.fi }} <br />
     - Tapahtuma: {{ eventName.fi }} <br />
     - Ajankohta: {{ eventTime }} <br />
+    - Paikka: {{ eventLocation }} <br />
     - Linkki tapahtumaan: <a href="{{ url }}/fi/event/{{ eventSlug }}" target="_blank">{{ url }}/fi/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
   <mj-text>
     Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
-    <a href="{{ eventRegistrationUpdateLink }}" target="_blank">{{ eventRegistrationUpdateLink }}</a>
+    <a href="{{ url }}/fi/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/fi/{{ eventRegistrationUpdateLink }}</a>
   </mj-text
   >
   <mj-divider border-color="#002851" border-width="1px"></mj-divider>
@@ -23,12 +24,13 @@
     - Kiintiö: {{ registrationQuota.en }} <br />
     - Tapahtuma: {{ eventName.en }} <br />
     - Event time: {{ eventTime }} <br />
+    - Event location: {{ eventLocation }} <br />
     - Link to the event: <a href="{{ url }}/en/event/{{ eventSlug }}" target="_blank">{{ url }}/en/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
   <mj-text>
     You can update or delete your registration via this link:
-    <a href="{{ eventRegistrationUpdateLink }}" target="_blank">{{ eventRegistrationUpdateLink }}</a>
+    <a href="{{ url }}/en/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/en/{{ eventRegistrationUpdateLink }}</a>
   </mj-text>
 </mj-column>
 {% endblock %}

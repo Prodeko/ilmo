@@ -1,7 +1,7 @@
-import { mapValues } from "lodash";
-import { PoolClient } from "pg";
+import { mapValues } from "lodash"
+import { PoolClient } from "pg"
 
-import { createQuotas, User } from "../../__tests__/data";
+import { createQuotas, User } from "../../__tests__/data"
 import {
   asRoot,
   createEventCategories,
@@ -12,14 +12,14 @@ import {
   deleteTestData,
   poolFromUrl,
   TEST_DATABASE_URL,
-} from "../../__tests__/helpers";
+} from "../../__tests__/helpers"
 
 /*
  * We need to inform jest that these files depend on changes to the database,
  * so we write a dummy file after current.sql is imported. This file has to be
  * tracked by git, otherwise `jest --watch` won't pick up changes to it...
  */
-import { ts } from "./jest.watch.hack";
+import { ts } from "./jest.watch.hack"
 
 if (ts) {
   /*
@@ -28,8 +28,8 @@ if (ts) {
    */
   require("fs").writeFileSync(
     `${__dirname}/jest.watch.hack.ts`,
-    "export const ts = null;\n"
-  );
+    "export const ts = null\n"
+  )
   /*
    * This will trigger Jest's file watching again, but the second time
    * `ts` will be null (as above), so:
@@ -39,88 +39,88 @@ if (ts) {
    */
 }
 
-export * from "../../__tests__/helpers";
+export * from "../../__tests__/helpers"
 
-beforeAll(deleteTestData);
+beforeAll(deleteTestData)
 
 /******************************************************************************/
 
-type ClientCallback<T = any> = (client: PoolClient) => Promise<T>;
+type ClientCallback<T = any> = (client: PoolClient) => Promise<T>
 
 export async function createEventData(client: PoolClient) {
-  const [organization] = await createOrganizations(client, 1);
+  const [organization] = await createOrganizations(client, 1)
   const [eventCategory] = await createEventCategories(
     client,
     1,
     organization.id
-  );
+  )
   const [event] = await createEvents(
     client,
     1,
     organization.id,
     eventCategory.id
-  );
-  const [quota] = await createQuotas(client, 1, event.id);
+  )
+  const [quota] = await createQuotas(client, 1, event.id)
 
-  return { organization, eventCategory, event, quota };
+  return { organization, eventCategory, event, quota }
 }
 
 const withDbFromUrl = async <T>(url: string, fn: ClientCallback<T>) => {
-  const pool = poolFromUrl(url);
-  const client = await pool.connect();
-  await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE;");
+  const pool = poolFromUrl(url)
+  const client = await pool.connect()
+  await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE;")
 
   try {
-    await fn(client);
+    await fn(client)
   } catch (e) {
     // Error logging can be helpful:
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
-      console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"));
+      console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"))
     }
-    throw e;
+    throw e
   } finally {
-    await client.query("ROLLBACK;");
-    await client.query("RESET ALL;"); // Shouldn't be necessary, but just in case...
-    await client.release();
+    await client.query("ROLLBACK;")
+    await client.query("RESET ALL;") // Shouldn't be necessary, but just in case...
+    await client.release()
   }
-};
+}
 
 export const withRootDb = <T>(fn: ClientCallback<T>) =>
-  withDbFromUrl(TEST_DATABASE_URL, fn);
+  withDbFromUrl(TEST_DATABASE_URL, fn)
 
 export const withUserDb = <T>(
   fn: (client: PoolClient, user: User) => Promise<T>
 ) =>
   withRootDb(async (client) => {
-    const [user] = await createUsers(client, 1);
-    await becomeUser(client, user.id);
-    await fn(client, user);
-  });
+    const [user] = await createUsers(client, 1)
+    await becomeUser(client, user.id)
+    await fn(client, user)
+  })
 
 export const withAnonymousDb = <T>(fn: (client: PoolClient) => Promise<T>) =>
   withRootDb(async (client) => {
-    await becomeUser(client, null);
-    await fn(client);
-  });
+    await becomeUser(client, null)
+    await fn(client)
+  })
 
-export const becomeRoot = (client: PoolClient) => client.query("reset role");
+export const becomeRoot = (client: PoolClient) => client.query("reset role")
 
 export const becomeUser = async (
   client: PoolClient,
   userOrUserId: User | string | null
 ) => {
-  await becomeRoot(client);
+  await becomeRoot(client)
   const session = userOrUserId
     ? await createSession(
         client,
         typeof userOrUserId === "object" ? userOrUserId.id : userOrUserId
       )
-    : null;
+    : null
   await client.query(
     `select set_config('role', $1::text, true), set_config('jwt.claims.session_id', $2::text, true)`,
     [process.env.DATABASE_VISITOR, session ? session.uuid : ""]
-  );
-};
+  )
+}
 
 export const getSessions = async (client: PoolClient, userId: string) => {
   const { rows } = await asRoot(client, () =>
@@ -128,77 +128,78 @@ export const getSessions = async (client: PoolClient, userId: string) => {
       `select * from app_private.sessions where user_id = $1 order by uuid asc`,
       [userId]
     )
-  );
-  return rows;
-};
+  )
+  return rows
+}
 
 /******************************************************************************/
 
 export const pruneDates = (row: { [key: string]: unknown }) =>
   mapValues(row, (v, k) => {
     if (!v) {
-      return v;
+      return v
     }
     if (v instanceof Date) {
-      return "[DATE]";
+      return "[DATE]"
     } else if (
       typeof v === "string" &&
       k.match(/(_at|At)$/) &&
       v.match(/^20[0-9]{2}-[0-9]{2}-[0-9]{2}/)
     ) {
-      return "[DATE]";
+      return "[DATE]"
     }
-    return v;
-  });
+    return v
+  })
 
-const idReplacement = (v: string | number | null) => (!v ? v : "[ID]");
+const idReplacement = (v: string | number | null) => (!v ? v : "[ID]")
 export const pruneIds = (row: { [key: string]: unknown }) =>
   mapValues(row, (v, k) =>
     (k === "id" || k.endsWith("_id")) &&
     (typeof v === "string" || typeof v === "number")
       ? idReplacement(v)
       : v
-  );
+  )
 
-const uuidRegexp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const uuidRegexp =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export const pruneUUIDs = (row: { [key: string]: unknown }) =>
   mapValues(row, (v, k) => {
     if (typeof v !== "string") {
-      return v;
+      return v
     }
-    const val = v;
+    const val = v
     return ["uuid", "queue_name"].includes(k) && v.match(uuidRegexp)
       ? "[UUID]"
       : k === "gravatar" && val.match(/^[0-9a-f]{32}$/i)
       ? "[gUUID]"
-      : v;
-  });
+      : v
+  })
 
 export const pruneHashes = (row: { [key: string]: unknown }) =>
   mapValues(row, (v, k) =>
     k.endsWith("_hash") && typeof v === "string" && v[0] === "$" ? "[hash]" : v
-  );
+  )
 
 export const snapshotSafe = (obj: { [key: string]: unknown }) =>
-  pruneHashes(pruneUUIDs(pruneIds(pruneDates(obj))));
+  pruneHashes(pruneUUIDs(pruneIds(pruneDates(obj))))
 
 export const deepSnapshotSafe = (obj: { [key: string]: unknown }): any => {
   if (Array.isArray(obj)) {
-    return obj.map(deepSnapshotSafe);
+    return obj.map(deepSnapshotSafe)
   } else if (obj && typeof obj === "object") {
     return mapValues(
       pruneHashes(pruneUUIDs(pruneIds(pruneDates(obj)))),
       deepSnapshotSafe
-    );
+    )
   }
-  return obj;
-};
+  return obj
+}
 
 export const clearEmails = () => {
-  global["TEST_EMAILS"] = [];
-};
+  global["TEST_EMAILS"] = []
+}
 
-beforeEach(clearEmails);
+beforeEach(clearEmails)
 
-export const getEmails = () => global["TEST_EMAILS"];
+export const getEmails = () => global["TEST_EMAILS"]

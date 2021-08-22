@@ -1,6 +1,7 @@
 {
+  "confirmGoBack": "Haluatko varmasti mennä takaisin? Menetät paikkasi jonossa.",
   "deleteRegistration": "Poista ilmoittautuminen",
-  "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautummisesi?",
+  "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautumisesi?",
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
   "errors": {
     "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui",
@@ -14,6 +15,8 @@
     "rules": {
       "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
       "emailValid": "Tarkista sähköpostiosoite",
+      "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
+      "provideAnswer": "Vastaus vaaditaan",
       "provideFirstName": "Anna etunimi",
       "provideLastName": "Anna sukunimi"
     }

@@ -1,137 +1,259 @@
-import dayjs from "dayjs";
-import slugify from "slugify";
+import { CreateEventDocument } from "@app/graphql"
+import dayjs from "dayjs"
+import slugify from "slugify"
 
 import {
   asRoot,
   createEventDataAndLogin,
   deleteTestData,
   runGraphQLQuery,
-  sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
 
-test("CreateEvent", async () => {
-  const {
-    organization,
-    eventCategory,
-    session,
-  } = await createEventDataAndLogin();
+const quotas = [
+  {
+    position: 0,
+    title: {
+      fi: "Kiintiö 1",
+      en: "Quota 1",
+    },
+    size: 1,
+  },
+  {
+    position: 1,
+    title: {
+      fi: "Kiintiö 2",
+      en: "Quota 2",
+    },
+    size: 2,
+  },
+  {
+    position: 2,
+    title: {
+      fi: "Kiintiö 3",
+      en: "Quota 3",
+    },
+    size: 3,
+  },
+]
 
-  const day = dayjs("2021-02-20");
-  const daySlug = day.format("YYYY-M-D");
-  const slug = slugify(`${daySlug}-testitapahtuma`, {
-    lower: true,
-  });
+const questions = [
+  {
+    position: 0,
+    type: "RADIO",
+    label: {
+      en: "Test question, choose option",
+      fi: "Testikysymys, valitse vaihtoehto",
+    },
+    isRequired: false,
+    data: [
+      { fi: "Radio 1", en: "Radio 1" },
+      { fi: "Radio 2", en: "Radio 2" },
+      { fi: "Radio 3", en: "Radio 3" },
+    ],
+  },
+  {
+    position: 0,
+    type: "CHECKBOX",
+    label: {
+      en: "Test question, choose option",
+      fi: "Testikysymys, valitse vaihtoehto",
+    },
+    isRequired: true,
+    data: [
+      { fi: "Check 1", en: "Check 1" },
+      { fi: "Check 2", en: "Check 2" },
+      { fi: "Check 3", en: "Check 3" },
+    ],
+  },
+  {
+    position: 0,
+    type: "TEXT",
+    label: {
+      en: "Test question",
+      fi: "Testikysymys",
+    },
+    isRequired: true,
+    data: null,
+  },
+]
 
-  await runGraphQLQuery(
-    `mutation CreateEvent(
-      $slug: String!
-      $name: JSON!
-      $description: JSON!
-      $organizationId: UUID!
-      $categoryId: UUID!
-      $isHighlighted: Boolean
-      $isDraft: Boolean
-      $eventStartTime: Datetime!
-      $eventEndTime: Datetime!
-      $registrationStartTime: Datetime!
-      $registrationEndTime: Datetime!
-    ) {
-      createEvent(
+describe("CreateEvent", () => {
+  it("can create eveant while logged in", async () => {
+    const { organization, eventCategory, session } =
+      await createEventDataAndLogin()
+    const day = dayjs("2021-02-20")
+    const daySlug = day.format("YYYY-M-D")
+    const slug = slugify(`${daySlug}-testitapahtuma`, {
+      lower: true,
+    })
+
+    await runGraphQLQuery(
+      CreateEventDocument,
+
+      // GraphQL variables:
+      {
         input: {
           event: {
-            slug: $slug
-            name: $name
-            description: $description
-            ownerOrganizationId: $organizationId
-            categoryId: $categoryId
-            isHighlighted: $isHighlighted
-            isDraft: $isDraft
-            eventStartTime: $eventStartTime
-            eventEndTime: $eventEndTime
-            registrationStartTime: $registrationStartTime
-            registrationEndTime: $registrationEndTime
-          }
+            slug: slug,
+            name: { fi: "Testitapahtuma", en: "Test event" },
+            description: { fi: "Testikuvaus", en: "Test description" },
+            location: "Testikatu 123",
+            ownerOrganizationId: organization.id,
+            categoryId: eventCategory.id,
+            isHighlighted: true,
+            isDraft: false,
+            eventStartTime: day.add(1, "days").toISOString(),
+            eventEndTime: day.add(2, "days").toISOString(),
+            registrationStartTime: day.toISOString(),
+            registrationEndTime: day.add(7, "hour").toISOString(),
+          },
+          quotas,
+          questions,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: { sessionId: session.uuid },
+      },
+
+      // This function runs all your test assertions:
+      async (json, { pgClient }) => {
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
+
+        const event = json.data!.createEvent.event
+
+        const { rows: eventRows } = await asRoot(pgClient, () =>
+          pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
+            event.id,
+          ])
+        )
+        const { rows: quotaRows } = await asRoot(pgClient, () =>
+          pgClient.query(
+            `SELECT * FROM app_public.quotas WHERE event_id = $1`,
+            [event.id]
+          )
+        )
+        const { rows: questionRows } = await asRoot(pgClient, () =>
+          pgClient.query(
+            `SELECT * FROM app_public.event_questions WHERE event_id = $1`,
+            [event.id]
+          )
+        )
+
+        if (eventRows.length !== 1) {
+          throw new Error("Event not found!")
         }
-      ) {
-        event {
-          id
-          slug
-          name
-          description
-          ownerOrganizationId
-          categoryId
-          isHighlighted
-          isDraft
+        if (quotaRows.length !== 3) {
+          throw new Error("Wrong amount of quotas after mutation!")
+        }
+        if (questionRows.length !== 3) {
+          throw new Error("Wrong amount of questions after mutation!")
         }
       }
-    }`,
+    )
+  })
 
-    // GraphQL variables:
-    {
-      slug: slug,
-      name: { fi: "Testitapahtuma", en: "Test event" },
-      description: { fi: "Testikuvaus", en: "Test description" },
-      organizationId: organization.id,
-      categoryId: eventCategory.id,
-      isHighlighted: true,
-      isDraft: false,
-      eventStartTime: day.add(1, "days").toISOString(),
-      eventEndTime: day.add(2, "days").toISOString(),
-      registrationStartTime: day.toISOString(),
-      registrationEndTime: day.add(7, "hour").toISOString(),
-    },
+  it("can't create an event while logged out", async () => {
+    const { organization, eventCategory } = await createEventDataAndLogin()
+    const day = dayjs("2021-02-20")
+    const daySlug = day.format("YYYY-M-D")
+    const slug = slugify(`${daySlug}-testitapahtuma`, {
+      lower: true,
+    })
 
-    // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
-    {
-      user: { session_id: session.uuid },
-    },
-
-    // This function runs all your test assertions:
-    async (json, { pgClient }) => {
-      expect(json.errors).toBeFalsy();
-      expect(json.data).toBeTruthy();
-
-      const event = json.data!.createEvent.event;
-
-      expect(event).toBeTruthy();
-      expect(event.ownerOrganizationId).toEqual(organization.id);
-      expect(event.categoryId).toEqual(eventCategory.id);
-
-      expect(sanitize(event)).toMatchInlineSnapshot(`
-        Object {
-          "categoryId": "[id-3]",
-          "description": Object {
-            "en": "Test description",
-            "fi": "Testikuvaus",
+    await runGraphQLQuery(
+      CreateEventDocument,
+      // GraphQL variables:
+      {
+        input: {
+          event: {
+            slug: slug,
+            name: { fi: "Testitapahtuma", en: "Test event" },
+            description: { fi: "Testikuvaus", en: "Test description" },
+            location: "Testikatu 123",
+            ownerOrganizationId: organization.id,
+            categoryId: eventCategory.id,
+            isHighlighted: true,
+            isDraft: false,
+            eventStartTime: day.add(1, "days").toISOString(),
+            eventEndTime: day.add(2, "days").toISOString(),
+            registrationStartTime: day.toISOString(),
+            registrationEndTime: day.add(7, "hour").toISOString(),
           },
-          "id": "[id-1]",
-          "isDraft": false,
-          "isHighlighted": true,
-          "name": Object {
-            "en": "Test event",
-            "fi": "Testitapahtuma",
-          },
-          "ownerOrganizationId": "[id-2]",
-          "slug": "2021-2-20-testitapahtuma",
-        }
-      `);
+          quotas,
+          questions,
+        },
+      },
 
-      const { rows } = await asRoot(pgClient, () =>
-        pgClient.query(`SELECT * FROM app_public.events WHERE id = $1`, [
-          event.id,
-        ])
-      );
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
 
-      if (rows.length !== 1) {
-        throw new Error("Event not found!");
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        expect(message).toEqual("You must log in to create a event")
       }
-      expect(rows[0].id).toEqual(event.id);
-    }
-  );
-});
+    )
+  })
+
+  it("must specify at least one event quota", async () => {
+    const { session, organization, eventCategory } =
+      await createEventDataAndLogin()
+    const day = dayjs("2021-02-20")
+    const daySlug = day.format("YYYY-M-D")
+    const slug = slugify(`${daySlug}-testitapahtuma`, {
+      lower: true,
+    })
+
+    await runGraphQLQuery(
+      CreateEventDocument,
+      // GraphQL variables:
+      {
+        input: {
+          event: {
+            slug: slug,
+            name: { fi: "Testitapahtuma", en: "Test event" },
+            description: { fi: "Testikuvaus", en: "Test description" },
+            location: "Testikatu 123",
+            ownerOrganizationId: organization.id,
+            categoryId: eventCategory.id,
+            isHighlighted: true,
+            isDraft: false,
+            eventStartTime: day.add(1, "days").toISOString(),
+            eventEndTime: day.add(2, "days").toISOString(),
+            registrationStartTime: day.toISOString(),
+            registrationEndTime: day.add(7, "hour").toISOString(),
+          },
+          quotas: [],
+          questions: [],
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: { sessionId: session.uuid },
+      },
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+
+        expect(message).toEqual("You must specify at least one quota")
+        expect(code).toEqual("DNIED")
+      }
+    )
+  })
+})

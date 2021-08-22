@@ -1,17 +1,15 @@
-mutation UpdateEventRegistration(
-  $updateToken: String!
-  $firstName: String!
-  $lastName: String!
-) {
-  updateRegistration(
-    input: {
-      updateToken: $updateToken
-      firstName: $firstName
-      lastName: $lastName
-    }
-  ) {
+mutation UpdateEventRegistration($input: UpdateRegistrationInput!) {
+  updateRegistration(input: $input) {
     registration {
-      id
+      ...EventPage_Registration
+      # Some additional fields so that if a registration is
+      # updated via the admin we show the updated info.
+      # EventPage_Registration does not include answers or
+      # updatedAt info for privacy reasons.
+      firstName
+      lastName
+      answers
+      updatedAt
     }
   }
 }

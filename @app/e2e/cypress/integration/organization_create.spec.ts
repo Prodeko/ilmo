@@ -1,46 +1,62 @@
 /// <reference types="Cypress" />
 
 context("Create organizations", () => {
-  beforeEach(() => cy.serverCommand("clearTestUsers"));
-  beforeEach(() => cy.serverCommand("clearTestOrganizations"));
+  beforeEach(() => cy.serverCommand("clearTestUsers"))
+  beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
   it("can create an organization", () => {
     // Setup
-    cy.login({ verified: true });
+    cy.login({
+      verified: true,
+      isAdmin: true,
+      orgs: [["Test Organization 1", "test-organization-1"]],
+    })
 
     // Action
-    cy.getCy("layout-dropdown-user").click();
-    cy.getCy("layout-link-create-organization").click();
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
-    cy.getCy("createorganization-input-name").type("Test Organization");
-    cy.getCy("createorganization-slug-value").contains("test-organization");
-    cy.getCy("createorganization-button-create").click();
+    cy.getCy("layout-dropdown-user").click()
+    cy.getCy("layout-link-admin").click()
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
+    cy.getCy("admin-sider-organizations").click()
+    cy.getCy("admin-sider-create-organization").click()
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/organization/create"
+    )
+    cy.getCy("createorganization-input-name").type("Test Organization 2")
+    cy.getCy("createorganization-slug-value").contains("test-organization-2")
+    cy.getCy("createorganization-button-create").click()
 
     // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/o/test-organization");
-    cy.getCy("layout-header-title").contains("Test Organization");
-    cy.getCy("layout-header-titlelink")
-      .invoke("attr", "href")
-      .should("equal", "/o/test-organization");
-  });
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/organization/test-organization-2"
+    )
+  })
 
   it("handles conflicting organization name", () => {
     // Setup
     cy.login({
       verified: true,
+      isAdmin: true,
       orgs: [["Test Organization", "test-organization"]],
-    });
+    })
 
     // Action
-    cy.getCy("layout-dropdown-user").click();
-    cy.getCy("layout-link-create-organization").click();
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/create-organization");
-    cy.getCy("createorganization-input-name").type("Test Organization");
-    cy.getCy("createorganization-slug-value").contains("test-organization");
+    cy.getCy("layout-dropdown-user").click()
+    cy.getCy("layout-link-admin").click()
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
+    cy.getCy("admin-sider-organizations").click()
+    cy.getCy("admin-sider-create-organization").click()
+    cy.url().should(
+      "equal",
+      Cypress.env("ROOT_URL") + "/admin/organization/create"
+    )
+    cy.getCy("createorganization-input-name").type("Test Organization")
+    cy.getCy("createorganization-slug-value").contains("test-organization")
 
     // Assertion
-    cy.getCy("createorganization-hint-nameinuse").should("exist");
-    cy.getCy("createorganization-button-create").click();
-    cy.getCy("createorganization-alert-nuniq").should("exist");
-  });
-});
+    cy.getCy("createorganization-hint-nameinuse").should("exist")
+    cy.getCy("createorganization-button-create").click()
+    cy.getCy("createorganization-alert-nuniq").should("exist")
+  })
+})

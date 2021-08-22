@@ -1,10 +1,10 @@
-import { Store } from "rc-field-form/lib/interface";
+import { Store } from "rc-field-form/lib/interface"
 
-const zxcvbn = import("zxcvbn").then(({ default: zxcvbn }) => zxcvbn);
+const zxcvbn = import("zxcvbn").then(({ default: zxcvbn }) => zxcvbn)
 
 interface ExpectedProps {
-  setPasswordStrength: (score: number) => void;
-  setPasswordSuggestions: (message: string[]) => void;
+  setPasswordStrength: (score: number) => void
+  setPasswordSuggestions: (message: string[]) => void
 }
 
 export const setPasswordInfo = async (
@@ -14,17 +14,17 @@ export const setPasswordInfo = async (
 ): Promise<void> => {
   // On field change check to see if password changed
   if (!(fieldName in changedValues)) {
-    return;
+    return
   }
 
-  const value = changedValues[fieldName];
-  const z = await zxcvbn;
-  const { score, feedback } = z(value || "");
-  props.setPasswordStrength(score);
+  const value = changedValues[fieldName]
+  const z = await zxcvbn
+  const { score, feedback } = z(value || "")
+  props.setPasswordStrength(score)
 
-  const messages = [...feedback.suggestions];
+  const messages = [...feedback.suggestions]
   if (feedback.warning !== "") {
-    messages.push(feedback.warning);
+    messages.push(feedback.warning)
   }
-  props.setPasswordSuggestions(messages);
-};
+  props.setPasswordSuggestions(messages)
+}

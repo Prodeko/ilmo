@@ -1,0 +1,7 @@
+mutation UpdateEventCategory($input: UpdateEventCategoryInput!) {
+  updateEventCategory(input: $input) {
+    eventCategory {
+      ...EventPage_EventCategory
+    }
+  }
+}

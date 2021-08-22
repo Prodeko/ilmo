@@ -9,12 +9,12 @@
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^5.6.0",
+    "@cypress/webpack-preprocessor": "^5.9.1",
     "cross-env": "^7.0.3",
-    "cypress": "^6.6.0",
-    "cypress-file-upload": "^5.0.2",
-    "jest": "^26.6.3",
-    "slugify": "^1.4.7",
-    "webpack": "^5.25.0"
+    "cypress": "^8.3.0",
+    "cypress-file-upload": "^5.0.8",
+    "jest": "^27.0.6",
+    "slugify": "^1.6.0",
+    "webpack": "^5.51.1"
   }
 }

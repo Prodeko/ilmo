@@ -1,26 +1,49 @@
 {
+  "admin": "Hallintapaneeli",
+  "answers": "Vastaukset",
   "backHome": "Takaisin etusivulle",
+  "color": "Väri",
   "create": "Luo",
+  "createdAt": "Luotu",
+  "data": "Data",
+  "delete": "Poista",
   "description": "Kuvaus",
+  "draft": "Luonnokset",
   "dragToUpload": "Klikkaa tai raahaa kuva tähän",
   "emailSwitchLabel": "Näytä html-versio",
-  "en": "Englanti",
-  "fi": "Suomi",
-  "headerMenu": {
-    "createEvent": "Luo tapahtuma",
-    "createEventCategory": "Luo tapahtumakategoria",
-    "createOrganization": "Luo organisaatio"
+  "head": {
+    "description": "Prodeko ilmo",
+    "title": "Prodeko ilmo"
   },
   "imgCropTitle": "Muokkaa kuvaa",
+  "label": "Otsikko",
+  "lang": {
+    "en": "Englanti",
+    "fi": "Suomi",
+    "in": {
+      "en": "englanniksi",
+      "fi": "suomeksi"
+    }
+  },
   "loading": "Ladataan...",
+  "location": "Paikka",
   "logout": "Kirjaudu ulos",
   "moreInfo": "Lisätietoja",
   "name": "Nimi",
   "no": "Ei",
+  "option": "Vaihtoehto",
+  "question": "Kysymys",
   "redirect": "Uudelleenohjataan...",
+  "registrationClosed": "Ilmoittautuminen päättynyt",
+  "registrationOpen": "Ilmoittautuminen auki",
+  "registrationUpcoming": "Ilmoittautuminen tulossa",
+  "required": "Pakollinen",
   "settings": "Asetukset",
   "shortDescription": "Lyhyt kuvaus",
-  "signin": "Kirjaudu sisään",
+  "signin": "Kirjaudu",
+  "status": "Status",
+  "type": "Tyyppi",
   "update": "Päivitä",
+  "updatedAt": "Päivitetty",
   "yes": "Kyllä"
 }

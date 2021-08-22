@@ -1,5 +1,7 @@
-@import "~antd/lib/style/themes/default.less";
+@import url("https://fonts.googleapis.com/css?family=Raleway:regular,bold,italic&subset=latin,latin-ext");
+@import "antd/lib/style/themes/default.less";
 @import "buttons.less";
+@import "keyframes.less";
 
 :root {
   // Work around for using less variables in react code.
@@ -7,10 +9,19 @@
   --primary-color: @primary-color;
 }
 
-.table-row-highlight {
-  background-color: @blue-1;
+.ant-layout-sider-zero-width-trigger-left {
+  // positioning and color for responsive admin sider collapse trigger
+  top: 0px !important;
+  background: @primary-color !important;
+}
 
-  &:hover > td {
-    background-color: @blue-2 !important;
-  }
+.ant-upload-list-picture-card {
+  // Some margin between Dragger and file list
+  margin-top: 8px;
+}
+
+/* Remove list styles on ul, ol elements with a class attribute */
+ul,
+ol {
+  list-style: none;
 }

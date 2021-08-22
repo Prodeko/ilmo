@@ -1,14 +1,14 @@
-import { QueryBuilder, SQL } from "graphile-build-pg";
+import { QueryBuilder, SQL } from "graphile-build-pg"
 import {
   AugmentedGraphQLFieldResolver,
   embed,
   gql,
   makeExtendSchemaPlugin,
-} from "graphile-utils";
+} from "graphile-utils"
 // graphile-utils doesn't export this yet
-import { GraphQLResolveInfo } from "graphql";
+import { GraphQLResolveInfo } from "graphql"
 
-import { OurGraphQLContext } from "../middleware/installPostGraphile";
+import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
 /*
  * PG NOTIFY events are sent via a channel, this function helps us determine
@@ -29,13 +29,13 @@ const currentUserTopicFromContext = async (
       rows: [user],
     } = await context.pgClient.query(
       "select app_public.current_user_id() as id"
-    );
+    )
     if (user) {
-      return `graphql:user:${user.id}`;
+      return `graphql:user:${user.id}`
     }
   }
-  throw new Error("You're not logged in");
-};
+  throw new Error("You're not logged in")
+}
 
 const eventRegistrationsTopicFromContext = async (
   args: { eventId: string },
@@ -47,12 +47,12 @@ const eventRegistrationsTopicFromContext = async (
   } = await context.pgClient.query(
     "select id from app_public.events where id = $1",
     [args.eventId]
-  );
+  )
   if (event) {
-    return `graphql:eventRegistrations:${event.id}`;
+    return `graphql:eventRegistrations:${event.id}`
   }
-  throw new Error("Invalid event ID.");
-};
+  throw new Error("Invalid event ID.")
+}
 
 /*
  * This plugin adds a number of custom subscriptions to our schema. By making
@@ -68,7 +68,7 @@ const eventRegistrationsTopicFromContext = async (
  * And see the database trigger function `app_public.tg__graphql_subscription()`.
  */
 const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
-  const { pgSql: sql } = build;
+  const { pgSql: sql } = build
   return {
     typeDefs: gql`
        type UserSubscriptionPayload {
@@ -77,7 +77,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
       }
 
       type EventRegistrationsSubscriptionPayload {
-        registrations(after: Datetime!): [Registration]
+        registrations(after: Datetime): [Registration]
         event: String
       }
 
@@ -87,7 +87,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
           currentUserTopicFromContext
         )})
 
-        """Triggered when new event registrations are created. Each event has its own subscription topic."""
+        """Triggered when new event registrations are created or updated. Each event has its own subscription topic."""
         eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload @pgSubscription(topic: ${embed(
           eventRegistrationsTopicFromContext
         )})
@@ -110,10 +110,10 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
           ({ sqlBuilder, tableAlias, event, args }) => {
             const where = sql.fragment`${tableAlias}.event_id = ${sql.value(
               event.subject
-            )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`;
-            const orderBy = sql.fragment`created_at`;
-            sqlBuilder.where(where);
-            sqlBuilder.orderBy(() => orderBy, true);
+            )} and ${tableAlias}.created_at >= ${sql.value(args.after)}`
+            const orderBy = sql.fragment`created_at`
+            sqlBuilder.where(where)
+            sqlBuilder.orderBy(() => orderBy, true)
           },
           // Whether to return a single record or a list.
           // If true, return list.
@@ -121,20 +121,20 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
         ),
       },
     },
-  };
-});
+  }
+})
 
 /* The JSON object that `tg__graphql_subscription()` delivers via NOTIFY */
 interface TgGraphQLSubscriptionPayload {
-  event: string;
-  subject: string | null;
+  event: string
+  subject: string | null
 }
 
 interface ConstructQueryArgs {
-  sqlBuilder: QueryBuilder;
-  tableAlias: SQL;
-  event: TgGraphQLSubscriptionPayload;
-  args: any;
+  sqlBuilder: QueryBuilder
+  tableAlias: SQL
+  event: TgGraphQLSubscriptionPayload
+  args: any
 }
 
 /*
@@ -156,12 +156,12 @@ function getByQueryFromTable(
     const rows = await selectGraphQLResultFromTable(
       sqlTable,
       (tableAlias: SQL, sqlBuilder: QueryBuilder) => {
-        constructQuery({ sqlBuilder, tableAlias, event, args });
+        constructQuery({ sqlBuilder, tableAlias, event, args })
       }
-    );
+    )
 
-    return returnList ? rows : rows[0];
-  };
+    return returnList ? rows : rows[0]
+  }
 }
 
-export default SubscriptionsPlugin;
+export default SubscriptionsPlugin

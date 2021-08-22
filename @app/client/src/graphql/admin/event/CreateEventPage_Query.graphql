@@ -1,0 +1,12 @@
+fragment CreateEventPage_Query on Query {
+  ...SharedLayout_Query
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
+    }
+  }
+}
+
+query CreateEventPage {
+  ...CreateEventPage_Query
+}

@@ -1,0 +1,27 @@
+fragment EventPage_EventCategory on EventCategory {
+  id
+  description
+  name
+  color
+  ownerOrganization {
+    ...EventPage_OwnerOrganization
+    __typename
+  }
+  updatedAt
+  __typename
+}
+fragment EventPage_OwnerOrganization on Organization {
+  id
+  name
+  slug
+  __typename
+}
+mutation UpdateEventCategory($input: UpdateEventCategoryInput!) {
+  updateEventCategory(input: $input) {
+    eventCategory {
+      ...EventPage_EventCategory
+      __typename
+    }
+    __typename
+  }
+}

@@ -1,39 +1,29 @@
-import * as React from "react";
-import { useCallback } from "react";
-import CrownOutlined from "@ant-design/icons/CrownOutlined";
-import DownOutlined from "@ant-design/icons/DownOutlined";
-import { ApolloError, QueryResult, useApolloClient } from "@apollo/client";
-import { companyName, projectName } from "@app/config";
+import * as React from "react"
+import { useCallback } from "react"
+import DownOutlined from "@ant-design/icons/DownOutlined"
+import { companyName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
   SharedLayout_UserFragment,
   useCurrentUserUpdatedSubscription,
   useLogoutMutation,
-} from "@app/graphql";
-import * as Sentry from "@sentry/react";
-import {
-  Avatar,
-  Col,
-  Dropdown,
-  Grid,
-  Layout,
-  Menu,
-  Row,
-  Typography,
-} from "antd";
-import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
-import Router, { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+} from "@app/graphql"
+import * as Sentry from "@sentry/react"
+import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd"
+import Head from "next/head"
+import Image from "next/image"
+import Link from "next/link"
+import Router, { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
+import { CombinedError, UseQueryState } from "urql"
 
-import { LocaleSelect } from "./LocaleSelect";
-import { Redirect } from "./Redirect";
-import { ErrorAlert, H3, StandardWidth, Warn } from ".";
+import { useIsMobile } from "./hooks"
+import { LocaleSelect } from "./LocaleSelect"
+import { Redirect } from "./Redirect"
+import { ErrorResult, H3, StandardWidth, Warn } from "."
 
-const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
-const { useBreakpoint } = Grid;
+const { Header, Content, Footer } = Layout
+const { Text } = Typography
 /*
  * For some reason, possibly related to the interaction between
  * `babel-plugin-import` and https://github.com/babel/babel/pull/9766, we can't
@@ -42,16 +32,17 @@ const { useBreakpoint } = Grid;
  *
  * TODO: change back to `export { Row, Col, Link }` when this issue is fixed.
  */
-const _babelHackRow = Row;
-const _babelHackCol = Col;
-export { _babelHackCol as Col, Link, _babelHackRow as Row };
+const _babelHackRow = Row
+const _babelHackCol = Col
+export { _babelHackCol as Col, Link, _babelHackRow as Row }
 
-export const contentMinHeight = "calc(100vh - 64px - 70px)";
+export const contentMinHeight = "calc(100vh - 64px - 70px)"
+export const contentMaxWidth = "75rem"
 
 export interface SharedLayoutChildProps {
-  error?: ApolloError | Error;
-  loading: boolean;
-  currentUser?: SharedLayout_UserFragment | null;
+  error?: CombinedError | Error
+  fetching: boolean
+  currentUser?: SharedLayout_UserFragment | null
 }
 
 export enum AuthRestrict {
@@ -72,20 +63,18 @@ export interface SharedLayoutProps {
    * page to be fetchable via a single GraphQL query, rather than multiple
    * chained queries.
    */
-  query: Pick<
-    QueryResult<SharedLayout_QueryFragment>,
-    "data" | "loading" | "error" | "networkStatus" | "client" | "refetch"
-  >;
+  query: UseQueryState<SharedLayout_QueryFragment>
 
-  title: string;
-  titleHref?: string;
-  titleHrefAs?: string;
+  title: string
+  titleHref?: string
+  titleHrefAs?: string
   children:
     | React.ReactNode
-    | ((props: SharedLayoutChildProps) => React.ReactNode);
-  noPad?: boolean;
-  noHandleErrors?: boolean;
-  forbidWhen?: AuthRestrict;
+    | ((props: SharedLayoutChildProps) => React.ReactNode)
+  noPad?: boolean
+  noHandleErrors?: boolean
+  forbidWhen?: AuthRestrict
+  sider?: React.ReactNode
 }
 
 export function SharedLayout({
@@ -96,50 +85,48 @@ export function SharedLayout({
   noHandleErrors = false,
   query,
   forbidWhen = AuthRestrict.NEVER,
+  sider,
   children,
 }: SharedLayoutProps) {
-  const router = useRouter();
-  const currentUrl = router.asPath;
-  const client = useApolloClient();
-  const screens = useBreakpoint();
-  const [logout] = useLogoutMutation();
-  const { t } = useTranslation("common");
+  const router = useRouter()
+  const currentUrl = router.asPath
+  const [, logout] = useLogoutMutation()
+  const { t } = useTranslation("common")
+  const isMobile = useIsMobile()
 
-  const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN;
-  const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT;
-  const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN;
-
-  const isMobile = screens["xs"];
+  const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
+  const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
+  const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
 
   const handleLogout = useCallback(() => {
     const reset = async () => {
-      Router.events.off("routeChangeComplete", reset);
+      Router.events.off("routeChangeComplete", reset)
       try {
-        await logout();
-        client.resetStore();
+        await logout()
+        // client.resetStore()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
-        window.location.href = "/logout";
-        Sentry.captureException(e);
+        window.location.href = "/logout"
+        Sentry.captureException(e)
       }
-    };
-    Router.events.on("routeChangeComplete", reset);
-    Router.push("/");
-  }, [client, logout]);
+    }
+    Router.events.on("routeChangeComplete", reset)
+    Router.push("/")
+  }, [logout])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
-      props.error && !props.loading && !noHandleErrors ? (
+      props.error && !props.fetching && !noHandleErrors ? (
         <>
           {process.env.NODE_ENV === "development" && (
-            <ErrorAlert error={props.error} />
+            <ErrorResult error={props.error} />
           )}
         </>
       ) : typeof children === "function" ? (
         children(props)
       ) : (
         children
-      );
+      )
 
     if (
       data &&
@@ -148,38 +135,38 @@ export function SharedLayout({
     ) {
       return (
         <StandardWidth>
-          <Redirect href={"/"} />
+          <Redirect href="/" />
         </StandardWidth>
-      );
+      )
     } else if (
       data &&
       data.currentUser === null &&
-      !loading &&
+      !fetching &&
       !error &&
       forbidsLoggedOut
     ) {
       return (
         <Redirect href={`/login?next=${encodeURIComponent(router.asPath)}`} />
-      );
+      )
     }
 
-    return noPad ? inner : <StandardWidth>{inner}</StandardWidth>;
-  };
+    return noPad ? inner : <StandardWidth>{inner}</StandardWidth>
+  }
 
-  const { data, loading, error } = query;
+  const { data, fetching, error } = query
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
    * current user. Interestingly we don't need to actually _do_ anything - no
    * rendering or similar - because the payload of this mutation will
-   * automatically update Apollo's cache which will cause the data to be
+   * automatically update Urql's cache which will cause the data to be
    * re-rendered wherever appropriate.
    */
   useCurrentUserUpdatedSubscription({
     // Skip checking for changes to the current user if
     // current user does not exist
-    skip: !data?.currentUser,
-  });
+    pause: !data?.currentUser,
+  })
 
   return (
     <Layout>
@@ -228,60 +215,19 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col flex="auto" style={{ textAlign: "right" }}>
+          <Col flex="auto" style={{ textAlign: "right", marginRight: "10px" }}>
             <LocaleSelect />
           </Col>
-          <Col md={{ span: 2 }} style={{ textAlign: "right" }} xs={{ span: 7 }}>
+          <Col md={{ span: 2 }} style={{ textAlign: "left" }} xs={{ span: 4 }}>
             {data && data.currentUser ? (
               <Dropdown
                 overlay={
                   <Menu>
-                    {data.currentUser.organizationMemberships.nodes.map(
-                      ({ organization, isOwner }) => (
-                        <Menu.Item key={organization?.id}>
-                          <Link
-                            as={`/o/${organization?.slug}`}
-                            href={`/o/[slug]`}
-                          >
-                            <a>
-                              {organization?.name}
-                              {isOwner ? (
-                                <span>
-                                  {" "}
-                                  <CrownOutlined />
-                                </span>
-                              ) : (
-                                ""
-                              )}
-                            </a>
-                          </Link>
-                        </Menu.Item>
-                      )
-                    )}
                     <Menu.Item>
-                      <Link href="/create-organization">
-                        <a data-cy="layout-link-create-organization">
-                          {t("headerMenu.createOrganization")}
-                        </a>
+                      <Link href="/admin/event/list">
+                        <a data-cy="layout-link-admin">{t("admin")}</a>
                       </Link>
                     </Menu.Item>
-                    {data.currentUser?.organizationMemberships?.nodes.length >
-                      0 && [
-                      <Menu.Item key="create-event">
-                        <Link href="/event/create">
-                          <a data-cy="layout-link-create-event">
-                            {t("headerMenu.createEvent")}
-                          </a>
-                        </Link>
-                      </Menu.Item>,
-                      <Menu.Item key="create-event-category">
-                        <Link href="/create-event-category">
-                          <a data-cy="layout-link-create-event-category">
-                            {t("headerMenu.createEventCategory")}
-                          </a>
-                        </Link>
-                      </Menu.Item>,
-                    ]}
                     <Menu.Item>
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">
@@ -321,13 +267,17 @@ export function SharedLayout({
           </Col>
         </Row>
       </Header>
-      <Content style={{ minHeight: contentMinHeight }}>
-        {renderChildren({
-          error,
-          loading,
-          currentUser: data && data.currentUser,
-        })}
-      </Content>
+      <Layout hasSider={!!sider}>
+        {sider ? sider : null}
+        <Content style={{ minHeight: contentMinHeight }}>
+          {renderChildren({
+            error,
+            fetching,
+            currentUser: data && data.currentUser,
+          })}
+        </Content>
+      </Layout>
+
       <Footer>
         <div
           style={{
@@ -350,17 +300,8 @@ export function SharedLayout({
               </span>
             )}
           </Text>
-          <Text>
-            Powered by{" "}
-            <a
-              href="https://graphile.org/postgraphile"
-              style={{ textDecoration: "underline" }}
-            >
-              PostGraphile
-            </a>
-          </Text>
         </div>
       </Footer>
     </Layout>
-  );
+  )
 }

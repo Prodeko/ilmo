@@ -1,10 +1,7 @@
 {
-  "events": {
-    "eventTime": "Tapahtuma",
-    "registrationTime": "Ilmo",
-    "signupsClosedEvents": "Ilmoittautuminen päättynyt",
-    "signupsOpenEvents": "Ilmoittautuminen auki",
-    "signupsUpcomingEvents": "Ilmoittautuminen tulossa"
-  },
-  "noEvents": "Ei tapahtumia"
+  "eventTime": "Tapahtuma",
+  "highlightText": "Nätti tapahtuma!",
+  "noEvents": "Ei tapahtumia",
+  "registerToAnEvent": "Ilmoittaudu",
+  "registrationTime": "Ilmo"
 }

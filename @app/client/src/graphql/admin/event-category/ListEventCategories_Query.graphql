@@ -1,0 +1,17 @@
+fragment ListEventCategories on EventCategory {
+  ...EventPage_EventCategory
+}
+
+fragment ListEventCategories_Query on Query {
+  eventCategories(first: $first, offset: $offset) {
+    nodes {
+      id
+      ...ListEventCategories
+    }
+    totalCount
+  }
+}
+
+query ListEventCategories($offset: Int!, $first: Int!) {
+  ...ListEventCategories_Query
+}

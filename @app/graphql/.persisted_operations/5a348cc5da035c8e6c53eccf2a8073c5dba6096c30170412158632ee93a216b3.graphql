@@ -1,0 +1,37 @@
+fragment ListEventCategories_Query on Query {
+  eventCategories(first: $first, offset: $offset) {
+    nodes {
+      id
+      ...ListEventCategories
+      __typename
+    }
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment ListEventCategories on EventCategory {
+  ...EventPage_EventCategory
+  __typename
+}
+fragment EventPage_EventCategory on EventCategory {
+  id
+  description
+  name
+  color
+  ownerOrganization {
+    ...EventPage_OwnerOrganization
+    __typename
+  }
+  updatedAt
+  __typename
+}
+fragment EventPage_OwnerOrganization on Organization {
+  id
+  name
+  slug
+  __typename
+}
+query ListEventCategories($offset: Int!, $first: Int!) {
+  ...ListEventCategories_Query
+}

@@ -1,0 +1,11 @@
+fragment UpdateEventCategoryPage_Query on Query {
+  ...SharedLayout_Query
+  eventCategory(id: $id) {
+    id
+    ...EventPage_EventCategory
+  }
+}
+
+query UpdateEventCategoryPage($id: UUID!) {
+  ...UpdateEventCategoryPage_Query
+}

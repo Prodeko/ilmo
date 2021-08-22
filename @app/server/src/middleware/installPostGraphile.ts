@@ -1,112 +1,120 @@
-import { resolve } from "path";
+import { IncomingMessage } from "http"
+import { resolve } from "path"
 
-import PersistedOperationsPlugin from "@graphile/persisted-operations";
-import PgPubsub from "@graphile/pg-pubsub";
-import GraphilePro from "@graphile/pro";
-import _PgSubscriptionsLds from "@graphile/subscriptions-lds";
-import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector";
-import { Request, Response } from "express";
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
-import { NodePlugin } from "graphile-build";
-import { WorkerUtils } from "graphile-worker";
-import { Redis } from "ioredis";
-import { Pool, PoolClient } from "pg";
+import PersistedOperationsPlugin from "@graphile/persisted-operations"
+import PgPubsub from "@graphile/pg-pubsub"
+import _PgSubscriptionsLds from "@graphile/subscriptions-lds"
+import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
+import { parse } from "cookie"
+import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
+import fp from "fastify-plugin"
+import { NodePlugin } from "graphile-build"
+import { WorkerUtils } from "graphile-worker"
+import { Redis } from "ioredis"
+import { Pool, PoolClient } from "pg"
 import {
   enhanceHttpServerWithSubscriptions,
   makePluginHook,
   Middleware,
   postgraphile,
   PostGraphileOptions,
-} from "postgraphile";
-import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins";
-import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter";
+} from "postgraphile"
+import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins"
+import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter"
 
-import { convertHandler } from "../app";
-import EmailsPlugin from "../plugins/EmailsPlugin";
-import EventRegistrationPlugin from "../plugins/EventRegistrationPlugin";
-import OrdersPlugin from "../plugins/Orders";
-import PassportLoginPlugin from "../plugins/PassportLoginPlugin";
-import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin";
-import RateLimitPlugin from "../plugins/RateLimitPlugin";
-import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin";
-import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin";
-import { resolveUpload } from "../utils/fileUpload";
-import handleErrors from "../utils/handleErrors";
+import { convertHandler } from "../app"
+import EmailsPlugin from "../plugins/EmailsPlugin"
+import EventRegistrationPlugin from "../plugins/EventRegistrationPlugin"
+import OrdersPlugin from "../plugins/Orders"
+import PassportLoginPlugin from "../plugins/PassportLoginPlugin"
+import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin"
+import RateLimitPlugin from "../plugins/RateLimitPlugin"
+import RemoveAccountRegistrationFields from "../plugins/RemoveAccountRegistrationFields"
+import RemoveOwnershipInfoForeignKeyConnections from "../plugins/RemoveOwnershipInfoForeignKeyConnections"
+import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin"
+import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin"
+import UploadsPlugin from "../plugins/UploadsPlugin"
+import { resolveUpload } from "../utils/fileUpload"
+import handleErrors from "../utils/handleErrors"
 
-const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field");
+const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
 
-declare module "postgraphile" {
-  export interface CompatFastifyRequest {
-    login: any;
-    logout: any;
-  }
-}
 export interface OurGraphQLContext {
-  pgClient: PoolClient;
-  sessionId: string | null;
-  ipAddress: string;
-  rootPgPool: Pool;
-  redisClient: Redis;
-  workerUtils: WorkerUtils;
-  login(user: any): Promise<void>;
-  logout(): Promise<void>;
+  pgClient: PoolClient
+  sessionId: string | null
+  ipAddress: string
+  rootPgPool: Pool
+  redisClient: Redis
+  workerUtils: WorkerUtils
+  login(user: any): Promise<void>
+  logout(): Promise<void>
 }
 
 const TagsFilePlugin = makePgSmartTagsFromFilePlugin(
   // We're using JSONC for VSCode compatibility; also using an explicit file
   // path keeps the tests happy.
   resolve(__dirname, "../../postgraphile.tags.jsonc")
-);
+)
 
-type UUID = string;
+type UUID = string
 
-const isDev = process.env.NODE_ENV === "development";
-const isTest = process.env.NODE_ENV === "test";
+const isDev = process.env.NODE_ENV === "development"
+const isTest = process.env.NODE_ENV === "test"
 
 function uuidOrNull(input: string | number | null | undefined): UUID | null {
-  if (!input) return null;
-  const str = String(input);
+  if (!input) return null
+  const str = String(input)
   if (
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       str
     )
   ) {
-    return str;
+    return str
   } else {
-    return null;
+    return null
   }
+}
+
+function sessionIdFromRequest(
+  app: FastifyInstance,
+  req: IncomingMessage | FastifyRequest
+) {
+  // @ts-ignore
+  if (isTest) return req?.user?.sessionId
+  const sessionCookie = parse(req.headers?.cookie || "")?.["session"]
+  const decodedSession = app.decodeSecureSession(sessionCookie)
+  const sessionId = uuidOrNull(decodedSession?.get("passport"))
+  return sessionId
 }
 
 const pluginHook = makePluginHook([
   // Add the pub/sub realtime provider
   PgPubsub,
 
-  // If we have a Graphile Pro license, then enable the plugin
-  ...(process.env.GRAPHILE_LICENSE ? [GraphilePro] : []),
-
   // Implements a query allowlist. Only queries in the allowlist can be executed
   // in production
   PersistedOperationsPlugin,
-]);
+])
 
 // redisClient is set as an optional property here since it is not needed
 // in @app/server/scripts/schema-export.ts. For normal server startup it is required.
 // Same with workerUtils.
 interface PostGraphileOptionsOptions {
-  websocketMiddlewares?: Middleware<Request, Response>[];
-  rootPgPool: Pool;
-  redisClient?: Redis;
-  workerUtils?: WorkerUtils;
+  app?: FastifyInstance
+  websocketMiddlewares?: Middleware[]
+  rootPgPool: Pool
+  redisClient?: Redis
+  workerUtils?: WorkerUtils
 }
 
 export function getPostGraphileOptions({
+  app,
   websocketMiddlewares,
   rootPgPool,
   redisClient,
   workerUtils,
 }: PostGraphileOptionsOptions) {
-  const options: PostGraphileOptions<Request, Response> = {
+  const options: PostGraphileOptions = {
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
     pluginHook,
 
@@ -127,8 +135,8 @@ export function getPostGraphileOptions({
     // @graphile/subscriptions-lds
     live: false,
 
-    // enableQueryBatching: On the client side, use something like @apollo/client/link/batch-http to make use of this
-    enableQueryBatching: true,
+    // We don't enable query batching since urql doesn't support it, and we don't really need it
+    enableQueryBatching: false,
 
     // dynamicJson: instead of inputting/outputting JSON as strings, input/output raw JSON objects
     dynamicJson: true,
@@ -197,9 +205,17 @@ export function getPostGraphileOptions({
       `${__dirname}../../../../graphql/.persisted_operations/`
     ),
     allowUnpersistedOperation(req) {
+      const query = req?.body?.query
+      // urql doesn't support persisted mutations: https://github.com/FormidableLabs/urql/issues/1287.
+      const isMutation = query?.startsWith("mutation")
+      const isIntroSpectionQuery = query?.startsWith("query IntrospectionQuery")
+
+      if (isMutation || isIntroSpectionQuery) {
+        return true
+      }
       // Allow arbitrary requests to be made via GraphiQL in development
       return (process.env.NODE_ENV === "development" &&
-        req.headers.referer?.endsWith("/graphiql"))!;
+        req.headers.referer?.endsWith("/graphiql"))!
     },
 
     /*
@@ -215,6 +231,9 @@ export function getPostGraphileOptions({
 
       // Render email templates
       EmailsPlugin,
+
+      // Handle uploads for
+      UploadsPlugin,
 
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
       // compatibility. We don't need that.
@@ -237,6 +256,14 @@ export function getPostGraphileOptions({
 
       // Adds the `login` mutation to enable users to log in
       PassportLoginPlugin,
+
+      // Remove connections based on ownership information from the schema.
+      // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
+      RemoveOwnershipInfoForeignKeyConnections,
+
+      // If process.env.ENABLE_REGISTRATION=0, remove fields related to account
+      // registration. Must be below PassportLoginPlugin.
+      RemoveAccountRegistrationFields,
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
@@ -264,17 +291,6 @@ export function getPostGraphileOptions({
       pgStrictFunctions: true,
       uploadFieldDefinitions: [
         {
-          /**
-           * Add colums that should support file uploads here.
-           * In @app/client mark the mutations which use file fields
-           * with context: { hasUpload: true }. For example:
-           *
-           * const [createEvent] = useCreateEventMutation({
-           *   context: { hasUpload: true },
-           * });
-           *
-           */
-          //
           match: ({ column }: { column: string }) =>
             column === "header_image_file",
           resolve: resolveUpload,
@@ -297,13 +313,13 @@ export function getPostGraphileOptions({
      * whether or not you're using JWTs.
      */
     async pgSettings(req) {
-      const sessionId = uuidOrNull(req?.user?.session_id);
+      const sessionId = sessionIdFromRequest(app!, req)
       if (sessionId) {
         // Update the last_active timestamp (but only do it at most once every 15 seconds to avoid too much churn).
         await rootPgPool.query(
           "UPDATE app_private.sessions SET last_active = NOW() WHERE uuid = $1 AND last_active < NOW() - INTERVAL '15 seconds'",
           [sessionId]
-        );
+        )
       }
       return {
         // Everyone uses the "visitor" role currently
@@ -316,7 +332,7 @@ export function getPostGraphileOptions({
          * names reducing the amount of code you need to write.
          */
         "jwt.claims.session_id": sessionId,
-      };
+      }
     },
 
     /*
@@ -327,14 +343,15 @@ export function getPostGraphileOptions({
     async additionalGraphQLContextFromRequest(
       req
     ): Promise<Partial<OurGraphQLContext>> {
+      const sessionId = sessionIdFromRequest(app!, req)
+      const fastifyRequest = req._fastifyRequest as FastifyRequest
+      const ipAddress = fastifyRequest?.ip
+
       return {
         // The current session id
-        sessionId: uuidOrNull(req?.user?.session_id),
+        sessionId,
 
-        // IP address from request. Compatability middleware fastify-express
-        // modifies the raw request object to include the ip. Could also use
-        // req._fastifyRequest.ip but that would break in tests.
-        ipAddress: req.ip,
+        ipAddress,
 
         // Needed by RateLimitPlugin
         redisClient,
@@ -346,30 +363,13 @@ export function getPostGraphileOptions({
         // Needed so passport can write to the database
         rootPgPool,
 
-        // Use this to tell Passport.js we're logged in
-        login: (user: any) =>
-          new Promise((resolve, reject) => {
-            req.login(user, (err) => (err ? reject(err) : resolve()));
-          }),
-
-        logout: () => {
-          req.logout();
-          return Promise.resolve();
-        },
-      };
+        // Use these to tell Passport.js we're logged in / out
+        login: async (user: any) => await fastifyRequest.logIn(user),
+        logout: () => fastifyRequest.logOut(),
+      }
     },
-    // Pro plugin options (requires process.env.GRAPHILE_LICENSE)
-    defaultPaginationCap:
-      parseInt(process.env.GRAPHQL_PAGINATION_CAP || "", 10) || 50,
-    graphqlDepthLimit:
-      parseInt(process.env.GRAPHQL_DEPTH_LIMIT || "", 10) || 12,
-    graphqlCostLimit:
-      parseInt(process.env.GRAPHQL_COST_LIMIT || "", 10) || 30000,
-    exposeGraphQLCost:
-      (parseInt(process.env.HIDE_QUERY_COST || "", 10) || 0) < 1,
-    // readReplicaPgPool ...,
-  };
-  return options;
+  }
+  return options
 }
 
 const Postgraphphile: FastifyPluginAsync = async (app) => {
@@ -379,35 +379,29 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
     authPgPool,
     rootPgPool,
     workerUtils,
-  } = app;
+  } = app
 
   const middleware = postgraphile(
     authPgPool,
     "app_public",
     getPostGraphileOptions({
+      app,
       websocketMiddlewares,
       rootPgPool,
       redisClient,
       workerUtils,
     })
-  );
-
-  // Add 'postgraphileMiddleware' to the raw request object.
-  // Used in makeServerSideLink in @app/lib/src/withApollo.tsx
-  app.decorateRequest("postgraphileMiddleware", null);
-  app.addHook("onRequest", async (req, _res) => {
-    req.raw.postgraphileMiddleware = middleware;
-  });
+  )
 
   app.options(
     middleware.graphqlRoute,
     convertHandler(middleware.graphqlRouteHandler)
-  );
+  )
 
   app.post(
     middleware.graphqlRoute,
     convertHandler(middleware.graphqlRouteHandler)
-  );
+  )
 
   // GraphiQL
   if (middleware.options.graphiql) {
@@ -415,11 +409,11 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       app.head(
         middleware.graphiqlRoute,
         convertHandler(middleware.graphiqlRouteHandler)
-      );
+      )
       app.get(
         middleware.graphiqlRoute,
         convertHandler(middleware.graphiqlRouteHandler)
-      );
+      )
     }
   }
 
@@ -428,18 +422,18 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       app.options(
         middleware.eventStreamRoute,
         convertHandler(middleware.eventStreamRouteHandler)
-      );
+      )
       app.get(
         middleware.eventStreamRoute,
         convertHandler(middleware.eventStreamRouteHandler)
-      );
+      )
     }
   }
 
-  const httpServer = app.httpServer;
+  const httpServer = app.httpServer
   if (httpServer) {
-    enhanceHttpServerWithSubscriptions(httpServer, middleware);
+    enhanceHttpServerWithSubscriptions(httpServer, middleware)
   }
-};
+}
 
-export default fp(Postgraphphile);
+export default fp(Postgraphphile)

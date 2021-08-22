@@ -1,31 +1,49 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ApolloError, useApolloClient } from "@apollo/client";
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
+  CreateEventRegistrationDocument,
+  EventPage_QuestionFragment,
+  QuestionType,
+  UpdateEventRegistrationDocument,
   useClaimRegistrationTokenMutation,
-  useCreateEventRegistrationMutation,
   useDeleteEventRegistrationMutation,
-  useUpdateEventRegistrationMutation,
-} from "@app/graphql";
+} from "@app/graphql"
+import { registrationFormItemLayout, tailFormItemLayout } from "@app/lib"
+import * as Sentry from "@sentry/react"
 import {
-  extractError,
-  formItemLayout,
-  getCodeFromError,
-  tailFormItemLayout,
-} from "@app/lib";
-import * as Sentry from "@sentry/react";
-import { Alert, Button, Form, Input, message, Popconfirm } from "antd";
-import { useRouter } from "next/router";
-import useTranslation from "next-translate/useTranslation";
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  message,
+  Popconfirm,
+  Radio,
+  Space,
+  Typography,
+} from "antd"
+import { Rule } from "antd/lib/form"
+import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
+import { CombinedError, useMutation } from "urql"
+
+import { ErrorAlert } from "."
+
+const { Text } = Typography
 
 interface EventRegistrationFormProps {
-  type: "update" | "create";
-  formRedirect: { pathname: string; query: { [key: string]: string } } | string;
+  type: "update" | "create"
+  isAdmin?: boolean
+  questions: EventPage_QuestionFragment[]
+  formRedirect?: { pathname: string; query: { [key: string]: string } } | string
+  // SubmitAction is used when this form is displayed in the admin panel
+  submitAction?: () => void
   // eventId and quotaId are used when type is "create"
-  eventId?: string;
-  quotaId?: string;
+  eventId?: string
+  quotaId?: string
   // updateToken and initialValues are used when type is "update"
-  updateToken?: string;
-  initialValues?: any;
+  updateToken?: string
+  initialValues?: any
+  // Used to delete an unfinished registration
+  setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
 }
 
 export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
@@ -33,140 +51,174 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
 ) => {
   const {
     type,
+    isAdmin,
     eventId,
     quotaId,
+    questions,
     updateToken,
     formRedirect,
+    submitAction,
     initialValues,
-  } = props;
+    setUpdateToken,
+  } = props
 
-  const { t } = useTranslation("register");
-  const client = useApolloClient();
-  const router = useRouter();
+  const { t, lang } = useTranslation("register")
+  const router = useRouter()
 
   // Handling form values, errors and submission
-  const [form] = Form.useForm();
-  const [formError, setFormError] = useState<Error | ApolloError | null>(null);
-  const [createRegistration] = useCreateEventRegistrationMutation();
-  const [deleteRegistration] = useDeleteEventRegistrationMutation();
-  const [updateRegistration] = useUpdateEventRegistrationMutation();
-  const [claimRegistratioToken] = useClaimRegistrationTokenMutation();
-  const [deleting, setDeleting] = useState(false);
+  const [form] = Form.useForm()
+  const [formError, setFormError] = useState<Error | CombinedError | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [registrationToken, setRegistrationToken] = useState<
     string | undefined
-  >(undefined);
+  >(undefined)
 
-  const code = getCodeFromError(formError);
+  // Mutations
+  const mutation =
+    type === "update"
+      ? UpdateEventRegistrationDocument
+      : CreateEventRegistrationDocument
+  const [, formMutation] = useMutation(mutation)
+  const [, deleteRegistration] = useDeleteEventRegistrationMutation()
+  const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
-    form.setFieldsValue(initialValues);
-  }, [form, initialValues]);
+    form.setFieldsValue(initialValues)
+  }, [form, initialValues])
 
   useEffect(() => {
     // Claim registration token on mount if related
     // event and quota exist
-    (async () => {
+    ;(async () => {
       if (type === "create" && eventId && quotaId) {
         try {
-          const { data } = await claimRegistratioToken({
-            variables: { eventId, quotaId },
-          });
-          const token = data?.claimRegistrationToken?.registrationToken;
-          if (!token) {
+          const { data, error } = await claimRegistrationToken({
+            input: {
+              eventId,
+              quotaId,
+            },
+          })
+          if (error) throw error
+          const { registrationToken, updateToken } =
+            data?.claimRegistrationToken?.claimRegistrationTokenOutput || {}
+          if (!registrationToken || !updateToken) {
             throw new Error(
               "Claiming the registration token failed, please reload the page."
-            );
+            )
           }
-          setRegistrationToken(token);
+          setRegistrationToken(registrationToken)
+          setUpdateToken?.(updateToken)
         } catch (e) {
-          setFormError(e);
-          Sentry.captureException(e);
+          setFormError(e)
+          Sentry.captureException(e)
         }
       }
-    })();
-  }, [claimRegistratioToken, eventId, quotaId, type]);
+    })()
+  }, [claimRegistrationToken, setUpdateToken, eventId, quotaId, type])
 
-  const doDelete = useCallback(() => {
-    setFormError(null);
-    setDeleting(true);
-    (async () => {
-      try {
-        if (updateToken) {
-          const result = await deleteRegistration({
-            variables: { updateToken },
-          });
-          if (!result) {
-            throw new Error("Result expected");
-          }
-          const { data } = result;
-          if (!data?.deleteRegistration?.success) {
-            throw new Error(t("deleteRegistrationFailed"));
-          }
-          // Success: refetch
-          client.resetStore();
-          router.push(formRedirect);
-          message.success(t("registrationDeleteComplete"));
+  const doDelete = useCallback(async () => {
+    setFormError(null)
+    setDeleting(true)
+    try {
+      if (updateToken) {
+        const { data, error } = await deleteRegistration({
+          updateToken,
+        })
+        if (error) throw error
+        if (!data?.deleteRegistration?.success) {
+          throw new Error(t("deleteRegistrationFailed"))
         }
-      } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
+
+        if (submitAction) {
+          submitAction()
+        }
+        if (formRedirect) {
+          router.push(formRedirect)
+        }
+
+        message.success(t("registrationDeleteComplete"))
       }
-      setDeleting(false);
-    })();
-  }, [deleteRegistration, updateToken, client, formRedirect, router, t]);
+    } catch (e) {
+      setFormError(e)
+      Sentry.captureException(e)
+    }
+    setDeleting(false)
+  }, [deleteRegistration, updateToken, submitAction, formRedirect, router, t])
 
   const handleSubmit = useCallback(
     async (values) => {
-      setFormError(null);
+      setFormError(null)
       try {
-        if (type === "create") {
-          await createRegistration({
-            variables: {
-              ...values,
-              eventId,
-              quotaId,
-              registrationToken,
-            },
-          });
-        } else if (type === "update") {
-          await updateRegistration({
-            variables: {
-              ...values,
-              updateToken,
-            },
-          });
+        const input =
+          type === "create"
+            ? {
+                ...values,
+                eventId,
+                quotaId,
+                registrationToken,
+              }
+            : {
+                ...values,
+                updateToken,
+              }
+        const { error } = await formMutation({ input })
+        if (error) throw error
+
+        if (submitAction) {
+          submitAction()
+        }
+        if (formRedirect) {
+          router.push(formRedirect)
         }
 
-        // Success: refetch
-        client.resetStore();
-        router.push(formRedirect);
         type === "create"
           ? message.success(t("eventSignupComplete"))
-          : message.success(t("registrationUpdateComplete"));
+          : message.success(t("registrationUpdateComplete"))
       } catch (e) {
-        setFormError(e);
-        Sentry.captureException(e);
+        setFormError(e)
+        Sentry.captureException(e)
       }
     },
     [
-      createRegistration,
-      updateRegistration,
-      client,
       registrationToken,
       updateToken,
+      submitAction,
       formRedirect,
+      formMutation,
       router,
       eventId,
       quotaId,
       type,
       t,
     ]
-  );
+  )
+
+  const validateName: Rule = () => ({
+    validator(_, value) {
+      // firstName and lastName are not allowed to contain spaces
+      if (/\s/.test(value)) {
+        return Promise.reject(new Error(t("forms.rules.nameContainsSpace")))
+      }
+      return Promise.resolve()
+    },
+  })
+
+  const showAdminEmptyAnswersNote = useMemo(() => {
+    const requiredQuestion = questions.filter(
+      ({ isRequired }) => isRequired
+    )?.[0]
+    if (!requiredQuestion) {
+      return false
+    }
+    const answerToRequiredQuestion =
+      initialValues?.answers[requiredQuestion?.id]
+    return requiredQuestion?.data?.[0]?.[lang] !== answerToRequiredQuestion[0]
+  }, [questions, initialValues, lang])
 
   return (
     <Form
-      {...formItemLayout}
+      {...registrationFormItemLayout}
       form={form}
       initialValues={initialValues}
       onFinish={handleSubmit}
@@ -179,7 +231,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             required: true,
             message: t("forms.rules.provideFirstName"),
           },
+          validateName,
         ]}
+        hasFeedback
       >
         <Input data-cy="eventregistrationform-input-firstname" />
       </Form.Item>
@@ -191,7 +245,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             required: true,
             message: t("forms.rules.provideLastName"),
           },
+          validateName,
         ]}
+        hasFeedback
       >
         <Input data-cy="eventregistrationform-input-lastname" />
       </Form.Item>
@@ -209,30 +265,67 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
               message: t("forms.rules.emailEmpty"),
             },
           ]}
+          hasFeedback
         >
           <Input data-cy="eventregistrationform-input-email" />
         </Form.Item>
       )}
+      {questions?.map(({ id, type, data, label, isRequired }, i) => {
+        let input
+        if (type === QuestionType.Text) {
+          input = <Input />
+        } else if (type === QuestionType.Radio) {
+          input = (
+            <Radio.Group>
+              <Space direction="vertical">
+                {data?.map((val, i) => (
+                  <Radio key={i} value={val[lang]}>
+                    {val[lang]}
+                  </Radio>
+                ))}
+              </Space>
+            </Radio.Group>
+          )
+        } else if (type === QuestionType.Checkbox) {
+          input = (
+            <Checkbox.Group>
+              <Space direction="vertical">
+                {data?.map((val, i) => (
+                  <Checkbox key={i} value={val[lang]}>
+                    {val[lang]}
+                  </Checkbox>
+                ))}
+              </Space>
+            </Checkbox.Group>
+          )
+        }
+
+        return (
+          <Form.Item
+            key={i}
+            label={label[lang]}
+            name={["answers", id]}
+            rules={[
+              {
+                required: isRequired,
+                message: t("forms.rules.provideAnswer"),
+              },
+            ]}
+          >
+            {input}
+          </Form.Item>
+        )
+      })}
       {formError && (
         <Form.Item {...tailFormItemLayout}>
-          <Alert
+          <ErrorAlert
             data-cy="eventregistrationform-error-alert"
-            description={
-              <span>
-                {extractError(formError).message}{" "}
-                {code && (
-                  <span>
-                    ({t("error:errorCode")}: <code>ERR_{code}</code>)
-                  </span>
-                )}
-              </span>
-            }
+            error={formError}
             message={
               type === "create"
                 ? t("errors.registrationFailed")
                 : t("errors.registrationUpdateFailed")
             }
-            type="error"
           />
         </Form.Item>
       )}
@@ -241,7 +334,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           data-cy="eventregistrationform-button-submit"
           htmlType="submit"
           loading={
-            (type === "create" && !!registrationToken) || type === "update"
+            formError
+              ? false
+              : (type === "create" && !!registrationToken) || type === "update"
               ? false
               : true
           }
@@ -249,7 +344,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         >
           {t(`common:${type}`)}
         </Button>
-        {type === "update" ? (
+        {type === "update" && !isAdmin ? (
           <Popconfirm
             cancelText={t("common:no")}
             okText={t("common:yes")}
@@ -267,7 +362,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             </Button>
           </Popconfirm>
         ) : null}
+        {isAdmin && showAdminEmptyAnswersNote ? (
+          <Text style={{ display: "block", marginTop: 12 }} type="danger">
+            {t("admin:registrations.update.emptyAnswers")}
+          </Text>
+        ) : null}
       </Form.Item>
     </Form>
-  );
-};
+  )
+}

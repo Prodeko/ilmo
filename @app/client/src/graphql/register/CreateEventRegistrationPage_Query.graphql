@@ -1,0 +1,13 @@
+fragment CreateEventRegistrationPage_Query on Query {
+  ...SharedLayout_Query
+  eventBySlug(slug: $slug) {
+    ...EventPage_Event
+  }
+  quota(id: $quotaId) {
+    ...EventPage_Quota
+  }
+}
+
+query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
+}

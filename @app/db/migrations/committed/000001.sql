@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:af9ffd0c6b1d63b517797fd034bcca6fbf6e8dfa
+--! Hash: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
 
 --! split: 0001-reset.sql
 /*
@@ -247,50 +247,15 @@ as $$
 $$
 language sql stable;
 
---! split: 0050-common-functions.sql
-/*
- * These functions are commonly used across many tables.
- */
-
--- Used as a check constraint to verify that a column contains
--- the required languages. Language dependent columns are stored as
--- jsonb.
---
--- Example usage:
---   constraint _cnstr_check_name_language check(check_language(name))
-create function app_public.check_language(_column jsonb)
-  returns boolean
-  as $$
-declare
-  v_supported_languages text[];
-begin
-  select supported_languages into v_supported_languages from app_public.languages();
-
-  return (
-    -- Check that supported_languages exist as top level keys in _column
-    select _column ?| v_supported_languages
-    -- ...and that _column contains no other top level keys than supported_languages
-    and (select v_supported_languages @> array_agg(keys) from jsonb_object_keys(_column) as keys)
-  );
-end;
-$$ language plpgsql stable security definer set search_path to pg_catalog, public, pg_temp;
-
 --! split: 1000-sessions.sql
 /*
  * The sessions table is used to track who is logged in, if there are any
  * restrictions on that session, when it was last active (so we know if it's
  * still valid), etc.
  *
- * In Starter we only have an extremely limited implementation of this, but you
- * could add things like "last_auth_at" to it so that you could track when they
- * last officially authenticated; that way if you have particularly dangerous
- * actions you could require them to log back in to allow them to perform those
- * actions. (GitHub does this when you attempt to change the settings on a
- * repository, for example.)
- *
  * The primary key is a cryptographically secure random uuid; the value of this
  * primary key should be secret, and only shared with the user themself. We
- * currently wrap this session in a webserver-level session using redis so that we
+ * currently wrap this session in a webserver-level session cookie so that we
  * don't even send the raw session id to the end user, but you might want to
  * consider exposing it for things such as mobile apps or command line
  * utilities that may not want to implement cookies to maintain a cookie
@@ -1285,10 +1250,11 @@ grant execute on function app_public.change_password(text, text) to :DATABASE_VI
 create function app_private.really_create_user(
   username citext,
   email text,
-  email_is_verified bool,
   name text,
   avatar_url text,
-  password text default null
+  password text default null,
+  email_is_verified bool default false,
+  is_admin bool default false
 ) returns app_public.users as $$
 declare
   v_user app_public.users;
@@ -1302,8 +1268,8 @@ begin
   end if;
 
   -- Insert the new user
-  insert into app_public.users (username, name, avatar_url) values
-    (v_username, name, avatar_url)
+  insert into app_public.users (username, name, avatar_url, is_admin) values
+    (v_username, name, avatar_url, is_admin)
     returning * into v_user;
 
 	-- Add the user's email
@@ -1324,7 +1290,7 @@ begin
 end;
 $$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
 
-comment on function app_private.really_create_user(username citext, email text, email_is_verified bool, name text, avatar_url text, password text) is
+comment on function app_private.really_create_user(username citext, email text, name text, avatar_url text, password text, email_is_verified bool, is_admin bool) is
   E'Creates a user account. All arguments are optional, it trusts the calling method to perform sanitisation.';
 
 /**********/
@@ -1387,9 +1353,9 @@ begin
   v_user = app_private.really_create_user(
     username => v_username,
     email => v_email,
-    email_is_verified => f_email_is_verified,
     name => v_name,
-    avatar_url => v_avatar_url
+    avatar_url => v_avatar_url,
+    email_is_verified => f_email_is_verified
   );
 
   -- Insert the user’s private account data (e.g. OAuth tokens)
@@ -1573,34 +1539,6 @@ $$ language plpgsql strict volatile security definer set search_path to pg_catal
 comment on function app_public.resend_email_verification_code(email_id uuid) is
   E'If you didn''t receive the verification code for this email, we can resend it. We silently cap the rate of resends on the backend, so calls to this function may not result in another email being sent if it has been called recently.';
 
---! split: 2000-organizations-reset.sql
-/*
- * The organizations functionality in Starter is modelled in a way that would
- * be typically useful for a B2B SaaS project: the organization can have
- * multiple members, one of which is the "owner" and the others are just regular
- * members (though you can of course add additional tiers by adding columns to the
- * `organization_memberships` table.
- *
- * This file drops all the organizations functionality, but it's unnecessary
- * because `0001-reset.sql` has already done all that; we just include it
- * because you might want to separate the organizations functionality into a
- * separate migration, and this makes iteration faster.
- */
-drop function if exists app_public.transfer_organization_ownership(uuid, uuid);
-drop function if exists app_public.delete_organization(uuid);
-drop function if exists app_public.remove_from_organization(uuid, uuid);
-drop function if exists app_public.organizations_current_user_is_owner(app_public.organizations);
-drop function if exists app_public.accept_invitation_to_organization(uuid, text) cascade;
-drop function if exists app_public.get_organization_for_invitation(uuid, text) cascade;
-drop function if exists app_public.organization_for_invitation(uuid, text) cascade;
-drop function if exists app_public.invite_user_to_organization(uuid, uuid) cascade;
-drop function if exists app_public.invite_to_organization(uuid, citext, citext) cascade;
-drop function if exists app_public.current_user_invited_organization_ids() cascade;
-drop function if exists app_public.current_user_member_organization_ids() cascade;
-drop table if exists app_public.organization_invitations;
-drop table if exists app_public.organization_memberships;
-drop table if exists app_public.organizations cascade;
-
 --! split: 2010-organizations.sql
 /*
  * Organizations have a name, and a unique identifier we call the "slug" (it's
@@ -1623,8 +1561,7 @@ grant update(name, slug) on app_public.organizations to :DATABASE_VISITOR;
 /*
  * This table details who is a member of an organization. When someone is
  * invited to an organization they won't have an entry in this table until
- * their invitation is accepted (for invitations, see
- * `organization_invitations`).
+ * their invitation is accepted (for invitations, see `organization_invitations`).
  */
 create table app_public.organization_memberships (
   id uuid primary key default gen_random_uuid (),
@@ -1827,7 +1764,7 @@ $$ language plpgsql stable security definer set search_path = pg_catalog, public
 --! split: 2080-accept_invitation_to_organization.sql
 /*
  * This function accepts an invitation to join the organization and adds you to
- * the organization (deleting the invite).  If you were invited by username (or
+ * the organization (deleting the invite). If you were invited by username (or
  * your account could already be determined) you can accept an invitation
  * directly by the invitation_id; otherwise you will need the code as well to
  * prove you are the person that was invited (for example if you were invited

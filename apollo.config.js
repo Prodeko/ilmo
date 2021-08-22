@@ -6,4 +6,4 @@ module.exports = {
       localSchemaFile: `${__dirname}/data/schema.graphql`,
     },
   },
-};
+}

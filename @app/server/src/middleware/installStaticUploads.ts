@@ -1,8 +1,8 @@
-import path from "path";
+import path from "path"
 
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
-import fastifyStatic from "fastify-static";
+import { FastifyPluginAsync } from "fastify"
+import fp from "fastify-plugin"
+import fastifyStatic from "fastify-static"
 
 const SharedStatic: FastifyPluginAsync = async (app) => {
   app.register(fastifyStatic, {
@@ -11,7 +11,7 @@ const SharedStatic: FastifyPluginAsync = async (app) => {
     maxAge: "30d",
     immutable: true,
     cacheControl: true,
-  });
-};
+  })
+}
 
-export default fp(SharedStatic);
+export default fp(SharedStatic)

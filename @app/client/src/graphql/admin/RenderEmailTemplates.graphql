@@ -1,6 +1,7 @@
 query RenderEmailTemplates {
   renderEmailTemplates {
     templates {
+      id
       name
       html
       text

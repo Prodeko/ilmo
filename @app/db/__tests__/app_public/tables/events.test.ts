@@ -1,30 +1,31 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs"
 
 import {
   createEventCategories,
   createOrganizations,
   withUserDb,
-} from "../../helpers";
+} from "../../helpers"
 
 function getEventValues(eventStartTime: Dayjs) {
   const name = {
     fi: "Tapahtuma",
     en: "Event",
-  };
+  }
   const description = {
     fi: "Testi",
     en: "Test",
-  };
+  }
+  const location = "Testikatu 123"
 
-  const daySlug = eventStartTime.format("YYYY-M-D");
-  const slug = `${daySlug}-${name["fi"].toLowerCase()}`;
+  const daySlug = eventStartTime.format("YYYY-M-D")
+  const slug = `${daySlug}-${name["fi"].toLowerCase()}`
 
-  return [name, slug, description];
+  return [name, slug, description, location]
 }
 
-const today = dayjs();
-const yesterday = today.subtract(1, "day");
-const tomorrow = today.add(1, "day");
+const today = dayjs()
+const yesterday = today.subtract(1, "day")
+const tomorrow = today.add(1, "day")
 
 describe("Test app_public.events table", () => {
   const commonQuery = `
@@ -32,6 +33,7 @@ describe("Test app_public.events table", () => {
       name,
       slug,
       description,
+      location,
       event_start_time,
       event_end_time,
       registration_start_time,
@@ -39,26 +41,26 @@ describe("Test app_public.events table", () => {
       owner_organization_id,
       category_id
     )
-    values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     returning *
-  `;
+  `
 
   it("cannot create event with event_start_time > event_end_time", () =>
     withUserDb(async (client) => {
-      const [organization] = await createOrganizations(client, 1);
+      const [organization] = await createOrganizations(client, 1)
       const [eventCategory] = await createEventCategories(
         client,
         1,
         organization.id
-      );
+      )
 
       // Should not be able to create a new event where
       // event_start_time > event_end_time
-      const eventStartTime = today;
-      const eventEndTime = yesterday;
+      const eventStartTime = today
+      const eventEndTime = yesterday
 
-      const registrationStartTime = today;
-      const registrationEndTime = tomorrow;
+      const registrationStartTime = today
+      const registrationEndTime = tomorrow
 
       const promise = client.query(commonQuery, [
         ...getEventValues(eventStartTime),
@@ -68,28 +70,28 @@ describe("Test app_public.events table", () => {
         registrationEndTime,
         organization.id,
         eventCategory.id,
-      ]);
+      ])
       await expect(promise).rejects.toThrow(
         'new row for relation "events" violates check constraint "_cnstr_check_event_time"'
-      );
-    }));
+      )
+    }))
 
   it("cannot create event with registration_start_time > registration_end_time", () =>
     withUserDb(async (client) => {
-      const [organization] = await createOrganizations(client, 1);
+      const [organization] = await createOrganizations(client, 1)
       const [eventCategory] = await createEventCategories(
         client,
         1,
         organization.id
-      );
+      )
 
-      const eventStartTime = today;
-      const eventEndTime = tomorrow;
+      const eventStartTime = today
+      const eventEndTime = tomorrow
 
       // Should not be able to create a new event where
       // registration_start_time > registration_end_time
-      const registrationStartTime = today;
-      const registrationEndTime = yesterday;
+      const registrationStartTime = today
+      const registrationEndTime = yesterday
 
       const promise = client.query(commonQuery, [
         ...getEventValues(eventStartTime),
@@ -99,28 +101,28 @@ describe("Test app_public.events table", () => {
         registrationEndTime,
         organization.id,
         eventCategory.id,
-      ]);
+      ])
       await expect(promise).rejects.toThrow(
         'new row for relation "events" violates check constraint "_cnstr_check_event_registration_time"'
-      );
-    }));
+      )
+    }))
 
   it("cannot create event with registration_end_time >= event_start_time", () =>
     withUserDb(async (client) => {
-      const [organization] = await createOrganizations(client, 1);
+      const [organization] = await createOrganizations(client, 1)
       const [eventCategory] = await createEventCategories(
         client,
         1,
         organization.id
-      );
+      )
 
-      const eventStartTime = today;
-      const eventEndTime = today.add(1, "hour");
+      const eventStartTime = today
+      const eventEndTime = today.add(1, "hour")
 
-      const registrationStartTime = today;
+      const registrationStartTime = today
       // Should not be able to create a new event where
       // registration_end_time >= event_start_time
-      const registrationEndTime = today.add(1, "hour");
+      const registrationEndTime = today.add(1, "hour")
 
       const promise = client.query(commonQuery, [
         ...getEventValues(eventStartTime),
@@ -130,9 +132,9 @@ describe("Test app_public.events table", () => {
         registrationEndTime,
         organization.id,
         eventCategory.id,
-      ]);
+      ])
       await expect(promise).rejects.toThrow(
         'new row for relation "events" violates check constraint "_cnstr_check_registration_end_before_event_start"'
-      );
-    }));
-});
+      )
+    }))
+})

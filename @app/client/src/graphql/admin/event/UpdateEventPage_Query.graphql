@@ -1,0 +1,38 @@
+fragment UpdateEventPage_Event on Event {
+  ...EventFields
+  category {
+    ...EventPage_EventCategory
+  }
+  ownerOrganization {
+    ...EventPage_OwnerOrganization
+  }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+      }
+    }
+  }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
+    }
+  }
+}
+
+fragment UpdateEventPage_Query on Query {
+  ...SharedLayout_Query
+  event(id: $id) {
+    ...UpdateEventPage_Event
+  }
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
+    }
+  }
+}
+
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
+}

@@ -1,9 +1,8 @@
-import React from "react";
-import { Badge } from "antd";
+import { Badge } from "antd"
 
 export interface WarnProps extends React.ComponentProps<typeof Badge> {
-  children: React.ReactNode;
-  okay?: boolean;
+  children: React.ReactNode
+  okay?: boolean
 }
 
 export function Warn({ children, okay, ...props }: WarnProps) {
@@ -15,5 +14,5 @@ export function Warn({ children, okay, ...props }: WarnProps) {
         {children}
       </Badge>
     </span>
-  );
+  )
 }

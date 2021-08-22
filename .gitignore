@@ -8,8 +8,11 @@ dist
 /@app/e2e/cypress/videos
 /@app/e2e/cypress/screenshots
 /@app/graphql/index.*
+/@app/graphql/introspection.json
 .agignore
 *.tsbuildinfo
 .ethereal
 yarn-error.log
 .DS_Store
+.yarnrc
+.yarn

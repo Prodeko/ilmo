@@ -1,9 +1,7 @@
 fragment HomePage_Event on Event {
   ...EventFields
-  id
   ownerOrganization {
-    id
-    name
+    ...EventPage_OwnerOrganization
   }
   category {
     ...EventPage_EventCategory
@@ -20,7 +18,7 @@ fragment HomePage_Query on Query {
   }
   signupOpenEvents: events(
     filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
-    orderBy: REGISTRATION_END_TIME_ASC
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
   ) {
     nodes {
       ...HomePage_Event
@@ -28,7 +26,7 @@ fragment HomePage_Query on Query {
   }
   signupUpcomingEvents: events(
     filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
-    orderBy: REGISTRATION_END_TIME_ASC
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
   ) {
     nodes {
       ...HomePage_Event

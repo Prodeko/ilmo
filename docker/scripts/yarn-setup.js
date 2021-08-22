@@ -1,27 +1,27 @@
-const { runSync } = require("../../scripts/lib/run");
-const { basename, dirname, resolve } = require("path");
-const platform = require("os").platform();
-const { safeRandomString } = require("../../scripts/lib/random");
-const fs = require("fs");
+const { runSync } = require("../../scripts/lib/run")
+const { basename, dirname, resolve } = require("path")
+const platform = require("os").platform()
+const { safeRandomString } = require("../../scripts/lib/random")
+const fs = require("fs")
 
-const fsp = fs.promises;
+const fsp = fs.promises
 
-const DOCKER_DOTENV_PATH = `${__dirname}/../.env`;
+const DOCKER_DOTENV_PATH = `${__dirname}/../.env`
 
 if (platform !== "win32" && !process.env.UID) {
   console.error(
     "You should run `export UID` before running 'yarn docker setup' otherwise you may end up with permissions issues."
-  );
-  process.exit(1);
+  )
+  process.exit(1)
 }
 
 async function main() {
   // Check that docker/.env exists
   try {
-    await fsp.access(DOCKER_DOTENV_PATH, fs.constants.F_OK);
+    await fsp.access(DOCKER_DOTENV_PATH, fs.constants.F_OK)
   } catch (e) {
     // Does not exist, write it
-    const password = safeRandomString(30);
+    const password = safeRandomString(30)
     const data = `
 # We'd like scripts ran through Docker to pretend they're in a normal
 # interactive terminal.
@@ -56,24 +56,25 @@ NEXT_TRANSLATE_PATH=../client
 # Redis is used for session storage and as a rate limiting store
 REDIS_URL=redis://redis:6379
 
-# Specify Sentry error tracking Data Source Name
-SENTRY_DSN=https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6
-`;
-    await fsp.writeFile(DOCKER_DOTENV_PATH, data);
+# Specify Sentry error tracking Data Source Name and CSP report uri
+SENTRY_DSN=
+SENTRY_REPORT_URI=
+`
+    await fsp.writeFile(DOCKER_DOTENV_PATH, data)
   }
 
   // The `docker-compose` project name defaults to the directory name containing
   // `docker-compose.yml`, which is the root folder of our project. Let's call
   // that 'ROOT'. We're in ROOT/docker/scripts and we want to get the name of
   // ROOT:
-  const projectName = basename(dirname(dirname(resolve(__dirname))));
+  const projectName = basename(dirname(dirname(resolve(__dirname))))
 
   // On Windows we must run 'yarn.cmd' rather than 'yarn'
-  const yarnCmd = platform === "win32" ? "yarn.cmd" : "yarn";
+  const yarnCmd = platform === "win32" ? "yarn.cmd" : "yarn"
 
-  runSync(yarnCmd, ["down"]);
-  runSync(yarnCmd, ["db:up"]);
-  runSync(yarnCmd, ["redis:up"]);
+  runSync(yarnCmd, ["down"])
+  runSync(yarnCmd, ["db:up"])
+  runSync(yarnCmd, ["redis:up"])
 
   // Fix permissions
   runSync(yarnCmd, [
@@ -84,7 +85,7 @@ SENTRY_DSN=https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6
     "bash",
     "-c",
     "chmod o+rwx /var/run/docker.sock && chown -R node /work/node_modules /work/@app/*/node_modules",
-  ]);
+  ])
 
   // Run setup as normal
   runSync(yarnCmd, [
@@ -95,10 +96,10 @@ SENTRY_DSN=https://711cf89fb3524b359f171aa9e07b3b3d@sentry.prodeko.org/6
     "server",
     "yarn",
     "setup",
-  ]);
+  ])
 }
 
 main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+  console.error(e)
+  process.exit(1)
+})

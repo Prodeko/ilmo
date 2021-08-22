@@ -1,48 +1,55 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/node"
 import {
   extractTraceparentData,
   stripUrlQueryAndFragment,
-} from "@sentry/tracing";
-import { Transaction } from "@sentry/types";
-import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin";
+} from "@sentry/tracing"
+import { Transaction } from "@sentry/types"
+import { FastifyPluginAsync } from "fastify"
+import fp from "fastify-plugin"
 
 declare module "fastify" {
   interface FastifyInstance {
-    __sentry_transaction: Transaction;
+    __sentry_transaction: Transaction
   }
 }
 
-// Adapted from https://docs.sentry.io/platforms/node/guides/koa/
+// Adapted from https://github.com/getsentry/sentry-javascript/blob/master/packages/nextjs/src/utils/handlers.ts
 const SentryRequestHandler: FastifyPluginAsync = async (app) => {
-  app.decorate("__sentry_transaction", null);
+  app.decorate("__sentry_transaction", null)
   app.addHook("onRequest", async (req, res) => {
-    const reqMethod = (req.method || "").toUpperCase();
-    const reqUrl = req.url && stripUrlQueryAndFragment(req.url);
+    const reqMethod = (req.method || "").toUpperCase()
+    const reqUrl = req.url && stripUrlQueryAndFragment(req.url)
 
     // connect to trace of upstream app
-    let traceparentData;
-    if (req["sentry-trace"]) {
-      traceparentData = extractTraceparentData(req["sentry-trace"]);
+    let traceparentData
+    if (req.headers["sentry-trace"]) {
+      traceparentData = extractTraceparentData(
+        req.headers["sentry-trace"] as string
+      )
     }
 
     const transaction = Sentry.startTransaction({
       name: `${reqMethod} ${reqUrl}`,
       op: "http.server",
       ...traceparentData,
-    });
-    app.__sentry_transaction = transaction;
+    })
+    app.__sentry_transaction = transaction
 
-    transaction.setHttpStatus(res.statusCode);
-    transaction.finish();
-  });
-};
+    transaction.setHttpStatus(res.statusCode)
+  })
+
+  app.addHook("onResponse", async (req, res) => {
+    const transaction = app.__sentry_transaction
+    transaction.setHttpStatus(res.statusCode)
+    transaction.finish()
+  })
+}
 
 const SentryErrorHandler: FastifyPluginAsync = async (app) => {
   app.addHook("onError", async (_req, _reply, error) => {
-    Sentry.captureException(error);
-  });
-};
+    Sentry.captureException(error)
+  })
+}
 
-export const installSentryRequestHandler = fp(SentryRequestHandler);
-export const installSentryErrorHandler = fp(SentryErrorHandler);
+export const installSentryRequestHandler = fp(SentryRequestHandler)
+export const installSentryErrorHandler = fp(SentryErrorHandler)

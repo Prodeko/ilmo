@@ -1,34 +1,28 @@
-import React, { useState } from "react";
-import { ErrorAlert, SettingsLayout } from "@app/components";
-import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql";
-import * as Sentry from "@sentry/react";
-import { Card, Col, PageHeader, Row, Switch, Typography } from "antd";
-import { capitalize } from "lodash";
-import { NextPage } from "next";
-import useTranslation from "next-translate/useTranslation";
+import { useState } from "react"
+import { AdminLayout, ErrorResult } from "@app/components"
+import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql"
+import { Card, Col, PageHeader, Row, Switch, Typography } from "antd"
+import { capitalize } from "lodash"
+import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
-const { Text } = Typography;
+const { Text } = Typography
 
 const Admin_Emails: NextPage = () => {
-  const { t } = useTranslation("admin");
-  const query = useSharedQuery();
-  const [showHtml, setShowHtml] = useState(true);
-  const { loading, data, error } = useRenderEmailTemplatesQuery();
-
-  if (error) {
-    Sentry.captureException(error);
-  }
+  const { t } = useTranslation("admin")
+  const [query] = useSharedQuery()
+  const [showHtml, setShowHtml] = useState(true)
+  const [{ fetching, data, error }] = useRenderEmailTemplatesQuery()
 
   return (
-    <SettingsLayout href="/settings/accounts" query={query}>
+    <AdminLayout href="/admin/emails" query={query}>
       <PageHeader title="Emails" />
-
       {error ? (
-        <ErrorAlert error={error} />
+        <ErrorResult error={error} />
       ) : (
         <>
           <Switch
-            loading={loading}
+            loading={fetching}
             style={{ marginRight: "1rem" }}
             defaultChecked
             onChange={(checked) => setShowHtml(checked)}
@@ -38,7 +32,7 @@ const Admin_Emails: NextPage = () => {
             {data?.renderEmailTemplates.templates.map((email, i) => (
               <Col key={i} sm={{ span: 12 }} xs={{ span: 24 }}>
                 <Card
-                  loading={loading}
+                  loading={fetching}
                   style={{ margin: "10px" }}
                   title={capitalize(email?.name)}
                 >
@@ -57,8 +51,8 @@ const Admin_Emails: NextPage = () => {
           </Row>
         </>
       )}
-    </SettingsLayout>
-  );
-};
+    </AdminLayout>
+  )
+}
 
-export default Admin_Emails;
+export default Admin_Emails

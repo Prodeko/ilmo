@@ -1,135 +1,119 @@
 import {
+  ClaimRegistrationTokenDocument,
+  CreateEventRegistrationDocument,
+  QuestionType,
+} from "@app/graphql"
+import { removePropFromObject } from "@app/lib"
+
+import {
   asRoot,
   assertJobComplete,
+  constructAnswersFromQuestions,
   createEventDataAndLogin,
   deleteTestData,
   getJobs,
   runGraphQLQuery,
   runJobs,
-  sanitize,
   setup,
   teardown,
-} from "../helpers";
+} from "../helpers"
 
-beforeEach(deleteTestData);
-beforeAll(setup);
-afterAll(teardown);
+beforeEach(deleteTestData)
+beforeAll(setup)
+afterAll(teardown)
+
+async function getRegistrationToken(eventId: string, quotaId: string) {
+  // First claim a registration token
+  const { data } = await runGraphQLQuery(
+    ClaimRegistrationTokenDocument,
+
+    // GraphQL variables:
+    {
+      input: {
+        eventId,
+        quotaId,
+      },
+    },
+
+    // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+    {},
+    async (json) => {
+      expect(json.errors).toBeFalsy()
+      expect(json.data).toBeTruthy()
+    },
+    // Don't rollback in order to use the result of this mutation
+    false
+  )
+
+  const { registrationToken } =
+    data?.claimRegistrationToken?.claimRegistrationTokenOutput
+  return registrationToken
+}
 
 describe("CreateRegistration", () => {
   // A bit of background about the overall event registration setup. In order
-  // to register to an event the user first has to call a ClaimRegistrationToken
+  // to register to an event the user first has to call a claimRegistrationToken
   // mutation. This mutation provides the user with a registration token that
-  // must be passed to the CreateRegistration mutation. A row is inserted into
-  // app_public.registrations already when calling ClaimRegistrationToken. This
+  // must be passed to the createRegistration mutation. A row is inserted into
+  // app_public.registrations already when calling claimRegistrationToken. This
   // same row (identified by registration_token) is then updated with user info
-  // when the user calls the CreateRegistration mutation. We also have a server
-  // plugin called EventRegistrationPlugin that wraps the CreateRegistration
+  // when the user calls the createRegistration mutation. We also have a server
+  // plugin called EventRegistrationPlugin that wraps the createRegistration
   // mutation. This plugin is reponsible for dispatching a graphile-worker event
   // that deletes the rate limit key from redis after successful registration.
   //
   // This setup is designed to prevent people from claiming registration
-  // tokens by calling the API and then distributing registration tokens
-  // to their friends. By rate limiting the claimRegistrationToken
-  // endpoint we prevent this. After the registration is complete the rate
-  // limit key should be removed from redis. This enables multiple people to
-  // use the same computer for registering to an event.
+  // tokens by calling the API and then distributing the tokens to their friends.
+  // By rate limiting the claimRegistrationToken endpoint we prevent this. After
+  // the registration is complete the rate limit key should be removed from redis.
+  // This enables multiple people to use the same computer for registering to an
+  // event.
 
   it("can create registration", async () => {
-    const { events, quotas } = await createEventDataAndLogin({
+    const { events, quotas, questions } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
-    const quotaId = quotas[0].id;
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+    const answers = constructAnswersFromQuestions(questions)
 
-    const rateLimitId = `${eventId}:${quotaId}`;
-    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`;
+    const rateLimitId = `${eventId}:${quotaId}`
+    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
 
     // In order to test the createRegistration mutation, we first need to run
     // claimRegistrationToken which creates a dummy registration.
-    const result = await runGraphQLQuery(
-      `mutation ClaimRegistrationToken($eventId: UUID!, $quotaId: UUID!) {
-        claimRegistrationToken(input: { eventId: $eventId, quotaId: $quotaId }) {
-          registrationToken
-        }
-      }`,
-      {
-        eventId,
-        quotaId,
-      },
-      {},
-      async (_json, { redisClient }) => {
-        const value = await redisClient.get(key);
-        // Redis should contain rate limit value after calling
-        // claimRegistrationToken mutation
-        expect(value).toEqual("1");
-      },
-      // Don't rollback in order to use the result of this mutation
-      false
-    );
-    const { registrationToken } = result.data.claimRegistrationToken;
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-            firstName
-            lastName
-            eventId
-            quotaId
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        eventId,
-        quotaId,
-        registrationToken,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers,
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json, { pgClient, redisClient, req }) => {
-        expect(json.errors).toBeFalsy();
-        expect(json.data).toBeTruthy();
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
 
-        const registration = json.data!.createRegistration.registration;
+        const registration = json.data!.createRegistration.registration
 
-        expect(registration).toBeTruthy();
-        expect(registration.eventId).toEqual(eventId);
-        expect(registration.quotaId).toEqual(quotaId);
-
-        expect(sanitize(registration)).toMatchInlineSnapshot(`
-          Object {
-            "eventId": "[id-3]",
-            "firstName": "Testname",
-            "id": "[id-2]",
-            "lastName": "Testlastname",
-            "quotaId": "[id-4]",
-          }
-        `);
+        expect(registration).toBeTruthy()
+        expect(registration.event.id).toEqual(eventId)
+        expect(registration.quota.id).toEqual(quotaId)
 
         // Registration should exist in the database
         const { rows: registrations } = await asRoot(pgClient, () =>
@@ -137,11 +121,11 @@ describe("CreateRegistration", () => {
             `SELECT * FROM app_public.registrations WHERE id = $1`,
             [registration.id]
           )
-        );
+        )
         if (registrations.length !== 1) {
-          throw new Error("Registration not found!");
+          throw new Error("Registration not found!")
         }
-        expect(registrations[0].id).toEqual(registration.id);
+        expect(registrations[0].id).toEqual(registration.id)
 
         // Registration secrets table should be updated with the registration_id
         const { rows: registrationSecrets } = await asRoot(pgClient, () =>
@@ -149,36 +133,36 @@ describe("CreateRegistration", () => {
             `SELECT * FROM app_private.registration_secrets WHERE registration_id = $1`,
             [registration.id]
           )
-        );
+        )
 
         if (registrationSecrets.length !== 1) {
-          throw new Error("Registration secret not found!");
+          throw new Error("Registration secret not found!")
         }
-        expect(registrationSecrets[0].registration_id).toEqual(registration.id);
-        expect(registrationSecrets[0].registration_token).toEqual(null);
+        expect(registrationSecrets[0].registration_id).toEqual(registration.id)
+        expect(registrationSecrets[0].registration_token).toEqual(null)
 
         const rateLimitjobs = await getJobs(
           pgClient,
           "registration_complete__delete_rate_limit_key"
-        );
+        )
 
-        expect(rateLimitjobs).toHaveLength(1);
-        const [rateLimitJob] = rateLimitjobs;
+        expect(rateLimitjobs).toHaveLength(1)
+        const [rateLimitJob] = rateLimitjobs
         expect(rateLimitJob.payload).toMatchObject({
           eventId: eventId,
           ipAddress: req.ip,
-        });
+        })
 
         const confirmationEmailJobs = await getJobs(
           pgClient,
           "registration__send_confirmation_email"
-        );
+        )
 
-        expect(confirmationEmailJobs).toHaveLength(1);
-        const [confirmationEmailJob] = confirmationEmailJobs;
+        expect(confirmationEmailJobs).toHaveLength(1)
+        const [confirmationEmailJob] = confirmationEmailJobs
         expect(confirmationEmailJob.payload).toMatchObject({
           id: registration.id,
-        });
+        })
 
         // Escape transaction set by runGraphQLQuery.
         //
@@ -186,7 +170,7 @@ describe("CreateRegistration", () => {
         // the __start time of the current transaction__. This is a problem since
         // graphile-worker only executes a task if its run_at property is less than
         // now(). Our helper function runGraphQLQuery sets up a transaction by calling
-        // withPostGraphileContext. Next we run the CreateRegistration mutation that
+        // withPostGraphileContext. Next we run the createRegistration mutation that
         // we are testing. The mutation goes through EventRegistrationPlugin which schedules
         // a task called `registration_complete__delete_rate_limit_key`. Next we call
         // `runJobs` that executes a graphile-worker function called `runTaskListOnce`.
@@ -195,328 +179,578 @@ describe("CreateRegistration", () => {
         // inside a transaction and calls to now() return the timestamp of when the
         // transaction was created (which is before the mutation is run). Thus
         // run_at >= now() and the task is not executed if we don't end the transaction here.
-        await pgClient.query("commit");
+        await pgClient.query("commit")
 
         // Run the jobs and assert that the jobs run correctly
-        await runJobs(pgClient);
-        await assertJobComplete(pgClient, rateLimitJob);
-        await assertJobComplete(pgClient, confirmationEmailJob);
+        await runJobs(pgClient)
+        await assertJobComplete(pgClient, rateLimitJob)
+        await assertJobComplete(pgClient, confirmationEmailJob)
 
         // Redis should not contain a rate limiting key after
         // successful registration
-        const value = await redisClient.get(key);
-        expect(value).toEqual(null);
+        const value = await redisClient.get(key)
+        expect(value).toEqual(null)
 
         // TODO: Figure out a way to test gdpr__delete_event_registrations
         // graphile worker cron task.
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration token is not valid", async () => {
     const { events, quotas } = await createEventDataAndLogin({
       registrationOptions: { create: false },
-    });
-    // RegistrationSecret is claimed for event[0], try to use it to
-    // register to another event which should not be allowed
-    const event = events[0];
-    const quota = quotas[0];
+      questionOptions: { create: false },
+    })
+    const event = events[0]
+    const quota = quotas[0]
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        eventId: event.id,
-        quotaId: quota.id,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
-        // Invalid token
-        registrationToken: "540f7d0f-7433-4657-bd98-3b405f913a15",
+        input: {
+          eventId: event.id,
+          quotaId: quota.id,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          // Invalid token
+          registrationToken: "540f7d0f-7433-4657-bd98-3b405f913a15",
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
-        );
-        expect(code).toEqual("DNIED");
+        )
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if quotaId is invalid", async () => {
     const { events, registrationSecrets } = await createEventDataAndLogin({
+      questionOptions: { create: false },
       registrationOptions: { create: false },
-    });
-    const eventId = events[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    })
+    const eventId = events[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        eventId,
-        quotaId: "d24a4112-81e2-440a-a9fa-be2371944310",
-        registrationToken,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
+        input: {
+          eventId,
+          quotaId: "d24a4112-81e2-440a-a9fa-be2371944310",
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Quota not found.");
-        expect(code).toEqual("NTFND");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Quota not found.")
+        expect(code).toEqual("NTFND")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if eventId is invalid", async () => {
     const { quotas, registrationSecrets } = await createEventDataAndLogin({
+      questionOptions: { create: false },
       registrationOptions: { create: false },
-    });
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    })
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        eventId: "d24a4112-81e2-440a-a9fa-be2371944310",
-        quotaId,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
-        registrationToken,
+        input: {
+          eventId: "d24a4112-81e2-440a-a9fa-be2371944310",
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Event not found.");
-        expect(code).toEqual("NTFND");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Event not found.")
+        expect(code).toEqual("NTFND")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration is not open", async () => {
-    const {
-      quotas,
-      events,
-      registrationSecrets,
-    } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 1, signupOpen: false },
-    });
-    const eventId = events[0].id;
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    const { quotas, events, registrationSecrets } =
+      await createEventDataAndLogin({
+        questionOptions: { create: false },
+        registrationOptions: { create: false },
+        eventOptions: { create: true, amount: 1, signupOpen: false },
+      })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        eventId,
-        quotaId,
-        registrationToken,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
-        expect(message).toEqual("Event registration is not open.");
-        expect(code).toEqual("DNIED");
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Event registration is not open.")
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
+    )
+  })
 
   it("can't create registration if registration token is for another event", async () => {
-    const {
-      events,
-      quotas,
-      registrationSecrets,
-    } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-      eventOptions: { create: true, amount: 2, signupOpen: true },
-    });
+    const { events, quotas, registrationSecrets } =
+      await createEventDataAndLogin({
+        questionOptions: { create: false },
+        registrationOptions: { create: false },
+        eventOptions: { create: true, amount: 2, signupOpen: true },
+      })
     // RegistrationSecret is claimed for event[0], try to use it to
     // register to another event which is not allowed
-    const eventId = events[1].id;
-    const quotaId = quotas[0].id;
-    const registrationToken = registrationSecrets[0].registration_token;
+    const eventId = events[1].id
+    const quotaId = quotas[0].id
+    const registrationToken = registrationSecrets[0].registration_token
 
     await runGraphQLQuery(
-      `mutation CreateRegistration(
-        $registrationToken: String!
-        $eventId: UUID!
-        $quotaId: UUID!
-        $firstName: String!
-        $lastName: String!
-        $email: String!
-      ) {
-        createRegistration(
-          input: {
-            registrationToken: $registrationToken
-            eventId: $eventId
-            quotaId: $quotaId
-            firstName: $firstName
-            lastName: $lastName
-            email: $email
-          }
-        ) {
-          registration {
-            id
-          }
-        }
-      }`,
+      CreateEventRegistrationDocument,
 
       // GraphQL variables:
       {
-        // Registration token is not valid for this event
-        eventId,
-        quotaId,
-        registrationToken,
-        firstName: "Testname",
-        lastName: "Testlastname",
-        email: "testuser@example.com",
+        input: {
+          // Registration token is not valid for this event
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+        },
       },
 
-      // Additional props to add to `req` (e.g. `user: {session_id: '...'}`)
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
       {},
 
       // This function runs all your test assertions:
       async (json) => {
-        expect(json.errors).toBeTruthy();
+        expect(json.errors).toBeTruthy()
 
-        const message = json.errors![0].message;
-        const code = json.errors![0].extensions.exception.code;
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
         expect(message).toEqual(
           "Registration token was not valid. Please reload the page."
-        );
-        expect(code).toEqual("DNIED");
+        )
+        expect(code).toEqual("DNIED")
       }
-    );
-  });
-});
+    )
+  })
+
+  it("can't create a registration if first or last name contains spaces", async () => {
+    const { quotas, events } = await createEventDataAndLogin({
+      questionOptions: { create: false },
+      registrationOptions: { create: false },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    // Test first name
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: " ",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          'value for domain app_public.constrained_name violates check constraint "constrained_name_check"'
+        )
+        expect(code).toEqual("23514")
+      }
+    )
+
+    // Test last name
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Last name",
+          email: "testuser@example.com",
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          'value for domain app_public.constrained_name violates check constraint "constrained_name_check"'
+        )
+        expect(code).toEqual("23514")
+      }
+    )
+  })
+
+  it("can't create registration if required question is not answered", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    const answers = constructAnswersFromQuestions(questions)
+
+    // Remove one required answer
+    const someKey = Object.keys(answers)[0]
+    const missingAnswers = removePropFromObject(answers, someKey)
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers: missingAnswers,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Required question not answered.")
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't create registration if more than one answer provided to a question type RADIO", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    const radioId = questions.find((q) => q.type === QuestionType.Radio).id
+    const answers = constructAnswersFromQuestions(questions)
+    const answersInvalidRadio = {
+      ...answers,
+      // Answer for a RADIO question should not be an array
+      [radioId]: [{ ...answers[radioId] }, { fi: "Väärin", en: "Invalid" }],
+    }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers: answersInvalidRadio,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          "Invalid answer data to question of type: RADIO."
+        )
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't create registration if invalid answer id provided", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    const answers = constructAnswersFromQuestions(questions)
+    const answersInvalid = {
+      ...answers,
+      // Invalid answer id
+      "3582a656-80a3-45af-a58a-ba2ae8d7ddb2": ["Vastaus"],
+    }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers: answersInvalid,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual("Invalid answer, related question not found.")
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't create registration if answer is to a question which is not related to this event", async () => {
+    const { quotas, questions, events } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+      questionOptions: { create: true, amount: 3, required: true },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    const { questions: otherQuestions } = await createEventDataAndLogin({
+      registrationOptions: { create: false },
+    })
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    // Answers are for another event. We must include the correct answers also.
+    const correctAnswers = constructAnswersFromQuestions(questions)
+    const wrongAnswers = constructAnswersFromQuestions(otherQuestions)
+    const answers = { ...wrongAnswers, ...correctAnswers }
+
+    // Test missing answer to a required question
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Testname",
+          lastName: "Testlastname",
+          email: "testuser@example.com",
+          answers,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          "Invalid answer, question is for another event."
+        )
+        expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  const possibleMissingData = [
+    ["null", null],
+    ["[]", []],
+    ["[null]", [null]],
+    ["[null, null]", [null, null]],
+  ]
+  for (const type in QuestionType) {
+    const upper = type.toUpperCase()
+    for (const [repr, data] of possibleMissingData) {
+      it(`can't create registration if type is: ${upper} and data is: ${repr}`, async () => {
+        const { quotas, questions, events } = await createEventDataAndLogin({
+          registrationOptions: { create: false },
+
+          questionOptions: {
+            create: true,
+            amount: 1,
+            required: true,
+            type: upper as QuestionType,
+          },
+        })
+        const eventId = events[0].id
+        const quotaId = quotas[0].id
+        const questionId = questions[0].id
+
+        // In order to test the createRegistration mutation, we first need to run
+        // claimRegistrationToken which creates a dummy registration.
+        const registrationToken = await getRegistrationToken(eventId, quotaId)
+        const answers = { [questionId]: data }
+
+        // Test missing answer to a required question
+        await runGraphQLQuery(
+          CreateEventRegistrationDocument,
+
+          // GraphQL variables:
+          {
+            input: {
+              eventId,
+              quotaId,
+              registrationToken,
+              firstName: "Testname",
+              lastName: "Testlastname",
+              email: "testuser@example.com",
+              answers,
+            },
+          },
+
+          // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+          {},
+
+          // This function runs all your test assertions:
+          async (json) => {
+            expect(json.errors).toBeTruthy()
+
+            const message = json.errors![0].message
+            const code = json.errors![0].extensions.exception.code
+
+            expect(message).toEqual(
+              `Invalid answer data to question of type: ${upper}.`
+            )
+            expect(code).toEqual("NVLID")
+          }
+        )
+      })
+    }
+  }
+})

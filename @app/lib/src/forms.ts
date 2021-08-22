@@ -5,9 +5,10 @@ export const formItemLayout = {
   },
   wrapperCol: {
     xs: { span: 24 },
+    md: { span: 12 },
     sm: { span: 18 },
   },
-};
+}
 
 export const tailFormItemLayout = {
   wrapperCol: {
@@ -20,4 +21,16 @@ export const tailFormItemLayout = {
       offset: 6,
     },
   },
-};
+}
+
+// Use narrower form items for the registration form
+export const registrationFormItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 6 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 12 },
+  },
+}

@@ -10,7 +10,7 @@ Object {
 }
 `;
 
-exports[`DeleteRegistration can't update registration if registration token is not valid 1`] = `
+exports[`DeleteRegistration can't delete registration if registration token is not valid 1`] = `
 Object {
   "data": Object {
     "deleteRegistration": null,
@@ -26,7 +26,7 @@ Object {
       },
       "locations": Array [
         Object {
-          "column": 9,
+          "column": 3,
           "line": 2,
         },
       ],
