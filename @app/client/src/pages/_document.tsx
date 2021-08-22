@@ -18,6 +18,7 @@ class CustomDocument extends Document {
         <Head />
         <body>
           <Main />
+          <div id="alert" />
           <NextScript />
         </body>
       </Html>

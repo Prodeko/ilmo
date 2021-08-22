@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { extractError, getCodeFromError } from "@app/lib"
 import { Alert } from "antd"
 import useTranslation from "next-translate/useTranslation"
@@ -17,16 +19,28 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   setError,
   ...rest
 }) => {
+  const [mounted, setMounted] = useState(false)
   const { t } = useTranslation()
   const code = getCodeFromError(error)
 
-  const alert = (
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  const alertInner = (
     <Alert
       {...rest}
       banner={banner}
       closable={banner}
       description={
-        <span>
+        <span
+          style={{
+            wordBreak: "break-word",
+            border: "1px solib black",
+            display: "block",
+          }}
+        >
           {extractError(error).message}{" "}
           {code && (
             <span>
@@ -40,24 +54,26 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
       onClose={() => setError?.(null)}
     />
   )
+  const alertContent = banner ? (
+    <div
+      style={{
+        position: "fixed",
+        top: "16px",
+        left: "50%",
+        width: "100%",
+        maxWidth: "600px",
+        transform: "translate(-50%, 0)",
+        zIndex: 999,
+      }}
+    >
+      {alertInner}
+    </div>
+  ) : (
+    alertInner
+  )
+  const alertPortal = mounted
+    ? createPortal(alertContent, document?.querySelector("#alert")!)
+    : null
 
-  return error ? (
-    banner ? (
-      <div
-        style={{
-          position: "fixed",
-          top: "16px",
-          left: "50%",
-          width: "100%",
-          maxWidth: "600px",
-          transform: "translate(-50%, 0)",
-          zIndex: 999,
-        }}
-      >
-        {alert}
-      </div>
-    ) : (
-      alert
-    )
-  ) : null
+  return error ? alertPortal : null
 }
