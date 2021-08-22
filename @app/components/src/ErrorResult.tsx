@@ -37,7 +37,9 @@ export function ErrorResult({ error }: ErrorResultProps) {
   return (
     <Result
       status="error"
-      subTitle={<span>{t("unknownError")}</span>}
+      subTitle={
+        <span dangerouslySetInnerHTML={{ __html: t("unknownError") }} />
+      }
       title="Unexpected error occurred"
     >
       <Alert message={error.message} type="error" />

@@ -12,5 +12,5 @@
   "errorOccurred": "Tapahtui virhe",
   "pageNotFound": "Sivua ei löytynyt",
   "refresh": "Päivitä sivu",
-  "unknownError": "Pahoittelut, tuntematon virhe. Palaa{\" \"} <a href=\"/\">etusivulle</a> ja yritä uudestaan."
+  "unknownError": "Pahoittelut, tuntematon virhe. Palaa <a href=\"/\">etusivulle</a> ja yritä uudestaan."
 }
