@@ -1,7 +1,6 @@
 import { IncomingMessage, Server, ServerResponse } from "http"
 import { ParsedUrlQuery } from "querystring"
 
-import { EventQuestion, QuestionType } from "@app/graphql"
 import dayjs from "dayjs"
 import * as faker from "faker"
 import {
@@ -611,19 +610,19 @@ export const createQuestions = async (
   count: number = 1,
   eventId: string,
   isRequired?: boolean,
-  type?: QuestionType
+  type?: "CHECKBOX" | "RADIO" | "TEXT"
 ) => {
-  const questionTypes = Object.values(QuestionType)
+  const questionTypes = ["CHECKBOX", "RADIO", "TEXT"]
   let questions = []
   for (let i = 0; i < count; i++) {
     const t = type ? type : questionTypes[i % 3]
     const label = { fi: words(), en: words() }
     let data
-    if (t === QuestionType.Checkbox) {
+    if (t === "CHECKBOX") {
       data = getRandomQuestionData()
-    } else if (t === QuestionType.Radio) {
+    } else if (t === "RADIO") {
       data = getRandomQuestionData()
-    } else if (t === QuestionType.Text) {
+    } else if (t === "TEXT") {
       data = null
     }
     const {
@@ -679,16 +678,16 @@ export const createRegistrationSecrets = async (
 /******************************************************************************/
 // Registrations
 
-export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
+export const constructAnswersFromQuestions = (questions: any[]) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
   const chosenLanguage = faker.random.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
-    if (cur.type === QuestionType.Text) {
+    if (cur.type === "TEXT") {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
-    } else if (cur.type === QuestionType.Checkbox) {
-      acc[cur.id] = cur?.data?.map((option) => option[chosenLanguage])
-    } else if (cur.type === QuestionType.Radio) {
+    } else if (cur.type === "CHECKBOX") {
+      acc[cur.id] = cur?.data?.map((option: any) => option[chosenLanguage])
+    } else if (cur.type === "RADIO") {
       acc[cur.id] = cur?.data?.[0][chosenLanguage]
     }
     i++
@@ -704,7 +703,7 @@ export const createRegistrations = async (
   count: number = 1,
   eventId: string,
   quotaId: string,
-  questions: EventQuestion[]
+  questions: any[]
 ) => {
   const registrations = []
   for (let i = 0; i < count; i++) {

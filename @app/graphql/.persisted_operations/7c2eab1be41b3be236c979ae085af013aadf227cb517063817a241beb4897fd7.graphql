@@ -56,7 +56,6 @@ fragment SharedLayout_Languages on AppLanguage {
 }
 fragment UpdateEventPage_Event on Event {
   ...EventFields
-  id
   category {
     ...EventPage_EventCategory
     __typename

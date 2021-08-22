@@ -3,82 +3,161 @@ import {
   EventPage_QuestionFragment,
   ListEventRegistrationsDocument,
   Registration,
-  useDeleteEventRegistrationMutation,
+  useAdminDeleteRegistrationMutation,
+  useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
-import { Sorter } from "@app/lib"
+import { filterObjectByKeys, Sorter } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Button, Col, message, Popconfirm, Row, Typography } from "antd"
+import Modal, { ModalProps } from "antd/lib/modal/Modal"
 import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
 
 import {
-  ButtonLink,
   ErrorAlert,
   EventRegistrationAnswersPopover,
+  EventRegistrationForm,
   ServerPaginatedTable,
   useIsMobile,
 } from "../."
 
 const { Text } = Typography
 
-export const RegistrationsTableActions: React.FC = () => {
-  const { t } = useTranslation("admin")
-  const [error, setError] = useState<Error | null>(null)
-  const [, deleteRegistration] = useDeleteEventRegistrationMutation()
+interface UpdateRegistrationModalProps extends ModalProps {
+  registration: Registration
+  questions: EventPage_QuestionFragment[] | undefined
+  updateToken: string
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>
+}
 
-  const doDelete = useCallback(async () => {
-    try {
-      const { error } = await deleteRegistration({ updateToken: "test" })
-      if (error) throw error
-      message.info(t("notifications.deleteSuccess"))
-    } catch (e) {
-      Sentry.captureException(e)
-      setError(e)
-    }
-  }, [deleteRegistration, t])
+function constructInitialValues(values: any) {
+  return filterObjectByKeys(values, ["firstName", "lastName", "answers"])
+}
 
+const UpdateRegistrationModal: React.FC<UpdateRegistrationModalProps> = ({
+  registration,
+  questions,
+  updateToken,
+  setShowModal,
+  ...rest
+}) => {
   return (
-    <>
-      <Row gutter={[8, 8]}>
-        <Col flex="1 0 50%">
-          <ButtonLink
-            as={`/update-registration`}
-            href="/update-registration/[updatetoken]"
-            style={{ minWidth: "85px" }}
-            type="primary"
-          >
-            {t("common:update")}
-          </ButtonLink>
-        </Col>
-        <Col flex="1 0 50%">
-          <Popconfirm
-            cancelText={t("common:no")}
-            okText={t("common:yes")}
-            placement="top"
-            title={t("registrations.delete.confirmText")}
-            onConfirm={doDelete}
-          >
-            <Button
-              data-cy="admin-table-delete-button"
-              style={{ minWidth: "85px" }}
-              danger
-            >
-              {t("common:delete")}
-            </Button>
-          </Popconfirm>
-        </Col>
-      </Row>
-      {error ? (
-        <ErrorAlert
-          error={error}
-          message={t("registrations.delete.deleteFailed")}
-          setError={setError}
-          banner
-        />
-      ) : null}
-    </>
+    <Modal
+      destroyOnClose
+      {...rest}
+      footer={null}
+      width={800}
+      onCancel={() => setShowModal(false)}
+    >
+      <EventRegistrationForm
+        initialValues={constructInitialValues(registration)}
+        questions={questions!}
+        submitAction={() => setShowModal(false)}
+        type="update"
+        updateToken={updateToken}
+        isAdmin
+      />
+    </Modal>
   )
 }
+
+interface RegistrationsTableActionsProps {
+  registration: Registration
+  questions: EventPage_QuestionFragment[] | undefined
+}
+
+export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps> =
+  (props) => {
+    const { registration } = props
+    const { t } = useTranslation("admin")
+    const [showModal, setShowModal] = useState(false)
+    const [updateToken, setUpdateToken] = useState<string | undefined>(
+      undefined
+    )
+    const [error, setError] = useState<Error | null>(null)
+    const [, updateRegistration] = useAdminUpdateRegistrationMutation()
+    const [, deleteRegistration] = useAdminDeleteRegistrationMutation()
+
+    const doDelete = useCallback(async () => {
+      try {
+        const { data, error } = await deleteRegistration({
+          input: { id: registration.id },
+        })
+        if (error) throw error
+        if (!data?.adminDeleteRegistration?.success) {
+          throw new Error(t("register:deleteRegistrationFailed"))
+        }
+        message.info(t("notifications.deleteSuccess"))
+      } catch (e) {
+        Sentry.captureException(e)
+        setError(e)
+      }
+    }, [registration, deleteRegistration, t])
+
+    const doUpdate = useCallback(async () => {
+      try {
+        const { data, error } = await updateRegistration({
+          input: { id: registration.id },
+        })
+        if (error) throw error
+        setUpdateToken(data?.adminUpdateRegistration?.updateToken!)
+        setShowModal(true)
+      } catch (e) {
+        Sentry.captureException(e)
+        setError(e)
+      }
+    }, [registration, updateRegistration])
+
+    return (
+      <>
+        <Row gutter={[8, 8]}>
+          <Col flex="1 1 50%">
+            <Button
+              data-cy="admin-table-update-button"
+              style={{ minWidth: "85px" }}
+              type="primary"
+              onClick={doUpdate}
+            >
+              {t("common:update")}
+            </Button>
+          </Col>
+          <Col flex="1 1 50%">
+            <Popconfirm
+              cancelText={t("common:no")}
+              okText={t("common:yes")}
+              placement="top"
+              title={t("registrations.delete.confirmText")}
+              onConfirm={doDelete}
+            >
+              <Button
+                data-cy="admin-table-delete-button"
+                style={{ minWidth: "85px" }}
+                danger
+              >
+                {t("common:delete")}
+              </Button>
+            </Popconfirm>
+          </Col>
+        </Row>
+        {error ? (
+          <ErrorAlert
+            error={error}
+            message={t("registrations.delete.deleteFailed")}
+            setError={setError}
+            banner
+          />
+        ) : null}
+        {showModal ? (
+          <UpdateRegistrationModal
+            setShowModal={setShowModal}
+            visible={showModal}
+            {...props}
+            updateToken={updateToken!}
+          />
+        ) : null}
+      </>
+    )
+  }
 
 interface RegistrationsTabProps {
   eventId: string
@@ -97,9 +176,9 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       title: "",
       key: "actions",
       ellipsis: true,
-      render: (_name: string) => {
-        return <RegistrationsTableActions />
-      },
+      render: (_value: string, row: Registration) => (
+        <RegistrationsTableActions questions={questions} registration={row} />
+      ),
     },
     {
       title: t("common:name"),

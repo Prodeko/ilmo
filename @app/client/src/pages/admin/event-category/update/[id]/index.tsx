@@ -1,6 +1,7 @@
 import {
   AdminLayout,
   EventCategoryForm,
+  LoadingPadded,
   Redirect,
   useQueryId,
 } from "@app/components"
@@ -54,13 +55,17 @@ const Admin_UpdateEventCategory: NextPage = () => {
             title={t("pageTitle.updateEventCategory")}
             onBack={() => router.push("/admin/event-category/list")}
           />
-          <EventCategoryForm
-            categoryId={categoryId}
-            data={data}
-            formRedirect="/admin/event-category/list"
-            initialValues={constructInitialValues(eventCategory)}
-            type="update"
-          />
+          {stale || fetching ? (
+            <LoadingPadded size="huge" />
+          ) : (
+            <EventCategoryForm
+              categoryId={categoryId}
+              data={data}
+              formRedirect="/admin/event-category/list"
+              initialValues={constructInitialValues(eventCategory)}
+              type="update"
+            />
+          )}
         </Col>
       </Row>
     </AdminLayout>

@@ -1,0 +1,6 @@
+mutation AdminDeleteRegistration($input: AdminDeleteRegistrationInput!) {
+  adminDeleteRegistration(input: $input) {
+    success
+    __typename
+  }
+}

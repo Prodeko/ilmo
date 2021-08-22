@@ -1,0 +1,5 @@
+mutation AdminUpdateRegistration($input: AdminUpdateRegistrationInput!) {
+  adminUpdateRegistration(input: $input) {
+    updateToken
+  }
+}

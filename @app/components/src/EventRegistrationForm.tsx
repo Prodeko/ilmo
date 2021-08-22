@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   CreateEventRegistrationDocument,
   EventPage_QuestionFragment,
@@ -18,6 +18,7 @@ import {
   Popconfirm,
   Radio,
   Space,
+  Typography,
 } from "antd"
 import { Rule } from "antd/lib/form"
 import { useRouter } from "next/router"
@@ -26,10 +27,15 @@ import { CombinedError, useMutation } from "urql"
 
 import { ErrorAlert } from "."
 
+const { Text } = Typography
+
 interface EventRegistrationFormProps {
   type: "update" | "create"
+  isAdmin?: boolean
   questions: EventPage_QuestionFragment[]
-  formRedirect: { pathname: string; query: { [key: string]: string } } | string
+  formRedirect?: { pathname: string; query: { [key: string]: string } } | string
+  // SubmitAction is used when this form is displayed in the admin panel
+  submitAction?: () => void
   // eventId and quotaId are used when type is "create"
   eventId?: string
   quotaId?: string
@@ -44,12 +50,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   props
 ) => {
   const {
-    questions,
     type,
+    isAdmin,
     eventId,
     quotaId,
+    questions,
     updateToken,
     formRedirect,
+    submitAction,
     initialValues,
     setUpdateToken,
   } = props
@@ -121,7 +129,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         if (!data?.deleteRegistration?.success) {
           throw new Error(t("deleteRegistrationFailed"))
         }
-        router.push(formRedirect)
+
+        if (submitAction) {
+          submitAction()
+        }
+        if (formRedirect) {
+          router.push(formRedirect)
+        }
+
         message.success(t("registrationDeleteComplete"))
       }
     } catch (e) {
@@ -129,7 +144,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       Sentry.captureException(e)
     }
     setDeleting(false)
-  }, [deleteRegistration, updateToken, formRedirect, router, t])
+  }, [deleteRegistration, updateToken, submitAction, formRedirect, router, t])
 
   const handleSubmit = useCallback(
     async (values) => {
@@ -150,7 +165,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         const { error } = await formMutation({ input })
         if (error) throw error
 
-        router.push(formRedirect)
+        if (submitAction) {
+          submitAction()
+        }
+        if (formRedirect) {
+          router.push(formRedirect)
+        }
+
         type === "create"
           ? message.success(t("eventSignupComplete"))
           : message.success(t("registrationUpdateComplete"))
@@ -162,6 +183,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     [
       registrationToken,
       updateToken,
+      submitAction,
       formRedirect,
       formMutation,
       router,
@@ -181,6 +203,18 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       return Promise.resolve()
     },
   })
+
+  const showAdminEmptyAnswersNote = useMemo(() => {
+    const requiredQuestion = questions.filter(
+      ({ isRequired }) => isRequired
+    )?.[0]
+    if (!requiredQuestion) {
+      return false
+    }
+    const answerToRequiredQuestion =
+      initialValues?.answers[requiredQuestion?.id]
+    return requiredQuestion?.data?.[0]?.[lang] !== answerToRequiredQuestion[0]
+  }, [questions, initialValues, lang])
 
   return (
     <Form
@@ -310,7 +344,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         >
           {t(`common:${type}`)}
         </Button>
-        {type === "update" ? (
+        {type === "update" && !isAdmin ? (
           <Popconfirm
             cancelText={t("common:no")}
             okText={t("common:yes")}
@@ -327,6 +361,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
               {t("deleteRegistration")}
             </Button>
           </Popconfirm>
+        ) : null}
+        {isAdmin && showAdminEmptyAnswersNote ? (
+          <Text style={{ display: "block", marginTop: 12 }} type="danger">
+            {t("admin:registrations.update.emptyAnswers")}
+          </Text>
         ) : null}
       </Form.Item>
     </Form>

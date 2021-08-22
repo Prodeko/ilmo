@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:209ad79eb6147943f85ec946f238bb1b29e39b93
+--! Hash: sha1:428a464de2e834697dc44bb145cbf58d0c69d5dd
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -1091,7 +1091,62 @@ create index on app_private.registration_secrets(registration_id);
 comment on table app_private.registration_secrets is
   E'The contents of this table should never be visible to the user. Contains data related to event registrations.';
 
---! split: 0043-registrations-crud-functions.sql
+--! split: 0043-registrations-admin-functions.sql
+/*
+ * These functions are used to manage registrations via the admin panel.
+ */
+
+drop function if exists app_public.admin_update_registration(uuid);
+drop function if exists app_public.admin_delete_registration(uuid);
+
+create function app_public.admin_update_registration(id uuid)
+returns text as $$
+declare
+  v_registration_secret app_private.registration_secrets;
+  v_required_question_ids uuid[];
+begin
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+
+  select * into v_registration_secret
+    from app_private.registration_secrets
+    where registration_id = admin_update_registration.id;
+
+  if v_registration_secret is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  return v_registration_secret.update_token;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.admin_update_registration(id uuid) is
+  E'Mutation only accessible to admin users. Allows updating a registration via the admin panel.';
+
+create function app_public.admin_delete_registration(id uuid)
+returns boolean as $$
+declare
+  v_registration_id uuid;
+begin
+
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+
+  -- Delete registration and associated secrets (foreign key has on delete)
+  delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
+
+  if v_registration_id is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  return true;
+end;
+$$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.admin_delete_registration(id uuid) is
+  E'Mutation only accessible to admin users. Allows deleting a registration via the admin panel.';
+
+--! split: 0044-registrations-crud-functions.sql
 /*
  * These functions define create, update and delete mutations for event
  * registrations. This allows us to specify additional conditions in order to
@@ -1279,7 +1334,7 @@ grant execute on function  app_public.registration_by_update_token("updateToken"
 comment on function app_public.registration_by_update_token("updateToken" text) is
   E'Get registration by update token.';
 
---! split: 0044-registration_secrets-functions.sql
+--! split: 0045-registration_secrets-functions.sql
 /*
  * These functions are used to create registration secrets that are required
  * to create, update or delete registrations.

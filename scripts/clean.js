@@ -6,6 +6,8 @@ try {
   rimraf.sync(`${__dirname}/../@app/*/tsconfig.tsbuildinfo`)
   rimraf.sync(`${__dirname}/../@app/client/.next`)
   rimraf.sync(`${__dirname}/../@app/server/uploads/*`)
+  rimraf.sync(`${__dirname}/../@app/graphql/index.*`)
+  rimraf.sync(`${__dirname}/../@app/graphql/introspection.json`)
 } catch (e) {
   console.error("Failed to clean up, perhaps rimraf isn't installed?")
   console.error(e)

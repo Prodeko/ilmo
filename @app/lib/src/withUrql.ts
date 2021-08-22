@@ -7,20 +7,23 @@ import {
   ListEventsQuery,
 } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
-// import schema from "@app/graphql/introspection.json"
-import { dedupExchange, subscriptionExchange } from "@urql/core"
+import schema from "@app/graphql/introspection.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-// import { minifyIntrospectionQuery } from "@urql/introspection"
+import { minifyIntrospectionQuery } from "@urql/introspection"
 import { serialize } from "cookie"
-// import { IntrospectionQuery } from "graphql"
-import { OperationDefinitionNode } from "graphql"
+import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
 import { NextPageContext } from "next"
 import { SSRExchange, withUrqlClient } from "next-urql"
-import { errorExchange, Exchange } from "urql"
+import {
+  dedupExchange,
+  errorExchange,
+  Exchange,
+  subscriptionExchange,
+} from "urql"
 import ws from "ws"
 
 const isDev = process.env.NODE_ENV === "development"
@@ -114,13 +117,9 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         dedupExchange,
         cacheExchange<GraphCacheConfig>({
-          // TODO: Schema awareness caused some issues with no data being returned.
-          // For example, on admin/evet/update, no data was being returned for the
-          // event field and the stale flag was always set to true
-
-          // schema: minifyIntrospectionQuery(
-          //   schema as unknown as IntrospectionQuery
-          // ),
+          schema: minifyIntrospectionQuery(
+            schema as unknown as IntrospectionQuery
+          ),
           keys: {
             // AppLanguage type does not have an 'id' field and thus cannot be
             // cached. Here we define a new key which will be used for caching
@@ -181,16 +180,17 @@ export const withUrql = withUrqlClient(
                   .forEach((field) => cache.invalidate(key, field.fieldKey))
               },
               updateEvent: (_result, _args, cache, _info) => {
-                // Could do a complex cache updating function (such as the one for
-                // deleteEvent above) here to prevent a network request after
-                // updating an event but this is easier.  We would have to track
-                // which type of event (draft, signupUpcoming, signupOpen,
-                // signupClosed) was updated and if it's type changed
-                // (say from draft to signupUpcoming) we'd have to update the
-                // ListEvents query's return value sin the cache accordingly.
-                // By instead invalidating all 'events' fields from the cache
-                // we can instead issue a new HTTP request to fetch the events.
-                // This incurs the cost of a roundtrip.
+                // We could define complex cache updating function
+                // (such as the one for deleteEvent above) here to
+                // prevent a network request after updating an event.
+                // However, that would require keeping track of which
+                // type of event (draft, signupUpcoming, signupOpen or
+                // signupClosed) was updated and also track if its type
+                // changed say from draft to signupUpcoming. We instead
+                // invalidate all 'events' fields in the cache after a
+                // single event is updated. This refetches the /admin/events/list
+                // page's query in order to display up-to-date data on
+                // that page.
                 const key = "Query"
                 cache
                   .inspectFields(key)
@@ -217,7 +217,7 @@ export const withUrql = withUrqlClient(
               createRegistration(result, _args, cache, _info) {
                 // Update EventPageQuery results in the cache after createRegistration
                 // mutation so that eventPage shows the correct registrations without a
-                // doing a new HTTP request
+                // issuing a new HTTP request
                 const { registration } = result.createRegistration || {}
                 cache.updateQuery<EventPageQuery>(
                   {
@@ -234,6 +234,12 @@ export const withUrql = withUrqlClient(
                     return data
                   }
                 )
+              },
+              adminDeleteRegistration(_result, args, cache, _info) {
+                cache.invalidate({
+                  __typename: "Registration",
+                  id: args.input.id,
+                })
               },
             },
           },

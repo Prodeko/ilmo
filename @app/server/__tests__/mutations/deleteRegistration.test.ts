@@ -64,7 +64,7 @@ describe("DeleteRegistration", () => {
     )
   })
 
-  it("can't update registration if registration token is not valid", async () => {
+  it("can't delete registration if registration token is not valid", async () => {
     await runGraphQLQuery(
       DeleteEventRegistrationDocument,
 

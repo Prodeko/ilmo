@@ -266,6 +266,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           right: (
             <Badge
               color={isDraft ? "yellow" : "green"}
+              style={{ marginLeft: 8 }}
               text={isDraft ? t("forms.isDraft") : t("forms.isNotDraft")}
             />
           ),

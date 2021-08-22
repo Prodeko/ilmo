@@ -1,4 +1,10 @@
-import { AdminLayout, EventForm, Redirect, useQueryId } from "@app/components"
+import {
+  AdminLayout,
+  EventForm,
+  LoadingPadded,
+  Redirect,
+  useQueryId,
+} from "@app/components"
 import {
   EventQuestionsConnection,
   QuotasConnection,
@@ -112,13 +118,17 @@ const Admin_UpdateEvent: NextPage = () => {
             title={t("pageTitle.updateEvent")}
             onBack={() => router.push("/admin/event/list")}
           />
-          <EventForm
-            data={data}
-            eventId={eventId}
-            formRedirect="/admin/event/list"
-            initialValues={constructInitialValues(event)}
-            type="update"
-          />
+          {stale || fetching ? (
+            <LoadingPadded size="huge" />
+          ) : (
+            <EventForm
+              data={data}
+              eventId={eventId}
+              formRedirect="/admin/event/list"
+              initialValues={constructInitialValues(event)}
+              type="update"
+            />
+          )}
         </Col>
       </Row>
     </AdminLayout>

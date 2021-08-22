@@ -9,6 +9,7 @@ import useTranslation from "next-translate/useTranslation"
 type UpdateFormInitialValues = {
   firstName: string
   lastName: string
+  answers: any
 }
 
 function constructInitialValues(values: any) {

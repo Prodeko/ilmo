@@ -17,6 +17,8 @@ fragment ListEventRegistrations_Query on Query {
 fragment ListEventRegistrations_Registration on Registration {
   id
   fullName
+  firstName
+  lastName
   isQueued
   answers
   createdAt

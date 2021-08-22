@@ -20,6 +20,10 @@ mutation UpdateEventRegistration($input: UpdateRegistrationInput!) {
   updateRegistration(input: $input) {
     registration {
       ...EventPage_Registration
+      firstName
+      lastName
+      answers
+      updatedAt
       __typename
     }
     __typename

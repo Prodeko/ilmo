@@ -954,6 +954,77 @@ $$;
 
 
 --
+-- Name: admin_delete_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_delete_registration(id uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_id uuid;
+begin
+
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+
+  -- Delete registration and associated secrets (foreign key has on delete)
+  delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
+
+  if v_registration_id is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  return true;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_delete_registration(id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid) IS 'Mutation only accessible to admin users. Allows deleting a registration via the admin panel.';
+
+
+--
+-- Name: admin_update_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_update_registration(id uuid) RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_secret app_private.registration_secrets;
+  v_required_question_ids uuid[];
+begin
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+
+  select * into v_registration_secret
+    from app_private.registration_secrets
+    where registration_id = admin_update_registration.id;
+
+  if v_registration_secret is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  return v_registration_secret.update_token;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_update_registration(id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_update_registration(id uuid) IS 'Mutation only accessible to admin users. Allows updating a registration via the admin panel.';
+
+
+--
 -- Name: change_password(text, text); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -4768,6 +4839,22 @@ REVOKE ALL ON FUNCTION app_private.tg_user_secrets__insert_with_user() FROM PUBL
 
 REVOKE ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id uuid, code text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id uuid, code text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_delete_registration(id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_delete_registration(id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_delete_registration(id uuid) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_update_registration(id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_update_registration(id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_update_registration(id uuid) TO ilmo_visitor;
 
 
 --

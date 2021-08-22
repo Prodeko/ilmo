@@ -9,6 +9,7 @@ import {
   createQuestions,
   createQuotas,
   createRegistrations,
+  createRegistrationSecrets,
   createSession,
   User,
 } from "../../__tests__/data"
@@ -94,7 +95,16 @@ async function generateData(client: PoolClient) {
       )
       const quotas = await createQuotas(client, 5, e.id)
       quotas.forEach(async (q) => {
-        await createRegistrations(client, random(0, 10), e.id, q.id, questions)
+        const registrations = await createRegistrations(
+          client,
+          random(0, 10),
+          e.id,
+          q.id,
+          questions
+        )
+        registrations.forEach(async (r) => {
+          await createRegistrationSecrets(client, 1, r.id, e.id, q.id)
+        })
       })
     })
   })

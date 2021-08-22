@@ -23,6 +23,56 @@ type AcceptInvitationToOrganizationPayload {
   query: Query
 }
 
+"""All input for the `adminDeleteRegistration` mutation."""
+input AdminDeleteRegistrationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our `adminDeleteRegistration` mutation."""
+type AdminDeleteRegistrationPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  success: Boolean
+}
+
+"""All input for the `adminUpdateRegistration` mutation."""
+input AdminUpdateRegistrationInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our `adminUpdateRegistration` mutation."""
+type AdminUpdateRegistrationPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  updateToken: String
+}
+
 type AppLanguage {
   defaultLanguage: String
   supportedLanguages: [String]
@@ -1453,6 +1503,26 @@ type Mutation {
     input: AcceptInvitationToOrganizationInput!
   ): AcceptInvitationToOrganizationPayload
 
+  """
+  Mutation only accessible to admin users. Allows deleting a registration via the admin panel.
+  """
+  adminDeleteRegistration(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminDeleteRegistrationInput!
+  ): AdminDeleteRegistrationPayload
+
+  """
+  Mutation only accessible to admin users. Allows updating a registration via the admin panel.
+  """
+  adminUpdateRegistration(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminUpdateRegistrationInput!
+  ): AdminUpdateRegistrationPayload
+
   """Enter your old password and a new password to change your password."""
   changePassword(
     """
@@ -1723,6 +1793,14 @@ type Mutation {
     """
     input: UpdateUserInput!
   ): UpdateUserPayload
+
+  """Validate registration answers."""
+  validateRegistrationAnswers(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: ValidateRegistrationAnswersInput!
+  ): ValidateRegistrationAnswersPayload
 
   """
   Once you have received a verification token for your email, you may call this mutation with that token to make your email verified.
@@ -3518,6 +3596,33 @@ enum UsersOrderBy {
   PRIMARY_KEY_DESC
   USERNAME_ASC
   USERNAME_DESC
+}
+
+"""All input for the `validateRegistrationAnswers` mutation."""
+input ValidateRegistrationAnswersInput {
+  answers: JSON
+
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+  requiredQuestionIds: [UUID]!
+}
+
+"""The output of our `validateRegistrationAnswers` mutation."""
+type ValidateRegistrationAnswersPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """All input for the `verifyEmail` mutation."""

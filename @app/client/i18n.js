@@ -6,7 +6,7 @@ module.exports = {
     "/": ["home", "events"],
     "/create-event-category": ["events"],
     "/update-registration/[updateToken]": ["register"],
-    "rgx:^/admin": ["admin", "events", "home"],
+    "rgx:^/admin": ["admin", "events", "home", "register"],
     "rgx:^/event": ["events", "register"],
   },
   loadLocaleFrom: (lang, ns) =>

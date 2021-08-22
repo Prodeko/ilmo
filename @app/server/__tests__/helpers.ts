@@ -236,6 +236,7 @@ const randomColumns = [
   "color",
   "headerImageFile",
   "size",
+  "answers",
 ]
 export function sanitize(json: any): any {
   /* This allows us to maintain stable references whilst dealing with variable values */

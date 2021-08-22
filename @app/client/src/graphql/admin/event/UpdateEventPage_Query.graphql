@@ -1,6 +1,5 @@
 fragment UpdateEventPage_Event on Event {
   ...EventFields
-  id
   category {
     ...EventPage_EventCategory
   }

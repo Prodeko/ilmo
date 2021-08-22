@@ -5,16 +5,20 @@ Object {
   "data": Object {
     "updateRegistration": Object {
       "registration": Object {
+        "answers": "[random-3]",
         "createdAt": "[timestamp-1]",
+        "firstName": "Päivi",
         "fullName": "Päivi Tetty",
         "id": "[id-1]",
         "isQueued": false,
+        "lastName": "Tetty",
         "quota": Object {
           "id": "[id-2]",
           "position": 0,
           "size": "[random-2]",
           "title": "[random-1]",
         },
+        "updatedAt": "[timestamp-2]",
       },
     },
   },
