@@ -1,11 +1,13 @@
 # Docker-compose file to debug production build issues.
 # Build containers first:
 #
-# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg TARGET="server" --tag ilmo-server .
-# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --build-arg TARGET="worker" --tag ilmo-worker .
+# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --target server --tag ilmo-server .
+# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --target worker --tag ilmo-worker .
 #
 # Then run this compose stack with server entrypoint 'yarn db migrate'
 # Then run this compose stack with server entrypoint 'yarn server start'
+#
+# The compose stack can be run with 'docker-compose -f docker-compose.test.prod.yml up'
 
 version: "3.8"
 services:
@@ -52,9 +54,8 @@ services:
       - ./data:/data
     restart: unless-stopped
     command:
-      postgres -c logging_collector=on -c log_destination=stderr -c
-      log_directory=/var/lib/postgresql/data/logs -c log_rotation_age=60 -c
-      log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
+      postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/var/lib/postgresql/data/logs -c
+      log_rotation_age=60 -c log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
 
 volumes:
   ilmo-redis:

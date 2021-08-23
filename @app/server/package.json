@@ -4,16 +4,16 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsc -b",
-    "start": "node -r @app/config/env dist/index.js",
+    "start": "yarn node -r @app/config/env dist/index.js",
     "dev": "nodemon --signal SIGINT --watch 'dist/**/*.js' -x \"node --inspect=9678 -r @app/config/env -r source-map-support/register\" dist/index.js",
-    "schema:export": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" ts-node scripts/schema-export.ts",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
+    "schema:export": "cross-env NODE_OPTIONS=\"-r @app/config/env\" ts-node scripts/schema-export.ts",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" jest"
   },
   "dependencies": {
-    "@app/client": "0.0.0",
-    "@app/config": "0.0.0",
-    "@app/graphql": "0.0.0",
-    "@app/lib": "0.0.0",
+    "@app/client": "workspace:*",
+    "@app/config": "workspace:*",
+    "@app/graphql": "workspace:*",
+    "@app/lib": "workspace:*",
     "@azure/storage-blob": "^12.7.0",
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
     "@graphile/persisted-operations": "^0.1.0",
@@ -46,7 +46,7 @@
     "lodash": "^4.17.21",
     "mjml": "^4.10.2",
     "mock-req": "^0.2.0",
-    "next": "11.1.1-canary.13",
+    "next": "11.1.0",
     "nunjucks": "^3.2.3",
     "passport-oauth2": "^1.6.0",
     "pg": "^8.7.1",
@@ -54,6 +54,7 @@
     "postgraphile-plugin-connection-filter": "^2.2.2",
     "postgraphile-plugin-upload-field": "^1.0.0-alpha.10",
     "prop-types": "^15.7.2",
+    "sharp": "^0.29.0",
     "slugify": "^1.6.0",
     "source-map-support": "^0.5.19",
     "tslib": "^2.3.1"
@@ -61,8 +62,7 @@
   "devDependencies": {
     "@sentry/types": "^6.11.0",
     "@types/faker": "^5.5.8",
-    "@types/graphql-upload": "^8.0.6",
-    "@types/helmet": "^4.0.0",
+    "@types/graphql-upload": "^8.0.7",
     "@types/ioredis": "^4.26.7",
     "@types/node": "^16.7.1",
     "@types/nunjucks": "^3.1.5",

@@ -3,14 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "gm": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" graphile-migrate",
+    "gm": "cross-env NODE_OPTIONS=\"-r @app/config/env\" graphile-migrate",
     "migrate": "yarn gm migrate",
     "watch": "yarn gm watch",
     "commit": "yarn gm commit",
     "uncommit": "yarn gm uncommit",
     "reset": "yarn gm reset",
     "dump": "yarn gm migrate && yarn gm reset --shadow --erase && yarn gm migrate --shadow --forceActions",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" jest",
     "create-fake-data": "ts-node -r @app/config/env scripts/create-fake-data.ts",
     "clean-fake-data": "ts-node -r @app/config/env scripts/clean-fake-data.ts"
   },
@@ -19,7 +19,7 @@
     "graphile-migrate": "^1.2.0"
   },
   "devDependencies": {
-    "@app/graphql": "0.0.0",
+    "@app/graphql": "workspace:*",
     "@types/pg": "^8.6.1",
     "faker": "^5.5.3",
     "jest": "^27.0.6",

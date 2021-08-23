@@ -3,15 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" next build",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env\" next build"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.3",
-    "@app/components": "0.0.0",
-    "@app/config": "0.0.0",
-    "@app/graphql": "0.0.0",
-    "@app/lib": "0.0.0",
+    "@app/components": "workspace:*",
+    "@app/config": "workspace:*",
+    "@app/graphql": "workspace:*",
+    "@app/lib": "workspace:*",
     "@sentry/react": "^6.11.0",
     "@sentry/tracing": "^6.11.0",
     "@types/lodash": "^4.14.172",
@@ -26,7 +25,7 @@
     "less": "^4.1.1",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
-    "next": "11.1.1-canary.13",
+    "next": "11.1.0",
     "next-plugin-antd-less": "^1.4.2",
     "next-translate": "^1.0.7",
     "next-transpile-modules": "^8.0.0",

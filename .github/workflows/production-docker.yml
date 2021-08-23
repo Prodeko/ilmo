@@ -9,10 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [14.x]
-
     services:
       redis:
         image: redis
@@ -35,51 +31,73 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # TODO: we should be able to get rid of Node here
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
+      - name: Setup node and cache
+        uses: ./.github/actions/node-and-cache
 
       - name: Install pg_dump
-        run: |
-          sudo bash -c "echo deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main >> /etc/apt/sources.list.d/pgdg.list"
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get -yqq install postgresql-client-11
+        uses: ./.github/actions/install-pg-dump
 
-      - name: setup database
+      - name: Setup database
         run: |
           cp .env.ci .env
-          yarn --frozen-lockfile
+          yarn install
           CONFIRM_DROP=1 yarn setup
         env:
           CI: true
 
-      - name: "Run docker server build"
-        run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
-          TARGET="server" --tag ilmo-server .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-      - name: "Run docker worker build"
-        run:
-          docker build --file production.Dockerfile --build-arg ROOT_URL="http://ilmo3.prodeko.org:5678" --build-arg
-          TARGET="worker" --tag ilmo-worker .
+      - name: Build server
+        uses: docker/build-push-action@v2
+        with:
+          file: production.Dockerfile
+          load: true
+          push: false
+          build-args: ROOT_URL=http://ilmo3.prodeko.org:5678"
+          tags: |
+            ilmo-server
+            ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: server
 
-      - name: "Start docker server"
-        run:
-          docker run --rm -d --init -p 5678:5678 --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
-          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-server ilmo-server
+      - name: Build worker
+        uses: docker/build-push-action@v2
+        with:
+          file: production.Dockerfile
+          load: true
+          push: false
+          build-args: ROOT_URL=http://ilmo3.prodeko.org:5678"
+          tags: |
+            ilmo-worker
+            ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: worker
 
-      - name: "Start docker worker"
-        run:
-          docker run --rm -d --init --env-file .env -e NODE_ENV=production -e DATABASE_HOST=172.17.0.1 -e
-          REDIS_URL=redis://172.17.0.1:6379 --name ilmo-worker ilmo-worker
+      - name: Start server
+        run: |
+          docker run --rm -d --init -p 5678:5678 \
+            --env-file .env \
+            -e NODE_ENV=production \
+            -e DATABASE_HOST=172.17.0.1 \
+            -e REDIS_URL=redis://172.17.0.1:6379 \
+            --name ilmo-server ilmo-server
 
-      - name: "Test docker"
-        run: node .github/workflows/test-docker.js
+      - name: Start worker
+        run: |
+          docker run --rm -d --init \
+            --env-file .env \
+            -e NODE_ENV=production \
+            -e DATABASE_HOST=172.17.0.1 \
+            -e REDIS_URL=redis://172.17.0.1:6379 \
+            --name ilmo-worker ilmo-worker
 
-      - name: "Tear down docker"
+      # - name: Test docker
+      # run: node .github/workflows/test-docker.js
+
+      - name: Tear down docker
         run: docker kill ilmo-server ilmo-worker
 
       - name: Docker login to ACR
@@ -89,10 +107,8 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Tag and push images to ACR
+      - name: Push images to ACR
         run: |
-          docker image tag ilmo-server ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
-          docker image tag ilmo-worker ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
 

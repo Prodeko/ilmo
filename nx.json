@@ -1,0 +1,64 @@
+{
+  "npmScope": "ilmo",
+  "implicitDependencies": {
+    "workspace.json": "*",
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
+    },
+    "tsconfig.json": "*",
+    "nx.json": "*"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/workspace/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "test", "lint"],
+        "runtimeCacheInputs": ["node -v"]
+      }
+    }
+  },
+  "targetDependencies": {
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "projects": {
+    "client": {
+      "implicitDependencies": ["config", "graphql", "components", "lib"]
+    },
+    "components": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "config": {
+      "implicitDependencies": []
+    },
+    "db": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "e2e": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "graphql": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "lib": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "server": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "worker": {
+      "implicitDependencies": ["config", "graphql"]
+    },
+    "docker-helpers": {
+      "implicitDependencies": ["config", "graphql"]
+    }
+  },
+  "affected": {
+    "defaultBase": "main"
+  }
+}

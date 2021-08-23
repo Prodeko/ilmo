@@ -4,10 +4,10 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -b",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"$NODE_OPTIONS -r @app/config/env\" jest"
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" jest"
   },
   "dependencies": {
-    "@app/graphql": "0.0.0",
+    "@app/graphql": "workspace:*",
     "@urql/core": "^2.3.0",
     "@urql/devtools": "^2.0.3",
     "@urql/exchange-graphcache": "^4.2.1",
@@ -17,7 +17,7 @@
     "cookie": "^0.4.1",
     "graphql": "^15.5.1",
     "graphql-ws": "^5.4.0",
-    "next": "11.1.1-canary.13",
+    "next": "11.1.0",
     "next-urql": "^3.2.0",
     "rc-field-form": "^1.21.2",
     "react": "^17.0.2",

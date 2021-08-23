@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "projects": {
+    "client": {
+      "root": "@app/client",
+      "sourceRoot": "@app/client/src",
+      "type": "application"
+    },
+    "components": {
+      "root": "@app/components",
+      "sourceRoot": "@app/components/src",
+      "type": "library"
+    },
+    "config": {
+      "root": "@app/config",
+      "sourceRoot": "@app/config/src",
+      "type": "library"
+    },
+    "db": {
+      "root": "@app/db",
+      "type": "library"
+    },
+    "e2e": {
+      "root": "@app/e2e",
+      "type": "library"
+    },
+    "graphql": {
+      "root": "@app/graphql",
+      "type": "library"
+    },
+    "lib": {
+      "root": "@app/lib",
+      "sourceRoot": "@app/lib/src",
+      "type": "library"
+    },
+    "server": {
+      "root": "@app/server",
+      "sourceRoot": "@app/server/src",
+      "type": "application"
+    },
+    "worker": {
+      "root": "@app/worker",
+      "sourceRoot": "@app/worker/src",
+      "type": "application"
+    },
+    "docker-helpers": {
+      "root": "docker",
+      "type": "library"
+    }
+  }
+}

@@ -22,7 +22,7 @@ async function main() {
   const app = await makeApp({ serverFactory })
 
   // And finally, we open the listen port
-  const PORT = parseInt(process.env.PORT || "", 10) || 3000
+  const PORT = parseInt(process.env.PORT || "", 10) || 5678
   app.listen(PORT, "0.0.0.0", () => {
     const address = app.server.address()
     const actualPort: string =

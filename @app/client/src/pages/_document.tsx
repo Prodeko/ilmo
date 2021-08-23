@@ -15,7 +15,22 @@ class CustomDocument extends Document {
   render() {
     return (
       <Html>
-        <Head />
+        <Head>
+          <link
+            as="font"
+            crossOrigin="anonymous"
+            href="/fonts/Raleway-Italic-VariableFont_wght-subset.woff2"
+            rel="preload"
+            type="font/woff2"
+          />
+          <link
+            as="font"
+            crossOrigin="anonymous"
+            href="/fonts/Raleway-VariableFont_wght-subset.woff2"
+            rel="preload"
+            type="font/woff2"
+          />
+        </Head>
         <body>
           <Main />
           <div id="alert" />

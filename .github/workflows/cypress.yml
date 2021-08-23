@@ -39,18 +39,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Setup node and cache
+        uses: ./.github/actions/node-and-cache
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install pg_dump
-        run: sudo apt-get install postgresql-client-11
+        uses: ./.github/actions/install-pg-dump
 
       - name: Setup
         run: |
           cp .env.ci .env
-          yarn --frozen-lockfile
+          yarn install
           yarn setup
           yarn build
 

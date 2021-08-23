@@ -179,14 +179,14 @@ supply the `ROOT_URL` build variable (which will be baked into the client code,
 so cannot be changed as envvars); if you don't then the defaults will apply
 (which likely will not be suitable).
 
-To build the worker, pass `TARGET="worker"` instead of the default
-`TARGET="server"`.
+To build the worker, pass `--target worker` instead of the default
+`--target server`.
 
 ```sh
 docker build \
   --file production.Dockerfile \
   --build-arg ROOT_URL="http://localhost:5678" \
-  --build-arg TARGET="server" \
+  --target server \
   .
 ```
 
