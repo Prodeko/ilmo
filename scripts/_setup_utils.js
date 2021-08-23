@@ -164,6 +164,8 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Specify Sentry error tracking Data Source Name and CSP report uri`
   )
 
+  add("SENTRY_REPORT_URI", "")
+
   add(
     "AZURE_STORAGE_CONNECTION_STRING",
     null,

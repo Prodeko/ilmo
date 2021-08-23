@@ -13,8 +13,8 @@ ARG NODE_ENV
 ARG ROOT_URL
 
 # Some libs are needed for node-gyp
-RUN apk add --update libtool autoconf automake python make g++\
-   && rm -rf /var/cache/apk/*
+RUN apk add --update \
+  libtool autoconf automake python git make g++
 
 # Cache node_modules for as long as possible
 COPY lerna.json package.json yarn.lock /app/
@@ -78,7 +78,7 @@ FROM node:14-alpine
 
 # Some libs are needed for node-gyp
 RUN apk add --no-cache --virtual .build-deps \
-   libtool autoconf automake python make g++
+   libtool autoconf automake python make git g++
 
 EXPOSE $PORT
 WORKDIR /app/

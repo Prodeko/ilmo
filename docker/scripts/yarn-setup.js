@@ -59,6 +59,10 @@ REDIS_URL=redis://redis:6379
 # Specify Sentry error tracking Data Source Name and CSP report uri
 SENTRY_DSN=
 SENTRY_REPORT_URI=
+
+# Emails
+SENDGRID_USERNAME=apikey
+SENDGRID_API_KEY={{ sendgrid_apikey }}
 `
     await fsp.writeFile(DOCKER_DOTENV_PATH, data)
   }

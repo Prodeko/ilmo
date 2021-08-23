@@ -208,13 +208,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     const requiredQuestion = questions.filter(
       ({ isRequired }) => isRequired
     )?.[0]
-    if (!requiredQuestion) {
-      return false
-    }
+    if (!isAdmin) return false
+    if (!requiredQuestion) return false
+
     const answerToRequiredQuestion =
-      initialValues?.answers[requiredQuestion?.id]
-    return requiredQuestion?.data?.[0]?.[lang] !== answerToRequiredQuestion[0]
-  }, [questions, initialValues, lang])
+      initialValues?.answers?.[requiredQuestion?.id]
+    return requiredQuestion?.data?.[0]?.[lang] !== answerToRequiredQuestion?.[0]
+  }, [isAdmin, questions, initialValues, lang])
 
   return (
     <Form
