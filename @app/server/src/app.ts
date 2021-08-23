@@ -70,7 +70,7 @@ export async function makeApp({
    */
   const app = Fastify({
     pluginTimeout: isDev ? 60000 : 10000,
-    logger: false,
+    logger: !isDev,
     serverFactory,
   })
   initSentry()
@@ -101,7 +101,6 @@ export async function makeApp({
    * operate very rapidly to enable quick as possible server startup.
    */
   await app.register(middleware.installSentryRequestHandler)
-  await app.register(middleware.installErrorHandler)
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)

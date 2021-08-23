@@ -1,5 +1,6 @@
 import { parse } from "url"
 
+import * as Sentry from "@sentry/node"
 import { FastifyPluginCallback } from "fastify"
 import fp from "fastify-plugin"
 import Next from "next"
@@ -16,7 +17,6 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
   const nextApp = Next({
     dev: isDev,
     dir: `${__dirname}/../../../client`,
-    quiet: !isDev,
     // Don't specify 'conf' key
   })
   const handle = nextApp.getRequestHandler()
@@ -59,7 +59,10 @@ const SSR: FastifyPluginCallback = (fastify, _options, next) => {
 
       next()
     })
-    .catch((err) => next(err))
+    .catch((err) => {
+      Sentry.captureException(err)
+      return next(err)
+    })
 }
 
 export default fp(SSR)
