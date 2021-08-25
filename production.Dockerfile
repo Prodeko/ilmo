@@ -108,4 +108,4 @@ ENTRYPOINT yarn server start
 FROM env as worker
 LABEL description="Prodeko ilmo worker"
 COPY --from=clean /app/ /app/
-ENTRYPOINT yarn server start
+ENTRYPOINT yarn worker start
