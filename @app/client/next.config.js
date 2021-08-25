@@ -29,6 +29,7 @@ module.exports = () => {
     withAntdLess,
     withNextTranslate
   )({
+    reactStrictMode: true,
     useFileSystemPublicRoutes: true,
     poweredByHeader: false,
     trailingSlash: false,
