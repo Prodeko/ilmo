@@ -28,6 +28,7 @@ services:
 
   worker:
     image: ilmo-worker
+    entrypoint: yarn worker start
     container_name: ilmo_worker
     env_file:
       - .env.production

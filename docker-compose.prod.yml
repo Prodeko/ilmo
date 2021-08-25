@@ -17,6 +17,7 @@ services:
     image: prodekoregistry.azurecr.io/ilmo/ilmo-worker
     container_name: ilmo_worker
     restart: unless-stopped
+    entrypoint: yarn worker start
     env_file:
       - .env.production
     depends_on:
