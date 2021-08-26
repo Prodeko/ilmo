@@ -51,10 +51,6 @@ async function main() {
     console.log()
   })
 
-  app.ready(() => {
-    console.error(app.printPlugins())
-  })
-
   // Nodemon SIGUSR2 handling
   const shutdownActions = app.shutdownActions
   shutdownActions.push(() => {
