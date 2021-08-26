@@ -69,8 +69,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-    | React.ReactNode
-    | ((props: SharedLayoutChildProps) => React.ReactNode)
+  | React.ReactNode
+  | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
@@ -181,7 +181,7 @@ export function SharedLayout({
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
         <Row justify="space-between" wrap={false}>
-          <Col flex="auto" style={{ padding: 5 }}>
+          <Col flex="auto" style={{ padding: "5px 0" }}>
             <Link href="/">
               <a>
                 <Image
@@ -195,7 +195,7 @@ export function SharedLayout({
             </Link>
           </Col>
           {!isMobile ? (
-            <Col lg={{ span: 16 }} md={{ span: 13 }}>
+            <Col lg={{ span: 16 }} md={{ span: 13 }} sm={{ span: 10 }}>
               <H3
                 data-cy="layout-header-title"
                 style={{
@@ -215,7 +215,7 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col flex="auto" style={{ textAlign: "right", marginRight: "10px" }}>
+          <Col flex="auto" style={{ textAlign: "right" }}>
             <LocaleSelect />
           </Col>
           <Col md={{ span: 2 }} style={{ textAlign: "left" }} xs={{ span: 4 }}>
@@ -266,7 +266,7 @@ export function SharedLayout({
             )}
           </Col>
         </Row>
-      </Header>
+      </Header >
       <Layout hasSider={!!sider}>
         {sider ? sider : null}
         <Content style={{ minHeight: contentMinHeight }}>
@@ -302,6 +302,6 @@ export function SharedLayout({
           </Text>
         </div>
       </Footer>
-    </Layout>
+    </Layout >
   )
 }

@@ -32,8 +32,6 @@ const EventPage: NextPage = () => {
           ? t("common:loading")
           : `${event?.name[lang] ?? t("eventNotFound")}`
       }
-      titleHref="/event/[slug]"
-      titleHrefAs={`/event/${event?.slug}`}
     >
       {eventLoadingElement || <EventPageInner event={event!} />}
     </SharedLayout>
