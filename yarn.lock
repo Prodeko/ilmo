@@ -254,6 +254,7 @@ __metadata:
     fastify-cookie: ^5.3.1
     fastify-csrf: ^3.1.0
     fastify-helmet: ^5.3.2
+    fastify-nextjs: ^6.0.0
     fastify-passport: ^0.4.3
     fastify-plugin: ^3.0.0
     fastify-redis: ^4.3.1
@@ -274,7 +275,6 @@ __metadata:
     lodash: ^4.17.21
     mjml: ^4.10.2
     mock-req: ^0.2.0
-    next: ^11.1.0
     nunjucks: ^3.2.3
     passport-oauth2: ^1.6.0
     pg: ^8.7.1
@@ -9987,6 +9987,18 @@ __metadata:
     fastify-plugin: ^3.0.0
     helmet: ^4.0.0
   checksum: e933893c473779a78b01aacfe38bf7481499d8c7a5b545ae9e1f667e66a22a1abd7635d0879c17aa6427c67341468dc9c0ae15bc83cef0223a6daa2ce29c69b3
+  languageName: node
+  linkType: hard
+
+"fastify-nextjs@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "fastify-nextjs@npm:6.0.0"
+  dependencies:
+    fastify-plugin: ^3.0.0
+    under-pressure: ^5.4.0
+  peerDependencies:
+    next: 9.x.x || 10.x.x || 11.x.x
+  checksum: 0d2459577607bb9df04176bdb88a7043ddf5970004df1f02e894b9464ddb79b0036613e2e1728e2735c9d592ad4d2cc018d0f78265ddc83cba9b2c1980465df4
   languageName: node
   linkType: hard
 
@@ -21167,6 +21179,16 @@ typescript@^4.3.5:
   dependencies:
     debug: ^2.2.0
   checksum: 9187472bea3ed993bab004ef8dcda5d8dff1fe02d9a763a97255d2fb05354323a9c4bdc804e23f689b9066b5ec1847f073226b27e0513b891b21125b67733e9d
+  languageName: node
+  linkType: hard
+
+"under-pressure@npm:^5.4.0":
+  version: 5.7.0
+  resolution: "under-pressure@npm:5.7.0"
+  dependencies:
+    fastify-error: ^0.3.0
+    fastify-plugin: ^3.0.0
+  checksum: 3826b94145633b887d61fd056c69193447c185c3d873436387cd14279b9c5b270f2d33c053e135d13264e67c96868fc27af55a5a97f994f62670f83a55b1af67
   languageName: node
   linkType: hard
 

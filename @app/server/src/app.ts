@@ -68,6 +68,7 @@ export async function makeApp({
   /*
    * Our FastifyInstance server
    */
+  console.log(process.env.LOG_LEVEL)
   const app = Fastify({
     pluginTimeout: isDev ? 60000 : 10000,
     logger: isDev ? false : { level: process.env.LOG_LEVEL },
@@ -113,15 +114,15 @@ export async function makeApp({
   if (isTest || isDev) {
     await app.register(middleware.installCypressServerCommand)
   }
-  await app.register(middleware.installSSR)
   await app.register(middleware.installPostGraphile)
   await app.register(middleware.installFileUpload)
 
-  /*
-   * Error handling middleware
-   */
+  // Error handling middleware
   await app.register(middleware.installErrorHandler)
   await app.register(middleware.installSentryErrorHandler)
+
+  // Needs to be last
+  await app.register(middleware.installSSR)
 
   return app
 }

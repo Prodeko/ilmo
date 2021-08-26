@@ -57,7 +57,7 @@ function _getErrorPage({ message }: ParsedError) {
 }
 
 const ErrorHandler: FastifyPluginAsync = async (app) => {
-  app.setErrorHandler((error, _req, res): void => {
+  app.setErrorHandler((error, _req, res) => {
     console.error(error)
 
     const parsedError = parseError(error)
