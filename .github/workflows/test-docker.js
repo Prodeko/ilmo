@@ -12,7 +12,7 @@ async function main() {
       const controller = new AbortController()
       const timeout = setTimeout(() => {
         controller.abort()
-      }, 40000)
+      }, 8000)
       try {
         response = await fetch("http://0.0.0.0:5678", {
           signal: controller.signal,
@@ -25,7 +25,6 @@ async function main() {
       }
       break
     } catch (e) {
-      console.log(e, response)
       attempts++
       if (attempts <= 30) {
         console.log(`Server is not ready yet: ${e.message}`)
@@ -38,7 +37,6 @@ async function main() {
     }
   }
   const text = await response.text()
-  console.log(text)
 
   // Check for known text on homepage
   if (!text.includes("Prodeko")) {
