@@ -117,11 +117,7 @@ export function SharedLayout({
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
       props.error && !props.fetching && !noHandleErrors ? (
-        <>
-          {process.env.NODE_ENV === "development" && (
-            <ErrorResult error={props.error} />
-          )}
-        </>
+        <ErrorResult error={props.error} />
       ) : typeof children === "function" ? (
         children(props)
       ) : (
