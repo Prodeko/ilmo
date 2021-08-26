@@ -29,6 +29,20 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   )
 
   add(
+    "PORT",
+    "5678",
+    `\
+# The port that the server listens on.`
+  )
+
+  add(
+    "LOG_LEVEL",
+    "error",
+    `\
+# Server logging level. Only used in production. Available levels: fatal, error, warn, info, debug, trace.`
+  )
+
+  add(
     "ROOT_DATABASE_URL",
     null,
     `\
