@@ -17,10 +17,16 @@ import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import { CombinedError, UseQueryState } from "urql"
 
-import { useIsMobile } from "./hooks"
-import { LocaleSelect } from "./LocaleSelect"
-import { Redirect } from "./Redirect"
-import { ErrorResult, H3, StandardWidth, Warn } from "."
+import {
+  ErrorResult,
+  H3,
+  LocaleSelect,
+  Redirect,
+  StandardWidth,
+  useIlmoContext,
+  useIsMobile,
+  Warn,
+} from "."
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
@@ -69,8 +75,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-  | React.ReactNode
-  | ((props: SharedLayoutChildProps) => React.ReactNode)
+    | React.ReactNode
+    | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
@@ -93,6 +99,7 @@ export function SharedLayout({
   const [, logout] = useLogoutMutation()
   const { t } = useTranslation("common")
   const isMobile = useIsMobile()
+  const context = useIlmoContext()
 
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
@@ -103,7 +110,7 @@ export function SharedLayout({
       Router.events.off("routeChangeComplete", reset)
       try {
         await logout()
-        // client.resetStore()
+        context?.resetUrqlClient?.()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
         window.location.href = "/logout"
@@ -112,7 +119,7 @@ export function SharedLayout({
     }
     Router.events.on("routeChangeComplete", reset)
     Router.push("/")
-  }, [logout])
+  }, [logout, context])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
@@ -262,7 +269,7 @@ export function SharedLayout({
             )}
           </Col>
         </Row>
-      </Header >
+      </Header>
       <Layout hasSider={!!sider}>
         {sider ? sider : null}
         <Content style={{ minHeight: contentMinHeight }}>
@@ -298,6 +305,6 @@ export function SharedLayout({
           </Text>
         </div>
       </Footer>
-    </Layout >
+    </Layout>
   )
 }

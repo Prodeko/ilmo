@@ -1,5 +1,5 @@
-import * as React from "react"
-import { Head } from "@app/components"
+import React from "react"
+import { Head, IlmoContext } from "@app/components"
 import { withUrql } from "@app/lib"
 import * as Sentry from "@sentry/react"
 import { Integrations as TracingIntegrations } from "@sentry/tracing"
@@ -110,19 +110,21 @@ class Ilmo extends App<Props> {
 
     return (
       <Sentry.ErrorBoundary fallback={<ErrorPage statusCode={500} />}>
-        <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
-          <Head />
-          <LazyMotion features={domMax} strict>
-            <AnimateSharedLayout>
-              <AnimatePresence
-                exitBeforeEnter
-                onExitComplete={() => window.scrollTo(0, 0)}
-              >
-                <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
-              </AnimatePresence>
-            </AnimateSharedLayout>
-          </LazyMotion>
-        </ConfigProvider>
+        <IlmoContext.Provider value={{ resetUrqlClient }}>
+          <ConfigProvider locale={locale === "en" ? enUS : fiFI}>
+            <Head />
+            <LazyMotion features={domMax} strict>
+              <AnimateSharedLayout>
+                <AnimatePresence
+                  exitBeforeEnter
+                  onExitComplete={() => window.scrollTo(0, 0)}
+                >
+                  <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
+                </AnimatePresence>
+              </AnimateSharedLayout>
+            </LazyMotion>
+          </ConfigProvider>
+        </IlmoContext.Provider>
       </Sentry.ErrorBoundary>
     )
   }
