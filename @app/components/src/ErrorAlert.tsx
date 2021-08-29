@@ -75,5 +75,5 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
     ? createPortal(alertContent, document?.querySelector("#alert")!)
     : null
 
-  return error ? alertPortal : null
+  return banner ? alertPortal : alertContent
 }

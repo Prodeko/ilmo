@@ -39,7 +39,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   } = props
   const { t, lang } = useTranslation("events")
 
-  function getDefaultFileList(): Array<UploadFile> | undefined {
+  function getUploadDefaultFileList(): Array<UploadFile> | undefined {
     if (type === "update") {
       const { headerImageFile } = (data as UpdateEventPageQuery).event || {}
       const name = headerImageFile?.split("/")?.pop() ?? ""
@@ -258,7 +258,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           accept="image/*"
           cropAspect={851 / 315}
           data-cy="eventform-header-image-upload"
-          defaultFileList={getDefaultFileList()}
+          defaultFileList={getUploadDefaultFileList()}
           maxCount={1}
         />
       </Form.Item>

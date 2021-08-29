@@ -26,13 +26,16 @@ export const EventRegistrationAnswersPopover: React.FC<EventRegistrationAnswersP
       questions: EventPage_QuestionFragment[] | undefined
     ) {
       const answerRows = questions?.map(({ id, type, label }) => {
-        let answer
-        if (type === QuestionType.Text) {
-          answer = <Text>{answers[id]}</Text>
-        } else if (type === QuestionType.Radio) {
-          answer = answers?.[id]
-        } else if (type === QuestionType.Checkbox) {
-          answer = answers?.[id]?.join(", ")
+        let answerJsx
+        const answer = answers?.[id]
+        if (answer) {
+          if (type === QuestionType.Text) {
+            answerJsx = <Text>{answers[id]}</Text>
+          } else if (type === QuestionType.Radio) {
+            answerJsx = answers[id]
+          } else if (type === QuestionType.Checkbox) {
+            answerJsx = answers[id]?.join(", ")
+          }
         }
 
         return (
@@ -40,7 +43,7 @@ export const EventRegistrationAnswersPopover: React.FC<EventRegistrationAnswersP
             <Col span="8" style={{ textAlign: "right" }}>
               <Text type="secondary">{label[lang]}:</Text>
             </Col>
-            <Col span="16">{answer}</Col>
+            <Col span="16">{answerJsx}</Col>
           </Row>
         )
       })
