@@ -71,6 +71,7 @@ export async function makeApp({
   const app = Fastify({
     pluginTimeout: isDev ? 60000 : 10000,
     logger: isDev ? false : { level: process.env.LOG_LEVEL },
+    trustProxy: !isDev,
     serverFactory,
   })
   initSentry()
