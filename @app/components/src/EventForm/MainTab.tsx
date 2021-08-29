@@ -59,8 +59,8 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   }
 
   function disabledDate(current: dayjs.Dayjs) {
-    const { eventStartTime } = formValues
-    return current.isAfter(dayjs(eventStartTime))
+    const eventStartTime = formValues?.eventTime?.[0]
+    return eventStartTime ? current.isAfter(dayjs(eventStartTime)) : false
   }
 
   return (

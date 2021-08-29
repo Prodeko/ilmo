@@ -37,11 +37,8 @@ export type FormValues = {
   name?: TranslatedFormValue
   description?: TranslatedFormValue
   location?: string
-  eventStartTime?: string
-  eventEndTime?: string
-  registrationStartTime?: string
-  registrationEndTime?: string
-  registrationTime?: string
+  eventTime?: Date[]
+  registrationTime?: Date[]
   isHighlighted?: boolean
   headerImageFile?: string
   isDraft?: boolean
