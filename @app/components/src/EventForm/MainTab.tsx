@@ -3,9 +3,12 @@ import { CreateEventPageQuery, Maybe, UpdateEventPageQuery } from "@app/graphql"
 import { tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
 import { UploadFile } from "antd/lib/upload/interface"
+import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
 
 import { ErrorAlert, FileUpload } from "../index"
+
+import { FormValues } from "."
 
 const { Option } = Select
 const { TextArea, Group } = Input
@@ -13,6 +16,7 @@ const { RangePicker } = DatePicker
 
 interface MainTabProps {
   type: "update" | "create"
+  formValues: FormValues
   data: CreateEventPageQuery | UpdateEventPageQuery
   formSubmitting: boolean
   selectedLanguages: string[]
@@ -28,6 +32,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   const {
     type,
     data,
+    formValues,
     selectedLanguages,
     setSelectedLanguages,
     isDraft,
@@ -51,6 +56,11 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       } as UploadFile
       return [uploadFile]
     }
+  }
+
+  function disabledDate(current: dayjs.Dayjs) {
+    const { eventStartTime } = formValues
+    return current.isAfter(dayjs(eventStartTime))
   }
 
   return (
@@ -220,7 +230,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <RangePicker
           data-cy="eventform-input-event-time"
-          format="YYYY-MM-DD HH:mm"
+          format="YYYY-MM-DD HH:mm:ss"
           showTime
         />
       </Form.Item>
@@ -237,8 +247,12 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <RangePicker
           data-cy="eventform-input-registration-time"
-          format="YYYY-MM-DD HH:mm"
-          showTime
+          // @ts-ignore: dayjs is supported, types are incorrectly specified in antd
+          disabledDate={disabledDate}
+          format="YYYY-MM-DD HH:mm:ss"
+          showTime={{
+            hideDisabledOptions: true,
+          }}
         />
       </Form.Item>
       <Form.Item

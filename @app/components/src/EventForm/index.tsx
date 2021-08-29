@@ -37,8 +37,11 @@ export type FormValues = {
   name?: TranslatedFormValue
   description?: TranslatedFormValue
   location?: string
-  eventTime?: Date[]
-  registrationTime?: Date[]
+  eventStartTime?: string
+  eventEndTime?: string
+  registrationStartTime?: string
+  registrationEndTime?: string
+  registrationTime?: string
   isHighlighted?: boolean
   headerImageFile?: string
   isDraft?: boolean
@@ -91,7 +94,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   // Handling form values, errors and submission
   const [form] = Form.useForm()
   const { setFieldsValue } = form
-  const [formValues, setFormValues] = useState<FormValues>({})
+  const [formValues, setFormValues] = useState<FormValues>(initialValues || {})
   const [activeTab, setActiveTab] = useState<TAB>(TAB.General)
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | CombinedError | null>(null)
@@ -242,6 +245,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     type,
     data,
     isDraft,
+    formValues,
     setIsDraft,
     formError,
     tabErrors,
