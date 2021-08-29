@@ -48,7 +48,7 @@ module.exports = () => {
     images: {
       domains: isDevOrTest
         ? ["placeimg.com", "localhost"]
-        : [process.env.ROOT_URL],
+        : ["ilmo3.prodeko.org", "static.prodeko.org"],
     },
     env: {
       ROOT_URL: process.env.ROOT_URL,
