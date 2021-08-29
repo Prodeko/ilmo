@@ -76,10 +76,6 @@ COPY --from=build /app/@app/worker/dist/ /app/@app/worker/dist/
 # push them to a .env file that we can source from ENTRYPOINT.
 RUN echo -e "NODE_ENV=$NODE_ENV\nROOT_URL=$ROOT_URL" > /app/.env
 
-# Clear yarn and apk cache
-RUN yarn cache clean
-RUN apk del .build-deps
-
 ################################################################################
 # Build stage env - install production dependencies, set env variables and import docker args
 FROM base as env
@@ -95,6 +91,10 @@ ENV DATABASE_NAME="ilmo"
 ENV DATABASE_OWNER="${DATABASE_NAME}"
 ENV DATABASE_VISITOR="${DATABASE_NAME}_visitor"
 ENV DATABASE_AUTHENTICATOR="${DATABASE_NAME}_authenticator"
+
+# Clear yarn and apk cache
+RUN yarn cache clean
+RUN apk del .build-deps
 
 ################################################################################
 # Build stage server - server image to run in production
