@@ -23,7 +23,7 @@ FROM base as build
 ARG NODE_ENV
 ARG ROOT_URL
 
-COPY lerna.json package.json .yarnrc.yml yarn.lock /app/
+COPY package.json .yarnrc.yml yarn.lock /app/
 COPY .yarn /app/.yarn
 COPY @app/ /app/@app/
 
@@ -44,7 +44,7 @@ RUN NEXT_TRANSLATE_PATH=../client yarn build
 FROM build as clean
 
 # Copy over selectively just the tings we need, try and avoid the rest
-COPY --from=build /app/lerna.json /app/package.json /app/.yarnrc.yml /app/yarn.lock /app/
+COPY --from=build /app/package.json /app/.yarnrc.yml /app/yarn.lock /app/
 COPY --from=build /app/.yarn /app/.yarn
 COPY --from=build /app/nx.json /app/workspace.json /app/
 COPY --from=build /app/@app/config/ /app/@app/config/

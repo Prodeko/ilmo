@@ -258,6 +258,8 @@ export const withUrql = withUrqlClient(
         subscriptionExchange({
           forwardSubscription: (operation) => ({
             subscribe: (sink) => ({
+              // TODO: remove ignore once urql types are updated
+              // @ts-ignore
               unsubscribe: wsClient!.subscribe(operation, sink),
             }),
           }),
