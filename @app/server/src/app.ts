@@ -104,7 +104,7 @@ export async function makeApp({
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
-  // await app.register(middleware.installHelmet)
+  await app.register(middleware.installHelmet)
   await app.register(middleware.installSameOrigin)
   await app.register(middleware.installSession)
   await app.register(middleware.installCSRFProtection)

@@ -10,9 +10,8 @@ const handleFileUpload = () => {
     if (image instanceof Promise) {
       const upload = await image
       if (upload) {
-        const baseUrl = process.env.ROOT_URL
-        const relativeUrl = await resolveUpload(upload)
-        args.input.event.headerImageFile = `${baseUrl}/${relativeUrl}`
+        const url = await resolveUpload(upload)
+        args.input.event.headerImageFile = url
       }
     }
 
