@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:428a464de2e834697dc44bb145cbf58d0c69d5dd
+--! Hash: sha1:8c7f5d7079a077074d9710c865e4aa4390be6c7e
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -9,9 +9,6 @@
  *  create policy manage_admin on app_public.events for all using(app_public.current_user_is_admin());
  *  create policy manage_organization on app_public.events for all using(app_public.current_user_is_owner_organization_member(owner_organization_id));
  */
-
-drop function if exists app_public.current_user_is_admin cascade;
-drop function if exists app_public.current_user_is_owner_organization_member cascade;
 
 create function app_public.current_user_is_admin() returns boolean as $$
   select exists (
@@ -38,8 +35,6 @@ comment on function app_public.current_user_is_owner_organization_member(owner_o
  * they are valid (namely: `created_by` cannot be changed after initial INSERT,
  * and `updated_by` is updated after UPDATE statement).
  */
-drop function if exists app_private.tg__ownership_info() cascade;
-
 create function app_private.tg__ownership_info() returns trigger as $$
 begin
   NEW.created_by = (case when TG_OP = 'INSERT' then app_public.current_user_id() else OLD.created_by end);
@@ -58,9 +53,6 @@ comment on function app_private.tg__ownership_info() is
 -- Used as a check constraint to verify that a column contains
 -- the required languages. Language dependent columns are stored as
 -- jsonb.
-drop function if exists app_public.check_language(jsonb) cascade;
-drop function if exists app_public.validate_jsonb_no_nulls(anyelement) cascade;
-
 create function app_public.check_language(_column jsonb)
   returns boolean
   as $$
@@ -119,8 +111,6 @@ comment on function app_public.validate_jsonb_no_nulls(input anyelement) is
 /*
  * Get the user primary email as a computed column.
  */
-drop function if exists app_public.users_primary_email;
-
 create function app_public.users_primary_email(u app_public.users) returns citext as $$
   select email
     from app_public.user_emails
@@ -146,9 +136,6 @@ comment on function app_public.users_primary_email(u app_public.users) is
  *  description translated_field,
  *  ...
  */
-drop domain if exists translated_field cascade;
-drop domain if exists constrained_name cascade;
-
 create domain translated_field as jsonb check (check_language(value));
 comment on domain translated_field is
   E'A translated field.';
@@ -172,8 +159,6 @@ comment on domain translated_field is
  * can see private event registration information (such as allergies) and update
  * event details.
  */
-drop table if exists app_public.event_categories cascade;
-
 create table app_public.event_categories(
   id uuid primary key default gen_random_uuid(),
   name translated_field not null,
@@ -236,9 +221,6 @@ on app_public.event_categories to :DATABASE_VISITOR;
  * The events table stores events that a user of the application can register to.
  * Events can either be upcoming, open to registration or closed.
  */
-
-drop table if exists app_public.events cascade;
-
 create table app_public.events(
   id uuid primary key default gen_random_uuid(),
   -- Slug should be unique, but app_public.update_event custom mutation
@@ -357,8 +339,6 @@ grant
 on app_public.events to :DATABASE_VISITOR;
 
 --! split: 0012-rls-helpers-2.sql
-drop function if exists app_public.current_user_has_event_permissions cascade;
-
 /*
  * We have to define this RLS policy helper function here since it uses the
  * events table. This function checks that the current user is a member of an
@@ -387,8 +367,6 @@ comment on function app_public.current_user_has_event_permissions(event_id uuid)
  * to be in queue for the quota. There may be multiple quotas with different
  * sizes for a single event.
  */
-
-drop table if exists app_public.quotas cascade;
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
@@ -456,12 +434,6 @@ on app_public.quotas to :DATABASE_VISITOR;
  * these functions instead. The default mutations are omitted in
  * @app/server/postgraphile.tags.jsonc file.
  */
-
-drop type if exists app_public.create_event_quotas cascade;
-drop type if exists app_public.update_event_quotas cascade;
-drop function if exists app_public.create_event_quotas(event_id uuid, quotas app_public.create_event_quotas[]);
-drop function if exists app_public.update_event_quotas(event_id uuid, quotas app_public.update_event_quotas[]);
-
 -- Input type for app_public.create_event_quotas
 create type app_public.create_event_quotas as (
   position smallint,
@@ -581,11 +553,6 @@ comment on function app_public.update_event_quotas(event_id uuid, quotas app_pub
  * event. The questions are presented to the user during event
  * registration.
  */
-
-drop type if exists app_public.question_type cascade;
-drop function if exists app_public.validate_question_data;
-drop table if exists app_public.event_questions cascade;
-
 create type app_public.question_type as enum (
   'TEXT',
   'RADIO',
@@ -705,12 +672,6 @@ on app_public.event_questions to :DATABASE_VISITOR;
  * these functions instead. The default mutations are omitted in
  * @app/server/postgraphile.tags.jsonc file.
  */
-
-drop type if exists app_public.create_event_questions cascade;
-drop type if exists app_public.update_event_questions cascade;
-drop function if exists app_public.create_event_questions(event_id uuid, questions app_public.create_event_questions[]);
-drop function if exists app_public.update_event_questions(event_id uuid, questions app_public.update_event_questions[]);
-
 -- Input type for app_public.create_event_questions
 create type app_public.create_event_questions as (
   position smallint,
@@ -827,11 +788,6 @@ comment on function app_public.update_event_questions(event_id uuid, questions a
  * database. That is, the related event is open to registrations and all required
  * questions are answered.
  */
-
-drop function if exists app_public.validate_registration_answers(uuid, uuid[], jsonb);
-drop function if exists tg__registration_is_valid() cascade;
-drop function if exists tg__registration_answers_are_valid() cascade;
-
 create function app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb default null)
   returns void as $$
 declare
@@ -924,10 +880,6 @@ comment on function app_private.tg__registration_is_valid() is
 /*
  * The registrations table stores event registrations.
  */
-
-
-drop table if exists app_public.registrations cascade;
-
 create table app_public.registrations(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
@@ -1057,8 +1009,6 @@ on app_public.registrations to :DATABASE_VISITOR;
  * an update_token must be provided. Upon registration, an email containing an
  * update_token is sent to the user.
  */
-
-drop table if exists app_private.registration_secrets cascade;
 create table app_private.registration_secrets(
   id uuid primary key default gen_random_uuid(),
   registration_token text default encode(gen_random_bytes(7), 'hex'),
@@ -1095,10 +1045,6 @@ comment on table app_private.registration_secrets is
 /*
  * These functions are used to manage registrations via the admin panel.
  */
-
-drop function if exists app_public.admin_update_registration(uuid);
-drop function if exists app_public.admin_delete_registration(uuid);
-
 create function app_public.admin_update_registration(id uuid)
 returns text as $$
 declare
@@ -1162,11 +1108,6 @@ comment on function app_public.admin_delete_registration(id uuid) is
  * use these functions instead. The default mutations are omitted in
  * @app/server/postgraphile.tags.jsonc file.
  */
-
-drop function if exists app_public.create_registration(text, uuid, uuiad, text, text, citext, jsonb);
-drop function if exists app_public.update_registration(text, text, text, jsonb);
-drop function if exists app_public.delete_registration(text);
-
 create function app_public.create_registration(
   "registrationToken" text,
   "eventId" uuid,
@@ -1339,9 +1280,6 @@ comment on function app_public.registration_by_update_token("updateToken" text) 
  * These functions are used to create registration secrets that are required
  * to create, update or delete registrations.
  */
-drop function if exists app_public.claim_registration_token(uuid, uuid);
-drop type if exists app_public.claim_registration_token_output;
-
 -- Output type for app_public.claim_registration_token
 create type app_public.claim_registration_token_output as (
   registration_token text,
@@ -1418,11 +1356,6 @@ comment on function app_public.claim_registration_token(event_id uuid, quota_id 
  * these functions instead. The default mutations are omitted in
  * @app/server/postgraphile.tags.jsonc file.
  */
-
-drop type if exists app_public.event_input cascade;
-drop function if exists app_public.create_event(event app_public.event_input, quotas app_public.create_event_quotas[], questions app_public.create_event_questions[]);
-drop function if exists app_public.update_event(id uuid, event app_public.event_input, quotas app_public.create_event_quotas[], questions app_public.create_event_questions[]);
-
 -- Input type for app_public.create_event
 create type app_public.event_input as (
   slug citext,
