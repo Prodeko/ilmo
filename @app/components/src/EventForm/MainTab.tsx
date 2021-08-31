@@ -1,10 +1,11 @@
 import { Dispatch, SetStateAction } from "react"
 import { CreateEventPageQuery, Maybe, UpdateEventPageQuery } from "@app/graphql"
-import { tailFormItemLayout } from "@app/lib"
+import { range, tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
 import { UploadFile } from "antd/lib/upload/interface"
 import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
+import { DisabledTimes } from "rc-picker/lib/interface"
 
 import { ErrorAlert, FileUpload } from "../index"
 
@@ -60,7 +61,27 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
 
   function disabledDate(current: dayjs.Dayjs) {
     const eventStartTime = formValues?.eventTime?.[0]
-    return eventStartTime ? current.isAfter(dayjs(eventStartTime)) : false
+    return eventStartTime
+      ? current.isAfter(eventStartTime.add(1, "day"))
+      : false
+  }
+
+  function disabledDateTime(current: dayjs.Dayjs): DisabledTimes {
+    const eventStartTime = formValues.eventTime?.[0]
+    // Don't restrict values if no eventStartTime is set yet
+    if (!eventStartTime) return {}
+
+    // Don't restrict values if currently selected date is before eventStartDate
+    if (current.isBefore(eventStartTime)) return {}
+
+    const eventStartHour = eventStartTime.get("hours")
+    const eventStartMinute = eventStartTime.get("minutes")
+    const eventStartSecond = eventStartTime.get("seconds")
+    return {
+      disabledHours: () => range(eventStartHour + 1, 24),
+      disabledMinutes: () => range(eventStartMinute + 1, 60),
+      disabledSeconds: () => range(eventStartSecond, 60),
+    }
   }
 
   return (
@@ -249,6 +270,8 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           data-cy="eventform-input-registration-time"
           // @ts-ignore: dayjs is supported, types are incorrectly specified in antd
           disabledDate={disabledDate}
+          // @ts-ignore
+          disabledTime={disabledDateTime}
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,
