@@ -205,10 +205,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   })
 
   const showAdminEmptyAnswersNote = useMemo(() => {
-    const requiredQuestion = questions.filter(
+    if (!isAdmin) return false
+
+    const requiredQuestion = questions?.filter(
       ({ isRequired }) => isRequired
     )?.[0]
-    if (!isAdmin) return false
+
     if (!requiredQuestion) return false
 
     const answerToRequiredQuestion =
@@ -219,6 +221,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   return (
     <Form
       {...registrationFormItemLayout}
+      colon={false}
       form={form}
       initialValues={initialValues}
       onFinish={handleSubmit}

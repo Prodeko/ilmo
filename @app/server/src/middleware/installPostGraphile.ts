@@ -3,7 +3,7 @@ import { resolve } from "path"
 
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
-import _PgSubscriptionsLds from "@graphile/subscriptions-lds"
+import PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
 import { parse } from "cookie"
 import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
@@ -126,14 +126,14 @@ export function getPostGraphileOptions({
     // For these reasons, we're going to keep retryOnInitFail enabled for both environments.
     retryOnInitFail: !isTest,
 
-    // Add websocket support to the PostGraphile server; you still need to use a subscriptions plugin such as
-    // @graphile/pg-pubsub
+    // Add websocket support to the PostGraphile server
     subscriptions: true,
     websockets: ["v1"],
     websocketMiddlewares,
-    // Support for Postgraphilelive queries
+
+    // Support for Postgraphile live queries
     // @graphile/subscriptions-lds
-    live: false,
+    live: true,
 
     // We don't enable query batching since urql doesn't support it, and we don't really need it
     enableQueryBatching: false,
@@ -267,7 +267,9 @@ export function getPostGraphileOptions({
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
-      //PgSubscriptionsLds,
+
+      // Support for live queries https://www.graphile.org/postgraphile/live-queries/
+      PgSubscriptionsLds,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,

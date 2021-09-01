@@ -33,7 +33,8 @@ module.exports = () => {
     useFileSystemPublicRoutes: true,
     poweredByHeader: false,
     trailingSlash: false,
-    lessVarsFilePath: path.resolve(__dirname, "./assets/antd-custom.less"),
+    lessVarsFilePath: path.resolve(__dirname, "./src/styles/antd-custom.less"),
+    lessVarsFilePathAppendToEndOfContent: false,
     cssLoaderOptions: {
       esModule: false,
       sourceMap: false,

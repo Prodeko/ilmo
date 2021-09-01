@@ -78,5 +78,11 @@
   "quota": "Quota",
   "removeOption": "Remove option",
   "removeQuestion": "Remove question",
-  "removeQuota": "Remove quota"
+  "removeQuota": "Remove quota",
+  "timer": {
+    "instructions": "The page will update automatically once the registration opens. Please do not refresh the page.",
+    "registrationStarts": "Registration opens",
+    "time": "Current time",
+    "title": "Registration opens soon"
+  }
 }

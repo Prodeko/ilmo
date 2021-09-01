@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import {
-  EventPage_QueryFragment,
   EventPage_RegistrationFragment,
+  EventPage_SubscriptionFragment,
   OrganizationPage_QueryFragment,
   useEventRegistrationsSubscription,
 } from "@app/graphql"
@@ -24,7 +24,9 @@ export function useQueryId() {
   return String(rawId)
 }
 
-export function useEventLoading(query: UseQueryState<EventPage_QueryFragment>) {
+export function useEventLoading(
+  query: UseQueryState<EventPage_SubscriptionFragment>
+) {
   const { data, fetching, error, stale } = query
 
   let child: JSX.Element | null = null

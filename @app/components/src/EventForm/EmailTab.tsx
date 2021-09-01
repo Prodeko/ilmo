@@ -8,7 +8,7 @@ import { FormValues, getEventSlug } from "."
 
 const { Text } = Typography
 
-function getFormattedEventTime(dates?: Date[]) {
+function getFormattedEventTime(dates?: dayjs.Dayjs[]) {
   const formatString = "D.M.YY HH:mm"
   const eventStartTime = dayjs(dates?.[0]).format(formatString)
   const eventEndTime = dayjs(dates?.[1]).format(formatString)

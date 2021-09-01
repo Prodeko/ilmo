@@ -1,7 +1,5 @@
 import {
   Event,
-  EventPageDocument,
-  EventPageQuery,
   GraphCacheConfig,
   ListEventsDocument,
   ListEventsQuery,
@@ -213,27 +211,6 @@ export const withUrql = withUrqlClient(
                   __typename: "EventCategory",
                   id: args.input.id,
                 })
-              },
-              createRegistration(result, _args, cache, _info) {
-                // Update EventPageQuery results in the cache after createRegistration
-                // mutation so that eventPage shows the correct registrations without a
-                // issuing a new HTTP request
-                const { registration } = result.createRegistration || {}
-                cache.updateQuery<EventPageQuery>(
-                  {
-                    query: EventPageDocument,
-                    variables: { slug: registration?.event?.slug! },
-                  },
-                  (data) => {
-                    if (registration) {
-                      data?.eventBySlug?.registrations?.nodes?.push(
-                        registration
-                      )
-                      return data
-                    }
-                    return data
-                  }
-                )
               },
               adminDeleteRegistration(_result, args, cache, _info) {
                 cache.invalidate({

@@ -88,13 +88,15 @@ fragment EventPage_Event on Event {
   }
 }
 
-fragment EventPage_Query on Query {
-  ...SharedLayout_Query
+fragment EventPage_Subscription on Subscription {
+  currentUser {
+    ...SharedLayout_User
+  }
   eventBySlug(slug: $slug) {
     ...EventPage_Event
   }
 }
 
-query EventPage($slug: String!) {
-  ...EventPage_Query
+subscription EventPage($slug: String!) {
+  ...EventPage_Subscription
 }

@@ -67,9 +67,14 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   }
 
   function disabledDateTime(current: dayjs.Dayjs): DisabledTimes {
-    const eventStartTime = formValues.eventTime?.[0]
+    const { eventTime } = formValues || []
+    const [eventStartTime, eventEndTime] = eventTime!
+
     // Don't restrict values if no eventStartTime is set yet
-    if (!eventStartTime) return {}
+    // or if start and end times are the same. The times can be
+    // the same due to some unknown bug in RangePicker (or somewhere)
+    // else.
+    if (!eventStartTime || eventStartTime === eventEndTime) return {}
 
     // Don't restrict values if currently selected date is before eventStartDate
     if (current.isBefore(eventStartTime)) return {}

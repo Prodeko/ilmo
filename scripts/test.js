@@ -85,7 +85,7 @@ function main() {
       [
         {
           name: "jest",
-          command: `cross-env NODE_OPTIONS=\"--inspect=9876\" jest -i ${watchMode}`,
+          command: `yarn node --inspect=9876 ./node_modules/jest/bin/jest.js -i ${watchMode}`,
           prefixColor: "greenBright",
         },
         {

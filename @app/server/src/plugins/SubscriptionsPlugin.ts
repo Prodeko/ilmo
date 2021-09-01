@@ -1,3 +1,4 @@
+import { sleep } from "@app/lib"
 import { QueryBuilder, SQL } from "graphile-build-pg"
 import {
   AugmentedGraphQLFieldResolver,
@@ -9,6 +10,11 @@ import {
 import { GraphQLResolveInfo } from "graphql"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
+
+// The asyncIterator topic for currentTime mutation asyncIterator
+const CURRENT_TIME_PUBSUB_TOPIC = "updateTime"
+// How often the topic should be updated
+const CURRENT_TIME_UPDATE_INTERVAL = 1000
 
 /*
  * PG NOTIFY events are sent via a channel, this function helps us determine
@@ -67,8 +73,21 @@ const eventRegistrationsTopicFromContext = async (
  *
  * And see the database trigger function `app_public.tg__graphql_subscription()`.
  */
-const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
+const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
   const { pgSql: sql } = build
+
+  // TODO: pubsub is not available in tests
+  // Need to start an actual postgraphile server to that pluginHooks
+  // are run.
+  if (process.env.NODE_ENV !== "test") {
+    ;(async () => {
+      while (true) {
+        pubsub.publish(CURRENT_TIME_PUBSUB_TOPIC, new Date())
+        await sleep(CURRENT_TIME_UPDATE_INTERVAL)
+      }
+    })()
+  }
+
   return {
     typeDefs: gql`
        type UserSubscriptionPayload {
@@ -83,19 +102,33 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build) => {
 
       extend type Subscription {
         """Triggered when the logged in user's record is updated in some way."""
-        currentUserUpdated: UserSubscriptionPayload @pgSubscription(topic: ${embed(
+        currentUserUpdated: UserSubscriptionPayload! @pgSubscription(topic: ${embed(
           currentUserTopicFromContext
         )})
 
         """Triggered when new event registrations are created or updated. Each event has its own subscription topic."""
-        eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload @pgSubscription(topic: ${embed(
+        eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload! @pgSubscription(topic: ${embed(
           eventRegistrationsTopicFromContext
         )})
+
+        """Returns the server time every second."""
+        currentTime: Date!
       }
     `,
     resolvers: {
+      Subscription: {
+        currentTime: {
+          subscribe() {
+            return pubsub.asyncIterator(CURRENT_TIME_PUBSUB_TOPIC)
+          },
+          resolve(t) {
+            return t.toISOString()
+          },
+        },
+      },
       UserSubscriptionPayload: {
         user: getByQueryFromTable(
+          // Table to select subscription results from
           sql.fragment`app_public.users`,
           ({ tableAlias, event }) =>
             sql.fragment`${tableAlias}.id = ${sql.value(event.subject)}`

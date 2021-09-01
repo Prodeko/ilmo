@@ -1,18 +1,10 @@
-fragment EventPage_Query on Query {
-  ...SharedLayout_Query
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
-    __typename
-  }
-  __typename
-}
-fragment SharedLayout_Query on Query {
+fragment EventPage_Subscription on Subscription {
   currentUser {
     ...SharedLayout_User
     __typename
   }
-  languages {
-    ...SharedLayout_Languages
+  eventBySlug(slug: $slug) {
+    ...EventPage_Event
     __typename
   }
   __typename
@@ -40,11 +32,6 @@ fragment SharedLayout_User on User {
     }
     __typename
   }
-  __typename
-}
-fragment SharedLayout_Languages on AppLanguage {
-  supportedLanguages
-  defaultLanguage
   __typename
 }
 fragment EventPage_Event on Event {
@@ -147,6 +134,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-query EventPage($slug: String!) {
-  ...EventPage_Query
+subscription EventPage($slug: String!) {
+  ...EventPage_Subscription
 }

@@ -20,8 +20,12 @@
   "imgCropTitle": "Edit image",
   "label": "Label",
   "lang": {
-    "en": "in English",
-    "fi": "in Finnish"
+    "en": "English",
+    "fi": "Finnish",
+    "in": {
+      "en": "in English",
+      "fi": "in Finnish"
+    }
   },
   "loading": "Loading...",
   "location": "Location",

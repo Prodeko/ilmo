@@ -1,4 +1,12 @@
 import dayjs from "dayjs"
+import isEqual from "lodash/isEqual"
+
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
+
+export const arePropsEqual = (prevProps: any, nextProps: any) => {
+  return isEqual(prevProps, nextProps)
+}
 
 export const filterObjectByKeys = (raw: object, allowed: string[]) =>
   raw &&
@@ -16,6 +24,14 @@ export function removePropFromObject(obj: any, prop: string | number) {
 
 export const randomElementFromArray = (arr: any[]) =>
   arr[Math.floor(Math.random() * arr.length)]
+
+export const range = (start: number, end: number) => {
+  const result = []
+  for (let i = start; i < end; i++) {
+    result.push(i)
+  }
+  return result
+}
 
 /**
  * Table utils

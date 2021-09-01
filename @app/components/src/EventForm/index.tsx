@@ -37,8 +37,8 @@ export type FormValues = {
   name?: TranslatedFormValue
   description?: TranslatedFormValue
   location?: string
-  eventTime?: Date[]
-  registrationTime?: Date[]
+  eventTime?: dayjs.Dayjs[]
+  registrationTime?: dayjs.Dayjs[]
   isHighlighted?: boolean
   headerImageFile?: string
   isDraft?: boolean
@@ -56,7 +56,10 @@ interface EventFormProps {
   initialValues?: any
 }
 
-export function getEventSlug(name?: TranslatedFormValue, dates?: Date[]) {
+export function getEventSlug(
+  name?: TranslatedFormValue,
+  dates?: dayjs.Dayjs[]
+) {
   const eventStartTime = dates?.[0].toISOString()
 
   const daySlug = dayjs(eventStartTime).format("YYYY-M-D")

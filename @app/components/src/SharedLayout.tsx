@@ -221,7 +221,12 @@ export function SharedLayout({
           <Col flex="auto" style={{ textAlign: "right" }}>
             <LocaleSelect />
           </Col>
-          <Col md={{ span: 2 }} style={{ textAlign: "left" }} xs={{ span: 4 }}>
+          <Col
+            lg={{ span: 2 }}
+            md={{ span: 4 }}
+            style={{ textAlign: "left" }}
+            xs={{ span: 6 }}
+          >
             {data && data.currentUser ? (
               <Dropdown
                 overlay={

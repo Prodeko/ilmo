@@ -7,6 +7,7 @@ import { ConfigProvider, notification } from "antd"
 import enUS from "antd/lib/locale/en_US"
 import fiFI from "antd/lib/locale/fi_FI"
 import dayjs from "dayjs"
+import customParseFormat from "dayjs/plugin/customParseFormat"
 import {
   AnimatePresence,
   AnimateSharedLayout,
@@ -26,6 +27,8 @@ import "nprogress/nprogress.css"
 import "react-color-palette/lib/css/styles.css"
 
 require("../styles/styles.less")
+
+dayjs.extend(customParseFormat)
 
 declare global {
   interface Window {

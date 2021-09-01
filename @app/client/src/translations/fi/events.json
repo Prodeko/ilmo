@@ -78,5 +78,11 @@
   "quota": "Kiintiö",
   "removeOption": "Poista vaihtoehto",
   "removeQuestion": "Poista kysymys",
-  "removeQuota": "Poista kiintiö"
+  "removeQuota": "Poista kiintiö",
+  "timer": {
+    "instructions": "Sivu päivittyy automaattisesti kun ilmo aukeaa. Älä päivitä sivua omatoimisesti.",
+    "registrationStarts": "Ilmo aukeaa",
+    "time": "Aika",
+    "title": "Ilmoittautuminen aukeaa pian"
+  }
 }
