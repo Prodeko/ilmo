@@ -1,9 +1,6 @@
 import dayjs from "dayjs"
 import isEqual from "lodash/isEqual"
 
-export const sleep = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms))
-
 export const arePropsEqual = (prevProps: any, nextProps: any) => {
   return isEqual(prevProps, nextProps)
 }

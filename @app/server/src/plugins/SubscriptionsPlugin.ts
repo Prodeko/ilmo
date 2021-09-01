@@ -1,4 +1,3 @@
-import { sleep } from "@app/lib"
 import { QueryBuilder, SQL } from "graphile-build-pg"
 import {
   AugmentedGraphQLFieldResolver,
@@ -10,6 +9,8 @@ import {
 import { GraphQLResolveInfo } from "graphql"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // The asyncIterator topic for currentTime mutation asyncIterator
 const CURRENT_TIME_PUBSUB_TOPIC = "updateTime"
