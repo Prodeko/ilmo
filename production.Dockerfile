@@ -54,7 +54,6 @@ COPY --from=build /app/@app/lib/ /app/@app/lib/
 COPY --from=build /app/@app/components/package.json /app/@app/components/
 COPY --from=build /app/@app/components/dist/ /app/@app/components/dist/
 COPY --from=build /app/@app/client/package.json /app/@app/client/
-COPY --from=build /app/@app/client/assets/ /app/@app/client/assets/
 COPY --from=build /app/@app/client/public/ /app/@app/client/public/
 COPY --from=build /app/@app/client/next.config.js /app/@app/client/
 COPY --from=build /app/@app/client/i18n.js /app/@app/client/
