@@ -1,5 +1,5 @@
 import { Event } from "@app/graphql"
-import { randomElementFromArray } from "@app/lib"
+import { DEFAULT_HEADER_IMAGE, randomElementFromArray } from "@app/lib"
 import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
@@ -10,9 +10,6 @@ import { ButtonLink, P } from "."
 
 const { Text } = Typography
 const { Ribbon } = Badge
-
-const DEFAULT_HEADER_IMAGE =
-  "https://static.prodeko.org/media/ilmo/default-header-image.jpg"
 
 interface EventCardProps {
   event: Event

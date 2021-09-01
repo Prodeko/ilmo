@@ -15,6 +15,7 @@ import {
   useEventPageSubscription,
   useSharedQuery,
 } from "@app/graphql"
+import { DEFAULT_HEADER_IMAGE } from '@app/lib'
 import { Col, Divider, notification, PageHeader, Row } from "antd"
 import dayjs from "dayjs"
 import { m } from "framer-motion"
@@ -187,7 +188,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                 data-cy="eventpage-header-image"
                 height={315}
                 objectFit="cover"
-                src={headerImageFile}
+                src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
                 width={851}
                 priority
               />
