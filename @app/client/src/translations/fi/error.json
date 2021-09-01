@@ -4,7 +4,7 @@
     "errorPart2": "Yritä kirjautua sisään?"
   },
   "ErrorOccurred": {
-    "errorInfo": "Tuntematon virhe. Yritä uudelleen myöhemmin, jos ongelma jatkoon olethan yhteydessä meihin.",
+    "errorInfo": "Tuntematon virhe. Yritä uudelleen myöhemmin, jos ongelma jatkuu olethan yhteydessä meihin.",
     "somethingWentWrong": "Jotain meni pieleen"
   },
   "csrfError": "Sivuston suojaus ei onnistunut todentamaan kyselyäsi. Yritä uudestaan päivittämällä sivu",
