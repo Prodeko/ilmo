@@ -77,7 +77,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     if (!eventStartTime || eventStartTime === eventEndTime) return {}
 
     // Don't restrict values if currently selected date is before eventStartDate
-    if (current.isBefore(eventStartTime)) return {}
+    if (!current || current?.isBefore(eventStartTime)) return {}
 
     const eventStartHour = eventStartTime.get("hours")
     const eventStartMinute = eventStartTime.get("minutes")
