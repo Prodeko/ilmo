@@ -48,7 +48,7 @@ module.exports = () => {
     },
     images: {
       domains: isDevOrTest
-        ? ["placeimg.com", "localhost"]
+        ? ["localhost", "static.prodeko.org", "placeimg.com"]
         : ["ilmo3.prodeko.org", "static.prodeko.org"],
     },
     env: {
@@ -56,6 +56,7 @@ module.exports = () => {
       T_AND_C_URL: process.env.T_AND_C_URL,
       SENTRY_DSN: process.env.SENTRY_DSN,
       ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
+      TZ: process.env.TZ,
     },
     webpack(config, { webpack, dev, isServer }) {
       const makeSafe = (externals) => {

@@ -66,7 +66,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       : false
   }
 
-  function disabledDateTime(current: dayjs.Dayjs): DisabledTimes {
+  function _disabledDateTime(current: dayjs.Dayjs): DisabledTimes {
     const { eventTime } = formValues || []
     const [eventStartTime, eventEndTime] = eventTime!
 
@@ -275,8 +275,9 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           data-cy="eventform-input-registration-time"
           // @ts-ignore: dayjs is supported, types are incorrectly specified in antd
           disabledDate={disabledDate}
+          // TODO: Fix disableDateTime
           // @ts-ignore
-          disabledTime={disabledDateTime}
+          // disabledTime={disabledDateTime}
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,

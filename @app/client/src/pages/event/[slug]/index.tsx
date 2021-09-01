@@ -15,7 +15,6 @@ import {
   useEventPageSubscription,
   useSharedQuery,
 } from "@app/graphql"
-import { DEFAULT_HEADER_IMAGE } from '@app/lib'
 import { Col, Divider, notification, PageHeader, Row } from "antd"
 import dayjs from "dayjs"
 import { m } from "framer-motion"
@@ -105,12 +104,9 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   useEffect(() => {
     const { currentTime } = data || {}
     if (currentTime) {
-      const time = dayjs(currentTime)
-      const startTime = dayjs(
-        registrationStartTime,
-        "YYYY-MM-DDTHH:mm:ss+03:00"
-      )
-      const endTime = dayjs(registrationEndTime, "YYYY-MM-DDTHH:mm:ss+03:00")
+      const time = dayjs(currentTime).tz(process.env.TZ)
+      const startTime = dayjs(registrationStartTime).tz(process.env.TZ)
+      const endTime = dayjs(registrationEndTime).tz(process.env.TZ)
 
       handleSignupState(time, startTime, endTime)
 
@@ -188,7 +184,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
                 data-cy="eventpage-header-image"
                 height={315}
                 objectFit="cover"
-                src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+                src={headerImageFile}
                 width={851}
                 priority
               />

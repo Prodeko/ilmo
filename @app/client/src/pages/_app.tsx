@@ -7,7 +7,8 @@ import { ConfigProvider, notification } from "antd"
 import enUS from "antd/lib/locale/en_US"
 import fiFI from "antd/lib/locale/fi_FI"
 import dayjs from "dayjs"
-import customParseFormat from "dayjs/plugin/customParseFormat"
+import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc"
 import {
   AnimatePresence,
   AnimateSharedLayout,
@@ -28,7 +29,10 @@ import "react-color-palette/lib/css/styles.css"
 
 require("../styles/styles.less")
 
-dayjs.extend(customParseFormat)
+// Required for dayjs timezone features
+// https://day.js.org/docs/en/plugin/timezone
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 declare global {
   interface Window {

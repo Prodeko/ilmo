@@ -29,6 +29,13 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   )
 
   add(
+    "TZ",
+    "Europe/Helsinki",
+    `\
+# Timezone for the server`
+  )
+
+  add(
     "PORT",
     "5678",
     `\

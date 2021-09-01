@@ -13,6 +13,14 @@ WORKDIR /app/
 RUN apk add --no-cache --virtual .build-deps \
    alpine-sdk bash libtool autoconf automake make python python3 curl git g++
 
+# Setting the timezone
+# Reference to https://wiki.alpinelinux.org/wiki/Setting_the_timezone
+ENV TZ Europe/Helsinki
+RUN apk update && \
+    apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    echo ${TZ} > /etc/timezone
+
 EXPOSE $PORT
 
 ################################################################################
