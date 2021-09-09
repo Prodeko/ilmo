@@ -1,0 +1,25 @@
+FROM postgres:12-buster
+
+ENV WAL2JSON_VERSION 2_4
+
+RUN deps="curl build-essential ca-certificates git pkg-config glib2.0" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends ${deps} \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libc++1 postgresql-server-dev-12 \
+    && mkdir -p /tmp/build \
+    && curl -so /tmp/build/${WAL2JSON_VERSION}.tar.gz -SL "https://github.com/eulerto/wal2json/archive/wal2json_${WAL2JSON_VERSION}.tar.gz" \
+    && cd /tmp/build/ \
+    && tar -xzf /tmp/build/${WAL2JSON_VERSION}.tar.gz -C /tmp/build/ \
+    && cd /tmp/build/wal2json-wal2json_${WAL2JSON_VERSION} \
+    && make && make install \
+    && cp wal2json.so /usr/lib/postgresql/12/lib/ \
+    && cd / \
+    && rm -rf /tmp/build \
+    && apt-get remove -y --purge ${deps} \
+    && apt-get autoremove -y --purge \
+    && rm -rf /var/lib/apt/lists/
+
+COPY ./docker/dockerfiles/scripts/db_setup.dev.sh /docker-entrypoint-initdb.d/db_setup.dev.sh

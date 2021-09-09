@@ -147,8 +147,6 @@ This main command runs a number of tasks:
 - watches your GraphQL files and your PostGraphile schema for changes and
   generates your TypeScript React hooks for you automatically, leading to
   strongly typed code with minimal effort
-- runs the `jest` tests in watch mode, automatically re-running as the database
-  or test files change
 
 **NOTE**: `docker-compose up server` also runs the PostgreSQL server that the
 system connects to.
@@ -184,7 +182,7 @@ To build the worker, pass `--target worker` instead of the default
 
 ```sh
 docker build \
-  --file production.Dockerfile \
+  --file ./docker/dockerfiles/Dockerfile.prod \
   --build-arg ROOT_URL="http://localhost:5678" \
   --target server \
   .
@@ -209,112 +207,6 @@ currently have environment validation (PRs welcome!).
 ## Production build for local mode
 
 Use `yarn run build` to generate a production build of the project
-
-## Deploying to Heroku
-
-Prerequisites:
-
-- Install the Heroku CLI: https://devcenter.heroku.com/articles/heroku-cli
-
-If you are using `graphile-migrate` make sure that you have executed
-`graphile-migrate commit` to commit all your database changes, since we only run
-committed migrations in production.
-
-Make sure you have customized `@app/config/src/index.ts`.
-
-Make sure everything is committed and pushed in git.
-
-Set up a database server; we recommend using Amazon RDS.
-
-Once your database server is running, you can use our `heroku-setup` script to
-automate the setup process. This script does the following:
-
-- Creates the Heroku app
-- Adds the redis extension to this Heroku app
-- Creates the database in the database server
-- Creates the relevant roles, generating random passwords for them
-- Installs some common database extensions
-- Sets the Heroku config variables
-- Adds the Heroku app as a git remote named 'Heroku'
-- Pushes the 'master' branch to Heroku to perform your initial build
-
-Create a copy of `heroku-setup.template` and rename the copy to `heroku-setup`,
-then edit it and customize the settings at the top. We also recommend reading
-through the script and customizing it as you see fit - particularly if you are
-using additional extensions that need installing.
-
-Now run the script:
-
-```
-bash heroku-setup
-```
-
-Hopefully all has gone well. If not, step through the remaining tasks in the
-Heroku-setup script and fix each task as you go. We've designed the script so
-that if your superuser credentials are wrong, or the Heroku app already exists,
-you can just edit the settings and try again. All other errors will probably
-need manual intervention. Verbosity is high so you can track exactly what
-happened.
-
-The server should be up and running now (be sure to access it over HTTPS
-otherwise you will not be able to run GraphQL queries), but it is not yet
-capable of sending emails. To achieve this, you must configure an email
-transport. We have pre-configured support for Amazon SES. Once SES is set up,
-your domain is verified, and you've verified any emails you wish to send email
-to (or have had your sending limits removed), make sure that the `fromEmail` in
-`@app/config/src/index.ts` is correct, and then create an IAM role for your
-PostGraphile server. Here's an IAM template for sending emails - this is the
-only permission required for our IAM role currently, but you may wish to add
-others later.
-
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "ses:SendRawEmail",
-            "Resource": "*"
-        }
-    ]
-}
-```
-
-Generate an Access Key for this IAM role, and then tell Heroku the access key id
-and secret:
-
-```
-heroku config:set AWS_ACCESS_KEY_ID="..." AWS_SECRET_ACCESS_KEY="..." -a $APP_NAME
-```
-
-Now you can tell Heroku to run the worker process as well as the currently
-running 'web' process:
-
-```
-heroku ps:scale worker=1 -a $APP_NAME
-```
-
-When you register an account on the server you should receive a verification
-email containing a clickable link. When you click the link your email will be
-verified and thanks to GraphQL subscriptions the previous tab should be updated
-to reflect that your account is now verified.
-
-## Cleanup
-
-To delete the Heroku app:
-
-```
-heroku apps:destroy -a $APP_NAME
-```
-
-To delete the database/roles (replace `dbname` with your database name):
-
-```
-drop database dbname;
-drop role dbname_visitor;
-drop role dbname_authenticator;
-drop role dbname;
-```
 
 ## MIT License
 

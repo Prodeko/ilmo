@@ -1,15 +1,23 @@
-name: Node CI
+name: Node checks
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  skip_duplicates:
     runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: "same_content_newer"
 
-    env:
-      CI: true
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+  build:
+    needs: skip_duplicates
+    if: ${{ needs.skip_duplicates.outputs.should_skip != 'true' }}
+
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -18,19 +26,18 @@ jobs:
     services:
       redis:
         image: redis
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
       postgres:
-        image: postgres:11
+        # Use a Postgres image that has wal2json installed
+        image: debezium/postgres:11
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
-          - "0.0.0.0:5432:5432"
-        # needed because the postgres container does not provide a healthcheck
+          - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -52,5 +59,8 @@ jobs:
           CONFIRM_DROP=1 yarn setup
           yarn build
           yarn lint
-          yarn test --ci --forceExit
+          # Got errors about all replication slots being in use
+          # without --runInBand. debezium/postgres image is configured
+          # by default to have only a single replication slot.
+          yarn test --ci --runInBand
           yarn depcheck

@@ -170,7 +170,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           ))}
         </Select>
       </Form.Item>
-      <Form.Item label={t("common:name")}>
+      <Form.Item label={t("common:name")} required>
         <Group compact>
           {selectedLanguages.length === 0 ? (
             <Form.Item noStyle>
@@ -199,7 +199,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           )}
         </Group>
       </Form.Item>
-      <Form.Item label={t("common:description")}>
+      <Form.Item label={t("common:description")} required>
         <Group compact>
           {selectedLanguages.length === 0 ? (
             <Form.Item noStyle>

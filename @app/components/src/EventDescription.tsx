@@ -65,7 +65,7 @@ export const EventDescription: React.FC<EventDescriptionProps> = memo(
         </Descriptions>
 
         <br />
-        <P>{description[lang]}</P>
+        <P style={{ whiteSpace: "pre-line" }}>{description[lang]}</P>
       </>
     )
   },

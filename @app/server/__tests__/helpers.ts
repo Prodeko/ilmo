@@ -50,7 +50,7 @@ export async function createUserAndLogIn(args?: CreateUserAndLogInArgs) {
 
     return { user, session }
   } finally {
-    await client.release()
+    client.release()
   }
 }
 
@@ -214,19 +214,6 @@ export const becomeUser = async (
   )
 }
 
-let known: Record<string, { counter: number; values: Map<unknown, string> }> =
-  {}
-
-beforeEach(() => {
-  known = {}
-})
-
-/*
- * This function replaces values that are expected to change with static
- * placeholders so that our snapshot testing doesn't throw an error
- * every time we run the tests because time has ticked on in it's inevitable
- * march toward the future.
- */
 const randomColumns = [
   "name",
   "slug",
@@ -238,6 +225,19 @@ const randomColumns = [
   "size",
   "answers",
 ]
+
+let known: Record<string, { counter: number; values: Map<unknown, string> }> =
+  {}
+
+beforeEach(() => {
+  known = {}
+})
+/*
+ * This function replaces values that are expected to change with static
+ * placeholders so that our snapshot testing doesn't throw an error
+ * every time we run the tests because time has ticked on in it's inevitable
+ * march toward the future.
+ */
 export function sanitize(json: any): any {
   /* This allows us to maintain stable references whilst dealing with variable values */
   function mask(value: unknown, type: string) {
@@ -344,7 +344,7 @@ export const teardown = async () => {
     workerUtils.release()
     // Flush redis after tests have run
     await redisClient.flushdb()
-    redisClient.quit()
+    await redisClient.quit()
     return null
   } catch (e) {
     console.error(e)

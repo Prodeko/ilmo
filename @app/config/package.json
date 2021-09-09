@@ -5,14 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" jest"
+    "build": "tsc"
   },
   "dependencies": {
     "dotenv": "^10.0.0"
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3",
-    "jest": "^27.1.0"
   }
 }

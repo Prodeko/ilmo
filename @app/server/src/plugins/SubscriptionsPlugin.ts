@@ -78,17 +78,22 @@ const eventRegistrationsTopicFromContext = async (
 const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
   const { pgSql: sql } = build
 
-  // TODO: pubsub is not available in tests
-  // Need to start an actual postgraphile server to that pluginHooks
-  // are run.
-  if (process.env.NODE_ENV !== "test") {
-    ;(async () => {
-      while (true) {
+  ;(async () => {
+    while (true) {
+      // pubsub is not available in tests and one off script such as
+      // yarn server schema:export.
+      //
+      // Need to start an actual postgraphile server so that 'pluginHooks'
+      // defined in installPostGraphile.ts are run.
+      if (pubsub) {
         pubsub.publish(CURRENT_TIME_PUBSUB_TOPIC, new Date())
         await sleep(CURRENT_TIME_UPDATE_INTERVAL)
+      } else {
+        // Break out of infinite loop if pubsub is not defined
+        break
       }
-    })()
-  }
+    }
+  })()
 
   return {
     typeDefs: gql`

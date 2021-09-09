@@ -78,9 +78,6 @@ describe("CreateRegistration", () => {
     const quotaId = quotas[0].id
     const answers = constructAnswersFromQuestions(questions)
 
-    const rateLimitId = `${eventId}:${quotaId}`
-    const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
-
     // In order to test the createRegistration mutation, we first need to run
     // claimRegistrationToken which creates a dummy registration.
     const registrationToken = await getRegistrationToken(eventId, quotaId)
@@ -143,7 +140,7 @@ describe("CreateRegistration", () => {
 
         const rateLimitjobs = await getJobs(
           pgClient,
-          "registration_complete__delete_rate_limit_key"
+          "registration__delete_rate_limit_key"
         )
 
         expect(rateLimitjobs).toHaveLength(1)
@@ -169,12 +166,12 @@ describe("CreateRegistration", () => {
         // When inside a transaction, SQL date functions return values based on
         // the __start time of the current transaction__. This is a problem since
         // graphile-worker only executes a task if its run_at property is less than
-        // now(). Our helper function runGraphQLQuery sets up a transaction by calling
+        // select now(). Our helper function runGraphQLQuery sets up a transaction by calling
         // withPostGraphileContext. Next we run the createRegistration mutation that
         // we are testing. The mutation goes through EventRegistrationPlugin which schedules
-        // a task called `registration_complete__delete_rate_limit_key`. Next we call
+        // a task called `registration__delete_rate_limit_key`. Next we call
         // `runJobs` that executes a graphile-worker function called `runTaskListOnce`.
-        // This function calls a graphile-worker database function called graphile_worker.get_job
+        // This function calls a graphile-worker database function graphile_worker.get_job
         // which only returns a task to run if run_at <= now(). As explained earlier, we are
         // inside a transaction and calls to now() return the timestamp of when the
         // transaction was created (which is before the mutation is run). Thus
@@ -188,9 +185,10 @@ describe("CreateRegistration", () => {
 
         // Redis should not contain a rate limiting key after
         // successful registration
+        const rateLimitId = `${eventId}:${quotaId}`
+        const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
         const value = await redisClient.get(key)
         expect(value).toEqual(null)
-
         // TODO: Figure out a way to test gdpr__delete_event_registrations
         // graphile worker cron task.
       }

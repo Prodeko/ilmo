@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useCallback } from "react"
 import DownOutlined from "@ant-design/icons/DownOutlined"
+import headerLogo from "@app/client/assets/images/header-logo.png"
 import { companyName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
@@ -190,7 +191,8 @@ export function SharedLayout({
                 <Image
                   alt="Prodeko"
                   height={50}
-                  src={"/images/header-logo.png"}
+                  placeholder="blur"
+                  src={headerLogo}
                   width={50}
                   priority
                 />

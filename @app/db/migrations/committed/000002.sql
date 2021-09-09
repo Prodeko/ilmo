@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:8c7f5d7079a077074d9710c865e4aa4390be6c7e
+--! Hash: sha1:133fa51c9e8f77f0453c03ea3196c16bc096dfb0
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -888,6 +888,7 @@ create table app_public.registrations(
   last_name constrained_name,
   email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
   answers jsonb,
+  is_finished boolean not null default false,
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -984,6 +985,8 @@ comment on column app_public.registrations.email is
   E'@omit\nEmail address of the person registering to an event.';
 comment on column app_public.registrations.answers is
   E'Answers to event questions.';
+comment on column app_public.registrations.is_finished is
+  E'True if the registration is completed succesfully.';
 
 -- RLS policies and grants
 create policy select_all on app_public.registrations for select using (true);
@@ -992,7 +995,7 @@ create policy manage_admin on app_public.registrations for all using(app_public.
 
 grant
   select,
-  insert (event_id, quota_id, first_name, last_name, email, answers),
+  insert (event_id, quota_id, first_name, last_name, email, answers, is_finished),
   -- Don't allow updating an existing registration to another event or quota
   -- Don't allow updating registration email
   update (first_name, last_name, answers),
@@ -1170,7 +1173,8 @@ begin
       last_name = "lastName",
       email = create_registration.email,
       -- strip nulls just in case
-      answers = jsonb_strip_nulls(create_registration.answers)
+      answers = jsonb_strip_nulls(create_registration.answers),
+      is_finished = true
     where id = v_registration_id
   returning
     * into v_registration;
@@ -1332,12 +1336,6 @@ begin
   update app_private.registration_secrets
     set registration_id = v_registration_id
     where registration_token = v_output.registration_token;
-
-  -- Schedule graphile worker task for token deletion
-  perform graphile_worker.add_job(
-    'registration__schedule_unfinished_registration_delete',
-    json_build_object('token', v_output.registration_token)
-  );
 
   return v_output;
 end;

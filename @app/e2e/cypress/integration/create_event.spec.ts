@@ -54,7 +54,7 @@ context("Create event", () => {
 
       cy.getCy("eventform-input-location").type("Testikatu 123")
 
-      const format = "YYYY-MM-DD HH:MM"
+      const format = "YYYY-MM-DD HH:MM:ss"
       const today = dayjs()
 
       cy.getCy("eventform-input-event-time").eq(0).click()
@@ -87,7 +87,6 @@ context("Create event", () => {
       })
       cy.get(".ant-picker-footer button").eq(1).click()
 
-      cy.getCy("eventform-switch-highlight").click()
       cy.getCy("eventform-switch-save-as-draft").click()
 
       cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg")
@@ -105,21 +104,13 @@ context("Create event", () => {
       cy.getCy("eventform-input-quotas-title-en-0").should("not.exist")
 
       // Test adding quotas works
-      cy.getCy("eventform-quotas-add-quota").click()
-
-      cy.getCy("eventform-input-quotas-title-fi-0").type("Testikiintiö 1")
-      cy.getCy("eventform-input-quotas-title-en-0").type("Test quota 1")
-      cy.getCy("eventform-input-quotas-size-0").type("0")
-
-      cy.getCy("eventform-quotas-add-quota").click()
-      cy.getCy("eventform-input-quotas-title-fi-1").type("Testikiintiö 2")
-      cy.getCy("eventform-input-quotas-title-en-1").type("Test quota 2")
-      cy.getCy("eventform-input-quotas-size-1").type("2")
-
-      cy.getCy("eventform-quotas-add-quota").click()
-      cy.getCy("eventform-input-quotas-title-fi-2").type("Testikiintiö 3")
-      cy.getCy("eventform-input-quotas-title-en-2").type("Test quota 3")
-      cy.getCy("eventform-input-quotas-size-2").type("3")
+      // prettier-ignore
+      for (var i = 0; i < 3; i++) {
+        cy.getCy("eventform-quotas-add-quota").click()
+        cy.getCy(`eventform-input-quotas-title-fi-${i}`).type(`Testikiintiö ${i + 1}`)
+        cy.getCy(`eventform-input-quotas-title-en-${i}`).type(`Test quota ${i + 1}`)
+        cy.getCy(`eventform-input-quotas-size-${i}`).type(`${i}`)
+      }
 
       // Questions tab
       cy.get("@tabs").eq(2).click()
@@ -130,44 +121,28 @@ context("Create event", () => {
       cy.getCy("eventform-questions-remove-question").click()
       cy.getCy("eventform-select-questions-type-0").should("not.exist")
 
-      // Test adding questions works
-      cy.getCy("eventform-questions-add-question").click()
-      cy.getCy("eventform-select-questions-type-0").click()
-      // option-0 mean CHECKBOX question
-      cy.getCy("eventform-select-questions-type-0-option-0").click()
-      cy.getCy("eventform-input-questions-0-label").should("be.visible")
-      cy.getCy("eventform-input-questions-0-label").type("Test question 1")
-      cy.getCy("eventform-input-questions-0-data-0").should("be.visible")
-      cy.getCy("eventform-input-questions-0-data-0").type("a")
-      cy.getCy("eventform-questions-0-add-option").click()
-      cy.getCy("eventform-input-questions-0-data-1").should("be.visible")
-      cy.getCy("eventform-input-questions-0-data-1").type("b")
-      cy.getCy("eventform-questions-0-add-option").click()
-      cy.getCy("eventform-input-questions-0-data-2").should("be.visible")
-      cy.getCy("eventform-input-questions-0-data-2").type("c")
-
-      cy.getCy("eventform-questions-add-question").click()
-      cy.getCy("eventform-select-questions-type-1").click()
-      // option-1 mean RADIO question
-      cy.getCy("eventform-select-questions-type-1-option-1").click()
-      cy.getCy("eventform-input-questions-1-label").should("be.visible")
-      cy.getCy("eventform-input-questions-1-label").type("Test question 2")
-      cy.getCy("eventform-input-questions-1-data-0").should("be.visible")
-      cy.getCy("eventform-input-questions-1-data-0").type("1")
-      cy.getCy("eventform-questions-1-add-option").click()
-      cy.getCy("eventform-input-questions-1-data-1").should("be.visible")
-      cy.getCy("eventform-input-questions-1-data-1").type("2")
-      cy.getCy("eventform-questions-1-add-option").click()
-      cy.getCy("eventform-input-questions-1-data-2").should("be.visible")
-      cy.getCy("eventform-input-questions-1-data-2").type("3")
-
-      cy.getCy("eventform-questions-add-question").click()
-      cy.getCy("eventform-select-questions-type-2").click()
-      // option-2 mean TEXT question
-      cy.getCy("eventform-select-questions-type-2-option-2").click()
-      cy.getCy("eventform-input-questions-2-label").should("be.visible")
-      cy.getCy("eventform-input-questions-2-label").type("Test question 3")
-      cy.getCy("eventform-input-questions-2-data").should("be.visible")
+      const options = ["a", "b", "c"]
+      // prettier-ignore
+      for (var i = 0; i < 3; i++) {
+        cy.getCy("eventform-questions-add-question").click()
+        cy.getCy(`eventform-select-questions-type-${i}`).click()
+        cy.getCy(`eventform-select-questions-type-${i}-option-${i}`).click()
+        cy.getCy(`eventform-input-questions-${i}-fi-label`).should("be.visible")
+        cy.getCy(`eventform-input-questions-${i}-en-label`).should("be.visible")
+        cy.getCy(`eventform-input-questions-${i}-fi-label`).type(`Testikysymys ${i + 1}`)
+        cy.getCy(`eventform-input-questions-${i}-en-label`).type(`Test question ${i + 1}`)
+        if (i < 2) {
+          for (var j = 0; j < 3; j++) {
+            if(j < 2) {
+              cy.getCy(`eventform-questions-${i}-add-option`).click()
+            }
+            cy.getCy(`eventform-input-questions-${i}-data-${j}-fi`).should("be.visible")
+            cy.getCy(`eventform-input-questions-${i}-data-${j}-en`).should("be.visible")
+            cy.getCy(`eventform-input-questions-${i}-data-${j}-fi`).type(options[j])
+            cy.getCy(`eventform-input-questions-${i}-data-${j}-en`).type(options[j])
+          }
+        }
+      }
 
       // Email tab
       cy.get("@tabs").eq(3).click()
@@ -191,13 +166,14 @@ context("Create event", () => {
         "Testitapahtuma"
       )
 
+      // Event should not be highlighted
+      cy.getCy("eventcard-is-highlighted").should("not.exist")
       cy.getCy(`eventcard-eventpage-link-${slug}`).click()
 
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${slug}`)
 
-      // Header image should exist and be visible
+      // Header image should be visible
       cy.getCy("eventpage-header-image").should("be.visible")
-      cy.get('img[src$="kitten.jpg"]').should("have.length", 1)
 
       // Quotas should exist and be ordered correctly
       cy.getCy("eventpage-quotas-card")
@@ -210,6 +186,31 @@ context("Create event", () => {
         .should("contain", "Testikiintiö 2")
         .next()
         .should("contain", "Testikiintiö 3")
+
+      // Click first quota to go to registration page. Wait for the button to not be disabled
+      // as the server time is being fetched
+      // prettier-ignore
+      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should("not.be.disabled")
+      cy.getCy("eventpage-quotas-link-0").click()
+
+      // Questions should exist on registration page
+      // prettier-ignore
+      for (var i = 0; i < 3; i++) {
+        if (i < 2) {
+          // CHECKBOX and RADIO questions
+          for (var j = 0; j < 3; j++) {
+            cy.getCy(`eventregistrationform-questions-${i}-input-option-${j}`)
+              .should("exist")
+            cy.getCy(`eventregistrationform-questions-${i}-input-option-${j}`)
+              .parent()
+              .parent()
+              .should("contain", options[j])
+          }
+        } else if (i == 2) {
+          // TEXT question
+          cy.getCy(`eventregistrationform-questions-${i}-input`).should("be.visible")
+        }
+      }
     })
   })
 })

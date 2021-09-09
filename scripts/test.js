@@ -53,6 +53,9 @@ process.env.SHADOW_DATABASE_URL = process.env.TEST_DATABASE_URL
 process.env.IN_TESTS = "1"
 process.env.NODE_ENV = "test"
 
+// Don't log graphile-worker job successes in tests
+process.env.NO_LOG_SUCCESS = true
+
 const cmdArgs = process.argv.slice(2)
 const watchMode = cmdArgs.find(
   (arg) => arg === "--watch" || arg === "--watchAll"

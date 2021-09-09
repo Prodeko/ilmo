@@ -2549,6 +2549,9 @@ type Registration {
   """Unique identifier for the registration."""
   id: UUID!
 
+  """True if the registration is completed succesfully."""
+  isFinished: Boolean!
+
   """Designates whether the registration is queued for a quota or not."""
   isQueued: Boolean
 

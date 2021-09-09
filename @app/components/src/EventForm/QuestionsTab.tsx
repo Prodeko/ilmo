@@ -194,7 +194,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <>
         <Col {...colSpan}>{questionLabel}</Col>
         <Col {...colSpan}>
-          {/* TEXT questions don't have any data data with them.
+          {/* TEXT questions don't have any data associated with them.
               This Col is included for layout. */}
         </Col>
       </>

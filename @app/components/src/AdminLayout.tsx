@@ -78,8 +78,11 @@ export function AdminLayout({
     (organizationMemberships?.length === 0 || !currentUser)
   ) {
     if (!isSSR) {
-      // Antd notifications don't work with SSR
-      message.error(t("notifications.adminAccessDenied"))
+      // Antd messages don't work with SSR
+      message.error({
+        key: "admin-access-denied",
+        content: `${t("notifications.adminAccessDenied")}`,
+      })
     }
     return <Redirect href="/" layout />
   }

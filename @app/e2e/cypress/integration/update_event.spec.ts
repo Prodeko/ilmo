@@ -19,6 +19,7 @@ context("Update event", () => {
           password: "DOESNT MATTER",
           existingUser: true,
         })
+
         cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
         cy.get(".ant-tabs-tab").as("tabs")
 

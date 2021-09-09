@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node"
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { Pool } from "pg"
@@ -16,10 +17,9 @@ declare module "fastify" {
  * an 'error' event is raised and it isn't handled, the entire process exits.
  * This NOOP handler avoids this occurring on our pools.
  *
- * TODO: log this to an error reporting service.
  */
-function swallowPoolError(_error: Error) {
-  /* noop */
+function swallowPoolError(error: Error) {
+  Sentry.captureException(error)
 }
 
 const DatabasePools: FastifyPluginAsync = async (app) => {

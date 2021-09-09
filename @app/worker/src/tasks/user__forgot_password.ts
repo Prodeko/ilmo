@@ -19,20 +19,18 @@ interface UserForgotPasswordPayload {
   token: string
 }
 
-const task: Task = async (inPayload, { addJob, withPgClient }) => {
+const task: Task = async (inPayload, { addJob, query }) => {
   const payload: UserForgotPasswordPayload = inPayload as any
   const { id: userId, email, token } = payload
   const {
     rows: [user],
-  } = await withPgClient((pgClient) =>
-    pgClient.query(
-      `
+  } = await query(
+    `
         select users.*
         from app_public.users
         where id = $1
       `,
-      [userId]
-    )
+    [userId]
   )
   if (!user) {
     console.error("User not found; aborting")
@@ -54,4 +52,4 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   await addJob("send_email", sendEmailPayload)
 }
 
-module.exports = task
+export default task

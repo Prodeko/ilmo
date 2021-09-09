@@ -4,34 +4,37 @@ on: [pull_request]
 
 jobs:
   cypress-run:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    container:
+      image: cypress/browsers:node14.17.0-chrome91-ff89
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2, 3, 4, 5]
 
     env:
-      CYPRESS_ROOT_URL: http://localhost:5678
-      CI: true
-      CONFIRM_DROP: 1
       NODE_ENV: test
-      ENABLE_CYPRESS_COMMANDS: 1
-
-    strategy:
-      matrix:
-        node-version: [14.x]
+      CONFIRM_DROP: 1
+      DATABASE_HOST: postgres
+      ROOT_DATABASE_URL: postgres://postgres:postgres@postgres/template1
+      REDIS_URL: redis://redis:6379
+      ROOT_URL: http://0.0.0.0:5678
 
     services:
       redis:
         image: redis
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
       postgres:
-        image: postgres:11
+        # Use a Postgres image that has wal2json installed
+        image: debezium/postgres:11
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
-          - "0.0.0.0:5432:5432"
+          - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
@@ -42,10 +45,7 @@ jobs:
       - name: Setup node and cache
         uses: ./.github/actions/node-and-cache
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install pg_dump
-        uses: ./.github/actions/install-pg-dump
+          node-version: 14
 
       - name: Setup
         run: |
@@ -63,8 +63,14 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          wait-on: http://localhost:5678
+          command: yarn run:ci
           working-directory: "@app/e2e"
+          wait-on: http://0.0.0.0:5678
+          parallel: true
+          install: false
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v2
         if: failure()

@@ -206,7 +206,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
       "COMPOSE_PROJECT_NAME",
       projectName,
       `\
-# The name of the folder you cloned graphile-starter to (so we can run docker-compose inside a container):`
+# The name of the folder you cloned ilmo to (so we can run docker-compose inside a container):`
     )
   }
 }

@@ -72,8 +72,8 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         const newSlug = data?.updateOrganization?.organization?.slug
         if (newSlug && newSlug !== slug) {
           Router.push(
-            "/admin/organization/[slug]/settings",
-            `/admin/organization/${newSlug}/settings`
+            "/admin/organization/[slug]",
+            `/admin/organization/${newSlug}`
           )
         }
       } catch (e) {

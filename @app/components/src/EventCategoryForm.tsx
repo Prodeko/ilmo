@@ -146,7 +146,7 @@ export const EventCategoryForm = ({
               data-cy={`eventcategoryform-select-language-option-${l}`}
               value={l ? l : ""}
             >
-              {t(`common:${l}`)}
+              {t(`common:lang.${l}`)}
             </Option>
           ))}
         </Select>

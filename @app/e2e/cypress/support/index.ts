@@ -18,14 +18,6 @@
 // Import commands.js using ES2015 syntax:
 import "./commands"
 
-// Don't clear the session cookie between tests.
-// Somehow this introduced a race condition which resulted in
-// CSRF errors when running e2e tests. I.e. Cypress was clearing
-// the session cookie between tests which resulted in CSRF errors.
-Cypress.Cookies.defaults({
-  preserve: "session",
-})
-
 // Work around 'ResizeObserver loop limit exceeded' error
 const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/
 Cypress.on("uncaught:exception", (err) => {

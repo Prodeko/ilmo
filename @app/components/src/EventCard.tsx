@@ -6,7 +6,7 @@ import Image from "next/image"
 import useTranslation from "next-translate/useTranslation"
 
 import { H5 } from "./Text"
-import { ButtonLink, P } from "."
+import { ButtonLink, Link, P } from "."
 
 const { Text } = Typography
 const { Ribbon } = Badge
@@ -45,17 +45,27 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
       // even if the description of some event would be very short.
       bodyStyle={{ display: "flex", flexDirection: "column", flex: "1" }}
       cover={
-        <Image
-          alt={t("events:headerImage")}
-          height={315}
-          objectFit="cover"
-          src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
-          width={851}
-        />
+        <Link href={`/event/${slug}`}>
+          <div style={{ cursor: "pointer" }}>
+            <Image
+              alt={t("events:headerImage")}
+              height={315}
+              objectFit="cover"
+              src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+              width={851}
+            />
+          </div>
+        </Link>
       }
       style={{ display: "flex", flexDirection: "column" }}
     >
-      <H5 ellipsis={true}>{title}</H5>
+      <Link href={`/event/${slug}`}>
+        <a>
+          <H5 ellipsis={true} style={{ cursor: "pointer" }}>
+            {title}
+          </H5>
+        </a>
+      </Link>
       <div style={cardEventDatesStyle}>
         <Text strong>{t("registrationTime")}:</Text>
         <br />
@@ -92,6 +102,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return isHighlighted ? (
     <Ribbon
       color={randomElementFromArray(rainbowColors)}
+      data-cy="eventcard-is-highlighted"
       text={t("highlightText")}
     >
       {card}

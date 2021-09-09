@@ -76,7 +76,7 @@ export const AdminSideMenu = ({ items, initialKey }: MenuProps) => {
 
   return (
     <Menu
-      mode="vertical"
+      mode="inline"
       openKeys={openKeys}
       selectedKeys={[initialKey]}
       style={{ height: "100%" }}
