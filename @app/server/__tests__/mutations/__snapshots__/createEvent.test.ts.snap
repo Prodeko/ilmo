@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CreateEvent can create eveant while logged in 1`] = `
+exports[`CreateEvent can create event while logged in 1`] = `
 Object {
   "data": Object {
     "createEvent": Object {

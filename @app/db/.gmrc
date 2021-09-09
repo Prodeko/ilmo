@@ -69,7 +69,7 @@
     "!afterReset.sql",
     {
       "_": "command",
-      "command": "cross-env DATABASE_URL=\"$GM_DBURL\" yarn workspace @app/worker install-db-schema"
+      "command": "DATABASE_URL=\"$GM_DBURL\" yarn workspace @app/worker install-db-schema"
     }
   ],
 

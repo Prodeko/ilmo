@@ -12,9 +12,10 @@
     "jsx": "react-jsx",
     "declaration": true,
     "emitDeclarationOnly": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "typeRoots": ["src/types/"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["../client/next-env.d.ts", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
       "path": "../graphql"

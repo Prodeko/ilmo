@@ -121,7 +121,7 @@ runMain(async () => {
       `GRANT ${DATABASE_VISITOR} TO ${DATABASE_AUTHENTICATOR};`
     )
   } finally {
-    await client.release()
+    client.release()
   }
   await pgPool.end()
 

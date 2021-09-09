@@ -1098,7 +1098,7 @@ Confirm intent
               <tr>
                 <td align=\\"left\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
-      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
+      <div style=\\"font-family:'Raleway', Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#000000;\\">Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
     <a href=\\"http://localhost:5678/fi/\\" target=\\"_blank\\">http://localhost:5678/fi/</a></div>
     
                 </td>
@@ -1270,7 +1270,8 @@ Confirm intent
 - Linkki tapahtumaan: http://localhost:5678/fi/event/2021-01-01-testitapahtuma
 [http://localhost:5678/fi/event/2021-01-01-testitapahtuma]
 
-Voit tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa: http://localhost:5678/fi/ [http://localhost:5678/fi/]
+Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa: http://localhost:5678/fi/
+[http://localhost:5678/fi/]
 
 Successfully registered to the event:
 

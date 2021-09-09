@@ -1,4 +1,4 @@
-name: production.Dockerfile CI
+name: Docker build
 
 on:
   push:
@@ -12,8 +12,7 @@ jobs:
     services:
       redis:
         image: redis
-        options: >-
-          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
       postgres:
@@ -23,7 +22,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
-          - "0.0.0.0:5432:5432"
+          - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
@@ -51,7 +50,7 @@ jobs:
       - name: Build server
         uses: docker/build-push-action@v2
         with:
-          file: production.Dockerfile
+          file: ./docker/dockerfiles/Dockerfile.prod
           load: true
           push: false
           build-args: ROOT_URL=https://ilmo3.prodeko.org
@@ -65,7 +64,7 @@ jobs:
       - name: Build worker
         uses: docker/build-push-action@v2
         with:
-          file: production.Dockerfile
+          file: ./docker/dockerfiles/Dockerfile.prod
           load: true
           push: false
           build-args: ROOT_URL=https://ilmo3.prodeko.org
@@ -94,8 +93,8 @@ jobs:
             -e REDIS_URL=redis://172.17.0.1:6379 \
             --name ilmo-worker ilmo-worker
 
-      # - name: Test docker
-      # run: node .github/workflows/test-docker.js
+      - name: Test docker
+        run: node .github/workflows/test-docker.js
 
       - name: Tear down docker
         run: docker kill ilmo-server ilmo-worker

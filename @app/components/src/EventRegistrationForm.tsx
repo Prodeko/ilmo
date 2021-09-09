@@ -137,7 +137,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           router.push(formRedirect)
         }
 
-        message.success(t("registrationDeleteComplete"))
+        message.success({
+          key: "registration-delete-complete",
+          content: `${t("registrationDeleteComplete")}`,
+        })
       }
     } catch (e) {
       setFormError(e)
@@ -173,8 +176,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         }
 
         type === "create"
-          ? message.success(t("eventSignupComplete"))
-          : message.success(t("registrationUpdateComplete"))
+          ? message.success({
+              key: "registration-signup-complete",
+              content: `${t("eventSignupComplete")}`,
+            })
+          : message.success({
+              key: "registration-update-complete",
+              content: `${t("registrationUpdateComplete")}`,
+            })
       } catch (e) {
         setFormError(e)
         Sentry.captureException(e)
@@ -255,6 +264,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
         <Input data-cy="eventregistrationform-input-lastname" />
       </Form.Item>
       {type == "create" && (
+        // Don't allow updating the email used in registration
         <Form.Item
           label={t("forms.email")}
           name="email"
@@ -276,13 +286,19 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       {questions?.map(({ id, type, data, label, isRequired }, i) => {
         let input
         if (type === QuestionType.Text) {
-          input = <Input />
+          input = (
+            <Input data-cy={`eventregistrationform-questions-${i}-input`} />
+          )
         } else if (type === QuestionType.Radio) {
           input = (
-            <Radio.Group>
+            <Radio.Group data-cy={`eventregistrationform-questions-${i}`}>
               <Space direction="vertical">
-                {data?.map((val, i) => (
-                  <Radio key={i} value={val[lang]}>
+                {data?.map((val, j) => (
+                  <Radio
+                    key={j}
+                    data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
+                    value={val[lang]}
+                  >
                     {val[lang]}
                   </Radio>
                 ))}
@@ -293,8 +309,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           input = (
             <Checkbox.Group>
               <Space direction="vertical">
-                {data?.map((val, i) => (
-                  <Checkbox key={i} value={val[lang]}>
+                {data?.map((val, j) => (
+                  <Checkbox
+                    key={j}
+                    data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
+                    value={val[lang]}
+                  >
                     {val[lang]}
                   </Checkbox>
                 ))}

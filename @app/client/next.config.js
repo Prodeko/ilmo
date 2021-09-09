@@ -4,7 +4,7 @@ const { locales, defaultLocale } = require("./i18n.js")
 const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin")
 
 if (!process.env.ROOT_URL) {
-  if (process.argv[1].endsWith("/depcheck")) {
+  if (process.argv[1].endsWith("/depcheck.js")) {
     /* NOOP */
   } else {
     throw new Error("ROOT_URL is a required envvar")
@@ -29,6 +29,7 @@ module.exports = () => {
     withAntdLess,
     withNextTranslate
   )({
+    experimental: { esmExternals: true },
     reactStrictMode: true,
     useFileSystemPublicRoutes: true,
     poweredByHeader: false,
@@ -52,6 +53,8 @@ module.exports = () => {
         : ["ilmo3.prodeko.org", "static.prodeko.org"],
     },
     env: {
+      CI: process.env.CI,
+      ENV: process.env.NODE_ENV,
       ROOT_URL: process.env.ROOT_URL,
       T_AND_C_URL: process.env.T_AND_C_URL,
       SENTRY_DSN: process.env.SENTRY_DSN,

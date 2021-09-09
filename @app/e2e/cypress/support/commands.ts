@@ -130,13 +130,22 @@ function login(payload?: {
   password?: string
   orgs?: [[string, string] | [string, string, boolean]]
   existingUser?: true
-}): Chainable<Window> {
-  return cy.visit(
-    Cypress.env("ROOT_URL") +
-      `/cypressServerCommand?command=login&payload=${encodeURIComponent(
-        JSON.stringify(payload)
-      )}`
-  )
+}) {
+  return cy
+    .request(
+      Cypress.env("ROOT_URL") +
+        `/cypressServerCommand?command=login&payload=${encodeURIComponent(
+          JSON.stringify(payload)
+        )}`
+    )
+    .then(() => {
+      const root = Cypress.env("ROOT_URL")
+      if (payload?.next) {
+        cy.visit(`${root}/${payload.next}`)
+      } else {
+        cy.visit(root)
+      }
+    })
 }
 
 Cypress.Commands.add("getCy", getCy)

@@ -84,7 +84,7 @@ const questions = [
 ]
 
 describe("CreateEvent", () => {
-  it("can create eveant while logged in", async () => {
+  it("can create event while logged in", async () => {
     const { organization, eventCategory, session } =
       await createEventDataAndLogin()
     const day = dayjs("2021-02-20")

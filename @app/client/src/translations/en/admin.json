@@ -37,6 +37,13 @@
     "updateSuccess": "Updated successfully"
   },
   "organizations": {
+    "create": {
+      "checkingName": "Checking organization name",
+      "errorNameInUse": "That organization name is already in use, please choose a different organization name.",
+      "errorOccurred": "Error occurred checking for existing organization with this name",
+      "nameInUse": "Organization name is already in use",
+      "urlWillBe": "Your organization URL will be"
+    },
     "deleteOrganization": "Delete organization",
     "deleteOrganizationConfirmText": "Are you sure you want to delete this organization? This action cannot be undone.",
     "forms": {

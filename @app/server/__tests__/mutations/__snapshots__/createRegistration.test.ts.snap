@@ -61,7 +61,8 @@ Object {
       last_name = \\"lastName\\",
       email = create_registration.email,
       -- strip nulls just in case
-      answers = jsonb_strip_nulls(create_registration.answers)
+      answers = jsonb_strip_nulls(create_registration.answers),
+      is_finished = true
     where id = v_registration_id
   returning
     *\\"
@@ -103,7 +104,8 @@ Object {
       last_name = \\"lastName\\",
       email = create_registration.email,
       -- strip nulls just in case
-      answers = jsonb_strip_nulls(create_registration.answers)
+      answers = jsonb_strip_nulls(create_registration.answers),
+      is_finished = true
     where id = v_registration_id
   returning
     *\\"

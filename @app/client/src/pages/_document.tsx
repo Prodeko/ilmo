@@ -6,6 +6,8 @@ import Document, {
   NextScript,
 } from "next/document"
 
+const { ENV, CI } = process.env
+
 class CustomDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx)
@@ -30,7 +32,13 @@ class CustomDocument extends Document {
             rel="preload"
             type="font/woff2"
           />
-          <script data-account-id="2b404169-9d56-4686-be6c-eb30fd8cf8eb" src="https://usage.prodeko.org/script.js" async />
+          {ENV === "production" && !CI && (
+            <script
+              data-account-id="2b404169-9d56-4686-be6c-eb30fd8cf8eb"
+              src="https://usage.prodeko.org/script.js"
+              async
+            />
+          )}
         </Head>
         <body>
           <Main />

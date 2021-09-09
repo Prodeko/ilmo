@@ -33,4 +33,4 @@ const task: Task = async (inPayload, { addJob }) => {
   await addJob("send_email", sendEmailPayload)
 }
 
-module.exports = task
+export default task

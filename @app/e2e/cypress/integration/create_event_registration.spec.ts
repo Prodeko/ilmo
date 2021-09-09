@@ -14,7 +14,11 @@ context("Create event registration", () => {
       cy.visit(
         Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
-      cy.getCy("eventregistrationform-input-firstname").type("Etunimi")
+      cy.getCy("eventregistrationform-input-firstname")
+        .wait(0)
+        .focus()
+        .clear()
+        .type("Etunimi")
       cy.getCy("eventregistrationform-input-lastname").type("Sukunimi")
       cy.getCy("eventregistrationform-input-email").type(
         "etunimi.sukunimi@prodeko.org"
@@ -33,6 +37,7 @@ context("Create event registration", () => {
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult")
     cy.login({
+      username: "testuser2",
       name: "Test Tester",
       verified: true,
       orgs: [["Test Organization", "test-organization"]],
@@ -53,7 +58,7 @@ context("Create event registration", () => {
       )
       cy.getCy("eventregistrationform-input-email").should(
         "contain.value",
-        "testuser@example.com"
+        "testuser2@example.com"
       )
 
       cy.getCy("eventregistrationform-button-submit").click()

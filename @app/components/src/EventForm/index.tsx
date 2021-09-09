@@ -259,7 +259,12 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     <Form
       {...formItemLayout}
       form={form}
-      initialValues={{ languages: selectedLanguages, ...initialValues }}
+      initialValues={{
+        languages: selectedLanguages,
+        isDraft,
+        isHighlighted: false,
+        ...initialValues,
+      }}
       onFieldsChange={handleFieldsChange}
       onFinish={handleSubmit}
       onValuesChange={(_, values) => setFormValues(values)}

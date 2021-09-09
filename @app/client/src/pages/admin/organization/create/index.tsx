@@ -25,39 +25,30 @@ const Admin_CreateOrganization: NextPage = () => {
   const { t } = useTranslation("admin")
   const [form] = useForm()
   const [slug, setSlug] = useState("")
+  const [pauseQuery, setPauseQuery] = useState(true)
+
   const [
     {
       data: existingOrganizationData,
       fetching: fetchingSlug,
       error: slugError,
     },
-    lookupOrganizationBySlug,
-  ] = useOrganizationBySlugQuery()
+  ] = useOrganizationBySlugQuery({ pause: pauseQuery, variables: { slug } })
 
-  const [slugCheckIsValid, setSlugCheckIsValid] = useState(false)
   const checkSlug = useMemo(
     () =>
-      debounce(async (slug: string) => {
-        try {
-          if (slug) {
-            lookupOrganizationBySlug({
-              variables: {
-                slug,
-              },
-            })
-          }
-        } catch (e) {
-          /* NOOP */
-        } finally {
-          setSlugCheckIsValid(true)
+      debounce((slug: string) => {
+        if (slug) {
+          setSlug(slug)
+          setPauseQuery(false)
         }
       }, 500),
-    [lookupOrganizationBySlug]
+    []
   )
 
   useEffect(() => {
-    setSlugCheckIsValid(false)
     checkSlug(slug)
+    setPauseQuery(true)
   }, [checkSlug, slug])
 
   const [{ data, error }, createOrganization] = useCreateOrganizationMutation()
@@ -103,83 +94,80 @@ const Admin_CreateOrganization: NextPage = () => {
       <Row>
         <Col flex={1}>
           <PageHeader title={t("pageTitle.createOrganization")} />
-          <div>
-            <Form
-              {...formItemLayout}
-              form={form}
-              onFinish={handleSubmit}
-              onValuesChange={handleValuesChange}
+          <Form
+            {...formItemLayout}
+            form={form}
+            onFinish={handleSubmit}
+            onValuesChange={handleValuesChange}
+          >
+            <Form.Item
+              label={t("common:name")}
+              name="name"
+              rules={[
+                {
+                  required: true,
+                  message: "Please choose a name for the organization",
+                },
+              ]}
             >
-              <Form.Item
-                label="Name"
-                name="name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please choose a name for the organization",
-                  },
-                ]}
-              >
-                <div>
-                  <Input data-cy="createorganization-input-name" />
-                  <p>
-                    Your organization URL will be{" "}
-                    <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/admin/organization/${slug}`}</span>
-                  </p>
-                  {!slug ? null : !slugCheckIsValid || fetchingSlug ? (
-                    <div>
-                      <Loading /> Checking organization name
-                    </div>
-                  ) : existingOrganizationData?.organizationBySlug ? (
-                    <Text
-                      data-cy="createorganization-hint-nameinuse"
-                      type="danger"
-                    >
-                      Organization name is already in use
-                    </Text>
-                  ) : slugError ? (
-                    <Text type="warning">
-                      Error occurred checking for existing organization with
-                      this name (error code: ERR_{getCodeFromError(slugError)})
-                    </Text>
-                  ) : null}
-                </div>
-              </Form.Item>
-              {error && (
-                <Form.Item {...tailFormItemLayout}>
-                  <Alert
-                    description={
-                      <span>
-                        {code === "NUNIQ" ? (
-                          <span data-cy="createorganization-alert-nuniq">
-                            That organization name is already in use, please
-                            choose a different organization name.
-                          </span>
-                        ) : (
-                          extractError(error).message
-                        )}
-                        {code && (
-                          <span>
-                            (Error code: <code>ERR_{code}</code>)
-                          </span>
-                        )}
-                      </span>
-                    }
-                    message="Creating organization failed"
-                    type="error"
-                  />
-                </Form.Item>
-              )}
+              <div>
+                <Input data-cy="createorganization-input-name" />
+                <p>
+                  {t("admin:organizations.create.urlWillBe")}{" "}
+                  <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/admin/organization/${slug}`}</span>
+                </p>
+                {!slug ? null : fetchingSlug ? (
+                  <div>
+                    <Loading /> {t("admin:organizations.create.checkingName")}
+                  </div>
+                ) : existingOrganizationData?.organizationBySlug ? (
+                  <Text
+                    data-cy="createorganization-hint-nameinuse"
+                    type="danger"
+                  >
+                    {t("admin:organizations.create.nameInUse")}
+                  </Text>
+                ) : slugError ? (
+                  <Text type="warning">
+                    {t("admin:organizations.create.errorOccurred")} (error code:
+                    ERR_{getCodeFromError(slugError)})
+                  </Text>
+                ) : null}
+              </div>
+            </Form.Item>
+            {error && (
               <Form.Item {...tailFormItemLayout}>
-                <Button
-                  data-cy="createorganization-button-create"
-                  htmlType="submit"
-                >
-                  Create
-                </Button>
+                <Alert
+                  description={
+                    <span>
+                      {code === "NUNIQ" ? (
+                        <span data-cy="createorganization-alert-nuniq">
+                          {t("admin:organizations.create.errorNameInUse")}{" "}
+                        </span>
+                      ) : (
+                        extractError(error).message
+                      )}
+                      {code && (
+                        <span>
+                          (Error code: <code>ERR_{code}</code>)
+                        </span>
+                      )}
+                    </span>
+                  }
+                  message="Creating organization failed"
+                  type="error"
+                />
               </Form.Item>
-            </Form>
-          </div>
+            )}
+            <Form.Item {...tailFormItemLayout}>
+              <Button
+                data-cy="createorganization-button-create"
+                htmlType="submit"
+              >
+                {t("common:create")}
+              </Button>
+            </Form.Item>
+          </Form>
         </Col>
       </Row>
     </AdminLayout>

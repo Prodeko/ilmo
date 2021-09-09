@@ -3,18 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "cy": "cross-env NODE_OPTIONS=\"-r @app/config/env\" cypress",
+    "cy": "NODE_OPTIONS=\"-r @app/config/env\" yarn cypress",
     "open": "yarn cy open",
-    "run": "yarn cy run",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" jest"
+    "run:local": "yarn cy run",
+    "run:ci": "yarn cy run --record --parallel --browser chrome",
+    "depcheck": "depcheck"
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.9.1",
-    "cross-env": "^7.0.3",
     "cypress": "^8.3.1",
     "cypress-file-upload": "^5.0.8",
-    "jest": "^27.1.0",
+    "dayjs": "^1.10.6",
     "slugify": "^1.6.0",
-    "webpack": "^5.51.1"
+    "webpack": "^5.52.0"
   }
 }

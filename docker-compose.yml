@@ -3,7 +3,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/dockerfiles/Dockerfile.dev
       args:
         USER_UID: $UID
         SETUP_MODE: normal
@@ -20,13 +20,6 @@ services:
       # let's us run docker & docker-compose from inside container (used for yarn setup)
       - /var/run/docker.sock:/var/run/docker.sock
       - nm_root:/work/node_modules
-      - nm_app_client:/work/@app/client/node_modules
-      - nm_app_config:/work/@app/config/node_modules
-      - nm_app_db:/work/@app/db/node_modules
-      - nm_app_e2e:/work/@app/e2e/node_modules
-      - nm_app_graphql:/work/@app/graphql/node_modules
-      - nm_app_server:/work/@app/server/node_modules
-      - nm_app_worker:/work/@app/worker/node_modules
     working_dir: /work
     networks:
       - default
@@ -47,7 +40,7 @@ services:
   dev:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/dockerfiles/Dockerfile.dev
       args:
         USER_UID: $UID
         SETUP_MODE: dev
@@ -67,13 +60,6 @@ services:
       # let's us run docker & docker-compose from inside container (used for yarn setup)
       - /var/run/docker.sock:/var/run/docker.sock
       - nm_root:/work/node_modules
-      - nm_app_client:/work/@app/client/node_modules
-      - nm_app_config:/work/@app/config/node_modules
-      - nm_app_db:/work/@app/db/node_modules
-      - nm_app_e2e:/work/@app/e2e/node_modules
-      - nm_app_graphql:/work/@app/graphql/node_modules
-      - nm_app_server:/work/@app/server/node_modules
-      - nm_app_worker:/work/@app/worker/node_modules
 
       #* You may want to enable following lines
       #* to use your local configs inside container
@@ -118,7 +104,9 @@ services:
 
   # This runs the database that everything else connects to
   db:
-    image: postgres:11
+    build:
+      context: .
+      dockerfile: docker/dockerfiles/Dockerfile.dev.db
     env_file:
       - docker/.env
 
@@ -156,12 +144,5 @@ volumes:
 
   # Node modules
   nm_root:
-  nm_app_client:
-  nm_app_config:
-  nm_app_db:
-  nm_app_e2e:
-  nm_app_graphql:
-  nm_app_server:
-  nm_app_worker:
   # used for keeeping vscode-extensions while rebuilding
   # vscode-extensions:

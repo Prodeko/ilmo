@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env\" next build"
+    "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env\" next build",
+    "depcheck": "depcheck --ignores=\"less,net,tls,webpack,net,tls\" --ignore-patterns=.next"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
@@ -14,14 +15,13 @@
     "@sentry/react": "^6.12.0",
     "@sentry/tracing": "^6.12.0",
     "@types/lodash": "^4.14.172",
-    "@types/node": "^16.7.10",
+    "@types/node": "^16.9.0",
     "@types/nprogress": "^0.2.0",
-    "@types/react": "^17.0.19",
+    "@types/react": "^17.0.20",
     "antd": "^4.16.13",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "^1.10.6",
     "framer-motion": "^4.1.17",
-    "graphql": "^15.5.2",
     "less": "^4.1.1",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
@@ -37,12 +37,9 @@
     "slugify": "^1.6.0",
     "tls": "^0.0.1",
     "urql": "^2.0.4",
-    "webpack": "^5.51.1"
+    "webpack": "^5.52.0"
   },
   "devDependencies": {
-    "babel-plugin-import": "^1.13.3",
-    "cross-env": "^7.0.3",
-    "eslint-config-next": "^11.1.2",
-    "jest": "^27.1.0"
+    "babel-plugin-import": "^1.13.3"
   }
 }

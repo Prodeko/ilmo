@@ -59,7 +59,7 @@ const TagsFilePlugin = makePgSmartTagsFromFilePlugin(
 type UUID = string
 
 const isDev = process.env.NODE_ENV === "development"
-const isTest = process.env.NODE_ENV === "test"
+const isJestTest = process.env.IN_TESTS === "1"
 
 function uuidOrNull(input: string | number | null | undefined): UUID | null {
   if (!input) return null
@@ -79,8 +79,9 @@ function sessionIdFromRequest(
   app: FastifyInstance,
   req: IncomingMessage | FastifyRequest
 ) {
+  // If we are in Jest tests, return sessionId from MockReq options
   // @ts-ignore
-  if (isTest) return req?.user?.sessionId
+  if (isJestTest) return req?.user?.sessionId
   const sessionCookie = parse(req.headers?.cookie || "")?.["session"]
   const decodedSession = app.decodeSecureSession(sessionCookie)
   const sessionId = uuidOrNull(decodedSession?.get("passport"))
@@ -124,16 +125,15 @@ export function getPostGraphileOptions({
     // On production we still want to start even if the database isn't available.
     // On development, we want to deal nicely with issues in the database.
     // For these reasons, we're going to keep retryOnInitFail enabled for both environments.
-    retryOnInitFail: !isTest,
+    retryOnInitFail: !isJestTest,
 
     // Add websocket support to the PostGraphile server
     subscriptions: true,
     websockets: ["v1"],
     websocketMiddlewares,
 
-    // Support for Postgraphile live queries
-    // @graphile/subscriptions-lds
-    live: true,
+    // Support for Postgraphile live queries @graphile/subscriptions-lds
+    live: !isJestTest,
 
     // We don't enable query batching since urql doesn't support it, and we don't really need it
     enableQueryBatching: false,
@@ -269,11 +269,13 @@ export function getPostGraphileOptions({
       SubscriptionsPlugin,
 
       // Support for live queries https://www.graphile.org/postgraphile/live-queries/
-      PgSubscriptionsLds,
+      // PgSubscriptionsLds pjolls for changes every 500ms, so in order for jest tests
+      // to cleanly exit we have to exclude this plugin when running tests.
+      !isJestTest ? PgSubscriptionsLds : null,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,
-    ],
+    ].filter(Boolean),
 
     /*
      * Plugins we don't want in our schema

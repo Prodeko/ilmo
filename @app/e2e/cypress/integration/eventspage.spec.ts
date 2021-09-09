@@ -13,7 +13,9 @@ context("Events page", () => {
     // Action
     cy.get("@createEventDataResult").then(
       ({ eventCategory, event, quota }: any) => {
-        cy.getCy("homepage-signup-open-events").find("a").click()
+        cy.getCy("homepage-signup-open-events")
+          .getCy(`eventcard-eventpage-link-${event.slug}`)
+          .click()
 
         // Assertions
         cy.url().should(
@@ -37,6 +39,9 @@ context("Events page", () => {
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action
       cy.visit(`${Cypress.env("ROOT_URL")}/event/${event.slug}`)
+      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should(
+        "not.be.disabled"
+      )
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",
@@ -44,17 +49,20 @@ context("Events page", () => {
       )
 
       // Create first registration
-      cy.getCy("eventregistrationform-input-firstname").type("Test")
+      cy.getCy("eventregistrationform-input-firstname")
+        .wait(0)
+        .focus()
+        .clear()
+        .type("Test")
       cy.getCy("eventregistrationform-input-lastname").type("Testersson")
       cy.getCy("eventregistrationform-input-email").type(
         "test.testersson@example.com"
       )
-      cy.getCy("eventregistrationpage-recent-registrations-list").should(
-        "contain",
-        "Sinä!"
-      )
       cy.getCy("eventregistrationform-button-submit").click()
 
+      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should(
+        "not.be.disabled"
+      )
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",
@@ -62,7 +70,11 @@ context("Events page", () => {
       )
 
       // Create second registration
-      cy.getCy("eventregistrationform-input-firstname").type("Per")
+      cy.getCy("eventregistrationform-input-firstname")
+        .wait(0)
+        .focus()
+        .clear()
+        .type("Per")
       cy.getCy("eventregistrationform-input-lastname").type("Webteamsson")
       cy.getCy("eventregistrationform-input-email").type(
         "per.webteamsson@example.com"
@@ -85,6 +97,9 @@ context("Events page", () => {
     cy.get("@createEventDataResult").then(({ event, quota }: any) => {
       // Action
       cy.visit(`${Cypress.env("ROOT_URL")}/event/${event.slug}`)
+      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should(
+        "not.be.disabled"
+      )
       cy.getCy("eventpage-quotas-link-0").click()
       cy.url().should(
         "equal",

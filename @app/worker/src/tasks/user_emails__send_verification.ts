@@ -9,26 +9,24 @@ interface UserEmailsSendVerificationPayload {
   id: string
 }
 
-const task: Task = async (inPayload, { addJob, withPgClient }) => {
+const task: Task = async (inPayload, { addJob, query }) => {
   const payload: UserEmailsSendVerificationPayload = inPayload as any
   const { id: userEmailId } = payload
   const {
     rows: [userEmail],
-  } = await withPgClient((pgClient) =>
-    pgClient.query(
-      `
-        select user_emails.id, email, verification_token, username, name, extract(epoch from now()) - extract(epoch from verification_email_sent_at) as seconds_since_verification_sent
-        from app_public.user_emails
-        inner join app_private.user_email_secrets
-        on user_email_secrets.user_email_id = user_emails.id
-        inner join app_public.users
-        on users.id = user_emails.user_id
-        where user_emails.id = $1
-        and user_emails.is_verified is false
-      `,
-      [userEmailId]
-    )
+  } = await query(
+    `select user_emails.id, email, verification_token, username, name, extract(epoch from now()) - extract(epoch from verification_email_sent_at) as seconds_since_verification_sent
+      from app_public.user_emails
+      inner join app_private.user_email_secrets
+      on user_email_secrets.user_email_id = user_emails.id
+      inner join app_public.users
+      on users.id = user_emails.user_id
+      where user_emails.id = $1
+      and user_emails.is_verified is false
+    `,
+    [userEmailId]
   )
+
   if (!userEmail) {
     console.warn(
       `user_emails__send_verification task for non-existent userEmail ignored (userEmailId = ${userEmailId})`
@@ -66,11 +64,9 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
     },
   }
   await addJob("send_email", sendEmailPayload)
-  await withPgClient((pgClient) =>
-    pgClient.query(
-      "update app_private.user_email_secrets set verification_email_sent_at = now() where user_email_id = $1",
-      [userEmailId]
-    )
+  await query(
+    "update app_private.user_email_secrets set verification_email_sent_at = now() where user_email_id = $1",
+    [userEmailId]
   )
 }
 

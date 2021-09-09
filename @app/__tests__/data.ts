@@ -102,7 +102,7 @@ export const createOrganizations = async (
   const organizations = []
   for (let i = 0; i < count; i++) {
     const random = words()
-    const slug = `organization-${random}`
+    const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
     const {
       rows: [organization],
@@ -382,14 +382,15 @@ export const createRegistrations = async (
     const lastName = faker.name.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
+    const isFinished = true
     const {
       rows: [registration],
     } = await client.query(
-      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers)
-        values ($1, $2, $3, $4, $5, $6)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers, is_finished)
+        values ($1, $2, $3, $4, $5, $6, $7)
         returning *
       `,
-      [eventId, quotaId, firstName, lastName, email, answers]
+      [eventId, quotaId, firstName, lastName, email, answers, isFinished]
     )
     registrations.push(registration)
   }

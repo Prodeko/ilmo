@@ -11,14 +11,15 @@ context("Create event category", () => {
       eventSignupUpcoming: true,
       userIsAdmin: true,
     }).as("createEventDataResult")
-    cy.login({
-      username: "testuser",
-      password: "DOESNT MATTER",
-      existingUser: true,
-    })
 
     // Action
     cy.get("@createEventDataResult").then(() => {
+      cy.login({
+        username: "testuser",
+        password: "DOESNT MATTER",
+        existingUser: true,
+      })
+
       cy.getCy("layout-dropdown-user").click()
       cy.getCy("layout-link-admin").click()
       cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
@@ -40,7 +41,7 @@ context("Create event category", () => {
       cy.getCy("eventcategoryform-select-organization-id-option-0").click()
 
       cy.getCy("eventcategoryform-input-name-fi").type("Testikategoria")
-      cy.getCy("eventcategoryform-input-name-en").type("Test event")
+      cy.getCy("eventcategoryform-input-name-en").type("Test category")
 
       cy.getCy("eventcategoryform-input-description-fi").type("Testikuvaus")
       cy.getCy("eventcategoryform-input-description-en").type(

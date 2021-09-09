@@ -1130,12 +1130,6 @@ begin
     set registration_id = v_registration_id
     where registration_token = v_output.registration_token;
 
-  -- Schedule graphile worker task for token deletion
-  perform graphile_worker.add_job(
-    'registration__schedule_unfinished_registration_delete',
-    json_build_object('token', v_output.registration_token)
-  );
-
   return v_output;
 end;
 $$;
@@ -1702,6 +1696,7 @@ CREATE TABLE app_public.registrations (
     last_name app_public.constrained_name,
     email public.citext,
     answers jsonb,
+    is_finished boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT registrations_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext))
@@ -1766,6 +1761,13 @@ COMMENT ON COLUMN app_public.registrations.answers IS 'Answers to event question
 
 
 --
+-- Name: COLUMN registrations.is_finished; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.is_finished IS 'True if the registration is completed succesfully.';
+
+
+--
 -- Name: create_registration(text, uuid, uuid, text, text, public.citext, jsonb); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1825,7 +1827,8 @@ begin
       last_name = "lastName",
       email = create_registration.email,
       -- strip nulls just in case
-      answers = jsonb_strip_nulls(create_registration.answers)
+      answers = jsonb_strip_nulls(create_registration.answers),
+      is_finished = true
     where id = v_registration_id
   returning
     * into v_registration;
@@ -5171,6 +5174,13 @@ GRANT INSERT(email) ON TABLE app_public.registrations TO ilmo_visitor;
 --
 
 GRANT INSERT(answers),UPDATE(answers) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.is_finished; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_finished) ON TABLE app_public.registrations TO ilmo_visitor;
 
 
 --

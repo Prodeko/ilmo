@@ -9,21 +9,19 @@ interface OrganizationInvitationSendInvitePayload {
   id: string
 }
 
-const task: Task = async (inPayload, { addJob, withPgClient }) => {
+const task: Task = async (inPayload, { addJob, query }) => {
   const payload: OrganizationInvitationSendInvitePayload = inPayload as any
   const { id: invitationId } = payload
   const {
     rows: [invitation],
-  } = await withPgClient((pgClient) =>
-    pgClient.query(
-      `
-        select *
-        from app_public.organization_invitations
-        where id = $1
-      `,
-      [invitationId]
-    )
+  } = await query(
+    `select *
+      from app_public.organization_invitations
+      where id = $1
+    `,
+    [invitationId]
   )
+
   if (!invitation) {
     console.error("Invitation not found; aborting")
     return
@@ -33,12 +31,11 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   if (!email) {
     const {
       rows: [primaryEmail],
-    } = await withPgClient((pgClient) =>
-      pgClient.query(
-        `select * from app_public.user_emails where user_id = $1 and is_primary = true`,
-        [invitation.user_id]
-      )
+    } = await query(
+      `select * from app_public.user_emails where user_id = $1 and is_primary = true`,
+      [invitation.user_id]
     )
+
     if (!primaryEmail) {
       console.error(
         `No primary email found for user ${invitation.user_id}; aborting`
@@ -50,11 +47,9 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
 
   const {
     rows: [organization],
-  } = await withPgClient((pgClient) =>
-    pgClient.query(`select * from app_public.organizations where id = $1`, [
-      invitation.organization_id,
-    ])
-  )
+  } = await query(`select * from app_public.organizations where id = $1`, [
+    invitation.organization_id,
+  ])
 
   const sendEmailPayload: SendEmailPayload = {
     options: {
@@ -74,4 +69,4 @@ const task: Task = async (inPayload, { addJob, withPgClient }) => {
   await addJob("send_email", sendEmailPayload)
 }
 
-module.exports = task
+export default task

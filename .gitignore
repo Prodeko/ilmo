@@ -3,6 +3,7 @@
 .next
 node_modules
 dist
+cache
 /heroku-setup
 /yarn-error.log
 /@app/e2e/cypress/videos

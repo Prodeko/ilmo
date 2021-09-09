@@ -1,8 +1,8 @@
 # Docker-compose file to debug production build issues.
 # Build containers first:
 #
-# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --target server --tag ilmo-server .
-# $ docker build --file production.Dockerfile --build-arg ROOT_URL="http://localhost:5678" --target worker --tag ilmo-worker .
+# $ docker build --file docker/dockerfiles/Dockerfile.prod --build-arg ROOT_URL="http://localhost:5678" --target server --tag ilmo-server .
+# $ docker build --file docker/dockerfiles/Dockerfile.prod --build-arg ROOT_URL="http://localhost:5678" --target worker --tag ilmo-worker .
 #
 # Then run this compose stack with server entrypoint 'yarn db migrate'
 # Then run this compose stack with server entrypoint 'yarn server start'

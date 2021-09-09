@@ -37,6 +37,13 @@
     "updateSuccess": "Päivitetty onnistuneesti"
   },
   "organizations": {
+    "create": {
+      "checkingName": "Tarkistetaan nimeä",
+      "errorNameInUse": "Valitsemasi nimi on jo käytössä. Valitse toinen nimi organisaatiolle.",
+      "errorOccurred": "Error occurred checking for existing organization with this name",
+      "nameInUse": "Nimi on jo käytössä",
+      "urlWillBe": "Organisaation URL tulee olemaan"
+    },
     "deleteOrganization": "Poista organisaatio",
     "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
     "forms": {

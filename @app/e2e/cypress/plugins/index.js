@@ -26,8 +26,8 @@ module.exports = (on, config) => {
 
   if (process.env.CI) {
     // CI seems to be pretty slow, lets be more forgiving
-    config.defaultCommandTimeout = 20000 // default 4000
-    config.requestTimeout = 10000 // default 5000
+    config.defaultCommandTimeout = 30000 // default 4000
+    config.requestTimeout = 20000 // default 5000
   }
   return config
 }

@@ -71,7 +71,7 @@ type UserAuditPayload =
       current_user_id: string
     }
 
-const task: Task = async (inPayload, { addJob, withPgClient, job }) => {
+const task: Task = async (inPayload, { addJob, query, job }) => {
   const payload: UserAuditPayload = inPayload as any
   let subject: string
   let actionDescription: string
@@ -118,12 +118,10 @@ const task: Task = async (inPayload, { addJob, withPgClient, job }) => {
 
   const {
     rows: [user],
-  } = await withPgClient((client) =>
-    client.query<{
-      id: string
-      created_at: Date
-    }>("select * from app_public.users where id = $1", [payload.user_id])
-  )
+  } = await query<{
+    id: string
+    created_at: Date
+  }>("select * from app_public.users where id = $1", [payload.user_id])
 
   if (!user) {
     console.error(
@@ -137,19 +135,17 @@ const task: Task = async (inPayload, { addJob, withPgClient, job }) => {
     )
     return
   }
-  const { rows: userEmails } = await withPgClient((client) =>
-    client.query<{
-      id: string
-      user_id: string
-      email: string
-      is_verified: boolean
-      is_primary: boolean
-      created_at: Date
-      updated_at: Date
-    }>(
-      "select * from app_public.user_emails where user_id = $1 and is_verified is true order by id asc",
-      [payload.user_id]
-    )
+  const { rows: userEmails } = await query<{
+    id: string
+    user_id: string
+    email: string
+    is_verified: boolean
+    is_primary: boolean
+    created_at: Date
+    updated_at: Date
+  }>(
+    "select * from app_public.user_emails where user_id = $1 and is_verified is true order by id asc",
+    [payload.user_id]
   )
 
   if (userEmails.length === 0) {

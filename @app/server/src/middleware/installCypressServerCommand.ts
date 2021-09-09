@@ -75,12 +75,13 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
       // Now run the actual command:
       const result = await runCommand(req, res, rootPgPool, command, payload)
 
-      if (result === null) {
+      if (result === null || command === "login") {
         /*
          * When a command returns null, we assume they've handled sending the
          * response. This allows commands to do things like redirect to new
          * pages when they're done.
          */
+        res.redirect(204, payload.next || "/")
       } else {
         /*
          * The command returned a result, send it back to the test suite.
@@ -186,7 +187,6 @@ async function runCommand(
       name = username,
       avatarUrl = null,
       password = "TestUserPassword",
-      next = "/",
       orgs = [],
       verified = false,
       isAdmin = false,
@@ -260,14 +260,10 @@ async function runCommand(
         await client.query("commit")
       }
     } finally {
-      await client.release()
+      client.release()
     }
 
-    req.logIn({ sessionId: session.uuid })
-    setTimeout(() => {
-      // This 500ms delay is required to keep GitHub actions happy. 200ms wasn't enough.
-      res.redirect(next || "/")
-    }, 500)
+    await req.logIn({ sessionId: session.uuid })
 
     return null
   } else if (command === "createTestEventData") {
@@ -383,12 +379,7 @@ async function createEventData(
       eventSignupClosed
     )
     const [quota] = await createQuotas(client, 1, event.id)
-    const questions = await createQuestions(
-      client,
-      1,
-      event.id,
-      faker.datatype.boolean()
-    )
+    const questions = await createQuestions(client, 1, event.id, false)
     let registration, registrationSecret
     if (!eventSignupClosed && !eventSignupUpcoming) {
       // Database trigger prevents creating registrations for events that are
@@ -420,7 +411,7 @@ async function createEventData(
       registrationSecret,
     }
   } finally {
-    await client.release()
+    client.release()
   }
 }
 
@@ -434,7 +425,7 @@ export const createOrganizations = async (
   const organizations = []
   for (let i = 0; i < count; i++) {
     const random = words()
-    const slug = `organization-${random}`
+    const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
     const {
       rows: [organization],
@@ -711,14 +702,15 @@ export const createRegistrations = async (
     const lastName = faker.name.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
+    const isFinished = true
     const {
       rows: [registration],
     } = await client.query(
-      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers)
-        values ($1, $2, $3, $4, $5, $6)
+      `insert into app_public.registrations(event_id, quota_id, first_name, last_name, email, answers, is_finished)
+        values ($1, $2, $3, $4, $5, $6, $7)
         returning *
       `,
-      [eventId, quotaId, firstName, lastName, email, answers]
+      [eventId, quotaId, firstName, lastName, email, answers, isFinished]
     )
     registrations.push(registration)
   }
