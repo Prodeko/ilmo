@@ -233,12 +233,12 @@ export function SharedLayout({
               <Dropdown
                 overlay={
                   <Menu>
-                    <Menu.Item>
+                    <Menu.Item key="admin">
                       <Link href="/admin/event/list">
                         <a data-cy="layout-link-admin">{t("admin")}</a>
                       </Link>
                     </Menu.Item>
-                    <Menu.Item>
+                    <Menu.Item key="settings">
                       <Link href="/settings">
                         <a data-cy="layout-link-settings">
                           <Warn okay={data.currentUser.isVerified}>
@@ -247,7 +247,7 @@ export function SharedLayout({
                         </a>
                       </Link>
                     </Menu.Item>
-                    <Menu.Item>
+                    <Menu.Item key="logout">
                       <a onClick={handleLogout}>{t("logout")}</a>
                     </Menu.Item>
                   </Menu>
