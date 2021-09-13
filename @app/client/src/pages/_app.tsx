@@ -20,7 +20,7 @@ import Router from "next/router"
 import NProgress from "nprogress"
 
 import "dayjs/locale/fi"
-import "dayjs/locale/en-gb"
+import "dayjs/locale/en"
 
 import ErrorPage from "./_error"
 
@@ -103,9 +103,6 @@ class Ilmo extends App<Props> {
     const { router } = appContext
 
     const { locale } = router
-    // TODO: Not sure if this is the best place for this..
-    dayjs.locale(locale === "en" ? "en-gb" : "fi")
-
     const appProps = await App.getInitialProps(appContext)
 
     return { ...appProps, locale }
@@ -114,6 +111,7 @@ class Ilmo extends App<Props> {
   render() {
     // @ts-ignore
     const { Component, pageProps, resetUrqlClient, locale } = this.props
+    dayjs.locale(locale === "en" ? "en" : "fi")
 
     return (
       <Sentry.ErrorBoundary fallback={<ErrorPage statusCode={500} />}>
