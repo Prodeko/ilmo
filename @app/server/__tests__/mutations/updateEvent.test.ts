@@ -1,3 +1,4 @@
+import { camelizeKeys } from "@app/lib"
 import { pick } from "lodash"
 
 import { UpdateEventDocument } from "../../../graphql"
@@ -34,7 +35,9 @@ describe("UpdateEvent", () => {
             },
           },
           quotas: [
-            ...quotas.map((q) => pick(q, ["id", "position", "size", "title"])),
+            ...quotas.map((q) =>
+              pick(camelizeKeys(q), ["id", "position", "size", "title"])
+            ),
             {
               // Should also be able to create new quotas via this mutation if
               // id is not specified
@@ -47,10 +50,16 @@ describe("UpdateEvent", () => {
             },
           ],
           questions: [
-            ...questions.map((q) => ({
-              ...pick(q, ["id", "position", "type", "label", "data"]),
-              isRequired: q.is_required,
-            })),
+            ...questions.map((q) =>
+              pick(camelizeKeys(q), [
+                "id",
+                "position",
+                "type",
+                "label",
+                "isRequired",
+                "data",
+              ])
+            ),
             {
               // Should also be able to create new questions via this mutation if
               // id is not specified
@@ -177,11 +186,20 @@ describe("UpdateEvent", () => {
             },
           },
           quotas: [
-            ...quotas.map((q) => pick(q, ["id", "position", "size", "title"])),
+            ...quotas.map((q) =>
+              pick(camelizeKeys(q), ["id", "position", "size", "title"])
+            ),
           ],
           questions: [
             ...questions.map((q) =>
-              pick(q, ["id", "position", "type", "label", "isRequired", "data"])
+              pick(camelizeKeys(q), [
+                "id",
+                "position",
+                "type",
+                "label",
+                "isRequired",
+                "data",
+              ])
             ),
           ],
         },

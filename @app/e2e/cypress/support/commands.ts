@@ -70,6 +70,16 @@ function serverCommand(
 }>
 
 /**
+ * Generate registrations for e2e tests.
+ */
+function serverCommand(
+  command: "createRegistrations",
+  payload?: {}
+): Chainable<{
+  success: true
+}>
+
+/**
  * Creates a verified or unverified user, bypassing all safety checks.
  * Redirects to `next`.
  *

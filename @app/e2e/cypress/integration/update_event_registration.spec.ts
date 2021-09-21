@@ -41,8 +41,11 @@ context("Update event registration", () => {
           "equal",
           Cypress.env("ROOT_URL") + `/event/${event.slug}`
         )
-        cy.getCy("eventpage-signups-table").should("contain", "Etunimi")
-        cy.getCy("eventpage-signups-table").should("contain", "Sukunimi")
+        cy.getCy("eventpage-signups-quota-0-table").should("contain", "Etunimi")
+        cy.getCy("eventpage-signups-quota-0-table").should(
+          "contain",
+          "Sukunimi"
+        )
       }
     )
   })

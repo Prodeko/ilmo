@@ -66,6 +66,7 @@ interface CreateEventDataAndLogin {
     amount?: number
     signupOpen?: boolean
     isDraft?: boolean
+    openQuotaSize?: number
   }
   quotaOptions?: { create: boolean; amount?: number }
   questionOptions?: {
@@ -135,7 +136,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         organization.id,
         eventCategory.id,
         eventOptions.signupOpen,
-        eventOptions.isDraft
+        eventOptions.isDraft,
+        eventOptions.openQuotaSize
       )
     }
 
@@ -151,7 +153,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     }
 
     let questions
-    if (quotaOptions.create) {
+    if (questionOptions.create) {
       questions = await createQuestions(
         client,
         questionOptions.amount,
@@ -187,7 +189,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       )
     }
 
-    client.query("COMMIT")
+    await client.query("commit")
     return {
       users,
       session,

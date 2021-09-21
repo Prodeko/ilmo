@@ -1,22 +1,37 @@
 import dayjs from "dayjs"
-import isEqual from "lodash/isEqual"
+import { camelCase, isEqual } from "lodash"
 
 export const arePropsEqual = (prevProps: any, nextProps: any) => {
   return isEqual(prevProps, nextProps)
 }
 
-export const filterObjectByKeys = (raw: object, allowed: string[]) =>
+export const filterObjectByKeys = <T>(raw: T, allowed: string[]): T =>
   raw &&
   Object.keys(raw)
     .filter((key) => allowed.includes(key))
     .reduce((obj, key) => {
       obj[key] = raw[key]
       return obj
-    }, {})
+    }, {} as T)
 
 export function removePropFromObject(obj: any, prop: string | number) {
   const { [prop]: _, ...rest } = obj
   return { ...rest }
+}
+
+export function camelizeKeys(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map((v) => camelizeKeys(v))
+  } else if (obj != null && obj.constructor === Object) {
+    return Object.keys(obj).reduce(
+      (result, key) => ({
+        ...result,
+        [camelCase(key)]: camelizeKeys(obj[key]),
+      }),
+      {}
+    )
+  }
+  return obj
 }
 
 export const randomElementFromArray = (arr: any[]) =>

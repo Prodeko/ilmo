@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import {
   EventDescription,
   EventQuotasCard,
-  EventRegistrationsTable,
+  EventRegistrationsTables,
   SharedLayout,
   SignupState,
   useEventLoading,
@@ -84,14 +84,14 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   })
 
   const handleSignupState = useCallback((time, startTime, endTime) => {
-    // We cannot rely on event.signup* since those are exposed to the API
-    // via Postgraphile computed columns (https://www.graphile.org/postgraphile/computed-columns/).
     // This page uses Postgraphile live queries (https://www.graphile.org/postgraphile/live-queries/)
     // to automaticaly update information (registrations, quota sizes, description etc.).
+    // We cannot rely on event.signup* since those are exposed to the API
+    // via Postgraphile computed columns (https://www.graphile.org/postgraphile/computed-columns/).
     // Computed columns are a known limitation of the @graphile/subscriptions-lds plugin
-    // which uses wal2json to detect updates in the database. It cannot detect updates computed
-    // column fields. This is why we replicate the signup* fields on the frontend based on
-    // a timestamp fetched from the server.
+    // which uses wal2json to detect updates in the database. It cannot detect updates on
+    // computed column fields. This is why we replicate the signup* fields on the frontend
+    // based on a timestamp fetched from the server.
     if (time.isBefore(startTime)) {
       setSignupState({ upcoming: true, open: false, closed: false })
     } else if (time.isAfter(startTime) && time.isBefore(endTime)) {
@@ -208,8 +208,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
         </Col>
         <Col sm={{ span: 16 }} xs={{ span: 24 }}>
           <EventDescription event={event} signupState={signupState} />
-          <EventRegistrationsTable
-            data-cy="eventpage-signups-table"
+          <EventRegistrationsTables
+            event={event}
             registrations={registrations.nodes}
           />
         </Col>

@@ -290,6 +290,17 @@ async function runCommand(
     const { email = "test.user@example.com" } = payload
     const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email)
     return userEmailSecrets
+  } else if (command === "createRegistrations") {
+    const { eventId, quotaId, count = 1 } = payload
+    const client = await rootPgPool.connect()
+    const registrations = await createRegistrations(
+      client,
+      count,
+      eventId,
+      quotaId,
+      []
+    )
+    return registrations
   } else {
     throw new Error(`Command '${command}' not understood.`)
   }
@@ -347,6 +358,8 @@ async function createEventData(
     eventSignupUpcoming = false,
     eventSignupClosed = false,
     userIsAdmin = false,
+    openQuotaSize = 0,
+    quotaSize = 5,
   } = payload
 
   try {
@@ -376,9 +389,10 @@ async function createEventData(
       organization.id,
       eventCategory.id,
       eventSignupUpcoming,
-      eventSignupClosed
+      eventSignupClosed,
+      openQuotaSize
     )
-    const [quota] = await createQuotas(client, 1, event.id)
+    const [quota] = await createQuotas(client, 1, event.id, quotaSize)
     const questions = await createQuestions(client, 1, event.id, false)
     let registration, registrationSecret
     if (!eventSignupClosed && !eventSignupUpcoming) {
@@ -479,7 +493,8 @@ export const createEvents = async (
   organizationId: string,
   categoryId: string,
   eventSignupUpcoming: boolean,
-  eventSignupClosed: boolean
+  eventSignupClosed: boolean,
+  openQuotaSize: number = 0
 ) => {
   const events = []
   for (let i = 0; i < count; i++) {
@@ -531,10 +546,11 @@ export const createEvents = async (
         registration_end_time,
         is_draft,
         header_image_file,
+        open_quota_size,
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       returning *
       `,
       [
@@ -548,6 +564,7 @@ export const createEvents = async (
         registrationEndTime,
         isDraft,
         headerImageFile,
+        openQuotaSize,
         organizationId,
         eventCategoryId,
       ]
@@ -564,15 +581,18 @@ export const createEvents = async (
 export const createQuotas = async (
   client: PoolClient,
   count: number = 1,
-  eventId: string
+  eventId: string,
+  size?: number
 ) => {
   const quotas = []
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
-    const size = faker.datatype.number({
-      min: 1,
-      max: 20,
-    })
+    const s = size
+      ? size
+      : faker.datatype.number({
+          min: 3,
+          max: 20,
+        })
     const {
       rows: [quota],
     } = await client.query(
@@ -580,7 +600,7 @@ export const createQuotas = async (
         values ($1, $2, $3, $4)
         returning *
       `,
-      [eventId, i, title, size]
+      [eventId, i, title, s]
     )
     quotas.push(quota)
   }

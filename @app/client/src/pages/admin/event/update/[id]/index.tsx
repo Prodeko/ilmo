@@ -23,6 +23,7 @@ type UpdateFormInitialValues = {
   headerImageFile: string
   quotas: QuotasConnection
   eventQuestions: EventQuestionsConnection
+  openQuotaSize: number
 }
 
 function constructInitialValues(values: any) {
@@ -39,6 +40,7 @@ function constructInitialValues(values: any) {
     "headerImageFile",
     "quotas",
     "eventQuestions",
+    "openQuotaSize",
   ]) as UpdateFormInitialValues
 
   const {

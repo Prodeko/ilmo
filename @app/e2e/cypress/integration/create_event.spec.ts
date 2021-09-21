@@ -103,6 +103,12 @@ context("Create event", () => {
       cy.getCy("eventform-input-quotas-title-fi-0").should("not.exist")
       cy.getCy("eventform-input-quotas-title-en-0").should("not.exist")
 
+      // Open quota
+      cy.getCy("eventform-input-quotas-openquota-size").should("be.disabled")
+      cy.getCy("eventform-quotas-switch-is-open-quota").click()
+      cy.getCy("eventform-input-quotas-openquota-size").should("be.enabled")
+      cy.getCy("eventform-input-quotas-openquota-size").type("5")
+
       // Test adding quotas works
       // prettier-ignore
       for (var i = 0; i < 3; i++) {

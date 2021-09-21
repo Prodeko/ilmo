@@ -1,0 +1,37 @@
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  status
+  position
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+mutation CreateEventRegistration($input: CreateRegistrationInput!) {
+  createRegistration(input: $input) {
+    registration {
+      ...EventPage_Registration
+      quota {
+        ...EventPage_Quota
+        __typename
+      }
+      event {
+        id
+        slug
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

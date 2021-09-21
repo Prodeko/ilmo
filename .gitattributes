@@ -1,7 +1,6 @@
-*.js text=auto eol=lf
-*.ts text=auto eol=lf
-*.json text=auto eol=lf
-*.md text=auto eol=lf
-*.sh text=auto eol=lf
-*.yml text=auto eol=lf
-*.sql text=auto eol=lf
+* text=auto eol=lf
+
+# Hide .yarn from GitHub's language detection
+/.yarn/** linguist-vendored
+/.yarn/releases/** binary
+/.yarn/plugins/** binary

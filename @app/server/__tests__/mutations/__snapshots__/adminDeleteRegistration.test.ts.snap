@@ -21,7 +21,7 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 7 at RAISE",
+          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 6 at RAISE",
         },
       },
       "locations": Array [
@@ -50,7 +50,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 14 at RAISE",
+          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 13 at RAISE",
         },
       },
       "locations": Array [

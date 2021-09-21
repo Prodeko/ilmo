@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:133fa51c9e8f77f0453c03ea3196c16bc096dfb0
+--! Hash: sha1:77383efa2f22a2831cd2a4a8852bc51bbdf9a06f
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -236,6 +236,7 @@ create table app_public.events(
   is_highlighted boolean not null default false,
   is_draft boolean not null default true,
   header_image_file text,
+  open_quota_size smallint not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
   category_id uuid not null references app_public.event_categories on delete set null,
 
@@ -247,6 +248,7 @@ create table app_public.events(
   constraint _cnstr_check_event_time check(event_start_time < event_end_time)
   constraint _cnstr_check_event_registration_time check(registration_start_time < registration_end_time)
   constraint _cnstr_check_registration_end_before_event_start check(registration_end_time < event_start_time)
+  constraint _cnstr_check_events_open_quota_size check (open_quota_size >= 0)
 );
 alter table app_public.events enable row level security;
 
@@ -320,6 +322,8 @@ comment on column app_public.events.is_draft is
   E'A draft event that is not publicly visible.';
 comment on column app_public.events.header_image_file is
   E'Header image for the event';
+comment on column app_public.events.open_quota_size is
+  E'Size of the open quota for the event.';
 comment on column app_public.events.owner_organization_id is
   E'Identifier of the event organizer';
 comment on column app_public.events.category_id is
@@ -333,8 +337,8 @@ create policy manage_organization on app_public.events for all using(app_public.
 
 grant
   select,
-  insert (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
-  update (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, owner_organization_id, category_id),
+  insert (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, open_quota_size, owner_organization_id, category_id),
+  update (name, slug, description, location, event_start_time, event_end_time, registration_start_time, registration_end_time, is_highlighted, is_draft, header_image_file, open_quota_size, owner_organization_id, category_id),
   delete
 on app_public.events to :DATABASE_VISITOR;
 
@@ -370,7 +374,7 @@ comment on function app_public.current_user_has_event_permissions(event_id uuid)
 create table app_public.quotas(
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references app_public.events on delete cascade,
-  position smallint not null,
+  position smallint not null check (position >= 0),
   title translated_field not null,
   size smallint not null check (size > 0),
 
@@ -934,38 +938,83 @@ create function app_public.registrations_full_name(registration app_public.regis
 returns text as $$
   select registration.first_name || ' ' || registration.last_name
 $$ language sql stable;
-grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
 comment on function app_public.registrations_full_name(registration app_public.registrations) is
   E'Returns the full name of a registered person.';
+grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
 
-create function app_public.registrations_is_queued(registration app_public.registrations)
-  returns boolean as $$
-declare
-  v_registrations_before_self integer;
-  v_quota app_public.quotas;
-begin
-  select *
-    into v_quota
-    from app_public.quotas
-    where id = registration.quota_id;
+create type app_public.registration_status as enum (
+  'IN_QUOTA',
+  'IN_QUEUE',
+  'IN_OPEN_QUOTA'
+);
 
-  select count(*)
-    into v_registrations_before_self
-    from app_public.registrations
-    where created_at < registration.created_at
-      and event_id = registration.event_id
-      and quota_id = registration.quota_id;
+create view app_public.registrations_status_and_position as
+  with cte1 as (
+    select
+      r.id,
+      size,
+      e.id as event_id,
+      q.id as quota_id,
+      e.open_quota_size,
+      r.created_at,
+      row_number() over (partition by r.quota_id order by r.created_at asc) as tmp_pos_quota
+    from app_public.registrations r
+    left join app_public.quotas q
+      on r.quota_id = q.id
+    left join app_public.events e
+      on r.event_id = e.id
+  ), cte2 as (
+    select
+      tmp.*,
+      row_number() over (partition by event_id, tmp_status order by created_at asc) as tmp_pos_status
+    from (
+      select
+        *,
+        case
+          when tmp_pos_quota <= size then 'IN_QUOTA'::text
+          else 'OPEN_OR_QUEUE'::text
+        end as tmp_status
+      from cte1
+    ) as tmp
+  ), cte3 as (
+    select
+      *,
+      case
+        when tmp_status = 'OPEN_OR_QUEUE'::text and tmp_pos_status <= open_quota_size then 'IN_OPEN_QUOTA'::app_public.registration_status
+        when tmp_status = 'OPEN_OR_QUEUE'::text then 'IN_QUEUE'::app_public.registration_status
+        else 'IN_QUOTA'::app_public.registration_status
+      end as status
+    from cte2
+  ) select
+      id,
+      status,
+      case
+        -- row_number() returns bigint but we cast it to integer to avoid
+        -- introducing another type to our GraphQL API. Besides, we are not
+        -- expecting to have that many registrations in the system.
+        when status = 'IN_QUOTA'::app_public.registration_status then cast(row_number() over (partition by quota_id, status order by created_at asc) as integer)
+        else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
+      end as position
+    from cte3;
+comment on view registrations_status_and_position is
+  E'Rank and position of registrations.';
+grant select on app_public.registrations_status_and_position to :DATABASE_VISITOR;
 
-  if v_registrations_before_self >= v_quota.size then
-    return true;
-  else
-    return false;
-  end if;
-end;
-$$ language plpgsql stable;
-grant execute on function app_public.registrations_is_queued(registration app_public.registrations) to :DATABASE_VISITOR;
-comment on function app_public.registrations_is_queued(registration app_public.registrations) is
-  E'Designates whether the registration is queued for a quota or not.';
+create function app_public.registrations_status(registration app_public.registrations)
+returns app_public.registration_status as $$
+  select status from app_public.registrations_status_and_position where id = registration.id;
+$$ language sql stable;
+comment on function app_public.registrations_status(registration app_public.registrations) is
+  E'Returns the status of the registration.';
+grant execute on function app_public.registrations_status(registration app_public.registrations) to :DATABASE_VISITOR;
+
+create function app_public.registrations_position(registration app_public.registrations)
+returns integer as $$
+  select position from app_public.registrations_status_and_position where id = registration.id;
+$$ language sql stable;
+comment on function app_public.registrations_position(registration app_public.registrations) is
+  E'Returns the position of the registration.';
+grant execute on function app_public.registrations_position(registration app_public.registrations) to :DATABASE_VISITOR;
 
 -- Comments
 comment on table app_public.registrations is
@@ -1021,7 +1070,7 @@ create table app_private.registration_secrets(
   -- When a registration/event/quota is deleted, also delete the secrets
   registration_id uuid null references app_public.registrations on delete cascade,
   event_id uuid not null references app_public.events on delete cascade,
-  quota_id uuid not null references app_public.quotas on delete cascade,
+  quota_id uuid not null references app_public.quotas on delete no action,
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -1077,7 +1126,6 @@ returns boolean as $$
 declare
   v_registration_id uuid;
 begin
-
   if not app_public.current_user_is_admin() then
     raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
   end if;
@@ -1345,14 +1393,9 @@ comment on function app_public.claim_registration_token(event_id uuid, quota_id 
 
 --! split: 0099-events-crud-functions.sql
 /*
- * These functions define create and update mutations that support operating on
- * multiple event questions at once.
- *
- * By default PostGraphile creates CRUD mutations for database tables
- * (https://www.graphile.org/postgraphile/crud-mutations/). We have omitted the
- * create, insert, update and delete mutations for the questions table and use
- * these functions instead. The default mutations are omitted in
- * @app/server/postgraphile.tags.jsonc file.
+ * These functions define create and update mutations that are used
+ * to create events. The same mutations also create quotas and
+ * questions related to the event.
  */
 -- Input type for app_public.create_event
 create type app_public.event_input as (
@@ -1367,6 +1410,7 @@ create type app_public.event_input as (
   is_highlighted boolean,
   is_draft boolean,
   header_image_file text,
+  open_quota_size smallint,
   owner_organization_id uuid,
   category_id uuid
 );
@@ -1399,6 +1443,7 @@ begin
     is_highlighted,
     is_draft,
     header_image_file,
+    open_quota_size,
     owner_organization_id,
     category_id
   )
@@ -1414,6 +1459,7 @@ begin
     event.is_highlighted,
     event.is_draft,
     event.header_image_file,
+    event.open_quota_size,
     event.owner_organization_id,
     event.category_id
   )
@@ -1459,6 +1505,7 @@ begin
       is_highlighted = coalesce(event.is_highlighted, is_highlighted),
       is_draft = coalesce(event.is_draft, is_draft),
       header_image_file = coalesce(event.header_image_file, header_image_file),
+      open_quota_size = coalesce(event.open_quota_size, open_quota_size),
       owner_organization_id = coalesce(event.owner_organization_id, owner_organization_id),
       category_id = coalesce(event.category_id, category_id)
     where id = update_event.id

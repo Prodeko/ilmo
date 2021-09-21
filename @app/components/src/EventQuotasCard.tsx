@@ -21,7 +21,6 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
     const { t, lang } = useTranslation("events")
     const isMobile = useIsMobile()
     const { slug, quotas } = event
-
     const { upcoming, open, closed } = signupState
 
     return (

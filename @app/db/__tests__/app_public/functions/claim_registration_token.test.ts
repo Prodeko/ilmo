@@ -18,7 +18,6 @@ async function claimToken(
 
 it("can claim registration token and token expires", () =>
   withUserDb(async (client) => {
-    jest.useFakeTimers()
     const { event, quota } = await createEventData(client)
 
     // Action

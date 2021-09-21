@@ -196,8 +196,8 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
         ...commonColumns,
         {
           title: t("events:queued"),
-          dataIndex: ["isQueued"],
-          key: "isQueued",
+          dataIndex: ["status"],
+          key: "status",
           ellipsis: true,
           render: (value: string) => {
             return value ? (

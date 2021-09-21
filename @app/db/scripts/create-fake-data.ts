@@ -120,9 +120,9 @@ async function main() {
   const pgPool = new Pool({ connectionString })
   const client = await pgPool.connect()
   try {
-    await client.query("BEGIN")
+    await client.query("begin")
     await generateData(client)
-    await client.query("COMMIT")
+    await client.query("commit")
   } catch (e) {
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
       console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"))

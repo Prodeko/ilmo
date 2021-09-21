@@ -32,6 +32,7 @@
   "name": "Nimi",
   "no": "Ei",
   "option": "Vaihtoehto",
+  "position": "Sija",
   "question": "Kysymys",
   "redirect": "Uudelleenohjataan...",
   "registrationClosed": "Ilmoittautuminen päättynyt",

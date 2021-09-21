@@ -18,6 +18,7 @@ describe("DeleteEventCategory", () => {
     const { eventCategory } = await createEventDataAndLogin({
       eventOptions: { create: false },
       quotaOptions: { create: false },
+      questionOptions: { create: false },
       registrationOptions: { create: false },
       registrationSecretOptions: { create: false },
       userOptions: { create: true, isAdmin: true },
@@ -64,6 +65,7 @@ describe("DeleteEventCategory", () => {
     const { eventCategory, session } = await createEventDataAndLogin({
       eventOptions: { create: false },
       quotaOptions: { create: false },
+      questionOptions: { create: false },
       registrationOptions: { create: false },
       registrationSecretOptions: { create: false },
       userOptions: { create: true, isAdmin: false },
