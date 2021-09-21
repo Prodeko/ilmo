@@ -11,6 +11,7 @@ fragment EventFields on Event {
   isHighlighted
   isDraft
   headerImageFile
+  openQuotaSize
   signupOpen
   signupUpcoming
   signupClosed
@@ -47,7 +48,8 @@ fragment EventPage_Quota on Quota {
 fragment EventPage_Registration on Registration {
   id
   fullName
-  isQueued
+  status
+  position
   createdAt
   quota {
     ...EventPage_Quota

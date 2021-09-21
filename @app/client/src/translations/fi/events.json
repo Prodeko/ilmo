@@ -1,4 +1,5 @@
 {
+  "addOpenQuota": "Lisää avoin kiintiö",
   "addOption": "Lisää vaihtoehto",
   "addQuestion": "Lisää kysymys",
   "addQuota": "Lisää kiintiö",
@@ -17,6 +18,7 @@
   "eventSignupNotOpen": "Tapahtuman ilmoittautuminen ei ole auki",
   "forms": {
     "eventTime": "Tapahtuman ajankohta",
+    "hasOpenQuota": "Has open quota",
     "highlightEvent": "Korostettu tapahtuma",
     "isDraft": "Luonnos",
     "isNotDraft": "Julkaistu",
@@ -73,6 +75,7 @@
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "numRegistrations": "Rekisteröityneitä",
+  "openQuota": "Avoin kiintiö",
   "organizer": "Järjestäjä",
   "queued": "Jonossa",
   "quota": "Kiintiö",

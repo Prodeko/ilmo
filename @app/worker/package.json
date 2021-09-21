@@ -16,17 +16,17 @@
     "@types/mjml": "^4.7.0",
     "@types/nodemailer": "^6.4.4",
     "chalk": "^4.1.2",
-    "dayjs": "^1.10.6",
+    "dayjs": "^1.10.7",
     "graphile-worker": "^0.11.4",
     "html-to-text": "^8.0.0",
     "ioredis": "^4.27.9",
-    "mjml": "^4.10.2",
-    "nodemailer": "^6.6.3",
+    "mjml": "^4.10.3",
+    "nodemailer": "^6.6.5",
     "nunjucks": "^3.2.3",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@types/nunjucks": "^3.1.5",
+    "@types/nunjucks": "^3.2.0",
     "mkdirp": "^1.0.4"
   }
 }

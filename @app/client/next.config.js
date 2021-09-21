@@ -2,6 +2,9 @@ require("@app/config")
 const compose = require("lodash/flowRight")
 const { locales, defaultLocale } = require("./i18n.js")
 const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin")
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+})
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck.js")) {
@@ -27,7 +30,8 @@ module.exports = () => {
   return compose(
     withTM,
     withAntdLess,
-    withNextTranslate
+    withNextTranslate,
+    withBundleAnalyzer
   )({
     experimental: { esmExternals: true },
     reactStrictMode: true,

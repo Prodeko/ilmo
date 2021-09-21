@@ -1,0 +1,32 @@
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  status
+  position
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+mutation UpdateEventRegistration($input: UpdateRegistrationInput!) {
+  updateRegistration(input: $input) {
+    registration {
+      ...EventPage_Registration
+      firstName
+      lastName
+      answers
+      updatedAt
+      __typename
+    }
+    __typename
+  }
+}

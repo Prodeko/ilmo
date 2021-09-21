@@ -1,9 +1,10 @@
+import { useEffect, useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import DragOutlined from "@ant-design/icons/DragOutlined"
 import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone"
 import PlusOutlined from "@ant-design/icons/PlusOutlined"
-import { Button, Form, Input, InputNumber, Space, Tooltip } from "antd"
+import { Button, Form, Input, InputNumber, Space, Switch, Tooltip } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
 import { DisableDraggable, Draggable } from "../Draggable"
@@ -15,7 +16,12 @@ interface QuotasTabProps {
 
 export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
   const { initialValues, selectedLanguages } = props
+  const [hasOpenQuota, setHasOpenQuota] = useState(false)
   const { t } = useTranslation("events")
+
+  useEffect(() => {
+    if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
+  }, [initialValues])
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -24,7 +30,7 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
         rules={[
           {
             validator: async (_, quotas) => {
-              if (!quotas || quotas.length < 1) {
+              if ((!quotas || quotas?.length < 1) && !hasOpenQuota) {
                 return Promise.reject(
                   new Error(t("errors.mustProvideEventQuota"))
                 )
@@ -47,10 +53,8 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                   index={index}
                   move={move}
                 >
-                  {/*
-                      These hidden form fields are needed so that the update
-                      variant of this form works correctly
-                  */}
+                  {/* These hidden form fields are needed so that the update
+                      variant of the EventForm works correctly */}
                   <Form.Item
                     fieldKey={[fieldKey, "id"]}
                     name={[name, "id"]}
@@ -144,6 +148,31 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
           </>
         )}
       </Form.List>
+      <Space>
+        <span>{t("addOpenQuota")}: </span>
+        <Switch
+          checked={hasOpenQuota}
+          data-cy="eventform-quotas-switch-is-open-quota"
+          onChange={(val) => setHasOpenQuota(val)}
+        />
+        <Form.Item
+          name="openQuotaSize"
+          rules={[
+            {
+              required: true,
+              message: t("forms.rules.quota.provideQuotaSize"),
+            },
+          ]}
+          noStyle
+        >
+          <InputNumber
+            data-cy="eventform-input-quotas-openquota-size"
+            disabled={!hasOpenQuota}
+            min={0}
+            placeholder={t("forms.placeholders.quota.size")}
+          />
+        </Form.Item>
+      </Space>
     </DndProvider>
   )
 }

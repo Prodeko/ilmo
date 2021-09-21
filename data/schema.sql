@@ -196,8 +196,20 @@ CREATE TYPE app_public.event_input AS (
 	is_highlighted boolean,
 	is_draft boolean,
 	header_image_file text,
+	open_quota_size smallint,
 	owner_organization_id uuid,
 	category_id uuid
+);
+
+
+--
+-- Name: registration_status; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.registration_status AS ENUM (
+    'IN_QUOTA',
+    'IN_QUEUE',
+    'IN_OPEN_QUOTA'
 );
 
 
@@ -964,7 +976,6 @@ CREATE FUNCTION app_public.admin_delete_registration(id uuid) RETURNS boolean
 declare
   v_registration_id uuid;
 begin
-
   if not app_public.current_user_is_admin() then
     raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
   end if;
@@ -1209,6 +1220,7 @@ CREATE TABLE app_public.events (
     is_highlighted boolean DEFAULT false NOT NULL,
     is_draft boolean DEFAULT true NOT NULL,
     header_image_file text,
+    open_quota_size smallint NOT NULL,
     owner_organization_id uuid NOT NULL,
     category_id uuid NOT NULL,
     created_by uuid,
@@ -1217,6 +1229,7 @@ CREATE TABLE app_public.events (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
     CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
+    CONSTRAINT _cnstr_check_events_open_quota_size CHECK ((open_quota_size >= 0)),
     CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
 );
 
@@ -1314,6 +1327,13 @@ COMMENT ON COLUMN app_public.events.header_image_file IS 'Header image for the e
 
 
 --
+-- Name: COLUMN events.open_quota_size; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.open_quota_size IS 'Size of the open quota for the event.';
+
+
+--
 -- Name: COLUMN events.owner_organization_id; Type: COMMENT; Schema: app_public; Owner: -
 --
 
@@ -1357,6 +1377,7 @@ begin
     is_highlighted,
     is_draft,
     header_image_file,
+    open_quota_size,
     owner_organization_id,
     category_id
   )
@@ -1372,6 +1393,7 @@ begin
     event.is_highlighted,
     event.is_draft,
     event.header_image_file,
+    event.open_quota_size,
     event.owner_organization_id,
     event.category_id
   )
@@ -1566,6 +1588,7 @@ CREATE TABLE app_public.quotas (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT quotas_position_check CHECK (("position" >= 0)),
     CONSTRAINT quotas_size_check CHECK ((size > 0))
 );
 
@@ -2489,42 +2512,39 @@ COMMENT ON FUNCTION app_public.registrations_full_name(registration app_public.r
 
 
 --
--- Name: registrations_is_queued(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: registrations_position(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.registrations_is_queued(registration app_public.registrations) RETURNS boolean
-    LANGUAGE plpgsql STABLE
+CREATE FUNCTION app_public.registrations_position(registration app_public.registrations) RETURNS integer
+    LANGUAGE sql STABLE
     AS $$
-declare
-  v_registrations_before_self integer;
-  v_quota app_public.quotas;
-begin
-  select *
-    into v_quota
-    from app_public.quotas
-    where id = registration.quota_id;
-
-  select count(*)
-    into v_registrations_before_self
-    from app_public.registrations
-    where created_at < registration.created_at
-      and event_id = registration.event_id
-      and quota_id = registration.quota_id;
-
-  if v_registrations_before_self >= v_quota.size then
-    return true;
-  else
-    return false;
-  end if;
-end;
+  select position from app_public.registrations_status_and_position where id = registration.id;
 $$;
 
 
 --
--- Name: FUNCTION registrations_is_queued(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+-- Name: FUNCTION registrations_position(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) IS 'Designates whether the registration is queued for a quota or not.';
+COMMENT ON FUNCTION app_public.registrations_position(registration app_public.registrations) IS 'Returns the position of the registration.';
+
+
+--
+-- Name: registrations_status(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registrations_status(registration app_public.registrations) RETURNS app_public.registration_status
+    LANGUAGE sql STABLE
+    AS $$
+  select status from app_public.registrations_status_and_position where id = registration.id;
+$$;
+
+
+--
+-- Name: FUNCTION registrations_status(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registrations_status(registration app_public.registrations) IS 'Returns the status of the registration.';
 
 
 --
@@ -2886,6 +2906,7 @@ begin
       is_highlighted = coalesce(event.is_highlighted, is_highlighted),
       is_draft = coalesce(event.is_draft, is_draft),
       header_image_file = coalesce(event.header_image_file, header_image_file),
+      open_quota_size = coalesce(event.open_quota_size, open_quota_size),
       owner_organization_id = coalesce(event.owner_organization_id, owner_organization_id),
       category_id = coalesce(event.category_id, category_id)
     where id = update_event.id
@@ -3472,6 +3493,77 @@ CREATE TABLE app_public.organization_memberships (
     is_owner boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: registrations_status_and_position; Type: VIEW; Schema: app_public; Owner: -
+--
+
+CREATE VIEW app_public.registrations_status_and_position AS
+ WITH cte1 AS (
+         SELECT r.id,
+            q.size,
+            e.id AS event_id,
+            q.id AS quota_id,
+            e.open_quota_size,
+            r.created_at,
+            row_number() OVER (PARTITION BY r.quota_id ORDER BY r.created_at) AS tmp_pos_quota
+           FROM ((app_public.registrations r
+             LEFT JOIN app_public.quotas q ON ((r.quota_id = q.id)))
+             LEFT JOIN app_public.events e ON ((r.event_id = e.id)))
+        ), cte2 AS (
+         SELECT tmp.id,
+            tmp.size,
+            tmp.event_id,
+            tmp.quota_id,
+            tmp.open_quota_size,
+            tmp.created_at,
+            tmp.tmp_pos_quota,
+            tmp.tmp_status,
+            row_number() OVER (PARTITION BY tmp.event_id, tmp.tmp_status ORDER BY tmp.created_at) AS tmp_pos_status
+           FROM ( SELECT cte1.id,
+                    cte1.size,
+                    cte1.event_id,
+                    cte1.quota_id,
+                    cte1.open_quota_size,
+                    cte1.created_at,
+                    cte1.tmp_pos_quota,
+                        CASE
+                            WHEN (cte1.tmp_pos_quota <= cte1.size) THEN 'IN_QUOTA'::text
+                            ELSE 'OPEN_OR_QUEUE'::text
+                        END AS tmp_status
+                   FROM cte1) tmp
+        ), cte3 AS (
+         SELECT cte2.id,
+            cte2.size,
+            cte2.event_id,
+            cte2.quota_id,
+            cte2.open_quota_size,
+            cte2.created_at,
+            cte2.tmp_pos_quota,
+            cte2.tmp_status,
+            cte2.tmp_pos_status,
+                CASE
+                    WHEN ((cte2.tmp_status = 'OPEN_OR_QUEUE'::text) AND (cte2.tmp_pos_status <= cte2.open_quota_size)) THEN 'IN_OPEN_QUOTA'::app_public.registration_status
+                    WHEN (cte2.tmp_status = 'OPEN_OR_QUEUE'::text) THEN 'IN_QUEUE'::app_public.registration_status
+                    ELSE 'IN_QUOTA'::app_public.registration_status
+                END AS status
+           FROM cte2
+        )
+ SELECT cte3.id,
+    cte3.status,
+        CASE
+            WHEN (cte3.status = 'IN_QUOTA'::app_public.registration_status) THEN (row_number() OVER (PARTITION BY cte3.quota_id, cte3.status ORDER BY cte3.created_at))::integer
+            ELSE (row_number() OVER (PARTITION BY cte3.event_id, cte3.status ORDER BY cte3.created_at))::integer
+        END AS "position"
+   FROM cte3;
+
+
+--
+-- Name: VIEW registrations_status_and_position; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON VIEW app_public.registrations_status_and_position IS 'Rank and position of registrations.';
 
 
 --
@@ -4194,7 +4286,7 @@ ALTER TABLE ONLY app_private.registration_secrets
 --
 
 ALTER TABLE ONLY app_private.registration_secrets
-    ADD CONSTRAINT registration_secrets_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id) ON DELETE CASCADE;
+    ADD CONSTRAINT registration_secrets_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id);
 
 
 --
@@ -4969,6 +5061,13 @@ GRANT INSERT(header_image_file),UPDATE(header_image_file) ON TABLE app_public.ev
 
 
 --
+-- Name: COLUMN events.open_quota_size; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(open_quota_size),UPDATE(open_quota_size) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
 -- Name: COLUMN events.owner_organization_id; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5382,11 +5481,19 @@ GRANT ALL ON FUNCTION app_public.registrations_full_name(registration app_public
 
 
 --
--- Name: FUNCTION registrations_is_queued(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION registrations_position(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.registrations_is_queued(registration app_public.registrations) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.registrations_position(registration app_public.registrations) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registrations_position(registration app_public.registrations) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registrations_status(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registrations_status(registration app_public.registrations) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registrations_status(registration app_public.registrations) TO ilmo_visitor;
 
 
 --
@@ -5573,6 +5680,13 @@ GRANT INSERT(color),UPDATE(color) ON TABLE app_public.event_categories TO ilmo_v
 --
 
 GRANT SELECT ON TABLE app_public.organization_memberships TO ilmo_visitor;
+
+
+--
+-- Name: TABLE registrations_status_and_position; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.registrations_status_and_position TO ilmo_visitor;
 
 
 --

@@ -28,8 +28,8 @@ context("Create event registration", () => {
 
       // Assertion
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${event.slug}`)
-      cy.getCy("eventpage-signups-table").should("contain", "Etunimi")
-      cy.getCy("eventpage-signups-table").should("contain", "Sukunimi")
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Etunimi")
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Sukunimi")
     })
   })
 
@@ -65,8 +65,8 @@ context("Create event registration", () => {
 
       // Assertion
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${event.slug}`)
-      cy.getCy("eventpage-signups-table").should("contain", "Test")
-      cy.getCy("eventpage-signups-table").should("contain", "Tester")
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Test")
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Tester")
     })
   })
 

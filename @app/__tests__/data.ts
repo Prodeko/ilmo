@@ -156,7 +156,8 @@ export const createEvents = async (
   organizationId: string,
   categoryId: string,
   signupOpen: boolean = true,
-  isDraft: boolean = false
+  isDraft: boolean = false,
+  openQuotaSize: number = 0
 ) => {
   const events = []
   for (let i = 0; i < count; i++) {
@@ -213,10 +214,11 @@ export const createEvents = async (
         registration_end_time,
         is_draft,
         header_image_file,
+        open_quota_size,
         owner_organization_id,
         category_id
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       returning *
       `,
       [
@@ -230,6 +232,7 @@ export const createEvents = async (
         registrationEndTime,
         isDraft,
         headerImageFile,
+        openQuotaSize,
         organizationId,
         eventCategoryId,
       ]
@@ -246,15 +249,18 @@ export const createEvents = async (
 export const createQuotas = async (
   client: PoolClient,
   count: number = 1,
-  eventId: string
+  eventId: string,
+  size?: number
 ) => {
   const quotas = []
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
-    const size = faker.datatype.number({
-      min: 3,
-      max: 20,
-    })
+    const s = size
+      ? size
+      : faker.datatype.number({
+          min: 3,
+          max: 20,
+        })
     const {
       rows: [quota],
     } = await client.query(
@@ -262,7 +268,7 @@ export const createQuotas = async (
         values ($1, $2, $3, $4)
         returning *
       `,
-      [eventId, i, title, size]
+      [eventId, i, title, s]
     )
     quotas.push(quota)
   }

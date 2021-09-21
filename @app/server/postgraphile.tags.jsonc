@@ -125,7 +125,9 @@
       },
       "app_public.registrations": {
         "tags": {
-          "omit": "create,insert,update,delete"
+          // Omit default CRUD mutations for registrations. They are handled
+          // via custom mutations.
+          "omit": "create,update,delete"
         }
       },
       // Omit all quota and event question CRUD operations. We define custom
@@ -133,17 +135,22 @@
       // app_public.create_event_quotas and app_public.update_event_quotas.
       "app_public.events": {
         "tags": {
-          "omit": "create,insert,update"
+          "omit": "create,update"
         }
       },
       "app_public.quotas": {
         "tags": {
-          "omit": "create,insert,update,delete"
+          "omit": "create,update,delete"
         }
       },
       "app_public.event_questions": {
         "tags": {
-          "omit": "create,insert,update,delete"
+          "omit": "create,update,delete"
+        }
+      },
+      "app_public.registrations_status_and_position": {
+        "tags": {
+          "omit": "all"
         }
       }
     },

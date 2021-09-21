@@ -16,6 +16,7 @@ Object {
         "isHighlighted": false,
         "location": "[random-4]",
         "name": "[random-1]",
+        "openQuotaSize": 0,
         "registrationEndTime": "[timestamp-4]",
         "registrationStartTime": "[timestamp-3]",
         "signupClosed": false,
@@ -72,7 +73,7 @@ Object {
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 16 at RAISE
 SQL statement \\"SELECT * from app_public.update_event_quotas(id, quotas)\\"
-PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 31 at PERFORM",
+PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 32 at PERFORM",
         },
       },
       "locations": Array [

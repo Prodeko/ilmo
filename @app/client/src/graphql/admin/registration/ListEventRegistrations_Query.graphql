@@ -3,8 +3,9 @@ fragment ListEventRegistrations_Registration on Registration {
   fullName
   firstName
   lastName
-  isQueued
   answers
+  status
+  position
   createdAt
   updatedAt
   quota {

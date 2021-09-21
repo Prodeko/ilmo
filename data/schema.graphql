@@ -765,6 +765,9 @@ type Event {
   """Name of the event."""
   name: TranslatedField!
 
+  """Size of the open quota for the event."""
+  openQuotaSize: Int!
+
   """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
@@ -1155,6 +1158,7 @@ input EventInputRecordInput {
   isHighlighted: Boolean
   location: String
   name: TranslatedField
+  openQuotaSize: Int
   ownerOrganizationId: UUID
   registrationEndTime: Datetime
   registrationStartTime: Datetime
@@ -2552,17 +2556,20 @@ type Registration {
   """True if the registration is completed succesfully."""
   isFinished: Boolean!
 
-  """Designates whether the registration is queued for a quota or not."""
-  isQueued: Boolean
-
   """Last name of the person registering to an event."""
   lastName: ConstrainedName
+
+  """Returns the position of the registration."""
+  position: Int
 
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
 
   """Identifier of a related quota."""
   quotaId: UUID!
+
+  """Returns the status of the registration."""
+  status: RegistrationStatus
   updatedAt: Datetime!
 }
 
@@ -2603,17 +2610,68 @@ input RegistrationFilter {
   """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """Filter by the object’s `isQueued` field."""
-  isQueued: BooleanFilter
-
   """Negates the expression."""
   not: RegistrationFilter
 
   """Checks for any expressions in this list."""
   or: [RegistrationFilter!]
 
+  """Filter by the object’s `position` field."""
+  position: IntFilter
+
   """Filter by the object’s `quotaId` field."""
   quotaId: UUIDFilter
+
+  """Filter by the object’s `status` field."""
+  status: RegistrationStatusFilter
+}
+
+enum RegistrationStatus {
+  IN_OPEN_QUOTA
+  IN_QUEUE
+  IN_QUOTA
+}
+
+"""
+A filter to be used against RegistrationStatus fields. All fields are combined with a logical ‘and.’
+"""
+input RegistrationStatusFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: RegistrationStatus
+
+  """Equal to the specified value."""
+  equalTo: RegistrationStatus
+
+  """Greater than the specified value."""
+  greaterThan: RegistrationStatus
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: RegistrationStatus
+
+  """Included in the specified list."""
+  in: [RegistrationStatus!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: RegistrationStatus
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: RegistrationStatus
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: RegistrationStatus
+
+  """Not equal to the specified value."""
+  notEqualTo: RegistrationStatus
+
+  """Not included in the specified list."""
+  notIn: [RegistrationStatus!]
 }
 
 """A connection to a list of `Registration` values."""

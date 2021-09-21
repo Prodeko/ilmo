@@ -129,15 +129,16 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       setTabErrors(null)
       try {
         const {
+          name,
           eventTime,
           registrationTime,
-          name,
+          openQuotaSize,
           headerImageFile: headerFile,
           quotas: formQuotas,
           questions: formQuestions,
         } = values
 
-        if (!formQuotas) {
+        if (!formQuotas && openQuotaSize < 1) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
@@ -166,13 +167,16 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           registrationStartTime,
           registrationEndTime,
           headerImageFile,
+          openQuotaSize,
         }
 
-        const quotas = formQuotas.map((q: Quota, index: number) => {
-          // Set quota position
-          q.position = index
-          return filterObjectByKeys(q, ["id", "position", "title", "size"])
-        })
+        // FormQuotas can be empty if only the open quota is specified
+        const quotas =
+          formQuotas?.map((q: Quota, index: number) => {
+            // Set quota position
+            q.position = index
+            return filterObjectByKeys(q, ["id", "position", "title", "size"])
+          }) || []
 
         // Questions may be empty
         const questions = formQuestions?.map(
@@ -236,8 +240,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   )
 
   const handleFieldsChange = useCallback(async () => {
-    // Filters form errors that relate to quotas in order to
-    // display them on the general tab
+    // Filters form errors that relate to quotas or questions
+    // in order to display them on the general tab
     debounceTabErrors()
   }, [debounceTabErrors])
 
