@@ -56,8 +56,6 @@ const SSR: FastifyPluginAsync = async (fastify) => {
           // See 'next.config.js'
           ROOT_URL: process.env.ROOT_URL || "http://localhost:5678",
           T_AND_C_URL: process.env.T_AND_C_URL,
-          SENTRY_DSN: process.env.SENTRY_DSN,
-          ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
         }
 
         if (!handler) {

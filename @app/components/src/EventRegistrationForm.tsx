@@ -8,7 +8,6 @@ import {
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
 import { registrationFormItemLayout, tailFormItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import {
   Button,
   Checkbox,
@@ -111,7 +110,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
           setUpdateToken?.(updateToken)
         } catch (e) {
           setFormError(e)
-          Sentry.captureException(e)
         }
       }
     })()
@@ -144,7 +142,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
       }
     } catch (e) {
       setFormError(e)
-      Sentry.captureException(e)
     }
     setDeleting(false)
   }, [deleteRegistration, updateToken, submitAction, formRedirect, router, t])
@@ -186,7 +183,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
             })
       } catch (e) {
         setFormError(e)
-        Sentry.captureException(e)
       }
     },
     [

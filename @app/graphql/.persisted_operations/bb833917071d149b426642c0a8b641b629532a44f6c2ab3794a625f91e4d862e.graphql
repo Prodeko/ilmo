@@ -1,0 +1,10 @@
+mutation PasswordStrength($password: String!) {
+  calculatePasswordStrength(password: $password) {
+    score
+    feedback {
+      suggestions
+      __typename
+    }
+    __typename
+  }
+}

@@ -1,22 +1,14 @@
 name: Node checks
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  skip_duplicates:
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@master
-        with:
-          concurrent_skipping: "same_content_newer"
-
   build:
-    needs: skip_duplicates
-    if: ${{ needs.skip_duplicates.outputs.should_skip != 'true' }}
-
     runs-on: ubuntu-latest
 
     strategy:

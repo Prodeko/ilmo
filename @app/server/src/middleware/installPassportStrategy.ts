@@ -24,7 +24,7 @@ export type GetUserInformationFunction = (
   accessToken: string,
   refreshToken: string,
   extra: any,
-  req: Request
+  req: FastifyRequest
 ) => UserSpec | Promise<UserSpec>
 
 declare module "fastify-secure-session" {

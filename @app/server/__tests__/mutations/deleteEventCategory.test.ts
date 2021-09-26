@@ -1,4 +1,5 @@
-import { DeleteEventCategoryDocument } from "../../../graphql"
+import { DeleteEventCategoryDocument } from "@app/graphql"
+
 import {
   asRoot,
   createEventDataAndLogin,

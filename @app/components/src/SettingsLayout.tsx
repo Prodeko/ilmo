@@ -1,4 +1,4 @@
-import * as qs from "querystring"
+import qs from "querystring"
 
 import { Layout, Menu, Typography } from "antd"
 import { TextProps } from "antd/lib/typography/Text"

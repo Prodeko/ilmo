@@ -11,19 +11,27 @@ import {
   getCodeFromError,
   tailFormItemLayout,
 } from "@app/lib"
-import { Alert, Button, Col, Form, Input, PageHeader, Row } from "antd"
-import { useForm } from "antd/lib/form/Form"
-import Text from "antd/lib/typography/Text"
-import { debounce } from "lodash"
+import {
+  Alert,
+  Button,
+  Col,
+  Form,
+  Input,
+  PageHeader,
+  Row,
+  Typography,
+} from "antd"
+import debounce from "lodash/debounce"
 import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
-import { Store } from "rc-field-form/lib/interface"
 import slugify from "slugify"
+
+const { Text } = Typography
 
 const Admin_CreateOrganization: NextPage = () => {
   const [query] = useSharedQuery()
   const { t } = useTranslation("admin")
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [slug, setSlug] = useState("")
   const [pauseQuery, setPauseQuery] = useState(true)
 
@@ -56,7 +64,7 @@ const Admin_CreateOrganization: NextPage = () => {
   const code = getCodeFromError(error)
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       const { name } = values
       const slug = slugify(name || "", {
         lower: true,
@@ -69,7 +77,7 @@ const Admin_CreateOrganization: NextPage = () => {
     [createOrganization]
   )
 
-  const handleValuesChange = useCallback((values: Store) => {
+  const handleValuesChange = useCallback((values) => {
     if ("name" in values) {
       setSlug(
         slugify(values.name, {

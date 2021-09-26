@@ -1,7 +1,7 @@
 import React from "react"
 import { Event } from "@app/graphql"
 import { Col, Popover, Progress, Row, Typography } from "antd"
-import { reduce } from "lodash"
+import reduce from "lodash/reduce"
 import useTranslation from "next-translate/useTranslation"
 
 interface EventQuotaPopoverProps {

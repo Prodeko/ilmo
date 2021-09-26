@@ -6,12 +6,9 @@ import {
   useUpdateUserMutation,
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
-import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Profile: NextPage = () => {
   const { t } = useTranslation()
@@ -40,12 +37,12 @@ interface ProfileSettingsFormProps {
 }
 
 function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [{ error }, updateUser] = useUpdateUserMutation()
   const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       setSuccess(false)
       try {
         const { error } = await updateUser({
@@ -69,8 +66,6 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
               ],
             },
           ])
-        } else {
-          Sentry.captureException(e)
         }
       }
     },

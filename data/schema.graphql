@@ -1529,6 +1529,7 @@ type Mutation {
     """
     input: AdminUpdateRegistrationInput!
   ): AdminUpdateRegistrationPayload
+  calculatePasswordStrength(password: String!): PasswordStrengthPayload
 
   """Enter your old password and a new password to change your password."""
   changePassword(
@@ -2124,6 +2125,15 @@ type PageInfo {
 
   """When paginating backwards, the cursor to continue."""
   startCursor: Cursor
+}
+
+type PasswordStrengthFeedback {
+  suggestions: [String!]!
+}
+
+type PasswordStrengthPayload {
+  feedback: PasswordStrengthFeedback!
+  score: Int!
 }
 
 """The root query type which gives access points into the data universe."""

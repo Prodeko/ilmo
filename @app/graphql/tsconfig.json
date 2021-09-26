@@ -1,16 +1,15 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "noEmit": false,
     "rootDir": ".",
     "outDir": ".",
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "declarationDir": ".",
-    "lib": ["es2018", "esnext.asynciterable"],
-    "target": "es2018",
+    "lib": ["esnext", "esnext.asynciterable"],
+    "target": "es2020",
     "module": "commonjs",
-    "jsx": "react"
+    "esModuleInterop": true
   },
-  "include": ["index.tsx", "client.json", "introspection.json"]
+  "include": ["index.ts", "client.json", "introspection.min.json"]
 }

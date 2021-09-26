@@ -32,7 +32,7 @@ jobs:
         env:
           cache-name: cache-next-build
         with:
-          path: .next/cache
+          path: "@app/client/.next/cache"
           # change this if you prefer a more strict cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}
 

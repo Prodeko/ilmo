@@ -1,7 +1,6 @@
 import { readFileSync } from "fs"
 import { resolve } from "path"
 
-import * as Sentry from "@sentry/node"
 import { FastifyError, FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { template, TemplateExecutor } from "lodash"
@@ -60,7 +59,6 @@ function _getErrorPage({ message }: ParsedError) {
 const ErrorHandler: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error, _req, res) => {
     console.error(error)
-    Sentry.captureException(error)
 
     const parsedError = parseError(error)
     const errorMessageString = `ERROR: ${parsedError.message}`

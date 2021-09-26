@@ -8,7 +8,6 @@ import {
   useTransferOrganizationOwnershipMutation,
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import {
   Button,
   Card,
@@ -19,11 +18,11 @@ import {
   Popconfirm,
   Typography,
 } from "antd"
-import Text from "antd/lib/typography/Text"
 import useTranslation from "next-translate/useTranslation"
-import { Store } from "rc-field-form/lib/interface"
 
 import { Redirect } from "./index"
+
+const { Text } = Typography
 
 interface OrganizationMembersProps {
   currentUser?: SharedLayout_UserFragment | null
@@ -61,7 +60,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
   const [inviteInProgress, setInviteInProgress] = useState(false)
   const [form] = Form.useForm()
   const handleInviteSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       if (inviteInProgress) {
         return
       }
@@ -82,7 +81,6 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
           "Could not invite to organization: " +
             e.message.replace(/^GraphQL Error:/i, "")
         )
-        Sentry.captureException(e)
       } finally {
         setInviteInProgress(false)
       }
@@ -159,7 +157,6 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
       })
     } catch (e) {
       message.error("Error occurred when removing member: " + e.message)
-      Sentry.captureException(e)
     }
   }, [node.user, organization.id, removeMember])
 
@@ -172,7 +169,6 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
       })
     } catch (e) {
       message.error("Error occurred when transferring ownership: " + e.message)
-      Sentry.captureException(e)
     }
   }, [node.user, organization.id, transferOwnership])
 

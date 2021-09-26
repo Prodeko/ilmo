@@ -1,8 +1,18 @@
 import { IncomingMessage, Server, ServerResponse } from "http"
 import { ParsedUrlQuery } from "querystring"
 
+import {
+  Event,
+  EventCategory,
+  EventQuestion,
+  Organization,
+  Quota,
+  Registration,
+  User,
+} from "@app/graphql"
+import { RegistrationSecret, Session } from "@app/lib"
 import dayjs from "dayjs"
-import * as faker from "faker"
+import faker from "faker"
 import {
   FastifyPluginAsync,
   FastifyReply,
@@ -13,6 +23,7 @@ import { RouteGenericInterface } from "fastify/types/route"
 import fp from "fastify-plugin"
 import { Pool, PoolClient } from "pg"
 import slugify from "slugify"
+import { SnakeCasedProperties } from "type-fest"
 
 const paragraph = () => faker.lorem.paragraph()
 const word = () => faker.lorem.word()
@@ -194,7 +205,10 @@ async function runCommand(
     } = payload
     const client = await rootPgPool.connect()
 
-    let user: any, otherUser: any, session: any, otherSession: any
+    let user: SnakeCasedProperties<User>,
+      otherUser: SnakeCasedProperties<User>,
+      session: any,
+      otherSession: any
 
     if (existingUser) {
       const { rows } = await client.query(
@@ -331,7 +345,7 @@ async function reallyCreateUser(
     verified?: boolean
     isAdmin?: boolean
   }
-) {
+): Promise<SnakeCasedProperties<User>> {
   const {
     rows: [user],
   } = await rootPgPool.query(
@@ -436,7 +450,7 @@ export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
 ) => {
-  const organizations = []
+  const organizations: SnakeCasedProperties<Organization>[] = []
   for (let i = 0; i < count; i++) {
     const random = words()
     const slug = slugify(`organization-${random}`)
@@ -461,7 +475,7 @@ export const createEventCategories = async (
   count: number = 1,
   organizationId: string
 ) => {
-  const categories = []
+  const categories: SnakeCasedProperties<EventCategory>[] = []
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
     const description = {
@@ -496,7 +510,7 @@ export const createEvents = async (
   eventSignupClosed: boolean,
   openQuotaSize: number = 0
 ) => {
-  const events = []
+  let events: SnakeCasedProperties<Event>[] = []
   for (let i = 0; i < count; i++) {
     const name = {
       fi: `Tapahtuma ${words()} ${i}`,
@@ -584,7 +598,7 @@ export const createQuotas = async (
   eventId: string,
   size?: number
 ) => {
-  const quotas = []
+  const quotas: SnakeCasedProperties<Quota>[] = []
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const s = size
@@ -624,7 +638,7 @@ export const createQuestions = async (
   type?: "CHECKBOX" | "RADIO" | "TEXT"
 ) => {
   const questionTypes = ["CHECKBOX", "RADIO", "TEXT"]
-  let questions = []
+  let questions: SnakeCasedProperties<EventQuestion>[] = []
   for (let i = 0; i < count; i++) {
     const t = type ? type : questionTypes[i % 3]
     const label = { fi: words(), en: words() }
@@ -654,7 +668,7 @@ export const createQuestions = async (
   questions = questions.map((q) => ({
     ...q,
     data: q?.data?.map((d: string) => JSON.parse(d)),
-  }))
+  })) as SnakeCasedProperties<EventQuestion>[]
 
   return questions
 }
@@ -669,7 +683,7 @@ export const createRegistrationSecrets = async (
   eventId: string,
   quotaId: string
 ) => {
-  const registrationSecrets = []
+  const registrationSecrets: RegistrationSecret[] = []
   for (let i = 0; i < count; i++) {
     const {
       rows: [secret],
@@ -714,9 +728,9 @@ export const createRegistrations = async (
   count: number = 1,
   eventId: string,
   quotaId: string,
-  questions: any[]
+  questions: SnakeCasedProperties<EventQuestion>[]
 ) => {
-  const registrations = []
+  const registrations: SnakeCasedProperties<Registration>[] = []
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName()
     const lastName = faker.name.lastName()
@@ -738,10 +752,13 @@ export const createRegistrations = async (
   return registrations
 }
 
-async function createSession(rootPgPool: Pool, userId: string) {
+export const createSession = async (
+  client: Pool,
+  userId: string
+): Promise<Session> => {
   const {
     rows: [session],
-  } = await rootPgPool.query(
+  } = await client.query(
     `insert into app_private.sessions (user_id)
       values ($1)
       returning *

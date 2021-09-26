@@ -1,6 +1,5 @@
 import { useState } from "react"
-import InboxOutlined from "@ant-design/icons/InboxOutlined"
-import PictureOutlined from "@ant-design/icons/PictureOutlined"
+import { InboxOutlined, PictureOutlined } from "@ant-design/icons"
 import { Upload } from "antd"
 import { UploadFile } from "antd/lib/upload/interface"
 import ImgCrop from "antd-img-crop"

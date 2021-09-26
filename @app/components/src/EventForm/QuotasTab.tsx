@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import DragOutlined from "@ant-design/icons/DragOutlined"
-import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone"
-import PlusOutlined from "@ant-design/icons/PlusOutlined"
+import {
+  DragOutlined,
+  MinusCircleTwoTone,
+  PlusOutlined,
+} from "@ant-design/icons"
 import { Button, Form, Input, InputNumber, Space, Switch, Tooltip } from "antd"
 import useTranslation from "next-translate/useTranslation"
 

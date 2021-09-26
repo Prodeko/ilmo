@@ -69,6 +69,8 @@ runMain(async () => {
   )
 
   // And perform setup
+  runSync(yarnCmd, ["graphql", "build"])
+  runSync(yarnCmd, ["lib", "build"])
   runSync(yarnCmd, ["server", "build"])
 
   if (process.argv[2] === "auto") {

@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   EventPage_RegistrationFragment,
   EventPage_SubscriptionFragment,
   OrganizationPage_QueryFragment,
   useEventRegistrationsSubscription,
+  usePasswordStrengthMutation,
 } from "@app/graphql"
 import { Col, Row } from "antd"
 import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
+import debounce from "lodash/debounce"
 import { useRouter } from "next/router"
 import { UseQueryState } from "urql"
 
@@ -108,4 +110,33 @@ export function useIsMobile() {
   const screens = useBreakpoint()
   const isMobile = screens["xs"]
   return isMobile!
+}
+
+export function usePasswordStrength(
+  changedValues: any,
+  fieldName = "password"
+) {
+  const [strength, setStrength] = useState(0)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [_, getPasswordStrength] = usePasswordStrengthMutation()
+
+  const getPasswordStrengthDebounced = useMemo(
+    () =>
+      debounce(async (password: string) => {
+        const { data } = await getPasswordStrength({ password })
+        const { score, feedback } = data?.calculatePasswordStrength || {}
+        setStrength(score || 0)
+        setSuggestions(feedback?.suggestions || [])
+      }, 500),
+    [getPasswordStrength]
+  )
+
+  useEffect(() => {
+    const password = changedValues?.[fieldName]
+    if (password) {
+      getPasswordStrengthDebounced(password)
+    }
+  }, [changedValues, fieldName, getPasswordStrengthDebounced])
+
+  return { strength, suggestions }
 }

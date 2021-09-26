@@ -5,7 +5,6 @@ import {
   useDeleteEventCategoryMutation,
   useDeleteEventMutation,
 } from "@app/graphql"
-import * as Sentry from "@sentry/react"
 import { Button, Col, message, Popconfirm, Row } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
@@ -40,7 +39,6 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
       if (error) throw error
       message.info(t("notifications.deleteSuccess"))
     } catch (e) {
-      Sentry.captureException(e)
       setError(e)
     }
   }, [deleteDataType, dataType, t])

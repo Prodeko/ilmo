@@ -7,13 +7,11 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "declarationDir": "dist",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "target": "es5",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
     "jsx": "react-jsx",
-    "declaration": true,
-    "emitDeclarationOnly": true,
     "isolatedModules": true,
-    "typeRoots": ["src/types/"]
+    "esModuleInterop": true
   },
   "include": ["../client/next-env.d.ts", "src/**/*.ts", "src/**/*.tsx"],
   "references": [

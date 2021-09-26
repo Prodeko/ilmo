@@ -8,10 +8,6 @@ import installPassport from "./installPassport"
 import installPostGraphile from "./installPostGraphile"
 import installRedis from "./installRedis"
 import installSameOrigin from "./installSameOrigin"
-import {
-  installSentryErrorHandler,
-  installSentryRequestHandler,
-} from "./installSentry"
 import installSession from "./installSession"
 import installSSR from "./installSSR"
 import installStaticUploads from "./installStaticUploads"
@@ -28,8 +24,6 @@ export {
   installPostGraphile,
   installRedis,
   installSameOrigin,
-  installSentryErrorHandler,
-  installSentryRequestHandler,
   installSession,
   installSSR,
   installStaticUploads,

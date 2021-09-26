@@ -2,19 +2,19 @@
   "name": "@app/components",
   "version": "0.0.0",
   "main": "dist/index.js",
+  "type": "module",
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc -b && babel src --out-dir dist --extensions '.tsx'",
-    "watch": "babel src --watch --out-dir dist --extensions '.tsx'",
-    "depcheck": "depcheck --ignores=\"graphql,tslib\""
+    "build": "tsc -b",
+    "depcheck": "depcheck --ignores=\"graphql\""
   },
   "dependencies": {
-    "@ant-design/icons": "^4.6.4",
+    "@ant-design/icons": "^4.7.0",
     "@app/client": "workspace:*",
     "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
-    "@babel/runtime": "^7.15.4",
-    "@sentry/react": "^6.13.2",
+    "@react-icons/all-files": "^4.1.0",
     "antd": "^4.16.13",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^3.16.0",
@@ -22,23 +22,20 @@
     "lodash": "^4.17.21",
     "next": "^11.1.2",
     "next-translate": "^1.1.0",
-    "rc-field-form": "^1.21.2",
+    "nprogress": "^0.2.0",
     "rc-picker": "^2.5.18",
     "react": "^17.0.2",
     "react-color-palette": "^6.1.0",
     "react-cookie": "^4.1.1",
     "react-country-flag": "^2.3.1",
-    "react-dnd": "^14.0.3",
-    "react-dnd-html5-backend": "^14.0.1",
+    "react-dnd": "^14.0.4",
+    "react-dnd-html5-backend": "^14.0.2",
     "react-dom": "^17.0.2",
-    "react-icons": "^4.2.0",
     "slugify": "^1.6.0",
-    "tslib": "^2.3.1",
     "urql": "^2.0.5"
   },
   "devDependencies": {
-    "@babel/cli": "^7.15.7",
-    "@types/react-dom": "^17.0.9",
-    "babel-plugin-import": "^1.13.3"
+    "@types/nprogress": "^0.2.0",
+    "@types/react-dom": "^17.0.9"
   }
 }

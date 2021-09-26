@@ -8,7 +8,7 @@ import {
   TableProps,
 } from "antd/lib/table"
 import { DocumentNode } from "graphql"
-import { get } from "lodash"
+import get from "lodash/get"
 import { useQuery } from "urql"
 
 import { ErrorResult } from "./ErrorResult"
@@ -118,6 +118,7 @@ export function ServerPaginatedTable({
       dataSource={get(data, dataField)?.nodes || []}
       loading={fetching && { indicator: <Loading /> }}
       pagination={showPagination && pagination}
+      // @ts-ignore
       rowKey={(obj) => obj.id}
       scroll={{ x: 100 }}
       size={isMobile ? "small" : "middle"}

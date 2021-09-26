@@ -1,4 +1,5 @@
-import { UpdateEventCategoryDocument } from "../../../graphql"
+import { UpdateEventCategoryDocument } from "@app/graphql"
+
 import {
   asRoot,
   createEventDataAndLogin,

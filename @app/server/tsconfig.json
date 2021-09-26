@@ -6,15 +6,10 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "declarationDir": "dist",
-    "lib": ["es2018", "esnext.asynciterable"],
-    "target": "es2018",
+    "lib": ["es2020", "esnext.asynciterable"],
+    "target": "es2020",
     "module": "commonjs"
   },
   "include": ["src"],
-  "references": [{ "path": "../config" }],
-  "ts-node": {
-    "compilerOptions": {
-      "rootDir": ""
-    }
-  }
+  "references": [{ "path": "../config" }, { "path": "../lib" }]
 }

@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/node"
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
@@ -161,7 +160,6 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
             console.error(
               "Unrecognised error in PassportLoginPlugin; replacing with sanitized version"
             )
-            Sentry.captureException(e)
             console.error(e)
             const error = new Error("Registration failed")
             error["code"] = code
@@ -219,7 +217,6 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
             throw e
           } else {
             console.error(e)
-            Sentry.captureException(e)
             const error = new Error("Login failed")
             error["code"] = e.code
             throw error

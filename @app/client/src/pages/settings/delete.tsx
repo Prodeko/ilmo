@@ -6,7 +6,6 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { getCodeFromError } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Alert, Button, Modal, PageHeader, Typography } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
@@ -44,7 +43,6 @@ const Settings_Accounts: NextPage = () => {
         setItIsDone(true)
       } catch (e) {
         setError(e)
-        Sentry.captureException(e)
       }
       setDoingIt(false)
       setConfirmOpen(false)
@@ -68,7 +66,6 @@ const Settings_Accounts: NextPage = () => {
         setDeleted(true)
       } catch (e) {
         setError(e)
-        Sentry.captureException(e)
       }
       setDeleting(false)
     })()

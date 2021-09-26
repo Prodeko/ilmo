@@ -5,6 +5,7 @@ import {
   P,
   PasswordStrength,
   SettingsLayout,
+  usePasswordStrength,
 } from "@app/components"
 import {
   useChangePasswordMutation,
@@ -12,31 +13,23 @@ import {
   useSettingsPasswordQuery,
   useSharedQuery,
 } from "@app/graphql"
-import {
-  formItemLayout,
-  getCodeFromError,
-  setPasswordInfo,
-  tailFormItemLayout,
-} from "@app/lib"
-import * as Sentry from "@sentry/react"
+import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Link from "next/link"
-import { Store } from "rc-field-form/lib/interface"
 
 const Settings_Security: NextPage = () => {
-  const [passwordStrength, setPasswordStrength] = useState<number>(0)
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
-
   const [query] = useSharedQuery()
 
-  const [form] = useForm()
+  const [form] = Form.useForm()
+  const [formValues, setFormValues] = useState()
+  const { strength: passwordStrength, suggestions: passwordSuggestions } =
+    usePasswordStrength(formValues, "newPassword")
   const [{ error }, changePassword] = useChangePasswordMutation()
   const [success, setSuccess] = useState(false)
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       setSuccess(false)
       try {
         const { error } = await changePassword({
@@ -66,7 +59,6 @@ const Settings_Security: NextPage = () => {
             },
           ])
         } else {
-          Sentry.captureException(e)
         }
       }
     },
@@ -102,12 +94,8 @@ const Settings_Security: NextPage = () => {
   const [passwordIsDirty, setPasswordIsDirty] = useState(false)
   const handleValuesChange = useCallback(
     (changedValues) => {
-      setPasswordInfo(
-        { setPasswordStrength, setPasswordSuggestions },
-        changedValues,
-        "newPassword"
-      )
-      setPasswordIsDirty(form.isFieldTouched("password"))
+      setFormValues(changedValues)
+      setPasswordIsDirty(form.isFieldTouched("newPassword"))
     },
     [form]
   )
