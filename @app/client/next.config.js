@@ -1,4 +1,6 @@
 require("@app/config")
+
+const path = require("path")
 const compose = require("lodash/flowRight")
 const { locales, defaultLocale } = require("./i18n.js")
 const AntDDayjsWebpackPlugin = require("antd-dayjs-webpack-plugin")
@@ -17,54 +19,65 @@ if (!process.env.ROOT_URL) {
 const { NODE_ENV } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
 
-module.exports = () => {
-  const path = require("path")
+const withTM = require("next-transpile-modules")([
+  // Transpile components and lib according to @app/client/.babelrc.
+  // This is needed to have correct styling as babel-plugin-import
+  // inserts the required styles
+  "@app/components",
+  "@app/lib",
+  "rc-util",
+])
+const withAntdLess = require("next-plugin-antd-less")
+const withNextTranslate = require("next-translate")
 
-  const withTM = require("next-transpile-modules")([
-    "@app/components",
-    "@app/lib",
-  ])
-  const withAntdLess = require("next-plugin-antd-less")
-  const withNextTranslate = require("next-translate")
+const withAntdLessOptions = {
+  lessVarsFilePath: path.resolve(__dirname, "./src/styles/antd-custom.less"),
+  cssLoaderOptions: {
+    esModule: false,
+    sourceMap: false,
+    modules: {
+      mode: "local",
+    },
+  },
+}
 
-  return compose(
+const nextOptions = {
+  experimental: {
+    // Import @app/components and @app/lib as ES modules
+    esmExternals: true,
+  },
+  reactStrictMode: true,
+  useFileSystemPublicRoutes: true,
+  poweredByHeader: false,
+  trailingSlash: false,
+  i18n: {
+    locales,
+    defaultLocale,
+  },
+  images: {
+    domains: isDevOrTest
+      ? ["localhost", "static.prodeko.org", "placeimg.com"]
+      : ["ilmo3.prodeko.org", "static.prodeko.org"],
+  },
+  env: {
+    CI: process.env.CI,
+    ENV: process.env.NODE_ENV,
+    ROOT_URL: process.env.ROOT_URL,
+    T_AND_C_URL: process.env.T_AND_C_URL,
+    ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
+    TZ: process.env.TZ,
+  },
+}
+
+module.exports = () =>
+  compose(
     withTM,
     withAntdLess,
     withNextTranslate,
     withBundleAnalyzer
   )({
-    experimental: { esmExternals: true },
-    reactStrictMode: true,
-    useFileSystemPublicRoutes: true,
-    poweredByHeader: false,
-    trailingSlash: false,
-    lessVarsFilePath: path.resolve(__dirname, "./src/styles/antd-custom.less"),
-    lessVarsFilePathAppendToEndOfContent: false,
-    cssLoaderOptions: {
-      esModule: false,
-      sourceMap: false,
-      modules: {
-        mode: "local",
-      },
-    },
-    i18n: {
-      locales,
-      defaultLocale,
-    },
-    images: {
-      domains: isDevOrTest
-        ? ["localhost", "static.prodeko.org", "placeimg.com"]
-        : ["ilmo3.prodeko.org", "static.prodeko.org"],
-    },
-    env: {
-      CI: process.env.CI,
-      ENV: process.env.NODE_ENV,
-      ROOT_URL: process.env.ROOT_URL,
-      T_AND_C_URL: process.env.T_AND_C_URL,
-      SENTRY_DSN: process.env.SENTRY_DSN,
-      ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
-      TZ: process.env.TZ,
-    },
+    ...nextOptions,
+    ...withAntdLessOptions,
     webpack(config, { webpack, dev, isServer }) {
       const makeSafe = (externals) => {
         if (Array.isArray(externals)) {
@@ -89,19 +102,20 @@ module.exports = () => {
 
       if (!isServer) {
         config.resolve.fallback.fs = false
+        config.plugins.push(
+          new webpack.IgnorePlugin(
+            // These modules are server-side only; we don't want webpack
+            // attempting to bundle them into the client.
+            {
+              resourceRegExp: /^(ws)$/,
+            }
+          )
+        )
       }
 
       return {
         ...config,
-        plugins: [
-          ...config.plugins,
-          new webpack.IgnorePlugin(
-            // These modules are server-side only; we don't want webpack
-            // attempting to bundle them into the client.
-            /^(node-gyp-build|bufferutil|utf-8-validate)$/
-          ),
-          new AntDDayjsWebpackPlugin(),
-        ],
+        plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
         externals: [
           ...(externals || []),
           isServer ? { "pg-native": "pg/lib/client" } : null,
@@ -109,4 +123,3 @@ module.exports = () => {
       }
     },
   })
-}

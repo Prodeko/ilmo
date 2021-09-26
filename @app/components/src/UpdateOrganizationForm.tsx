@@ -5,12 +5,9 @@ import {
   useUpdateOrganizationMutation,
 } from "@app/graphql"
 import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
-import { Store } from "rc-field-form/lib/interface"
 
 import { Redirect } from "./index"
 
@@ -31,7 +28,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
   )
 
   const { t } = useTranslation("admin")
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const router = useRouter()
   const [error, setError] = useState<Error | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -53,13 +50,12 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
       router.push("/")
     } catch (e) {
       setError(e)
-      Sentry.captureException(e)
     }
     setDeleting(false)
   }, [deleteOrganization, organizationId, name, router])
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       try {
         setError(null)
         const { data } = await updateOrganization({
@@ -78,7 +74,6 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         }
       } catch (e) {
         setError(e)
-        Sentry.captureException(e)
       }
     },
     [organizationId, slug, updateOrganization]

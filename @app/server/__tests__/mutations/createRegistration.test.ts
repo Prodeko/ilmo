@@ -3,7 +3,6 @@ import {
   CreateEventRegistrationDocument,
   QuestionType,
 } from "@app/graphql"
-import { removePropFromObject } from "@app/lib"
 
 import {
   asRoot,
@@ -12,6 +11,7 @@ import {
   createEventDataAndLogin,
   deleteTestData,
   getJobs,
+  removePropFromObject,
   runGraphQLQuery,
   runJobs,
   setup,

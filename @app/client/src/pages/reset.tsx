@@ -5,14 +5,12 @@ import {
   PasswordStrength,
   Row,
   SharedLayout,
+  usePasswordStrength,
 } from "@app/components"
 import { useResetPasswordMutation, useSharedQuery } from "@app/graphql"
-import { formItemLayout, setPasswordInfo, tailFormItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
+import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
-import { Store } from "rc-field-form/lib/interface"
 
 interface Props {
   userId: string | null
@@ -26,11 +24,12 @@ enum State {
 }
 
 const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [query] = useSharedQuery()
   const [error, setError] = useState<Error | null>(null)
-  const [passwordStrength, setPasswordStrength] = useState<number>(0)
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
+  const [formValues, setFormValues] = useState()
+  const { strength: passwordStrength, suggestions: passwordSuggestions } =
+    usePasswordStrength(formValues, "password")
   const [state, setState] = useState<State>(State.PENDING)
   const [[userId, token], setIdAndToken] = useState<[string, string]>([
     rawUserId || "",
@@ -60,7 +59,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
 
   const [, resetPassword] = useResetPasswordMutation()
   const handleSubmit = useCallback(
-    (values: Store) => {
+    (values) => {
       setState(State.SUBMITTING)
       setError(null)
       ;(async () => {
@@ -83,7 +82,6 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
             setError(new Error("Please check the errors above and try again"))
           }
           setState(State.PENDING)
-          Sentry.captureException(e)
         }
       })()
     },
@@ -93,10 +91,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
   const [passwordIsDirty, setPasswordIsDirty] = useState(false)
   const handleValuesChange = useCallback(
     (changedValues) => {
-      setPasswordInfo(
-        { setPasswordStrength, setPasswordSuggestions },
-        changedValues
-      )
+      setFormValues(changedValues)
       setPasswordIsDirty(form.isFieldTouched("password"))
       if (changedValues.confirm) {
         if (form.isFieldTouched("password")) {

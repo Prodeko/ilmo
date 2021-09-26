@@ -8,10 +8,10 @@ import {
   UpdateEventPageQuery,
 } from "@app/graphql"
 import { filterObjectByKeys, formItemLayout } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Badge, Form, Tabs } from "antd"
 import dayjs from "dayjs"
-import { debounce, uniq } from "lodash"
+import debounce from "lodash/debounce"
+import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
@@ -212,7 +212,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         router.push(formRedirect, formRedirect)
       } catch (e) {
         setFormError(e)
-        Sentry.captureException(e)
       }
       setFormSubmitting(false)
     },

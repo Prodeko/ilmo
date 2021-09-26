@@ -17,9 +17,7 @@ import {
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
-import { Store } from "rc-field-form/lib/interface"
 
 function Email({
   email,
@@ -187,10 +185,10 @@ interface AddEmailFormProps {
 }
 
 function AddEmailForm({ onComplete }: AddEmailFormProps) {
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [{ error }, addEmail] = useAddEmailMutation()
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       const { error } = await addEmail({ email: values.email })
       if (!error) onComplete()
     },

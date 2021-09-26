@@ -17,6 +17,8 @@ runMain(async () => {
   await checkGit()
 
   // Ensure server build has been run
+  runSync(yarnCmd, ["graphql", "build"])
+  runSync(yarnCmd, ["lib", "build"])
   runSync(yarnCmd, ["server", "build"])
 
   // Source our environment

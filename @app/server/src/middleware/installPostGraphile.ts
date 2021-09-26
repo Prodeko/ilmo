@@ -23,17 +23,20 @@ import { makePgSmartTagsFromFilePlugin } from "postgraphile/plugins"
 import ConnectionFilterPlugin from "postgraphile-plugin-connection-filter"
 
 import { convertHandler } from "../app"
-import EmailsPlugin from "../plugins/EmailsPlugin"
-import EventRegistrationPlugin from "../plugins/EventRegistrationPlugin"
-import OrdersPlugin from "../plugins/Orders"
-import PassportLoginPlugin from "../plugins/PassportLoginPlugin"
-import PrimaryKeyMutationsOnlyPlugin from "../plugins/PrimaryKeyMutationsOnlyPlugin"
-import RateLimitPlugin from "../plugins/RateLimitPlugin"
-import RemoveAccountRegistrationFields from "../plugins/RemoveAccountRegistrationFields"
-import RemoveOwnershipInfoForeignKeyConnections from "../plugins/RemoveOwnershipInfoForeignKeyConnections"
-import RemoveQueryQueryPlugin from "../plugins/RemoveQueryQueryPlugin"
-import SubscriptionsPlugin from "../plugins/SubscriptionsPlugin"
-import UploadsPlugin from "../plugins/UploadsPlugin"
+import {
+  EmailsPlugin,
+  EventRegistrationPlugin,
+  OrdersPlugin,
+  PassportLoginPlugin,
+  PasswordStrengthPlugin,
+  PrimaryKeyMutationsOnlyPlugin,
+  RateLimitPlugin,
+  RemoveAccountRegistrationFields,
+  RemoveOwnershipInfoForeignKeyConnections,
+  RemoveQueryQueryPlugin,
+  SubscriptionsPlugin,
+  UploadsPlugin,
+} from "../plugins"
 import { resolveUpload } from "../utils/fileUpload"
 import handleErrors from "../utils/handleErrors"
 
@@ -261,6 +264,9 @@ export function getPostGraphileOptions({
 
       // Adds the `login` mutation to enable users to log in
       PassportLoginPlugin,
+
+      // Calculate password strength with zxcvbn-ts on the server side
+      PasswordStrengthPlugin,
 
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.

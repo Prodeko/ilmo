@@ -5,9 +5,9 @@ import {
 } from "@app/config"
 import chalk from "chalk"
 import { Task } from "graphile-worker"
-import * as html2text from "html-to-text"
+import html2text from "html-to-text"
 import mjml2html from "mjml"
-import * as nodemailer from "nodemailer"
+import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
 
 import getTransport from "../transport"

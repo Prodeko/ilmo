@@ -73,7 +73,7 @@ module.exports = {
       },
     },
     {
-      files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "**/*.jsx"],
       parser: "@typescript-eslint/parser",
       extends: [
         "plugin:react/recommended",

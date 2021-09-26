@@ -1,10 +1,10 @@
 import { UpdateEventRegistrationDocument } from "@app/graphql"
-import { removePropFromObject } from "@app/lib"
 
 import {
   asRoot,
   createEventDataAndLogin,
   deleteTestData,
+  removePropFromObject,
   runGraphQLQuery,
   setup,
   teardown,

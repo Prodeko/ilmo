@@ -1,10 +1,12 @@
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import DragOutlined from "@ant-design/icons/DragOutlined"
-import MinusCircleTwoTone from "@ant-design/icons/MinusCircleTwoTone"
-import MinusOutlined from "@ant-design/icons/MinusOutlined"
-import PlusCircleTwoTone from "@ant-design/icons/PlusCircleTwoTone"
-import PlusOutlined from "@ant-design/icons/PlusOutlined"
+import {
+  DragOutlined,
+  MinusCircleTwoTone,
+  MinusOutlined,
+  PlusCircleTwoTone,
+  PlusOutlined,
+} from "@ant-design/icons"
 import { QuestionType } from "@app/graphql"
 import {
   Button,

@@ -1,11 +1,10 @@
 {
   // Minimal tsconfig for running scripts/{create-fake-data,clean-fake-data}
-  // with node-ts
+  // with ts-node
   "compilerOptions": {
     "noEmit": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "jsx": "preserve",
     "module": "commonjs"
   }
 }

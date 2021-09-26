@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import LockOutlined from "@ant-design/icons/LockOutlined"
-import UserAddOutlined from "@ant-design/icons/UserAddOutlined"
-import UserOutlined from "@ant-design/icons/UserOutlined"
+import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
   ButtonLink,
@@ -15,13 +13,10 @@ import {
 } from "@app/components"
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
 import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Button, Form, Input } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Link from "next/link"
 import Router from "next/router"
-import { Store } from "rc-field-form/lib/interface"
 
 function hasErrors(fieldsError: Object) {
   return Object.keys(fieldsError).some((field) => fieldsError[field])
@@ -128,12 +123,12 @@ function LoginForm({
   onCancel,
   resetUrqlClient,
 }: LoginFormProps) {
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [{ error }, login] = useLoginMutation()
 
   const [submitDisabled, setSubmitDisabled] = useState(false)
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       try {
         const { error } = await login({
           username: values.username,
@@ -155,8 +150,6 @@ function LoginForm({
             },
           ])
           setSubmitDisabled(true)
-        } else {
-          Sentry.captureException(e)
         }
       }
     },

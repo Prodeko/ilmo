@@ -7,9 +7,8 @@ import {
   useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
 import { filterObjectByKeys, Sorter } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Button, Col, message, Popconfirm, Row, Typography } from "antd"
-import Modal, { ModalProps } from "antd/lib/modal/Modal"
+import Modal, { ModalProps } from "antd/lib/modal"
 import dayjs from "dayjs"
 import useTranslation from "next-translate/useTranslation"
 
@@ -89,7 +88,6 @@ export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps>
         }
         message.info(t("notifications.deleteSuccess"))
       } catch (e) {
-        Sentry.captureException(e)
         setError(e)
       }
     }, [registration, deleteRegistration, t])
@@ -103,7 +101,6 @@ export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps>
         setUpdateToken(data?.adminUpdateRegistration?.updateToken!)
         setShowModal(true)
       } catch (e) {
-        Sentry.captureException(e)
         setError(e)
       }
     }, [registration, updateRegistration])

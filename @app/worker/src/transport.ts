@@ -1,7 +1,7 @@
 import { promises as fsp } from "fs"
 
 import chalk from "chalk"
-import * as nodemailer from "nodemailer"
+import nodemailer from "nodemailer"
 
 const { readFile, writeFile } = fsp
 

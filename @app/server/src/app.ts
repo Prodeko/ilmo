@@ -1,7 +1,5 @@
 import { Server } from "http"
 
-import * as Sentry from "@sentry/node"
-import * as Tracing from "@sentry/tracing"
 import Fastify, {
   FastifyReply,
   FastifyRequest,
@@ -33,20 +31,6 @@ export const convertHandler =
   (request: FastifyRequest, reply: FastifyReply) =>
     handler(new PostGraphileResponseFastify3(request, reply))
 
-function initSentry() {
-  Sentry.init({
-    environment: process.env.NODE_ENV,
-    dsn: process.env.SENTRY_DSN,
-    integrations: [
-      // enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }),
-      // enable database query tracing
-      new Tracing.Integrations.Postgres(),
-    ],
-    tracesSampleRate: 0.3,
-  })
-}
-
 export async function makeApp({
   serverFactory,
 }: {
@@ -74,8 +58,6 @@ export async function makeApp({
     trustProxy: !isDev,
     serverFactory,
   })
-  initSentry()
-
   /*
    * Getting access to the HTTP server directly means that we can do things
    * with websockets if we need to (e.g. GraphQL subscriptions).
@@ -101,7 +83,6 @@ export async function makeApp({
    * Fastify middleware. These helpers may be asynchronous, but they should
    * operate very rapidly to enable quick as possible server startup.
    */
-  await app.register(middleware.installSentryRequestHandler)
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
@@ -119,7 +100,6 @@ export async function makeApp({
 
   // Error handling middleware
   await app.register(middleware.installErrorHandler)
-  await app.register(middleware.installSentryErrorHandler)
 
   // Needs to be last
   await app.register(middleware.installSSR)

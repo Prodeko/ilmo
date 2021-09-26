@@ -1,5 +1,4 @@
 import { CSSProperties } from "react"
-import Icon from "@ant-design/icons"
 
 interface SvgProps {
   size: string
@@ -309,6 +308,6 @@ interface IconProps {
   size: string
 }
 
-export const ProdekoIcon: React.FC<IconProps> = ({ style, size }) => (
-  <Icon component={() => <ProdekoSvg size={size} />} style={style} />
+export const ProdekoIcon: React.FC<IconProps> = ({ size }) => (
+  <ProdekoSvg size={size} />
 )

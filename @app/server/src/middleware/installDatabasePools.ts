@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/node"
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { Pool } from "pg"
@@ -18,8 +17,8 @@ declare module "fastify" {
  * This NOOP handler avoids this occurring on our pools.
  *
  */
-function swallowPoolError(error: Error) {
-  Sentry.captureException(error)
+function swallowPoolError(_error: Error) {
+  // NOOP
 }
 
 const DatabasePools: FastifyPluginAsync = async (app) => {

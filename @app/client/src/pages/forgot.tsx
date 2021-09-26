@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import UserOutlined from "@ant-design/icons/UserOutlined"
+import { UserOutlined } from "@ant-design/icons"
 import { AuthRestrict, ErrorAlert, SharedLayout } from "@app/components"
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
-import * as Sentry from "@sentry/react"
 import { Alert, Button, Col, Form, Input, Row } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Link from "next/link"
 
 const ForgotPassword: NextPage = () => {
   const [query] = useSharedQuery()
 
-  const [form] = useForm()
+  const [form] = Form.useForm()
   const [{ error }, forgotPassword] = useForgotPasswordMutation()
   const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null)
 
@@ -26,7 +24,7 @@ const ForgotPassword: NextPage = () => {
           if (error) throw error
           setSuccessfulEmail(email)
         } catch (e) {
-          Sentry.captureException(e)
+          console.error(e)
         }
       })()
     },

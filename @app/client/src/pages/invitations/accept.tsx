@@ -1,4 +1,4 @@
-import * as qs from "querystring"
+import qs from "querystring"
 
 import { useCallback, useState } from "react"
 import {

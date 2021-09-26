@@ -1,8 +1,18 @@
-import { EventQuestion, QuestionType } from "@app/graphql"
+import {
+  Event,
+  EventCategory,
+  EventQuestion,
+  Organization,
+  QuestionType,
+  Quota,
+  Registration,
+} from "@app/graphql"
+import { Session } from "@app/lib"
 import dayjs from "dayjs"
-import * as faker from "faker"
+import faker from "faker"
 import { PoolClient } from "pg"
 import slugify from "slugify"
+import { SnakeCasedProperties } from "type-fest"
 
 export type User = {
   id: string
@@ -30,7 +40,7 @@ export const createUsers = async (
   count: number = 1,
   verified: boolean = true,
   isAdmin: boolean = false
-) => {
+): Promise<SnakeCasedProperties<User>[]> => {
   const users = []
   if (userCreationCounter > 25) {
     throw new Error("Too many users created!")
@@ -79,7 +89,7 @@ const words = () => faker.lorem.words()
 export const createSession = async (
   client: PoolClient,
   userId: string
-): Promise<{ uuid: string }> => {
+): Promise<Session> => {
   const {
     rows: [session],
   } = await client.query(
@@ -98,7 +108,7 @@ export const createSession = async (
 export const createOrganizations = async (
   client: PoolClient,
   count: number = 1
-) => {
+): Promise<SnakeCasedProperties<Organization>[]> => {
   const organizations = []
   for (let i = 0; i < count; i++) {
     const random = words()
@@ -123,7 +133,7 @@ export const createEventCategories = async (
   client: PoolClient,
   count: number = 1,
   organizationId: string
-) => {
+): Promise<SnakeCasedProperties<EventCategory>[]> => {
   const categories = []
   for (let i = 0; i < count; i++) {
     const name = { fi: `Kategoria ${i}`, en: `Category ${i}` }
@@ -158,7 +168,7 @@ export const createEvents = async (
   signupOpen: boolean = true,
   isDraft: boolean = false,
   openQuotaSize: number = 0
-) => {
+): Promise<SnakeCasedProperties<Event>[]> => {
   const events = []
   for (let i = 0; i < count; i++) {
     const name = {
@@ -251,7 +261,7 @@ export const createQuotas = async (
   count: number = 1,
   eventId: string,
   size?: number
-) => {
+): Promise<SnakeCasedProperties<Quota>[]> => {
   const quotas = []
   for (let i = 0; i < count; i++) {
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
@@ -290,7 +300,7 @@ export const createQuestions = async (
   eventId: string,
   isRequired?: boolean,
   type?: QuestionType
-) => {
+): Promise<SnakeCasedProperties<EventQuestion>[]> => {
   const questionTypes = Object.values(QuestionType)
   let questions = []
   for (let i = 0; i < count; i++) {
@@ -355,7 +365,9 @@ export const createRegistrationSecrets = async (
 /******************************************************************************/
 // Registrations
 
-export const constructAnswersFromQuestions = (questions: EventQuestion[]) => {
+export const constructAnswersFromQuestions = (
+  questions: SnakeCasedProperties<EventQuestion>[]
+) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
   const chosenLanguage = faker.random.arrayElement(["fi", "en"])
@@ -380,8 +392,8 @@ export const createRegistrations = async (
   count: number = 1,
   eventId: string,
   quotaId: string,
-  questions: EventQuestion[]
-) => {
+  questions: SnakeCasedProperties<EventQuestion>[]
+): Promise<SnakeCasedProperties<Registration>[]> => {
   const registrations = []
   for (let i = 0; i < count; i++) {
     const firstName = faker.name.firstName()

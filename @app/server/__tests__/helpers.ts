@@ -10,12 +10,14 @@ import {
   print,
 } from "graphql"
 import Redis from "ioredis"
+import camelCase from "lodash/camelCase"
 import { Pool, PoolClient } from "pg"
 import {
   createPostGraphileSchema,
   PostGraphileOptions,
   withPostGraphileContext,
 } from "postgraphile"
+import { PromiseValue } from "type-fest"
 
 import {
   createEventCategories,
@@ -104,7 +106,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // Have to begin a transaction here, since we set the third parameter
     // of set_config to 'true' in becomeUser below
     client.query("BEGIN")
-    let users
+    let users: PromiseValue<ReturnType<typeof createUsers>>
     if (userOptions.create) {
       users = await createUsers(
         client,
@@ -128,7 +130,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       organization.id
     )
 
-    let events
+    let events: PromiseValue<ReturnType<typeof createEvents>>
     if (eventOptions.create) {
       events = await createEvents(
         client,
@@ -147,12 +149,12 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
 
     // A quota should not exist for createQuotas.test.ts but other tests such
     // as createRegistration.test.ts need an existing quota.
-    let quotas
+    let quotas: PromiseValue<ReturnType<typeof createQuotas>>
     if (quotaOptions.create) {
       quotas = await createQuotas(client, quotaOptions.amount, events[0].id)
     }
 
-    let questions
+    let questions: PromiseValue<ReturnType<typeof createQuestions>>
     if (questionOptions.create) {
       questions = await createQuestions(
         client,
@@ -167,7 +169,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // don't want to create a registration for createRegistration.test.ts
     // since that would create another registration__send_confirmation_email
     // task.
-    let registrations
+    let registrations: PromiseValue<ReturnType<typeof createRegistrations>>
     if (registrationOptions.create) {
       registrations = await createRegistrations(
         client,
@@ -178,7 +180,9 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       )
     }
 
-    let registrationSecrets
+    let registrationSecrets: PromiseValue<
+      ReturnType<typeof createRegistrationSecrets>
+    >
     if (registrationSecretOptions.create) {
       registrationSecrets = await createRegistrationSecrets(
         client,
@@ -488,4 +492,24 @@ export const runGraphQLQuery = async (
     }
   )
   return result
+}
+
+export function removePropFromObject(obj: any, prop: string | number) {
+  const { [prop]: _, ...rest } = obj
+  return { ...rest }
+}
+
+export function camelizeKeys(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map((v) => camelizeKeys(v))
+  } else if (obj != null && obj.constructor === Object) {
+    return Object.keys(obj).reduce(
+      (result, key) => ({
+        ...result,
+        [camelCase(key)]: camelizeKeys(obj[key]),
+      }),
+      {}
+    )
+  }
+  return obj
 }

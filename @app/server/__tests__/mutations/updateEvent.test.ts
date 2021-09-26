@@ -1,9 +1,9 @@
-import { camelizeKeys } from "@app/lib"
+import { UpdateEventDocument } from "@app/graphql"
 import { pick } from "lodash"
 
-import { UpdateEventDocument } from "../../../graphql"
 import {
   asRoot,
+  camelizeKeys,
   createEventDataAndLogin,
   deleteTestData,
   runGraphQLQuery,

@@ -1,7 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import { FocusEvent, useCallback, useEffect, useRef, useState } from "react"
-import QuestionCircleOutlined from "@ant-design/icons/QuestionCircleOutlined"
+import { QuestionCircleOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
   ErrorAlert,
@@ -15,17 +15,11 @@ import {
   getCodeFromError,
   getExceptionFromError,
   resetWebsocketConnection,
-  setPasswordInfo,
   tailFormItemLayout,
 } from "@app/lib"
-import * as Sentry from "@sentry/react"
 import { Button, Form, Input, Tooltip } from "antd"
-import { useForm } from "antd/lib/form/Form"
 import { NextPage } from "next"
 import Router from "next/router"
-import { Store } from "rc-field-form/lib/interface"
-
-import { isSafe } from "../login"
 
 interface RegisterProps {
   next: string | null
@@ -41,17 +35,18 @@ const Register: NextPage<RegisterProps> = ({
   next: rawNext,
   resetUrqlClient,
 }) => {
-  const [passwordStrength, setPasswordStrength] = useState<number>(0)
-  const [passwordSuggestions, setPasswordSuggestions] = useState<string[]>([])
+  const [formValues, setFormValues] = useState()
+  const { strength: passwordStrength, suggestions: passwordSuggestions } =
+    usePasswordStrength(formValues, "password")
   const next: string = isSafe(rawNext) ? rawNext! : "/"
   const [query] = useSharedQuery()
 
   const [{ error }, register] = useRegisterMutation()
   const [confirmDirty, setConfirmDirty] = useState(false)
-  const [form] = useForm()
+  const [form] = Form.useForm()
 
   const handleSubmit = useCallback(
-    async (values: Store) => {
+    async (values) => {
       try {
         const { error } = await register({
           username: values.username,
@@ -108,8 +103,6 @@ const Register: NextPage<RegisterProps> = ({
               ],
             },
           ])
-        } else {
-          Sentry.captureException(e)
         }
       }
     },
@@ -150,10 +143,7 @@ const Register: NextPage<RegisterProps> = ({
 
   const handleValuesChange = useCallback(
     (changedValues) => {
-      setPasswordInfo(
-        { setPasswordStrength, setPasswordSuggestions },
-        changedValues
-      )
+      setFormValues(changedValues)
       setPasswordIsDirty(form.isFieldTouched("password"))
       if (changedValues.confirm) {
         if (form.isFieldTouched("password")) {

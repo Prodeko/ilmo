@@ -1,8 +1,9 @@
-import SyncOutlined from "@ant-design/icons/SyncOutlined"
-import { Alert, Button, Result } from "antd"
-import Paragraph from "antd/lib/typography/Paragraph"
+import { SyncOutlined } from "@ant-design/icons"
+import { Alert, Button, Result, Typography } from "antd"
 import useTranslation from "next-translate/useTranslation"
 import { CombinedError } from "urql"
+
+const { Paragraph } = Typography
 
 export interface ErrorResultProps {
   error: CombinedError | Error

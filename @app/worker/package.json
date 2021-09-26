@@ -8,13 +8,10 @@
     "start": "yarn gw",
     "dev": "yarn run --inspect gw --watch",
     "install-db-schema": "mkdirp dist && yarn gw --schema-only",
-    "depcheck": "depcheck"
+    "depcheck": "depcheck --ignores=\"tslib\""
   },
   "dependencies": {
     "@app/config": "workspace:*",
-    "@types/html-to-text": "^8.0.1",
-    "@types/mjml": "^4.7.0",
-    "@types/nodemailer": "^6.4.4",
     "chalk": "^4.1.2",
     "dayjs": "^1.10.7",
     "graphile-worker": "^0.11.4",
@@ -22,10 +19,12 @@
     "ioredis": "^4.27.9",
     "mjml": "^4.10.3",
     "nodemailer": "^6.6.5",
-    "nunjucks": "^3.2.3",
-    "tslib": "^2.3.1"
+    "nunjucks": "^3.2.3"
   },
   "devDependencies": {
+    "@types/html-to-text": "^8.0.1",
+    "@types/mjml": "^4.7.0",
+    "@types/nodemailer": "^6.4.4",
     "@types/nunjucks": "^3.2.0",
     "mkdirp": "^1.0.4"
   }

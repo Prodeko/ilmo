@@ -1,6 +1,5 @@
-import * as React from "react"
-import { useCallback } from "react"
-import DownOutlined from "@ant-design/icons/DownOutlined"
+import React, { useCallback } from "react"
+import { DownOutlined } from "@ant-design/icons"
 import headerLogo from "@app/client/assets/images/header-logo.png"
 import { companyName, projectName } from "@app/config"
 import {
@@ -9,7 +8,6 @@ import {
   useCurrentUserUpdatedSubscription,
   useLogoutMutation,
 } from "@app/graphql"
-import * as Sentry from "@sentry/react"
 import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd"
 import Head from "next/head"
 import Image from "next/image"
@@ -111,11 +109,10 @@ export function SharedLayout({
       Router.events.off("routeChangeComplete", reset)
       try {
         await logout()
-        context?.resetUrqlClient?.()
+        context.resetUrqlClient()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
         window.location.href = "/logout"
-        Sentry.captureException(e)
       }
     }
     Router.events.on("routeChangeComplete", reset)

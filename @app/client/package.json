@@ -4,20 +4,14 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env\" next build",
-    "depcheck": "depcheck --ignores=\"less,net,tls,webpack,net,tls\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"less,net,tls,webpack,net,tls,next-urql,nprogress\" --ignore-patterns=.next"
   },
   "dependencies": {
-    "@ant-design/icons": "^4.6.4",
+    "@ant-design/icons": "^4.7.0",
     "@app/components": "workspace:*",
     "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
-    "@sentry/react": "^6.13.2",
-    "@sentry/tracing": "^6.13.2",
-    "@types/lodash": "^4.14.173",
-    "@types/node": "^16.9.6",
-    "@types/nprogress": "^0.2.0",
-    "@types/react": "^17.0.24",
     "antd": "^4.16.13",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "^1.10.7",
@@ -29,18 +23,23 @@
     "next-plugin-antd-less": "^1.4.3",
     "next-translate": "^1.1.0",
     "next-transpile-modules": "^8.0.0",
-    "nprogress": "^0.2.0",
-    "rc-field-form": "^1.21.2",
     "react": "^17.0.2",
     "react-color-palette": "^6.1.0",
     "react-dom": "^17.0.2",
     "slugify": "^1.6.0",
     "tls": "^0.0.1",
     "urql": "^2.0.5",
-    "webpack": "^5.53.0"
+    "webpack": "^5.54.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^11.1.2",
-    "babel-plugin-import": "^1.13.3"
+    "@types/lodash": "^4.14.174",
+    "@types/node": "^16.10.1",
+    "@types/react": "^17.0.24"
+  },
+  "nextBundleAnalysis": {
+    "budget": 460800,
+    "budgetPercentIncreaseRed": 20,
+    "showDetails": true
   }
 }

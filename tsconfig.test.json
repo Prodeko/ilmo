@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["jest"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false
+  },
+  "exclude": ["@app/e2e"]
+}

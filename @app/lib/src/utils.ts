@@ -1,5 +1,5 @@
 import dayjs from "dayjs"
-import { camelCase, isEqual } from "lodash"
+import isEqual from "lodash/isEqual"
 
 export const arePropsEqual = (prevProps: any, nextProps: any) => {
   return isEqual(prevProps, nextProps)
@@ -14,32 +14,13 @@ export const filterObjectByKeys = <T>(raw: T, allowed: string[]): T =>
       return obj
     }, {} as T)
 
-export function removePropFromObject(obj: any, prop: string | number) {
-  const { [prop]: _, ...rest } = obj
-  return { ...rest }
-}
-
-export function camelizeKeys(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map((v) => camelizeKeys(v))
-  } else if (obj != null && obj.constructor === Object) {
-    return Object.keys(obj).reduce(
-      (result, key) => ({
-        ...result,
-        [camelCase(key)]: camelizeKeys(obj[key]),
-      }),
-      {}
-    )
-  }
-  return obj
-}
-
 export const randomElementFromArray = (arr: any[]) =>
   arr[Math.floor(Math.random() * arr.length)]
 
 export const range = (start: number, end: number) => {
   const result = []
   for (let i = start; i < end; i++) {
+    // @ts-ignore
     result.push(i)
   }
   return result

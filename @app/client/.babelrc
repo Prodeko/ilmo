@@ -11,28 +11,20 @@
     [
       "import",
       {
+        "libraryName": "@ant-design/icons",
+        "libraryDirectory": "es/icons",
+        "camel2DashComponentName": false
+      },
+      "@ant-design/icons"
+    ],
+    [
+      "import",
+      {
         "libraryName": "lodash",
         "libraryDirectory": "",
         "camel2DashComponentName": false
       },
       "lodash"
     ]
-  ],
-  "env": {
-    "development": {
-      "presets": [
-        [
-          "next/babel",
-          {
-            "preset-env": {
-              "targets": {
-                "node": "current",
-                "browsers": "last 2 chrome versions"
-              }
-            }
-          }
-        ]
-      ]
-    }
-  }
+  ]
 }

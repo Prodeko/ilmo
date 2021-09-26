@@ -9,6 +9,7 @@ try {
   rimraf.sync(`${__dirname}/../@app/server/uploads/*`)
   rimraf.sync(`${__dirname}/../@app/graphql/index.*`)
   rimraf.sync(`${__dirname}/../@app/graphql/introspection.json`)
+  rimraf.sync(`${__dirname}/../@app/graphql/introspection.min.json`)
   execSync("nx clear-cache", { stdio: "inherit" })
 } catch (e) {
   console.error("Failed to clean up, perhaps rimraf isn't installed?")

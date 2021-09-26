@@ -5,12 +5,11 @@ import {
   ListEventsQuery,
 } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
-import schema from "@app/graphql/introspection.json"
+import minifiedSchema from "@app/graphql/introspection.min.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-import { minifyIntrospectionQuery } from "@urql/introspection"
 import { serialize } from "cookie"
 import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
@@ -22,7 +21,6 @@ import {
   Exchange,
   subscriptionExchange,
 } from "urql"
-import ws from "ws"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -34,7 +32,13 @@ function createWsClient() {
   if (!rootURL) {
     throw new Error("No ROOT_URL")
   }
-  const impl = isSSR ? ws : WebSocket
+  let impl: typeof WebSocket
+  if (isSSR) {
+    const ws = require("ws")
+    impl = ws
+  } else {
+    impl = WebSocket
+  }
   const url = `${rootURL.replace(/^http/, "ws")}/graphql`
   return createClient({
     url,
@@ -115,9 +119,7 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         dedupExchange,
         cacheExchange<GraphCacheConfig>({
-          schema: minifyIntrospectionQuery(
-            schema as unknown as IntrospectionQuery
-          ),
+          schema: minifiedSchema as unknown as IntrospectionQuery,
           keys: {
             // AppLanguage type does not have an 'id' field and thus cannot be
             // cached. Here we define a new key which will be used for caching
