@@ -38,7 +38,7 @@ jobs:
 
       - name: Build next.js app
         # change this if your site requires a custom build command
-        run: yarn build
+        run: yarn build --skip-nx-cache
         working-directory: .
 
       # Here's the first place where next-bundle-analysis' own script is used
