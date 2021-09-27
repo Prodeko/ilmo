@@ -39,7 +39,7 @@ COPY @app/ /app/@app/
 RUN yarn install
 
 COPY nx.json workspace.json /app/
-COPY tsconfig.json babel.config.js /app/
+COPY tsconfig.json /app/
 COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 
