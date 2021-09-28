@@ -21,7 +21,6 @@ import {
   Exchange,
   subscriptionExchange,
 } from "urql"
-import ws from "ws"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -33,7 +32,13 @@ function createWsClient() {
   if (!rootURL) {
     throw new Error("No ROOT_URL")
   }
-  const impl = isSSR ? ws : WebSocket
+  let impl: typeof WebSocket
+  if (isSSR) {
+    const ws = require("ws")
+    impl = ws
+  } else {
+    impl = WebSocket
+  }
   const url = `${rootURL.replace(/^http/, "ws")}/graphql`
   return createClient({
     url,
