@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:9e1052caa44f6e5ef0f77f982fd8c3ef4a52f49b
+--! Hash: sha1:4e0f64f0689e61c40c139c59a6dab9a6b533d7eb
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -895,7 +895,9 @@ create table app_public.registrations(
   is_finished boolean not null default false,
 
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+
+  unique (email, event_id)
 );
 alter table app_public.registrations enable row level security;
 
@@ -1237,6 +1239,21 @@ begin
     where registration_secrets.registration_token = "registrationToken";
 
   return v_registration;
+exception when unique_violation then
+  -- We would like to do the line below but PostgreSQL transaction handling does not
+  -- allow it: https://stackoverflow.com/questions/53276032/commit-and-rollback-inside-the-postgres-function
+  --
+  -- PostgreSQL 11 has procedures which support this use case, but Postgraphile does not support
+  -- them and we cannot call a procedure that does a COMMIT or a ROLLBACK from a function:
+  --
+  -- https://www.postgresql.org/docs/current/plpgsql-transactions.html
+  -- https://www.postgresql.org/message-id/d318108f-313f-058b-5670-c4c20132733d%402ndquadrant.com
+  --
+  -- delete from app_public.registrations where id = v_registration_id;
+  --
+  -- Instead, we just let the worker task registration__delete_unfinished_registrations
+  -- cleanup unfinished registrations after the timeout.
+  raise exception 'A registration with email % already exists for this event.', create_registration.email using errcode = 'DNIED';
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.create_registration("registrationToken" text, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email citext, answers jsonb) is

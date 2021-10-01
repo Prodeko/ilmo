@@ -476,6 +476,57 @@ describe("CreateRegistration", () => {
     )
   })
 
+  it("can't create a registration if a registration already exists with the same email", async () => {
+    const { quotas, events, registrations } = await createEventDataAndLogin({
+      questionOptions: { create: false },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+    // @ts-ignore: email exists on registration but not exposed through the API
+    const email = registrations[0].email
+
+    // In order to test the createRegistration mutation, we first need to run
+    // claimRegistrationToken which creates a dummy registration.
+    const registrationToken = await getRegistrationToken(eventId, quotaId)
+
+    // Test first name
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Test",
+          lastName: "Tester",
+          email,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          `A registration with email ${email} already exists for this event.`
+        )
+        expect(code).toEqual("DNIED")
+      },
+      // rollback
+      true,
+      // takeSnapshot
+      // Don't take a snapshot of the result since the email in the error message changes
+      false
+    )
+  })
+
   it("can't create registration if required question is not answered", async () => {
     const { quotas, questions, events } = await createEventDataAndLogin({
       registrationOptions: { create: false },

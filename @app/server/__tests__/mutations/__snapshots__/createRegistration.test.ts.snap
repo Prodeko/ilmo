@@ -34,6 +34,14 @@ Object {
 }
 `;
 
+exports[`CreateRegistration can't create a registration if a registration already exists with the same email 1`] = `
+Object {
+  "data": Object {
+    "claimRegistrationToken": "[id-1]",
+  },
+}
+`;
+
 exports[`CreateRegistration can't create a registration if first or last name contains spaces 1`] = `
 Object {
   "data": Object {
