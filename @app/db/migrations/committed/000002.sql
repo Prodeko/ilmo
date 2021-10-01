@@ -1,5 +1,5 @@
 --! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:77383efa2f22a2831cd2a4a8852bc51bbdf9a06f
+--! Hash: sha1:9e1052caa44f6e5ef0f77f982fd8c3ef4a52f49b
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -1141,7 +1141,7 @@ begin
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.admin_delete_registration(id uuid) is
-  E'Mutation only accessible to admin users. Allows deleting a registration via the admin panel.';
+  E'Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed.';
 
 --! split: 0044-registrations-crud-functions.sql
 /*
@@ -1283,6 +1283,8 @@ create function app_public.delete_registration("updateToken" text)
 returns boolean as $$
 declare
   v_registration_id uuid;
+  v_registration app_public.registrations;
+  v_event app_public.events;
 begin
   select registration_id into v_registration_id
     from app_private.registration_secrets
@@ -1290,6 +1292,13 @@ begin
 
   if v_registration_id is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
+
+  select * into v_registration from app_public.registrations where id = v_registration_id;
+  select * into v_event from app_public.events where id = v_registration.event_id;
+
+  if (v_event is null) or not (select app_public.events_signup_open(v_event)) then
+    raise exception 'Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
   -- Delete registration and associated secrets (foreign key has on delete)

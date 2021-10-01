@@ -996,7 +996,7 @@ $$;
 -- Name: FUNCTION admin_delete_registration(id uuid); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid) IS 'Mutation only accessible to admin users. Allows deleting a registration via the admin panel.';
+COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid) IS 'Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed.';
 
 
 --
@@ -2064,6 +2064,8 @@ CREATE FUNCTION app_public.delete_registration("updateToken" text) RETURNS boole
     AS $$
 declare
   v_registration_id uuid;
+  v_registration app_public.registrations;
+  v_event app_public.events;
 begin
   select registration_id into v_registration_id
     from app_private.registration_secrets
@@ -2071,6 +2073,13 @@ begin
 
   if v_registration_id is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
+
+  select * into v_registration from app_public.registrations where id = v_registration_id;
+  select * into v_event from app_public.events where id = v_registration.event_id;
+
+  if (v_event is null) or not (select app_public.events_signup_open(v_event)) then
+    raise exception 'Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
   -- Delete registration and associated secrets (foreign key has on delete)

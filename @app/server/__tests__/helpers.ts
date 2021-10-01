@@ -67,6 +67,7 @@ interface CreateEventDataAndLogin {
     create: boolean
     amount?: number
     signupOpen?: boolean
+    times?: Date[]
     isDraft?: boolean
     openQuotaSize?: number
   }
@@ -93,6 +94,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       create: true,
       amount: 1,
       signupOpen: true,
+      times: undefined,
       isDraft: false,
     },
     quotaOptions = { create: true, amount: 1 },
@@ -139,7 +141,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         eventCategory.id,
         eventOptions.signupOpen,
         eventOptions.isDraft,
-        eventOptions.openQuotaSize
+        eventOptions.openQuotaSize,
+        eventOptions.times
       )
     }
 
@@ -512,4 +515,8 @@ export function camelizeKeys(obj: any): any {
     )
   }
   return obj
+}
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
