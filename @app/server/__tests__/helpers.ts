@@ -373,7 +373,8 @@ export const runGraphQLQuery = async (
       req: any
     }
   ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {}, // Place test assertions in this function
-  rollback = true
+  rollback = true,
+  takeSnapshot = true
 ) => {
   if (!ctx) throw new Error("No ctx!")
   const { schema, rootPgPool, options } = ctx
@@ -482,7 +483,9 @@ export const runGraphQLQuery = async (
         })
 
         // You don't have to keep this, I just like knowing when things change!
-        expect(sanitize(result)).toMatchSnapshot()
+        if (takeSnapshot) {
+          expect(sanitize(result)).toMatchSnapshot()
+        }
 
         return checkResult == null ? result : checkResult
       } finally {
