@@ -167,7 +167,8 @@ export const createEvents = async (
   categoryId: string,
   signupOpen: boolean = true,
   isDraft: boolean = false,
-  openQuotaSize: number = 0
+  openQuotaSize: number = 0,
+  times: Date[] = undefined
 ): Promise<SnakeCasedProperties<Event>[]> => {
   const events = []
   for (let i = 0; i < count; i++) {
@@ -181,22 +182,30 @@ export const createEvents = async (
     }
     const location = faker.address.streetAddress()
 
-    const now = dayjs()
-    const dayAdjustment = signupOpen ? -1 : 1
-    const registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
-    const registrationEndTime = faker.date.between(
-      dayjs(registrationStartTime).add(1, "day").toDate(),
-      dayjs(registrationStartTime).add(7, "day").toDate()
-    )
-
-    const eventStartTime = faker.date.between(
+    let [
+      registrationStartTime,
       registrationEndTime,
-      dayjs(registrationEndTime).add(7, "day").toDate()
-    )
-    const eventEndTime = faker.date.between(
       eventStartTime,
-      dayjs(eventStartTime).add(1, "day").toDate()
-    )
+      eventEndTime,
+    ] = times || []
+    if (!times) {
+      const now = dayjs()
+      const dayAdjustment = signupOpen ? -1 : 1
+      registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
+      registrationEndTime = faker.date.between(
+        dayjs(registrationStartTime).add(1, "day").toDate(),
+        dayjs(registrationStartTime).add(7, "day").toDate()
+      )
+
+      eventStartTime = faker.date.between(
+        registrationEndTime,
+        dayjs(registrationEndTime).add(7, "day").toDate()
+      )
+      eventEndTime = faker.date.between(
+        eventStartTime,
+        dayjs(eventStartTime).add(1, "day").toDate()
+      )
+    }
 
     const eventCategoryId = categoryId
     const headerImageFile = faker.image.imageUrl(

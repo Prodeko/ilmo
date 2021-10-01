@@ -21,7 +21,7 @@ Object {
         "exception": Object {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.delete_registration(text) line 10 at RAISE",
+          "where": "PL/pgSQL function app_public.delete_registration(text) line 12 at RAISE",
         },
       },
       "locations": Array [
@@ -31,6 +31,35 @@ Object {
         },
       ],
       "message": "Registration matching token was not found.",
+      "path": Array [
+        "deleteRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`DeleteRegistration can't delete registration once event signup has closed 1`] = `
+Object {
+  "data": Object {
+    "deleteRegistration": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.delete_registration(text) line 19 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.",
       "path": Array [
         "deleteRegistration",
       ],

@@ -1511,7 +1511,7 @@ type Mutation {
   ): AcceptInvitationToOrganizationPayload
 
   """
-  Mutation only accessible to admin users. Allows deleting a registration via the admin panel.
+  Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed
   """
   adminDeleteRegistration(
     """

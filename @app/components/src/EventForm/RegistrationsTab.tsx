@@ -3,6 +3,7 @@ import {
   EventPage_QuestionFragment,
   ListEventRegistrationsDocument,
   Registration,
+  RegistrationStatus,
   useAdminDeleteRegistrationMutation,
   useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
@@ -196,13 +197,12 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
           dataIndex: ["status"],
           key: "status",
           ellipsis: true,
-          render: (value: string) => {
-            return value ? (
+          render: (value: string) =>
+            value === RegistrationStatus.InQueue ? (
               <Text type="danger">{t("common:yes")}</Text>
             ) : (
               <Text type="success">{t("common:no")}</Text>
-            )
-          },
+            ),
         },
         {
           title: t("common:answers"),
