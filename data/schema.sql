@@ -1089,6 +1089,36 @@ COMMENT ON FUNCTION app_public.change_password(old_password text, new_password t
 
 
 --
+-- Name: check_is_admin(); Type: PROCEDURE; Schema: app_public; Owner: -
+--
+
+CREATE PROCEDURE app_public.check_is_admin()
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+end;
+$$;
+
+
+--
+-- Name: check_is_logged_in(text); Type: PROCEDURE; Schema: app_public; Owner: -
+--
+
+CREATE PROCEDURE app_public.check_is_logged_in(message text)
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if app_public.current_user_id() is null then
+    raise exception '%', message using errcode = 'LOGIN';
+  end if;
+end;
+$$;
+
+
+--
 -- Name: claim_registration_token(uuid, uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1165,9 +1195,7 @@ declare
   v_user_secret app_private.user_secrets;
   v_token_max_duration interval = interval '3 days';
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to delete your account' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_logged_in('You must log in to delete your account');
 
   select * into v_user_secret
     from app_private.user_secrets
@@ -1360,9 +1388,7 @@ declare
   v_event app_public.events;
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create a event' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Create the event
   insert into app_public.events(
@@ -1544,9 +1570,7 @@ declare
   v_ret app_public.event_questions[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create event questions' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   if questions is null then
     return null;
@@ -1642,9 +1666,7 @@ declare
   v_ret app_public.quotas[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Must specify at least one quota
   if (select array_length(quotas, 1)) is null then
@@ -1681,27 +1703,67 @@ CREATE TABLE app_public.organizations (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     slug public.citext NOT NULL,
     name text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    color text,
+    created_by uuid,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text))
 );
 
 
 --
--- Name: create_organization(public.citext, text); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: TABLE organizations; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.create_organization(slug public.citext, name text) RETURNS app_public.organizations
+COMMENT ON TABLE app_public.organizations IS 'Main table for organizations.';
+
+
+--
+-- Name: COLUMN organizations.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.organizations.id IS 'Unique identifier for the organization.';
+
+
+--
+-- Name: COLUMN organizations.slug; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.organizations.slug IS 'Name of the event category.';
+
+
+--
+-- Name: COLUMN organizations.name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.organizations.name IS 'Name of the organization.';
+
+
+--
+-- Name: COLUMN organizations.color; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.organizations.color IS 'Color for the organization.';
+
+
+--
+-- Name: create_organization(public.citext, text, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.create_organization(slug public.citext, name text, color text) RETURNS app_public.organizations
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 declare
   v_org app_public.organizations;
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create an organization' using errcode = 'LOGIN';
-  end if;
-  insert into app_public.organizations (slug, name) values (slug, name) returning * into v_org;
+  -- Check permissions
+  call app_public.check_is_admin();
+
+  insert into app_public.organizations (slug, name, color) values (slug, name, color) returning * into v_org;
   insert into app_public.organization_memberships (organization_id, user_id, is_owner)
-    values(v_org.id, app_public.current_user_id(), true);
+    values (v_org.id, app_public.current_user_id(), true);
   return v_org;
 end;
 $$;
@@ -2281,11 +2343,8 @@ declare
   v_code text;
   v_user app_public.users;
 begin
-  -- Are we allowed to add this person
-  -- Are we logged in
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to invite a user' using errcode = 'LOGIN';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   select * into v_user from app_public.users where users.username = invite_to_organization.username;
 
@@ -2625,9 +2684,7 @@ declare
   v_token text;
   v_token_max_duration interval = interval '3 days';
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to delete your account' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_logged_in('You must log in to delete your account');
 
   -- Get the email to send account deletion token to
   select * into v_user_email
@@ -2912,9 +2969,7 @@ declare
   v_event app_public.events;
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update an event' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Create the event
   update app_public.events
@@ -2968,9 +3023,7 @@ declare
   v_ret app_public.event_questions[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update event questions' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   select array(
     select id from app_public.event_questions as q
@@ -2992,7 +3045,7 @@ begin
         where id = v_input.id
       returning * into v_question;
     else
-      -- Create new questions that didn't exits before
+      -- Create new questions that didn't exist before
       insert into app_public.event_questions(event_id, position, type, label, is_required, data)
         values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
       returning * into v_question;
@@ -3030,9 +3083,7 @@ declare
   v_ret app_public.quotas[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Must specify at least one quota
   if (select array_length(quotas, 1)) is null then
@@ -3045,7 +3096,6 @@ begin
     and q.id not in (select id from unnest(quotas))
   )
   into v_quota_ids_to_delete;
-
 
   -- Delete existing event quotas that were not supplied
   -- as input to this function
@@ -3060,7 +3110,7 @@ begin
         where id = v_input.id
       returning * into v_quota;
     else
-      -- Create new quotas that didn't exits before
+      -- Create new quotas that didn't exist before
       insert into app_public.quotas(event_id, position, title, size)
         values (event_id, v_input.position, v_input.title, v_input.size)
       returning * into v_quota;
@@ -3225,7 +3275,7 @@ begin
 
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
-  -- We do this with the validate_jsonb_no_nulls funciton.
+  -- We do this with the validate_jsonb_no_nulls function.
   for v_question_id, v_answers in select * from jsonb_each(answers) loop
     select * into v_question from app_public.event_questions where id = v_question_id;
 
@@ -3488,7 +3538,7 @@ COMMENT ON COLUMN app_public.event_categories.owner_organization_id IS 'Identifi
 -- Name: COLUMN event_categories.color; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.event_categories.color IS 'Color of the event category.';
+COMMENT ON COLUMN app_public.event_categories.color IS 'Color color the event category.';
 
 
 --
@@ -4033,6 +4083,20 @@ CREATE INDEX organization_memberships_user_id_idx ON app_public.organization_mem
 
 
 --
+-- Name: organizations_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX organizations_created_by_idx ON app_public.organizations USING btree (created_by);
+
+
+--
+-- Name: organizations_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX organizations_updated_by_idx ON app_public.organizations USING btree (updated_by);
+
+
+--
 -- Name: quotas_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -4138,6 +4202,13 @@ CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR 
 
 
 --
+-- Name: organizations _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+
+
+--
 -- Name: quotas _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
@@ -4198,6 +4269,13 @@ CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_q
 --
 
 CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+
+
+--
+-- Name: organizations _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
 
 
 --
@@ -4471,6 +4549,22 @@ ALTER TABLE ONLY app_public.organization_memberships
 
 ALTER TABLE ONLY app_public.organization_memberships
     ADD CONSTRAINT organization_memberships_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: organizations organizations_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.organizations
+    ADD CONSTRAINT organizations_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: organizations organizations_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.organizations
+    ADD CONSTRAINT organizations_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -4993,6 +5087,22 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 
 --
+-- Name: PROCEDURE check_is_admin(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON PROCEDURE app_public.check_is_admin() FROM PUBLIC;
+GRANT ALL ON PROCEDURE app_public.check_is_admin() TO ilmo_visitor;
+
+
+--
+-- Name: PROCEDURE check_is_logged_in(message text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON PROCEDURE app_public.check_is_logged_in(message text) FROM PUBLIC;
+GRANT ALL ON PROCEDURE app_public.check_is_logged_in(message text) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION claim_registration_token(event_id uuid, quota_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5251,11 +5361,18 @@ GRANT UPDATE(name) ON TABLE app_public.organizations TO ilmo_visitor;
 
 
 --
--- Name: FUNCTION create_organization(slug public.citext, name text); Type: ACL; Schema: app_public; Owner: -
+-- Name: COLUMN organizations.color; Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name text) TO ilmo_visitor;
+GRANT UPDATE(color) ON TABLE app_public.organizations TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION create_organization(slug public.citext, name text, color text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.create_organization(slug public.citext, name text, color text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name text, color text) TO ilmo_visitor;
 
 
 --

@@ -10,8 +10,8 @@ import {
   getEmails,
   getJobs,
   runJobs,
+  withAdminUserDb,
   withRootDb,
-  withUserDb,
 } from "../../helpers"
 
 async function inviteToOrganization(
@@ -23,13 +23,7 @@ async function inviteToOrganization(
   const {
     rows: [row],
   } = await client.query(
-    `
-      select * from app_public.invite_to_organization(
-        $1,
-        $2,
-        $3
-      )
-      `,
+    `select * from app_public.invite_to_organization($1, $2, $3)`,
     [organizationId, username, email]
   )
   return row
@@ -43,21 +37,17 @@ async function acceptInvitationToOrganization(
   const {
     rows: [row],
   } = await client.query(
-    `
-      select * from app_public.accept_invitation_to_organization(
-        $1,
-        $2
-      )
-      `,
+    `select * from app_public.accept_invitation_to_organization($1, $2)`,
     [invitationId, code]
   )
   return row
 }
 
 it("Can invite user to organization", () =>
-  withUserDb(async (client, _user) => {
+  // Need to be an admin to invite someone to an organization
+  withAdminUserDb(async (client, _user) => {
     const [otherUser] = await asRoot(client, (client) =>
-      createUsers(client, 1, true)
+      createUsers(client, 1, true, true)
     )
     const [organization] = await createOrganizations(client, 1)
 
@@ -105,7 +95,12 @@ it("Can invite user to organization", () =>
 it("Can accept an invitation", () =>
   withRootDb(async (client) => {
     // Setup
-    const [organizationOwner, invitee] = await createUsers(client, 2, true)
+    const [organizationOwner, invitee] = await createUsers(
+      client,
+      2,
+      true,
+      true
+    )
     await becomeUser(client, organizationOwner)
     const [organization] = await createOrganizations(client, 1)
     await inviteToOrganization(client, organization.id, invitee.username)
@@ -142,7 +137,12 @@ it("Can accept an invitation", () =>
 it("Can accept an invitation that was sent to an email address", () =>
   withRootDb(async (client) => {
     // Setup
-    const [organizationOwner, invitee] = await createUsers(client, 2, true)
+    const [organizationOwner, invitee] = await createUsers(
+      client,
+      2,
+      true,
+      true
+    )
     await becomeUser(client, organizationOwner)
     const [organization] = await createOrganizations(client, 1)
     await inviteToOrganization(

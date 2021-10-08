@@ -4,7 +4,7 @@ fragment UpdateEventPage_Event on Event {
     ...EventPage_EventCategory
   }
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {

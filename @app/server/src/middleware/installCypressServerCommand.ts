@@ -251,8 +251,8 @@ async function runCommand(
               const {
                 rows: [organization],
               } = await client.query(
-                "select * from app_public.create_organization($1, $2)",
-                [slug, name]
+                "select * from app_public.create_organization($1, $2, $3)",
+                [slug, name, "#ffffff"]
               )
               if (!owner) {
                 await client.query(
@@ -455,11 +455,12 @@ export const createOrganizations = async (
     const random = words()
     const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
+    const color = faker.internet.color()
     const {
       rows: [organization],
     } = await client.query(
-      `select * from app_public.create_organization($1, $2)`,
-      [slug, name]
+      `select * from app_public.create_organization($1, $2, $3)`,
+      [slug, name, color]
     )
     organizations.push(organization)
   }

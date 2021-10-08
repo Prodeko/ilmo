@@ -15,18 +15,18 @@ beforeAll(setup)
 afterAll(teardown)
 
 describe("DeleteEventCategory", () => {
-  it("admin can delete an event category (RLS policy)", async () => {
+  it("can delete an event category as admin", async () => {
     const { eventCategory } = await createEventDataAndLogin({
       eventOptions: { create: false },
       quotaOptions: { create: false },
       questionOptions: { create: false },
       registrationOptions: { create: false },
       registrationSecretOptions: { create: false },
-      userOptions: { create: true, isAdmin: true },
+      userOptions: { create: true, isAdmin: false },
     })
     const categoryId = eventCategory.id
 
-    // Different user and session than the one who created the event catregories.
+    // Different user and session than the one who created the event category.
     // The user is admin so should be able to delete.
     const { session } = await createUserAndLogIn({ isAdmin: true })
 
@@ -62,8 +62,8 @@ describe("DeleteEventCategory", () => {
     )
   })
 
-  it("member of the owner organization for the related event can delete an event category (RLS policy)", async () => {
-    const { eventCategory, session } = await createEventDataAndLogin({
+  it("can't delete an event category while logged in as non admin", async () => {
+    const { eventCategory } = await createEventDataAndLogin({
       eventOptions: { create: false },
       quotaOptions: { create: false },
       questionOptions: { create: false },
@@ -73,47 +73,9 @@ describe("DeleteEventCategory", () => {
     })
     const categoryId = eventCategory.id
 
-    await runGraphQLQuery(
-      DeleteEventCategoryDocument,
-
-      // GraphQL variables:
-      { id: categoryId },
-
-      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
-      {
-        user: { sessionId: session.uuid },
-      },
-
-      // This function runs all your test assertions:
-      async (json, { pgClient }) => {
-        expect(json.errors).toBeFalsy()
-        expect(json.data).toBeTruthy()
-
-        const { rows } = await asRoot(pgClient, () =>
-          pgClient.query(
-            `SELECT * FROM app_public.event_categories WHERE id = $1`,
-            [categoryId]
-          )
-        )
-
-        if (rows.length !== 0) {
-          throw new Error("Event category not deleted successfully!")
-        }
-
-        expect(rows).toEqual([])
-      }
-    )
-  })
-
-  it("users without permissions cannot delete event categories (RLS policy)", async () => {
-    const { eventCategory } = await createEventDataAndLogin({
-      userOptions: { create: true, amount: 1, isAdmin: true },
-    })
-    const categoryId = eventCategory.id
-
     // Session for a different user than the one who created the event category.
     // Should not be able to delete.
-    const { session } = await createUserAndLogIn()
+    const { session } = await createUserAndLogIn({ isAdmin: false })
 
     await runGraphQLQuery(
       DeleteEventCategoryDocument,

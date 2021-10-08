@@ -31,7 +31,7 @@ Object {
 }
 `;
 
-exports[`UpdateEvent can't update an event while logged out 1`] = `
+exports[`UpdateEvent can't update an event if not logged in as admin 1`] = `
 Object {
   "data": Object {
     "updateEvent": null,
@@ -40,9 +40,11 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "LOGIN",
+          "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 8 at RAISE",
+          "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
+SQL statement \\"CALL app_public.check_is_admin()\\"
+PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 7 at CALL",
         },
       },
       "locations": Array [
@@ -51,7 +53,7 @@ Object {
           "line": 2,
         },
       ],
-      "message": "You must log in to update an event",
+      "message": "Acces denied. Only admins are allowed to use this mutation.",
       "path": Array [
         "updateEvent",
       ],
@@ -71,9 +73,9 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 16 at RAISE
+          "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 14 at RAISE
 SQL statement \\"SELECT * from app_public.update_event_quotas(id, quotas)\\"
-PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 32 at PERFORM",
+PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 30 at PERFORM",
         },
       },
       "locations": Array [

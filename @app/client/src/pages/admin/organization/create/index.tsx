@@ -1,28 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { AdminLayout, Loading, Redirect } from "@app/components"
+import { AdminLayout, ColorPicker, ErrorAlert, Loading } from "@app/components"
 import {
   useCreateOrganizationMutation,
   useOrganizationBySlugQuery,
   useSharedQuery,
 } from "@app/graphql"
-import {
-  extractError,
-  formItemLayout,
-  getCodeFromError,
-  tailFormItemLayout,
-} from "@app/lib"
-import {
-  Alert,
-  Button,
-  Col,
-  Form,
-  Input,
-  PageHeader,
-  Row,
-  Typography,
-} from "antd"
+import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
+import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
 import { NextPage } from "next"
+import Router from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
 
@@ -58,20 +45,30 @@ const Admin_CreateOrganization: NextPage = () => {
     setPauseQuery(true)
   }, [checkSlug, slug])
 
-  const [{ data, error }, createOrganization] = useCreateOrganizationMutation()
-  const organization = data?.createOrganization?.organization || null
+  const [, createOrganization] = useCreateOrganizationMutation()
+  const [error, setError] = useState<Error | null>(null)
   const code = getCodeFromError(error)
 
   const handleSubmit = useCallback(
     async (values) => {
-      const { name } = values
+      const { name, color } = values
       const slug = slugify(name || "", {
         lower: true,
       })
-      await createOrganization({
+      const { data, error } = await createOrganization({
         name,
         slug,
+        color,
       })
+      const organization = data?.createOrganization?.organization || null
+      if (error) {
+        setError(error)
+      } else {
+        Router.push(
+          "/admin/organization/[slug]",
+          `/admin/organization/${organization.slug}`
+        )
+      }
     },
     [createOrganization]
   )
@@ -85,16 +82,6 @@ const Admin_CreateOrganization: NextPage = () => {
       )
     }
   }, [])
-
-  if (organization) {
-    return (
-      <Redirect
-        as={`/admin/organization/${organization.slug}`}
-        href={`/admin/organization/[slug]`}
-        layout
-      />
-    )
-  }
 
   return (
     <AdminLayout href="/admin/organization/create" query={query}>
@@ -130,6 +117,7 @@ const Admin_CreateOrganization: NextPage = () => {
                 ) : existingOrganizationData?.organizationBySlug ? (
                   <Text
                     data-cy="createorganization-hint-nameinuse"
+                    style={{ display: "block" }}
                     type="danger"
                   >
                     {t("admin:organizations.create.nameInUse")}
@@ -142,27 +130,18 @@ const Admin_CreateOrganization: NextPage = () => {
                 ) : null}
               </div>
             </Form.Item>
+            <Form.Item label={t("common:color")} name="color">
+              <ColorPicker data-cy="createorganization-color" />
+            </Form.Item>
             {error && (
               <Form.Item {...tailFormItemLayout}>
-                <Alert
-                  description={
-                    <span>
-                      {code === "NUNIQ" ? (
-                        <span data-cy="createorganization-alert-nuniq">
-                          {t("admin:organizations.create.errorNameInUse")}{" "}
-                        </span>
-                      ) : (
-                        extractError(error).message
-                      )}
-                      {code && (
-                        <span>
-                          (Error code: <code>ERR_{code}</code>)
-                        </span>
-                      )}
-                    </span>
+                <ErrorAlert
+                  error={error}
+                  message={
+                    code === "NUNIQ"
+                      ? t("organizations.create.errorNameInUse")
+                      : t("organizations.errors.organizationCreateFailed")
                   }
-                  message={t("organizations.errors.organizationCreateFailed")}
-                  type="error"
                 />
               </Form.Item>
             )}

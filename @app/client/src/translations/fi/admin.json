@@ -38,8 +38,8 @@
   },
   "organizations": {
     "accessDenied": "Sinulla ei ole oikeuksia muokata organisaation asetuksia. Ota yhteyttä organisaation omistajaan.",
-    "confirmDelete": "Haluatko varmasti poistaa käyttäjän {{userName}} organisaatiosta {{organizationName}}?",
-    "confirmTransfer": "Haluatko varmasti siirtää kohteen {{organizationName}} omistajuuden käyttäjälle {{userName}}?",
+    "confirmDelete": "Haluatko varmasti poistaa käyttäjän {{username}} organisaatiosta {{organizationName}}?",
+    "confirmTransfer": "Haluatko varmasti siirtää kohteen {{organizationName}} omistajuuden käyttäjälle {{username}}?",
     "couldNotInvite": "Organisaatioon ei voitu kutsua",
     "create": {
       "checkingName": "Tarkistetaan nimeä",
@@ -72,7 +72,7 @@
     "inviteNewMember": "Kutsu uusi jäsen",
     "makeOwner": "Tee omistaja",
     "messages": {
-      "deleteSuccess": "Organization '{{name}}' successfully deleted",
+      "deleteSuccess": "Organisaatio '{{name}}' poistettu",
       "updated": "Organisaatio päivitetty"
     },
     "updateOrganization": "Päivitä organisaatio",

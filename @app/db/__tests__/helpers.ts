@@ -97,6 +97,15 @@ export const withUserDb = <T>(
     await fn(client, user)
   })
 
+export const withAdminUserDb = <T>(
+  fn: (client: PoolClient, user: User) => Promise<T>
+) =>
+  withRootDb(async (client) => {
+    const [user] = await createUsers(client, 1, true, true)
+    await becomeUser(client, user.id)
+    await fn(client, user)
+  })
+
 export const withAnonymousDb = <T>(fn: (client: PoolClient) => Promise<T>) =>
   withRootDb(async (client) => {
     await becomeUser(client, null)

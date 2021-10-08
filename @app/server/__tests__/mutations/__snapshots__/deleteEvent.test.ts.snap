@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DeleteEvent admin can delete an event (RLS policy) 1`] = `
+exports[`DeleteEvent can delete an event as admin 1`] = `
 Object {
   "data": Object {
     "deleteEvent": Object {
@@ -10,17 +10,7 @@ Object {
 }
 `;
 
-exports[`DeleteEvent member of the owner organization of the event can delete an event (RLS policy) 1`] = `
-Object {
-  "data": Object {
-    "deleteEvent": Object {
-      "clientMutationId": null,
-    },
-  },
-}
-`;
-
-exports[`DeleteEvent users without permissions cannot delete events (RLS policy) 1`] = `
+exports[`DeleteEvent can't delete an event while logged in as non admin 1`] = `
 Object {
   "data": Object {
     "deleteEvent": null,

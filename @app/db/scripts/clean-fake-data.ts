@@ -7,22 +7,20 @@ if (process.env.NODE_ENV !== "development") {
 
 async function cleanData(client: PoolClient) {
   return client.query(
-    `
-  BEGIN;
-    delete from app_public.users
-    where username like 'testuser%'
-    or username = 'testuser'
-    or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com');
+    `BEGIN;
+      delete from app_public.users
+      where username like 'testuser%'
+      or username = 'testuser'
+      or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com');
 
-    delete from app_public.registrations;
-    delete from app_public.quotas;
-    delete from app_private.registration_secrets;
-    delete from app_public.events;
-    delete from app_public.event_categories;
-    delete from app_public.event_questions;
-    delete from app_public.organizations;
-  COMMIT;
-  `
+      delete from app_public.registrations;
+      delete from app_public.quotas;
+      delete from app_private.registration_secrets;
+      delete from app_public.events;
+      delete from app_public.event_categories;
+      delete from app_public.event_questions;
+      delete from app_public.organizations;
+    COMMIT; `
   )
 }
 

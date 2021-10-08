@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`UpdateEventCategory can update an existing event category 1`] = `
+exports[`UpdateEventCategory can update an existing event category as admin 1`] = `
 Object {
   "data": Object {
     "updateEventCategory": Object {
@@ -10,6 +10,7 @@ Object {
         "id": "[id-1]",
         "name": "[random-2]",
         "ownerOrganization": Object {
+          "color": "[random-6]",
           "id": "[id-2]",
           "name": "[random-4]",
           "slug": "[random-5]",
@@ -21,7 +22,7 @@ Object {
 }
 `;
 
-exports[`UpdateEventCategory can't update an event category while logged out (RLS policy) 1`] = `
+exports[`UpdateEventCategory can't update an event category while logged in as non admin 1`] = `
 Object {
   "data": Object {
     "updateEventCategory": null,

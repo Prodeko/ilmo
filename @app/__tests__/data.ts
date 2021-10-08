@@ -114,11 +114,26 @@ export const createOrganizations = async (
     const random = words()
     const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
+    const color = faker.internet.color()
+
+    // Become root to bypass RLS policies
+    await client.query("reset role")
+
     const {
       rows: [organization],
     } = await client.query(
-      `select * from app_public.create_organization($1, $2)`,
-      [slug, name]
+      `with new_org as(
+          insert into app_public.organizations (slug, name, color)
+            values ($1, $2, $3)
+            returning *
+        ), new_membership as (
+          insert into app_public.organization_memberships (organization_id, user_id, is_owner)
+            select new_org.id, app_public.current_user_id(), true from new_org
+          returning *
+        )
+        select * from new_org;
+      `,
+      [slug, name, color]
     )
     organizations.push(organization)
   }

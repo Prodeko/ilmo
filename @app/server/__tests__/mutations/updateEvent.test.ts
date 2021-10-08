@@ -18,7 +18,12 @@ afterAll(teardown)
 describe("UpdateEvent", () => {
   it("can update an existing event", async () => {
     const { events, quotas, questions, session } =
-      await createEventDataAndLogin()
+      await createEventDataAndLogin({
+        userOptions: {
+          create: true,
+          isAdmin: true,
+        },
+      })
     const event = events[0]
 
     await runGraphQLQuery(
@@ -125,6 +130,7 @@ describe("UpdateEvent", () => {
   it("must specify at least one event quota", async () => {
     const { events, session } = await createEventDataAndLogin({
       quotaOptions: { create: false },
+      userOptions: { create: true, isAdmin: true },
       registrationOptions: { create: false },
       registrationSecretOptions: { create: false },
     })
@@ -166,10 +172,12 @@ describe("UpdateEvent", () => {
     )
   })
 
-  it("can't update an event while logged out", async () => {
-    const { events, quotas, questions } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-    })
+  it("can't update an event if not logged in as admin", async () => {
+    const { events, quotas, questions, session } =
+      await createEventDataAndLogin({
+        registrationOptions: { create: false },
+        userOptions: { create: true, isAdmin: false },
+      })
     const event = events[0]
 
     await runGraphQLQuery(
@@ -206,14 +214,21 @@ describe("UpdateEvent", () => {
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
-      {},
+      {
+        user: { sessionId: session.uuid },
+      },
 
       // This function runs all your test assertions:
       async (json) => {
         expect(json.errors).toBeTruthy()
 
         const message = json.errors![0].message
-        expect(message).toEqual("You must log in to update an event")
+        const code = json.errors![0].extensions.exception.code
+
+        expect(message).toEqual(
+          "Acces denied. Only admins are allowed to use this mutation."
+        )
+        expect(code).toEqual("DNIED")
       }
     )
   })

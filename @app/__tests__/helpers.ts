@@ -50,20 +50,17 @@ export const poolFromUrl = (url: string) => {
 export const deleteTestUsers = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
-    `
-      delete from app_public.users
+    `delete from app_public.users
       where username like 'testuser%'
       or username = 'testuser'
-      or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com')
-    `
+      or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com')`
   )
 }
 
 export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
-    `
-    BEGIN;
+    `BEGIN;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
@@ -76,8 +73,7 @@ export const deleteTestEventData = (pool: Pool) => {
 
       -- Delete graphile worker jobs
       delete from graphile_worker.jobs;
-    COMMIT;
-    `
+    COMMIT;`
   )
 }
 
