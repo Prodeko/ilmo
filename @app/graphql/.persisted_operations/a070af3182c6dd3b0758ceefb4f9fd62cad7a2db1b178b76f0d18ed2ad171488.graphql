@@ -17,7 +17,7 @@ fragment HomePageEvents_Query on Query {
 fragment HomePage_Event on Event {
   ...EventFields
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   category {
@@ -49,10 +49,11 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
-fragment EventPage_OwnerOrganization on Organization {
+fragment EventPage_Organization on Organization {
   id
   name
   slug
+  color
   __typename
 }
 fragment EventPage_EventCategory on EventCategory {
@@ -61,7 +62,7 @@ fragment EventPage_EventCategory on EventCategory {
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   updatedAt

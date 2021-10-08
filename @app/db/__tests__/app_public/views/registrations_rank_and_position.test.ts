@@ -1,3 +1,5 @@
+import { PoolClient } from "pg"
+
 import {
   becomeRoot,
   createEventCategories,
@@ -9,7 +11,7 @@ import {
   withUserDb,
 } from "../../helpers"
 
-async function setupData(client, opts) {
+async function setupData(client: PoolClient, opts) {
   const { openQuotaSize, numQuotas, quotaSize } = opts
   const [organization] = await createOrganizations(client, 1)
   const [eventCategory] = await createEventCategories(

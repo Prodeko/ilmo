@@ -31,7 +31,7 @@ Object {
 }
 `;
 
-exports[`CreateEvent can't create an event while logged out 1`] = `
+exports[`CreateEvent can't create an event if not an admin 1`] = `
 Object {
   "data": Object {
     "createEvent": null,
@@ -40,9 +40,11 @@ Object {
     Object {
       "extensions": Object {
         "exception": Object {
-          "code": "LOGIN",
+          "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 8 at RAISE",
+          "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
+SQL statement \\"CALL app_public.check_is_admin()\\"
+PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 7 at CALL",
         },
       },
       "locations": Array [
@@ -51,7 +53,7 @@ Object {
           "line": 2,
         },
       ],
-      "message": "You must log in to create a event",
+      "message": "Acces denied. Only admins are allowed to use this mutation.",
       "path": Array [
         "createEvent",
       ],
@@ -71,9 +73,9 @@ Object {
         "exception": Object {
           "code": "DNIED",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 14 at RAISE
+          "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 12 at RAISE
 SQL statement \\"SELECT * from app_public.create_event_quotas(v_event.id, quotas)\\"
-PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 47 at PERFORM",
+PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 45 at PERFORM",
         },
       },
       "locations": Array [

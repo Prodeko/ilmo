@@ -4,10 +4,12 @@ import {
   useDeleteOrganizationMutation,
   useUpdateOrganizationMutation,
 } from "@app/graphql"
-import { extractError, formItemLayout, tailFormItemLayout } from "@app/lib"
-import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
+import { formItemLayout, tailFormItemLayout } from "@app/lib"
+import { Button, Form, Input, message, Popconfirm } from "antd"
 import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
+
+import { ColorPicker, ErrorAlert } from "."
 
 interface UpdateOrganizationFormProps {
   organization: OrganizationPage_OrganizationFragment
@@ -16,13 +18,14 @@ interface UpdateOrganizationFormProps {
 export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
   organization,
 }) => {
-  const { id: organizationId, name, slug } = organization
+  const { id: organizationId, name, slug, color } = organization
   const initialValues = useMemo(
     () => ({
       slug,
       name,
+      color,
     }),
-    [name, slug]
+    [name, slug, color]
   )
 
   const { t } = useTranslation("admin")
@@ -56,10 +59,11 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
     async (values) => {
       try {
         setError(null)
+        const { slug, name, color } = values
         const { data } = await updateOrganization({
           input: {
             id: organizationId,
-            patch: { slug: values.slug, name: values.name },
+            patch: { name, slug, color },
           },
         })
         message.success(t("organizations.messages.updated"))
@@ -74,7 +78,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         setError(e)
       }
     },
-    [organizationId, slug, updateOrganization, t]
+    [organizationId, updateOrganization, t]
   )
 
   return (
@@ -110,12 +114,14 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
       >
         <Input />
       </Form.Item>
+      <Form.Item label={t("common:color")} name="color">
+        <ColorPicker />
+      </Form.Item>
       {error && (
-        <Form.Item>
-          <Alert
-            description={<span>{extractError(error).message}</span>}
+        <Form.Item {...tailFormItemLayout}>
+          <ErrorAlert
+            error={error}
             message={t("organizations.updatingOrganization")}
-            type="error"
           />
         </Form.Item>
       )}

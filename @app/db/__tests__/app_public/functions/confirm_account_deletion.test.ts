@@ -50,12 +50,12 @@ it("can delete account with no verified emails", () =>
 
 it("cannot delete account if organization owner", () =>
   withRootDb(async (client) => {
-    const [user] = await createUsers(client, 1)
+    const [user] = await createUsers(client, 1, true, true)
     await becomeUser(client, user.id)
-    await client.query("select * from app_public.create_organization($1, $2)", [
-      "myorg",
-      "My Organization",
-    ])
+    await client.query(
+      "select * from app_public.create_organization($1, $2, $3)",
+      ["myorg", "My Organization", "#ffffff"]
+    )
     await client.query("select * from app_public.request_account_deletion()")
     const jobs = await getJobs(client, "user__send_delete_account_email")
     expect(jobs).toHaveLength(1)

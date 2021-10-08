@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
+--! Hash: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
 
 --! split: 0001-reset.sql
 /*
@@ -157,6 +157,21 @@ comment on function app_private.tg__timestamps() is
   E'This trigger should be called on all tables with created_at, updated_at - it ensures that they cannot be manipulated and that updated_at will always be larger than the previous updated_at.';
 
 /*
+ * This trigger is used on tables with created_by and updated_by to ensure that
+ * they are valid (namely: `created_by` cannot be changed after initial INSERT,
+ * and `updated_by` is updated after UPDATE statement).
+ */
+create function app_private.tg__ownership_info() returns trigger as $$
+begin
+  NEW.created_by = (case when TG_OP = 'INSERT' then app_public.current_user_id() else OLD.created_by end);
+  NEW.updated_by = (case when TG_OP = 'UPDATE' then app_public.current_user_id() else OLD.updated_by end);
+  return NEW;
+end;
+$$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
+comment on function app_private.tg__ownership_info() is
+  E'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
+
+/*
  * This trigger is useful for adding realtime features to our GraphQL schema
  * with minimal effort in the database. It's a very generic trigger function;
  * you're intended to pass three arguments when you call it:
@@ -246,6 +261,28 @@ as $$
   select array['fi', 'en'], 'fi';
 $$
 language sql stable;
+
+--! split: 0050-permission-check-helpers.sql
+/*
+ * These procedures are used in various other database functions
+ * to validate user permissions.
+ */
+
+create procedure app_public.check_is_logged_in(message text) as $$
+begin
+  if app_public.current_user_id() is null then
+    raise exception '%', message using errcode = 'LOGIN';
+  end if;
+end;
+$$ language plpgsql;
+
+create procedure app_public.check_is_admin() as $$
+begin
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+end;
+$$ language plpgsql;
 
 --! split: 1000-sessions.sql
 /*
@@ -1103,9 +1140,7 @@ declare
   v_token text;
   v_token_max_duration interval = interval '3 days';
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to delete your account' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_logged_in('You must log in to delete your account');
 
   -- Get the email to send account deletion token to
   select * into v_user_email
@@ -1153,9 +1188,7 @@ declare
   v_user_secret app_private.user_secrets;
   v_token_max_duration interval = interval '3 days';
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to delete your account' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_logged_in('You must log in to delete your account');
 
   select * into v_user_secret
     from app_private.user_secrets
@@ -1548,12 +1581,45 @@ create table app_public.organizations (
   id uuid primary key default gen_random_uuid(),
   slug citext not null unique,
   name text not null,
-  created_at timestamptz not null default now()
+  color text,
+
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+
+  constraint _cnstr_check_color_hex check (color ~* '^#[a-f0-9]{6}$')
 );
 alter table app_public.organizations enable row level security;
 
-grant select on app_public.organizations to :DATABASE_VISITOR;
-grant update(name, slug) on app_public.organizations to :DATABASE_VISITOR;
+create index on app_public.organizations(created_by);
+create index on app_public.organizations(updated_by);
+
+-- Triggers
+create trigger _100_timestamps
+  before insert or update on app_public.organizations for each row
+  execute procedure app_private.tg__timestamps();
+
+create trigger _200_ownership_info
+  before insert or update on app_public.organizations for each row
+  execute procedure app_private.tg__ownership_info();
+
+-- Comments
+comment on table app_public.organizations is
+  E'Main table for organizations.';
+comment on column app_public.organizations.id is
+  E'Unique identifier for the organization.';
+comment on column app_public.organizations.slug is
+  E'Name of the event category.';
+comment on column app_public.organizations.name is
+  E'Name of the organization.';
+comment on column app_public.organizations.color is
+  E'Color for the organization.';
+
+grant
+  select,
+  update (name, slug, color)
+on app_public.organizations to :DATABASE_VISITOR;
 
 -- Note we can't define the RLS policies for an organization until we've defined membership of the organization, so RLS policies will come a little later.
 
@@ -1613,16 +1679,16 @@ create trigger _500_send_email after insert on app_public.organization_invitatio
  * When a user creates an organization they automatically become the owner of that organization.
  */
 
-create function app_public.create_organization(slug citext, name text) returns app_public.organizations as $$
+create function app_public.create_organization(slug citext, name text, color text) returns app_public.organizations as $$
 declare
   v_org app_public.organizations;
 begin
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create an organization' using errcode = 'LOGIN';
-  end if;
-  insert into app_public.organizations (slug, name) values (slug, name) returning * into v_org;
+  -- Check permissions
+  call app_public.check_is_admin();
+
+  insert into app_public.organizations (slug, name, color) values (slug, name, color) returning * into v_org;
   insert into app_public.organization_memberships (organization_id, user_id, is_owner)
-    values(v_org.id, app_public.current_user_id(), true);
+    values (v_org.id, app_public.current_user_id(), true);
   return v_org;
 end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
@@ -1641,11 +1707,8 @@ declare
   v_code text;
   v_user app_public.users;
 begin
-  -- Are we allowed to add this person
-  -- Are we logged in
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to invite a user' using errcode = 'LOGIN';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   select * into v_user from app_public.users where users.username = invite_to_organization.username;
 

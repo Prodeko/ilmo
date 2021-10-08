@@ -1,5 +1,5 @@
---! Previous: sha1:0d46ae8dccf5a417e3d5cd32864108a090c2c263
---! Hash: sha1:4e0f64f0689e61c40c139c59a6dab9a6b533d7eb
+--! Previous: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
+--! Hash: sha1:30baa47df9962bce2ccfaaaa73d6783b677efbce
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -29,23 +29,7 @@ $$ language sql stable security definer set search_path to pg_catalog, public, p
 comment on function app_public.current_user_is_owner_organization_member(owner_organization_id uuid) is
   E'Returns true if the current user is a member of the organization id passed as input, false otherwise.';
 
---! split: 0002-common-triggers.sql
-/*
- * This trigger is used on tables with created_by and updated_by to ensure that
- * they are valid (namely: `created_by` cannot be changed after initial INSERT,
- * and `updated_by` is updated after UPDATE statement).
- */
-create function app_private.tg__ownership_info() returns trigger as $$
-begin
-  NEW.created_by = (case when TG_OP = 'INSERT' then app_public.current_user_id() else OLD.created_by end);
-  NEW.updated_by = (case when TG_OP = 'UPDATE' then app_public.current_user_id() else OLD.updated_by end);
-  return NEW;
-end;
-$$ language plpgsql volatile set search_path to pg_catalog, public, pg_temp;
-comment on function app_private.tg__ownership_info() is
-  E'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
-
---! split: 0003-common-functions.sql
+--! split: 0002-common-functions.sql
 /*
  * These functions are commonly used across many tables.
  */
@@ -107,7 +91,7 @@ $$ language plpgsql volatile security definer set search_path = pg_catalog, publ
 comment on function app_public.validate_jsonb_no_nulls(input anyelement) is
   E'Validate that provided jsonb does not contain nulls.';
 
---! split: 0004-computed-columns.sql
+--! split: 0003-computed-columns.sql
 /*
  * Get the user primary email as a computed column.
  */
@@ -122,7 +106,7 @@ $$ language sql stable security definer set search_path to pg_catalog, public, p
 comment on function app_public.users_primary_email(u app_public.users) is
   E'Users primary email.';
 
---! split: 0005-domain-types.sql
+--! split: 0004-domain-types.sql
 /*
  * User-defined data type for easier handling of fields
  * with language support. The check_language constraint makes
@@ -199,8 +183,8 @@ comment on column app_public.event_categories.name is
   E'Name of the event category.';
 comment on column app_public.event_categories.description is
   E'Short description of the event category.';
-  comment on column app_public.event_categories.color is
-  E'Color of the event category.';
+comment on column app_public.event_categories.color is
+  E'Color color the event category.';
 comment on column app_public.event_categories.owner_organization_id is
   E'Identifier of the organizer.';
 
@@ -456,9 +440,7 @@ declare
   v_ret app_public.quotas[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create event quotas' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Must specify at least one quota
   if (select array_length(quotas, 1)) is null then
@@ -503,9 +485,7 @@ declare
   v_ret app_public.quotas[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update event quotas' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Must specify at least one quota
   if (select array_length(quotas, 1)) is null then
@@ -518,7 +498,6 @@ begin
     and q.id not in (select id from unnest(quotas))
   )
   into v_quota_ids_to_delete;
-
 
   -- Delete existing event quotas that were not supplied
   -- as input to this function
@@ -533,7 +512,7 @@ begin
         where id = v_input.id
       returning * into v_quota;
     else
-      -- Create new quotas that didn't exits before
+      -- Create new quotas that didn't exist before
       insert into app_public.quotas(event_id, position, title, size)
         values (event_id, v_input.position, v_input.title, v_input.size)
       returning * into v_quota;
@@ -696,9 +675,7 @@ declare
   v_ret app_public.event_questions[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create event questions' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   if questions is null then
     return null;
@@ -744,9 +721,7 @@ declare
   v_ret app_public.event_questions[] default '{}';
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update event questions' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   select array(
     select id from app_public.event_questions as q
@@ -768,7 +743,7 @@ begin
         where id = v_input.id
       returning * into v_question;
     else
-      -- Create new questions that didn't exits before
+      -- Create new questions that didn't exist before
       insert into app_public.event_questions(event_id, position, type, label, is_required, data)
         values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
       returning * into v_question;
@@ -806,7 +781,7 @@ begin
 
   -- Loop event answers and check that required questions have been answered
   -- It isn't very simple to verify that no nulls are present in jsonb...
-  -- We do this with the validate_jsonb_no_nulls funciton.
+  -- We do this with the validate_jsonb_no_nulls function.
   for v_question_id, v_answers in select * from jsonb_each(answers) loop
     select * into v_question from app_public.event_questions where id = v_question_id;
 
@@ -856,7 +831,6 @@ end;
 $$ language plpgsql volatile security definer set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.validate_registration_answers(event_id uuid, required_question_ids uuid[], answers jsonb) is
   E'Validate registration answers.';
-
 
 create function app_private.tg__registration_is_valid() returns trigger as $$
 declare
@@ -1452,9 +1426,7 @@ declare
   v_event app_public.events;
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to create a event' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Create the event
   insert into app_public.events(
@@ -1513,9 +1485,7 @@ declare
   v_event app_public.events;
 begin
   -- Check permissions
-  if app_public.current_user_id() is null then
-    raise exception 'You must log in to update an event' using errcode = 'LOGIN';
-  end if;
+  call app_public.check_is_admin();
 
   -- Create the event
   update app_public.events

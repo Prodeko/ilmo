@@ -14,8 +14,10 @@ beforeAll(setup)
 afterAll(teardown)
 
 describe("CreateEventCategory", () => {
-  it("can create an event category when logged in", async () => {
-    const { organization, session } = await createEventDataAndLogin()
+  it("can create an event category when logged in as admin", async () => {
+    const { organization, session } = await createEventDataAndLogin({
+      userOptions: { create: true, isAdmin: true },
+    })
     const ownerOrganizationId = organization.id
 
     await runGraphQLQuery(
@@ -63,6 +65,40 @@ describe("CreateEventCategory", () => {
 
   it("can't create an event category while logged out", async () => {
     const { organization } = await createEventDataAndLogin()
+    const ownerOrganizationId = organization.id
+
+    await runGraphQLQuery(
+      CreateEventCategoryDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventCategory: {
+            ownerOrganizationId,
+            name: { fi: "Testikategoria", en: "Test category" },
+            description: { fi: "Testikuvaus", en: "Test description" },
+            color: "#002e7d",
+          },
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        expect(message).toEqual("Permission denied (by RLS)")
+      }
+    )
+  })
+
+  it("can't create an event category while logged in as non admin", async () => {
+    const { organization } = await createEventDataAndLogin({
+      userOptions: { create: true, isAdmin: false },
+    })
     const ownerOrganizationId = organization.id
 
     await runGraphQLQuery(

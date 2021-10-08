@@ -1,10 +1,25 @@
-fragment EventPage_Subscription on Subscription {
+fragment UpdateEventPage_Query on Query {
+  ...SharedLayout_Query
+  event(id: $id) {
+    ...UpdateEventPage_Event
+    __typename
+  }
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
     __typename
   }
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
+  languages {
+    ...SharedLayout_Languages
     __typename
   }
   __typename
@@ -34,26 +49,28 @@ fragment SharedLayout_User on User {
   }
   __typename
 }
-fragment EventPage_Event on Event {
+fragment SharedLayout_Languages on AppLanguage {
+  supportedLanguages
+  defaultLanguage
+  __typename
+}
+fragment UpdateEventPage_Event on Event {
   ...EventFields
   category {
     ...EventPage_EventCategory
     __typename
   }
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      __typename
-    }
-    __typename
-  }
-  registrations(orderBy: CREATED_AT_ASC) {
-    nodes {
-      ...EventPage_Registration
+      registrations {
+        totalCount
+        __typename
+      }
       __typename
     }
     __typename
@@ -96,16 +113,17 @@ fragment EventPage_EventCategory on EventCategory {
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   updatedAt
   __typename
 }
-fragment EventPage_OwnerOrganization on Organization {
+fragment EventPage_Organization on Organization {
   id
   name
   slug
+  color
   __typename
 }
 fragment EventPage_Quota on Quota {
@@ -113,18 +131,6 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
-  __typename
-}
-fragment EventPage_Registration on Registration {
-  id
-  fullName
-  status
-  position
-  createdAt
-  quota {
-    ...EventPage_Quota
-    __typename
-  }
   __typename
 }
 fragment EventPage_Question on EventQuestion {
@@ -136,6 +142,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-subscription EventPage($slug: String!) {
-  ...EventPage_Subscription
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
 }

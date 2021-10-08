@@ -107,7 +107,9 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
   try {
     // Have to begin a transaction here, since we set the third parameter
     // of set_config to 'true' in becomeUser below
+    // https://www.postgresql.org/docs/9.3/functions-admin.html
     client.query("BEGIN")
+
     let users: PromiseValue<ReturnType<typeof createUsers>>
     if (userOptions.create) {
       users = await createUsers(
@@ -148,10 +150,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
 
     // Become root to bypass RLS policy on app_private.registration_secrets
     // and app_public.quotas
-    client.query("reset role")
+    await client.query("reset role")
 
-    // A quota should not exist for createQuotas.test.ts but other tests such
-    // as createRegistration.test.ts need an existing quota.
     let quotas: PromiseValue<ReturnType<typeof createQuotas>>
     if (quotaOptions.create) {
       quotas = await createQuotas(client, quotaOptions.amount, events[0].id)

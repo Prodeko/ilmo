@@ -1,10 +1,8 @@
-fragment CreateEventPage_Query on Query {
+fragment UpdateEventCategoryPage_Query on Query {
   ...SharedLayout_Query
-  eventCategories(orderBy: NAME_ASC) {
-    nodes {
-      ...EventPage_EventCategory
-      __typename
-    }
+  eventCategory(id: $id) {
+    id
+    ...EventPage_EventCategory
     __typename
   }
   __typename
@@ -56,18 +54,19 @@ fragment EventPage_EventCategory on EventCategory {
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   updatedAt
   __typename
 }
-fragment EventPage_OwnerOrganization on Organization {
+fragment EventPage_Organization on Organization {
   id
   name
   slug
+  color
   __typename
 }
-query CreateEventPage {
-  ...CreateEventPage_Query
+query UpdateEventCategoryPage($id: UUID!) {
+  ...UpdateEventCategoryPage_Query
 }

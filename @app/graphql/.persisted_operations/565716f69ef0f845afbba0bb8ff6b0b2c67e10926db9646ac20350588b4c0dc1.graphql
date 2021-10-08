@@ -1,9 +1,14 @@
+fragment EventPage_Organization on Organization {
+  id
+  name
+  slug
+  color
+  __typename
+}
 mutation UpdateOrganization($input: UpdateOrganizationInput!) {
   updateOrganization(input: $input) {
     organization {
-      id
-      slug
-      name
+      ...EventPage_Organization
       __typename
     }
     __typename

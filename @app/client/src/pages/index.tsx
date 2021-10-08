@@ -18,17 +18,6 @@ import { NextPage } from "next"
 import Link from "next/link"
 import useTranslation from "next-translate/useTranslation"
 
-const getColor = (org: string) => {
-  // TODO: Store this info in db?
-  if (org === "Prodeko") {
-    return "blue"
-  } else if (org === "Pora") {
-    return "black"
-  } else {
-    return "red"
-  }
-}
-
 const gridTemplateColumns = {
   xs: "1, minmax(0, 1fr)",
   sm: "2, minmax(0, 1fr)",
@@ -180,7 +169,10 @@ const Home_SignupClosedEvents = () => {
             compare: Sorter.TEXT,
           },
           render: (name: string, record: Event, index: number) => (
-            <Tag key={`${record.id}-${index}`} color={getColor(name)}>
+            <Tag
+              key={`${record.id}-${index}`}
+              color={record.ownerOrganization.color}
+            >
               {name?.toUpperCase()}
             </Tag>
           ),

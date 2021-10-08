@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CreateEventCategory can create an event category when logged in 1`] = `
+exports[`CreateEventCategory can create an event category when logged in as admin 1`] = `
 Object {
   "data": Object {
     "createEventCategory": Object {
@@ -10,6 +10,7 @@ Object {
         "id": "[id-1]",
         "name": "[random-2]",
         "ownerOrganization": Object {
+          "color": "[random-6]",
           "id": "[id-2]",
           "name": "[random-4]",
           "slug": "[random-5]",
@@ -18,6 +19,35 @@ Object {
       },
     },
   },
+}
+`;
+
+exports[`CreateEventCategory can't create an event category while logged in as non admin 1`] = `
+Object {
+  "data": Object {
+    "createEventCategory": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "42501",
+          "message": "Permission denied (by RLS)",
+          "severity": "ERROR",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Permission denied (by RLS)",
+      "path": Array [
+        "createEventCategory",
+      ],
+    },
+  ],
 }
 `;
 

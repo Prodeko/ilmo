@@ -3,6 +3,7 @@ import { UpdateEventCategoryDocument } from "@app/graphql"
 import {
   asRoot,
   createEventDataAndLogin,
+  createUserAndLogIn,
   deleteTestData,
   runGraphQLQuery,
   setup,
@@ -14,9 +15,9 @@ beforeAll(setup)
 afterAll(teardown)
 
 describe("UpdateEventCategory", () => {
-  it("can update an existing event category", async () => {
-    const { organization, eventCategory, session } =
-      await createEventDataAndLogin()
+  it("can update an existing event category as admin", async () => {
+    const { organization, eventCategory } = await createEventDataAndLogin()
+    const { session } = await createUserAndLogIn({ isAdmin: true })
 
     await runGraphQLQuery(
       UpdateEventCategoryDocument,
@@ -68,10 +69,10 @@ describe("UpdateEventCategory", () => {
     )
   })
 
-  it("can't update an event category while logged out (RLS policy)", async () => {
-    const { eventCategory } = await createEventDataAndLogin({
-      registrationOptions: { create: false },
-    })
+  it("can't update an event category while logged in as non admin", async () => {
+    const { eventCategory } = await createEventDataAndLogin()
+    const { session } = await createUserAndLogIn({ isAdmin: false })
+
     await runGraphQLQuery(
       UpdateEventCategoryDocument,
 
@@ -89,7 +90,9 @@ describe("UpdateEventCategory", () => {
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
-      {},
+      {
+        user: { sessionId: session.uuid },
+      },
 
       // This function runs all your test assertions:
       async (json) => {

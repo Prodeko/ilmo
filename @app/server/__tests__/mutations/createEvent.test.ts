@@ -86,7 +86,9 @@ const questions = [
 describe("CreateEvent", () => {
   it("can create event while logged in", async () => {
     const { organization, eventCategory, session } =
-      await createEventDataAndLogin()
+      await createEventDataAndLogin({
+        userOptions: { create: true, isAdmin: true },
+      })
     const day = dayjs("2021-02-20")
     const daySlug = day.format("YYYY-M-D")
     const slug = slugify(`${daySlug}-testitapahtuma`, {
@@ -162,8 +164,9 @@ describe("CreateEvent", () => {
     )
   })
 
-  it("can't create an event while logged out", async () => {
-    const { organization, eventCategory } = await createEventDataAndLogin()
+  it("can't create an event if not an admin", async () => {
+    const { organization, eventCategory, session } =
+      await createEventDataAndLogin()
     const day = dayjs("2021-02-20")
     const daySlug = day.format("YYYY-M-D")
     const slug = slugify(`${daySlug}-testitapahtuma`, {
@@ -196,21 +199,30 @@ describe("CreateEvent", () => {
       },
 
       // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
-      {},
+      {
+        user: { sessionId: session.uuid },
+      },
 
       // This function runs all your test assertions:
       async (json) => {
         expect(json.errors).toBeTruthy()
 
         const message = json.errors![0].message
-        expect(message).toEqual("You must log in to create a event")
+        const code = json.errors![0].extensions.exception.code
+
+        expect(message).toEqual(
+          "Acces denied. Only admins are allowed to use this mutation."
+        )
+        expect(code).toEqual("DNIED")
       }
     )
   })
 
   it("must specify at least one event quota", async () => {
     const { session, organization, eventCategory } =
-      await createEventDataAndLogin()
+      await createEventDataAndLogin({
+        userOptions: { create: true, isAdmin: true },
+      })
     const day = dayjs("2021-02-20")
     const daySlug = day.format("YYYY-M-D")
     const slug = slugify(`${daySlug}-testitapahtuma`, {

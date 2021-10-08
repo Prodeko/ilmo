@@ -1,12 +1,23 @@
+fragment EventPage_Organization on Organization {
+  id
+  name
+  slug
+  color
+  __typename
+}
 mutation CreateOrganization($name: String!, $slug: String!, $color: String!) {
-  createOrganization(input: { name: $name, slug: $slug, color: $color }) {
+  createOrganization(input: {name: $name, slug: $slug, color: $color}) {
     organization {
       ...EventPage_Organization
+      __typename
     }
     query {
       organizationBySlug(slug: $slug) {
         ...EventPage_Organization
+        __typename
       }
+      __typename
     }
+    __typename
   }
 }

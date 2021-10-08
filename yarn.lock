@@ -7402,6 +7402,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk-pipe@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "chalk-pipe@npm:5.1.1"
+  dependencies:
+    chalk: ^4.1.0
+  checksum: 102bcb06df8058c08909fd3bc52c228d1d8ea0687ff5c668ed9199f8fc0f92ba66eeccf7cf220195e0db9e9351909b9389eec382bfef92290dbf9841530d48d5
+  languageName: node
+  linkType: hard
+
 "chalk@npm:2.4.2, chalk@npm:^2.0.0, chalk@npm:^2.3.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
@@ -12649,6 +12658,7 @@ fsevents@^1.2.7:
     "@typescript-eslint/parser": ^4.32.0
     abort-controller: ^3.0.0
     babel-plugin-import: ^1.13.3
+    chalk-pipe: ^5.1.1
     concurrently: ^6.2.1
     core-js: ^3.18.1
     depcheck: ^1.4.2

@@ -21,10 +21,11 @@ fragment EventFields on Event {
   updatedAt
 }
 
-fragment EventPage_OwnerOrganization on Organization {
+fragment EventPage_Organization on Organization {
   id
   name
   slug
+  color
 }
 
 fragment EventPage_EventCategory on EventCategory {
@@ -33,7 +34,7 @@ fragment EventPage_EventCategory on EventCategory {
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
   }
   updatedAt
 }
@@ -71,7 +72,7 @@ fragment EventPage_Event on Event {
     ...EventPage_EventCategory
   }
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {

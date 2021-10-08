@@ -20,16 +20,17 @@ fragment EventPage_EventCategory on EventCategory {
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   updatedAt
   __typename
 }
-fragment EventPage_OwnerOrganization on Organization {
+fragment EventPage_Organization on Organization {
   id
   name
   slug
+  color
   __typename
 }
 query ListEventCategories($offset: Int!, $first: Int!) {

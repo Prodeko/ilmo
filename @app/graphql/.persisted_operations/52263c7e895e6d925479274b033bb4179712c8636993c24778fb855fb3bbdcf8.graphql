@@ -1,10 +1,34 @@
-fragment UpdateEventPage_Query on Query {
+fragment HomePage_Query on Query {
   ...SharedLayout_Query
-  event(id: $id) {
-    ...UpdateEventPage_Event
+  organizations {
+    nodes {
+      id
+      name
+      __typename
+    }
     __typename
   }
-  eventCategories(orderBy: NAME_ASC) {
+  signupOpenEvents: events(
+    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
+  ) {
+    nodes {
+      ...HomePage_Event
+      __typename
+    }
+    __typename
+  }
+  signupUpcomingEvents: events(
+    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
+  ) {
+    nodes {
+      ...HomePage_Event
+      __typename
+    }
+    __typename
+  }
+  eventCategories {
     nodes {
       ...EventPage_EventCategory
       __typename
@@ -54,32 +78,14 @@ fragment SharedLayout_Languages on AppLanguage {
   defaultLanguage
   __typename
 }
-fragment UpdateEventPage_Event on Event {
+fragment HomePage_Event on Event {
   ...EventFields
+  ownerOrganization {
+    ...EventPage_Organization
+    __typename
+  }
   category {
     ...EventPage_EventCategory
-    __typename
-  }
-  ownerOrganization {
-    ...EventPage_OwnerOrganization
-    __typename
-  }
-  quotas(orderBy: POSITION_ASC) {
-    nodes {
-      ...EventPage_Quota
-      registrations {
-        totalCount
-        __typename
-      }
-      __typename
-    }
-    __typename
-  }
-  eventQuestions(orderBy: POSITION_ASC) {
-    nodes {
-      ...EventPage_Question
-      __typename
-    }
     __typename
   }
   __typename
@@ -107,40 +113,25 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
+fragment EventPage_Organization on Organization {
+  id
+  name
+  slug
+  color
+  __typename
+}
 fragment EventPage_EventCategory on EventCategory {
   id
   description
   name
   color
   ownerOrganization {
-    ...EventPage_OwnerOrganization
+    ...EventPage_Organization
     __typename
   }
   updatedAt
   __typename
 }
-fragment EventPage_OwnerOrganization on Organization {
-  id
-  name
-  slug
-  __typename
-}
-fragment EventPage_Quota on Quota {
-  id
-  position
-  title
-  size
-  __typename
-}
-fragment EventPage_Question on EventQuestion {
-  id
-  position
-  type
-  label
-  isRequired
-  data
-  __typename
-}
-query UpdateEventPage($id: UUID!) {
-  ...UpdateEventPage_Query
+query HomePage {
+  ...HomePage_Query
 }
