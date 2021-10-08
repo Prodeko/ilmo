@@ -1,0 +1,16 @@
+{
+  "forgotPassword": "Forgotten passphrase?",
+  "form": {
+    "messages": {
+      "password": "Please input your passphrase",
+      "username": "Please input your username or email"
+    },
+    "placeholders": {
+      "password": "Passphrase",
+      "username": "E-mail or Username"
+    }
+  },
+  "registerButton": "Create an account",
+  "signinButton": "Sign in with E-mail or Username",
+  "signinDifferent": "Use a different sign in method"
+}

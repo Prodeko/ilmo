@@ -3,6 +3,7 @@ import {
   AdminLayout,
   ORGANIZATION_RESULTS_PER_PAGE,
   OrganizationMembers,
+  Redirect,
   UpdateOrganizationForm,
   useOrganizationLoading,
   useQuerySlug,
@@ -11,8 +12,9 @@ import {
   OrganizationPage_OrganizationFragment,
   useOrganizationPageQuery,
 } from "@app/graphql"
-import { Col, PageHeader, Row } from "antd"
+import { Col, message, PageHeader, Row } from "antd"
 import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
 const Admin_Organizations: NextPage = () => {
   const slug = useQuerySlug()
@@ -41,7 +43,16 @@ interface OrganizationPageInnerProps {
 }
 
 const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
+  const { t } = useTranslation("admin")
   const { organization, ...rest } = props
+
+  if (!organization.currentUserIsOwner) {
+    message.warning({
+      key: "organizations-access-denied",
+      content: t("organizations.accessDenied"),
+    })
+    return <Redirect as="/admin/event/list" href="/admin/event/list" />
+  }
 
   return (
     <Row>

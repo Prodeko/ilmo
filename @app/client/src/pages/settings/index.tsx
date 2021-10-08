@@ -11,7 +11,7 @@ import { NextPage } from "next"
 import useTranslation from "next-translate/useTranslation"
 
 const Settings_Profile: NextPage = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("settings")
   const [query] = useSettingsProfileQuery()
   const { data, fetching, error } = query
 
@@ -38,6 +38,7 @@ interface ProfileSettingsFormProps {
 
 function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
   const [form] = Form.useForm()
+  const { t } = useTranslation("settings")
   const [{ error }, updateUser] = useUpdateUserMutation()
   const [success, setSuccess] = useState(false)
 
@@ -59,22 +60,20 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         if (errcode === "23505") {
           form.setFields([
             {
-              name: "username",
+              name: t("username"),
               value: form.getFieldValue("username"),
-              errors: [
-                "This username is already in use, please pick a different name",
-              ],
+              errors: [t("errors.usernameTaken")],
             },
           ])
         }
       }
     },
-    [updateUser, user.id, form]
+    [updateUser, user.id, form, t]
   )
 
   return (
     <div>
-      <PageHeader title="Edit profile" />
+      <PageHeader title={t("titles.index")} />
       <Form
         {...formItemLayout}
         form={form}
@@ -82,24 +81,24 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         onFinish={handleSubmit}
       >
         <Form.Item
-          label="Name"
+          label={t("common:name")}
           name="name"
           rules={[
             {
               required: true,
-              message: "Please enter your name",
+              message: t("form.messages.name"),
             },
           ]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          label="Username"
+          label={t("common:username")}
           name="username"
           rules={[
             {
               required: true,
-              message: "Please choose a username",
+              message: t("form.messages.username"),
             },
           ]}
         >
@@ -107,15 +106,18 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         </Form.Item>
         {error ? (
           <Form.Item>
-            <ErrorAlert error={error} message="Updating username" />
+            <ErrorAlert
+              error={error}
+              message={t("form.feedback.profileUpdating")}
+            />
           </Form.Item>
         ) : success ? (
           <Form.Item>
-            <Alert message={`Profile updated`} type="success" />
+            <Alert message={t("form.feedback.profileUpdated")} type="success" />
           </Form.Item>
         ) : null}
         <Form.Item {...tailFormItemLayout}>
-          <Button htmlType="submit">Update Profile</Button>
+          <Button htmlType="submit">{t("buttons.updateProfile")}</Button>
         </Form.Item>
       </Form>
     </div>

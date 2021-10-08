@@ -19,6 +19,6 @@ context("Verify email", () => {
     )
 
     // Assertion
-    cy.contains("Email Verified").should("exist")
+    cy.contains("Sähköposti vahvistettu").should("exist")
   })
 })

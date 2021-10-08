@@ -1,0 +1,29 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "Odota, salasanaasi resetoidaan...",
+      "message": "Lähetetään..."
+    },
+    "success": {
+      "description": "Salasanasi on resetoitu. Voit kirjautua sisään uudella salasanallasi.",
+      "message": "Salasana resetoitu"
+    }
+  },
+  "errors": {
+    "passwordMatch": "Salasanat eivät täsmää. Ole hyvä ja yritä uudestaan.",
+    "unknownError": "Tarkista ylläolevat virheet ja yritä uudestaan"
+  },
+  "form": {
+    "labels": {
+      "confirm": "Vahvista salasana",
+      "password": "Anna uusi salasana:",
+      "resetToken": "Anna salasanan palautusmerkki:"
+    },
+    "messages": {
+      "confirm": "Vahvista salasana.",
+      "password": "Anna uusi salasana."
+    }
+  },
+  "resetButton": "Resetoi salasana",
+  "title": "Resetoi salasana"
+}

@@ -18,6 +18,7 @@ import {
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd"
 import { NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
 function Email({
   email,
@@ -26,6 +27,7 @@ function Email({
   email: EmailsForm_UserEmailFragment
   hasOtherEmails: boolean
 }) {
+  const { t } = useTranslation("settings")
   const canDelete = !email.isPrimary && hasOtherEmails
   const [, deleteEmail] = useDeleteEmailMutation()
   const [, resendEmailVerification] = useResendEmailVerificationMutation()
@@ -36,19 +38,21 @@ function Email({
       key={email.id}
       actions={[
         email.isPrimary && (
-          <span data-cy="settingsemails-indicator-primary">Primary</span>
+          <span data-cy="settingsemails-indicator-primary">
+            {t("common:primary")}
+          </span>
         ),
         canDelete && (
           <a
             data-cy="settingsemails-button-delete"
             onClick={() => deleteEmail({ emailId: email.id })}
           >
-            Delete
+            {t("common:delete")}
           </a>
         ),
         !email.isVerified && (
           <a onClick={() => resendEmailVerification({ emailId: email.id })}>
-            Resend verification
+            {t("pages.emails.resendVerification")}
           </a>
         ),
         email.isVerified && !email.isPrimary && (
@@ -56,7 +60,7 @@ function Email({
             data-cy="settingsemails-button-makeprimary"
             onClick={() => makeEmailPrimary({ emailId: email.id })}
           >
-            Make primary
+            {t("pages.emails.makePrimary")}
           </a>
         ),
       ].filter((_) => _)}
@@ -71,7 +75,7 @@ function Email({
             ✉️
           </Avatar>
         }
-        description={`Added ${new Date(
+        description={`${t("common:added")} ${new Date(
           Date.parse(email.createdAt)
         ).toLocaleString()}`}
         title={
@@ -81,15 +85,17 @@ function Email({
             <span
               title={
                 email.isVerified
-                  ? "Verified"
-                  : "Pending verification (please check your inbox / spam folder"
+                  ? t("pages.emails.verified")
+                  : t("pages.emails.pendingVerification")
               }
             >
               {" "}
               {email.isVerified ? (
                 "✅"
               ) : (
-                <small style={{ color: "red" }}>(unverified)</small>
+                <small style={{ color: "red" }}>
+                  ({t("pages.emails.unverified")})
+                </small>
               )}{" "}
             </span>{" "}
           </span>
@@ -100,6 +106,7 @@ function Email({
 }
 
 const Settings_Emails: NextPage = () => {
+  const { t } = useTranslation("settings")
   const [showAddEmailForm, setShowAddEmailForm] = useState(false)
   const [query] = useSettingsEmailsQuery()
   const { data, fetching, error } = query
@@ -114,33 +121,24 @@ const Settings_Emails: NextPage = () => {
         />
       )
     } else if (!user) {
-      return "Loading"
+      return t("common:loading")
     } else {
       return (
         <div>
           {user.isVerified ? null : (
             <div style={{ marginBottom: "0.5rem" }}>
               <Alert
-                description={`
-                  You do not have any verified email addresses, this will make
-                  account recovery impossible and may limit your available
-                  functionality within this application. Please complete email
-                  verification.
-                `}
-                message="No verified emails"
+                description={t("pages.emails.alerts.notVerified.description")}
+                message={t("pages.emails.alerts.notVerified.message")}
                 type="warning"
                 showIcon
               />
             </div>
           )}
-          <PageHeader title="Email addresses" />
+          <PageHeader title={t("titles.emails")} />
           <P>
-            <Strong>
-              Account notices will be sent your primary email address.
-            </Strong>{" "}
-            Additional email addresses may be added to help with account
-            recovery (or to change your primary email), but they cannot be used
-            until verified.
+            <Strong>{t("pages.emails.accountNoticeInfo1")}</Strong>{" "}
+            {t("pages.emails.accountNoticeInfo2")}
           </P>
           <List
             dataSource={user.userEmails.nodes}
@@ -152,7 +150,7 @@ const Settings_Emails: NextPage = () => {
                     type="primary"
                     onClick={() => setShowAddEmailForm(true)}
                   >
-                    Add email
+                    {t("buttons.addEmail")}
                   </Button>
                 </div>
               ) : (
@@ -185,6 +183,7 @@ interface AddEmailFormProps {
 }
 
 function AddEmailForm({ onComplete }: AddEmailFormProps) {
+  const { t } = useTranslation("settings")
   const [form] = Form.useForm()
   const [{ error }, addEmail] = useAddEmailMutation()
   const handleSubmit = useCallback(
@@ -197,12 +196,12 @@ function AddEmailForm({ onComplete }: AddEmailFormProps) {
   return (
     <Form {...formItemLayout} form={form} onFinish={handleSubmit}>
       <Form.Item
-        label="New email"
+        label={t("form.label.newEmail")}
         name="email"
         rules={[
           {
             required: true,
-            message: "Please enter an email address",
+            message: t("form.messages.email"),
           },
         ]}
       >
@@ -210,12 +209,15 @@ function AddEmailForm({ onComplete }: AddEmailFormProps) {
       </Form.Item>
       {error && (
         <Form.Item>
-          <ErrorAlert error={error} message="Error adding email" />
+          <ErrorAlert
+            error={error}
+            message={t("form.feedback.emailAddFailed")}
+          />
         </Form.Item>
       )}
       <Form.Item {...tailFormItemLayout}>
         <Button data-cy="settingsemails-button-submit" htmlType="submit">
-          Add email
+          {t("buttons.addEmail")}
         </Button>
       </Form.Item>
     </Form>

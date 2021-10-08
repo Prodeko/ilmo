@@ -1,0 +1,29 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "This might take a few moments...",
+      "message": "Submitting..."
+    },
+    "success": {
+      "description": "Your password was reset; you can go and log in now",
+      "message": "Password reset"
+    }
+  },
+  "errors": {
+    "passwordMatch": "Make sure your passphrase is the same in both passphrase boxes.",
+    "unknownError": "Please check the errors above and try again"
+  },
+  "form": {
+    "labels": {
+      "confirm": "Confirm passphrase",
+      "password": "Choose a new passphrase:",
+      "resetToken": "Enter your reset token:"
+    },
+    "messages": {
+      "confirm": "Please confirm your passphrase.",
+      "password": "Please input your passphrase."
+    }
+  },
+  "resetButton": "Reset passphrase",
+  "title": "Reset password"
+}

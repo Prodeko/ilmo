@@ -1,0 +1,22 @@
+{
+  "alerts": {
+    "successEmail": {
+      "description": "We've sent an email reset link to {{email}}; click the link and follow the instructions. If you don't receive the link, please ensure you entered the email address correctly, and check in your spam folder just in case.",
+      "message": "You've got mail"
+    }
+  },
+  "form": {
+    "messages": {
+      "emailInvalid": "The input is not a valid E-mail",
+      "emailRequired": "Please input your email",
+      "username": "Please input your username or email"
+    },
+    "placeholders": {
+      "password": "Passphrase",
+      "username": "E-mail or username"
+    }
+  },
+  "rememberedButton": "Remembered your password? Log in.",
+  "resetButton": "Reset password",
+  "title": "Forgot password"
+}

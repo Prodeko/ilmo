@@ -1,4 +1,6 @@
+import { useCallback } from "react"
 import { Button } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
 import { ProdekoIcon } from "./ProdekoIcon"
 
@@ -7,14 +9,16 @@ export interface SocialLoginOptionsProps {
   buttonTextFromService?: (service: string) => string
 }
 
-function defaultButtonTextFromService(service: string) {
-  return `Sign in with ${service}`
-}
-
 export function SocialLoginOptions({
   next,
-  buttonTextFromService = defaultButtonTextFromService,
+  buttonTextFromService,
 }: SocialLoginOptionsProps) {
+  const { t } = useTranslation()
+
+  const defaultButtonTextFromService = useCallback(
+    (service: string) => `${t("common:signinWith")} ${service}`,
+    [t]
+  )
   return (
     <Button
       href={`/auth/oauth2?next=${encodeURIComponent(next)}`}
@@ -23,7 +27,9 @@ export function SocialLoginOptions({
       type="primary"
       block
     >
-      {buttonTextFromService("Prodeko")}
+      {buttonTextFromService
+        ? buttonTextFromService("Prodeko")
+        : defaultButtonTextFromService("Prodeko")}
     </Button>
   )
 }

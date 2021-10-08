@@ -22,7 +22,7 @@ context("Manage emails", () => {
     // Setup
     cy.login({ next: "/settings/emails", verified: true })
     cy.contains("testuser@example.com").should("exist")
-    cy.contains("(unverified)").should("not.exist")
+    cy.contains("(vahvistamaton)").should("not.exist")
 
     // Action: add email
     cy.getCy("settingsemails-button-addemail").click()
@@ -33,7 +33,7 @@ context("Manage emails", () => {
     cy.getCy("settingsemails-emailitem-newemail-example-com").within(() => {
       cy.root().should("exist")
       cy.contains("newemail@example.com").should("exist")
-      cy.contains("(unverified)").should("exist")
+      cy.contains("(vahvistamaton)").should("exist")
     })
 
     // Action: verify the email
@@ -43,7 +43,7 @@ context("Manage emails", () => {
         user_email_id
       )}&token=${encodeURIComponent(verification_token!)}`
       cy.visit(url)
-      cy.contains("Email Verified").should("exist")
+      cy.contains("Sähköposti vahvistettu").should("exist")
       cy.visit(Cypress.env("ROOT_URL") + "/settings/emails")
     })
 
@@ -56,7 +56,7 @@ context("Manage emails", () => {
     cy.getCy("settingsemails-emailitem-newemail-example-com").within(() => {
       cy.root().should("exist")
       cy.contains("newemail@example.com").should("exist")
-      cy.contains("(unverified)").should("not.exist")
+      cy.contains("(vahvistamaton)").should("not.exist")
       cy.getCy("settingsemails-button-makeprimary").should("exist")
     })
 

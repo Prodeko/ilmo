@@ -20,8 +20,6 @@ import {
 } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
-import { Redirect } from "./index"
-
 const { Text } = Typography
 
 interface OrganizationMembersProps {
@@ -56,6 +54,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
     [currentUser, organization]
   )
 
+  const { t } = useTranslation("admin")
   const [, inviteToOrganization] = useInviteToOrganizationMutation()
   const [inviteInProgress, setInviteInProgress] = useState(false)
   const [form] = Form.useForm()
@@ -78,38 +77,32 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
       } catch (e) {
         // TODO: handle this through the interface
         message.error(
-          "Could not invite to organization: " +
+          `${t("organizations.couldNotInvite")}: ` +
             e.message.replace(/^GraphQL Error:/i, "")
         )
       } finally {
         setInviteInProgress(false)
       }
     },
-    [form, inviteInProgress, inviteToOrganization, organization.id]
+    [form, inviteInProgress, inviteToOrganization, organization.id, t]
   )
-
-  if (!organization.currentUserIsOwner) {
-    return (
-      <Redirect
-        as={`/admin/organization/${organization.slug}`}
-        href="/admin/organization/[slug]"
-      />
-    )
-  }
 
   return (
     <>
-      <Card title="Invite new member">
+      <Card title={t("organizations.inviteNewMember")}>
         <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
-          <Form.Item label="Username or email" name="inviteText">
+          <Form.Item
+            label={t("organizations.usernameOrEmail")}
+            name="inviteText"
+          >
             <Input
               disabled={inviteInProgress}
-              placeholder="Enter username or email"
+              placeholder={t("organizations.enterEmailOrUsername")}
             />
           </Form.Item>
           <Form.Item {...tailFormItemLayout}>
             <Button disabled={inviteInProgress} htmlType="submit">
-              Invite
+              {t("common:invite")}
             </Button>
           </Form.Item>
         </Form>
@@ -118,7 +111,7 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
         dataSource={organization.organizationMemberships?.nodes ?? []}
         header={
           <Typography.Text style={{ fontSize: "16px" }} strong>
-            Existing members
+            {t("organizations.existingMembers")}
           </Typography.Text>
         }
         pagination={{
@@ -156,9 +149,9 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         userId: node.user?.id ?? 0,
       })
     } catch (e) {
-      message.error("Error occurred when removing member: " + e.message)
+      message.error(t("organizations.errors.remove") + e.message)
     }
-  }, [node.user, organization.id, removeMember])
+  }, [node.user, organization.id, removeMember, t])
 
   const [, transferOwnership] = useTransferOrganizationOwnershipMutation()
   const handleTransfer = useCallback(async () => {
@@ -168,9 +161,9 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
         userId: node.user?.id ?? 0,
       })
     } catch (e) {
-      message.error("Error occurred when transferring ownership: " + e.message)
+      message.error(t("organizations.errors.transfer") + e.message)
     }
-  }, [node.user, organization.id, transferOwnership])
+  }, [node.user, organization.id, transferOwnership, t])
 
   const roles = [node.isOwner ? "owner" : null].filter(Boolean).join(" and ")
   return (
@@ -181,10 +174,13 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
             key="remove"
             cancelText={t("common:no")}
             okText={t("common:yes")}
-            title={`Are you sure you want to remove ${node.user?.name} from ${organization.name}?`}
+            title={t("organizations.confirmDelete", {
+              organizationName: organization.name,
+              username: node.user?.name as string,
+            })}
             onConfirm={handleRemove}
           >
-            <a>Remove</a>
+            <a>{t("common:remove")}</a>
           </Popconfirm>
         ),
         organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
@@ -192,16 +188,18 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
             key="transfer"
             cancelText={t("common:no")}
             okText={t("common:yes")}
-            title={`Are you sure you want to transfer ownership of ${organization.name} to ${node.user?.name}?`}
+            title={t("organizations.confirmTransfer", {
+              organizationName: organization.name,
+              username: node.user?.name as string,
+            })}
             onConfirm={handleTransfer}
           >
-            <a>Make owner</a>
+            <a>{t("organizations.makeOwner")}</a>
           </Popconfirm>
         ),
       ].filter(Boolean)}
     >
       <List.Item.Meta
-        //avatar={...}
         description={
           <div>
             <Text>{node.user?.username}</Text>

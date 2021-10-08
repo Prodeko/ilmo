@@ -1,0 +1,92 @@
+{
+  "buttons": {
+    "addEmail": "Add email",
+    "changePassphrase": "Change passphrase",
+    "permanentDelete": "PERMANENTLY DELETE MY ACCOUNT",
+    "resetPassphrase": "Reset passphrase",
+    "returnHome": "Return to homepage",
+    "updateProfile": "Update profile",
+    "wantToDeleteAccount": "I want to delete my account"
+  },
+  "errors": {
+    "accountDeleteFailedOrgOwner1": "You cannot delete your account whilst you are the owner of an organization.",
+    "accountDeleteFailedOrgOwner2": "For each organization you are the owner of, please either assign your ownership to another user or delete the organization to continue.",
+    "deleteFailed": "Requesting deletion failed",
+    "incorrectOldPassword": "Incorrect old passphrase",
+    "usernameTaken": "This username is already in use, please pick a different name"
+  },
+  "form": {
+    "feedback": {
+      "cannotDeleteAccount": "Cannot delete account",
+      "emailAddFailed": "Error adding email",
+      "passwordChangeFailed": "Changing passphrase failed",
+      "passwordChanged": "Password changed!",
+      "profileUpdated": "Profile updated",
+      "profileUpdating": "Updating username"
+    },
+    "label": {
+      "newEmail": "New email",
+      "newPassphrase": "New passphrase",
+      "oldPassphrase": "Old passphrase"
+    },
+    "messages": {
+      "email": "Please enter an email address",
+      "name": "Please enter your name",
+      "newPassword": "Please confirm your passphrase",
+      "oldPassword": "Please input your passphrase",
+      "username": "Please choose a username"
+    }
+  },
+  "pages": {
+    "accounts": {
+      "linkAccount": "Link {{service}} account",
+      "linkAnother": "Link another account",
+      "unlink": "Unlink",
+      "unlinkAccountNotice": "If you unlink this account you won't be able to log in with it any more; please make sure your email is valid."
+    },
+    "delete": {
+      "accountDeleted": "Account deleted",
+      "accountDeletedInfo": "Your account has been successfully deleted.",
+      "confirmDelete1": "Confirm account deletion",
+      "confirmDelete2": "Delete user account?",
+      "confirmDeleteEmail": "Confirm deletion via email link",
+      "deleteNotice1": "Deleting your user account will delete all data and cannot be undone. Make sure you want to do this.",
+      "deleteNotice2": "To protect your account, we require you to confirm you wish to delete your account here, then you will be sent an email with a confirmation code (to check your identity) and when you click that link you will be asked to confirm your account deletion again.",
+      "deleteNotice3": "Press this button and your account will be deleted.",
+      "deleteNotice4": "You've been sent an email with a confirmation link in it, you must click it to confirm that you are the account holder so that you may continue deleting your account.",
+      "deleteNotice5": "Deleting your account cannot be undone, you will lose all your data.",
+      "modals": {
+        "content1": "Before we can delete your account, we need to confirm it's definitely you. We'll send you an email with a link in it, which when clicked will give you the option to delete your account.",
+        "content2": "You should not trigger this unless you're sure you want to delete your account.",
+        "okText": "Send delete account email",
+        "title": "Send delete account confirmation email?"
+      }
+    },
+    "emails": {
+      "accountNoticeInfo1": "Account notices will be sent your primary email address.",
+      "accountNoticeInfo2": "Additional email addresses may be added to help with account recovery (or to change your primary email), but they cannot be used until verified.",
+      "alerts": {
+        "notVerified": {
+          "description": "You do not have any verified email addresses, this will make account recovery impossible and may limit your available functionality within this application. Please complete email verification.",
+          "message": "No verified emails"
+        }
+      },
+      "makePrimary": "Make primary",
+      "pendingVerification": "Pending verification (please check your inbox / spam folder)",
+      "resendVerification": "Resend verification",
+      "unverified": "unverified",
+      "verified": "Verified"
+    },
+    "security": {
+      "linkEmailSettings": "email settings",
+      "socialLoginNoPassword": "You registered your account through social login, so you do not currently have a passphrase. If you would like a passphrase, press the button below to request a passphrase reset email to '{{email}}' (you can choose a different email by making it primary in)"
+    }
+  },
+  "titles": {
+    "accounts": "Linked accounts",
+    "delete": "Delete account",
+    "emails": "Email addresses",
+    "index": "Edit profile",
+    "security": "Change passphrase"
+  }
+}

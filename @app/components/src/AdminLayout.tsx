@@ -73,11 +73,7 @@ export function AdminLayout({
     currentUser?.organizationMemberships.nodes || []
   // Redirect to index if the user is not part of any organization or if
   // the user is not logged in
-  if (
-    !error &&
-    !fetching &&
-    (organizationMemberships?.length === 0 || !currentUser)
-  ) {
+  if (!error && !fetching && !currentUser) {
     if (!isSSR) {
       // Antd messages don't work with SSR
       message.error({

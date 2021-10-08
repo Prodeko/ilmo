@@ -5,10 +5,12 @@ import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
 import { Alert, Button, Col, Form, Input, Row } from "antd"
 import { NextPage } from "next"
 import Link from "next/link"
+import useTranslation from "next-translate/useTranslation"
 
 const ForgotPassword: NextPage = () => {
   const [query] = useSharedQuery()
 
+  const { t } = useTranslation("forgot")
   const [form] = Form.useForm()
   const [{ error }, forgotPassword] = useForgotPasswordMutation()
   const [successfulEmail, setSuccessfulEmail] = useState<string | null>(null)
@@ -40,11 +42,17 @@ const ForgotPassword: NextPage = () => {
   if (successfulEmail != null) {
     return (
       <SharedLayout query={query} title="Forgot Password">
-        <Alert
-          description={`We've sent an email reset link to '${successfulEmail}'; click the link and follow the instructions. If you don't receive the link, please ensure you entered the email address correctly, and check in your spam folder just in case.`}
-          message="You've got mail"
-          type="success"
-        />
+        <Row justify="center">
+          <Col sm={14} xs={24}>
+            <Alert
+              description={t("alerts.successEmail.description", {
+                email: successfulEmail,
+              })}
+              message={t("alerts.successEmail.message")}
+              type="success"
+            />
+          </Col>
+        </Row>
       </SharedLayout>
     )
   }
@@ -53,7 +61,7 @@ const ForgotPassword: NextPage = () => {
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
       query={query}
-      title="Forgot Password"
+      title={t("title")}
     >
       <Row justify="center" style={{ marginTop: 32 }}>
         <Col sm={12} xs={24}>
@@ -68,32 +76,32 @@ const ForgotPassword: NextPage = () => {
               rules={[
                 {
                   type: "email",
-                  message: "The input is not valid E-mail",
+                  message: t("form.messages.emailInvalid"),
                 },
-                { required: true, message: "Please input your email" },
+                { required: true, message: t("form.messages.emailRequired") },
               ]}
             >
               <Input
                 ref={focusElement}
-                placeholder="Email"
+                placeholder={t("common:email")}
                 prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
               />
             </Form.Item>
 
             {error && (
               <Form.Item>
-                <ErrorAlert error={error} message="Something went wrong" />
+                <ErrorAlert error={error} message={t("common:unknownError")} />
               </Form.Item>
             )}
             <Form.Item>
               <Button htmlType="submit" type="primary">
-                Reset password
+                {t("resetButton")}
               </Button>
             </Form.Item>
             <Form.Item>
               <p>
                 <Link href="/login">
-                  <a>Remembered your password? Log in.</a>
+                  <a> {t("rememberedButton")}</a>
                 </Link>
               </p>
             </Form.Item>

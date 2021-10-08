@@ -17,8 +17,10 @@ import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
 import { NextPage } from "next"
 import Link from "next/link"
+import useTranslation from "next-translate/useTranslation"
 
 const Settings_Security: NextPage = () => {
+  const { t } = useTranslation("settings")
   const [query] = useSharedQuery()
 
   const [form] = Form.useForm()
@@ -45,9 +47,7 @@ const Settings_Security: NextPage = () => {
             {
               name: "newPassword",
               value: form.getFieldValue("newPassword"),
-              errors: [
-                "The server believes this passphrase is too weak, please make it stronger",
-              ],
+              errors: [t("error:weakp")],
             },
           ])
         } else if (errcode === "CREDS") {
@@ -55,14 +55,14 @@ const Settings_Security: NextPage = () => {
             {
               name: "oldPassword",
               value: form.getFieldValue("oldPassword"),
-              errors: ["Incorrect old passphrase"],
+              errors: [t("errors.incorrectOldPassword")],
             },
           ])
         } else {
         }
       }
     },
-    [changePassword, form]
+    [changePassword, form, t]
   )
 
   const [{ data, error: graphqlQueryError, fetching }] =
@@ -108,16 +108,16 @@ const Settings_Security: NextPage = () => {
     } else if (!data?.currentUser?.hasPassword) {
       return (
         <div>
-          <PageHeader title="Change passphrase" />
+          <PageHeader title={t("titles.security")} />
           <P>
-            You registered your account through social login, so you do not
-            currently have a passphrase. If you would like a passphrase, press
-            the button below to request a passphrase reset email to '{email}'
-            (you can choose a different email by making it primary in{" "}
-            <Link href="/settings/emails">email settings</Link>).
+            {t("pages.security.socialLoginNoPassword", { email })}{" "}
+            <Link href="/settings/emails">
+              {t("pages.security.linkEmailSettings")}
+            </Link>
+            ).
           </P>
           <Button disabled={resetInProgress} onClick={handleResetPassword}>
-            Reset passphrase
+            {t("buttons.resetPassphrase")}
           </Button>
         </div>
       )
@@ -125,7 +125,7 @@ const Settings_Security: NextPage = () => {
 
     return (
       <div>
-        <PageHeader title="Change passphrase" />
+        <PageHeader title={t("titles.security")} />
         <Form
           {...formItemLayout}
           form={form}
@@ -133,24 +133,24 @@ const Settings_Security: NextPage = () => {
           onValuesChange={handleValuesChange}
         >
           <Form.Item
-            label="Old passphrase"
+            label={t("form.label.oldPassphrase")}
             name="oldPassword"
             rules={[
               {
                 required: true,
-                message: "Please input your passphrase",
+                message: t("form.messages.oldPassword"),
               },
             ]}
           >
             <Input type="password" />
           </Form.Item>
-          <Form.Item label="New passphrase" required>
+          <Form.Item label={t("form.label.newPassphrase")} required>
             <Form.Item
               name="newPassword"
               rules={[
                 {
                   required: true,
-                  message: "Please confirm your passphrase",
+                  message: t("form.messages.newPassword"),
                 },
               ]}
               noStyle
@@ -169,16 +169,22 @@ const Settings_Security: NextPage = () => {
             />
           </Form.Item>
           {error ? (
-            <Form.Item>
-              <ErrorAlert error={error} message="Changing passphrase failed" />
+            <Form.Item {...tailFormItemLayout}>
+              <ErrorAlert
+                error={error}
+                message={t("form.feedback.passwordChangeFailed")}
+              />
             </Form.Item>
           ) : success ? (
-            <Form.Item>
-              <Alert message="Password changed!" type="success" />
+            <Form.Item {...tailFormItemLayout}>
+              <Alert
+                message={t("form.feedback.passwordChanged")}
+                type="success"
+              />
             </Form.Item>
           ) : null}
           <Form.Item {...tailFormItemLayout}>
-            <Button htmlType="submit">Change Passphrase</Button>
+            <Button htmlType="submit">{t("buttons.changePassphrase")}</Button>
           </Form.Item>
         </Form>
       </div>

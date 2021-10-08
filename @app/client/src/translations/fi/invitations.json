@@ -1,0 +1,22 @@
+{
+  "acceptInvitation": "Hyväksy kutsu",
+  "result": {
+    "dnied": {
+      "subTitle": "Yritä kirjautua sisään toisella käyttäjällä",
+      "title": "Kutsu ei ollut sinulle"
+    },
+    "error": {
+      "subtitle": "Kutsua ei löytnyt, yritä myöhemmin uudestaan"
+    },
+    "login": {
+      "title": "Kirjaudu sisään hyväksyäksesi kutsun"
+    },
+    "ntfnd": {
+      "subTitle": "Olet mahdollisesti jo hyäksynyt kutsun?",
+      "title": "Kutsua ei löytynyt"
+    },
+    "success": {
+      "title": "Sinut kutsuttiin organisaatioon {{organization}}"
+    }
+  }
+}

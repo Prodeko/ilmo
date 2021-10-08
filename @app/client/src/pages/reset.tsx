@@ -1,16 +1,16 @@
 import { FocusEvent, useCallback, useState } from "react"
 import {
   AuthRestrict,
-  Col,
+  ErrorAlert,
   PasswordStrength,
-  Row,
   SharedLayout,
   usePasswordStrength,
 } from "@app/components"
 import { useResetPasswordMutation, useSharedQuery } from "@app/graphql"
-import { formItemLayout, tailFormItemLayout } from "@app/lib"
+import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input } from "antd"
-import { NextPage } from "next"
+import { GetServerSideProps, NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
 interface Props {
   userId: string | null
@@ -19,11 +19,11 @@ interface Props {
 
 enum State {
   PENDING = "PENDING",
-  SUBMITTING = "SUBMITTING",
   SUCCESS = "SUCCESS",
 }
 
 const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
+  const { t } = useTranslation("reset")
   const [form] = Form.useForm()
   const [query] = useSharedQuery()
   const [error, setError] = useState<Error | null>(null)
@@ -60,7 +60,6 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
   const [, resetPassword] = useResetPasswordMutation()
   const handleSubmit = useCallback(
     (values) => {
-      setState(State.SUBMITTING)
       setError(null)
       ;(async () => {
         try {
@@ -71,21 +70,29 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
           })
           if (result?.data?.resetPassword?.success) {
             setState(State.SUCCESS)
+          } else if (!!result.error) {
+            const code = getCodeFromError(result.error)
+            if (code === "WEAKP") {
+              setError(new Error(t("error:weakp")))
+            } else {
+              setError(new Error(t("error:errorOccurred")))
+            }
+            setState(State.PENDING)
           } else {
             setState(State.PENDING)
-            setError(new Error("Incorrect token, please check and try again"))
+            setError(new Error(t("error:incorrectToken")))
           }
         } catch (e) {
           if (e.message) {
             setError(e)
           } else {
-            setError(new Error("Please check the errors above and try again"))
+            setError(new Error(t("errors.unknownError")))
           }
           setState(State.PENDING)
         }
       })()
     },
-    [resetPassword, token, userId]
+    [resetPassword, token, userId, t]
   )
 
   const [passwordIsDirty, setPasswordIsDirty] = useState(false)
@@ -109,10 +116,10 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
   const compareToFirstPassword = useCallback(
     async (_rule: any, value: any) => {
       if (value && value !== form.getFieldValue("password")) {
-        throw "Make sure your passphrase is the same in both passphrase boxes."
+        throw t("errors.passwordMatch")
       }
     },
-    [form]
+    [form, t]
   )
 
   return (
@@ -122,113 +129,106 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
         AuthRestrict.NEVER
       }
       query={query}
-      title="Reset Password"
+      title={t("title")}
     >
-      <Row>
-        <Col flex={1}>
-          <div>
-            {state === "SUBMITTING" ? (
-              <Alert
-                description="This might take a few moments..."
-                message="Submitting..."
-                type="info"
-              />
-            ) : state === "SUCCESS" ? (
-              <Alert
-                description="Your password was reset; you can go and log in now"
-                message="Password Reset"
-                type="success"
-              />
-            ) : null}
+      {state === "SUCCESS" ? (
+        <Alert
+          description={t("alerts.success.description")}
+          message={t("alerts.success.message")}
+          type="success"
+        />
+      ) : null}
 
-            <Form
-              {...formItemLayout}
-              form={form}
-              style={{ display: state === State.PENDING ? "" : "none" }}
-              onFinish={handleSubmit}
-              onValuesChange={handleValuesChange}
-            >
-              <Form.Item label="Enter your reset token:">
-                <Input
-                  type="text"
-                  value={token}
-                  onChange={(e) => setIdAndToken([userId, e.target.value])}
-                />
-              </Form.Item>
-              <Form.Item label="Choose a new passphrase:" required>
-                <Form.Item
-                  name="password"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input your passphrase.",
-                    },
-                  ]}
-                  noStyle
-                >
-                  <Input
-                    autoComplete="new-password"
-                    data-cy="registerpage-input-password"
-                    type="password"
-                    onBlur={setPasswordNotFocussed}
-                    onFocus={setPasswordFocussed}
-                  />
-                </Form.Item>
-                <PasswordStrength
-                  isDirty={passwordIsDirty}
-                  isFocussed={passwordIsFocussed}
-                  passwordStrength={passwordStrength}
-                  suggestions={passwordSuggestions}
-                />
-              </Form.Item>
-              <Form.Item
-                label="Confirm passphrase"
-                name="confirm"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please confirm your passphrase.",
-                  },
-                  {
-                    validator: compareToFirstPassword,
-                  },
-                ]}
-              >
-                <Input
-                  autoComplete="new-password"
-                  data-cy="registerpage-input-password2"
-                  type="password"
-                  onBlur={handleConfirmBlur}
-                />
-              </Form.Item>
-              {error && (
-                <Form.Item>
-                  <Alert
-                    message={
-                      error.message ? String(error.message) : String(error)
-                    }
-                    type="error"
-                    closable
-                    onClose={clearError}
-                  />
-                </Form.Item>
-              )}
-              <Form.Item {...tailFormItemLayout}>
-                <Button data-cy="resetpage-submit-button" htmlType="submit">
-                  Reset passphrase
-                </Button>
-              </Form.Item>
-            </Form>
-          </div>
-        </Col>
-      </Row>
+      <Form
+        {...formItemLayout}
+        form={form}
+        style={{ display: state === State.PENDING ? "" : "none" }}
+        onFinish={handleSubmit}
+        onValuesChange={handleValuesChange}
+      >
+        <Form.Item label={t("form.labels.resetToken")}>
+          <Input
+            type="text"
+            value={token}
+            onChange={(e) => {
+              setIdAndToken([userId, e.target.value])
+              clearError()
+            }}
+          />
+        </Form.Item>
+        <Form.Item label={t("form.labels.password")} required>
+          <Form.Item
+            name="password"
+            rules={[
+              {
+                required: true,
+                message: t("form.messages.password"),
+              },
+            ]}
+            noStyle
+          >
+            <Input
+              autoComplete="new-password"
+              data-cy="registerpage-input-password"
+              type="password"
+              onBlur={setPasswordNotFocussed}
+              onFocus={setPasswordFocussed}
+            />
+          </Form.Item>
+          <PasswordStrength
+            isDirty={passwordIsDirty}
+            isFocussed={passwordIsFocussed}
+            passwordStrength={passwordStrength}
+            suggestions={passwordSuggestions}
+          />
+        </Form.Item>
+        <Form.Item
+          label={t("form.labels.confirm")}
+          name="confirm"
+          rules={[
+            {
+              required: true,
+              message: t("form.messages.confirm"),
+            },
+            {
+              validator: compareToFirstPassword,
+            },
+          ]}
+        >
+          <Input
+            autoComplete="new-password"
+            data-cy="registerpage-input-password2"
+            type="password"
+            onBlur={handleConfirmBlur}
+          />
+        </Form.Item>
+        {error && (
+          <Form.Item {...tailFormItemLayout}>
+            <ErrorAlert
+              data-cy="eventregistrationform-error-alert"
+              error={error}
+            />
+          </Form.Item>
+        )}
+        <Form.Item {...tailFormItemLayout}>
+          <Button data-cy="resetpage-submit-button" htmlType="submit">
+            {t("resetButton")}
+          </Button>
+        </Form.Item>
+      </Form>
     </SharedLayout>
   )
 }
 
-ResetPage.getInitialProps = async ({ query: { user_id, token } = {} }) => ({
-  userId: typeof user_id === "string" ? user_id : null,
-  token: typeof token === "string" ? token : null,
-})
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { query } = context
+  const { user_id, token } = query
+  return {
+    props: {
+      userId: typeof user_id === "string" ? user_id : null,
+      token: typeof token === "string" ? token : null,
+    },
+  }
+}
 
 export default ResetPage
