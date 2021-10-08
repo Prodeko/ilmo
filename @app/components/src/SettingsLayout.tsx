@@ -4,6 +4,8 @@ import { Layout, Menu, Typography } from "antd"
 import { TextProps } from "antd/lib/typography/Text"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import { Translate } from "next-translate"
+import useTranslation from "next-translate/useTranslation"
 
 import { Redirect } from "./Redirect"
 import {
@@ -31,36 +33,36 @@ function page(spec: PageSpec): PageSpec {
   return spec
 }
 
-const pages = {
+const pages = (t: Translate) => ({
   "/settings": page({
-    title: "Profile",
+    title: t("titles.index"),
     cy: "settingslayout-link-profile",
   }),
   "/settings/security": page({
-    title: "Passphrase",
+    title: t("titles.security"),
     cy: "settingslayout-link-password",
   }),
   "/settings/accounts": page({
-    title: "Linked Accounts",
+    title: t("titles.accounts"),
     cy: "settingslayout-link-accounts",
   }),
   "/settings/emails": page({
-    title: "Emails",
+    title: t("titles.emails"),
     warnIfUnverified: true,
     cy: "settingslayout-link-emails",
   }),
   "/settings/delete": page({
-    title: "Delete Account",
+    title: t("titles.delete"),
     titleProps: {
       type: "danger",
     },
     cy: "settingslayout-link-delete",
   }),
-}
+})
 
 export interface SettingsLayoutProps {
   query: SharedLayoutProps["query"]
-  href: keyof typeof pages
+  href: keyof ReturnType<typeof pages>
   children: React.ReactNode
 }
 
@@ -69,8 +71,10 @@ export function SettingsLayout({
   href: inHref,
   children,
 }: SettingsLayoutProps) {
-  const href = pages[inHref] ? inHref : Object.keys(pages)[0]
-  const page = pages[href]
+  const { t } = useTranslation("settings")
+  const sideMenuItems = pages(t)
+  const href = sideMenuItems[inHref] ? inHref : Object.keys(sideMenuItems)[0]
+  const page = sideMenuItems[href]
   const router = useRouter()
   const fullHref =
     href + (router && router.query ? `?${qs.stringify(router.query)}` : "")
@@ -78,7 +82,7 @@ export function SettingsLayout({
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_OUT}
       query={query}
-      title={`Settings: ${page.title}`}
+      title={`${t("common:settings")}: ${page.title}`}
       noPad
     >
       {({ currentUser, error, fetching }: SharedLayoutChildProps) =>
@@ -88,19 +92,19 @@ export function SettingsLayout({
           <Layout style={{ minHeight: contentMinHeight }} hasSider>
             <Sider>
               <Menu selectedKeys={[href]}>
-                {Object.keys(pages).map((pageHref) => (
+                {Object.keys(sideMenuItems).map((pageHref) => (
                   <Menu.Item key={pageHref}>
                     <Link href={pageHref}>
-                      <a data-cy={pages[pageHref].cy}>
+                      <a data-cy={sideMenuItems[pageHref].cy}>
                         <Warn
                           okay={
                             !currentUser ||
                             currentUser.isVerified ||
-                            !pages[pageHref].warnIfUnverified
+                            !sideMenuItems[pageHref].warnIfUnverified
                           }
                         >
-                          <Text {...pages[pageHref].titleProps}>
-                            {pages[pageHref].title}
+                          <Text {...sideMenuItems[pageHref].titleProps}>
+                            {sideMenuItems[pageHref].title}
                           </Text>
                         </Warn>
                       </a>

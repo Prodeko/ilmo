@@ -1,0 +1,92 @@
+{
+  "buttons": {
+    "addEmail": "Lisää sähköposti",
+    "changePassphrase": "Vaihda salasana",
+    "permanentDelete": "POISTA KÄYTTÄJÄ LOPULLISESTI",
+    "resetPassphrase": "Resetoi salasana",
+    "returnHome": "Palaa etusivulle",
+    "updateProfile": "Päivitä tiedot",
+    "wantToDeleteAccount": "Haluan poistaa käyttäjäni"
+  },
+  "errors": {
+    "accountDeleteFailedOrgOwner1": "Et voi poistaa tiliäsi, kun olet organisaation omistaja.",
+    "accountDeleteFailedOrgOwner2": "Määritä omistajuutesi toiselle käyttäjälle tai poista organisaatio jokaisen omistamasi organisaation kohdalla.",
+    "deleteFailed": "Poistopyyntö epäonnistui",
+    "incorrectOldPassword": "Väärä vanha salasana",
+    "usernameTaken": "Tämä käyttäjänimi on jo käytössä, valitse toinen nimi"
+  },
+  "form": {
+    "feedback": {
+      "cannotDeleteAccount": "Tiliä ei voi poisata",
+      "emailAddFailed": "Virhe lisättäessä sähköpostia",
+      "passwordChangeFailed": "Salasanan vaihtaminen epäonnistui",
+      "passwordChanged": "Salasana vaihdettu!",
+      "profileUpdated": "Profiili päivitetty",
+      "profileUpdating": "Päivitetään käyttäjänimeä"
+    },
+    "label": {
+      "newEmail": "Uusi sähköpostil",
+      "newPassphrase": "Uusi salasana",
+      "oldPassphrase": "Vanha salasana"
+    },
+    "messages": {
+      "email": "Kirjoita sähköpostiosoite",
+      "name": "Kirjoita nimesi",
+      "newPassword": "Vahvista tunnuslause",
+      "oldPassword": "Kirjoita salasana",
+      "username": "Valitse käyttäjätunnus"
+    }
+  },
+  "pages": {
+    "accounts": {
+      "linkAccount": "Linkitä {{service}} käyttäjä",
+      "linkAnother": "Linkitä toinen käyttäjä",
+      "unlink": "Poista linkitys",
+      "unlinkAccountNotice": "Jos poistat tämän tilin linkityksen, et voi kirjautua siihen enää. Varmista, että sähköpostiosoitteesi on kelvollinen."
+    },
+    "delete": {
+      "accountDeleted": "Tili poistettu",
+      "accountDeletedInfo": "Tilisi poistaminen onnistui.",
+      "confirmDelete1": "Vahvista tilin poisto",
+      "confirmDelete2": "Poista tili?",
+      "confirmDeleteEmail": "Vahvista poisto sähköpostilinkin kautta",
+      "deleteNotice1": "Käyttäjätilisi poistaminen poistaa kaikki tiedot, eikä niitä voi peruuttaa. Varmista, että haluat tehdä tämän.",
+      "deleteNotice2": "Tilisi suojaamiseksi edellytämme vahvistamista poistolle. Sinulle lähetetään sähköposti jossa on vahvistuskoodi ja kun seuraat viestin linkkiä linkkiä, sinua pyydetään vahvistamaan tilisi poistaminen uudelleen.",
+      "deleteNotice3": "Paina tätä poistaaksesi tilisi.",
+      "deleteNotice4": "Sinulle on lähetetty sähköposti, jossa on vahvistuslinkki. Sinun on vahvistaaksesi että olet tilinhaltija jotta voit jatkaa tilisi poistamista.",
+      "deleteNotice5": "Tilisi poistamista ei voi kumota, menetät kaikki tietosi.",
+      "modals": {
+        "content1": "Ennen kuin voimme poistaa tilisi, meidän on vahvistettava, että se olet varmasti sinä. Lähetämme sinulle sähköpostiviestin, jossa on linkki, jota seuraamalla voit poistaa tilisi.",
+        "content2": "Älä vahvista tätä, ellet ole varma, että haluat poistaa tilisi.",
+        "okText": "Lähetä tilin poistosähköposti",
+        "title": "Lähetä tilin poiston vahvistusviesti?"
+      }
+    },
+    "emails": {
+      "accountNoticeInfo1": "Tili -ilmoitukset lähetetään ensisijaiselle sähköpostiosoitteellesi.",
+      "accountNoticeInfo2": "Muita sähköpostiosoitteita voidaan lisätä tilin palauttamisen helpottamiseksi (tai ensisijaisen sähköpostiosoitteen muuttamiseksi), mutta niitä ei voi käyttää ennen vahvistamista.",
+      "alerts": {
+        "notVerified": {
+          "description": "Sinulla ei ole vahvistettuja sähköpostiosoitteita, mikä tekee tilin palauttamisesta mahdotonta ja saattaa rajoittaa käytettävissä olevia toimintoja tässä sovelluksessa. Suorita sähköpostin vahvistus loppuun.",
+          "message": "Ei vahvistettuja sähköposteja"
+        }
+      },
+      "makePrimary": "Muuta ensisijaiseksi",
+      "pendingVerification": "Odottaa vahvistusta (tarkista postilaatikkosi / roskapostikansiosi)",
+      "resendVerification": "Lähetä vahvistus uudelleen",
+      "unverified": "vahvistamaton",
+      "verified": "Vahvistettu"
+    },
+    "security": {
+      "linkEmailSettings": "sähköpostiasetukset",
+      "socialLoginNoPassword": "Rekisteröit tilisi sosiaalisen kirjautumisen kautta, joten sinulla ei ole tällä hetkellä salasanaa. Jos haluat tunnuslauseen, paina alla olevaa painiketta ja pyydä salasanan vaihtosähköposti osoitteeseen {{email}} (voit valita toisen sähköpostin asettamalla sen ensisijaiseksi"
+    }
+  },
+  "titles": {
+    "accounts": "Linkitetyt tilit",
+    "delete": "Poista käyttäjä",
+    "emails": "Sähköpostiosoitteet",
+    "index": "Muokkaa tiliä",
+    "security": "Vaihda salasana"
+  }
+}

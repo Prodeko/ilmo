@@ -1,0 +1,13 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "This might take a few moments...",
+      "message": "Submitting..."
+    },
+    "success": {
+      "description": "Thank you for verifying your email address. You may now close this window.",
+      "message": "Email verified"
+    }
+  },
+  "enterCode": "Please enter your email verification code"
+}

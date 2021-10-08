@@ -34,7 +34,6 @@ const Admin_CreateOrganization: NextPage = () => {
   const [form] = Form.useForm()
   const [slug, setSlug] = useState("")
   const [pauseQuery, setPauseQuery] = useState(true)
-
   const [
     {
       data: existingOrganizationData,
@@ -114,16 +113,16 @@ const Admin_CreateOrganization: NextPage = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please choose a name for the organization",
+                  message: t("organizations.forms.messages.nameNotEmpty"),
                 },
               ]}
             >
               <div>
                 <Input data-cy="createorganization-input-name" />
-                <p>
+                <Text>
                   {t("admin:organizations.create.urlWillBe")}{" "}
                   <span data-cy="createorganization-slug-value">{`${process.env.ROOT_URL}/admin/organization/${slug}`}</span>
-                </p>
+                </Text>
                 {!slug ? null : fetchingSlug ? (
                   <div>
                     <Loading /> {t("admin:organizations.create.checkingName")}
@@ -162,7 +161,7 @@ const Admin_CreateOrganization: NextPage = () => {
                       )}
                     </span>
                   }
-                  message="Creating organization failed"
+                  message={t("organizations.errors.organizationCreateFailed")}
                   type="error"
                 />
               </Form.Item>
@@ -171,6 +170,7 @@ const Admin_CreateOrganization: NextPage = () => {
               <Button
                 data-cy="createorganization-button-create"
                 htmlType="submit"
+                style={{ marginTop: 12 }}
               >
                 {t("common:create")}
               </Button>

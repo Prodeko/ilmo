@@ -2,7 +2,8 @@ import { useEffect, useState } from "react"
 import { Col, Row, SharedLayout } from "@app/components"
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql"
 import { Alert } from "antd"
-import { NextPage } from "next"
+import { GetServerSideProps, NextPage } from "next"
+import useTranslation from "next-translate/useTranslation"
 
 interface Props {
   id: string | null
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const VerifyPage: NextPage<Props> = (props) => {
+  const { t } = useTranslation("verify")
   const [[id, token], setIdAndToken] = useState<[string, string]>([
     props.id || "",
     props.token || "",
@@ -32,7 +34,7 @@ const VerifyPage: NextPage<Props> = (props) => {
             setState("SUCCESS")
           } else {
             setState("PENDING")
-            setError(new Error("Incorrect token, please check and try again"))
+            setError(new Error(t("error:incorrectToken")))
           }
         })
         .catch((e: Error) => {
@@ -40,19 +42,19 @@ const VerifyPage: NextPage<Props> = (props) => {
           setState("PENDING")
         })
     }
-  }, [id, token, state, props, verifyEmail])
+  }, [id, token, state, props, verifyEmail, t])
 
   function form() {
     return (
       <form onSubmit={() => setState("SUBMITTING")}>
-        <p>Please enter your email verification code</p>
+        <p>{t("enterCode")}</p>
         <input
           type="text"
           value={token}
           onChange={(e) => setIdAndToken([id, e.target.value])}
         />
         {error && <p>{error.message || error}</p>}
-        <button>Submit</button>
+        <button>{t("common:submit")}</button>
       </form>
     )
   }
@@ -66,26 +68,34 @@ const VerifyPage: NextPage<Props> = (props) => {
           {state === "PENDING" ? (
             form()
           ) : state === "SUBMITTING" ? (
-            "Submitting..."
+            <Alert
+              description={t("alerts.submitting.description")}
+              message={t("alerts.submitting.message")}
+              type="info"
+            />
           ) : state === "SUCCESS" ? (
             <Alert
-              description="Thank you for verifying your email address. You may now close this window."
-              message="Email Verified"
+              description={t("alerts.success.description")}
+              message={t("alerts.success.message")}
               type="success"
               showIcon
             />
-          ) : (
-            "Unknown state"
-          )}
+          ) : null}
         </Col>
       </Row>
     </SharedLayout>
   )
 }
 
-VerifyPage.getInitialProps = async ({ query: { id, token } }) => ({
-  id: typeof id === "string" ? id : null,
-  token: typeof token === "string" ? token : null,
-})
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { query } = context
+  const { id, token } = query
+  return {
+    props: {
+      id: typeof id === "string" ? id : null,
+      token: typeof token === "string" ? token : null,
+    },
+  }
+}
 
 export default VerifyPage

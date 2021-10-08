@@ -4,7 +4,7 @@
   "eventCategories": {
     "delete": {
       "confirmText": "Are you sure you want to delete this event?",
-      "deleteFailedBADFK": "This event category is still referenced by some events. Delete them first."
+      "deleteFailedBADFK": "Some events still reference this event category. Delete them first."
     }
   },
   "events": {
@@ -37,6 +37,10 @@
     "updateSuccess": "Updated successfully"
   },
   "organizations": {
+    "accessDenied": "You are not allowed to edit organization settings. Please contact the organization owner.",
+    "confirmDelete": "Are you sure you want remove {{username}} from {{organizationName}}?",
+    "confirmTransfer": "Are you sure you want to transfer ownership of {{organizationName}} to {{username}}?",
+    "couldNotInvite": "Could not invite to organization",
     "create": {
       "checkingName": "Checking organization name",
       "errorNameInUse": "That organization name is already in use, please choose a different organization name.",
@@ -46,13 +50,34 @@
     },
     "deleteOrganization": "Delete organization",
     "deleteOrganizationConfirmText": "Are you sure you want to delete this organization? This action cannot be undone.",
+    "enterEmailOrUsername": "Enter username or email",
+    "errors": {
+      "organizationCreateFailed": "Organisaation luominen epäonnistui",
+      "remove": "Error occurred when removing member: ",
+      "transfer": "Error occurred when transferring ownership: "
+    },
+    "existingMembers": "Existing members",
     "forms": {
       "labels": {
         "name": "Organization name",
         "slug": "Slug"
+      },
+      "messages": {
+        "nameNotEmpty": "Organization name must not be empty",
+        "nameRequired": "Organization name is required",
+        "slugLength": "Slug must be at least 2 characters long",
+        "slugRequired": "Slug is required"
       }
     },
-    "updateOrganization": "Update organization"
+    "inviteNewMember": "Invite new member",
+    "makeOwner": "Make owner",
+    "messages": {
+      "deleteSuccess": "Organization '{{name}}' successfully deleted",
+      "updated": "Organization updated"
+    },
+    "updateOrganization": "Update organization",
+    "updatingOrganization": "Updating organization",
+    "usernameOrEmail": "Username or email"
   },
   "pageTitle": {
     "createEvent": "Create event",

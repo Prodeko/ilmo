@@ -1,0 +1,22 @@
+{
+  "acceptInvitation": "Accept Invitation",
+  "result": {
+    "dnied": {
+      "subTitle": "Perhaps you should log out and log in with a different account?",
+      "title": "That invitation is not for you"
+    },
+    "error": {
+      "subtitle": "We couldn't find details about this invite, please try again later"
+    },
+    "login": {
+      "title": "Log in to accept invitation"
+    },
+    "ntfnd": {
+      "subTitle": "Perhaps you have already accepted it?",
+      "title": "That invitation could not be found"
+    },
+    "success": {
+      "title": "You were invited to {{organization}}"
+    }
+  }
+}

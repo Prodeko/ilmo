@@ -37,6 +37,10 @@
     "updateSuccess": "Päivitetty onnistuneesti"
   },
   "organizations": {
+    "accessDenied": "Sinulla ei ole oikeuksia muokata organisaation asetuksia. Ota yhteyttä organisaation omistajaan.",
+    "confirmDelete": "Haluatko varmasti poistaa käyttäjän {{userName}} organisaatiosta {{organizationName}}?",
+    "confirmTransfer": "Haluatko varmasti siirtää kohteen {{organizationName}} omistajuuden käyttäjälle {{userName}}?",
+    "couldNotInvite": "Organisaatioon ei voitu kutsua",
     "create": {
       "checkingName": "Tarkistetaan nimeä",
       "errorNameInUse": "Valitsemasi nimi on jo käytössä. Valitse toinen nimi organisaatiolle.",
@@ -46,14 +50,34 @@
     },
     "deleteOrganization": "Poista organisaatio",
     "deleteOrganizationConfirmText": "Haluatko varmasti poistaa tämän organisaation?",
+    "enterEmailOrUsername": "Anna käyttäjätunnus tai sähköpostiosoite",
+    "errors": {
+      "organizationCreateFailed": "Creating organization failed",
+      "remove": "Jäsenen poistamisessa tapahtui virhe: ",
+      "transfer": "Omistajuuden siirrossa tapahtui virhe: "
+    },
+    "existingMembers": "Nykyiset jäsenet",
     "forms": {
       "labels": {
         "name": "Organisaation nimi",
         "slug": "Nimi jota käytetään URL:ssa"
+      },
+      "messages": {
+        "nameNotEmpty": "Organisaation nimi ei saa olla tyhjä",
+        "nameRequired": "Organisaation nimi on pakollinen",
+        "slugLength": "URL-nimen on oltava vähintään 2 merkkiä pitkä",
+        "slugRequired": "URL-nimi vaaditaan"
       }
     },
-    "siderTitle": "Organisaatiot",
-    "updateOrganization": "Päivitä organisaatio"
+    "inviteNewMember": "Kutsu uusi jäsen",
+    "makeOwner": "Tee omistaja",
+    "messages": {
+      "deleteSuccess": "Organization '{{name}}' successfully deleted",
+      "updated": "Organisaatio päivitetty"
+    },
+    "updateOrganization": "Päivitä organisaatio",
+    "updatingOrganization": "Organisaatiota päivitetään",
+    "usernameOrEmail": "Käyttäjätunnus tai sähköpostiosoite"
   },
   "pageTitle": {
     "createEvent": "Luo tapahtuma",

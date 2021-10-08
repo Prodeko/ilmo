@@ -1,0 +1,13 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "Odota, sähköpostiasi verifioidaan...",
+      "message": "Lähetetään..."
+    },
+    "success": {
+      "description": "Kiitos kun varmistit sähköpostiosoitteesi. Voit nyt sulkea tämän ikkunan.",
+      "message": "Sähköposti vahvistettu"
+    }
+  },
+  "enterCode": "Anna sähköpostin vahvistuskoodi"
+}

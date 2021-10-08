@@ -15,6 +15,8 @@ import {
 } from "@app/graphql"
 import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd"
 import { NextPage } from "next"
+import { Translate } from "next-translate"
+import useTranslation from "next-translate/useTranslation"
 
 const AUTH_NAME_LOOKUP = {
   // Could add more login options in the future
@@ -47,6 +49,7 @@ function authAvatar(service: string) {
 }
 
 function UnlinkAccountButton({ id }: { id: string }) {
+  const { t } = useTranslation("settings")
   const [, unlinkUserAuthentication] = useUnlinkUserAuthenticationMutation()
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -75,17 +78,17 @@ function UnlinkAccountButton({ id }: { id: string }) {
         onCancel={handleCloseModal}
         onOk={handleUnlink}
       >
-        If you unlink this account you won't be able to log in with it any more;
-        please make sure your email is valid.
+        {t("pages.accounts.unlinkAccountNotice")}
       </Modal>
       <a key="unlink" onClick={handleOpenModal}>
-        {deleting ? <Spin /> : "Unlink"}
+        {deleting ? <Spin /> : t("pages.accounts.unlink")}
       </a>
     </>
   )
 }
 
 function renderAuth(
+  t: Translate,
   auth: Pick<UserAuthentication, "id" | "service" | "createdAt">
 ) {
   return (
@@ -95,7 +98,7 @@ function renderAuth(
     >
       <List.Item.Meta
         avatar={authAvatar(auth.service)}
-        description={`Added ${new Date(
+        description={`${t("common:added")} ${new Date(
           Date.parse(auth.createdAt)
         ).toLocaleString()}`}
         title={<Strong>{authName(auth.service)}</Strong>}
@@ -107,6 +110,7 @@ function renderAuth(
 const Settings_Accounts: NextPage = () => {
   const [query] = useSharedQuery()
   const [{ data, fetching, error }] = useCurrentUserAuthenticationsQuery()
+  const { t } = useTranslation("settings")
 
   const linkedAccounts =
     fetching || !data || !data.currentUser ? (
@@ -114,7 +118,7 @@ const Settings_Accounts: NextPage = () => {
     ) : (
       <List
         dataSource={data.currentUser.authentications}
-        renderItem={renderAuth}
+        renderItem={(item) => renderAuth(t, item)}
         size="large"
         bordered
       />
@@ -122,11 +126,16 @@ const Settings_Accounts: NextPage = () => {
 
   return (
     <SettingsLayout href="/settings/accounts" query={query}>
-      <PageHeader title="Linked accounts" />
+      <PageHeader title={t("titles.accounts")} />
       {error && !fetching ? <ErrorAlert error={error} /> : linkedAccounts}
-      <Card style={{ marginTop: "2rem" }} title="Link another account">
+      <Card
+        style={{ marginTop: "2rem" }}
+        title={t("pages.accounts.linkAnother")}
+      >
         <SocialLoginOptions
-          buttonTextFromService={(service) => `Link ${service} account`}
+          buttonTextFromService={(service) =>
+            t("pages.accounts.linkAccount", { service })
+          }
           next="/settings/accounts"
         />
       </Card>

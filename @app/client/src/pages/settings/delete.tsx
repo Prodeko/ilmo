@@ -9,11 +9,13 @@ import { getCodeFromError } from "@app/lib"
 import { Alert, Button, Modal, PageHeader, Typography } from "antd"
 import { NextPage } from "next"
 import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 import { CombinedError } from "urql"
 
 const { Text } = Typography
 
 const Settings_Accounts: NextPage = () => {
+  const { t } = useTranslation("settings")
   const router = useRouter()
   const token: string | null =
     (router?.query?.token && !Array.isArray(router?.query?.token)
@@ -33,11 +35,11 @@ const Settings_Accounts: NextPage = () => {
       try {
         const result = await requestAccountDeletion()
         if (!result) {
-          throw new Error("Result expected")
+          throw new Error(t("error:errorOccurred"))
         }
         const { data, error } = result
         if (!data?.requestAccountDeletion?.success) {
-          throw new Error("Requesting deletion failed")
+          throw new Error(t("errors.deleteFailed"))
         }
         if (error) throw error
         setItIsDone(true)
@@ -47,7 +49,7 @@ const Settings_Accounts: NextPage = () => {
       setDoingIt(false)
       setConfirmOpen(false)
     })()
-  }, [requestAccountDeletion])
+  }, [requestAccountDeletion, t])
 
   const [deleting, setDeleting] = useState(false)
   const [deleted, setDeleted] = useState(false)
@@ -75,64 +77,41 @@ const Settings_Accounts: NextPage = () => {
 
   return (
     <SettingsLayout href="/settings/delete" query={query}>
-      <PageHeader title="Delete account" />
-      <P>
-        Deleting your user account will delete all data (except that which we
-        must retain for legal, compliance and accounting reasons) and cannot be
-        undone. Make sure you want to do this.
-      </P>
-      <P>
-        To protect your account, we require you to confirm you wish to delete
-        your account here, then you will be sent an email with a confirmation
-        code (to check your identity) and when you click that link you will be
-        asked to confirm your account deletion again.
-      </P>
+      <PageHeader title={t("titles.delete")} />
+      <P>{t("pages.delete.deleteNotice1")}</P>
+      <P>{t("pages.delete.deleteNotice2")}</P>
       {token ? (
         <Alert
           description={
             <>
               <P>
-                This is it.{" "}
-                <Text mark>
-                  Press this button and your account will be deleted.
-                </Text>{" "}
-                We're sorry to see you go, please don't hesitate to reach out
-                and let us know why you no longer want your account.
+                <Text mark>{t("pages.delete.deleteNotice3")}</Text>
               </P>
               <Button disabled={deleting} danger onClick={confirmDeletion}>
-                PERMANENTLY DELETE MY ACCOUNT
+                {t("buttons.permanentDelete")}
               </Button>
             </>
           }
-          message="Confirm account deletion"
+          message={t("pages.delete.confirmDelete1")}
           type="error"
         />
       ) : itIsDone ? (
         <Alert
-          description={
-            <P>
-              You've been sent an email with a confirmation link in it, you must
-              click it to confirm that you are the account holder so that you
-              may continue deleting your account.
-            </P>
-          }
-          message="Confirm deletion via email link"
+          description={<P>{t("pages.delete.deleteNotice4")}</P>}
+          message={t("pages.delete.confirmDeleteEmail")}
           type="warning"
         />
       ) : (
         <Alert
           description={
             <>
-              <P>
-                Deleting your account cannot be undone, you will lose all your
-                data.
-              </P>
+              <P>{t("pages.delete.deleteNotice5")}</P>
               <Button danger onClick={openModal}>
-                I want to delete my account
+                {t("buttons.wantToDeleteAccount")}
               </Button>
             </>
           }
-          message="Delete user account?"
+          message={t("pages.delete.confirmDelete2")}
           type="error"
         />
       )}
@@ -141,18 +120,11 @@ const Settings_Accounts: NextPage = () => {
           <Alert
             description={
               <>
-                <P>
-                  You cannot delete your account whilst you are the owner of an
-                  organization.
-                </P>
-                <P>
-                  For each organization you are the owner of, please either
-                  assign your ownership to another user or delete the
-                  organization to continue.
-                </P>
+                <P>{t("errors.accountDeleteFailedOrgOwner1")}</P>
+                <P>{t("errors.accountDeleteFailedOrgOwner2")}</P>
               </>
             }
-            message="Cannot delete account"
+            message={"form.feedback.cannotDeleteAccount"}
             type="error"
             showIcon
           />
@@ -163,22 +135,15 @@ const Settings_Accounts: NextPage = () => {
       <Modal
         confirmLoading={doingIt}
         okButtonProps={{ danger: true }}
-        okText="Send delete account email"
+        okText={t("pages.delete.modals.okText")}
         okType="primary"
-        title="Send delete account confirmation email?"
+        title={t("pages.delete.modals.title")}
         visible={confirmOpen}
         onCancel={closeModal}
         onOk={doIt}
       >
-        <P>
-          Before we can delete your account, we need to confirm it's definitely
-          you. We'll send you an email with a link in it, which when clicked
-          will give you the option to delete your account.
-        </P>
-        <P>
-          You should not trigger this unless you're sure you want to delete your
-          account.
-        </P>
+        <P>{t("pages.delete.modals.content1")}</P>
+        <P>{t("pages.delete.modals.content2")}</P>
       </Modal>
       <Modal
         closable={false}
@@ -190,14 +155,14 @@ const Settings_Accounts: NextPage = () => {
                 window.location.href = "/"
               }}
             >
-              Return to homepage
+              {t("buttons.returnHome")}
             </Button>
           </div>
         }
-        title="Account deleted"
+        title={t("pages.delete.accountDeleted")}
         visible={deleted}
       >
-        Your account has been successfully deleted. We wish you all the best.
+        {t("pages.delete.accountDeletedInfo")}
       </Modal>
     </SettingsLayout>
   )

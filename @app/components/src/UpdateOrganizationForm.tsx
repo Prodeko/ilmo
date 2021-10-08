@@ -9,8 +9,6 @@ import { Alert, Button, Form, Input, message, Popconfirm } from "antd"
 import Router, { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
-import { Redirect } from "./index"
-
 interface UpdateOrganizationFormProps {
   organization: OrganizationPage_OrganizationFragment
 }
@@ -46,13 +44,13 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
       await deleteOrganization({
         organizationId,
       })
-      message.info(`Organization '${name}' successfully deleted`)
+      message.info(t("organizations.messages.deleteSuccess", { name }))
       router.push("/")
     } catch (e) {
       setError(e)
     }
     setDeleting(false)
-  }, [deleteOrganization, organizationId, name, router])
+  }, [deleteOrganization, organizationId, name, router, t])
 
   const handleSubmit = useCallback(
     async (values) => {
@@ -64,7 +62,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
             patch: { slug: values.slug, name: values.name },
           },
         })
-        message.success("Organization updated")
+        message.success(t("organizations.messages.updated"))
         const newSlug = data?.updateOrganization?.organization?.slug
         if (newSlug && newSlug !== slug) {
           Router.push(
@@ -76,17 +74,8 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         setError(e)
       }
     },
-    [organizationId, slug, updateOrganization]
+    [organizationId, slug, updateOrganization, t]
   )
-
-  if (!organization.currentUserIsOwner) {
-    return (
-      <Redirect
-        as={`/admin/organization/${slug}`}
-        href="/admin/organization/[slug]"
-      />
-    )
-  }
 
   return (
     <Form
@@ -99,8 +88,11 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         label={t("organizations.forms.labels.name")}
         name="name"
         rules={[
-          { required: true, message: "Organization name is required" },
-          { min: 1, message: "Organization name must not be empty" },
+          {
+            required: true,
+            message: t("organizations.forms.messages.nameRequired"),
+          },
+          { min: 1, message: t("organizations.forms.messages.nameNotEmpty") },
         ]}
       >
         <Input />
@@ -109,8 +101,11 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         label={t("organizations.forms.labels.slug")}
         name="slug"
         rules={[
-          { required: true, message: "Slug is required" },
-          { min: 2, message: "Slug must be at least 2 characters long" },
+          {
+            required: true,
+            message: t("organizations.forms.messages.slugRequired"),
+          },
+          { min: 2, message: t("organizations.forms.messages.slugLength") },
         ]}
       >
         <Input />
@@ -119,7 +114,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         <Form.Item>
           <Alert
             description={<span>{extractError(error).message}</span>}
-            message={`Updating organization`}
+            message={t("organizations.updatingOrganization")}
             type="error"
           />
         </Form.Item>

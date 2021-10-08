@@ -1,0 +1,16 @@
+{
+  "forgotPassword": "Salasana unohtunut?",
+  "form": {
+    "messages": {
+      "password": "Salasana vaaditaan",
+      "username": "Käyttäjänimi tai sähköposti vaaditaan"
+    },
+    "placeholders": {
+      "password": "Salasana",
+      "username": "Sähköposti tai käyttäjänimi"
+    }
+  },
+  "registerButton": "Luo käyttäjä",
+  "signinButton": "Kirjaudu sisään",
+  "signinDifferent": "Käytä toista kirjautumistapaa"
+}

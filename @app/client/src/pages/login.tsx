@@ -14,9 +14,10 @@ import {
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
 import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
 import { Button, Form, Input } from "antd"
-import { NextPage } from "next"
+import { GetServerSideProps, NextPage } from "next"
 import Link from "next/link"
 import Router from "next/router"
+import useTranslation from "next-translate/useTranslation"
 
 function hasErrors(fieldsError: Object) {
   return Object.keys(fieldsError).some((field) => fieldsError[field])
@@ -36,6 +37,7 @@ export function isSafe(nextUrl: string | null) {
  * Login page just renders the standard layout and embeds the login form
  */
 const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
+  const { t } = useTranslation("login")
   const [showLogin, setShowLogin] = useState(false)
   const [query] = useSharedQuery()
 
@@ -45,7 +47,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
       query={query}
-      title="Sign in"
+      title={t("common:signin")}
     >
       {({ currentUser }: SharedLayoutChildProps) =>
         currentUser ? (
@@ -72,7 +74,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
                       block
                       onClick={() => setShowLogin(true)}
                     >
-                      Sign in with E-mail or Username
+                      {t("signinButton")}
                     </Button>
                   </Col>
                 </Row>
@@ -92,7 +94,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
                         type="default"
                         block
                       >
-                        Create an account
+                        {t("registerButton")}
                       </ButtonLink>
                     </Col>
                   </Row>
@@ -106,9 +108,15 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
   )
 }
 
-Login.getInitialProps = async ({ query }) => ({
-  next: typeof query.next === "string" ? query.next : null,
-})
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { query } = context
+  const { next } = query
+  return {
+    props: {
+      next: typeof next === "string" ? next : null,
+    },
+  }
+}
 
 export default Login
 
@@ -123,6 +131,7 @@ function LoginForm({
   onCancel,
   resetUrqlClient,
 }: LoginFormProps) {
+  const { t } = useTranslation("login")
   const [form] = Form.useForm()
   const [{ error }, login] = useLoginMutation()
 
@@ -175,25 +184,25 @@ function LoginForm({
     >
       <Form.Item
         name="username"
-        rules={[{ required: true, message: "Please input your username" }]}
+        rules={[{ required: true, message: t("form.messages.username") }]}
       >
         <Input
           ref={focusElement}
           autoComplete="email username"
           data-cy="loginpage-input-username"
-          placeholder="E-mail or Username"
+          placeholder={t("form.placeholders.username")}
           prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
           size="large"
         />
       </Form.Item>
       <Form.Item
         name="password"
-        rules={[{ required: true, message: "Please input your passphrase" }]}
+        rules={[{ required: true, message: t("form.messages.password") }]}
       >
         <Input
           autoComplete="current-password"
           data-cy="loginpage-input-password"
-          placeholder="Passphrase"
+          placeholder={t("form.placeholders.password")}
           prefix={<LockOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
           size="large"
           type="password"
@@ -201,7 +210,7 @@ function LoginForm({
       </Form.Item>
       <Form.Item>
         <Link href="/forgot">
-          <a>Forgotten passphrase?</a>
+          <a>{t("forgotPassword")}</a>
         </Link>
       </Form.Item>
       {error && code !== "CREDS" && (
@@ -216,10 +225,10 @@ function LoginForm({
           htmlType="submit"
           type="primary"
         >
-          Sign in
+          {t("common:signin")}
         </Button>
         <a style={{ marginLeft: 16 }} onClick={onCancel}>
-          Use a different sign in method
+          {t("signinDifferent")}
         </a>
       </Form.Item>
     </Form>

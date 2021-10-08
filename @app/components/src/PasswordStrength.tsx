@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { InfoCircleOutlined } from "@ant-design/icons"
 import { Col, Popover, Progress, Row } from "antd"
+import useTranslation from "next-translate/useTranslation"
 
 export interface PasswordStrengthProps {
   passwordStrength: number
@@ -24,6 +25,7 @@ export function PasswordStrength({
   isFocussed = false,
 }: PasswordStrengthProps) {
   const [visible, setVisible] = useState(false)
+  const { t } = useTranslation("common")
 
   useEffect(() => {
     // Auto-display popup
@@ -69,7 +71,7 @@ export function PasswordStrength({
         <Popover
           content={content}
           placement="bottomRight"
-          title={"Password Hints"}
+          title={t("passwordHints")}
           trigger="click"
           visible={visible}
           onVisibleChange={handleVisibleChange}

@@ -17,8 +17,9 @@ import {
 } from "@app/graphql"
 import { getCodeFromError } from "@app/lib"
 import { Button, Col, Result, Row, Skeleton } from "antd"
-import { NextPage } from "next"
+import { GetServerSideProps, NextPage } from "next"
 import Router, { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 
 interface Props {
@@ -32,12 +33,12 @@ enum Status {
 }
 
 const InvitationAccept: NextPage<Props> = (props) => {
+  const { t } = useTranslation("invitations")
   const router = useRouter()
   const fullHref =
-    router.pathname +
-    (router && router.query ? `?${qs.stringify(router.query)}` : "")
+    router.pathname + (router?.query ? `?${qs.stringify(router.query)}` : "")
   const { id: rawId, code } = props
-  const id = rawId || ("" as string)
+  const id = rawId || ""
 
   const [query] = useInvitationDetailQuery({
     variables: {
@@ -52,7 +53,7 @@ const InvitationAccept: NextPage<Props> = (props) => {
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_OUT}
       query={query}
-      title="Accept Invitation"
+      title={t("acceptInvitation")}
       noHandleErrors
     >
       {({ currentUser, error, fetching }) =>
@@ -82,6 +83,7 @@ interface InvitationAcceptInnerProps extends Props {
 
 const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
   const { id, code, query } = props
+  const { t } = useTranslation("accept")
   const router = useRouter()
 
   const { data, fetching, error } = query
@@ -124,16 +126,16 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
       child = (
         <Result
           status="404"
-          subTitle="Perhaps you have already accepted it?"
-          title="That invitation could not be found"
+          subTitle={t("result.ntfnd.subTitle")}
+          title={t("result.ntfnd.title")}
         />
       )
     } else if (code === "DNIED") {
       child = (
         <Result
           status="403"
-          subTitle="Perhaps you should log out and log in with a different account?"
-          title="That invitation is not for you"
+          subTitle={t("result.dnied.subTitle")}
+          title={t("result.dnied.title")}
         />
       )
     } else if (code === "LOGIN") {
@@ -143,11 +145,11 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
             <ButtonLink
               href={`/login?next=${encodeURIComponent(router.asPath)}`}
             >
-              Log in
+              {t("common:login")}
             </ButtonLink>
           }
           status="403"
-          title="Log in to accept invitation"
+          title={t("result.login.title")}
         />
       )
     } else {
@@ -158,11 +160,11 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
       <Result
         extra={
           <Button type="primary" onClick={handleAccept}>
-            Accept invitation
+            {t("acceptInvitation")}
           </Button>
         }
         status="success"
-        title={`You were invited to ${organization.name}`}
+        title={t("result.success.title", { organization: organization.name })}
       />
     )
   } else if (fetching) {
@@ -171,17 +173,23 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
     child = (
       <Result
         status="error"
-        subTitle="We couldn't find details about this invite, please try again later"
-        title="Something went wrong"
+        subTitle={t("result.error.subtitle")}
+        title={t("common:unknownError")}
       />
     )
   }
   return child
 }
 
-InvitationAccept.getInitialProps = async ({ query: { id, code } }) => ({
-  id: typeof id === "string" ? id : null,
-  code: typeof code === "string" ? code : null,
-})
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { query } = context
+  const { id, code } = query
+  return {
+    props: {
+      id: typeof id === "string" ? id : null,
+      code: typeof code === "string" ? code : null,
+    },
+  }
+}
 
 export default InvitationAccept

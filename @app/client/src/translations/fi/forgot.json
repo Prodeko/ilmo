@@ -1,0 +1,22 @@
+{
+  "alerts": {
+    "successEmail": {
+      "description": "Olemme lähettäneet sähköpostin osoitteeseen {{email}} - klikkaa sähköpostissa olevaa linkkiä ja seuraa ohjeita. Jos et saanut sähköpostia, varmista että kirjoitit osoitteesi oikein ja tarkista roskapostikansio.",
+      "message": "Olet saanut sähköpostia"
+    }
+  },
+  "form": {
+    "messages": {
+      "emailInvalid": "Anna kunnollinen sähköpostiosoite",
+      "emailRequired": "Anna sähköposti",
+      "username": "Anna sähköposti tai käyttäjätunnus"
+    },
+    "placeholders": {
+      "password": "Salasana",
+      "username": "Sähköposti tai käyttäjätunnus"
+    }
+  },
+  "rememberedButton": "Salasana muistuikin? Kirjaudu sisään.",
+  "resetButton": "Resetoi salasana",
+  "title": "Salasanan palautus"
+}
