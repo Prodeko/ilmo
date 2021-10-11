@@ -5,7 +5,12 @@ import {
   useOrganizationBySlugQuery,
   useSharedQuery,
 } from "@app/graphql"
-import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
+import {
+  formItemLayout,
+  getCodeFromError,
+  primaryColor,
+  tailFormItemLayout,
+} from "@app/lib"
 import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
 import { NextPage } from "next"
@@ -130,12 +135,17 @@ const Admin_CreateOrganization: NextPage = () => {
                 ) : null}
               </div>
             </Form.Item>
-            <Form.Item label={t("common:color")} name="color">
+            <Form.Item
+              initialValue={primaryColor}
+              label={t("common:color")}
+              name="color"
+            >
               <ColorPicker data-cy="createorganization-color" />
             </Form.Item>
             {error && (
               <Form.Item {...tailFormItemLayout}>
                 <ErrorAlert
+                  data-cy="createorganization-alert-nuniq"
                   error={error}
                   message={
                     code === "NUNIQ"

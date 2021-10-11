@@ -40,7 +40,6 @@ context("Create event registration", () => {
       username: "testuser2",
       name: "Test Tester",
       verified: true,
-      orgs: [["Test Organization", "test-organization"]],
     })
 
     // Action
@@ -67,6 +66,39 @@ context("Create event registration", () => {
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${event.slug}`)
       cy.getCy("eventpage-signups-quota-0-table").should("contain", "Test")
       cy.getCy("eventpage-signups-quota-0-table").should("contain", "Tester")
+    })
+  })
+
+  it("can't register to an event with the same email twice", () => {
+    // Setup
+    cy.serverCommand("createTestEventData").as("createEventDataResult")
+    cy.login({
+      username: "testuser2",
+      name: "Test Tester",
+      verified: true,
+    })
+
+    // Action
+    cy.get("@createEventDataResult").then(({ event, quota }: any) => {
+      cy.visit(
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
+      )
+      cy.getCy("eventregistrationform-button-submit").click()
+
+      // Assertion
+      cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${event.slug}`)
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Test")
+      cy.getCy("eventpage-signups-quota-0-table").should("contain", "Tester")
+
+      cy.visit(
+        Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
+      )
+
+      cy.getCy("eventregistrationform-button-submit").click()
+      cy.getCy("eventregistrationform-error-alert").should(
+        "contain",
+        "A registration with email testuser2@example.com already exists for this event"
+      )
     })
   })
 
