@@ -8,7 +8,7 @@ module.exports = {
     "/reset": ["reset"],
     "/forgot": ["forgot"],
     "/verify": ["verify"],
-    "/settings": ["settings"],
+    "/settings/profile": ["settings"],
     "/settings/accounts": ["settings"],
     "/settings/delete": ["settings"],
     "/settings/emails": ["settings"],

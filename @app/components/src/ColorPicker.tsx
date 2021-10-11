@@ -4,6 +4,7 @@ import {
   ColorPicker as ReactColorPalettePicker,
   useColor,
 } from "react-color-palette"
+import { primaryColor } from "@app/lib"
 import { Space, Tag } from "antd"
 
 import { useIsMobile } from "./hooks"
@@ -17,7 +18,7 @@ interface ColorPickerProps {
 
 export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
   const { value, onChange } = props
-  const initialColor = "#002e7d"
+  const initialColor = primaryColor
   const [color, setColor] = useColor("hex", value ?? initialColor)
   const isMobile = useIsMobile()
 

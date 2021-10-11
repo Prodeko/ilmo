@@ -1,6 +1,10 @@
 import dayjs from "dayjs"
 import isEqual from "lodash/isEqual"
 
+export function isString(x: any): x is string {
+  return typeof x === "string"
+}
+
 export const arePropsEqual = (prevProps: any, nextProps: any) => {
   return isEqual(prevProps, nextProps)
 }

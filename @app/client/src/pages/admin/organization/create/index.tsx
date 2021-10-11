@@ -14,13 +14,14 @@ import {
 import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
 import { NextPage } from "next"
-import Router from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
 
 const { Text } = Typography
 
 const Admin_CreateOrganization: NextPage = () => {
+  const router = useRouter()
   const [query] = useSharedQuery()
   const { t } = useTranslation("admin")
   const [form] = Form.useForm()
@@ -69,13 +70,13 @@ const Admin_CreateOrganization: NextPage = () => {
       if (error) {
         setError(error)
       } else {
-        Router.push(
+        router.push(
           "/admin/organization/[slug]",
           `/admin/organization/${organization.slug}`
         )
       }
     },
-    [createOrganization]
+    [createOrganization, router]
   )
 
   const handleValuesChange = useCallback((values) => {

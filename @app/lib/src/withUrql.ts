@@ -13,6 +13,7 @@ import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
 import { serialize } from "cookie"
 import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
+import Cookies from "js-cookie"
 import { NextPageContext } from "next"
 import { SSRExchange, withUrqlClient } from "next-urql"
 import {
@@ -56,17 +57,11 @@ export function resetWebsocketConnection(): void {
 function getCSRFToken(ctx: NextPageContext | undefined) {
   let CSRF_TOKEN
   if (!isSSR) {
-    // Read the CSRF_TOKEN from __NEXT_DATA__ on client side
-    const nextDataEl = document.getElementById("__NEXT_DATA__")
-    if (!nextDataEl) {
-      throw new Error("Cannot read from __NEXT_DATA__ element")
-    }
-    const data = JSON.parse(nextDataEl.textContent || "{}")
-    CSRF_TOKEN = data.query.CSRF_TOKEN
+    CSRF_TOKEN = Cookies.get("csrfToken")
   } else {
     // Read the CSRF_TOKEN from the context on server side.
     // See @app/server/src/middleware/installSSR.ts for more information.
-    CSRF_TOKEN = ctx?.query.CSRF_TOKEN
+    CSRF_TOKEN = ctx?.req?.cookies?.csrfToken
   }
   return CSRF_TOKEN
 }
@@ -75,6 +70,7 @@ declare module "http" {
   interface IncomingMessage {
     cookies?: {
       session?: string
+      csrfToken?: string
     }
   }
 }
@@ -112,6 +108,7 @@ export const withUrql = withUrqlClient(
         const COOKIES = getCookies(ctx)
         const CSRF_TOKEN = getCSRFToken(ctx)
         return {
+          // fastify-csrf reads the CSRF-Token header
           headers: { "CSRF-Token": CSRF_TOKEN ?? "", cookie: COOKIES ?? "" },
         }
       },

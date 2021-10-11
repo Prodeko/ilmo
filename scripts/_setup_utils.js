@@ -201,14 +201,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Enable / disable account registrations (0 = don't allow users to register new accounts)`
   )
 
-  if (projectName) {
-    add(
-      "COMPOSE_PROJECT_NAME",
-      projectName,
-      `\
-# The name of the folder you cloned ilmo to (so we can run docker-compose inside a container):`
-    )
-  }
+  add("PRIVACY_URL", "")
 }
 
 exports.checkGit = async function checkGit() {

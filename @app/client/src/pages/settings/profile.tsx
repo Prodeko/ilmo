@@ -16,7 +16,7 @@ const Settings_Profile: NextPage = () => {
   const { data, fetching, error } = query
 
   return (
-    <SettingsLayout href="/settings" query={query}>
+    <SettingsLayout href="/settings/profile" query={query}>
       {data && data.currentUser ? (
         <ProfileSettingsForm user={data.currentUser} />
       ) : fetching ? (
@@ -24,7 +24,9 @@ const Settings_Profile: NextPage = () => {
       ) : error ? (
         <ErrorAlert error={error} />
       ) : (
-        <Redirect href={`/login?next=${encodeURIComponent("/settings")}`} />
+        <Redirect
+          href={`/login?next=${encodeURIComponent("/settings/profile")}`}
+        />
       )}
     </SettingsLayout>
   )

@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { Skeleton } from "antd"
-import Router from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 import { H3, SharedLayout, StandardWidth } from "."
@@ -29,12 +29,13 @@ export const DummyPage: React.FC = ({ children }) => {
   )
 }
 
-export function Redirect({ href, as, layout }: RedirectProps) {
+export const Redirect: React.FC<RedirectProps> = ({ href, as, layout }) => {
+  const router = useRouter()
   const { t } = useTranslation("common")
 
   useEffect(() => {
-    Router.push(href, as)
-  }, [as, href])
+    router.push(href, as)
+  }, [router, as, href])
 
   if (layout) {
     return (

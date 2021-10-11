@@ -24,6 +24,21 @@ fragment HomePage_Event on Event {
     ...EventPage_EventCategory
     __typename
   }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  registrations {
+    totalCount
+    __typename
+  }
   __typename
 }
 fragment EventFields on Event {
@@ -66,6 +81,13 @@ fragment EventPage_EventCategory on EventCategory {
     __typename
   }
   updatedAt
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
   __typename
 }
 query HomePageEvents($offset: Int!, $first: Int!) {

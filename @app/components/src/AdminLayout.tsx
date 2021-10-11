@@ -6,7 +6,7 @@ import { AiOutlineMail } from "@react-icons/all-files/ai/AiOutlineMail"
 import { AiOutlineTag } from "@react-icons/all-files/ai/AiOutlineTag"
 import { MdEvent } from "@react-icons/all-files/md/MdEvent"
 import { VscOrganization } from "@react-icons/all-files/vsc/VscOrganization"
-import { Layout, message } from "antd"
+import { Layout } from "antd"
 import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
@@ -18,17 +18,16 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout"
-import { PageLoading } from "."
 
 const { Sider } = Layout
 
 const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
-  if (items?.some((item) => item.key === key)) {
-    return items.find((item) => item.key === key)
+  const foundItem = items.find((item) => item.key === key)
+  if (foundItem) {
+    return foundItem
   }
   const itemsWithChildren = items?.filter(
-    (item) =>
-      typeof item.target !== "string" && typeof item.target !== "function"
+    ({ target }) => typeof target !== "string" && typeof target !== "function"
   )
   for (let i = 0; i < itemsWithChildren?.length; i++) {
     const res = findPage(key, itemsWithChildren[i].target as MenuItem[])
@@ -45,15 +44,14 @@ export interface AdminLayoutProps {
   children: React.ReactNode
 }
 
-export function AdminLayout({
+export const AdminLayout: React.FC<AdminLayoutProps> = ({
   query,
   href: inHref,
   children,
-}: AdminLayoutProps) {
+}) => {
   const { t } = useTranslation("admin")
   const router = useRouter()
-  const { data, fetching, error } = query
-  const isSSR = typeof window === "undefined"
+  const { data, fetching } = query
 
   const basicMenuItems = [
     {
@@ -64,25 +62,8 @@ export function AdminLayout({
     },
   ]
 
-  if (fetching) {
-    return <PageLoading />
-  }
-
-  const { currentUser } = data || {}
   const organizationMemberships =
-    currentUser?.organizationMemberships.nodes || []
-  // Redirect to index if the user is not part of any organization or if
-  // the user is not logged in
-  if (!error && !fetching && !currentUser) {
-    if (!isSSR) {
-      // Antd messages don't work with SSR
-      message.error({
-        key: "admin-access-denied",
-        content: `${t("notifications.adminAccessDenied")}`,
-      })
-    }
-    return <Redirect href="/" layout />
-  }
+    data?.currentUser?.organizationMemberships.nodes || []
 
   const items: MenuItem[] = fetching
     ? [...basicMenuItems]
@@ -170,6 +151,7 @@ export function AdminLayout({
 
   return (
     <SharedLayout
+      displayFooter={false}
       forbidWhen={AuthRestrict.NOT_ADMIN}
       query={query}
       sider={layoutSider}

@@ -1,6 +1,9 @@
 {
   "forgotPassword": "Salasana unohtunut?",
   "form": {
+    "errors": {
+      "incorrectCredentials": "Väärä käyttäjänimi tai salasana"
+    },
     "messages": {
       "password": "Salasana vaaditaan",
       "username": "Käyttäjänimi tai sähköposti vaaditaan"

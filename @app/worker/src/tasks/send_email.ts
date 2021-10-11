@@ -1,5 +1,5 @@
 import {
-  emailLegalText as legalText,
+  emailFooterText as footerText,
   fromEmail,
   projectName,
 } from "@app/config"
@@ -80,7 +80,7 @@ export function loadTemplate(template: string) {
       return (variables: { [varName: string]: any }) => {
         const mjml = njk.render(template, {
           projectName,
-          legalText,
+          footerText,
           ...variables,
         })
 

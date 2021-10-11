@@ -1,6 +1,9 @@
 {
   "forgotPassword": "Forgotten passphrase?",
   "form": {
+    "errors": {
+      "incorrectCredentials": "Incorrect username or passphrase"
+    },
     "messages": {
       "password": "Please input your passphrase",
       "username": "Please input your username or email"

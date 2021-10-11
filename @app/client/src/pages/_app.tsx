@@ -1,4 +1,3 @@
-import React from "react"
 import { Head, IlmoContext, TopProgressBar } from "@app/components"
 import { withUrql } from "@app/lib"
 import { ConfigProvider } from "antd"

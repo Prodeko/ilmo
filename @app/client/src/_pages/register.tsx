@@ -19,7 +19,7 @@ import {
 } from "@app/lib"
 import { Button, Form, Input, Tooltip } from "antd"
 import { NextPage } from "next"
-import Router from "next/router"
+import { useRouter } from "next/router"
 
 interface RegisterProps {
   next: string | null
@@ -35,6 +35,7 @@ const Register: NextPage<RegisterProps> = ({
   next: rawNext,
   resetUrqlClient,
 }) => {
+  const router = useRouter()
   const [formValues, setFormValues] = useState()
   const { strength: passwordStrength, suggestions: passwordSuggestions } =
     usePasswordStrength(formValues, "password")
@@ -58,7 +59,7 @@ const Register: NextPage<RegisterProps> = ({
         // Success: refetch
         resetWebsocketConnection()
         resetUrqlClient()
-        Router.push(next)
+        router.push(next)
       } catch (e) {
         const code = getCodeFromError(e)
         const exception = getExceptionFromError(e)

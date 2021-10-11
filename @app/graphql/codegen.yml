@@ -6,10 +6,7 @@ hooks:
     - node --experimental-json-modules scripts/addToPersistedOperations.mjs
     - node --experimental-json-modules scripts/minifyIntrospectionSchema.mjs
 config:
-  avoidOptionals:
-    field: true
-    inputValue: false
-    object: false
+  avoidOptionals: false
   noGraphQLTag: false
   withHOC: false
   withComponent: false

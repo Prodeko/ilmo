@@ -6,7 +6,7 @@ import {
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Button, Form, Input, message, Popconfirm } from "antd"
-import Router, { useRouter } from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 import { ColorPicker, ErrorAlert } from "."
@@ -69,7 +69,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         message.success(t("organizations.messages.updated"))
         const newSlug = data?.updateOrganization?.organization?.slug
         if (newSlug && newSlug !== slug) {
-          Router.push(
+          router.push(
             "/admin/organization/[slug]",
             `/admin/organization/${newSlug}`
           )
@@ -78,7 +78,7 @@ export const UpdateOrganizationForm: React.FC<UpdateOrganizationFormProps> = ({
         setError(e)
       }
     },
-    [organizationId, updateOrganization, t]
+    [organizationId, updateOrganization, router, t]
   )
 
   return (

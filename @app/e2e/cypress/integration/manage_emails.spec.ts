@@ -10,7 +10,7 @@ context("Manage emails", () => {
     // Action
     cy.getCy("layout-dropdown-user").click()
     cy.getCy("layout-link-settings").click()
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/settings")
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/settings/profile")
     cy.getCy("settingslayout-link-emails").click()
 
     // Assertion
