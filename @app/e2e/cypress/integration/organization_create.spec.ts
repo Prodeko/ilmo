@@ -9,7 +9,6 @@ context("Create organizations", () => {
     cy.login({
       verified: true,
       isAdmin: true,
-      orgs: [["Test Organization 1", "test-organization-1"]],
     })
 
     // Action

@@ -28,14 +28,15 @@ context("Admin", () => {
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
   })
 
-  it("redirects to index if user is not part of any organization", () => {
+  it("can access admin even if not part of any organization", () => {
     // Action
     cy.login({
       verified: true,
+      isAdmin: true,
     })
     cy.visit(Cypress.env("ROOT_URL") + "/admin")
 
     // Assertion
-    cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
+    cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
   })
 })
