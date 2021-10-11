@@ -12,7 +12,7 @@ import dayjs from "dayjs"
 import faker from "faker"
 import { PoolClient } from "pg"
 import slugify from "slugify"
-import { SnakeCasedProperties } from "type-fest"
+import type { SnakeCasedProperties } from "type-fest"
 
 export type User = {
   id: string

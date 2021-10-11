@@ -9,10 +9,9 @@ various places in the app, for example:
 
 - `fromEmail` - the email address to send emails from.
 - `projectName` - sourced from `package.json`; the name of your project!
-- `companyName` - for copyright ownership.
-- `emailLegalText` - legal text to put at the bottom of emails. Since all emails
-  in this project is transactional, an `unsubscribe` link is not needed, but you
-  should definitely consider how you intend to handle complaints
+- `orgName` - for copyright ownership.
+- `emailFooterText` - footer text to put at the bottom of emails. Since all
+  emails in this project are transactional, an `unsubscribe` link is not needed
 
 ## Environmental variables
 

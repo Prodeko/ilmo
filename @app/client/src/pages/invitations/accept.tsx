@@ -18,7 +18,7 @@ import {
 import { getCodeFromError } from "@app/lib"
 import { Button, Col, Result, Row, Skeleton } from "antd"
 import { GetServerSideProps, NextPage } from "next"
-import Router, { useRouter } from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 
@@ -105,7 +105,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
     }).then(
       () => {
         // Redirect
-        Router.push(
+        router.push(
           `/admin/organization/[slug]`,
           `/admin/organization/${organization.slug}`
         )
@@ -115,7 +115,7 @@ const InvitationAcceptInner: React.FC<InvitationAcceptInnerProps> = (props) => {
         setAcceptError(e)
       }
     )
-  }, [acceptInvite, code, id, organization])
+  }, [acceptInvite, code, id, organization, router])
 
   let child: JSX.Element | null = null
   if (status === Status.ACCEPTING) {

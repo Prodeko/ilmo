@@ -16,8 +16,7 @@
       "linkToEvent": "Show event",
       "linkUpdateEventCategory": "Edit category",
       "registrationStartTime": "Registration time",
-      "registrations": "Registrations",
-      "registrationsPerQuota": "Registrations by quota"
+      "registrations": "Registrations"
     },
     "tabs": {
       "email": "Email",
@@ -31,7 +30,6 @@
     }
   },
   "notifications": {
-    "adminAccessDenied": "Access to admin panel denied",
     "deleteFailed": "Failed to delete",
     "deleteSuccess": "Deleted successfully",
     "updateSuccess": "Updated successfully"

@@ -6,6 +6,17 @@ fragment HomePage_Event on Event {
   category {
     ...EventPage_EventCategory
   }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+      }
+    }
+  }
+  registrations {
+    totalCount
+  }
 }
 
 fragment HomePage_Query on Query {

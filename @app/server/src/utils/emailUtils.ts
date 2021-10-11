@@ -1,4 +1,4 @@
-import { emailLegalText as legalText, projectName } from "@app/config"
+import { emailFooterText as footerText, projectName } from "@app/config"
 import mjml2html from "mjml"
 import nunjucks from "nunjucks"
 
@@ -19,7 +19,7 @@ export function loadTemplate(template: string) {
       return (variables: { [varName: string]: any }) => {
         const mjml = njk.render(template, {
           projectName,
-          legalText,
+          footerText,
           ...variables,
         })
 

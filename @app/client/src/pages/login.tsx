@@ -16,7 +16,7 @@ import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
 import { Button, Form, Input } from "antd"
 import { GetServerSideProps, NextPage } from "next"
 import Link from "next/link"
-import Router from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 function hasErrors(fieldsError: Object) {
@@ -131,6 +131,7 @@ function LoginForm({
   onCancel,
   resetUrqlClient,
 }: LoginFormProps) {
+  const router = useRouter()
   const { t } = useTranslation("login")
   const [form] = Form.useForm()
   const [{ error }, login] = useLoginMutation()
@@ -147,7 +148,7 @@ function LoginForm({
         // Success: refetch
         resetWebsocketConnection()
         resetUrqlClient()
-        Router.push(onSuccessRedirectTo)
+        router.push(onSuccessRedirectTo)
       } catch (e) {
         const code = getCodeFromError(e)
         if (code === "CREDS") {
@@ -155,14 +156,14 @@ function LoginForm({
             {
               name: "password",
               value: form.getFieldValue("password"),
-              errors: ["Incorrect username or passphrase"],
+              errors: [t("form.errors.incorrectCredentials")],
             },
           ])
           setSubmitDisabled(true)
         }
       }
     },
-    [form, login, onSuccessRedirectTo, resetUrqlClient]
+    [form, login, onSuccessRedirectTo, resetUrqlClient, router, t]
   )
 
   const focusElement = useRef<Input>(null)

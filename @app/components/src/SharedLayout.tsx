@@ -1,18 +1,27 @@
 import React, { useCallback } from "react"
 import { DownOutlined } from "@ant-design/icons"
 import headerLogo from "@app/client/assets/images/header-logo.png"
-import { companyName, projectName } from "@app/config"
+import { orgName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
   SharedLayout_UserFragment,
   useCurrentUserUpdatedSubscription,
   useLogoutMutation,
 } from "@app/graphql"
-import { Avatar, Col, Dropdown, Layout, Menu, Row, Typography } from "antd"
+import {
+  Avatar,
+  Col,
+  Dropdown,
+  Layout,
+  Menu,
+  message,
+  Row,
+  Typography,
+} from "antd"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
-import Router, { useRouter } from "next/router"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 import { CombinedError, UseQueryState } from "urql"
 
@@ -80,6 +89,7 @@ export interface SharedLayoutProps {
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
   sider?: React.ReactNode
+  displayFooter?: boolean
 }
 
 export function SharedLayout({
@@ -92,9 +102,10 @@ export function SharedLayout({
   forbidWhen = AuthRestrict.NEVER,
   sider,
   children,
+  displayFooter = true,
 }: SharedLayoutProps) {
   const router = useRouter()
-  const currentUrl = router.asPath
+  const currentUrl = router?.asPath
   const [, logout] = useLogoutMutation()
   const { t } = useTranslation("common")
   const isMobile = useIsMobile()
@@ -104,9 +115,11 @@ export function SharedLayout({
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
   const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
 
+  const isSSR = typeof window === "undefined"
+
   const handleLogout = useCallback(() => {
     const reset = async () => {
-      Router.events.off("routeChangeComplete", reset)
+      router.events.off("routeChangeComplete", reset)
       try {
         await logout()
         context.resetUrqlClient()
@@ -115,9 +128,9 @@ export function SharedLayout({
         window.location.href = "/logout"
       }
     }
-    Router.events.on("routeChangeComplete", reset)
-    Router.push("/")
-  }, [logout, context])
+    router.events.on("routeChangeComplete", reset)
+    router.push("/")
+  }, [logout, context, router])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
     const inner =
@@ -134,14 +147,16 @@ export function SharedLayout({
       data.currentUser &&
       (forbidsLoggedIn || (forbidsNotAdmin && !data.currentUser.isAdmin))
     ) {
-      return (
-        <StandardWidth>
-          <Redirect href="/" />
-        </StandardWidth>
-      )
+      if (!isSSR) {
+        // Antd messages don't work with SSR
+        message.error({
+          key: "admin-access-denied",
+          content: `${t("error:adminAccessDenied")}`,
+        })
+      }
+      return <Redirect href="/" />
     } else if (
-      data &&
-      data.currentUser === null &&
+      data?.currentUser === null &&
       !fetching &&
       !error &&
       forbidsLoggedOut
@@ -236,7 +251,7 @@ export function SharedLayout({
                       </Link>
                     </Menu.Item>
                     <Menu.Item key="settings">
-                      <Link href="/settings">
+                      <Link href="/settings/profile">
                         <a data-cy="layout-link-settings">
                           <Warn okay={data.currentUser.isVerified}>
                             {t("settings")}
@@ -280,35 +295,36 @@ export function SharedLayout({
           {renderChildren({
             error,
             fetching,
-            currentUser: data && data.currentUser,
+            currentUser: data?.currentUser,
           })}
         </Content>
       </Layout>
 
-      <Footer>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text>
-            Copyright &copy; {new Date().getFullYear()} {companyName}. All
-            rights reserved.
-            {process.env.T_AND_C_URL && (
-              <span>
-                <a
-                  href={process.env.T_AND_C_URL}
-                  style={{ textDecoration: "underline" }}
-                >
-                  Terms and conditions
-                </a>
-              </span>
-            )}
-          </Text>
-        </div>
-      </Footer>
+      {displayFooter && (
+        <Footer>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text>
+              &copy; {new Date().getFullYear()} {orgName}.{" "}
+              {process.env.PRIVACY_URL && (
+                <span>
+                  <a
+                    href={process.env.PRIVACY_URL}
+                    style={{ textDecoration: "underline" }}
+                  >
+                    {t("privacyPolicy")}
+                  </a>
+                </span>
+              )}
+            </Text>
+          </div>
+        </Footer>
+      )}
     </Layout>
   )
 }

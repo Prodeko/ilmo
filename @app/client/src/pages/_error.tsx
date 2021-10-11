@@ -1,4 +1,3 @@
-import React from "react"
 import { ErrorOccurred, FourOhFour, SharedLayout } from "@app/components"
 import { useSharedQuery } from "@app/graphql"
 import { Col, Row } from "antd"

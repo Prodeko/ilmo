@@ -1,12 +1,16 @@
 import { Event } from "@app/graphql"
-import { DEFAULT_HEADER_IMAGE, randomElementFromArray } from "@app/lib"
+import {
+  DEFAULT_HEADER_IMAGE,
+  rainbowColors,
+  randomElementFromArray,
+} from "@app/lib"
 import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
 import useTranslation from "next-translate/useTranslation"
 
 import { H5 } from "./Text"
-import { ButtonLink, Link, P } from "."
+import { ButtonLink, EventQuotaPopover, Link, P } from "."
 
 const { Text } = Typography
 const { Ribbon } = Badge
@@ -15,9 +19,7 @@ interface EventCardProps {
   event: Event
 }
 
-const rainbowColors = ["#d8353d", "#d8984f", "#1d8d4f", "#3877e4"]
-
-const cardEventDatesStyle = {
+const cardInfoStyle = {
   fontSize: 12,
   whiteSpace: "nowrap",
   paddingBottom: "0.5rem",
@@ -66,22 +68,25 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           </H5>
         </a>
       </Link>
-      <div style={cardEventDatesStyle}>
+      <div style={cardInfoStyle}>
         <Text strong>{t("registrationTime")}:</Text>
         <br />
         {dayjs(registrationStartTime).format("LLL")}
         <br />
         {dayjs(registrationEndTime).format("LLL")}
       </div>
-      <div style={cardEventDatesStyle}>
+      <div style={cardInfoStyle}>
         <Text strong>{t("common:location")}: </Text>
         <span>{location}</span>
+      </div>
+      <div style={cardInfoStyle}>
+        <EventQuotaPopover event={event} showText />
       </div>
       <P
         ellipsis={{
           rows: 2,
         }}
-        style={{ fontSize: 12, height: "100%" }}
+        style={{ fontSize: 12 }}
         type="secondary"
       >
         {description[lang]}

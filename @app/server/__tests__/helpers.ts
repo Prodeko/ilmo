@@ -17,7 +17,7 @@ import {
   PostGraphileOptions,
   withPostGraphileContext,
 } from "postgraphile"
-import { PromiseValue } from "type-fest"
+import type { PromiseValue } from "type-fest"
 
 import {
   createEventCategories,

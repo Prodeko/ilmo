@@ -1,11 +1,14 @@
-import React from "react"
 import { Event } from "@app/graphql"
+import { secondaryColor } from "@app/lib"
 import { Col, Popover, Progress, Row, Typography } from "antd"
 import reduce from "lodash/reduce"
 import useTranslation from "next-translate/useTranslation"
 
+const { Text } = Typography
+
 interface EventQuotaPopoverProps {
   event: Event
+  showText?: boolean
 }
 
 const numberStyle = {
@@ -16,6 +19,7 @@ const numberStyle = {
 
 export const EventQuotaPopover: React.FC<EventQuotaPopoverProps> = ({
   event,
+  showText = false,
 }) => {
   const { t, lang } = useTranslation("admin")
 
@@ -28,6 +32,7 @@ export const EventQuotaPopover: React.FC<EventQuotaPopoverProps> = ({
           <Progress
             percent={(quotaRegistrations * 100) / quota.size}
             showInfo={false}
+            strokeColor={secondaryColor}
           />
         </Col>
         <Col flex="auto" style={{ whiteSpace: "nowrap" }}>
@@ -46,21 +51,19 @@ export const EventQuotaPopover: React.FC<EventQuotaPopoverProps> = ({
     0
   )
   return (
-    <Popover
-      content={popoverContent}
-      title={t("events.list.registrationsPerQuota")}
-    >
-      <Row gutter={12}>
-        <Col span={8}>
-          <Typography.Text style={numberStyle}>
+    <Popover content={popoverContent} title={t("common:registrationsPerQuota")}>
+      <Row align="middle">
+        <Col flex="none">
+          {showText && <Text strong>{t("common:registrations")}: </Text>}
+          <Text style={numberStyle}>
             {numRegistrations} / {totalSize}
-          </Typography.Text>
+          </Text>
         </Col>
-        <Col span={12}>
+        <Col flex="auto" style={{ marginLeft: "8px" }}>
           <Progress
             percent={(numRegistrations * 100) / totalSize}
             showInfo={false}
-            style={{ marginLeft: "12px" }}
+            strokeColor={secondaryColor}
           />
         </Col>
       </Row>

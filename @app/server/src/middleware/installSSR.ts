@@ -22,12 +22,16 @@ const isDev = NODE_ENV === "development"
  * included in the CSRF-Token header when using POST (mainly to /graphql).
  */
 const SSR: FastifyPluginAsync = async (fastify) => {
-  let handler: any
-  let csrfToken: string
+  let handler
 
   fastify.addHook("onRequest", async (request, reply) => {
-    csrfToken = await reply.generateCsrf()
     handleSessionCookie(fastify, request, reply)
+
+    const csrfToken = await reply.generateCsrf()
+    reply.setCookie("csrfToken", csrfToken, {
+      path: "/",
+      sameSite: "lax",
+    })
   })
 
   fastify
@@ -50,14 +54,6 @@ const SSR: FastifyPluginAsync = async (fastify) => {
       fastify.next("/*", async (app, req, reply) => {
         const parsedUrl = parse(req.url, true)
 
-        const query = {
-          ...parsedUrl.query,
-          CSRF_TOKEN: csrfToken,
-          // See 'next.config.js'
-          ROOT_URL: process.env.ROOT_URL || "http://localhost:5678",
-          T_AND_C_URL: process.env.T_AND_C_URL,
-        }
-
         if (!handler) {
           // TODO: should be able to use app.render that gets
           // defined in fastify.nextjs but that resulted in
@@ -66,7 +62,7 @@ const SSR: FastifyPluginAsync = async (fastify) => {
           handler = app.getRequestHandler()
         }
 
-        await handler(req.raw, reply.raw, { ...parsedUrl, query })
+        await handler(req.raw, reply.raw, parsedUrl)
         reply.sent = true
       })
     })

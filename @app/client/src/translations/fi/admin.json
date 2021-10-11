@@ -16,8 +16,7 @@
       "linkToEvent": "Näytä tapahtumasivu",
       "linkUpdateEventCategory": "Muokkaa kategoriaa",
       "registrationStartTime": "Ilmo aukeaa",
-      "registrations": "Rekisteröityneitä",
-      "registrationsPerQuota": "Rekisteröityneet kiintiöittäin"
+      "registrations": "Rekisteröityneitä"
     },
     "tabs": {
       "email": "Sähköposti",
@@ -31,7 +30,6 @@
     }
   },
   "notifications": {
-    "adminAccessDenied": "Pääsy hallintapaneeliin kielletty",
     "deleteFailed": "Poisto epäonnistui",
     "deleteSuccess": "Poistettu onnistuneesti",
     "updateSuccess": "Päivitetty onnistuneesti"

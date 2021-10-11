@@ -1,9 +1,8 @@
-import { Key, ReactNode, useState } from "react"
+import React, { Key, ReactNode, useState } from "react"
+import { isString } from "@app/lib"
 import { Menu, Typography } from "antd"
 import { TextProps } from "antd/lib/typography/Text"
 import Link from "next/link"
-
-import { Warn } from "."
 
 const { Text } = Typography
 const { SubMenu } = Menu
@@ -18,27 +17,18 @@ export interface MenuItem {
   icon?: ReactNode
 }
 
-function isString(x: any): x is string {
-  return typeof x === "string"
-}
-
 const getMenuItem = (
   item: MenuItem,
   initialKey: Key
 ): [JSX.Element, string[]] => {
-  const { showWarn, titleProps, title, key, cy, icon, target } = item
+  const { titleProps, title, key, cy, icon, target } = item
   if (isString(target)) {
-    const inner = (
-      <a>
-        <Warn okay={!showWarn}>
-          <Text {...titleProps}>{title}</Text>
-        </Warn>
-      </a>
-    )
     const initialKeyPath = key === initialKey ? [initialKey] : []
     return [
       <Menu.Item key={key} data-cy={cy} icon={icon}>
-        <Link href={target}>{inner}</Link>
+        <Link href={target}>
+          <Text {...titleProps}>{title}</Text>
+        </Link>
       </Menu.Item>,
       initialKeyPath,
     ]
@@ -53,12 +43,15 @@ const getMenuItem = (
   ]
 }
 
-type MenuProps = {
+type AdminSideMenuProps = {
   items: MenuItem[]
   initialKey: string
 }
 
-export const AdminSideMenu = ({ items, initialKey }: MenuProps) => {
+export const AdminSideMenu: React.FC<AdminSideMenuProps> = ({
+  items,
+  initialKey,
+}) => {
   const [openKeys, setOpenKeys] = useState<string[]>([])
 
   const rootSubmenuKeys = items.map((item) => item.key)

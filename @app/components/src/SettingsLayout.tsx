@@ -1,63 +1,66 @@
 import qs from "querystring"
 
-import { Layout, Menu, Typography } from "antd"
+import {
+  LoginOutlined,
+  MailOutlined,
+  ProfileOutlined,
+  TeamOutlined,
+  UserDeleteOutlined,
+} from "@ant-design/icons"
+import { User } from "@app/graphql"
+import { Layout } from "antd"
 import { TextProps } from "antd/lib/typography/Text"
-import Link from "next/link"
 import { useRouter } from "next/router"
 import { Translate } from "next-translate"
 import useTranslation from "next-translate/useTranslation"
 
-import { Redirect } from "./Redirect"
 import {
   AuthRestrict,
-  contentMinHeight,
   SharedLayout,
   SharedLayoutChildProps,
   SharedLayoutProps,
 } from "./SharedLayout"
-import { StandardWidth } from "./StandardWidth"
-import { Warn } from "./Warn"
+import { Redirect, SettingsSideMenu } from "."
 
-const { Text } = Typography
-const { Sider, Content } = Layout
+const { Sider } = Layout
 
-interface PageSpec {
+export interface SettingsPageSpec {
   title: string
   cy: string
   warnIfUnverified?: boolean
   titleProps?: TextProps
 }
 
-// TypeScript shenanigans (so we can still use `keyof typeof pages` later)
-function page(spec: PageSpec): PageSpec {
-  return spec
-}
-
-const pages = (t: Translate) => ({
-  "/settings": page({
+export const pages = (t: Translate) => ({
+  "/settings/profile": {
     title: t("titles.index"),
+    icon: <ProfileOutlined />,
     cy: "settingslayout-link-profile",
-  }),
-  "/settings/security": page({
+  } as SettingsPageSpec,
+  "/settings/security": {
     title: t("titles.security"),
+    icon: <LoginOutlined />,
     cy: "settingslayout-link-password",
-  }),
-  "/settings/accounts": page({
+  } as SettingsPageSpec,
+  "/settings/accounts": {
     title: t("titles.accounts"),
+    icon: <TeamOutlined />,
     cy: "settingslayout-link-accounts",
-  }),
-  "/settings/emails": page({
+  } as SettingsPageSpec,
+  "/settings/emails": {
     title: t("titles.emails"),
     warnIfUnverified: true,
+    icon: <MailOutlined />,
     cy: "settingslayout-link-emails",
-  }),
-  "/settings/delete": page({
+  } as SettingsPageSpec,
+  "/settings/delete": {
     title: t("titles.delete"),
     titleProps: {
       type: "danger",
     },
+    icon: <UserDeleteOutlined />,
     cy: "settingslayout-link-delete",
-  }),
+  } as SettingsPageSpec,
 })
 
 export interface SettingsLayoutProps {
@@ -66,57 +69,36 @@ export interface SettingsLayoutProps {
   children: React.ReactNode
 }
 
-export function SettingsLayout({
-  query,
-  href: inHref,
-  children,
-}: SettingsLayoutProps) {
+export function SettingsLayout({ query, href, children }: SettingsLayoutProps) {
   const { t } = useTranslation("settings")
   const sideMenuItems = pages(t)
-  const href = sideMenuItems[inHref] ? inHref : Object.keys(sideMenuItems)[0]
-  const page = sideMenuItems[href]
+  const pageTitle = sideMenuItems[href].title
   const router = useRouter()
-  const fullHref =
-    href + (router && router.query ? `?${qs.stringify(router.query)}` : "")
+  const routerQuery = router?.query
+  const fullHref = href + (routerQuery ? `?${qs.stringify(routerQuery)}` : "")
+
+  const layoutSider = (
+    <Sider breakpoint="md" collapsedWidth={40}>
+      <SettingsSideMenu
+        currentUser={query.data?.currentUser as User}
+        initialKey={href}
+        items={sideMenuItems}
+      />
+    </Sider>
+  )
   return (
     <SharedLayout
+      displayFooter={false}
       forbidWhen={AuthRestrict.LOGGED_OUT}
       query={query}
-      title={`${t("common:settings")}: ${page.title}`}
-      noPad
+      sider={layoutSider}
+      title={`${t("common:settings")}: ${pageTitle}`}
     >
       {({ currentUser, error, fetching }: SharedLayoutChildProps) =>
         !currentUser && !error && !fetching ? (
           <Redirect href={`/login?next=${encodeURIComponent(fullHref)}`} />
         ) : (
-          <Layout style={{ minHeight: contentMinHeight }} hasSider>
-            <Sider>
-              <Menu selectedKeys={[href]}>
-                {Object.keys(sideMenuItems).map((pageHref) => (
-                  <Menu.Item key={pageHref}>
-                    <Link href={pageHref}>
-                      <a data-cy={sideMenuItems[pageHref].cy}>
-                        <Warn
-                          okay={
-                            !currentUser ||
-                            currentUser.isVerified ||
-                            !sideMenuItems[pageHref].warnIfUnverified
-                          }
-                        >
-                          <Text {...sideMenuItems[pageHref].titleProps}>
-                            {sideMenuItems[pageHref].title}
-                          </Text>
-                        </Warn>
-                      </a>
-                    </Link>
-                  </Menu.Item>
-                ))}
-              </Menu>
-            </Sider>
-            <Content>
-              <StandardWidth>{children}</StandardWidth>
-            </Content>
-          </Layout>
+          children
         )
       }
     </SharedLayout>

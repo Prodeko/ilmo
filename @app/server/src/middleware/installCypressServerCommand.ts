@@ -19,11 +19,11 @@ import {
   FastifyRequest,
   RouteHandlerMethod,
 } from "fastify"
-import { RouteGenericInterface } from "fastify/types/route"
+import type { RouteGenericInterface } from "fastify/types/route"
 import fp from "fastify-plugin"
 import { Pool, PoolClient } from "pg"
 import slugify from "slugify"
-import { SnakeCasedProperties } from "type-fest"
+import type { SnakeCasedProperties } from "type-fest"
 
 const paragraph = () => faker.lorem.paragraph()
 const word = () => faker.lorem.word()

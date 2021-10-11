@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react"
-import { CreateEventPageQuery, Maybe, UpdateEventPageQuery } from "@app/graphql"
+import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
 import { range, tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
 import { UploadFile } from "antd/lib/upload/interface"
@@ -26,7 +26,7 @@ interface MainTabProps {
   setIsDraft: Dispatch<SetStateAction<boolean>>
   tabErrors: string[] | null
   formError: any
-  supportedLanguages: Maybe<Maybe<string>[]>
+  supportedLanguages: Array<string | null | undefined> | null | undefined
 }
 
 export const MainTab: React.FC<MainTabProps> = (props) => {
