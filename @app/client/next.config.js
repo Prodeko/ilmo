@@ -59,13 +59,27 @@ const nextOptions = {
       ? ["localhost", "static.prodeko.org", "placeimg.com"]
       : ["ilmo3.prodeko.org", "static.prodeko.org"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/settings",
+        destination: "/settings/profile",
+        permanent: false,
+      },
+      {
+        source: "/admin",
+        destination: "/admin/event/list",
+        permanent: false,
+      },
+    ]
+  },
   env: {
     CI: process.env.CI,
+    TZ: process.env.TZ,
     ENV: process.env.NODE_ENV,
     ROOT_URL: process.env.ROOT_URL,
-    T_AND_C_URL: process.env.T_AND_C_URL,
+    PRIVACY_URL: process.env.PRIVACY_URL,
     ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
-    TZ: process.env.TZ,
   },
 }
 
