@@ -2,7 +2,10 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fastifyCSRF from "fastify-csrf"
 import fp from "fastify-plugin"
 
-import { cookieOptions as sessionCookieOptions } from "./installSession"
+import {
+  cookieOptions as sessionCookieOptions,
+  handleSessionCookie,
+} from "./installSession"
 
 const { ROOT_URL, NODE_ENV } = process.env
 const isDev = NODE_ENV === "development"
@@ -11,13 +14,15 @@ const isDev = NODE_ENV === "development"
 // document.cookie on the client side
 const cookieOptions = { ...sessionCookieOptions, httpOnly: false }
 
-export async function handleCsrfToken(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
-  const sessionHasCsrfToken = request?.session.get("_csrf")
-  const requestHasCsrfToken = request.cookies.csrfToken
-  if (!sessionHasCsrfToken || !requestHasCsrfToken) {
+async function handleCsrfToken(request: FastifyRequest, reply: FastifyReply) {
+  const sessionHasCsrfToken = !!request?.session.get("_csrf")
+  const requestHasCsrfToken = !!request.cookies.csrfToken
+  if (
+    (!sessionHasCsrfToken || !requestHasCsrfToken) &&
+    request.method === "GET"
+  ) {
+    // Generate a new CSRF token if one does not yet exist in the session
+    // or if the request did not contain a token and the request method is GET
     const csrfToken = await reply.generateCsrf(cookieOptions)
     reply.setCookie("csrfToken", csrfToken, cookieOptions)
   }
@@ -26,6 +31,11 @@ export async function handleCsrfToken(
 const CSRFProtection: FastifyPluginAsync = async (app) => {
   await app.register(fastifyCSRF, {
     sessionPlugin: "fastify-secure-session",
+  })
+
+  app.addHook("onRequest", async (request, reply) => {
+    await handleCsrfToken(request, reply)
+    handleSessionCookie(app, request, reply)
   })
 
   app.addHook("onRequest", (request, reply, done) => {

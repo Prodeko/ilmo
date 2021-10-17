@@ -1,19 +1,10 @@
-import { User } from "@app/graphql"
 import { Result } from "antd"
 import useTranslation from "next-translate/useTranslation"
 
 import { ButtonLink } from "./ButtonLink"
 
-interface FourOhFourProps {
-  currentUser?: Pick<User, "id"> | null
-}
-
-export function FourOhFour(props: FourOhFourProps) {
-  const { currentUser } = props
+export function FourOhFour() {
   const { t } = useTranslation("error")
-  const subtitle = `${t("404.errorPart1")} ${
-    currentUser ? "" : t("404.errorPart2")
-  }`
   return (
     <div>
       <Result
@@ -23,7 +14,7 @@ export function FourOhFour(props: FourOhFourProps) {
           </ButtonLink>
         }
         status="404"
-        subTitle={<>{subtitle}</>}
+        subTitle={t("404")}
         title="404"
       />
     </div>

@@ -19,6 +19,7 @@ import {
   Exchange,
   subscriptionExchange,
 } from "urql"
+
 import { getSessionAndCSRFToken } from "."
 
 const isDev = process.env.NODE_ENV === "development"
@@ -70,6 +71,7 @@ export const withUrql = withUrqlClient(
           // fastify-csrf reads the CSRF-Token header
           // https://github.com/fastify/fastify-csrf#fastifycsrfprotectionrequest-reply-next
           headers: { "CSRF-Token": csrfToken, cookie },
+          credentials: "same-origin",
         }
       },
       exchanges: [

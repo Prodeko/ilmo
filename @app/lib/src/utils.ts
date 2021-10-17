@@ -18,6 +18,9 @@ export const filterObjectByKeys = <T>(raw: T, allowed: string[]): T =>
       return obj
     }, {} as T)
 
+export const objectHasKey = (obj, key) =>
+  Object.keys(obj).some((k) => k === key)
+
 export const randomElementFromArray = (arr: any[]) =>
   arr[Math.floor(Math.random() * arr.length)]
 

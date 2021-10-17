@@ -10,7 +10,6 @@ export function LocaleSelect() {
   function changeLocale(locale: string) {
     setCookie("NEXT_LOCALE", locale, {
       path: "/",
-      maxAge: 3600 * 60 * 60,
       sameSite: true,
       secure: true,
     })
