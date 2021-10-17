@@ -8,23 +8,15 @@ import { CookieSerializeOptions } from "fastify-cookie"
 import fp from "fastify-plugin"
 import fastifySecureSession from "fastify-secure-session"
 
-const MILLISECOND = 1
-const SECOND = 1000 * MILLISECOND
-const MINUTE = 60 * SECOND
-const HOUR = 60 * MINUTE
-const DAY = 24 * HOUR
-
 const { SECRET } = process.env
 if (!SECRET) {
   throw new Error("Server misconfigured")
 }
-const MAXIMUM_SESSION_DURATION_IN_MILLISECONDS = 3 * DAY
-
-const cookieOptions: CookieSerializeOptions = {
+export const cookieOptions: CookieSerializeOptions = {
   path: "/",
   httpOnly: true,
   sameSite: "lax",
-  maxAge: MAXIMUM_SESSION_DURATION_IN_MILLISECONDS,
+  secure: true,
 }
 
 export function handleSessionCookie(

@@ -10,11 +10,8 @@ import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-import { serialize } from "cookie"
 import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
-import Cookies from "js-cookie"
-import { NextPageContext } from "next"
 import { SSRExchange, withUrqlClient } from "next-urql"
 import {
   dedupExchange,
@@ -22,6 +19,7 @@ import {
   Exchange,
   subscriptionExchange,
 } from "urql"
+import { getSessionAndCSRFToken } from "."
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -54,44 +52,6 @@ export function resetWebsocketConnection(): void {
   wsClient = createWsClient()
 }
 
-function getCSRFToken(ctx: NextPageContext | undefined) {
-  let CSRF_TOKEN
-  if (!isSSR) {
-    CSRF_TOKEN = Cookies.get("csrfToken")
-  } else {
-    // Read the CSRF_TOKEN from the context on server side.
-    // See @app/server/src/middleware/installSSR.ts for more information.
-    CSRF_TOKEN = ctx?.req?.cookies?.csrfToken
-  }
-  return CSRF_TOKEN
-}
-
-declare module "http" {
-  interface IncomingMessage {
-    cookies?: {
-      session?: string
-      csrfToken?: string
-    }
-  }
-}
-
-function getCookies(ctx: NextPageContext | undefined) {
-  let COOKIES
-  if (!isSSR) {
-    COOKIES = document.cookie
-  } else {
-    const sessionCookie = ctx?.req?.cookies?.session
-    // If the session cookie already exists during SSR, we serialize the
-    // cookie and send it along with other HTTP headers. On the other hand,
-    // if a session does not yet exist we read the session cookie from the
-    // "set-cookie" header and send that as the session cookie during SSR.
-    COOKIES = sessionCookie
-      ? serialize("session", sessionCookie)
-      : ctx?.res?.getHeaders()?.["set-cookie"]
-  }
-  return COOKIES as string
-}
-
 export const withUrql = withUrqlClient(
   (ssrExchange: SSRExchange, ctx) => {
     const ROOT_URL = process.env.ROOT_URL
@@ -105,11 +65,11 @@ export const withUrql = withUrqlClient(
     return {
       url: `${rootURL}/graphql`,
       fetchOptions: () => {
-        const COOKIES = getCookies(ctx)
-        const CSRF_TOKEN = getCSRFToken(ctx)
+        const [cookie, csrfToken] = getSessionAndCSRFToken(ctx)
         return {
           // fastify-csrf reads the CSRF-Token header
-          headers: { "CSRF-Token": CSRF_TOKEN ?? "", cookie: COOKIES ?? "" },
+          // https://github.com/fastify/fastify-csrf#fastifycsrfprotectionrequest-reply-next
+          headers: { "CSRF-Token": csrfToken, cookie },
         }
       },
       exchanges: [
