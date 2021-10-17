@@ -1,19 +1,41 @@
-import { FastifyPluginAsync } from "fastify"
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fastifyCSRF from "fastify-csrf"
 import fp from "fastify-plugin"
 
-const { ROOT_URL } = process.env
+import { cookieOptions as sessionCookieOptions } from "./installSession"
+
+const { ROOT_URL, NODE_ENV } = process.env
+const isDev = NODE_ENV === "development"
+
+// Set httpOnly to false to allow reading the csrf token with
+// document.cookie on the client side
+const cookieOptions = { ...sessionCookieOptions, httpOnly: false }
+
+export async function handleCsrfToken(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const sessionHasCsrfToken = request?.session.get("_csrf")
+  const requestHasCsrfToken = request.cookies.csrfToken
+  if (!sessionHasCsrfToken || !requestHasCsrfToken) {
+    const csrfToken = await reply.generateCsrf(cookieOptions)
+    reply.setCookie("csrfToken", csrfToken, cookieOptions)
+  }
+}
 
 const CSRFProtection: FastifyPluginAsync = async (app) => {
-  await app.register(fastifyCSRF, { sessionPlugin: "fastify-secure-session" })
+  await app.register(fastifyCSRF, {
+    sessionPlugin: "fastify-secure-session",
+  })
 
   app.addHook("onRequest", (request, reply, done) => {
     if (
+      isDev &&
       request.method === "POST" &&
       request.url === "/graphql" &&
       request.headers.referer === `${ROOT_URL}/graphiql`
     ) {
-      // Bypass CSRF for GraphiQL
+      // Bypass CSRF for GraphiQL in dev
       done()
     } else if (request.method === "POST") {
       // Add CSRF protection to POST requests

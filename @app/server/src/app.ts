@@ -83,6 +83,9 @@ export async function makeApp({
    * Fastify middleware. These helpers may be asynchronous, but they should
    * operate very rapidly to enable quick as possible server startup.
    */
+  // Error handling middleware
+  await app.register(middleware.installErrorHandler)
+
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
@@ -97,9 +100,6 @@ export async function makeApp({
   }
   await app.register(middleware.installPostGraphile)
   await app.register(middleware.installFileUpload)
-
-  // Error handling middleware
-  await app.register(middleware.installErrorHandler)
 
   // Needs to be last
   await app.register(middleware.installSSR)
