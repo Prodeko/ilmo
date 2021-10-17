@@ -1,11 +1,12 @@
 {
-  "404": {
-    "errorPart1": "The page you attempted to load was not found.",
-    "errorPart2": "Maybe you need to log in?"
-  },
+  "404": "The page you attempted to load was not found.",
   "ErrorOccurred": {
     "errorInfo": "We're not sure what happened there; how embarrassing! Please try again later, or if this keeps happening then let us know.",
     "somethingWentWrong": "Something went wrong"
+  },
+  "ErrorResult": {
+    "invalidCsrfToken": "Invalid CSRF token",
+    "unexpectedError": "Unexpected error occurred"
   },
   "adminAccessDenied": "Access to admin panel denied",
   "csrfError": "Our security protections have failed to authenticate your request; to solve this you need to refresh the page:",

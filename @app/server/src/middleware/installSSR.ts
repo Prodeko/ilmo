@@ -4,9 +4,6 @@ import { FastifyPluginAsync } from "fastify"
 import fastifyNextjs from "fastify-nextjs"
 import fp from "fastify-plugin"
 
-import { handleCsrfToken } from "./installCSRFProtection"
-import { handleSessionCookie } from "./installSession"
-
 const { NODE_ENV } = process.env || {}
 const isDev = NODE_ENV === "development"
 
@@ -24,11 +21,6 @@ const isDev = NODE_ENV === "development"
  */
 const SSR: FastifyPluginAsync = async (fastify) => {
   let handler
-
-  fastify.addHook("onRequest", async (request, reply) => {
-    await handleCsrfToken(request, reply)
-    handleSessionCookie(fastify, request, reply)
-  })
 
   fastify
     .register(fastifyNextjs, {

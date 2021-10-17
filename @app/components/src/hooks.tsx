@@ -39,7 +39,7 @@ export function useEventLoading(
   } else if (error && !stale) {
     child = <ErrorResult error={error} />
   } else {
-    child = <FourOhFour currentUser={data?.currentUser} />
+    child = <FourOhFour />
   }
 
   return (
@@ -64,7 +64,7 @@ export function useOrganizationLoading(
   } else if (error) {
     child = <ErrorResult error={error} />
   } else {
-    child = <FourOhFour currentUser={data?.currentUser} />
+    child = <FourOhFour />
   }
 
   return (

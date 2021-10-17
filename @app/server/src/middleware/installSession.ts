@@ -44,7 +44,6 @@ export function handleSessionCookie(
      * own website; external URLs that need to issue requests to us must use a
      * different authentication method such as bearer tokens.
      */
-
     const session = request.session
 
     if (!session || !session.changed) {

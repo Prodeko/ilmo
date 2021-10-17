@@ -31,16 +31,15 @@ const EventPage: NextPage = () => {
   const eventLoadingElement = useEventLoading(subscription)
   const event = subscription?.data?.eventBySlug
   const { fetching, stale } = subscription
+  const title =
+    fetching || stale
+      ? t("common:loading")
+      : query.error
+      ? ""
+      : `${event?.name[lang] ?? t("eventNotFound")}`
 
   return (
-    <SharedLayout
-      query={query}
-      title={
-        fetching || stale
-          ? t("common:loading")
-          : `${event?.name[lang] ?? t("eventNotFound")}`
-      }
-    >
+    <SharedLayout query={query} title={title}>
       {eventLoadingElement || <EventPageInner event={event!} />}
     </SharedLayout>
   )
