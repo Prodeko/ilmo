@@ -5,7 +5,7 @@ context("CSRF protection", () => {
   beforeEach(() => cy.serverCommand("clearTestEventData"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
-  it("Displays CSRF error page when an incorrect token is provided in the request", () => {
+  it("displays CSRF error page when an incorrect token is provided in the request", () => {
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult")
     cy.visit(Cypress.env("ROOT_URL"))
@@ -29,6 +29,8 @@ context("CSRF protection", () => {
 
       // Assertions
       cy.get(".ant-result").should("contain", "Väärä CSRF-tunnus")
+
+      // Can recover from csrf error
       cy.getCy("error-csrf-refresh").click()
       cy.get(".ant-page-header-heading").should(
         "contain",

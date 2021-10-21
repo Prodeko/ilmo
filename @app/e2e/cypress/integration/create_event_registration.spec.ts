@@ -168,4 +168,34 @@ context("Create event registration", () => {
     // Assertion
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/")
   })
+
+  it("registration rate limiting works", () => {
+    // Setup
+    cy.serverCommand("createTestEventData").as("createEventDataResult")
+
+    cy.get("@createEventDataResult").then(({ event, quota }: any) => {
+      // Action
+      cy.visit(`${Cypress.env("ROOT_URL")}/event/${event.slug}`)
+      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should(
+        "not.be.disabled"
+      )
+      cy.getCy("eventpage-quotas-link-0").click()
+      cy.url().should(
+        "equal",
+        `${Cypress.env("ROOT_URL")}/event/${event.slug}/register/${quota.id}`
+      )
+
+      // Reload page, hit rate limit (3 requests from the same IP)
+      ;[...Array(3)].forEach(() => {
+        // Wait so that the request to claimRegistrationToken finishes
+        cy.wait(1000)
+        cy.reload()
+      })
+
+      // Assertions
+      cy.getCy("eventregistrationform-error-alert").contains(
+        "Too many requests. You have been rate-limited for 30 minutes."
+      )
+    })
+  })
 })

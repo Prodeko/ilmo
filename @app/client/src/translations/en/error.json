@@ -8,7 +8,7 @@
     "invalidCsrfToken": "Invalid CSRF token",
     "unexpectedError": "Unexpected error occurred"
   },
-  "adminAccessDenied": "Access to admin panel denied",
+  "accessDenied": "Access denied",
   "csrfError": "Our security protections have failed to authenticate your request; to solve this you need to refresh the page:",
   "errorCode": "Error code",
   "errorOccurred": "An error occurred",

@@ -16,7 +16,7 @@
     "dayjs": "^1.10.7",
     "graphile-worker": "^0.11.4",
     "html-to-text": "^8.0.0",
-    "ioredis": "^4.27.11",
+    "ioredis": "^4.28.0",
     "mjml": "^4.10.4",
     "nodemailer": "^6.7.0",
     "nunjucks": "^3.2.3"

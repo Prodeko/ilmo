@@ -24,4 +24,4 @@ const task: Task = async (_, { query }) => {
   )
 }
 
-module.exports = task
+export default task

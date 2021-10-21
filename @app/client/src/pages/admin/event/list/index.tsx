@@ -7,8 +7,9 @@ import {
   useIsMobile,
 } from "@app/components"
 import {
+  AdminListEventsDocument,
   Event,
-  ListEventsDocument,
+  EventsOrderBy,
   useDeleteEventMutation,
   useListEventsPageQuery,
 } from "@app/graphql"
@@ -29,6 +30,7 @@ const Admin_ListEvents: NextPage = () => {
   const actionsColumn = {
     title: "",
     key: "actions",
+    width: 200,
     render: (_name: string, event: Event) => {
       return (
         <AdminTableActions
@@ -66,6 +68,7 @@ const Admin_ListEvents: NextPage = () => {
   const isDraftColumn = {
     title: t("events:forms.isDraft"),
     dataIndex: ["isDraft"],
+    align: "center",
     key: "isDraft",
     render: (isDraft: string) => (
       <Badge
@@ -146,38 +149,58 @@ const Admin_ListEvents: NextPage = () => {
     {
       kind: "draft",
       translation: "common:draft",
-      dataField: "draftEvents",
+      variables: {
+        filter: { isDraft: { equalTo: true } },
+        orderBy: EventsOrderBy.RegistrationEndTimeAsc,
+      },
     },
     {
       kind: "upcoming",
       translation: "common:registrationUpcoming",
-      dataField: "signupUpcomingEvents",
+      variables: {
+        filter: {
+          signupUpcoming: { equalTo: true },
+          isDraft: { equalTo: false },
+        },
+
+        orderBy: EventsOrderBy.RegistrationEndTimeAsc,
+      },
     },
     {
       kind: "open",
       translation: "common:registrationOpen",
-      dataField: "signupOpenEvents",
+      variables: {
+        filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } },
+        orderBy: EventsOrderBy.RegistrationEndTimeAsc,
+      },
     },
     {
       kind: "closed",
       translation: "common:registrationClosed",
-      dataField: "signupClosedEvents",
+      variables: {
+        filter: {
+          signupClosed: { equalTo: true },
+          isDraft: { equalTo: false },
+        },
+        orderBy: EventsOrderBy.EventEndTimeAsc,
+      },
     },
   ]
 
   return (
     <AdminLayout href="/admin/event/list" query={query}>
       <Row gutter={[0, 24]}>
-        {tables.map(({ kind, translation, dataField }) => (
+        {tables.map(({ kind, translation, variables }) => (
           <Col key={kind} span={24} style={{ paddingTop: 24 }}>
             <H3>{t(translation)}</H3>
             <ServerPaginatedTable
               columns={columns}
               data-cy={`adminpage-events-${kind}`}
-              dataField={dataField}
-              queryDocument={ListEventsDocument}
+              dataField="events"
+              queryDocument={AdminListEventsDocument}
               showPagination={true}
               size="middle"
+              variables={variables}
             />
           </Col>
         ))}

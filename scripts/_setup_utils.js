@@ -201,7 +201,12 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # Enable / disable account registrations (0 = don't allow users to register new accounts)`
   )
 
-  add("PRIVACY_URL", "")
+  add(
+    "PRIVACY_URL",
+    null,
+    `\
+  # Link to a privacy policy. Displayed in the application footer.`
+  )
 }
 
 exports.checkGit = async function checkGit() {

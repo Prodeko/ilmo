@@ -1,4 +1,4 @@
-fragment HomePageEvents_Query on Query {
+fragment HomePageClosedEvents_Query on Query {
   signupClosedEvents: events(
     first: $first
     offset: $offset
@@ -12,6 +12,6 @@ fragment HomePageEvents_Query on Query {
   }
 }
 
-query HomePageEvents($offset: Int!, $first: Int!) {
-  ...HomePageEvents_Query
+query HomePageEvents($offset: Int, $first: Int) {
+  ...HomePageClosedEvents_Query
 }

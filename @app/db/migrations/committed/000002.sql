@@ -1,5 +1,5 @@
 --! Previous: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
---! Hash: sha1:30baa47df9962bce2ccfaaaa73d6783b677efbce
+--! Hash: sha1:c3e038e724e27f0a857709e19c239448f7000642
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -868,6 +868,8 @@ create table app_public.registrations(
   answers jsonb,
   is_finished boolean not null default false,
 
+  created_by uuid references app_public.users on delete set null,
+  updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
 
@@ -878,6 +880,8 @@ alter table app_public.registrations enable row level security;
 -- Indices
 create index on app_public.registrations(event_id);
 create index on app_public.registrations(quota_id);
+create index on app_public.registrations(created_by);
+create index on app_public.registrations(updated_by);
 create index on app_public.registrations(created_at);
 
 -- Triggers
@@ -885,11 +889,15 @@ create trigger _100_timestamps
   before insert or update on app_public.registrations for each row
   execute procedure app_private.tg__timestamps();
 
-create trigger _200_registration_is_valid
+create trigger _200_ownership_info
+  before insert or update on app_public.registrations for each row
+  execute procedure app_private.tg__ownership_info();
+
+create trigger _300_registration_is_valid
   before insert on app_public.registrations for each row
   execute procedure app_private.tg__registration_is_valid();
 
-create trigger _300_send_registration_email
+create trigger _400_send_registration_email
   -- Send email upon successful registration. We run this trigger on update because
   -- the registration is initially created with claim_registration_token and we
   -- don't know the users email at that point. The registration__send_confirmation_email
@@ -917,6 +925,26 @@ $$ language sql stable;
 comment on function app_public.registrations_full_name(registration app_public.registrations) is
   E'Returns the full name of a registered person.';
 grant execute on function app_public.registrations_full_name(registration app_public.registrations) to :DATABASE_VISITOR;
+
+create or replace function app_public.registrations_email(registration app_public.registrations)
+  returns text as $$
+begin
+  if
+    app_public.current_user_id() = registration.created_by or
+    app_public.current_user_is_admin()
+  then
+    -- Don't obfuscate email for the user that created the registration
+    -- Dont obfuscate email for admin users
+    return registration.email;
+  else
+    -- Obfuscate email for all other cases
+    return '***';
+  end if;
+end;
+$$ language plpgsql stable set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.registrations_email(registration app_public.registrations) is
+  E'Email address of the person registered to an event.';
+grant execute on function app_public.registrations_email(registration app_public.registrations) to :DATABASE_VISITOR;
 
 create type app_public.registration_status as enum (
   'IN_QUOTA',
@@ -981,7 +1009,7 @@ returns app_public.registration_status as $$
   select status from app_public.registrations_status_and_position where id = registration.id;
 $$ language sql stable;
 comment on function app_public.registrations_status(registration app_public.registrations) is
-  E'Returns the status of the registration.';
+  E'@sortable\n@filterable\nReturns the status of the registration.';
 grant execute on function app_public.registrations_status(registration app_public.registrations) to :DATABASE_VISITOR;
 
 create function app_public.registrations_position(registration app_public.registrations)
@@ -989,7 +1017,7 @@ returns integer as $$
   select position from app_public.registrations_status_and_position where id = registration.id;
 $$ language sql stable;
 comment on function app_public.registrations_position(registration app_public.registrations) is
-  E'Returns the position of the registration.';
+  E'@sortable\n@filterable\nReturns the position of the registration.';
 grant execute on function app_public.registrations_position(registration app_public.registrations) to :DATABASE_VISITOR;
 
 -- Comments
@@ -1002,12 +1030,11 @@ comment on column app_public.registrations.event_id is
 comment on column app_public.registrations.quota_id is
   E'Identifier of a related quota.';
 comment on column app_public.registrations.first_name is
-  E'First name of the person registering to an event.';
+  E'First name of the person registered to an event.';
 comment on column app_public.registrations.last_name is
-  E'Last name of the person registering to an event.';
--- Use @omit to prevet exposing emails via the GraphQL API
+  E'Last name of the person registered to an event.';
 comment on column app_public.registrations.email is
-  E'@omit\nEmail address of the person registering to an event.';
+  E'@omit\nEmail address of the person registered to an event.';
 comment on column app_public.registrations.answers is
   E'Answers to event questions.';
 comment on column app_public.registrations.is_finished is

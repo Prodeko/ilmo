@@ -26,38 +26,6 @@
       }
     ]
   },
-  "projects": {
-    "client": {
-      "implicitDependencies": ["config", "graphql", "components", "lib"]
-    },
-    "components": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "config": {
-      "implicitDependencies": []
-    },
-    "db": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "e2e": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "graphql": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "lib": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "server": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "worker": {
-      "implicitDependencies": ["config", "graphql"]
-    },
-    "docker-helpers": {
-      "implicitDependencies": ["config", "graphql"]
-    }
-  },
   "affected": {
     "defaultBase": "main"
   }

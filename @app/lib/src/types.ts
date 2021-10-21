@@ -1,3 +1,5 @@
+import { RegistrationStatus } from "@app/graphql"
+
 export type ValueOf<T> = T[keyof T]
 
 export type Session = { uuid: string }
@@ -12,4 +14,11 @@ export type RegistrationSecret = {
   quota_id: string
   created_at: string
   updated_at: string
+}
+
+export type CsvRow = {
+  fullName: string
+  email: string
+  status: RegistrationStatus
+  position: number
 }

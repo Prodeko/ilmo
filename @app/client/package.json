@@ -19,7 +19,7 @@
     "lodash": "^4.17.21",
     "net": "^1.0.2",
     "next": "^11.1.2",
-    "next-plugin-antd-less": "^1.4.3",
+    "next-plugin-antd-less": "^1.4.4",
     "next-translate": "^1.1.1",
     "next-transpile-modules": "^8.0.0",
     "react": "^17.0.2",
@@ -28,13 +28,13 @@
     "slugify": "^1.6.1",
     "tls": "^0.0.1",
     "urql": "^2.0.5",
-    "webpack": "^5.58.1"
+    "webpack": "^5.59.1"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^11.1.2",
-    "@types/lodash": "^4.14.175",
-    "@types/node": "^16.10.5",
-    "@types/react": "^17.0.29",
+    "@types/lodash": "^4.14.176",
+    "@types/node": "^16.11.1",
+    "@types/react": "^17.0.31",
     "less": "^4.1.2"
   },
   "nextBundleAnalysis": {

@@ -46,18 +46,18 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   return (
     <>
       <Row gutter={[8, 8]}>
-        <Col flex="1 0 50%">
+        <Col flex="none">
           <ButtonLink
             as={`/admin/${adminUrl}/update/${dataType.id}`}
             href={`/admin/${adminUrl}/update/[id]`}
+            size="small"
             style={{ minWidth: "85px" }}
             type="primary"
           >
             {t("common:update")}
           </ButtonLink>
         </Col>
-        <Col flex="1 0 50%">
-          {" "}
+        <Col flex="auto">
           <Popconfirm
             cancelText={t("common:no")}
             okText={t("common:yes")}
@@ -67,6 +67,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
           >
             <Button
               data-cy="admin-table-delete-button"
+              size="small"
               style={{ minWidth: "85px" }}
               danger
             >

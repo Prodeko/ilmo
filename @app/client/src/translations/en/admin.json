@@ -3,7 +3,7 @@
   "createNewOrganization": "Create a new organization",
   "eventCategories": {
     "delete": {
-      "confirmText": "Are you sure you want to delete this event?",
+      "confirmText": "Are you sure you want to delete this event category?",
       "deleteFailedBADFK": "Some events still reference this event category. Delete them first."
     }
   },

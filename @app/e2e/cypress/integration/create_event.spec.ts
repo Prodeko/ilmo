@@ -14,14 +14,15 @@ context("Create event", () => {
       eventSignupUpcoming: true,
       userIsAdmin: true,
     }).as("createEventDataResult")
-    cy.login({
-      username: "testuser",
-      password: "DOESNT MATTER",
-      existingUser: true,
-    })
 
     // Action
     cy.get("@createEventDataResult").then(() => {
+      cy.login({
+        username: "testuser",
+        password: "DOESNT MATTER",
+        existingUser: true,
+      })
+
       cy.getCy("layout-dropdown-user").click()
       cy.getCy("layout-link-admin").click()
       cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")

@@ -79,7 +79,7 @@ fragment EventPage_Event on Event {
       ...EventPage_Quota
     }
   }
-  registrations(orderBy: CREATED_AT_ASC) {
+  registrations(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Registration
     }

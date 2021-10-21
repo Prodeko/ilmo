@@ -8,6 +8,7 @@ cache
 /yarn-error.log
 /@app/e2e/cypress/videos
 /@app/e2e/cypress/screenshots
+/@app/e2e/cypress/downloads
 /@app/graphql/index.*
 /@app/graphql/introspection.json
 /@app/graphql/introspection.min.json
