@@ -8,15 +8,17 @@ import { CookieSerializeOptions } from "fastify-cookie"
 import fp from "fastify-plugin"
 import fastifySecureSession from "fastify-secure-session"
 
-const { SECRET } = process.env
+const { SECRET, NODE_ENV } = process.env
 if (!SECRET) {
   throw new Error("Server misconfigured")
 }
+const isProd = NODE_ENV === "production"
+
 export const cookieOptions: CookieSerializeOptions = {
   path: "/",
   httpOnly: true,
   sameSite: "lax",
-  secure: true,
+  secure: isProd ? true : false,
 }
 
 export function handleSessionCookie(

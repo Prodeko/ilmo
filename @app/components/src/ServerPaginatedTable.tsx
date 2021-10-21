@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import CsvDownloader from "react-csv-downloader"
 import { Sorter, ValueOf } from "@app/lib"
-import { Table } from "antd"
+import { Button, Table } from "antd"
+import { SizeType } from "antd/lib/config-provider/SizeContext"
 import {
   ColumnsType,
   ColumnType,
@@ -9,6 +11,7 @@ import {
 } from "antd/lib/table"
 import { DocumentNode } from "graphql"
 import get from "lodash/get"
+import useTranslation from "next-translate/useTranslation"
 import { useQuery } from "urql"
 
 import { ErrorResult } from "./ErrorResult"
@@ -28,7 +31,11 @@ interface ServerPaginatedTableProps extends TableProps<RecordType> {
   dataField: string
   queryDocument: DocumentNode
   variables?: Record<string, any>
+  downloadFunction?: (data) => Array<Record<string, any>>
+  downloadFilename?: string
+  showDownload?: boolean
   showPagination?: boolean
+  size?: SizeType
 }
 
 export function ServerPaginatedTable({
@@ -36,10 +43,18 @@ export function ServerPaginatedTable({
   dataField,
   queryDocument,
   variables,
+  downloadFunction,
+  downloadFilename = "data.csv",
+  showDownload = false,
   showPagination = true,
+  size,
   ...props
 }: ServerPaginatedTableProps) {
   const isMobile = useIsMobile()
+  const { t } = useTranslation("common")
+  const downloadRef = useRef<HTMLButtonElement>(null)
+  const [downloadData, setDownloadData] = useState(false)
+  const [first, setFirst] = useState(10)
   const [offset, setOffset] = useState(0)
   const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
@@ -49,8 +64,8 @@ export function ServerPaginatedTable({
     variables: {
       ...variables,
       // Pagination can be empty if table contains less than 10 elements
-      first: 10,
-      offset: offset,
+      first,
+      offset,
     },
   })
   const [pagination, setPagination] = useState<TablePaginationConfig>({
@@ -58,6 +73,21 @@ export function ServerPaginatedTable({
     pageSize: 10,
     total: data?.[dataField]?.totalCount || 0,
   })
+  const dataSource = get(data, `${dataField}.nodes`, [])
+
+  const downloadTableData = useCallback(async () => {
+    setFirst(999)
+    setOffset(0)
+    setDownloadData(true)
+  }, [])
+
+  useEffect(() => {
+    if (downloadData && !fetching) {
+      // @ts-ignore
+      downloadRef.current?.handleClick()
+      setDownloadData(false)
+    }
+  }, [downloadData, fetching])
 
   useEffect(() => {
     const total = data?.[dataField]?.totalCount
@@ -113,17 +143,39 @@ export function ServerPaginatedTable({
   return error ? (
     <ErrorResult error={error} />
   ) : (
-    <Table
-      columns={transformedColumns as ColumnsType<object>}
-      dataSource={get(data, dataField)?.nodes || []}
-      loading={fetching && { indicator: <Loading /> }}
-      pagination={showPagination && pagination}
-      // @ts-ignore
-      rowKey={(obj) => obj.id}
-      scroll={{ x: 100 }}
-      size={isMobile ? "small" : "middle"}
-      onChange={handleTableChange}
-      {...props}
-    />
+    <>
+      {showDownload && (
+        <CsvDownloader
+          // @ts-ignore
+          ref={downloadRef}
+          datas={
+            typeof downloadFunction === "function"
+              ? downloadFunction(dataSource)
+              : dataSource
+          }
+          disabled={downloadData}
+          filename={downloadFilename}
+          separator=";"
+        >
+          <div style={{ marginBottom: 16 }}>
+            <Button data-cy="button-download-csv" onClick={downloadTableData}>
+              {t("download")}
+            </Button>
+          </div>
+        </CsvDownloader>
+      )}
+      <Table
+        columns={transformedColumns as ColumnsType<object>}
+        dataSource={dataSource}
+        loading={fetching && { indicator: <Loading /> }}
+        pagination={showPagination && pagination}
+        // @ts-ignore
+        rowKey={(obj) => obj.id}
+        scroll={{ x: 100 }}
+        size={size ?? isMobile ? "small" : "middle"}
+        onChange={handleTableChange}
+        {...props}
+      />
+    </>
   )
 }

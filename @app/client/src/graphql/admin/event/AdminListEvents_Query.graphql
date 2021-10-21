@@ -1,0 +1,47 @@
+fragment AdminListEvents_Event on Event {
+  # Don't query all event fields, since the admin
+  # list events view displays a large number of events.
+  # Querying additional fields would mae the view slower.
+  id
+  name
+  slug
+  isDraft
+  registrationStartTime
+  eventStartTime
+  category {
+    id
+    name
+    color
+  }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      id
+      title
+      size
+      registrations {
+        totalCount
+      }
+    }
+  }
+  registrations {
+    totalCount
+  }
+}
+
+fragment AdminListEvents_Query on Query {
+  events(first: $first, offset: $offset, filter: $filter, orderBy: $orderBy) {
+    nodes {
+      ...AdminListEvents_Event
+    }
+    totalCount
+  }
+}
+
+query AdminListEvents(
+  $offset: Int!
+  $first: Int!
+  $filter: EventFilter
+  $orderBy: [EventsOrderBy!]
+) {
+  ...AdminListEvents_Query
+}

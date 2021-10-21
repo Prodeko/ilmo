@@ -150,8 +150,8 @@ export function SharedLayout({
       if (!isSSR) {
         // Antd messages don't work with SSR
         message.error({
-          key: "admin-access-denied",
-          content: `${t("error:adminAccessDenied")}`,
+          key: "access-denied",
+          content: `${t("error:accessDenied")}`,
         })
       }
       return <Redirect href="/" />
@@ -245,11 +245,13 @@ export function SharedLayout({
               <Dropdown
                 overlay={
                   <Menu>
-                    <Menu.Item key="admin">
-                      <Link href="/admin/event/list">
-                        <a data-cy="layout-link-admin">{t("admin")}</a>
-                      </Link>
-                    </Menu.Item>
+                    {data.currentUser.isAdmin && (
+                      <Menu.Item key="admin">
+                        <Link href="/admin/event/list">
+                          <a data-cy="layout-link-admin">{t("admin")}</a>
+                        </Link>
+                      </Menu.Item>
+                    )}
                     <Menu.Item key="settings">
                       <Link href="/settings/profile">
                         <a data-cy="layout-link-settings">

@@ -9,8 +9,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
     "module": "esnext",
-    "isolatedModules": true,
-    "esModuleInterop": true
+    "isolatedModules": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "../graphql/client.json"],
   "references": [

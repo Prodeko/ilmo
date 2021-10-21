@@ -12,12 +12,12 @@
   },
   "devDependencies": {
     "@graphql-codegen/add": "^3.1.0",
-    "@graphql-codegen/cli": "^2.2.0",
+    "@graphql-codegen/cli": "^2.2.1",
     "@graphql-codegen/introspection": "^2.1.0",
-    "@graphql-codegen/typescript": "^2.2.2",
-    "@graphql-codegen/typescript-operations": "^2.1.6",
-    "@graphql-codegen/typescript-urql": "^3.2.0",
-    "@graphql-codegen/typescript-urql-graphcache": "^2.1.4",
+    "@graphql-codegen/typescript": "^2.2.4",
+    "@graphql-codegen/typescript-operations": "^2.1.8",
+    "@graphql-codegen/typescript-urql": "^3.2.2",
+    "@graphql-codegen/typescript-urql-graphcache": "^2.1.6",
     "@graphql-codegen/urql-introspection": "^2.1.0",
     "@urql/introspection": "^0.3.0",
     "graphql-codegen-persisted-query-ids": "^0.1.2"

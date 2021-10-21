@@ -1782,6 +1782,8 @@ CREATE TABLE app_public.registrations (
     email public.citext,
     answers jsonb,
     is_finished boolean DEFAULT false NOT NULL,
+    created_by uuid,
+    updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT registrations_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext))
@@ -1820,14 +1822,14 @@ COMMENT ON COLUMN app_public.registrations.quota_id IS 'Identifier of a related 
 -- Name: COLUMN registrations.first_name; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.registrations.first_name IS 'First name of the person registering to an event.';
+COMMENT ON COLUMN app_public.registrations.first_name IS 'First name of the person registered to an event.';
 
 
 --
 -- Name: COLUMN registrations.last_name; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person registering to an event.';
+COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person registered to an event.';
 
 
 --
@@ -1835,7 +1837,7 @@ COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person
 --
 
 COMMENT ON COLUMN app_public.registrations.email IS '@omit
-Email address of the person registering to an event.';
+Email address of the person registered to an event.';
 
 
 --
@@ -2577,6 +2579,37 @@ COMMENT ON FUNCTION app_public.registration_by_update_token("updateToken" text) 
 
 
 --
+-- Name: registrations_email(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registrations_email(registration app_public.registrations) RETURNS text
+    LANGUAGE plpgsql STABLE
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if
+    app_public.current_user_id() = registration.created_by or
+    app_public.current_user_is_admin()
+  then
+    -- Don't obfuscate email for the user that created the registration
+    -- Dont obfuscate email for admin users
+    return registration.email;
+  else
+    -- Obfuscate email for all other cases
+    return '***';
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION registrations_email(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registrations_email(registration app_public.registrations) IS 'Email address of the person registered to an event.';
+
+
+--
 -- Name: registrations_full_name(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2609,7 +2642,9 @@ $$;
 -- Name: FUNCTION registrations_position(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.registrations_position(registration app_public.registrations) IS 'Returns the position of the registration.';
+COMMENT ON FUNCTION app_public.registrations_position(registration app_public.registrations) IS '@sortable
+@filterable
+Returns the position of the registration.';
 
 
 --
@@ -2627,7 +2662,9 @@ $$;
 -- Name: FUNCTION registrations_status(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.registrations_status(registration app_public.registrations) IS 'Returns the status of the registration.';
+COMMENT ON FUNCTION app_public.registrations_status(registration app_public.registrations) IS '@sortable
+@filterable
+Returns the status of the registration.';
 
 
 --
@@ -4139,6 +4176,13 @@ CREATE INDEX registrations_created_at_idx ON app_public.registrations USING btre
 
 
 --
+-- Name: registrations_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX registrations_created_by_idx ON app_public.registrations USING btree (created_by);
+
+
+--
 -- Name: registrations_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -4150,6 +4194,13 @@ CREATE INDEX registrations_event_id_idx ON app_public.registrations USING btree 
 --
 
 CREATE INDEX registrations_quota_id_idx ON app_public.registrations USING btree (quota_id);
+
+
+--
+-- Name: registrations_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX registrations_updated_by_idx ON app_public.registrations USING btree (updated_by);
 
 
 --
@@ -4286,17 +4337,24 @@ CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.quotas 
 
 
 --
--- Name: registrations _200_registration_is_valid; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__registration_is_valid();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
 
 
 --
--- Name: registrations _300_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _300_registration_is_valid; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_send_registration_email AFTER UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_job('registration__send_confirmation_email');
+CREATE TRIGGER _300_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__registration_is_valid();
+
+
+--
+-- Name: registrations _400_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _400_send_registration_email AFTER UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_job('registration__send_confirmation_email');
 
 
 --
@@ -4592,6 +4650,14 @@ ALTER TABLE ONLY app_public.quotas
 
 
 --
+-- Name: registrations registrations_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registrations
+    ADD CONSTRAINT registrations_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: registrations registrations_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4605,6 +4671,14 @@ ALTER TABLE ONLY app_public.registrations
 
 ALTER TABLE ONLY app_public.registrations
     ADD CONSTRAINT registrations_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id);
+
+
+--
+-- Name: registrations registrations_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registrations
+    ADD CONSTRAINT registrations_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -5619,6 +5693,14 @@ GRANT ALL ON FUNCTION app_public.organizations_current_user_is_owner(org app_pub
 
 REVOKE ALL ON FUNCTION app_public.registration_by_update_token("updateToken" text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.registration_by_update_token("updateToken" text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registrations_email(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registrations_email(registration app_public.registrations) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registrations_email(registration app_public.registrations) TO ilmo_visitor;
 
 
 --

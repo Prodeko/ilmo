@@ -129,7 +129,8 @@ async function runCommand(
 ): Promise<object | null> {
   if (command === "clearTestUsers") {
     await rootPgPool.query(
-      "delete from app_public.users where username like 'testuser%'"
+      `delete from app_public.users where username like 'testuser%';
+       delete from app_private.sessions;`
     )
     return { success: true }
   } else if (command === "clearTestOrganizations") {
@@ -139,8 +140,7 @@ async function runCommand(
     return { success: true }
   } else if (command === "clearTestEventData") {
     await rootPgPool.query(
-      `
-      delete from app_private.registration_secrets;
+      `delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
       delete from app_public.events;
@@ -149,8 +149,7 @@ async function runCommand(
       delete from app_public.organizations;
 
       -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;
-      `
+      delete from graphile_worker.jobs;`
     )
     return { success: true }
   } else if (command === "createUser") {
@@ -281,25 +280,7 @@ async function runCommand(
 
     return null
   } else if (command === "createTestEventData") {
-    const {
-      user,
-      organization,
-      eventCategory,
-      event,
-      quota,
-      registration,
-      registrationSecret,
-    } = await createEventData(rootPgPool, payload)
-
-    return {
-      user,
-      organization,
-      eventCategory,
-      event,
-      quota,
-      registration,
-      registrationSecret,
-    }
+    return createEventData(rootPgPool, payload)
   } else if (command === "getEmailSecrets") {
     const { email = "test.user@example.com" } = payload
     const userEmailSecrets = await getUserEmailSecrets(rootPgPool, email)
@@ -407,7 +388,7 @@ async function createEventData(
       openQuotaSize
     )
     const [quota] = await createQuotas(client, 1, event.id, quotaSize)
-    const questions = await createQuestions(client, 1, event.id, false)
+    const [question] = await createQuestions(client, 1, event.id, false)
     let registration, registrationSecret
     if (!eventSignupClosed && !eventSignupUpcoming) {
       // Database trigger prevents creating registrations for events that are
@@ -417,7 +398,7 @@ async function createEventData(
         1,
         event.id,
         quota.id,
-        questions
+        [question]
       )
       ;[registrationSecret] = await createRegistrationSecrets(
         client,
@@ -435,6 +416,7 @@ async function createEventData(
       eventCategory,
       event,
       quota,
+      question,
       registration,
       registrationSecret,
     }

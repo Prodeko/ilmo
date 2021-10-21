@@ -1,171 +1,35 @@
-import { useCallback, useState } from "react"
 import {
   EventPage_QuestionFragment,
   ListEventRegistrationsDocument,
   Registration,
   RegistrationStatus,
-  useAdminDeleteRegistrationMutation,
-  useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
-import { filterObjectByKeys, Sorter } from "@app/lib"
-import { Button, Col, message, Popconfirm, Row, Typography } from "antd"
-import Modal, { ModalProps } from "antd/lib/modal"
+import { downloadRegistrations, Sorter } from "@app/lib"
+import { Typography } from "antd"
 import dayjs from "dayjs"
+import { useRouter } from "next/router"
 import useTranslation from "next-translate/useTranslation"
 
 import {
-  ErrorAlert,
   EventRegistrationAnswersPopover,
-  EventRegistrationForm,
   ServerPaginatedTable,
   useIsMobile,
 } from "../."
 
+import { RegistrationsTableActions } from "./RegistrationTableActions"
+
 const { Text } = Typography
 
-interface UpdateRegistrationModalProps extends ModalProps {
-  registration: Registration
-  questions: EventPage_QuestionFragment[] | undefined
-  updateToken: string
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-function constructInitialValues(values: any) {
-  return filterObjectByKeys(values, ["firstName", "lastName", "answers"])
-}
-
-const UpdateRegistrationModal: React.FC<UpdateRegistrationModalProps> = ({
-  registration,
-  questions,
-  updateToken,
-  setShowModal,
-  ...rest
-}) => {
-  return (
-    <Modal
-      destroyOnClose
-      {...rest}
-      footer={null}
-      width={800}
-      onCancel={() => setShowModal(false)}
-    >
-      <EventRegistrationForm
-        initialValues={constructInitialValues(registration)}
-        questions={questions!}
-        submitAction={() => setShowModal(false)}
-        type="update"
-        updateToken={updateToken}
-        isAdmin
-      />
-    </Modal>
-  )
-}
-
-interface RegistrationsTableActionsProps {
-  registration: Registration
-  questions: EventPage_QuestionFragment[] | undefined
-}
-
-export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps> =
-  (props) => {
-    const { registration } = props
-    const { t } = useTranslation("admin")
-    const [showModal, setShowModal] = useState(false)
-    const [updateToken, setUpdateToken] = useState<string | undefined>(
-      undefined
-    )
-    const [error, setError] = useState<Error | null>(null)
-    const [, updateRegistration] = useAdminUpdateRegistrationMutation()
-    const [, deleteRegistration] = useAdminDeleteRegistrationMutation()
-
-    const doDelete = useCallback(async () => {
-      try {
-        const { data, error } = await deleteRegistration({
-          input: { id: registration.id },
-        })
-        if (error) throw error
-        if (!data?.adminDeleteRegistration?.success) {
-          throw new Error(t("register:deleteRegistrationFailed"))
-        }
-        message.info(t("notifications.deleteSuccess"))
-      } catch (e) {
-        setError(e)
-      }
-    }, [registration, deleteRegistration, t])
-
-    const doUpdate = useCallback(async () => {
-      try {
-        const { data, error } = await updateRegistration({
-          input: { id: registration.id },
-        })
-        if (error) throw error
-        setUpdateToken(data?.adminUpdateRegistration?.updateToken!)
-        setShowModal(true)
-      } catch (e) {
-        setError(e)
-      }
-    }, [registration, updateRegistration])
-
-    return (
-      <>
-        <Row gutter={[8, 8]}>
-          <Col flex="1 1 50%">
-            <Button
-              data-cy="admin-table-update-button"
-              style={{ minWidth: "85px" }}
-              type="primary"
-              onClick={doUpdate}
-            >
-              {t("common:update")}
-            </Button>
-          </Col>
-          <Col flex="1 1 50%">
-            <Popconfirm
-              cancelText={t("common:no")}
-              okText={t("common:yes")}
-              placement="top"
-              title={t("registrations.delete.confirmText")}
-              onConfirm={doDelete}
-            >
-              <Button
-                data-cy="admin-table-delete-button"
-                style={{ minWidth: "85px" }}
-                danger
-              >
-                {t("common:delete")}
-              </Button>
-            </Popconfirm>
-          </Col>
-        </Row>
-        {error ? (
-          <ErrorAlert
-            error={error}
-            message={t("registrations.delete.deleteFailed")}
-            setError={setError}
-            banner
-          />
-        ) : null}
-        {showModal ? (
-          <UpdateRegistrationModal
-            setShowModal={setShowModal}
-            visible={showModal}
-            {...props}
-            updateToken={updateToken!}
-          />
-        ) : null}
-      </>
-    )
-  }
-
 interface RegistrationsTabProps {
-  eventId: string
+  eventSlug: string
   questions: EventPage_QuestionFragment[] | undefined
 }
 
 export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
-  eventId,
+  eventSlug,
   questions,
 }) => {
+  const router = useRouter()
   const { t } = useTranslation("events")
   const isMobile = useIsMobile()
 
@@ -183,6 +47,14 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       dataIndex: ["fullName"],
       key: "fullName",
       ellipsis: true,
+      sorter: {
+        compare: Sorter.TEXT,
+      },
+    },
+    {
+      title: t("common:email"),
+      dataIndex: ["email"],
+      key: "email",
       sorter: {
         compare: Sorter.TEXT,
       },
@@ -236,16 +108,18 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       ]
     : commonColumns
 
-  if (!eventId) return null
-
   return (
     <ServerPaginatedTable
       columns={columns}
       data-cy="eventform-tab-registrations-table"
       dataField="registrations"
+      downloadFilename={`${eventSlug}-registrations.csv`}
+      downloadFunction={downloadRegistrations(questions)}
       queryDocument={ListEventRegistrationsDocument}
-      showPagination={true}
-      variables={{ eventId }}
+      size="small"
+      variables={{ eventId: router.query.id }}
+      showDownload
+      showPagination
     />
   )
 }

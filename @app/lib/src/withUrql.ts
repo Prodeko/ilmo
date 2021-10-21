@@ -1,8 +1,8 @@
 import {
+  AdminListEventsDocument,
+  AdminListEventsQuery,
   Event,
   GraphCacheConfig,
-  ListEventsDocument,
-  ListEventsQuery,
 } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
 import minifiedSchema from "@app/graphql/introspection.min.json"
@@ -108,9 +108,9 @@ export const withUrql = withUrqlClient(
                   .inspectFields(key)
                   .filter((field) => field.fieldName === "events")
                   .forEach((field) => {
-                    cache.updateQuery<ListEventsQuery>(
+                    cache.updateQuery<AdminListEventsQuery>(
                       {
-                        query: ListEventsDocument,
+                        query: AdminListEventsDocument,
                         variables: { ...field.arguments },
                       },
                       (data) => {

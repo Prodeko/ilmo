@@ -54,7 +54,11 @@ export const EventQuotaPopover: React.FC<EventQuotaPopoverProps> = ({
     <Popover content={popoverContent} title={t("common:registrationsPerQuota")}>
       <Row align="middle">
         <Col flex="none">
-          {showText && <Text strong>{t("common:registrations")}: </Text>}
+          {showText && (
+            <Text style={{ marginRight: 8 }} strong>
+              {t("common:registrations")}:{" "}
+            </Text>
+          )}
           <Text style={numberStyle}>
             {numRegistrations} / {totalSize}
           </Text>

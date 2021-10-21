@@ -32,6 +32,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
   const actionsColumn = {
     title: "",
     key: "actions",
+    width: 200,
     render: (_name: string, eventCategory: EventCategory) => {
       const bannerErrorText = t("eventCategories.delete.deleteFailedBADFK")
       return (
@@ -50,6 +51,8 @@ const AdminListEventCategoriesInner: React.FC = () => {
     title: t("common:name"),
     dataIndex: ["name", lang],
     key: "name",
+    width: 150,
+    align: "center",
     sorter: {
       compare: Sorter.TEXT,
     },

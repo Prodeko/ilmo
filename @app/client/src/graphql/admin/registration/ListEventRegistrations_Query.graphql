@@ -1,8 +1,7 @@
 fragment ListEventRegistrations_Registration on Registration {
   id
   fullName
-  firstName
-  lastName
+  email
   answers
   status
   position
@@ -18,7 +17,7 @@ fragment ListEventRegistrations_Query on Query {
     filter: { eventId: { equalTo: $eventId } }
     first: $first
     offset: $offset
-    orderBy: CREATED_AT_DESC
+    orderBy: [QUOTA_ID_ASC, POSITION_ASC]
   ) {
     nodes {
       ...ListEventRegistrations_Registration

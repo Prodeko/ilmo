@@ -211,5 +211,4 @@ Use `yarn run build` to generate a production build of the project
 ## MIT License
 
 This is open source software; you may use, modify and distribute it under the
-terms of the MIT License, see
-[GRAPHILE_STARTER_LICENSE.md](./GRAPHILE_STARTER_LICENSE.md).
+terms of the MIT License, see [LICENSE.md](./LICENSE.md).

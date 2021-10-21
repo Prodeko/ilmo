@@ -15,6 +15,7 @@ context("Admin", () => {
 
     // Assertion
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
+    cy.getCy("adminpage-events-open").should("be.visible")
   })
 
   it("redirects to index if user is not admin", () => {
@@ -38,5 +39,6 @@ context("Admin", () => {
 
     // Assertion
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/admin/event/list")
+    cy.getCy("adminpage-events-open").should("be.visible")
   })
 })

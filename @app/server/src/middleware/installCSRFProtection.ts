@@ -16,7 +16,8 @@ const cookieOptions = { ...sessionCookieOptions, httpOnly: false }
 
 async function handleCsrfToken(request: FastifyRequest, reply: FastifyReply) {
   const sessionHasCsrfToken = !!request?.session.get("_csrf")
-  const requestHasCsrfToken = !!request.cookies.csrfToken
+  const requestHasCsrfToken =
+    !!request.cookies.csrfToken || !!request.headers["csrf-token"]
   if (
     (!sessionHasCsrfToken || !requestHasCsrfToken) &&
     request.method === "GET"

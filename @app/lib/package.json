@@ -18,7 +18,7 @@
     "@urql/exchange-persisted-fetch": "^1.3.2",
     "cookie": "^0.4.1",
     "dayjs": "^1.10.7",
-    "graphql-ws": "^5.5.0",
+    "graphql-ws": "^5.5.3",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "next": "^11.1.2",

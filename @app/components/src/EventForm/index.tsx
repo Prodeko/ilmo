@@ -287,7 +287,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       >
         <TabPane
           key={TAB.General}
-          data-cy="eventform-tab-general"
           tab={t("admin:events.tabs.generalInfo")}
           forceRender
         >
@@ -295,7 +294,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         </TabPane>
         <TabPane
           key={TAB.Quotas}
-          data-cy="eventform-tab-quotas"
           tab={t("admin:events.tabs.quotas")}
           forceRender
         >
@@ -306,7 +304,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         </TabPane>
         <TabPane
           key={TAB.Questions}
-          data-cy="eventform-tab-questions"
           tab={t("admin:events.tabs.questions")}
           forceRender
         >
@@ -315,23 +312,18 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         {type === "update" && (
           <TabPane
             key={TAB.Registrations}
-            data-cy="eventform-tab-registrations"
             tab={t("admin:events.tabs.registrations")}
             forceRender
           >
             <RegistrationsTab
-              eventId={(data as UpdateEventPageQuery)?.event?.id}
+              eventSlug={(data as UpdateEventPageQuery)?.event?.slug as string}
               questions={
                 (data as UpdateEventPageQuery)?.event?.eventQuestions?.nodes
               }
             />
           </TabPane>
         )}
-        <TabPane
-          key={TAB.Email}
-          data-cy="eventform-tab-email"
-          tab={t("admin:events.tabs.email")}
-        >
+        <TabPane key={TAB.Email} tab={t("admin:events.tabs.email")}>
           {/*
             Only display email tab when activeTab is 'email' to reduce
             the number of api requests. EmailTab calls the renderEmailTemplate
