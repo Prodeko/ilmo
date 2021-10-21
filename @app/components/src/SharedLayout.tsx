@@ -304,27 +304,27 @@ export function SharedLayout({
 
       {displayFooter && (
         <Footer>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text>
-              &copy; {new Date().getFullYear()} {orgName}.{" "}
-              {process.env.PRIVACY_URL && (
-                <span>
-                  <a
-                    href={process.env.PRIVACY_URL}
-                    style={{ textDecoration: "underline" }}
-                  >
-                    {t("privacyPolicy")}
-                  </a>
-                </span>
-              )}
-            </Text>
-          </div>
+          <Row justify="space-between">
+            <Col span={12}>
+              <Text>
+                &copy; {new Date().getFullYear()} {orgName}{" "}
+              </Text>
+            </Col>
+            {process.env.PRIVACY_URL && (
+              <Col span={12} style={{ textAlign: "right" }}>
+                <Text>
+                  <span>
+                    <a
+                      href={process.env.PRIVACY_URL}
+                      style={{ textDecoration: "underline" }}
+                    >
+                      {t("privacyPolicy")}
+                    </a>
+                  </span>
+                </Text>
+              </Col>
+            )}
+          </Row>
         </Footer>
       )}
     </Layout>
