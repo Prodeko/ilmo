@@ -29,6 +29,7 @@ export const EventDescription: React.FC<EventDescriptionProps> = memo(
       name,
       description,
       location,
+      openQuotaSize,
       eventStartTime,
       eventEndTime,
       registrationStartTime,
@@ -50,6 +51,9 @@ export const EventDescription: React.FC<EventDescriptionProps> = memo(
           <Descriptions.Item label={t("forms.registrationTime")}>
             {formatDate(registrationStartTime)} -{" "}
             {formatDate(registrationEndTime)}
+          </Descriptions.Item>
+          <Descriptions.Item label={t("openQuota")}>
+            {`${openQuotaSize} ${t("spots")}`}
           </Descriptions.Item>
           <Descriptions.Item label="">
             {open && (

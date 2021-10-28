@@ -18,7 +18,6 @@
   "eventSignupNotOpen": "Tapahtuman ilmoittautuminen ei ole auki",
   "forms": {
     "eventTime": "Tapahtuman ajankohta",
-    "hasOpenQuota": "Has open quota",
     "highlightEvent": "Korostettu tapahtuma",
     "isDraft": "Luonnos",
     "isHighlighted": "Korostettu",
@@ -84,6 +83,7 @@
   "removeOption": "Poista vaihtoehto",
   "removeQuestion": "Poista kysymys",
   "removeQuota": "Poista kiintiö",
+  "spots": "paikkaa",
   "timer": {
     "instructions": "Sivu päivittyy automaattisesti kun ilmo aukeaa. Älä päivitä sivua omatoimisesti.",
     "registrationStarts": "Ilmo aukeaa",

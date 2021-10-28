@@ -18,7 +18,6 @@
   "eventSignupNotOpen": "Event signup is not open",
   "forms": {
     "eventTime": "Event time",
-    "hasOpenQuota": "Avoin kiintiö",
     "highlightEvent": "Highlighted event",
     "isDraft": "Draft",
     "isHighlighted": "Highlighted",
@@ -84,6 +83,7 @@
   "removeOption": "Remove option",
   "removeQuestion": "Remove question",
   "removeQuota": "Remove quota",
+  "spots": "spots",
   "timer": {
     "instructions": "The page will update automatically once the registration opens. Please do not refresh the page.",
     "registrationStarts": "Opens",
