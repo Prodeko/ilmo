@@ -1,14 +1,12 @@
 import qs from "querystring"
 
 import { PlusCircleTwoTone } from "@ant-design/icons"
-import { SharedLayout_QueryFragment } from "@app/graphql"
 import { AiOutlineMail } from "@react-icons/all-files/ai/AiOutlineMail"
 import { AiOutlineTag } from "@react-icons/all-files/ai/AiOutlineTag"
 import { MdEvent } from "@react-icons/all-files/md/MdEvent"
 import { VscOrganization } from "@react-icons/all-files/vsc/VscOrganization"
 import { Layout } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 
 import { AdminSideMenu, MenuItem } from "./AdminSideMenu"
@@ -18,6 +16,9 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout"
+import { useTranslation } from "."
+
+import type { SharedLayout_QueryFragment } from "@app/graphql"
 
 const { Sider } = Layout
 
@@ -38,7 +39,7 @@ const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
   return undefined
 }
 
-export interface AdminLayoutProps {
+interface AdminLayoutProps {
   query: UseQueryState<SharedLayout_QueryFragment>
   href: string
   children: React.ReactNode

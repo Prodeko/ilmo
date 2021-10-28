@@ -1,8 +1,10 @@
-import { Event } from "@app/graphql"
 import { secondaryColor } from "@app/lib"
 import { Col, Popover, Progress, Row, Typography } from "antd"
 import reduce from "lodash/reduce"
-import useTranslation from "next-translate/useTranslation"
+
+import { useTranslation } from "."
+
+import type { Event } from "@app/graphql"
 
 const { Text } = Typography
 

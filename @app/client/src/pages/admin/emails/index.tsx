@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { AdminLayout, ErrorResult } from "@app/components"
+import { AdminLayout, ErrorResult, useTranslation } from "@app/components"
 import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql"
 import { Card, Col, PageHeader, Row, Switch, Typography } from "antd"
 import capitalize from "lodash/capitalize"
-import { NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const { Text } = Typography
 

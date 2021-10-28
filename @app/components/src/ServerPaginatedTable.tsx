@@ -2,21 +2,21 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import CsvDownloader from "react-csv-downloader"
 import { Sorter, ValueOf } from "@app/lib"
 import { Button, Table } from "antd"
-import { SizeType } from "antd/lib/config-provider/SizeContext"
-import {
+import get from "lodash/get"
+import { useQuery } from "urql"
+
+import { ErrorResult } from "./ErrorResult"
+import { Loading } from "./Loading"
+import { useIsMobile, useTranslation } from "."
+
+import type { SizeType } from "antd/lib/config-provider/SizeContext"
+import type {
   ColumnsType,
   ColumnType,
   TablePaginationConfig,
   TableProps,
 } from "antd/lib/table"
-import { DocumentNode } from "graphql"
-import get from "lodash/get"
-import useTranslation from "next-translate/useTranslation"
-import { useQuery } from "urql"
-
-import { ErrorResult } from "./ErrorResult"
-import { Loading } from "./Loading"
-import { useIsMobile } from "."
+import type { DocumentNode } from "graphql"
 
 type RecordType = any
 
@@ -35,8 +35,11 @@ interface ServerPaginatedTableProps extends TableProps<RecordType> {
   downloadFilename?: string
   showDownload?: boolean
   showPagination?: boolean
+  showSizeChanger?: boolean
   size?: SizeType
 }
+
+const DEFAULT_PAGE_SIZE = 10
 
 export function ServerPaginatedTable({
   columns,
@@ -47,14 +50,15 @@ export function ServerPaginatedTable({
   downloadFilename = "data.csv",
   showDownload = false,
   showPagination = true,
+  showSizeChanger = false,
   size,
   ...props
 }: ServerPaginatedTableProps) {
   const isMobile = useIsMobile()
   const { t } = useTranslation("common")
   const downloadRef = useRef<HTMLButtonElement>(null)
-  const [downloadData, setDownloadData] = useState(false)
-  const [first, setFirst] = useState(10)
+  const [disableDownload, setDisableDownload] = useState(true)
+  const [first, setFirst] = useState(DEFAULT_PAGE_SIZE)
   const [offset, setOffset] = useState(0)
   const [{ error, fetching, data }] = useQuery<
     typeof queryDocument,
@@ -63,33 +67,45 @@ export function ServerPaginatedTable({
     query: queryDocument,
     variables: {
       ...variables,
-      // Pagination can be empty if table contains less than 10 elements
+      // Pagination can be empty if table contains less
+      // than DEFAULT_PAGE_SIZE elements
       first,
       offset,
     },
   })
+
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: 10,
+    pageSize: DEFAULT_PAGE_SIZE,
     total: data?.[dataField]?.totalCount || 0,
+    showSizeChanger,
+    showTotal: showSizeChanger
+      ? (total) => `${t("common:total")}: ${total}`
+      : undefined,
   })
+
   const dataSource = get(data, `${dataField}.nodes`, [])
 
   const downloadTableData = useCallback(async () => {
-    setFirst(999)
+    // Workaround for fething all data in the table before
+    // downloading it as csv. Otherwise we would only download
+    // what is displayed initially. The useEffect below is also
+    // used to achieve the desired effect here.
+    setFirst(pagination?.total || 999)
     setOffset(0)
-    setDownloadData(true)
-  }, [])
+    setDisableDownload(false)
+  }, [pagination])
 
   useEffect(() => {
-    if (downloadData && !fetching) {
+    if (!disableDownload && !fetching) {
       // @ts-ignore
       downloadRef.current?.handleClick()
-      setDownloadData(false)
+      setDisableDownload(true)
     }
-  }, [downloadData, fetching])
+  }, [disableDownload, downloadRef, fetching])
 
   useEffect(() => {
+    // Set pagination totalCount after data has loaded
     const total = data?.[dataField]?.totalCount
     if (total) {
       setPagination((prev) => ({ ...prev, total }))
@@ -101,6 +117,7 @@ export function ServerPaginatedTable({
     const newOffset = (current - 1) * pageSize || 0
     setPagination({ ...pagination })
     setOffset(newOffset)
+    setFirst(pageSize)
   }, [])
 
   // See @app/client/src/pages/index.tsx and @app/lib/src/utils to understand
@@ -153,7 +170,7 @@ export function ServerPaginatedTable({
               ? downloadFunction(dataSource)
               : dataSource
           }
-          disabled={downloadData}
+          disabled={disableDownload}
           filename={downloadFilename}
           separator=";"
         >

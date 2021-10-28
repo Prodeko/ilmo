@@ -1,9 +1,11 @@
 import React from "react"
-import { EventPage_QuestionFragment, Registration } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import Modal, { ModalProps } from "antd/lib/modal"
+import { Modal } from "antd"
 
 import { EventRegistrationForm } from "../."
+
+import type { EventPage_QuestionFragment, Registration } from "@app/graphql"
+import type { ModalProps } from "antd/lib/modal"
 
 interface RegistrationUpdateModalProps extends ModalProps {
   registration: Registration

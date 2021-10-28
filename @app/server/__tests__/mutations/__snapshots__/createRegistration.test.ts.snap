@@ -3,26 +3,18 @@
 exports[`CreateRegistration can create registration 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can create registration 2`] = `
-Object {
-  "data": Object {
     "createRegistration": Object {
       "registration": Object {
         "createdAt": "[timestamp-1]",
         "event": Object {
-          "id": "[id-4]",
+          "id": "[id-3]",
           "slug": "[random-3]",
         },
         "fullName": "Testname Testlastname",
-        "id": "[id-2]",
+        "id": "[id-1]",
         "position": 1,
         "quota": Object {
-          "id": "[id-3]",
+          "id": "[id-2]",
           "position": 0,
           "size": "[random-2]",
           "title": "[random-1]",
@@ -34,19 +26,46 @@ Object {
 }
 `;
 
-exports[`CreateRegistration can't create a registration if a registration already exists with the same email 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
 exports[`CreateRegistration can't create a registration if first or last name contains spaces 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
+    "createRegistration": null,
   },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "23514",
+          "constraint": "constrained_name_check",
+          "dataType": "constrained_name",
+          "schema": "app_public",
+          "severity": "ERROR",
+          "where": "SQL statement \\"update app_public.registrations
+    set
+      first_name = \\"firstName\\",
+      last_name = \\"lastName\\",
+      email = create_registration.email,
+      -- strip nulls just in case
+      answers = jsonb_strip_nulls(create_registration.answers),
+      is_finished = true
+    where id = v_registration_id
+  returning
+    *\\"
+PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 48 at SQL statement",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
+      "path": Array [
+        "createRegistration",
+      ],
+    },
+  ],
 }
 `;
 
@@ -93,58 +112,7 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 }
 `;
 
-exports[`CreateRegistration can't create a registration if first or last name contains spaces 3`] = `
-Object {
-  "data": Object {
-    "createRegistration": null,
-  },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
-          "code": "23514",
-          "constraint": "constrained_name_check",
-          "dataType": "constrained_name",
-          "schema": "app_public",
-          "severity": "ERROR",
-          "where": "SQL statement \\"update app_public.registrations
-    set
-      first_name = \\"firstName\\",
-      last_name = \\"lastName\\",
-      email = create_registration.email,
-      -- strip nulls just in case
-      answers = jsonb_strip_nulls(create_registration.answers),
-      is_finished = true
-    where id = v_registration_id
-  returning
-    *\\"
-PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext,jsonb) line 48 at SQL statement",
-        },
-      },
-      "locations": Array [
-        Object {
-          "column": 3,
-          "line": 2,
-        },
-      ],
-      "message": "value for domain app_public.constrained_name violates check constraint \\"constrained_name_check\\"",
-      "path": Array [
-        "createRegistration",
-      ],
-    },
-  ],
-}
-`;
-
 exports[`CreateRegistration can't create registration if answer is to a question which is not related to this event 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if answer is to a question which is not related to this event 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -207,14 +175,6 @@ Object {
 exports[`CreateRegistration can't create registration if invalid answer id provided 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if invalid answer id provided 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -244,14 +204,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if more than one answer provided to a question type RADIO 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if more than one answer provided to a question type RADIO 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -401,14 +353,6 @@ Object {
 exports[`CreateRegistration can't create registration if required question is not answered 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if required question is not answered 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -438,14 +382,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [] 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [] 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -479,14 +415,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null, null] 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null, null] 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -516,14 +444,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null] 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: [null] 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -557,14 +477,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: null 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: CHECKBOX and data is: null 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -594,14 +506,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: RADIO and data is: [] 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: RADIO and data is: [] 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -635,14 +539,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null, null] 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null, null] 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -672,14 +568,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null] 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: RADIO and data is: [null] 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -713,14 +601,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: RADIO and data is: null 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: RADIO and data is: null 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -750,14 +630,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: TEXT and data is: [] 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: TEXT and data is: [] 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,
@@ -791,14 +663,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null, null] 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null, null] 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -830,14 +694,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null] 1`] = `
 Object {
   "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: TEXT and data is: [null] 2`] = `
-Object {
-  "data": Object {
     "createRegistration": null,
   },
   "errors": Array [
@@ -867,14 +723,6 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 `;
 
 exports[`CreateRegistration can't create registration if type is: TEXT and data is: null 1`] = `
-Object {
-  "data": Object {
-    "claimRegistrationToken": "[id-1]",
-  },
-}
-`;
-
-exports[`CreateRegistration can't create registration if type is: TEXT and data is: null 2`] = `
 Object {
   "data": Object {
     "createRegistration": null,

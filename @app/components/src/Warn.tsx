@@ -1,6 +1,6 @@
 import { Badge } from "antd"
 
-export interface WarnProps extends React.ComponentProps<typeof Badge> {
+interface WarnProps extends React.ComponentProps<typeof Badge> {
   children: React.ReactNode
   okay?: boolean
 }

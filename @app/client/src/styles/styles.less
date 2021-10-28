@@ -1,4 +1,4 @@
-@import "buttons.less";
+@import "~antd-button-color/dist/css/style.less";
 @import "keyframes.less";
 
 :root {
@@ -7,18 +7,18 @@
   --primary-color: @primary-color;
 }
 
-.ant-layout-sider-zero-width-trigger-left {
+.@{ant-prefix}-layout-sider-zero-width-trigger-left {
   // positioning and color for responsive admin sider collapse trigger
   top: 0px !important;
   background: @primary-color !important;
 }
 
-.ant-upload-list-picture-card {
+.@{ant-prefix}-upload-list-picture-card {
   // Some margin between Dragger and file list
   margin-top: 8px;
 }
 
-.ant-form-item-label {
+.@{ant-prefix}-form-item-label {
   // To wrap lines for long form labels
   white-space: normal;
 }

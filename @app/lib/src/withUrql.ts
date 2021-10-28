@@ -113,7 +113,7 @@ export const withUrql = withUrqlClient(
                         query: AdminListEventsDocument,
                         variables: { ...field.arguments },
                       },
-                      (data) => {
+                      (data: any) => {
                         if (data) {
                           Object.keys(data).map((key) => {
                             if (data?.[key]?.nodes) {

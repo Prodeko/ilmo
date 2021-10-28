@@ -40,7 +40,7 @@ context("Admin csv download", () => {
           existingUser: true,
         })
         cy.visit(Cypress.env("ROOT_URL") + `/admin/event/update/${event.id}`)
-        cy.get("[role=tab]").contains("Ilmoittautumiset").click()
+        cy.get("[role=tab]").contains("Ilmoittautuneet").click()
         cy.getCy("button-download-csv").should("exist")
         cy.getCy("button-download-csv").click()
 

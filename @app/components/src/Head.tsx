@@ -1,5 +1,6 @@
 import NextHead from "next/head"
-import useTranslation from "next-translate/useTranslation"
+
+import { useTranslation } from "."
 
 export const Head: React.FC = () => {
   const { t, lang } = useTranslation("common")

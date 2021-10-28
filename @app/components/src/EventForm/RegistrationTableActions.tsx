@@ -6,9 +6,8 @@ import {
   useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
 import { Button, Col, message, Popconfirm, Row } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
-import { ErrorAlert } from "../."
+import { ErrorAlert, useTranslation } from "../."
 
 import { RegistrationUpdateModal } from "./RegistrationUpdateModal"
 

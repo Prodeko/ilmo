@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { UserOutlined } from "@ant-design/icons"
-import { AuthRestrict, ErrorAlert, SharedLayout } from "@app/components"
+import {
+  AuthRestrict,
+  ErrorAlert,
+  Link,
+  SharedLayout,
+  useTranslation,
+} from "@app/components"
 import { useForgotPasswordMutation, useSharedQuery } from "@app/graphql"
 import { Alert, Button, Col, Form, Input, Row } from "antd"
-import { NextPage } from "next"
-import Link from "next/link"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const ForgotPassword: NextPage = () => {
   const [query] = useSharedQuery()

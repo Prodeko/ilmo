@@ -15,15 +15,13 @@
       "eventStartTime": "Event time",
       "linkToEvent": "Show event",
       "linkUpdateEventCategory": "Edit category",
-      "registrationStartTime": "Registration time",
-      "registrations": "Registrations"
+      "registrationStartTime": "Registration time"
     },
     "tabs": {
       "email": "Email",
       "generalInfo": "General",
       "questions": "Questions",
-      "quotas": "Quotas",
-      "registrations": "Registrations"
+      "quotas": "Quotas"
     },
     "update": {
       "showAnswers": "Show answers"

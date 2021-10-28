@@ -9,7 +9,7 @@ interface DbSession {
   last_active: Date
 }
 
-export interface UserSpec {
+interface UserSpec {
   id: string
   displayName: string
   username: string
@@ -19,7 +19,7 @@ export interface UserSpec {
   auth?: any
 }
 
-export type GetUserInformationFunction = (
+type GetUserInformationFunction = (
   profile: any,
   accessToken: string,
   refreshToken: string,

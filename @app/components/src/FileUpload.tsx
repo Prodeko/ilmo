@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { InboxOutlined, PictureOutlined } from "@ant-design/icons"
 import { Upload } from "antd"
-import { UploadFile } from "antd/lib/upload/interface"
 import ImgCrop from "antd-img-crop"
-import useTranslation from "next-translate/useTranslation"
 
 import "antd/lib/modal/style"
 import "antd/lib/slider/style"
+
+import { useTranslation } from "."
+
+import type { UploadFile } from "antd/lib/upload/interface"
 
 const { Dragger } = Upload
 

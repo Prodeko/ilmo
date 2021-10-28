@@ -6,9 +6,8 @@ import {
   useDeleteEventMutation,
 } from "@app/graphql"
 import { Button, Col, message, Popconfirm, Row } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
-import { ButtonLink, ErrorAlert } from "."
+import { ButtonLink, ErrorAlert, useTranslation } from "."
 
 interface AdminTableActionsProps {
   adminUrl: string
@@ -45,13 +44,13 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
 
   return (
     <>
-      <Row gutter={[8, 8]}>
+      <Row gutter={[8, 8]} wrap>
         <Col flex="none">
           <ButtonLink
             as={`/admin/${adminUrl}/update/${dataType.id}`}
             href={`/admin/${adminUrl}/update/[id]`}
             size="small"
-            style={{ minWidth: "85px" }}
+            style={{ width: "65px" }}
             type="primary"
           >
             {t("common:update")}
@@ -68,7 +67,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
             <Button
               data-cy="admin-table-delete-button"
               size="small"
-              style={{ minWidth: "85px" }}
+              style={{ width: "65px" }}
               danger
             >
               {t("common:delete")}

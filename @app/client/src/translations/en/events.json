@@ -21,7 +21,9 @@
     "hasOpenQuota": "Avoin kiintiö",
     "highlightEvent": "Highlighted event",
     "isDraft": "Draft",
+    "isHighlighted": "Highlighted",
     "isNotDraft": "Published",
+    "isNotHighlighted": "Not highlighted",
     "placeholders": {
       "event": {
         "category": "Please select a category for the event",

@@ -67,3 +67,23 @@ Object {
   ],
 }
 `;
+
+exports[`DeleteRegistration sends an email to the next person in queue when a registration is deleted from a normal quota 1`] = `
+Object {
+  "data": Object {
+    "deleteRegistration": Object {
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`DeleteRegistration sends an email to the next person in queue when a registration is deleted from an open quota 1`] = `
+Object {
+  "data": Object {
+    "deleteRegistration": Object {
+      "success": true,
+    },
+  },
+}
+`;

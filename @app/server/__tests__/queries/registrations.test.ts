@@ -60,7 +60,6 @@ describe("Registration email obfuscation", () => {
       quotaOptions: { create: false },
       questionOptions: { create: false },
       registrationOptions: { create: false },
-      registrationSecretOptions: { create: false },
     })
     await runGraphQLQuery(
       // GraphQL query goes here:
@@ -99,7 +98,6 @@ describe("Registration email obfuscation", () => {
       quotaOptions: { create: false },
       questionOptions: { create: false },
       registrationOptions: { create: false },
-      registrationSecretOptions: { create: false },
     })
 
     await runGraphQLQuery(

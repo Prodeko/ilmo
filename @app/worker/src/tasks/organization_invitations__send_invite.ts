@@ -1,6 +1,5 @@
-import { Task } from "graphile-worker"
-
-import { SendEmailPayload } from "./send_email"
+import type { SendEmailPayload } from "./send_email"
+import type { Task } from "graphile-worker"
 
 interface OrganizationInvitationSendInvitePayload {
   /**

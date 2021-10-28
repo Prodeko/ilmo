@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import {
+  ButtonLink,
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
@@ -8,9 +9,11 @@ import {
   useEventLoading,
   useIsMobile,
   useQuerySlug,
+  useTranslation,
 } from "@app/components"
 import {
   EventPage_EventFragment,
+  SharedLayout_UserFragment,
   useCurrentTimeSubscription,
   useEventPageSubscription,
   useSharedQuery,
@@ -18,10 +21,10 @@ import {
 import { Col, Divider, notification, PageHeader, Row } from "antd"
 import dayjs from "dayjs"
 import { m } from "framer-motion"
-import { NextPage } from "next"
 import Image from "next/image"
 import { Router, useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const EventPage: NextPage = () => {
   const slug = useQuerySlug()
@@ -40,22 +43,28 @@ const EventPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title={title}>
-      {eventLoadingElement || <EventPageInner event={event!} />}
+      {eventLoadingElement || (
+        <EventPageInner currentUser={query.data.currentUser} event={event!} />
+      )}
     </SharedLayout>
   )
 }
 
 interface EventPageInnerProps {
   event: EventPage_EventFragment
+  currentUser: SharedLayout_UserFragment
 }
 
 const POLL_SERVER_TIME_MINUTES_BEFORE = 15
 const NOTIFICATION_KEY = "time-notification"
 
-const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
+const EventPageInner: React.FC<EventPageInnerProps> = ({
+  event,
+  currentUser,
+}) => {
   const router = useRouter()
-  const { t } = useTranslation("events")
   const isMobile = useIsMobile()
+  const { t } = useTranslation("events")
   const [pauseServerTime, setPauseServerTime] = useState(false)
   const [signupState, setSignupState] = useState<SignupState>({
     upcoming: false,
@@ -167,6 +176,19 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({ event }) => {
   return (
     <>
       <PageHeader
+        extra={
+          currentUser?.isAdmin ? (
+            <ButtonLink
+              data-cy="eventpage-button-admin-link"
+              href={`/admin/event/update/${event.id}`}
+              size="large"
+              type="success"
+              block
+            >
+              {t("common:modify")}
+            </ButtonLink>
+          ) : null
+        }
         title={t("common:backHome")}
         onBack={() => router.push("/")}
       />

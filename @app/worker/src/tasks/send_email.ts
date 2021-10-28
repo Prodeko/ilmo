@@ -4,13 +4,14 @@ import {
   projectName,
 } from "@app/config"
 import chalk from "chalk"
-import { Task } from "graphile-worker"
 import html2text from "html-to-text"
 import mjml2html from "mjml"
 import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
 
 import getTransport from "../transport"
+
+import type { Task } from "graphile-worker"
 
 declare module global {
   let TEST_EMAILS: any[]

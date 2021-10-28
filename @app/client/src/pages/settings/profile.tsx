@@ -1,23 +1,28 @@
 import { useCallback, useState } from "react"
-import { ErrorAlert, Redirect, SettingsLayout } from "@app/components"
 import {
-  ProfileSettingsForm_UserFragment,
-  useSettingsProfileQuery,
+  ErrorAlert,
+  Redirect,
+  SettingsLayout,
+  useTranslation,
+} from "@app/components"
+import {
+  SharedLayout_UserFragment,
+  useSharedQuery,
   useUpdateUserMutation,
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
-import { NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Settings_Profile: NextPage = () => {
   const { t } = useTranslation("settings")
-  const [query] = useSettingsProfileQuery()
+  const [query] = useSharedQuery()
   const { data, fetching, error } = query
 
   return (
     <SettingsLayout href="/settings/profile" query={query}>
-      {data && data.currentUser ? (
+      {data?.currentUser ? (
         <ProfileSettingsForm user={data.currentUser} />
       ) : fetching ? (
         t("common:loading")
@@ -35,7 +40,7 @@ const Settings_Profile: NextPage = () => {
 export default Settings_Profile
 
 interface ProfileSettingsFormProps {
-  user: ProfileSettingsForm_UserFragment
+  user: SharedLayout_UserFragment
 }
 
 function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {

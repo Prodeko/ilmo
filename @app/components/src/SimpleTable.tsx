@@ -1,7 +1,8 @@
 import { Table } from "antd"
-import { TableProps } from "antd/lib/table"
 
 import { useIsMobile } from "./hooks"
+
+import type { TableProps } from "antd/lib/table"
 
 interface Props extends TableProps<any> {
   data?: any

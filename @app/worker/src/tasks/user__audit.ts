@@ -1,19 +1,9 @@
 import { projectName } from "@app/config"
-import { Task } from "graphile-worker"
 
-import { SendEmailPayload } from "./send_email"
+import type { SendEmailPayload } from "./send_email"
+import type { Task } from "graphile-worker"
 
 /* For tracking account actions */
-
-/*
-type AccountAction =
-  | "linked_account" //
-  | "unlinked_account" //
-  | "changed_password" //
-  | "reset_password" //
-  | "added_email" //
-  | "removed_email"; //
- */
 
 type UserAuditPayload =
   | {

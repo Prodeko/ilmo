@@ -1,11 +1,11 @@
 import { memo } from "react"
-import { EventPage_EventFragment } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import { Badge, Descriptions } from "antd"
 import dayjs from "dayjs"
-import useTranslation from "next-translate/useTranslation"
 
-import { H2, P } from "."
+import { H2, P, useTranslation } from "."
+
+import type { EventPage_EventFragment } from "@app/graphql"
 
 export type SignupState = {
   upcoming: boolean

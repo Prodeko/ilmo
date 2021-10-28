@@ -1,7 +1,7 @@
 import { Result } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
 import { ButtonLink } from "./ButtonLink"
+import { useTranslation } from "."
 
 export function FourOhFour() {
   const { t } = useTranslation("error")

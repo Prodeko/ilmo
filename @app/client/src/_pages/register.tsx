@@ -18,7 +18,7 @@ import {
   tailFormItemLayout,
 } from "@app/lib"
 import { Button, Form, Input, Tooltip } from "antd"
-import { NextPage } from "next"
+import type { NextPage } from "next"
 import { useRouter } from "next/router"
 
 interface RegisterProps {

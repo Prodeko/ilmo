@@ -132,7 +132,6 @@ describe("UpdateEvent", () => {
       quotaOptions: { create: false },
       userOptions: { create: true, isAdmin: true },
       registrationOptions: { create: false },
-      registrationSecretOptions: { create: false },
     })
     const event = events[0]
 

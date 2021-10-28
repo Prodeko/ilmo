@@ -5,9 +5,8 @@ import {
 } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import { Button, Card, Popover } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
-import { useIsMobile } from "./hooks"
+import { useIsMobile, useTranslation } from "./hooks"
 import { Link, ProgressBar, SignupState } from "."
 
 interface EventQuotasCardProps {

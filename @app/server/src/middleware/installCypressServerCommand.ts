@@ -19,10 +19,11 @@ import {
   FastifyRequest,
   RouteHandlerMethod,
 } from "fastify"
-import type { RouteGenericInterface } from "fastify/types/route"
 import fp from "fastify-plugin"
 import { Pool, PoolClient } from "pg"
 import slugify from "slugify"
+
+import type { RouteGenericInterface } from "fastify/types/route"
 import type { SnakeCasedProperties } from "type-fest"
 
 const paragraph = () => faker.lorem.paragraph()
@@ -402,8 +403,7 @@ async function createEventData(
       )
       ;[registrationSecret] = await createRegistrationSecrets(
         client,
-        1,
-        registration.id,
+        [registration],
         event.id,
         quota.id
       )
@@ -675,13 +675,12 @@ export const createQuestions = async (
 
 export const createRegistrationSecrets = async (
   client: PoolClient,
-  count: number = 1,
-  registrationId: string,
+  registrations: SnakeCasedProperties<Registration>[],
   eventId: string,
   quotaId: string
 ) => {
   const registrationSecrets: RegistrationSecret[] = []
-  for (let i = 0; i < count; i++) {
+  for (const registration of registrations) {
     const {
       rows: [secret],
     } = await client.query(
@@ -689,7 +688,7 @@ export const createRegistrationSecrets = async (
         values ($1, $2, $3)
         returning *
       `,
-      [eventId, quotaId, registrationId]
+      [eventId, quotaId, registration.id]
     )
     registrationSecrets.push(secret)
   }
@@ -742,6 +741,11 @@ export const createRegistrations = async (
         returning *
       `,
       [eventId, quotaId, firstName, lastName, email, answers, isFinished]
+    )
+    await client.query(
+      `insert into app_private.registration_secrets(event_id, quota_id, registration_id)
+        values ($1, $2, $3)`,
+      [eventId, quotaId, registration.id]
     )
     registrations.push(registration)
   }

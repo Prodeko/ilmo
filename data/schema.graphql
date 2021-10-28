@@ -1,6 +1,4 @@
-"""
-All input for the `acceptInvitationToOrganization` mutation.
-"""
+"""All input for the `acceptInvitationToOrganization` mutation."""
 input AcceptInvitationToOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -11,9 +9,7 @@ input AcceptInvitationToOrganizationInput {
   invitationId: UUID!
 }
 
-"""
-The output of our `acceptInvitationToOrganization` mutation.
-"""
+"""The output of our `acceptInvitationToOrganization` mutation."""
 type AcceptInvitationToOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -27,9 +23,7 @@ type AcceptInvitationToOrganizationPayload {
   query: Query
 }
 
-"""
-All input for the `adminDeleteRegistration` mutation.
-"""
+"""All input for the `adminDeleteRegistration` mutation."""
 input AdminDeleteRegistrationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -39,9 +33,7 @@ input AdminDeleteRegistrationInput {
   id: UUID!
 }
 
-"""
-The output of our `adminDeleteRegistration` mutation.
-"""
+"""The output of our `adminDeleteRegistration` mutation."""
 type AdminDeleteRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -56,9 +48,7 @@ type AdminDeleteRegistrationPayload {
   success: Boolean
 }
 
-"""
-All input for the `adminUpdateRegistration` mutation.
-"""
+"""All input for the `adminUpdateRegistration` mutation."""
 input AdminUpdateRegistrationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -68,9 +58,7 @@ input AdminUpdateRegistrationInput {
   id: UUID!
 }
 
-"""
-The output of our `adminUpdateRegistration` mutation.
-"""
+"""The output of our `adminUpdateRegistration` mutation."""
 type AdminUpdateRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -99,24 +87,16 @@ input BooleanFilter {
   """
   distinctFrom: Boolean
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: Boolean
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: Boolean
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: Boolean
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [Boolean!]
 
   """
@@ -124,35 +104,23 @@ input BooleanFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: Boolean
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: Boolean
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: Boolean
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: Boolean
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [Boolean!]
 }
 
-"""
-All input for the `changePassword` mutation.
-"""
+"""All input for the `changePassword` mutation."""
 input ChangePasswordInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -163,9 +131,7 @@ input ChangePasswordInput {
   oldPassword: String!
 }
 
-"""
-The output of our `changePassword` mutation.
-"""
+"""The output of our `changePassword` mutation."""
 type ChangePasswordPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -180,9 +146,7 @@ type ChangePasswordPayload {
   success: Boolean
 }
 
-"""
-All input for the `claimRegistrationToken` mutation.
-"""
+"""All input for the `claimRegistrationToken` mutation."""
 input ClaimRegistrationTokenInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -198,9 +162,7 @@ type ClaimRegistrationTokenOutput {
   updateToken: String
 }
 
-"""
-The output of our `claimRegistrationToken` mutation.
-"""
+"""The output of our `claimRegistrationToken` mutation."""
 type ClaimRegistrationTokenPayload {
   claimRegistrationTokenOutput: ClaimRegistrationTokenOutput
 
@@ -216,9 +178,7 @@ type ClaimRegistrationTokenPayload {
   query: Query
 }
 
-"""
-All input for the `confirmAccountDeletion` mutation.
-"""
+"""All input for the `confirmAccountDeletion` mutation."""
 input ConfirmAccountDeletionInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -228,9 +188,7 @@ input ConfirmAccountDeletionInput {
   token: String!
 }
 
-"""
-The output of our `confirmAccountDeletion` mutation.
-"""
+"""The output of our `confirmAccountDeletion` mutation."""
 type ConfirmAccountDeletionPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -247,9 +205,7 @@ type ConfirmAccountDeletionPayload {
 
 scalar ConstrainedName
 
-"""
-All input for the create `EventCategory` mutation.
-"""
+"""All input for the create `EventCategory` mutation."""
 input CreateEventCategoryInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -257,15 +213,11 @@ input CreateEventCategoryInput {
   """
   clientMutationId: String
 
-  """
-  The `EventCategory` to be created by this mutation.
-  """
+  """The `EventCategory` to be created by this mutation."""
   eventCategory: EventCategoryInput!
 }
 
-"""
-The output of our create `EventCategory` mutation.
-"""
+"""The output of our create `EventCategory` mutation."""
 type CreateEventCategoryPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -273,24 +225,16 @@ type CreateEventCategoryPayload {
   """
   clientMutationId: String
 
-  """
-  The `EventCategory` that was created by this mutation.
-  """
+  """The `EventCategory` that was created by this mutation."""
   eventCategory: EventCategory
 
-  """
-  An edge for our `EventCategory`. May be used by Relay 1.
-  """
+  """An edge for our `EventCategory`. May be used by Relay 1."""
   eventCategoryEdge(
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesEdge
 
-  """
-  Reads a single `Organization` that is related to this `EventCategory`.
-  """
+  """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
 
   """
@@ -299,9 +243,7 @@ type CreateEventCategoryPayload {
   query: Query
 }
 
-"""
-All input for the `createEvent` mutation.
-"""
+"""All input for the `createEvent` mutation."""
 input CreateEventInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -313,13 +255,9 @@ input CreateEventInput {
   quotas: [CreateEventQuotaInput]!
 }
 
-"""
-The output of our `createEvent` mutation.
-"""
+"""The output of our `createEvent` mutation."""
 type CreateEventPayload {
-  """
-  Reads a single `EventCategory` that is related to this `Event`.
-  """
+  """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
 
   """
@@ -329,19 +267,13 @@ type CreateEventPayload {
   clientMutationId: String
   event: Event
 
-  """
-  An edge for our `Event`. May be used by Relay 1.
-  """
+  """An edge for our `Event`. May be used by Relay 1."""
   eventEdge(
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsEdge
 
-  """
-  Reads a single `Organization` that is related to this `Event`.
-  """
+  """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
   """
@@ -350,9 +282,7 @@ type CreateEventPayload {
   query: Query
 }
 
-"""
-An input for mutations affecting `CreateEventQuestion`
-"""
+"""An input for mutations affecting `CreateEventQuestion`"""
 input CreateEventQuestionInput {
   data: [TranslatedField]
   isRequired: Boolean
@@ -361,18 +291,14 @@ input CreateEventQuestionInput {
   type: QuestionType
 }
 
-"""
-An input for mutations affecting `CreateEventQuota`
-"""
+"""An input for mutations affecting `CreateEventQuota`"""
 input CreateEventQuotaInput {
   position: Int
   size: Int
   title: JSON
 }
 
-"""
-All input for the `createOrganization` mutation.
-"""
+"""All input for the `createOrganization` mutation."""
 input CreateOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -384,9 +310,7 @@ input CreateOrganizationInput {
   slug: String!
 }
 
-"""
-The output of our `createOrganization` mutation.
-"""
+"""The output of our `createOrganization` mutation."""
 type CreateOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -395,13 +319,9 @@ type CreateOrganizationPayload {
   clientMutationId: String
   organization: Organization
 
-  """
-  An edge for our `Organization`. May be used by Relay 1.
-  """
+  """An edge for our `Organization`. May be used by Relay 1."""
   organizationEdge(
-    """
-    The method to use when ordering `Organization`.
-    """
+    """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsEdge
 
@@ -411,9 +331,7 @@ type CreateOrganizationPayload {
   query: Query
 }
 
-"""
-All input for the `createRegistration` mutation.
-"""
+"""All input for the `createRegistration` mutation."""
 input CreateRegistrationInput {
   answers: JSON
 
@@ -430,9 +348,7 @@ input CreateRegistrationInput {
   registrationToken: String!
 }
 
-"""
-The output of our `createRegistration` mutation.
-"""
+"""The output of our `createRegistration` mutation."""
 type CreateRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -440,9 +356,7 @@ type CreateRegistrationPayload {
   """
   clientMutationId: String
 
-  """
-  Reads a single `Event` that is related to this `Registration`.
-  """
+  """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
   """
@@ -450,26 +364,18 @@ type CreateRegistrationPayload {
   """
   query: Query
 
-  """
-  Reads a single `Quota` that is related to this `Registration`.
-  """
+  """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
   registration: Registration
 
-  """
-  An edge for our `Registration`. May be used by Relay 1.
-  """
+  """An edge for our `Registration`. May be used by Relay 1."""
   registrationEdge(
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsEdge
 }
 
-"""
-All input for the create `UserEmail` mutation.
-"""
+"""All input for the create `UserEmail` mutation."""
 input CreateUserEmailInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -477,15 +383,11 @@ input CreateUserEmailInput {
   """
   clientMutationId: String
 
-  """
-  The `UserEmail` to be created by this mutation.
-  """
+  """The `UserEmail` to be created by this mutation."""
   userEmail: UserEmailInput!
 }
 
-"""
-The output of our create `UserEmail` mutation.
-"""
+"""The output of our create `UserEmail` mutation."""
 type CreateUserEmailPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -498,35 +400,23 @@ type CreateUserEmailPayload {
   """
   query: Query
 
-  """
-  Reads a single `User` that is related to this `UserEmail`.
-  """
+  """Reads a single `User` that is related to this `UserEmail`."""
   user: User
 
-  """
-  The `UserEmail` that was created by this mutation.
-  """
+  """The `UserEmail` that was created by this mutation."""
   userEmail: UserEmail
 
-  """
-  An edge for our `UserEmail`. May be used by Relay 1.
-  """
+  """An edge for our `UserEmail`. May be used by Relay 1."""
   userEmailEdge(
-    """
-    The method to use when ordering `UserEmail`.
-    """
+    """The method to use when ordering `UserEmail`."""
     orderBy: [UserEmailsOrderBy!] = [PRIMARY_KEY_ASC]
   ): UserEmailsEdge
 }
 
-"""
-A location in a connection that can be used for resuming pagination.
-"""
+"""A location in a connection that can be used for resuming pagination."""
 scalar Cursor
 
-"""
-The day, does not include a time.
-"""
+"""The day, does not include a time."""
 scalar Date
 
 """
@@ -544,24 +434,16 @@ input DatetimeFilter {
   """
   distinctFrom: Datetime
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: Datetime
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: Datetime
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: Datetime
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [Datetime!]
 
   """
@@ -569,35 +451,23 @@ input DatetimeFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: Datetime
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: Datetime
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: Datetime
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: Datetime
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [Datetime!]
 }
 
-"""
-All input for the `deleteEventCategory` mutation.
-"""
+"""All input for the `deleteEventCategory` mutation."""
 input DeleteEventCategoryInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -605,15 +475,11 @@ input DeleteEventCategoryInput {
   """
   clientMutationId: String
 
-  """
-  Unique identifier for the event category.
-  """
+  """Unique identifier for the event category."""
   id: UUID!
 }
 
-"""
-The output of our delete `EventCategory` mutation.
-"""
+"""The output of our delete `EventCategory` mutation."""
 type DeleteEventCategoryPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -622,24 +488,16 @@ type DeleteEventCategoryPayload {
   clientMutationId: String
   deletedEventCategoryNodeId: ID
 
-  """
-  The `EventCategory` that was deleted by this mutation.
-  """
+  """The `EventCategory` that was deleted by this mutation."""
   eventCategory: EventCategory
 
-  """
-  An edge for our `EventCategory`. May be used by Relay 1.
-  """
+  """An edge for our `EventCategory`. May be used by Relay 1."""
   eventCategoryEdge(
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesEdge
 
-  """
-  Reads a single `Organization` that is related to this `EventCategory`.
-  """
+  """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
 
   """
@@ -648,9 +506,7 @@ type DeleteEventCategoryPayload {
   query: Query
 }
 
-"""
-All input for the `deleteEvent` mutation.
-"""
+"""All input for the `deleteEvent` mutation."""
 input DeleteEventInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -658,19 +514,13 @@ input DeleteEventInput {
   """
   clientMutationId: String
 
-  """
-  Unique identifier for the event.
-  """
+  """Unique identifier for the event."""
   id: UUID!
 }
 
-"""
-The output of our delete `Event` mutation.
-"""
+"""The output of our delete `Event` mutation."""
 type DeleteEventPayload {
-  """
-  Reads a single `EventCategory` that is related to this `Event`.
-  """
+  """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
 
   """
@@ -680,24 +530,16 @@ type DeleteEventPayload {
   clientMutationId: String
   deletedEventNodeId: ID
 
-  """
-  The `Event` that was deleted by this mutation.
-  """
+  """The `Event` that was deleted by this mutation."""
   event: Event
 
-  """
-  An edge for our `Event`. May be used by Relay 1.
-  """
+  """An edge for our `Event`. May be used by Relay 1."""
   eventEdge(
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsEdge
 
-  """
-  Reads a single `Organization` that is related to this `Event`.
-  """
+  """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
   """
@@ -706,9 +548,7 @@ type DeleteEventPayload {
   query: Query
 }
 
-"""
-All input for the `deleteOrganization` mutation.
-"""
+"""All input for the `deleteOrganization` mutation."""
 input DeleteOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -718,9 +558,7 @@ input DeleteOrganizationInput {
   organizationId: UUID!
 }
 
-"""
-The output of our `deleteOrganization` mutation.
-"""
+"""The output of our `deleteOrganization` mutation."""
 type DeleteOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -734,9 +572,7 @@ type DeleteOrganizationPayload {
   query: Query
 }
 
-"""
-All input for the `deleteRegistration` mutation.
-"""
+"""All input for the `deleteRegistration` mutation."""
 input DeleteRegistrationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -746,9 +582,7 @@ input DeleteRegistrationInput {
   updateToken: String!
 }
 
-"""
-The output of our `deleteRegistration` mutation.
-"""
+"""The output of our `deleteRegistration` mutation."""
 type DeleteRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -763,9 +597,7 @@ type DeleteRegistrationPayload {
   success: Boolean
 }
 
-"""
-All input for the `deleteUserAuthentication` mutation.
-"""
+"""All input for the `deleteUserAuthentication` mutation."""
 input DeleteUserAuthenticationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -775,9 +607,7 @@ input DeleteUserAuthenticationInput {
   id: UUID!
 }
 
-"""
-The output of our delete `UserAuthentication` mutation.
-"""
+"""The output of our delete `UserAuthentication` mutation."""
 type DeleteUserAuthenticationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -791,20 +621,14 @@ type DeleteUserAuthenticationPayload {
   """
   query: Query
 
-  """
-  Reads a single `User` that is related to this `UserAuthentication`.
-  """
+  """Reads a single `User` that is related to this `UserAuthentication`."""
   user: User
 
-  """
-  The `UserAuthentication` that was deleted by this mutation.
-  """
+  """The `UserAuthentication` that was deleted by this mutation."""
   userAuthentication: UserAuthentication
 }
 
-"""
-All input for the `deleteUserEmail` mutation.
-"""
+"""All input for the `deleteUserEmail` mutation."""
 input DeleteUserEmailInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -814,9 +638,7 @@ input DeleteUserEmailInput {
   id: UUID!
 }
 
-"""
-The output of our delete `UserEmail` mutation.
-"""
+"""The output of our delete `UserEmail` mutation."""
 type DeleteUserEmailPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -830,30 +652,20 @@ type DeleteUserEmailPayload {
   """
   query: Query
 
-  """
-  Reads a single `User` that is related to this `UserEmail`.
-  """
+  """Reads a single `User` that is related to this `UserEmail`."""
   user: User
 
-  """
-  The `UserEmail` that was deleted by this mutation.
-  """
+  """The `UserEmail` that was deleted by this mutation."""
   userEmail: UserEmail
 
-  """
-  An edge for our `UserEmail`. May be used by Relay 1.
-  """
+  """An edge for our `UserEmail`. May be used by Relay 1."""
   userEmailEdge(
-    """
-    The method to use when ordering `UserEmail`.
-    """
+    """The method to use when ordering `UserEmail`."""
     orderBy: [UserEmailsOrderBy!] = [PRIMARY_KEY_ASC]
   ): UserEmailsEdge
 }
 
-"""
-The output of our `renderEmailTemplate` query.
-"""
+"""The output of our `renderEmailTemplate` query."""
 type EmailTemplate {
   html: String!
   id: String!
@@ -878,51 +690,33 @@ input EmailTemplateVariables {
   verifyLink: String
 }
 
-"""
-Reads through a set of `EmailTemplate`.
-"""
+"""Reads through a set of `EmailTemplate`."""
 type EmailTemplatesConnection {
   templates: [EmailTemplate!]!
 }
 
-"""
-Main table for events.
-"""
+"""Main table for events."""
 type Event {
-  """
-  Reads a single `EventCategory` that is related to this `Event`.
-  """
+  """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
 
-  """
-  Identifier of a related event category.
-  """
+  """Identifier of a related event category."""
   categoryId: UUID!
   createdAt: Datetime!
   createdBy: UUID
 
-  """
-  Description of the event.
-  """
+  """Description of the event."""
   description: TranslatedField!
 
-  """
-  Ending time of the event.
-  """
+  """Ending time of the event."""
   eventEndTime: Datetime!
 
-  """
-  Reads and enables pagination through a set of `EventQuestion`.
-  """
+  """Reads and enables pagination through a set of `EventQuestion`."""
   eventQuestions(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -935,14 +729,10 @@ type Event {
     """
     filter: EventQuestionFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -951,74 +741,46 @@ type Event {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventQuestion`.
-    """
+    """The method to use when ordering `EventQuestion`."""
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection!
 
-  """
-  Starting time of the event.
-  """
+  """Starting time of the event."""
   eventStartTime: Datetime!
 
-  """
-  Header image for the event
-  """
+  """Header image for the event"""
   headerImageFile: String
 
-  """
-  Unique identifier for the event.
-  """
+  """Unique identifier for the event."""
   id: UUID!
 
-  """
-  A draft event that is not publicly visible.
-  """
+  """A draft event that is not publicly visible."""
   isDraft: Boolean!
 
-  """
-  A highlighted event.
-  """
+  """A highlighted event."""
   isHighlighted: Boolean!
 
-  """
-  Event location.
-  """
+  """Event location."""
   location: String!
 
-  """
-  Name of the event.
-  """
+  """Name of the event."""
   name: TranslatedField!
 
-  """
-  Size of the open quota for the event.
-  """
+  """Size of the open quota for the event."""
   openQuotaSize: Int!
 
-  """
-  Reads a single `Organization` that is related to this `Event`.
-  """
+  """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
-  """
-  Identifier of the event organizer
-  """
+  """Identifier of the event organizer"""
   ownerOrganizationId: UUID!
 
-  """
-  Reads and enables pagination through a set of `Quota`.
-  """
+  """Reads and enables pagination through a set of `Quota`."""
   quotas(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -1031,14 +793,10 @@ type Event {
     """
     filter: QuotaFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -1047,34 +805,22 @@ type Event {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Quota`.
-    """
+    """The method to use when ordering `Quota`."""
     orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
   ): QuotasConnection!
 
-  """
-  Time of event registration end.
-  """
+  """Time of event registration end."""
   registrationEndTime: Datetime!
 
-  """
-  Time of event registration open.
-  """
+  """Time of event registration open."""
   registrationStartTime: Datetime!
 
-  """
-  Reads and enables pagination through a set of `Registration`.
-  """
+  """Reads and enables pagination through a set of `Registration`."""
   registrations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -1087,14 +833,10 @@ type Event {
     """
     filter: RegistrationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -1103,78 +845,52 @@ type Event {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
 
-  """
-  Designates whether event signup is closed or not.
-  """
+  """Designates whether event signup is closed or not."""
   signupClosed: Boolean
 
-  """
-  Designates whether event signup is open or not.
-  """
+  """Designates whether event signup is open or not."""
   signupOpen: Boolean
 
-  """
-  Designates whether event signup is upcoming or not.
-  """
+  """Designates whether event signup is upcoming or not."""
   signupUpcoming: Boolean
 
-  """
-  Slug for the event.
-  """
+  """Slug for the event."""
   slug: String!
   updatedAt: Datetime!
   updatedBy: UUID
 }
 
-"""
-A connection to a list of `EventCategory` values.
-"""
+"""A connection to a list of `EventCategory` values."""
 type EventCategoriesConnection {
   """
   A list of edges which contains the `EventCategory` and cursor to aid in pagination.
   """
   edges: [EventCategoriesEdge!]!
 
-  """
-  A list of `EventCategory` objects.
-  """
+  """A list of `EventCategory` objects."""
   nodes: [EventCategory!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `EventCategory` you could get from the connection.
-  """
+  """The count of *all* `EventCategory` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `EventCategory` edge in the connection.
-"""
+"""A `EventCategory` edge in the connection."""
 type EventCategoriesEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `EventCategory` at the end of the edge.
-  """
+  """The `EventCategory` at the end of the edge."""
   node: EventCategory!
 }
 
-"""
-Methods to use when ordering `EventCategory`.
-"""
+"""Methods to use when ordering `EventCategory`."""
 enum EventCategoriesOrderBy {
   CREATED_BY_ASC
   CREATED_BY_DESC
@@ -1191,34 +907,22 @@ enum EventCategoriesOrderBy {
   UPDATED_BY_DESC
 }
 
-"""
-Table for event categories.
-"""
+"""Table for event categories."""
 type EventCategory {
-  """
-  Color color the event category.
-  """
+  """Color color the event category."""
   color: String
   createdAt: Datetime!
   createdBy: UUID
 
-  """
-  Short description of the event category.
-  """
+  """Short description of the event category."""
   description: TranslatedField!
 
-  """
-  Reads and enables pagination through a set of `Event`.
-  """
+  """Reads and enables pagination through a set of `Event`."""
   eventsByCategoryId(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -1231,14 +935,10 @@ type EventCategory {
     """
     filter: EventFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -1247,30 +947,20 @@ type EventCategory {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection!
 
-  """
-  Unique identifier for the event category.
-  """
+  """Unique identifier for the event category."""
   id: UUID!
 
-  """
-  Name of the event category.
-  """
+  """Name of the event category."""
   name: TranslatedField!
 
-  """
-  Reads a single `Organization` that is related to this `EventCategory`.
-  """
+  """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
 
-  """
-  Identifier of the organizer.
-  """
+  """Identifier of the organizer."""
   ownerOrganizationId: UUID!
   updatedAt: Datetime!
   updatedBy: UUID
@@ -1281,29 +971,19 @@ A condition to be used against `EventCategory` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input EventCategoryCondition {
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `name` field.
-  """
+  """Checks for equality with the object’s `name` field."""
   name: TranslatedField
 
-  """
-  Checks for equality with the object’s `ownerOrganizationId` field.
-  """
+  """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -1311,69 +991,43 @@ input EventCategoryCondition {
 A filter to be used against `EventCategory` object types. All fields are combined with a logical ‘and.’
 """
 input EventCategoryFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [EventCategoryFilter!]
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Filter by the object’s `name` field.
-  """
+  """Filter by the object’s `name` field."""
   name: TranslatedFieldFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: EventCategoryFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [EventCategoryFilter!]
 
-  """
-  Filter by the object’s `ownerOrganizationId` field.
-  """
+  """Filter by the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUIDFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
-"""
-An input for mutations affecting `EventCategory`
-"""
+"""An input for mutations affecting `EventCategory`"""
 input EventCategoryInput {
-  """
-  Color color the event category.
-  """
+  """Color color the event category."""
   color: String
 
-  """
-  Short description of the event category.
-  """
+  """Short description of the event category."""
   description: TranslatedField!
 
-  """
-  Name of the event category.
-  """
+  """Name of the event category."""
   name: TranslatedField!
 
-  """
-  Identifier of the organizer.
-  """
+  """Identifier of the organizer."""
   ownerOrganizationId: UUID!
 }
 
@@ -1381,24 +1035,16 @@ input EventCategoryInput {
 Represents an update to a `EventCategory`. Fields that are set will be updated.
 """
 input EventCategoryPatch {
-  """
-  Color color the event category.
-  """
+  """Color color the event category."""
   color: String
 
-  """
-  Short description of the event category.
-  """
+  """Short description of the event category."""
   description: TranslatedField
 
-  """
-  Name of the event category.
-  """
+  """Name of the event category."""
   name: TranslatedField
 
-  """
-  Identifier of the organizer.
-  """
+  """Identifier of the organizer."""
   ownerOrganizationId: UUID
 }
 
@@ -1406,64 +1052,40 @@ input EventCategoryPatch {
 A condition to be used against `Event` object types. All fields are tested for equality and combined with a logical ‘and.’
 """
 input EventCondition {
-  """
-  Checks for equality with the object’s `categoryId` field.
-  """
+  """Checks for equality with the object’s `categoryId` field."""
   categoryId: UUID
 
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `eventEndTime` field.
-  """
+  """Checks for equality with the object’s `eventEndTime` field."""
   eventEndTime: Datetime
 
-  """
-  Checks for equality with the object’s `eventStartTime` field.
-  """
+  """Checks for equality with the object’s `eventStartTime` field."""
   eventStartTime: Datetime
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `isDraft` field.
-  """
+  """Checks for equality with the object’s `isDraft` field."""
   isDraft: Boolean
 
-  """
-  Checks for equality with the object’s `isHighlighted` field.
-  """
+  """Checks for equality with the object’s `isHighlighted` field."""
   isHighlighted: Boolean
 
-  """
-  Checks for equality with the object’s `ownerOrganizationId` field.
-  """
+  """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 
-  """
-  Checks for equality with the object’s `registrationEndTime` field.
-  """
+  """Checks for equality with the object’s `registrationEndTime` field."""
   registrationEndTime: Datetime
 
-  """
-  Checks for equality with the object’s `registrationStartTime` field.
-  """
+  """Checks for equality with the object’s `registrationStartTime` field."""
   registrationStartTime: Datetime
 
-  """
-  Checks for equality with the object’s `slug` field.
-  """
+  """Checks for equality with the object’s `slug` field."""
   slug: String
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -1471,100 +1093,62 @@ input EventCondition {
 A filter to be used against `Event` object types. All fields are combined with a logical ‘and.’
 """
 input EventFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [EventFilter!]
 
-  """
-  Filter by the object’s `categoryId` field.
-  """
+  """Filter by the object’s `categoryId` field."""
   categoryId: UUIDFilter
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `eventEndTime` field.
-  """
+  """Filter by the object’s `eventEndTime` field."""
   eventEndTime: DatetimeFilter
 
-  """
-  Filter by the object’s `eventStartTime` field.
-  """
+  """Filter by the object’s `eventStartTime` field."""
   eventStartTime: DatetimeFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Filter by the object’s `isDraft` field.
-  """
+  """Filter by the object’s `isDraft` field."""
   isDraft: BooleanFilter
 
-  """
-  Filter by the object’s `isHighlighted` field.
-  """
+  """Filter by the object’s `isHighlighted` field."""
   isHighlighted: BooleanFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: EventFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [EventFilter!]
 
-  """
-  Filter by the object’s `ownerOrganizationId` field.
-  """
+  """Filter by the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUIDFilter
 
-  """
-  Filter by the object’s `registrationEndTime` field.
-  """
+  """Filter by the object’s `registrationEndTime` field."""
   registrationEndTime: DatetimeFilter
 
-  """
-  Filter by the object’s `registrationStartTime` field.
-  """
+  """Filter by the object’s `registrationStartTime` field."""
   registrationStartTime: DatetimeFilter
 
-  """
-  Filter by the object’s `signupClosed` field.
-  """
+  """Filter by the object’s `signupClosed` field."""
   signupClosed: BooleanFilter
 
-  """
-  Filter by the object’s `signupOpen` field.
-  """
+  """Filter by the object’s `signupOpen` field."""
   signupOpen: BooleanFilter
 
-  """
-  Filter by the object’s `signupUpcoming` field.
-  """
+  """Filter by the object’s `signupUpcoming` field."""
   signupUpcoming: BooleanFilter
 
-  """
-  Filter by the object’s `slug` field.
-  """
+  """Filter by the object’s `slug` field."""
   slug: StringFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
-"""
-An input for mutations affecting `EventInputRecord`
-"""
+"""An input for mutations affecting `EventInputRecord`"""
 input EventInputRecordInput {
   categoryId: UUID
   description: TranslatedField
@@ -1582,51 +1166,33 @@ input EventInputRecordInput {
   slug: String
 }
 
-"""
-Main table for event questions.
-"""
+"""Main table for event questions."""
 type EventQuestion {
   createdAt: Datetime!
   createdBy: UUID
 
-  """
-  Question data.
-  """
+  """Question data."""
   data: [TranslatedField]
 
-  """
-  Reads a single `Event` that is related to this `EventQuestion`.
-  """
+  """Reads a single `Event` that is related to this `EventQuestion`."""
   event: Event
 
-  """
-  Identifier of a related event.
-  """
+  """Identifier of a related event."""
   eventId: UUID!
 
-  """
-  Unique identifier for the event question.
-  """
+  """Unique identifier for the event question."""
   id: UUID!
 
-  """
-  If true, the question must be answered during event registration.
-  """
+  """If true, the question must be answered during event registration."""
   isRequired: Boolean!
 
-  """
-  Question label.
-  """
+  """Question label."""
   label: TranslatedField!
 
-  """
-  Question position. Used to order question.
-  """
+  """Question position. Used to order question."""
   position: Int!
 
-  """
-  Question type (e.g. radio button, text, checkbox).
-  """
+  """Question type (e.g. radio button, text, checkbox)."""
   type: QuestionType!
   updatedAt: Datetime!
   updatedBy: UUID
@@ -1637,29 +1203,19 @@ A condition to be used against `EventQuestion` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input EventQuestionCondition {
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `eventId` field.
-  """
+  """Checks for equality with the object’s `eventId` field."""
   eventId: UUID
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `position` field.
-  """
+  """Checks for equality with the object’s `position` field."""
   position: Int
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -1667,90 +1223,58 @@ input EventQuestionCondition {
 A filter to be used against `EventQuestion` object types. All fields are combined with a logical ‘and.’
 """
 input EventQuestionFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [EventQuestionFilter!]
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `eventId` field.
-  """
+  """Filter by the object’s `eventId` field."""
   eventId: UUIDFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: EventQuestionFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [EventQuestionFilter!]
 
-  """
-  Filter by the object’s `position` field.
-  """
+  """Filter by the object’s `position` field."""
   position: IntFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
-"""
-A connection to a list of `EventQuestion` values.
-"""
+"""A connection to a list of `EventQuestion` values."""
 type EventQuestionsConnection {
   """
   A list of edges which contains the `EventQuestion` and cursor to aid in pagination.
   """
   edges: [EventQuestionsEdge!]!
 
-  """
-  A list of `EventQuestion` objects.
-  """
+  """A list of `EventQuestion` objects."""
   nodes: [EventQuestion!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `EventQuestion` you could get from the connection.
-  """
+  """The count of *all* `EventQuestion` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `EventQuestion` edge in the connection.
-"""
+"""A `EventQuestion` edge in the connection."""
 type EventQuestionsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `EventQuestion` at the end of the edge.
-  """
+  """The `EventQuestion` at the end of the edge."""
   node: EventQuestion!
 }
 
-"""
-Methods to use when ordering `EventQuestion`.
-"""
+"""Methods to use when ordering `EventQuestion`."""
 enum EventQuestionsOrderBy {
   CREATED_BY_ASC
   CREATED_BY_DESC
@@ -1772,49 +1296,33 @@ type EventRegistrationsSubscriptionPayload {
   registrations(after: Datetime): [Registration]
 }
 
-"""
-A connection to a list of `Event` values.
-"""
+"""A connection to a list of `Event` values."""
 type EventsConnection {
   """
   A list of edges which contains the `Event` and cursor to aid in pagination.
   """
   edges: [EventsEdge!]!
 
-  """
-  A list of `Event` objects.
-  """
+  """A list of `Event` objects."""
   nodes: [Event!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `Event` you could get from the connection.
-  """
+  """The count of *all* `Event` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `Event` edge in the connection.
-"""
+"""A `Event` edge in the connection."""
 type EventsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `Event` at the end of the edge.
-  """
+  """The `Event` at the end of the edge."""
   node: Event!
 }
 
-"""
-Methods to use when ordering `Event`.
-"""
+"""Methods to use when ordering `Event`."""
 enum EventsOrderBy {
   CATEGORY_ID_ASC
   CATEGORY_ID_DESC
@@ -1845,9 +1353,7 @@ enum EventsOrderBy {
   UPDATED_BY_DESC
 }
 
-"""
-All input for the `forgotPassword` mutation.
-"""
+"""All input for the `forgotPassword` mutation."""
 input ForgotPasswordInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -1857,9 +1363,7 @@ input ForgotPasswordInput {
   email: String!
 }
 
-"""
-The output of our `forgotPassword` mutation.
-"""
+"""The output of our `forgotPassword` mutation."""
 type ForgotPasswordPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -1882,24 +1386,16 @@ input IntFilter {
   """
   distinctFrom: Int
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: Int
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: Int
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: Int
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [Int!]
 
   """
@@ -1907,35 +1403,23 @@ input IntFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: Int
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: Int
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: Int
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: Int
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [Int!]
 }
 
-"""
-All input for the `inviteToOrganization` mutation.
-"""
+"""All input for the `inviteToOrganization` mutation."""
 input InviteToOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -1947,9 +1431,7 @@ input InviteToOrganizationInput {
   username: String
 }
 
-"""
-The output of our `inviteToOrganization` mutation.
-"""
+"""The output of our `inviteToOrganization` mutation."""
 type InviteToOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -1981,9 +1463,7 @@ type LogoutPayload {
   success: Boolean
 }
 
-"""
-All input for the `makeEmailPrimary` mutation.
-"""
+"""All input for the `makeEmailPrimary` mutation."""
 input MakeEmailPrimaryInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -1993,9 +1473,7 @@ input MakeEmailPrimaryInput {
   emailId: UUID!
 }
 
-"""
-The output of our `makeEmailPrimary` mutation.
-"""
+"""The output of our `makeEmailPrimary` mutation."""
 type MakeEmailPrimaryPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -2008,19 +1486,13 @@ type MakeEmailPrimaryPayload {
   """
   query: Query
 
-  """
-  Reads a single `User` that is related to this `UserEmail`.
-  """
+  """Reads a single `User` that is related to this `UserEmail`."""
   user: User
   userEmail: UserEmail
 
-  """
-  An edge for our `UserEmail`. May be used by Relay 1.
-  """
+  """An edge for our `UserEmail`. May be used by Relay 1."""
   userEmailEdge(
-    """
-    The method to use when ordering `UserEmail`.
-    """
+    """The method to use when ordering `UserEmail`."""
     orderBy: [UserEmailsOrderBy!] = [PRIMARY_KEY_ASC]
   ): UserEmailsEdge
 }
@@ -2060,9 +1532,7 @@ type Mutation {
   ): AdminUpdateRegistrationPayload
   calculatePasswordStrength(password: String!): PasswordStrengthPayload
 
-  """
-  Enter your old password and a new password to change your password.
-  """
+  """Enter your old password and a new password to change your password."""
   changePassword(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2100,9 +1570,7 @@ type Mutation {
     input: CreateEventInput!
   ): CreateEventPayload
 
-  """
-  Creates a single `EventCategory`.
-  """
+  """Creates a single `EventCategory`."""
   createEventCategory(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2130,9 +1598,7 @@ type Mutation {
     input: CreateRegistrationInput!
   ): CreateRegistrationPayload
 
-  """
-  Creates a single `UserEmail`.
-  """
+  """Creates a single `UserEmail`."""
   createUserEmail(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2140,9 +1606,7 @@ type Mutation {
     input: CreateUserEmailInput!
   ): CreateUserEmailPayload
 
-  """
-  Deletes a single `Event` using a unique key.
-  """
+  """Deletes a single `Event` using a unique key."""
   deleteEvent(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2150,9 +1614,7 @@ type Mutation {
     input: DeleteEventInput!
   ): DeleteEventPayload
 
-  """
-  Deletes a single `EventCategory` using a unique key.
-  """
+  """Deletes a single `EventCategory` using a unique key."""
   deleteEventCategory(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2170,9 +1632,7 @@ type Mutation {
     input: DeleteOrganizationInput!
   ): DeleteOrganizationPayload
 
-  """
-  Delete event registration.
-  """
+  """Delete event registration."""
   deleteRegistration(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2180,9 +1640,7 @@ type Mutation {
     input: DeleteRegistrationInput!
   ): DeleteRegistrationPayload
 
-  """
-  Deletes a single `UserAuthentication` using a unique key.
-  """
+  """Deletes a single `UserAuthentication` using a unique key."""
   deleteUserAuthentication(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2190,9 +1648,7 @@ type Mutation {
     input: DeleteUserAuthenticationInput!
   ): DeleteUserAuthenticationPayload
 
-  """
-  Deletes a single `UserEmail` using a unique key.
-  """
+  """Deletes a single `UserEmail` using a unique key."""
   deleteUserEmail(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2265,9 +1721,7 @@ type Mutation {
     input: RemoveFromOrganizationInput!
   ): RemoveFromOrganizationPayload
 
-  """
-  Begin the account deletion flow by requesting the confirmation email
-  """
+  """Begin the account deletion flow by requesting the confirmation email"""
   requestAccountDeletion(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2315,9 +1769,7 @@ type Mutation {
     input: UpdateEventInput!
   ): UpdateEventPayload
 
-  """
-  Updates a single `EventCategory` using a unique key and a patch.
-  """
+  """Updates a single `EventCategory` using a unique key and a patch."""
   updateEventCategory(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2325,9 +1777,7 @@ type Mutation {
     input: UpdateEventCategoryInput!
   ): UpdateEventCategoryPayload
 
-  """
-  Updates a single `Organization` using a unique key and a patch.
-  """
+  """Updates a single `Organization` using a unique key and a patch."""
   updateOrganization(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2345,9 +1795,7 @@ type Mutation {
     input: UpdateRegistrationInput!
   ): UpdateRegistrationPayload
 
-  """
-  Updates a single `User` using a unique key and a patch.
-  """
+  """Updates a single `User` using a unique key and a patch."""
   updateUser(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2355,9 +1803,7 @@ type Mutation {
     input: UpdateUserInput!
   ): UpdateUserPayload
 
-  """
-  Validate registration answers.
-  """
+  """Validate registration answers."""
   validateRegistrationAnswers(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
@@ -2376,30 +1822,20 @@ type Mutation {
   ): VerifyEmailPayload
 }
 
-"""
-Main table for organizations.
-"""
+"""Main table for organizations."""
 type Organization {
-  """
-  Color for the organization.
-  """
+  """Color for the organization."""
   color: String
   createdAt: Datetime!
   createdBy: UUID
   currentUserIsOwner: Boolean
 
-  """
-  Reads and enables pagination through a set of `EventCategory`.
-  """
+  """Reads and enables pagination through a set of `EventCategory`."""
   eventCategoriesByOwnerOrganizationId(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2412,14 +1848,10 @@ type Organization {
     """
     filter: EventCategoryFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -2428,24 +1860,16 @@ type Organization {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesConnection!
 
-  """
-  Reads and enables pagination through a set of `Event`.
-  """
+  """Reads and enables pagination through a set of `Event`."""
   eventsByOwnerOrganizationId(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2458,14 +1882,10 @@ type Organization {
     """
     filter: EventFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -2474,34 +1894,24 @@ type Organization {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection!
 
-  """
-  Unique identifier for the organization.
-  """
+  """Unique identifier for the organization."""
   id: UUID!
 
-  """
-  Name of the organization.
-  """
+  """Name of the organization."""
   name: String!
 
   """
   Reads and enables pagination through a set of `OrganizationMembership`.
   """
   organizationMemberships(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2514,14 +1924,10 @@ type Organization {
     """
     filter: OrganizationMembershipFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -2530,15 +1936,11 @@ type Organization {
     """
     offset: Int
 
-    """
-    The method to use when ordering `OrganizationMembership`.
-    """
+    """The method to use when ordering `OrganizationMembership`."""
     orderBy: [OrganizationMembershipsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationMembershipsConnection!
 
-  """
-  Name of the event category.
-  """
+  """Name of the event category."""
   slug: String!
   updatedAt: Datetime!
   updatedBy: UUID
@@ -2549,24 +1951,16 @@ A condition to be used against `Organization` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input OrganizationCondition {
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `slug` field.
-  """
+  """Checks for equality with the object’s `slug` field."""
   slug: String
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -2574,44 +1968,28 @@ input OrganizationCondition {
 A filter to be used against `Organization` object types. All fields are combined with a logical ‘and.’
 """
 input OrganizationFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [OrganizationFilter!]
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `currentUserIsOwner` field.
-  """
+  """Filter by the object’s `currentUserIsOwner` field."""
   currentUserIsOwner: BooleanFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: OrganizationFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [OrganizationFilter!]
 
-  """
-  Filter by the object’s `slug` field.
-  """
+  """Filter by the object’s `slug` field."""
   slug: StringFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
@@ -2638,19 +2016,13 @@ A condition to be used against `OrganizationMembership` object types. All fields
 are tested for equality and combined with a logical ‘and.’
 """
 input OrganizationMembershipCondition {
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `organizationId` field.
-  """
+  """Checks for equality with the object’s `organizationId` field."""
   organizationId: UUID
 
-  """
-  Checks for equality with the object’s `userId` field.
-  """
+  """Checks for equality with the object’s `userId` field."""
   userId: UUID
 }
 
@@ -2658,54 +2030,36 @@ input OrganizationMembershipCondition {
 A filter to be used against `OrganizationMembership` object types. All fields are combined with a logical ‘and.’
 """
 input OrganizationMembershipFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [OrganizationMembershipFilter!]
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: OrganizationMembershipFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [OrganizationMembershipFilter!]
 
-  """
-  Filter by the object’s `organizationId` field.
-  """
+  """Filter by the object’s `organizationId` field."""
   organizationId: UUIDFilter
 
-  """
-  Filter by the object’s `userId` field.
-  """
+  """Filter by the object’s `userId` field."""
   userId: UUIDFilter
 }
 
-"""
-A connection to a list of `OrganizationMembership` values.
-"""
+"""A connection to a list of `OrganizationMembership` values."""
 type OrganizationMembershipsConnection {
   """
   A list of edges which contains the `OrganizationMembership` and cursor to aid in pagination.
   """
   edges: [OrganizationMembershipsEdge!]!
 
-  """
-  A list of `OrganizationMembership` objects.
-  """
+  """A list of `OrganizationMembership` objects."""
   nodes: [OrganizationMembership!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
   """
@@ -2714,24 +2068,16 @@ type OrganizationMembershipsConnection {
   totalCount: Int!
 }
 
-"""
-A `OrganizationMembership` edge in the connection.
-"""
+"""A `OrganizationMembership` edge in the connection."""
 type OrganizationMembershipsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `OrganizationMembership` at the end of the edge.
-  """
+  """The `OrganizationMembership` at the end of the edge."""
   node: OrganizationMembership!
 }
 
-"""
-Methods to use when ordering `OrganizationMembership`.
-"""
+"""Methods to use when ordering `OrganizationMembership`."""
 enum OrganizationMembershipsOrderBy {
   ID_ASC
   ID_DESC
@@ -2750,65 +2096,43 @@ enum OrganizationMembershipsOrderBy {
 Represents an update to a `Organization`. Fields that are set will be updated.
 """
 input OrganizationPatch {
-  """
-  Color for the organization.
-  """
+  """Color for the organization."""
   color: String
 
-  """
-  Name of the organization.
-  """
+  """Name of the organization."""
   name: String
 
-  """
-  Name of the event category.
-  """
+  """Name of the event category."""
   slug: String
 }
 
-"""
-A connection to a list of `Organization` values.
-"""
+"""A connection to a list of `Organization` values."""
 type OrganizationsConnection {
   """
   A list of edges which contains the `Organization` and cursor to aid in pagination.
   """
   edges: [OrganizationsEdge!]!
 
-  """
-  A list of `Organization` objects.
-  """
+  """A list of `Organization` objects."""
   nodes: [Organization!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `Organization` you could get from the connection.
-  """
+  """The count of *all* `Organization` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `Organization` edge in the connection.
-"""
+"""A `Organization` edge in the connection."""
 type OrganizationsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `Organization` at the end of the edge.
-  """
+  """The `Organization` at the end of the edge."""
   node: Organization!
 }
 
-"""
-Methods to use when ordering `Organization`.
-"""
+"""Methods to use when ordering `Organization`."""
 enum OrganizationsOrderBy {
   CREATED_BY_ASC
   CREATED_BY_DESC
@@ -2823,28 +2147,18 @@ enum OrganizationsOrderBy {
   UPDATED_BY_DESC
 }
 
-"""
-Information about pagination in a connection.
-"""
+"""Information about pagination in a connection."""
 type PageInfo {
-  """
-  When paginating forwards, the cursor to continue.
-  """
+  """When paginating forwards, the cursor to continue."""
   endCursor: Cursor
 
-  """
-  When paginating forwards, are there more items?
-  """
+  """When paginating forwards, are there more items?"""
   hasNextPage: Boolean!
 
-  """
-  When paginating backwards, are there more items?
-  """
+  """When paginating backwards, are there more items?"""
   hasPreviousPage: Boolean!
 
-  """
-  When paginating backwards, the cursor to continue.
-  """
+  """When paginating backwards, the cursor to continue."""
   startCursor: Cursor
 }
 
@@ -2857,29 +2171,19 @@ type PasswordStrengthPayload {
   score: Int!
 }
 
-"""
-The root query type which gives access points into the data universe.
-"""
+"""The root query type which gives access points into the data universe."""
 type Query {
-  """
-  The currently logged in user (or null if not logged in).
-  """
+  """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 
-  """
-  Reads and enables pagination through a set of `EventCategory`.
-  """
+  """Reads and enables pagination through a set of `EventCategory`."""
   eventCategories(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2892,14 +2196,10 @@ type Query {
     """
     filter: EventCategoryFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -2908,26 +2208,18 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesConnection
   eventCategory(id: UUID!): EventCategory
   eventQuestion(id: UUID!): EventQuestion
 
-  """
-  Reads and enables pagination through a set of `EventQuestion`.
-  """
+  """Reads and enables pagination through a set of `EventQuestion`."""
   eventQuestions(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2940,14 +2232,10 @@ type Query {
     """
     filter: EventQuestionFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -2956,24 +2244,16 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventQuestion`.
-    """
+    """The method to use when ordering `EventQuestion`."""
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection
 
-  """
-  Reads and enables pagination through a set of `Event`.
-  """
+  """Reads and enables pagination through a set of `Event`."""
   events(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -2986,14 +2266,10 @@ type Query {
     """
     filter: EventFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -3002,9 +2278,7 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
   languages: AppLanguage
@@ -3016,18 +2290,12 @@ type Query {
   """
   organizationForInvitation(code: String, invitationId: UUID!): Organization
 
-  """
-  Reads and enables pagination through a set of `Organization`.
-  """
+  """Reads and enables pagination through a set of `Organization`."""
   organizations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -3040,14 +2308,10 @@ type Query {
     """
     filter: OrganizationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -3056,25 +2320,17 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Organization`.
-    """
+    """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
   quota(id: UUID!): Quota
 
-  """
-  Reads and enables pagination through a set of `Quota`.
-  """
+  """Reads and enables pagination through a set of `Quota`."""
   quotas(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -3087,14 +2343,10 @@ type Query {
     """
     filter: QuotaFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -3103,30 +2355,20 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Quota`.
-    """
+    """The method to use when ordering `Quota`."""
     orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
   ): QuotasConnection
   registration(id: UUID!): Registration
 
-  """
-  Get registration by update token.
-  """
+  """Get registration by update token."""
   registrationByUpdateToken(updateToken: String!): Registration
 
-  """
-  Reads and enables pagination through a set of `Registration`.
-  """
+  """Reads and enables pagination through a set of `Registration`."""
   registrations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -3139,14 +2381,10 @@ type Query {
     """
     filter: RegistrationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -3155,15 +2393,11 @@ type Query {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
 
-  """
-  Use this query to render server-side mjml templates to html and text.
-  """
+  """Use this query to render server-side mjml templates to html and text."""
   renderEmailTemplate(input: RenderEmailInput!): EmailTemplate
 
   """
@@ -3181,41 +2415,27 @@ enum QuestionType {
   TEXT
 }
 
-"""
-Main table for registration quotas.
-"""
+"""Main table for registration quotas."""
 type Quota {
   createdAt: Datetime!
   createdBy: UUID
 
-  """
-  Reads a single `Event` that is related to this `Quota`.
-  """
+  """Reads a single `Event` that is related to this `Quota`."""
   event: Event
 
-  """
-  Identifier of the event that this quota is for.
-  """
+  """Identifier of the event that this quota is for."""
   eventId: UUID!
   id: UUID!
 
-  """
-  Quota position. Used to order quotas.
-  """
+  """Quota position. Used to order quotas."""
   position: Int!
 
-  """
-  Reads and enables pagination through a set of `Registration`.
-  """
+  """Reads and enables pagination through a set of `Registration`."""
   registrations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -3228,14 +2448,10 @@ type Quota {
     """
     filter: RegistrationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -3244,20 +2460,14 @@ type Quota {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
 
-  """
-  Size of the quota.
-  """
+  """Size of the quota."""
   size: Int!
 
-  """
-  Title for the quota.
-  """
+  """Title for the quota."""
   title: TranslatedField!
   updatedAt: Datetime!
   updatedBy: UUID
@@ -3267,29 +2477,19 @@ type Quota {
 A condition to be used against `Quota` object types. All fields are tested for equality and combined with a logical ‘and.’
 """
 input QuotaCondition {
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `eventId` field.
-  """
+  """Checks for equality with the object’s `eventId` field."""
   eventId: UUID
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `position` field.
-  """
+  """Checks for equality with the object’s `position` field."""
   position: Int
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -3297,90 +2497,58 @@ input QuotaCondition {
 A filter to be used against `Quota` object types. All fields are combined with a logical ‘and.’
 """
 input QuotaFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [QuotaFilter!]
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `eventId` field.
-  """
+  """Filter by the object’s `eventId` field."""
   eventId: UUIDFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: QuotaFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [QuotaFilter!]
 
-  """
-  Filter by the object’s `position` field.
-  """
+  """Filter by the object’s `position` field."""
   position: IntFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
-"""
-A connection to a list of `Quota` values.
-"""
+"""A connection to a list of `Quota` values."""
 type QuotasConnection {
   """
   A list of edges which contains the `Quota` and cursor to aid in pagination.
   """
   edges: [QuotasEdge!]!
 
-  """
-  A list of `Quota` objects.
-  """
+  """A list of `Quota` objects."""
   nodes: [Quota!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `Quota` you could get from the connection.
-  """
+  """The count of *all* `Quota` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `Quota` edge in the connection.
-"""
+"""A `Quota` edge in the connection."""
 type QuotasEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `Quota` at the end of the edge.
-  """
+  """The `Quota` at the end of the edge."""
   node: Quota!
 }
 
-"""
-Methods to use when ordering `Quota`.
-"""
+"""Methods to use when ordering `Quota`."""
 enum QuotasOrderBy {
   CREATED_BY_ASC
   CREATED_BY_DESC
@@ -3409,75 +2577,47 @@ type RegisterPayload {
   user: User!
 }
 
-"""
-Main table for registrations.
-"""
+"""Main table for registrations."""
 type Registration {
-  """
-  Answers to event questions.
-  """
+  """Answers to event questions."""
   answers: JSON
   createdAt: Datetime!
   createdBy: UUID
 
-  """
-  Email address of the person registered to an event.
-  """
+  """Email address of the person registered to an event."""
   email: String
 
-  """
-  Reads a single `Event` that is related to this `Registration`.
-  """
+  """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
-  """
-  Identifier of a related event.
-  """
+  """Identifier of a related event."""
   eventId: UUID!
 
-  """
-  First name of the person registered to an event.
-  """
+  """First name of the person registered to an event."""
   firstName: ConstrainedName
 
-  """
-  Returns the full name of a registered person.
-  """
+  """Returns the full name of a registered person."""
   fullName: String
 
-  """
-  Unique identifier for the registration.
-  """
+  """Unique identifier for the registration."""
   id: UUID!
 
-  """
-  True if the registration is completed succesfully.
-  """
+  """True if the registration is completed succesfully."""
   isFinished: Boolean!
 
-  """
-  Last name of the person registered to an event.
-  """
+  """Last name of the person registered to an event."""
   lastName: ConstrainedName
 
-  """
-  Returns the position of the registration.
-  """
+  """Returns the position of the registration."""
   position: Int
 
-  """
-  Reads a single `Quota` that is related to this `Registration`.
-  """
+  """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
 
-  """
-  Identifier of a related quota.
-  """
+  """Identifier of a related quota."""
   quotaId: UUID!
 
-  """
-  Returns the status of the registration.
-  """
+  """Returns the status of the registration."""
   status: RegistrationStatus
   updatedAt: Datetime!
   updatedBy: UUID
@@ -3488,44 +2628,28 @@ A condition to be used against `Registration` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input RegistrationCondition {
-  """
-  Checks for equality with the object’s `createdAt` field.
-  """
+  """Checks for equality with the object’s `createdAt` field."""
   createdAt: Datetime
 
-  """
-  Checks for equality with the object’s `createdBy` field.
-  """
+  """Checks for equality with the object’s `createdBy` field."""
   createdBy: UUID
 
-  """
-  Checks for equality with the object’s `eventId` field.
-  """
+  """Checks for equality with the object’s `eventId` field."""
   eventId: UUID
 
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `position` field.
-  """
+  """Checks for equality with the object’s `position` field."""
   position: Int
 
-  """
-  Checks for equality with the object’s `quotaId` field.
-  """
+  """Checks for equality with the object’s `quotaId` field."""
   quotaId: UUID
 
-  """
-  Checks for equality with the object’s `status` field.
-  """
+  """Checks for equality with the object’s `status` field."""
   status: RegistrationStatus
 
-  """
-  Checks for equality with the object’s `updatedBy` field.
-  """
+  """Checks for equality with the object’s `updatedBy` field."""
   updatedBy: UUID
 }
 
@@ -3533,69 +2657,43 @@ input RegistrationCondition {
 A filter to be used against `Registration` object types. All fields are combined with a logical ‘and.’
 """
 input RegistrationFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [RegistrationFilter!]
 
-  """
-  Filter by the object’s `createdAt` field.
-  """
+  """Filter by the object’s `createdAt` field."""
   createdAt: DatetimeFilter
 
-  """
-  Filter by the object’s `createdBy` field.
-  """
+  """Filter by the object’s `createdBy` field."""
   createdBy: UUIDFilter
 
-  """
-  Filter by the object’s `email` field.
-  """
+  """Filter by the object’s `email` field."""
   email: StringFilter
 
-  """
-  Filter by the object’s `eventId` field.
-  """
+  """Filter by the object’s `eventId` field."""
   eventId: UUIDFilter
 
-  """
-  Filter by the object’s `fullName` field.
-  """
+  """Filter by the object’s `fullName` field."""
   fullName: StringFilter
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: RegistrationFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [RegistrationFilter!]
 
-  """
-  Filter by the object’s `position` field.
-  """
+  """Filter by the object’s `position` field."""
   position: IntFilter
 
-  """
-  Filter by the object’s `quotaId` field.
-  """
+  """Filter by the object’s `quotaId` field."""
   quotaId: UUIDFilter
 
-  """
-  Filter by the object’s `status` field.
-  """
+  """Filter by the object’s `status` field."""
   status: RegistrationStatusFilter
 
-  """
-  Filter by the object’s `updatedBy` field.
-  """
+  """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
 }
 
@@ -3614,24 +2712,16 @@ input RegistrationStatusFilter {
   """
   distinctFrom: RegistrationStatus
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: RegistrationStatus
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: RegistrationStatus
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: RegistrationStatus
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [RegistrationStatus!]
 
   """
@@ -3639,75 +2729,49 @@ input RegistrationStatusFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: RegistrationStatus
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: RegistrationStatus
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: RegistrationStatus
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: RegistrationStatus
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [RegistrationStatus!]
 }
 
-"""
-A connection to a list of `Registration` values.
-"""
+"""A connection to a list of `Registration` values."""
 type RegistrationsConnection {
   """
   A list of edges which contains the `Registration` and cursor to aid in pagination.
   """
   edges: [RegistrationsEdge!]!
 
-  """
-  A list of `Registration` objects.
-  """
+  """A list of `Registration` objects."""
   nodes: [Registration!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `Registration` you could get from the connection.
-  """
+  """The count of *all* `Registration` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `Registration` edge in the connection.
-"""
+"""A `Registration` edge in the connection."""
 type RegistrationsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `Registration` at the end of the edge.
-  """
+  """The `Registration` at the end of the edge."""
   node: Registration!
 }
 
-"""
-Methods to use when ordering `Registration`.
-"""
+"""Methods to use when ordering `Registration`."""
 enum RegistrationsOrderBy {
   CREATED_AT_ASC
   CREATED_AT_DESC
@@ -3730,9 +2794,7 @@ enum RegistrationsOrderBy {
   UPDATED_BY_DESC
 }
 
-"""
-All input for the `removeFromOrganization` mutation.
-"""
+"""All input for the `removeFromOrganization` mutation."""
 input RemoveFromOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -3743,9 +2805,7 @@ input RemoveFromOrganizationInput {
   userId: UUID!
 }
 
-"""
-The output of our `removeFromOrganization` mutation.
-"""
+"""The output of our `removeFromOrganization` mutation."""
 type RemoveFromOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -3759,17 +2819,13 @@ type RemoveFromOrganizationPayload {
   query: Query
 }
 
-"""
-All input for the `renderEmail` mutation.
-"""
+"""All input for the `renderEmail` mutation."""
 input RenderEmailInput {
   template: String!
   variables: EmailTemplateVariables
 }
 
-"""
-All input for the `requestAccountDeletion` mutation.
-"""
+"""All input for the `requestAccountDeletion` mutation."""
 input RequestAccountDeletionInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -3778,9 +2834,7 @@ input RequestAccountDeletionInput {
   clientMutationId: String
 }
 
-"""
-The output of our `requestAccountDeletion` mutation.
-"""
+"""The output of our `requestAccountDeletion` mutation."""
 type RequestAccountDeletionPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -3795,9 +2849,7 @@ type RequestAccountDeletionPayload {
   success: Boolean
 }
 
-"""
-All input for the `resendEmailVerificationCode` mutation.
-"""
+"""All input for the `resendEmailVerificationCode` mutation."""
 input ResendEmailVerificationCodeInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -3807,9 +2859,7 @@ input ResendEmailVerificationCodeInput {
   emailId: UUID!
 }
 
-"""
-The output of our `resendEmailVerificationCode` mutation.
-"""
+"""The output of our `resendEmailVerificationCode` mutation."""
 type ResendEmailVerificationCodePayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -3824,9 +2874,7 @@ type ResendEmailVerificationCodePayload {
   success: Boolean
 }
 
-"""
-All input for the `resetPassword` mutation.
-"""
+"""All input for the `resetPassword` mutation."""
 input ResetPasswordInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -3838,9 +2886,7 @@ input ResetPasswordInput {
   userId: UUID!
 }
 
-"""
-The output of our `resetPassword` mutation.
-"""
+"""The output of our `resetPassword` mutation."""
 type ResetPasswordPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -3869,64 +2915,40 @@ input StringFilter {
   """
   distinctFromInsensitive: String
 
-  """
-  Ends with the specified string (case-sensitive).
-  """
+  """Ends with the specified string (case-sensitive)."""
   endsWith: String
 
-  """
-  Ends with the specified string (case-insensitive).
-  """
+  """Ends with the specified string (case-insensitive)."""
   endsWithInsensitive: String
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: String
 
-  """
-  Equal to the specified value (case-insensitive).
-  """
+  """Equal to the specified value (case-insensitive)."""
   equalToInsensitive: String
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: String
 
-  """
-  Greater than the specified value (case-insensitive).
-  """
+  """Greater than the specified value (case-insensitive)."""
   greaterThanInsensitive: String
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: String
 
-  """
-  Greater than or equal to the specified value (case-insensitive).
-  """
+  """Greater than or equal to the specified value (case-insensitive)."""
   greaterThanOrEqualToInsensitive: String
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [String!]
 
-  """
-  Included in the specified list (case-insensitive).
-  """
+  """Included in the specified list (case-insensitive)."""
   inInsensitive: [String!]
 
-  """
-  Contains the specified string (case-sensitive).
-  """
+  """Contains the specified string (case-sensitive)."""
   includes: String
 
-  """
-  Contains the specified string (case-insensitive).
-  """
+  """Contains the specified string (case-insensitive)."""
   includesInsensitive: String
 
   """
@@ -3934,24 +2956,16 @@ input StringFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: String
 
-  """
-  Less than the specified value (case-insensitive).
-  """
+  """Less than the specified value (case-insensitive)."""
   lessThanInsensitive: String
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: String
 
-  """
-  Less than or equal to the specified value (case-insensitive).
-  """
+  """Less than or equal to the specified value (case-insensitive)."""
   lessThanOrEqualToInsensitive: String
 
   """
@@ -3964,9 +2978,7 @@ input StringFilter {
   """
   likeInsensitive: String
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: String
 
   """
@@ -3974,44 +2986,28 @@ input StringFilter {
   """
   notDistinctFromInsensitive: String
 
-  """
-  Does not end with the specified string (case-sensitive).
-  """
+  """Does not end with the specified string (case-sensitive)."""
   notEndsWith: String
 
-  """
-  Does not end with the specified string (case-insensitive).
-  """
+  """Does not end with the specified string (case-insensitive)."""
   notEndsWithInsensitive: String
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: String
 
-  """
-  Not equal to the specified value (case-insensitive).
-  """
+  """Not equal to the specified value (case-insensitive)."""
   notEqualToInsensitive: String
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [String!]
 
-  """
-  Not included in the specified list (case-insensitive).
-  """
+  """Not included in the specified list (case-insensitive)."""
   notInInsensitive: [String!]
 
-  """
-  Does not contain the specified string (case-sensitive).
-  """
+  """Does not contain the specified string (case-sensitive)."""
   notIncludes: String
 
-  """
-  Does not contain the specified string (case-insensitive).
-  """
+  """Does not contain the specified string (case-insensitive)."""
   notIncludesInsensitive: String
 
   """
@@ -4024,24 +3020,16 @@ input StringFilter {
   """
   notLikeInsensitive: String
 
-  """
-  Does not start with the specified string (case-sensitive).
-  """
+  """Does not start with the specified string (case-sensitive)."""
   notStartsWith: String
 
-  """
-  Does not start with the specified string (case-insensitive).
-  """
+  """Does not start with the specified string (case-insensitive)."""
   notStartsWithInsensitive: String
 
-  """
-  Starts with the specified string (case-sensitive).
-  """
+  """Starts with the specified string (case-sensitive)."""
   startsWith: String
 
-  """
-  Starts with the specified string (case-insensitive).
-  """
+  """Starts with the specified string (case-insensitive)."""
   startsWithInsensitive: String
 }
 
@@ -4068,43 +3056,27 @@ server-side event occurs. This makes them a lot more efficient than Live
 Queries, but it is still recommended that you keep payloads fairly small.
 """
 type Subscription {
-  """
-  Returns the server time every second.
-  """
+  """Returns the server time every second."""
   currentTime: Date!
 
-  """
-  The currently logged in user (or null if not logged in). (live)
-  """
+  """The currently logged in user (or null if not logged in). (live)"""
   currentUser: User
 
-  """
-  Triggered when the logged in user's record is updated in some way.
-  """
+  """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload!
 
-  """
-  (live)
-  """
+  """ (live)"""
   event(id: UUID!): Event
 
-  """
-  (live)
-  """
+  """ (live)"""
   eventBySlug(slug: String!): Event
 
-  """
-  Reads and enables pagination through a set of `EventCategory`. (live)
-  """
+  """Reads and enables pagination through a set of `EventCategory`. (live)"""
   eventCategories(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4117,14 +3089,10 @@ type Subscription {
     """
     filter: EventCategoryFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4133,34 +3101,22 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesConnection
 
-  """
-  (live)
-  """
+  """ (live)"""
   eventCategory(id: UUID!): EventCategory
 
-  """
-  (live)
-  """
+  """ (live)"""
   eventQuestion(id: UUID!): EventQuestion
 
-  """
-  Reads and enables pagination through a set of `EventQuestion`. (live)
-  """
+  """Reads and enables pagination through a set of `EventQuestion`. (live)"""
   eventQuestions(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4173,14 +3129,10 @@ type Subscription {
     """
     filter: EventQuestionFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4189,9 +3141,7 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `EventQuestion`.
-    """
+    """The method to use when ordering `EventQuestion`."""
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection
 
@@ -4200,18 +3150,12 @@ type Subscription {
   """
   eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload!
 
-  """
-  Reads and enables pagination through a set of `Event`. (live)
-  """
+  """Reads and enables pagination through a set of `Event`. (live)"""
   events(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4224,14 +3168,10 @@ type Subscription {
     """
     filter: EventFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4240,25 +3180,17 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
 
-  """
-  (live)
-  """
+  """ (live)"""
   languages: AppLanguage
 
-  """
-  (live)
-  """
+  """ (live)"""
   organization(id: UUID!): Organization
 
-  """
-  (live)
-  """
+  """ (live)"""
   organizationBySlug(slug: String!): Organization
 
   """
@@ -4266,18 +3198,12 @@ type Subscription {
   """
   organizationForInvitation(code: String, invitationId: UUID!): Organization
 
-  """
-  Reads and enables pagination through a set of `Organization`. (live)
-  """
+  """Reads and enables pagination through a set of `Organization`. (live)"""
   organizations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4290,14 +3216,10 @@ type Subscription {
     """
     filter: OrganizationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4306,29 +3228,19 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Organization`.
-    """
+    """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
 
-  """
-  (live)
-  """
+  """ (live)"""
   quota(id: UUID!): Quota
 
-  """
-  Reads and enables pagination through a set of `Quota`. (live)
-  """
+  """Reads and enables pagination through a set of `Quota`. (live)"""
   quotas(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4341,14 +3253,10 @@ type Subscription {
     """
     filter: QuotaFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4357,34 +3265,22 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Quota`.
-    """
+    """The method to use when ordering `Quota`."""
     orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
   ): QuotasConnection
 
-  """
-  (live)
-  """
+  """ (live)"""
   registration(id: UUID!): Registration
 
-  """
-  Get registration by update token. (live)
-  """
+  """Get registration by update token. (live)"""
   registrationByUpdateToken(updateToken: String!): Registration
 
-  """
-  Reads and enables pagination through a set of `Registration`. (live)
-  """
+  """Reads and enables pagination through a set of `Registration`. (live)"""
   registrations(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4397,14 +3293,10 @@ type Subscription {
     """
     filter: RegistrationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -4413,9 +3305,7 @@ type Subscription {
     """
     offset: Int
 
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
 
@@ -4429,25 +3319,17 @@ type Subscription {
   """
   renderEmailTemplates: EmailTemplatesConnection
 
-  """
-  (live)
-  """
+  """ (live)"""
   user(id: UUID!): User
 
-  """
-  (live)
-  """
+  """ (live)"""
   userAuthentication(id: UUID!): UserAuthentication
 
-  """
-  (live)
-  """
+  """ (live)"""
   userEmail(id: UUID!): UserEmail
 }
 
-"""
-All input for the `transferOrganizationOwnership` mutation.
-"""
+"""All input for the `transferOrganizationOwnership` mutation."""
 input TransferOrganizationOwnershipInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -4458,9 +3340,7 @@ input TransferOrganizationOwnershipInput {
   userId: UUID!
 }
 
-"""
-The output of our `transferOrganizationOwnership` mutation.
-"""
+"""The output of our `transferOrganizationOwnership` mutation."""
 type TransferOrganizationOwnershipPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -4469,13 +3349,9 @@ type TransferOrganizationOwnershipPayload {
   clientMutationId: String
   organization: Organization
 
-  """
-  An edge for our `Organization`. May be used by Relay 1.
-  """
+  """An edge for our `Organization`. May be used by Relay 1."""
   organizationEdge(
-    """
-    The method to use when ordering `Organization`.
-    """
+    """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsEdge
 
@@ -4485,38 +3361,26 @@ type TransferOrganizationOwnershipPayload {
   query: Query
 }
 
-"""
-A field which must not contain spaces
-"""
+"""A field which must not contain spaces"""
 scalar TranslatedField
 
 """
 A filter to be used against TranslatedField fields. All fields are combined with a logical ‘and.’
 """
 input TranslatedFieldFilter {
-  """
-  Contained by the specified JSON.
-  """
+  """Contained by the specified JSON."""
   containedBy: TranslatedField
 
-  """
-  Contains the specified JSON.
-  """
+  """Contains the specified JSON."""
   contains: TranslatedField
 
-  """
-  Contains all of the specified keys.
-  """
+  """Contains all of the specified keys."""
   containsAllKeys: [String!]
 
-  """
-  Contains any of the specified keys.
-  """
+  """Contains any of the specified keys."""
   containsAnyKeys: [String!]
 
-  """
-  Contains the specified key.
-  """
+  """Contains the specified key."""
   containsKey: String
 
   """
@@ -4524,24 +3388,16 @@ input TranslatedFieldFilter {
   """
   distinctFrom: TranslatedField
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: TranslatedField
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: TranslatedField
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: TranslatedField
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [TranslatedField!]
 
   """
@@ -4549,35 +3405,23 @@ input TranslatedFieldFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: TranslatedField
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: TranslatedField
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: TranslatedField
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: TranslatedField
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [TranslatedField!]
 }
 
-"""
-An input type for translated fields.
-"""
+"""An input type for translated fields."""
 input TranslatedInputField {
   en: String
   fi: String
@@ -4597,24 +3441,16 @@ input UUIDFilter {
   """
   distinctFrom: UUID
 
-  """
-  Equal to the specified value.
-  """
+  """Equal to the specified value."""
   equalTo: UUID
 
-  """
-  Greater than the specified value.
-  """
+  """Greater than the specified value."""
   greaterThan: UUID
 
-  """
-  Greater than or equal to the specified value.
-  """
+  """Greater than or equal to the specified value."""
   greaterThanOrEqualTo: UUID
 
-  """
-  Included in the specified list.
-  """
+  """Included in the specified list."""
   in: [UUID!]
 
   """
@@ -4622,35 +3458,23 @@ input UUIDFilter {
   """
   isNull: Boolean
 
-  """
-  Less than the specified value.
-  """
+  """Less than the specified value."""
   lessThan: UUID
 
-  """
-  Less than or equal to the specified value.
-  """
+  """Less than or equal to the specified value."""
   lessThanOrEqualTo: UUID
 
-  """
-  Equal to the specified value, treating null like an ordinary value.
-  """
+  """Equal to the specified value, treating null like an ordinary value."""
   notDistinctFrom: UUID
 
-  """
-  Not equal to the specified value.
-  """
+  """Not equal to the specified value."""
   notEqualTo: UUID
 
-  """
-  Not included in the specified list.
-  """
+  """Not included in the specified list."""
   notIn: [UUID!]
 }
 
-"""
-All input for the `updateEventCategory` mutation.
-"""
+"""All input for the `updateEventCategory` mutation."""
 input UpdateEventCategoryInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -4658,9 +3482,7 @@ input UpdateEventCategoryInput {
   """
   clientMutationId: String
 
-  """
-  Unique identifier for the event category.
-  """
+  """Unique identifier for the event category."""
   id: UUID!
 
   """
@@ -4669,9 +3491,7 @@ input UpdateEventCategoryInput {
   patch: EventCategoryPatch!
 }
 
-"""
-The output of our update `EventCategory` mutation.
-"""
+"""The output of our update `EventCategory` mutation."""
 type UpdateEventCategoryPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -4679,24 +3499,16 @@ type UpdateEventCategoryPayload {
   """
   clientMutationId: String
 
-  """
-  The `EventCategory` that was updated by this mutation.
-  """
+  """The `EventCategory` that was updated by this mutation."""
   eventCategory: EventCategory
 
-  """
-  An edge for our `EventCategory`. May be used by Relay 1.
-  """
+  """An edge for our `EventCategory`. May be used by Relay 1."""
   eventCategoryEdge(
-    """
-    The method to use when ordering `EventCategory`.
-    """
+    """The method to use when ordering `EventCategory`."""
     orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventCategoriesEdge
 
-  """
-  Reads a single `Organization` that is related to this `EventCategory`.
-  """
+  """Reads a single `Organization` that is related to this `EventCategory`."""
   ownerOrganization: Organization
 
   """
@@ -4705,9 +3517,7 @@ type UpdateEventCategoryPayload {
   query: Query
 }
 
-"""
-All input for the `updateEvent` mutation.
-"""
+"""All input for the `updateEvent` mutation."""
 input UpdateEventInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -4720,13 +3530,9 @@ input UpdateEventInput {
   quotas: [UpdateEventQuotaInput]!
 }
 
-"""
-The output of our `updateEvent` mutation.
-"""
+"""The output of our `updateEvent` mutation."""
 type UpdateEventPayload {
-  """
-  Reads a single `EventCategory` that is related to this `Event`.
-  """
+  """Reads a single `EventCategory` that is related to this `Event`."""
   category: EventCategory
 
   """
@@ -4736,19 +3542,13 @@ type UpdateEventPayload {
   clientMutationId: String
   event: Event
 
-  """
-  An edge for our `Event`. May be used by Relay 1.
-  """
+  """An edge for our `Event`. May be used by Relay 1."""
   eventEdge(
-    """
-    The method to use when ordering `Event`.
-    """
+    """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsEdge
 
-  """
-  Reads a single `Organization` that is related to this `Event`.
-  """
+  """Reads a single `Organization` that is related to this `Event`."""
   ownerOrganization: Organization
 
   """
@@ -4757,9 +3557,7 @@ type UpdateEventPayload {
   query: Query
 }
 
-"""
-An input for mutations affecting `UpdateEventQuestion`
-"""
+"""An input for mutations affecting `UpdateEventQuestion`"""
 input UpdateEventQuestionInput {
   data: [TranslatedField]
   id: UUID
@@ -4769,9 +3567,7 @@ input UpdateEventQuestionInput {
   type: QuestionType
 }
 
-"""
-An input for mutations affecting `UpdateEventQuota`
-"""
+"""An input for mutations affecting `UpdateEventQuota`"""
 input UpdateEventQuotaInput {
   id: UUID
   position: Int
@@ -4779,9 +3575,7 @@ input UpdateEventQuotaInput {
   title: JSON
 }
 
-"""
-All input for the `updateOrganization` mutation.
-"""
+"""All input for the `updateOrganization` mutation."""
 input UpdateOrganizationInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -4789,9 +3583,7 @@ input UpdateOrganizationInput {
   """
   clientMutationId: String
 
-  """
-  Unique identifier for the organization.
-  """
+  """Unique identifier for the organization."""
   id: UUID!
 
   """
@@ -4800,9 +3592,7 @@ input UpdateOrganizationInput {
   patch: OrganizationPatch!
 }
 
-"""
-The output of our update `Organization` mutation.
-"""
+"""The output of our update `Organization` mutation."""
 type UpdateOrganizationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -4810,18 +3600,12 @@ type UpdateOrganizationPayload {
   """
   clientMutationId: String
 
-  """
-  The `Organization` that was updated by this mutation.
-  """
+  """The `Organization` that was updated by this mutation."""
   organization: Organization
 
-  """
-  An edge for our `Organization`. May be used by Relay 1.
-  """
+  """An edge for our `Organization`. May be used by Relay 1."""
   organizationEdge(
-    """
-    The method to use when ordering `Organization`.
-    """
+    """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsEdge
 
@@ -4831,9 +3615,7 @@ type UpdateOrganizationPayload {
   query: Query
 }
 
-"""
-All input for the `updateRegistration` mutation.
-"""
+"""All input for the `updateRegistration` mutation."""
 input UpdateRegistrationInput {
   answers: JSON
 
@@ -4847,9 +3629,7 @@ input UpdateRegistrationInput {
   updateToken: String!
 }
 
-"""
-The output of our `updateRegistration` mutation.
-"""
+"""The output of our `updateRegistration` mutation."""
 type UpdateRegistrationPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -4857,9 +3637,7 @@ type UpdateRegistrationPayload {
   """
   clientMutationId: String
 
-  """
-  Reads a single `Event` that is related to this `Registration`.
-  """
+  """Reads a single `Event` that is related to this `Registration`."""
   event: Event
 
   """
@@ -4867,26 +3645,18 @@ type UpdateRegistrationPayload {
   """
   query: Query
 
-  """
-  Reads a single `Quota` that is related to this `Registration`.
-  """
+  """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
   registration: Registration
 
-  """
-  An edge for our `Registration`. May be used by Relay 1.
-  """
+  """An edge for our `Registration`. May be used by Relay 1."""
   registrationEdge(
-    """
-    The method to use when ordering `Registration`.
-    """
+    """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsEdge
 }
 
-"""
-All input for the `updateUser` mutation.
-"""
+"""All input for the `updateUser` mutation."""
 input UpdateUserInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -4894,9 +3664,7 @@ input UpdateUserInput {
   """
   clientMutationId: String
 
-  """
-  Unique identifier for the user.
-  """
+  """Unique identifier for the user."""
   id: UUID!
 
   """
@@ -4905,9 +3673,7 @@ input UpdateUserInput {
   patch: UserPatch!
 }
 
-"""
-The output of our update `User` mutation.
-"""
+"""The output of our update `User` mutation."""
 type UpdateUserPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -4920,66 +3686,44 @@ type UpdateUserPayload {
   """
   query: Query
 
-  """
-  The `User` that was updated by this mutation.
-  """
+  """The `User` that was updated by this mutation."""
   user: User
 
-  """
-  An edge for our `User`. May be used by Relay 1.
-  """
+  """An edge for our `User`. May be used by Relay 1."""
   userEdge(
-    """
-    The method to use when ordering `User`.
-    """
+    """The method to use when ordering `User`."""
     orderBy: [UsersOrderBy!] = [PRIMARY_KEY_ASC]
   ): UsersEdge
 }
 
-"""
-The `Upload` scalar type represents a file upload.
-"""
+"""The `Upload` scalar type represents a file upload."""
 scalar Upload
 
-"""
-A user who can log in to the application.
-"""
+"""A user who can log in to the application."""
 type User {
-  """
-  Optional avatar URL.
-  """
+  """Optional avatar URL."""
   avatarUrl: String
   createdAt: Datetime!
   hasPassword: Boolean
 
-  """
-  Unique identifier for the user.
-  """
+  """Unique identifier for the user."""
   id: UUID!
 
-  """
-  If true, the user has elevated privileges.
-  """
+  """If true, the user has elevated privileges."""
   isAdmin: Boolean!
   isVerified: Boolean!
 
-  """
-  Public-facing name (or pseudonym) of the user.
-  """
+  """Public-facing name (or pseudonym) of the user."""
   name: String
 
   """
   Reads and enables pagination through a set of `OrganizationMembership`.
   """
   organizationMemberships(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -4992,14 +3736,10 @@ type User {
     """
     filter: OrganizationMembershipFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -5008,21 +3748,15 @@ type User {
     """
     offset: Int
 
-    """
-    The method to use when ordering `OrganizationMembership`.
-    """
+    """The method to use when ordering `OrganizationMembership`."""
     orderBy: [OrganizationMembershipsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationMembershipsConnection!
 
-  """
-  Users primary email.
-  """
+  """Users primary email."""
   primaryEmail: String
   updatedAt: Datetime!
 
-  """
-  Reads and enables pagination through a set of `UserAuthentication`.
-  """
+  """Reads and enables pagination through a set of `UserAuthentication`."""
   userAuthenticationsList(
     """
     A condition to be used in determining which values should be returned by the collection.
@@ -5034,34 +3768,22 @@ type User {
     """
     filter: UserAuthenticationFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Skip the first `n` values.
-    """
+    """Skip the first `n` values."""
     offset: Int
 
-    """
-    The method to use when ordering `UserAuthentication`.
-    """
+    """The method to use when ordering `UserAuthentication`."""
     orderBy: [UserAuthenticationsOrderBy!]
   ): [UserAuthentication!]!
 
-  """
-  Reads and enables pagination through a set of `UserEmail`.
-  """
+  """Reads and enables pagination through a set of `UserEmail`."""
   userEmails(
-    """
-    Read all values in the set after (below) this cursor.
-    """
+    """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """
-    Read all values in the set before (above) this cursor.
-    """
+    """Read all values in the set before (above) this cursor."""
     before: Cursor
 
     """
@@ -5074,14 +3796,10 @@ type User {
     """
     filter: UserEmailFilter
 
-    """
-    Only read the first `n` values of the set.
-    """
+    """Only read the first `n` values of the set."""
     first: Int
 
-    """
-    Only read the last `n` values of the set.
-    """
+    """Only read the last `n` values of the set."""
     last: Int
 
     """
@@ -5090,15 +3808,11 @@ type User {
     """
     offset: Int
 
-    """
-    The method to use when ordering `UserEmail`.
-    """
+    """The method to use when ordering `UserEmail`."""
     orderBy: [UserEmailsOrderBy!] = [PRIMARY_KEY_ASC]
   ): UserEmailsConnection!
 
-  """
-  Public-facing username (or 'handle') of the user.
-  """
+  """Public-facing username (or 'handle') of the user."""
   username: String!
 }
 
@@ -5109,20 +3823,14 @@ type UserAuthentication {
   createdAt: Datetime!
   id: UUID!
 
-  """
-  A unique identifier for the user within the login service.
-  """
+  """A unique identifier for the user within the login service."""
   identifier: String!
 
-  """
-  The login service used, e.g. `twitter` or `github`.
-  """
+  """The login service used, e.g. `twitter` or `github`."""
   service: String!
   updatedAt: Datetime!
 
-  """
-  Reads a single `User` that is related to this `UserAuthentication`.
-  """
+  """Reads a single `User` that is related to this `UserAuthentication`."""
   user: User
   userId: UUID!
 }
@@ -5132,19 +3840,13 @@ A condition to be used against `UserAuthentication` object types. All fields are
 tested for equality and combined with a logical ‘and.’
 """
 input UserAuthenticationCondition {
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `service` field.
-  """
+  """Checks for equality with the object’s `service` field."""
   service: String
 
-  """
-  Checks for equality with the object’s `userId` field.
-  """
+  """Checks for equality with the object’s `userId` field."""
   userId: UUID
 }
 
@@ -5152,40 +3854,26 @@ input UserAuthenticationCondition {
 A filter to be used against `UserAuthentication` object types. All fields are combined with a logical ‘and.’
 """
 input UserAuthenticationFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [UserAuthenticationFilter!]
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: UserAuthenticationFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [UserAuthenticationFilter!]
 
-  """
-  Filter by the object’s `service` field.
-  """
+  """Filter by the object’s `service` field."""
   service: StringFilter
 
-  """
-  Filter by the object’s `userId` field.
-  """
+  """Filter by the object’s `userId` field."""
   userId: UUIDFilter
 }
 
-"""
-Methods to use when ordering `UserAuthentication`.
-"""
+"""Methods to use when ordering `UserAuthentication`."""
 enum UserAuthenticationsOrderBy {
   ID_ASC
   ID_DESC
@@ -5198,15 +3886,11 @@ enum UserAuthenticationsOrderBy {
   USER_ID_DESC
 }
 
-"""
-Information about a user's email address.
-"""
+"""Information about a user's email address."""
 type UserEmail {
   createdAt: Datetime!
 
-  """
-  The users email address, in `a@b.c` format.
-  """
+  """The users email address, in `a@b.c` format."""
   email: String!
   id: UUID!
   isPrimary: Boolean!
@@ -5217,9 +3901,7 @@ type UserEmail {
   isVerified: Boolean!
   updatedAt: Datetime!
 
-  """
-  Reads a single `User` that is related to this `UserEmail`.
-  """
+  """Reads a single `User` that is related to this `UserEmail`."""
   user: User
   userId: UUID!
 }
@@ -5229,19 +3911,13 @@ A condition to be used against `UserEmail` object types. All fields are tested
 for equality and combined with a logical ‘and.’
 """
 input UserEmailCondition {
-  """
-  Checks for equality with the object’s `id` field.
-  """
+  """Checks for equality with the object’s `id` field."""
   id: UUID
 
-  """
-  Checks for equality with the object’s `isPrimary` field.
-  """
+  """Checks for equality with the object’s `isPrimary` field."""
   isPrimary: Boolean
 
-  """
-  Checks for equality with the object’s `userId` field.
-  """
+  """Checks for equality with the object’s `userId` field."""
   userId: UUID
 }
 
@@ -5249,90 +3925,58 @@ input UserEmailCondition {
 A filter to be used against `UserEmail` object types. All fields are combined with a logical ‘and.’
 """
 input UserEmailFilter {
-  """
-  Checks for all expressions in this list.
-  """
+  """Checks for all expressions in this list."""
   and: [UserEmailFilter!]
 
-  """
-  Filter by the object’s `id` field.
-  """
+  """Filter by the object’s `id` field."""
   id: UUIDFilter
 
-  """
-  Filter by the object’s `isPrimary` field.
-  """
+  """Filter by the object’s `isPrimary` field."""
   isPrimary: BooleanFilter
 
-  """
-  Negates the expression.
-  """
+  """Negates the expression."""
   not: UserEmailFilter
 
-  """
-  Checks for any expressions in this list.
-  """
+  """Checks for any expressions in this list."""
   or: [UserEmailFilter!]
 
-  """
-  Filter by the object’s `userId` field.
-  """
+  """Filter by the object’s `userId` field."""
   userId: UUIDFilter
 }
 
-"""
-An input for mutations affecting `UserEmail`
-"""
+"""An input for mutations affecting `UserEmail`"""
 input UserEmailInput {
-  """
-  The users email address, in `a@b.c` format.
-  """
+  """The users email address, in `a@b.c` format."""
   email: String!
 }
 
-"""
-A connection to a list of `UserEmail` values.
-"""
+"""A connection to a list of `UserEmail` values."""
 type UserEmailsConnection {
   """
   A list of edges which contains the `UserEmail` and cursor to aid in pagination.
   """
   edges: [UserEmailsEdge!]!
 
-  """
-  A list of `UserEmail` objects.
-  """
+  """A list of `UserEmail` objects."""
   nodes: [UserEmail!]!
 
-  """
-  Information to aid in pagination.
-  """
+  """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `UserEmail` you could get from the connection.
-  """
+  """The count of *all* `UserEmail` you could get from the connection."""
   totalCount: Int!
 }
 
-"""
-A `UserEmail` edge in the connection.
-"""
+"""A `UserEmail` edge in the connection."""
 type UserEmailsEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `UserEmail` at the end of the edge.
-  """
+  """The `UserEmail` at the end of the edge."""
   node: UserEmail!
 }
 
-"""
-Methods to use when ordering `UserEmail`.
-"""
+"""Methods to use when ordering `UserEmail`."""
 enum UserEmailsOrderBy {
   ID_ASC
   ID_DESC
@@ -5345,23 +3989,15 @@ enum UserEmailsOrderBy {
   USER_ID_DESC
 }
 
-"""
-Represents an update to a `User`. Fields that are set will be updated.
-"""
+"""Represents an update to a `User`. Fields that are set will be updated."""
 input UserPatch {
-  """
-  Optional avatar URL.
-  """
+  """Optional avatar URL."""
   avatarUrl: String
 
-  """
-  Public-facing name (or pseudonym) of the user.
-  """
+  """Public-facing name (or pseudonym) of the user."""
   name: String
 
-  """
-  Public-facing username (or 'handle') of the user.
-  """
+  """Public-facing username (or 'handle') of the user."""
   username: String
 }
 
@@ -5370,24 +4006,16 @@ type UserSubscriptionPayload {
   user: User
 }
 
-"""
-A `User` edge in the connection.
-"""
+"""A `User` edge in the connection."""
 type UsersEdge {
-  """
-  A cursor for use in pagination.
-  """
+  """A cursor for use in pagination."""
   cursor: Cursor
 
-  """
-  The `User` at the end of the edge.
-  """
+  """The `User` at the end of the edge."""
   node: User!
 }
 
-"""
-Methods to use when ordering `User`.
-"""
+"""Methods to use when ordering `User`."""
 enum UsersOrderBy {
   ID_ASC
   ID_DESC
@@ -5398,9 +4026,7 @@ enum UsersOrderBy {
   USERNAME_DESC
 }
 
-"""
-All input for the `validateRegistrationAnswers` mutation.
-"""
+"""All input for the `validateRegistrationAnswers` mutation."""
 input ValidateRegistrationAnswersInput {
   answers: JSON
 
@@ -5413,9 +4039,7 @@ input ValidateRegistrationAnswersInput {
   requiredQuestionIds: [UUID]!
 }
 
-"""
-The output of our `validateRegistrationAnswers` mutation.
-"""
+"""The output of our `validateRegistrationAnswers` mutation."""
 type ValidateRegistrationAnswersPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
@@ -5429,9 +4053,7 @@ type ValidateRegistrationAnswersPayload {
   query: Query
 }
 
-"""
-All input for the `verifyEmail` mutation.
-"""
+"""All input for the `verifyEmail` mutation."""
 input VerifyEmailInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
@@ -5442,9 +4064,7 @@ input VerifyEmailInput {
   userEmailId: UUID!
 }
 
-"""
-The output of our `verifyEmail` mutation.
-"""
+"""The output of our `verifyEmail` mutation."""
 type VerifyEmailPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,

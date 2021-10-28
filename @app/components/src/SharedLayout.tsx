@@ -12,6 +12,7 @@ import {
   Avatar,
   Col,
   Dropdown,
+  Grid,
   Layout,
   Menu,
   message,
@@ -22,7 +23,6 @@ import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { CombinedError, UseQueryState } from "urql"
 
 import {
@@ -33,22 +33,15 @@ import {
   StandardWidth,
   useIlmoContext,
   useIsMobile,
+  useTranslation,
   Warn,
 } from "."
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
-/*
- * For some reason, possibly related to the interaction between
- * `babel-plugin-import` and https://github.com/babel/babel/pull/9766, we can't
- * directly export these values, but if we reference them and re-export then we
- * can.
- *
- * TODO: change back to `export { Row, Col, Link }` when this issue is fixed.
- */
-const _babelHackRow = Row
-const _babelHackCol = Col
-export { _babelHackCol as Col, Link, _babelHackRow as Row }
+
+export { Link }
+export const { useBreakpoint } = Grid
 
 export const contentMinHeight = "calc(100vh - 64px - 70px)"
 export const contentMaxWidth = "75rem"
@@ -166,7 +159,7 @@ export function SharedLayout({
       )
     }
 
-    return noPad ? inner : <StandardWidth>{inner}</StandardWidth>
+    return <StandardWidth noPad={noPad}>{inner}</StandardWidth>
   }
 
   const { data, fetching, error } = query
@@ -197,7 +190,7 @@ export function SharedLayout({
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
         <Row justify="space-between" wrap={false}>
-          <Col flex="auto" style={{ padding: "5px 0" }}>
+          <Col style={{ padding: "5px 0" }}>
             <Link href="/">
               <a>
                 <Image
@@ -212,7 +205,7 @@ export function SharedLayout({
             </Link>
           </Col>
           {!isMobile ? (
-            <Col lg={{ span: 16 }} md={{ span: 13 }} sm={{ span: 10 }}>
+            <Col>
               <H3
                 data-cy="layout-header-title"
                 style={{
@@ -232,15 +225,8 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col flex="auto" style={{ textAlign: "right" }}>
+          <Col style={{ textAlign: "right" }}>
             <LocaleSelect />
-          </Col>
-          <Col
-            lg={{ span: 2 }}
-            md={{ span: 4 }}
-            style={{ textAlign: "left" }}
-            xs={{ span: 6 }}
-          >
             {data && data.currentUser ? (
               <Dropdown
                 overlay={
@@ -272,9 +258,7 @@ export function SharedLayout({
                   data-cy="layout-dropdown-user"
                   style={{ whiteSpace: "nowrap" }}
                 >
-                  <Avatar>
-                    {(data.currentUser.name && data.currentUser.name[0]) || "?"}
-                  </Avatar>
+                  <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
                   <Warn okay={data.currentUser.isVerified}>
                     <span style={{ marginLeft: 8, marginRight: 8 }}>
                       {data.currentUser.name}
@@ -304,27 +288,29 @@ export function SharedLayout({
 
       {displayFooter && (
         <Footer>
-          <Row justify="space-between">
-            <Col span={12}>
-              <Text>
-                &copy; {new Date().getFullYear()} {orgName}{" "}
-              </Text>
-            </Col>
-            {process.env.PRIVACY_URL && (
-              <Col span={12} style={{ textAlign: "right" }}>
+          <StandardWidth>
+            <Row justify="space-between">
+              <Col span={12}>
                 <Text>
-                  <span>
-                    <a
-                      href={process.env.PRIVACY_URL}
-                      style={{ textDecoration: "underline" }}
-                    >
-                      {t("privacyPolicy")}
-                    </a>
-                  </span>
+                  &copy; {new Date().getFullYear()} {orgName}{" "}
                 </Text>
               </Col>
-            )}
-          </Row>
+              {process.env.PRIVACY_URL && (
+                <Col span={12} style={{ textAlign: "right" }}>
+                  <Text>
+                    <span>
+                      <a
+                        href={process.env.PRIVACY_URL}
+                        style={{ textDecoration: "underline" }}
+                      >
+                        {t("privacyPolicy")}
+                      </a>
+                    </span>
+                  </Text>
+                </Col>
+              )}
+            </Row>
+          </StandardWidth>
         </Footer>
       )}
     </Layout>

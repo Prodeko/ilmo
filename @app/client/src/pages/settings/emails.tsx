@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react"
 import {
   ErrorAlert,
-  ErrorResult,
   P,
   Redirect,
   SettingsLayout,
   Strong,
+  useTranslation,
 } from "@app/components"
 import {
   EmailsForm_UserEmailFragment,
@@ -13,12 +13,12 @@ import {
   useDeleteEmailMutation,
   useMakeEmailPrimaryMutation,
   useResendEmailVerificationMutation,
-  useSettingsEmailsQuery,
+  useSharedQuery,
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd"
-import { NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 function Email({
   email,
@@ -108,22 +108,13 @@ function Email({
 const Settings_Emails: NextPage = () => {
   const { t } = useTranslation("settings")
   const [showAddEmailForm, setShowAddEmailForm] = useState(false)
-  const [query] = useSettingsEmailsQuery()
+  const [query] = useSharedQuery()
   const { data, fetching, error } = query
-  const user = data && data.currentUser
-  const pageContent = (() => {
-    if (error && !fetching) {
-      return <ErrorResult error={error} />
-    } else if (!user && !fetching) {
-      return (
-        <Redirect
-          href={`/login?next=${encodeURIComponent("/settings/emails")}`}
-        />
-      )
-    } else if (!user) {
-      return t("common:loading")
-    } else {
-      return (
+  const user = data?.currentUser
+
+  return (
+    <SettingsLayout href="/settings/emails" query={query}>
+      {user ? (
         <div>
           {user.isVerified ? null : (
             <div style={{ marginBottom: "0.5rem" }}>
@@ -167,12 +158,15 @@ const Settings_Emails: NextPage = () => {
             bordered
           />
         </div>
-      )
-    }
-  })()
-  return (
-    <SettingsLayout href="/settings/emails" query={query}>
-      {pageContent}
+      ) : fetching ? (
+        t("common:loading")
+      ) : error ? (
+        <ErrorAlert error={error} />
+      ) : (
+        <Redirect
+          href={`/login?next=${encodeURIComponent("/settings/emails")}`}
+        />
+      )}
     </SettingsLayout>
   )
 }

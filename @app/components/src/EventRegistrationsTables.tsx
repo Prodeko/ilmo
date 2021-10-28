@@ -8,10 +8,9 @@ import {
 import { arePropsEqual } from "@app/lib"
 import { Skeleton } from "antd"
 import dayjs from "dayjs"
-import useTranslation from "next-translate/useTranslation"
 
 import { H4 } from "./Text"
-import { SimpleTable } from "."
+import { SimpleTable, useTranslation } from "."
 
 interface EventRegistrationsTablesProps {
   event: EventPage_EventFragment

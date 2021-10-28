@@ -21,7 +21,9 @@
     "hasOpenQuota": "Has open quota",
     "highlightEvent": "Korostettu tapahtuma",
     "isDraft": "Luonnos",
+    "isHighlighted": "Korostettu",
     "isNotDraft": "Julkaistu",
+    "isNotHighlighted": "Ei korostettu",
     "placeholders": {
       "event": {
         "category": "Valitse tapahtuman kategoria",

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
-import { Col, Row, SharedLayout } from "@app/components"
+import { SharedLayout, useTranslation } from "@app/components"
 import { useSharedQuery, useVerifyEmailMutation } from "@app/graphql"
-import { Alert } from "antd"
-import { GetServerSideProps, NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+import { Alert, Col, Row } from "antd"
+
+import type { GetServerSideProps, NextPage } from "next"
 
 interface Props {
   id: string | null

@@ -8,12 +8,12 @@ import { downloadRegistrations, Sorter } from "@app/lib"
 import { Typography } from "antd"
 import dayjs from "dayjs"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 
 import {
   EventRegistrationAnswersPopover,
   ServerPaginatedTable,
   useIsMobile,
+  useTranslation,
 } from "../."
 
 import { RegistrationsTableActions } from "./RegistrationTableActions"
@@ -120,6 +120,7 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       variables={{ eventId: router.query.id }}
       showDownload
       showPagination
+      showSizeChanger
     />
   )
 }

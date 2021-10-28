@@ -1,16 +1,18 @@
-import { FocusEvent, useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   AuthRestrict,
   ErrorAlert,
   PasswordStrength,
   SharedLayout,
   usePasswordStrength,
+  useTranslation,
 } from "@app/components"
 import { useResetPasswordMutation, useSharedQuery } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input } from "antd"
-import { GetServerSideProps, NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { GetServerSideProps, NextPage } from "next"
+import type { FocusEvent } from "react"
 
 interface Props {
   userId: string | null

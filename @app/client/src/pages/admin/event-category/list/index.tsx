@@ -3,6 +3,7 @@ import {
   AdminTableActions,
   ServerPaginatedTable,
   useIsMobile,
+  useTranslation,
 } from "@app/components"
 import {
   EventCategory,
@@ -12,8 +13,8 @@ import {
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
 import { Col, PageHeader, Row, Tag } from "antd"
-import { NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Admin_ListEventCategories: NextPage = () => {
   const [query] = useSharedQuery()

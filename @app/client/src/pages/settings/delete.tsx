@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { ErrorAlert, P, SettingsLayout } from "@app/components"
+import { ErrorAlert, P, SettingsLayout, useTranslation } from "@app/components"
 import {
   useConfirmAccountDeletionMutation,
   useRequestAccountDeletionMutation,
@@ -7,10 +7,10 @@ import {
 } from "@app/graphql"
 import { getCodeFromError } from "@app/lib"
 import { Alert, Button, Modal, PageHeader, Typography } from "antd"
-import { NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { CombinedError } from "urql"
+
+import type { NextPage } from "next"
 
 const { Text } = Typography
 

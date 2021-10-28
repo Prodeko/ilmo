@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { AdminLayout, ColorPicker, ErrorAlert, Loading } from "@app/components"
+import {
+  AdminLayout,
+  ColorPicker,
+  ErrorAlert,
+  Loading,
+  useTranslation,
+} from "@app/components"
 import {
   useCreateOrganizationMutation,
   useOrganizationBySlugQuery,
@@ -13,10 +19,10 @@ import {
 } from "@app/lib"
 import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
-import { NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
+
+import type { NextPage } from "next"
 
 const { Text } = Typography
 

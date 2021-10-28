@@ -8,8 +8,6 @@ if (process.env.NODE_ENV !== "development") {
 async function cleanData(client: PoolClient) {
   return client.query(
     `BEGIN;
-      drop function if exists app_private.tg__refresh_materialized_view cascade;
-      drop materialized view if exists app_hidden.registrations_status_and_position cascade;
       delete
         from app_public.users
         where username like 'testuser%'

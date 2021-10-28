@@ -4,9 +4,8 @@ import {
   Registration,
 } from "@app/graphql"
 import { Col, Popover, Row, Typography } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
-import { useIsMobile } from "./hooks"
+import { useIsMobile, useTranslation } from "./hooks"
 
 const { Text, Link } = Typography
 
