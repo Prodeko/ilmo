@@ -139,7 +139,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           questions: formQuestions,
         } = values
 
-        if (!formQuotas && openQuotaSize < 1) {
+        if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
@@ -200,9 +200,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const input =
           type === "update"
             ? {
-                id: eventId,
-                ...commonInput,
-              }
+              id: eventId,
+              ...commonInput,
+            }
             : commonInput
 
         // eventId is only used in update mutation
@@ -267,6 +267,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         languages: selectedLanguages,
         isDraft,
         isHighlighted: false,
+        openQuotaSize: 0,
         ...initialValues,
       }}
       onFieldsChange={handleFieldsChange}

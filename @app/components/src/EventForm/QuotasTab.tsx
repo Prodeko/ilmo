@@ -161,7 +161,7 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
           name="openQuotaSize"
           rules={[
             {
-              required: true,
+              required: hasOpenQuota,
               message: t("forms.rules.quota.provideQuotaSize"),
             },
           ]}
