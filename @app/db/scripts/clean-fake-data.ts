@@ -8,10 +8,13 @@ if (process.env.NODE_ENV !== "development") {
 async function cleanData(client: PoolClient) {
   return client.query(
     `BEGIN;
-      delete from app_public.users
-      where username like 'testuser%'
-      or username = 'testuser'
-      or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com');
+      drop function if exists app_private.tg__refresh_materialized_view cascade;
+      drop materialized view if exists app_hidden.registrations_status_and_position cascade;
+      delete
+        from app_public.users
+        where username like 'testuser%'
+        or username = 'testuser'
+        or id in (select user_id from app_public.user_emails where email like 'testuser%@example.com');
 
       delete from app_public.registrations;
       delete from app_public.quotas;

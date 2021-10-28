@@ -3,9 +3,14 @@ import dayjs from "dayjs"
 
 import {
   asRoot,
+  assertJobComplete,
+  claimRegistrationToken,
   createEventDataAndLogin,
   deleteTestData,
+  getEmails,
+  getJobs,
   runGraphQLQuery,
+  runJobs,
   setup,
   sleep,
   teardown,
@@ -112,10 +117,13 @@ describe("DeleteRegistration", () => {
       eventStartTime,
       eventEndTime,
     ]
-    const { registrationSecrets } = await createEventDataAndLogin({
+    const { events, quotas } = await createEventDataAndLogin({
       eventOptions: { create: true, times },
     })
-    const { update_token: updateToken } = registrationSecrets[0]
+    const { updateToken } = await claimRegistrationToken(
+      events[0].id,
+      quotas[0].id
+    )
 
     await sleep(1000)
 
@@ -124,7 +132,6 @@ describe("DeleteRegistration", () => {
 
       // GraphQL variables:
       {
-        // Invalid updateToken
         updateToken,
       },
 
@@ -142,6 +149,125 @@ describe("DeleteRegistration", () => {
           "Deleting a registration after event signup has closed is not allowed. Please contact the event organizers."
         )
         expect(code).toEqual("DNIED")
+      }
+    )
+  })
+
+  it("sends an email to the next person in queue when a registration is deleted from a normal quota", async () => {
+    const { events, registrations, registrationSecrets } =
+      await createEventDataAndLogin({
+        registrationOptions: { create: true, amount: 3 },
+        quotaOptions: { create: true, amount: 1, size: 2 },
+      })
+    const event = events[0]
+    const receivedSpot = registrations[2]
+    const updateToken = registrationSecrets[1].update_token
+
+    await runGraphQLQuery(
+      DeleteEventRegistrationDocument,
+
+      // GraphQL variables:
+      { updateToken },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: {},
+      },
+
+      // This function runs all your test assertions:
+      async (json, { pgClient }) => {
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
+
+        const { success } = json.data!.deleteRegistration
+        expect(success).toBeTruthy()
+
+        const jobs = await getJobs(pgClient, "registration__process_queue")
+        expect(jobs).toHaveLength(1)
+        const [job] = jobs
+        expect(job.payload).toMatchObject({
+          receivedSpot: {
+            id: receivedSpot.id,
+            event_id: receivedSpot.event_id,
+            quota_id: receivedSpot.quota_id,
+            status: "IN_QUEUE",
+            position: 1,
+          },
+        })
+
+        // Run the job and assert that the job runs correctly
+        await runJobs(pgClient)
+        await assertJobComplete(pgClient, job)
+
+        // Check that the email was sent
+        const emails = getEmails()
+        expect(emails).toHaveLength(1)
+        const [email] = emails
+        expect(email.envelope.to).toEqual([receivedSpot.email])
+        const message = JSON.parse(email.message)
+        expect(message.subject).toEqual(
+          `${event.name.fi} - Olet saanut paikan jonosta`
+        )
+      }
+    )
+  })
+
+  it("sends an email to the next person in queue when a registration is deleted from an open quota", async () => {
+    const { events, registrations, registrationSecrets } =
+      await createEventDataAndLogin({
+        eventOptions: { create: true, amount: 1, openQuotaSize: 1 },
+        quotaOptions: { create: true, amount: 1, size: 1 },
+        registrationOptions: { create: true, amount: 3 },
+      })
+    const event = events[0]
+    const receivedSpot = registrations[2]
+    const updateToken = registrationSecrets[1].update_token
+
+    await runGraphQLQuery(
+      DeleteEventRegistrationDocument,
+
+      // GraphQL variables:
+      { updateToken },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: {},
+      },
+
+      // This function runs all your test assertions:
+      async (json, { pgClient }) => {
+        expect(json.errors).toBeFalsy()
+        expect(json.data).toBeTruthy()
+
+        const { success } = json.data!.deleteRegistration
+        expect(success).toBeTruthy()
+
+        const jobs = await getJobs(pgClient, "registration__process_queue")
+        expect(jobs).toHaveLength(1)
+        const [job] = jobs
+        expect(job.payload).toMatchObject({
+          receivedSpot: {
+            id: receivedSpot.id,
+            event_id: receivedSpot.event_id,
+            quota_id: receivedSpot.quota_id,
+            status: "IN_QUEUE",
+            position: 1,
+          },
+        })
+
+        // Run the job and assert that the job runs correctly
+        await runJobs(pgClient)
+        await assertJobComplete(pgClient, job)
+
+        // Check that the email was sent
+        const emails = getEmails()
+        expect(emails).toHaveLength(1)
+        const [email] = emails
+        expect(email.envelope.to).toEqual([receivedSpot.email])
+        const message = JSON.parse(email.message)
+        expect(message.subject).toEqual(
+          `${event.name.fi} - Olet saanut paikan jonosta`
+        )
       }
     )
   })

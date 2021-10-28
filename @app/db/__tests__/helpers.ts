@@ -62,6 +62,8 @@ export async function createEventData(client: PoolClient) {
   )
   const [quota] = await createQuotas(client, 1, event.id)
 
+  // Commit to persist the changes
+  await client.query("commit")
   return { organization, eventCategory, event, quota }
 }
 
@@ -204,11 +206,3 @@ export const deepSnapshotSafe = (obj: { [key: string]: unknown }): any => {
   }
   return obj
 }
-
-export const clearEmails = () => {
-  global["TEST_EMAILS"] = []
-}
-
-beforeEach(clearEmails)
-
-export const getEmails = () => global["TEST_EMAILS"]

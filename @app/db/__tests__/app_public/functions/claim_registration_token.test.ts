@@ -1,27 +1,19 @@
-import { PoolClient } from "pg"
-
-import { asRoot, createEventData, withUserDb } from "../../helpers"
-
-async function claimToken(
-  client: PoolClient,
-  eventId: string,
-  quotaId: string
-) {
-  const {
-    rows: [row],
-  } = await client.query(
-    `select * from app_public.claim_registration_token($1, $2)`,
-    [eventId, quotaId]
-  )
-  return row
-}
+import {
+  asRoot,
+  claimRegistrationToken,
+  createEventData,
+  withUserDb,
+} from "../../helpers"
 
 it("can claim registration token and token expires", () =>
   withUserDb(async (client) => {
     const { event, quota } = await createEventData(client)
 
     // Action
-    await claimToken(client, event.id, quota.id)
+    const { registrationToken, updateToken } = await claimRegistrationToken(
+      event.id,
+      quota.id
+    )
 
     // Assertions
     const {
@@ -34,4 +26,6 @@ it("can claim registration token and token expires", () =>
     )
     expect(registrationSecret.event_id).toEqual(event.id)
     expect(registrationSecret.quota_id).toEqual(quota.id)
+    expect(registrationSecret.registration_token).toEqual(registrationToken)
+    expect(registrationSecret.update_token).toEqual(updateToken)
   }))

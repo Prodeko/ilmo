@@ -62,12 +62,12 @@ describe("registrations_status_and_position", () => {
         await client.query("commit")
         registrations.push(reg)
       }
-      const { rows: rankAndPos } = await client.query(
-        "select * from app_public.registrations_status_and_position"
+      const { rows: statusAndPos } = await client.query(
+        "select * from app_hidden.registrations_status_and_position"
       )
       const sorted = []
       registrations.forEach((r) => {
-        sorted.push(rankAndPos.find((reg) => reg.id === r.id))
+        sorted.push(statusAndPos.find((reg) => reg.id === r.id))
       })
 
       expect(sorted[0].id).toEqual(registrations[0].id)
@@ -127,12 +127,12 @@ describe("registrations_status_and_position", () => {
         await client.query("commit")
         registrations.push(reg)
       }
-      const { rows: rankAndPos } = await client.query(
-        "select * from app_public.registrations_status_and_position"
+      const { rows: statusAndPos } = await client.query(
+        "select * from app_hidden.registrations_status_and_position"
       )
       const sorted = []
       registrations.forEach((r) => {
-        sorted.push(rankAndPos.find((reg) => reg.id === r.id))
+        sorted.push(statusAndPos.find((reg) => reg.id === r.id))
       })
 
       // Check that id's are ordered
