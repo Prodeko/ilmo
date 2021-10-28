@@ -10,6 +10,8 @@ WHERE pg_stat_activity.datname = 'ilmo'
 DROP DATABASE ilmo;
 CREATE DATABASE ilmo;
 
+\c ilmo
+
 GRANT ALL PRIVILEGES ON DATABASE ilmo TO user_ilmo;
 GRANT ALL ON SCHEMA public to user_ilmo;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO user_ilmo;
@@ -26,3 +28,10 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
 COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+-- vim docker-compose.prod.yml
+-- Change yarn server start to yarn db migrate
+-- Restart with docker-compose -f docker-compose.prod.yml up
+-- Migrations should run
+-- Change back to yarn server start
+-- Restart with docker-compose -f docker-compose.prod.yml up
