@@ -1,11 +1,10 @@
 import { useEffect } from "react"
 import { Skeleton } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 
-import { H3, SharedLayout, StandardWidth } from "."
+import { H3, SharedLayout, StandardWidth, useTranslation } from "."
 
-export interface RedirectProps {
+interface RedirectProps {
   href: string
   as?: string
   layout?: boolean

@@ -1,7 +1,0 @@
-query SettingsEmails {
-  ...SharedLayout_Query
-  currentUser {
-    isVerified
-    ...EmailsForm_User
-  }
-}

@@ -3,12 +3,11 @@ import { SyncOutlined } from "@ant-design/icons"
 import { removeCsrfCookie } from "@app/lib"
 import { Alert, Button, Result } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { CombinedError } from "urql"
 
-import { useIlmoContext } from "."
+import { useIlmoContext, useTranslation } from "."
 
-export interface ErrorResultProps {
+interface ErrorResultProps {
   error: CombinedError | Error
 }
 

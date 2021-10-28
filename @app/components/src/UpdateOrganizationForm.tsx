@@ -7,9 +7,8 @@ import {
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Button, Form, Input, message, Popconfirm } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 
-import { ColorPicker, ErrorAlert } from "."
+import { ColorPicker, ErrorAlert, useTranslation } from "."
 
 interface UpdateOrganizationFormProps {
   organization: OrganizationPage_OrganizationFragment

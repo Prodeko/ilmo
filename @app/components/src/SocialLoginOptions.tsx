@@ -1,10 +1,10 @@
 import { useCallback } from "react"
 import { Button } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
 import { ProdekoIcon } from "./ProdekoIcon"
+import { useTranslation } from "."
 
-export interface SocialLoginOptionsProps {
+interface SocialLoginOptionsProps {
   next: string
   buttonTextFromService?: (service: string) => string
 }

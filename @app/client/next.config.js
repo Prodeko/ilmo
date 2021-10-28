@@ -16,7 +16,7 @@ if (!process.env.ROOT_URL) {
   }
 }
 
-const { NODE_ENV } = process.env
+const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
 
 const withTM = require("next-transpile-modules")([
@@ -57,7 +57,7 @@ const nextOptions = {
   images: {
     domains: isDevOrTest
       ? ["localhost", "static.prodeko.org", "placeimg.com"]
-      : ["ilmo3.prodeko.org", "static.prodeko.org"],
+      : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
   },
   async redirects() {
     return [
@@ -74,10 +74,10 @@ const nextOptions = {
     ]
   },
   env: {
+    ENV: NODE_ENV,
+    ROOT_URL: ROOT_URL,
     CI: process.env.CI,
     TZ: process.env.TZ,
-    ENV: process.env.NODE_ENV,
-    ROOT_URL: process.env.ROOT_URL,
     PRIVACY_URL: process.env.PRIVACY_URL,
     ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
   },

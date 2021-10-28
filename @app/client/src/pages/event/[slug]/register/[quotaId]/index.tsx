@@ -4,15 +4,16 @@ import {
   Redirect,
   SharedLayout,
   useEventRegistrations,
+  useTranslation,
 } from "@app/components"
 import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
 import { Col, List, PageHeader, Popconfirm, Row, Typography } from "antd"
-import { NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const EventRegistrationPage: NextPage = () => {
   const { t, lang } = useTranslation("register")

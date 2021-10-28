@@ -1,19 +1,13 @@
 import { useState } from "react"
 import { useRenderEmailTemplateQuery } from "@app/graphql"
+import { getFormattedEventTime } from "@app/lib"
 import { Card, Col, Row, Switch, Typography } from "antd"
-import dayjs from "dayjs"
-import useTranslation from "next-translate/useTranslation"
+
+import { useTranslation } from "../."
 
 import { FormValues, getEventSlug } from "."
 
 const { Text } = Typography
-
-function getFormattedEventTime(dates?: dayjs.Dayjs[]) {
-  const formatString = "D.M.YY HH:mm"
-  const eventStartTime = dayjs(dates?.[0]).format(formatString)
-  const eventEndTime = dayjs(dates?.[1]).format(formatString)
-  return `${eventStartTime} - ${eventEndTime}`
-}
 
 interface EmailTabProps {
   formValues: FormValues
@@ -23,6 +17,7 @@ export const EmailTab: React.FC<EmailTabProps> = ({ formValues }) => {
   const { t } = useTranslation("events")
 
   const [showHtml, setShowHtml] = useState(true)
+  const [eventStart, eventEnd] = formValues?.eventTime || []
   const [{ fetching, data }] = useRenderEmailTemplateQuery({
     variables: {
       template: "event_registration.mjml.njk",
@@ -33,7 +28,7 @@ export const EmailTab: React.FC<EmailTabProps> = ({ formValues }) => {
           en: "{{ registrationQuota }}",
         },
         eventName: formValues?.name,
-        eventTime: getFormattedEventTime(formValues?.eventTime) || "",
+        eventTime: getFormattedEventTime(eventStart, eventEnd) || "",
         eventSlug: getEventSlug(formValues?.name, formValues?.eventTime),
         eventLocation: formValues?.location,
         eventRegistrationUpdateLink: "{{ eventRegistrationUpdateLink }}",

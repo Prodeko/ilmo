@@ -1,8 +1,5 @@
-import Link from "next/link"
-import useTranslation from "next-translate/useTranslation"
-
 import { H2, P } from "./Text"
-import { StandardWidth } from "."
+import { Link, StandardWidth, useTranslation } from "."
 
 export function ErrorOccurred() {
   const { t } = useTranslation("error")

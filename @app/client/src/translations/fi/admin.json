@@ -15,15 +15,13 @@
       "eventStartTime": "Tapahtuma alkaa",
       "linkToEvent": "Näytä tapahtumasivu",
       "linkUpdateEventCategory": "Muokkaa kategoriaa",
-      "registrationStartTime": "Ilmo aukeaa",
-      "registrations": "Rekisteröityneitä"
+      "registrationStartTime": "Ilmo aukeaa"
     },
     "tabs": {
       "email": "Sähköposti",
       "generalInfo": "Yleistä",
       "questions": "Kysymykset",
-      "quotas": "Kiintiöt",
-      "registrations": "Ilmoittautumiset"
+      "quotas": "Kiintiöt"
     },
     "update": {
       "showAnswers": "Näytä vastaukset"

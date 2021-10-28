@@ -21,12 +21,13 @@ import {
   Space,
   Tooltip,
 } from "antd"
-import { SelectValue } from "antd/lib/select"
-import useTranslation from "next-translate/useTranslation"
 
+import { useTranslation } from "../."
 import { DisableDraggable, Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
+
+import type { SelectValue } from "antd/lib/select"
 
 const { Option } = Select
 

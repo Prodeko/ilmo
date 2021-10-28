@@ -1,4 +1,4 @@
-import { Task } from "graphile-worker"
+import type { Task } from "graphile-worker"
 
 // 60 days
 const GDPR_ANONYMIZATION_TIMEOUT = 60

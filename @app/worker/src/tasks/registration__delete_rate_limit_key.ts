@@ -1,5 +1,6 @@
-import { Task } from "graphile-worker"
 import Redis from "ioredis"
+
+import type { Task } from "graphile-worker"
 
 interface Payload {
   eventId: string

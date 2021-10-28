@@ -13,9 +13,10 @@ import dayjs from "dayjs"
 import debounce from "lodash/debounce"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import slugify from "slugify"
 import { CombinedError, useMutation } from "urql"
+
+import { useTranslation } from "../."
 
 import { EmailTab } from "./EmailTab"
 import { MainTab } from "./MainTab"
@@ -312,7 +313,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         {type === "update" && (
           <TabPane
             key={TAB.Registrations}
-            tab={t("admin:events.tabs.registrations")}
+            tab={t("common:registrations")}
             forceRender
           >
             <RegistrationsTab

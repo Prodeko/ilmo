@@ -17,7 +17,6 @@ import {
   PostGraphileOptions,
   withPostGraphileContext,
 } from "postgraphile"
-import type { PromiseValue } from "type-fest"
 
 import {
   createEventCategories,
@@ -30,9 +29,12 @@ import {
   createSession,
   createUsers,
   poolFromUrl,
+  refreshMaterializedView,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
+
+import type { PromiseValue } from "type-fest"
 
 export * from "../../__tests__/helpers"
 
@@ -71,7 +73,7 @@ interface CreateEventDataAndLogin {
     isDraft?: boolean
     openQuotaSize?: number
   }
-  quotaOptions?: { create: boolean; amount?: number }
+  quotaOptions?: { create: boolean; size?: number; amount?: number }
   questionOptions?: {
     create: boolean
     amount?: number
@@ -79,7 +81,6 @@ interface CreateEventDataAndLogin {
     type?: QuestionType
   }
   registrationOptions?: { create: boolean; amount?: number }
-  registrationSecretOptions?: { create: boolean; amount?: number }
 }
 
 export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
@@ -87,7 +88,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     userOptions = {
       create: true,
       amount: 1,
-      isVerified: false,
+      isVerified: true,
       isAdmin: false,
     },
     eventOptions = {
@@ -100,7 +101,6 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     quotaOptions = { create: true, amount: 1 },
     questionOptions = { create: true, amount: 1, required: true },
     registrationOptions = { create: true, amount: 1 },
-    registrationSecretOptions = { create: true, amount: 1 },
   } = args || {}
   const pool = poolFromUrl(TEST_DATABASE_URL)
   const client = await pool.connect()
@@ -154,7 +154,12 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
 
     let quotas: PromiseValue<ReturnType<typeof createQuotas>>
     if (quotaOptions.create) {
-      quotas = await createQuotas(client, quotaOptions.amount, events[0].id)
+      quotas = await createQuotas(
+        client,
+        quotaOptions.amount,
+        events[0].id,
+        quotaOptions.size
+      )
     }
 
     let questions: PromiseValue<ReturnType<typeof createQuestions>>
@@ -186,15 +191,16 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     let registrationSecrets: PromiseValue<
       ReturnType<typeof createRegistrationSecrets>
     >
-    if (registrationSecretOptions.create) {
+    if (registrationOptions.create) {
       registrationSecrets = await createRegistrationSecrets(
         client,
-        1,
-        registrations ? registrations[0].id : null,
+        registrations || [],
         events[0].id,
         quotas[0].id
       )
     }
+
+    await refreshMaterializedView(client)
 
     await client.query("commit")
     return {

@@ -7,6 +7,14 @@ fragment SharedLayout_Query on Query {
   }
 }
 
+fragment SharedLayout_UserEmail on UserEmail {
+  id
+  email
+  isVerified
+  isPrimary
+  createdAt
+}
+
 fragment SharedLayout_User on User {
   id
   name
@@ -15,6 +23,11 @@ fragment SharedLayout_User on User {
   isAdmin
   isVerified
   primaryEmail
+  userEmails(first: 50) {
+    nodes {
+      ...SharedLayout_UserEmail
+    }
+  }
   organizationMemberships(first: 20) {
     totalCount
     nodes {

@@ -7,8 +7,8 @@ import {
   PlusOutlined,
 } from "@ant-design/icons"
 import { Button, Form, Input, InputNumber, Space, Switch, Tooltip } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
+import { useTranslation } from "../."
 import { DisableDraggable, Draggable } from "../Draggable"
 
 interface QuotasTabProps {

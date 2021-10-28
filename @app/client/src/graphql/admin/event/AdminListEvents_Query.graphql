@@ -6,6 +6,7 @@ fragment AdminListEvents_Event on Event {
   name
   slug
   isDraft
+  isHighlighted
   registrationStartTime
   eventStartTime
   category {

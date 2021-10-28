@@ -2,7 +2,8 @@ import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { extractError, getCodeFromError } from "@app/lib"
 import { Alert } from "antd"
-import useTranslation from "next-translate/useTranslation"
+
+import { useTranslation } from "."
 
 interface ErrorAlertProps {
   error: Error

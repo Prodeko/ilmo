@@ -1,9 +1,9 @@
-import { AdminLayout, EventForm } from "@app/components"
+import { AdminLayout, EventForm, useTranslation } from "@app/components"
 import { useCreateEventPageQuery } from "@app/graphql"
 import { Col, PageHeader, Row } from "antd"
-import { NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Admin_CreateEvent: NextPage = () => {
   const { t } = useTranslation("admin")

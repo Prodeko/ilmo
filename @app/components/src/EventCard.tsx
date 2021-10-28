@@ -1,4 +1,3 @@
-import { Event } from "@app/graphql"
 import {
   DEFAULT_HEADER_IMAGE,
   rainbowColors,
@@ -7,10 +6,11 @@ import {
 import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
-import useTranslation from "next-translate/useTranslation"
 
 import { H5 } from "./Text"
-import { ButtonLink, EventQuotaPopover, Link, P } from "."
+import { ButtonLink, EventQuotaPopover, Link, P, useTranslation } from "."
+
+import type { Event } from "@app/graphql"
 
 const { Text } = Typography
 const { Ribbon } = Badge

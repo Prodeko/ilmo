@@ -7,14 +7,15 @@ import {
   UpdateOrganizationForm,
   useOrganizationLoading,
   useQuerySlug,
+  useTranslation,
 } from "@app/components"
 import {
   OrganizationPage_OrganizationFragment,
   useOrganizationPageQuery,
 } from "@app/graphql"
 import { Col, message, PageHeader, Row } from "antd"
-import { NextPage } from "next"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Admin_Organizations: NextPage = () => {
   const slug = useQuerySlug()

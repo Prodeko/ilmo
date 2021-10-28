@@ -8,6 +8,7 @@ import {
   Loading,
   Redirect,
   SharedLayout,
+  useTranslation,
 } from "@app/components"
 import {
   InvitationDetailQuery,
@@ -17,10 +18,10 @@ import {
 } from "@app/graphql"
 import { getCodeFromError } from "@app/lib"
 import { Button, Col, Result, Row, Skeleton } from "antd"
-import { GetServerSideProps, NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
+
+import type { GetServerSideProps, NextPage } from "next"
 
 interface Props {
   id: string | null

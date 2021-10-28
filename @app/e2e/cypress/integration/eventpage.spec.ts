@@ -153,4 +153,30 @@ context("Events page", () => {
       }
     )
   })
+
+  it("admin can navigate to /admin/event/update from eventpage", () => {
+    // Setup
+    cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
+      "createEventDataResult"
+    )
+
+    // Action
+    cy.get("@createEventDataResult").then(({ event }: any) => {
+      cy.login({
+        username: "testuser",
+        password: "DOESNT MATTER",
+        existingUser: true,
+      })
+
+      cy.visit(Cypress.env("ROOT_URL") + `/event/${event.slug}`)
+
+      cy.getCy("eventpage-button-admin-link").click()
+
+      // Assertions
+      cy.url().should(
+        "equal",
+        `${Cypress.env("ROOT_URL")}/admin/event/update/${event.id}`
+      )
+    })
+  })
 })

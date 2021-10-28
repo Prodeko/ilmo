@@ -3,8 +3,10 @@ import {
   AdminTableActions,
   EventQuotaPopover,
   H3,
+  Link,
   ServerPaginatedTable,
   useIsMobile,
+  useTranslation,
 } from "@app/components"
 import {
   AdminListEventsDocument,
@@ -14,11 +16,11 @@ import {
   useListEventsPageQuery,
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
-import { Badge, Col, Popover, Row, Tag } from "antd"
+import { Badge, Col, Popover, Row, Tag, Tooltip } from "antd"
 import dayjs from "dayjs"
-import { NextPage } from "next"
-import Link from "next/link"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
+import type { AlignType } from "rc-table/lib/interface"
 
 const Admin_ListEvents: NextPage = () => {
   const { t, lang } = useTranslation("admin")
@@ -30,7 +32,7 @@ const Admin_ListEvents: NextPage = () => {
   const actionsColumn = {
     title: "",
     key: "actions",
-    width: 200,
+    width: !isMobile ? 160 : 1,
     render: (_name: string, event: Event) => {
       return (
         <AdminTableActions
@@ -65,25 +67,46 @@ const Admin_ListEvents: NextPage = () => {
       </Link>
     ),
   }
+
   const isDraftColumn = {
     title: t("events:forms.isDraft"),
     dataIndex: ["isDraft"],
-    align: "center",
+    align: "center" as AlignType,
     key: "isDraft",
     render: (isDraft: string) => (
-      <Badge
-        color={isDraft ? "yellow" : "green"}
-        text={
+      <Tooltip
+        placement="top"
+        title={
           isDraft ? t("events:forms.isDraft") : t("events:forms.isNotDraft")
         }
-      />
+      >
+        <Badge color={isDraft ? "yellow" : "green"} />
+      </Tooltip>
+    ),
+  }
+
+  const isHighlightedColumn = {
+    title: t("events:forms.isHighlighted"),
+    dataIndex: ["isHighlighted"],
+    align: "center" as AlignType,
+    key: "isHighlighted",
+    render: (isHighlighted: string) => (
+      <Tooltip
+        placement="top"
+        title={
+          isHighlighted
+            ? t("events:forms.isHighlighted")
+            : t("events:forms.isNotHighlighted")
+        }
+      >
+        <Badge color={isHighlighted ? "green" : "yellow"} />
+      </Tooltip>
     ),
   }
 
   const columns = !isMobile
     ? [
         actionsColumn,
-        isDraftColumn,
         nameColumn,
         {
           title: t("events:category"),
@@ -122,7 +145,7 @@ const Admin_ListEvents: NextPage = () => {
           },
         },
         {
-          title: t("events.list.registrations"),
+          title: t("common:registrations"),
           key: "registrations",
           render: (event: Event) => <EventQuotaPopover event={event} />,
         },
@@ -142,6 +165,8 @@ const Admin_ListEvents: NextPage = () => {
           },
           render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
+        isDraftColumn,
+        isHighlightedColumn,
       ]
     : [actionsColumn, nameColumn]
 

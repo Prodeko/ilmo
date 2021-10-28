@@ -6,6 +6,7 @@ import {
   SocialLoginOptions,
   SpinPadded,
   Strong,
+  useTranslation,
 } from "@app/components"
 import {
   useCurrentUserAuthenticationsQuery,
@@ -14,9 +15,9 @@ import {
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
 import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd"
-import { NextPage } from "next"
 import { Translate } from "next-translate"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const AUTH_NAME_LOOKUP = {
   // Could add more login options in the future

@@ -7,12 +7,9 @@ import {
   TeamOutlined,
   UserDeleteOutlined,
 } from "@ant-design/icons"
-import { User } from "@app/graphql"
 import { Layout } from "antd"
-import { TextProps } from "antd/lib/typography/Text"
 import { useRouter } from "next/router"
 import { Translate } from "next-translate"
-import useTranslation from "next-translate/useTranslation"
 
 import {
   AuthRestrict,
@@ -20,11 +17,14 @@ import {
   SharedLayoutChildProps,
   SharedLayoutProps,
 } from "./SharedLayout"
-import { Redirect, SettingsSideMenu } from "."
+import { Redirect, SettingsSideMenu, useTranslation } from "."
+
+import type { User } from "@app/graphql"
+import type { TextProps } from "antd/lib/typography/Text"
 
 const { Sider } = Layout
 
-export interface SettingsPageSpec {
+interface SettingsPageSpec {
   title: string
   cy: string
   warnIfUnverified?: boolean
@@ -63,7 +63,7 @@ export const pages = (t: Translate) => ({
   } as SettingsPageSpec,
 })
 
-export interface SettingsLayoutProps {
+interface SettingsLayoutProps {
   query: SharedLayoutProps["query"]
   href: keyof ReturnType<typeof pages>
   children: React.ReactNode

@@ -7,12 +7,14 @@ import {
   usePasswordStrengthMutation,
 } from "@app/graphql"
 import { Col, Row } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import debounce from "lodash/debounce"
 import { useRouter } from "next/router"
+import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 
-import { ErrorResult, FourOhFour, LoadingPadded } from "./"
+import { ErrorResult, FourOhFour, LoadingPadded, useBreakpoint } from "./"
+
+export { useTranslation as useTranslation }
 
 export function useQuerySlug() {
   const router = useRouter()

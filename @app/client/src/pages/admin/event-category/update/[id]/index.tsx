@@ -4,13 +4,14 @@ import {
   LoadingPadded,
   Redirect,
   useQueryId,
+  useTranslation,
 } from "@app/components"
 import { useUpdateEventCategoryPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
 import { Col, PageHeader, Row } from "antd"
-import { NextPage } from "next"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 type UpdateFormInitialValues = {
   name: string

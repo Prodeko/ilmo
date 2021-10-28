@@ -21,7 +21,6 @@ describe("DeleteEventCategory", () => {
       quotaOptions: { create: false },
       questionOptions: { create: false },
       registrationOptions: { create: false },
-      registrationSecretOptions: { create: false },
       userOptions: { create: true, isAdmin: false },
     })
     const categoryId = eventCategory.id
@@ -68,7 +67,6 @@ describe("DeleteEventCategory", () => {
       quotaOptions: { create: false },
       questionOptions: { create: false },
       registrationOptions: { create: false },
-      registrationSecretOptions: { create: false },
       userOptions: { create: true, isAdmin: false },
     })
     const categoryId = eventCategory.id

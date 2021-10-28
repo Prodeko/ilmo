@@ -1,8 +1,10 @@
 import React, { Key, ReactNode, useState } from "react"
 import { isString } from "@app/lib"
 import { Menu, Typography } from "antd"
-import { TextProps } from "antd/lib/typography/Text"
-import Link from "next/link"
+
+import { Link } from "."
+
+import type { TextProps } from "antd/lib/typography/Text"
 
 const { Text } = Typography
 const { SubMenu } = Menu

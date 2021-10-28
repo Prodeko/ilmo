@@ -1,9 +1,9 @@
-import { AdminLayout, EventCategoryForm } from "@app/components"
+import { AdminLayout, EventCategoryForm, useTranslation } from "@app/components"
 import { useSharedQuery } from "@app/graphql"
 import { Col, PageHeader, Row } from "antd"
-import { NextPage } from "next"
 import { useRouter } from "next/dist/client/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Admin_CreateEventCategory: NextPage = () => {
   const [query] = useSharedQuery()

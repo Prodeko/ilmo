@@ -12,11 +12,11 @@ import {
 } from "@app/lib"
 import { Button, Form, Input, Select } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { CombinedError, useMutation } from "urql"
 
 import { ColorPicker } from "./ColorPicker"
 import { ErrorAlert } from "./ErrorAlert"
+import { useTranslation } from "."
 
 const { Option } = Select
 

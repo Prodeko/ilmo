@@ -3,21 +3,20 @@ import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
   ButtonLink,
-  Col,
   ErrorAlert,
+  Link,
   Redirect,
-  Row,
   SharedLayout,
   SharedLayoutChildProps,
   SocialLoginOptions,
+  useTranslation,
 } from "@app/components"
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
 import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
-import { Button, Form, Input } from "antd"
-import { GetServerSideProps, NextPage } from "next"
-import Link from "next/link"
+import { Button, Col, Form, Input, Row } from "antd"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
+
+import type { GetServerSideProps, NextPage } from "next"
 
 function hasErrors(fieldsError: Object) {
   return Object.keys(fieldsError).some((field) => fieldsError[field])

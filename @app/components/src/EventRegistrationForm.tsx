@@ -19,12 +19,12 @@ import {
   Space,
   Typography,
 } from "antd"
-import { Rule } from "antd/lib/form"
 import { useRouter } from "next/router"
-import useTranslation from "next-translate/useTranslation"
 import { CombinedError, useMutation } from "urql"
 
-import { ErrorAlert } from "."
+import { ErrorAlert, useTranslation } from "."
+
+import type { Rule } from "antd/lib/form"
 
 const { Text } = Typography
 

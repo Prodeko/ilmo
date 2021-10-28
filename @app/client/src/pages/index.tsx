@@ -1,21 +1,23 @@
 import {
   containerTransitions,
   EventCard,
+  EventQuotaPopover,
   H3,
   itemTransitionUp,
+  Link,
   ServerPaginatedTable,
   SharedLayout,
+  useBreakpoint,
   useIsMobile,
+  useTranslation,
 } from "@app/components"
 import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql"
 import { Sorter } from "@app/lib"
 import { Col, Divider, Empty, Space, Tag } from "antd"
-import useBreakpoint from "antd/lib/grid/hooks/useBreakpoint"
 import dayjs from "dayjs"
 import { AnimatePresence, m } from "framer-motion"
-import { NextPage } from "next"
-import Link from "next/link"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const gridTemplateColumns = {
   xs: "1, minmax(0, 1fr)",
@@ -156,6 +158,11 @@ const Home_SignupClosedEvents = () => {
     ? [
         nameColumn,
         {
+          title: t("common:registrations"),
+          key: "registrations",
+          render: (event: Event) => <EventQuotaPopover event={event} />,
+        },
+        {
           title: t("events:organizer"),
           dataIndex: ["ownerOrganization", "name"],
           key: "organizationName",
@@ -208,8 +215,9 @@ const Home_SignupClosedEvents = () => {
         data-cy="homepage-signup-closed-events"
         dataField="signupClosedEvents"
         queryDocument={HomePageEventsDocument}
-        showPagination={true}
         size="middle"
+        showPagination
+        showSizeChanger
       />
     </>
   )

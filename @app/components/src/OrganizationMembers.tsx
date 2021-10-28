@@ -18,7 +18,8 @@ import {
   Popconfirm,
   Typography,
 } from "antd"
-import useTranslation from "next-translate/useTranslation"
+
+import { useTranslation } from "."
 
 const { Text } = Typography
 

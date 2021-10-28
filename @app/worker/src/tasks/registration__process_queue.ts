@@ -29,8 +29,8 @@ const task: Task = async (inPayload, { addJob, query }) => {
     return
   }
 
-  if (registrationSecret.confirmation_email_sent) {
-    console.error("Confirmation email already sent; aborting")
+  if (registrationSecret.received_spot_from_queue_email_sent) {
+    console.error("Received spot from queue email already sent; aborting")
     return
   }
 

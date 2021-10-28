@@ -2,14 +2,14 @@ import { Dispatch, SetStateAction } from "react"
 import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
 import { range, tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
-import { UploadFile } from "antd/lib/upload/interface"
 import dayjs from "dayjs"
-import useTranslation from "next-translate/useTranslation"
-import { DisabledTimes } from "rc-picker/lib/interface"
 
-import { ErrorAlert, FileUpload } from "../index"
+import { ErrorAlert, FileUpload, useTranslation } from "../index"
 
 import { FormValues } from "."
+
+import type { UploadFile } from "antd/lib/upload/interface"
+import type { DisabledTimes } from "rc-picker/lib/interface"
 
 const { Option } = Select
 const { TextArea, Group } = Input

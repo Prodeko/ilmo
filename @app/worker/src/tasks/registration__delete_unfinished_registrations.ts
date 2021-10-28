@@ -1,4 +1,4 @@
-import { Task } from "graphile-worker"
+import type { Task } from "graphile-worker"
 
 // 10 minutes
 const EXPIRATION_TIMEOUT = 10

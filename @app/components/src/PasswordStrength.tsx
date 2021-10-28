@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { InfoCircleOutlined } from "@ant-design/icons"
 import { Col, Popover, Progress, Row } from "antd"
-import useTranslation from "next-translate/useTranslation"
 
-export interface PasswordStrengthProps {
+import { useTranslation } from "."
+
+interface PasswordStrengthProps {
   passwordStrength: number
   suggestions: string[]
   isDirty: boolean

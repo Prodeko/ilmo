@@ -2,10 +2,12 @@ import { useCallback, useState } from "react"
 import {
   ErrorAlert,
   ErrorResult,
+  Link,
   P,
   PasswordStrength,
   SettingsLayout,
   usePasswordStrength,
+  useTranslation,
 } from "@app/components"
 import {
   useChangePasswordMutation,
@@ -15,9 +17,8 @@ import {
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
 import { Alert, Button, Form, Input, PageHeader } from "antd"
-import { NextPage } from "next"
-import Link from "next/link"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 const Settings_Security: NextPage = () => {
   const { t } = useTranslation("settings")
@@ -69,7 +70,7 @@ const Settings_Security: NextPage = () => {
     useSettingsPasswordQuery()
   const [, forgotPassword] = useForgotPasswordMutation()
   const user = data?.currentUser
-  const email = user ? user.primaryEmail : null
+  const email = user?.primaryEmail ?? null
   const [resetInProgress, setResetInProgress] = useState(false)
 
   const handleResetPassword = useCallback(() => {

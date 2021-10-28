@@ -1,8 +1,9 @@
-import { User } from "@app/graphql"
 import { Menu, Typography } from "antd"
 
 import { pages } from "./SettingsLayout"
 import { Link, Warn } from "."
+
+import type { User } from "@app/graphql"
 
 const { Text } = Typography
 

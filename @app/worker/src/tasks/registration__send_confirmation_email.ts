@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
-import { Task } from "graphile-worker"
 
-import { SendEmailPayload } from "./send_email"
+import type { SendEmailPayload } from "./send_email"
+import type { Task } from "graphile-worker"
 
 interface RegistrationSendConfirmationEmail {
   /**
@@ -12,7 +12,7 @@ interface RegistrationSendConfirmationEmail {
 
 const { ROOT_URL } = process.env
 
-function getFormattedEventTime(event: any) {
+export function getFormattedEventTime(event: any) {
   const { event_start_time, event_end_time } = event
   const formatString = "D.M.YY HH:mm"
   const startTime = dayjs(event_start_time).format(formatString)
@@ -101,7 +101,8 @@ const task: Task = async (inPayload, { addJob, query }) => {
 
   await addJob("send_email", sendEmailPayload)
   await query(
-    "update app_private.registration_secrets set confirmation_email_sent = true"
+    "update app_private.registration_secrets set confirmation_email_sent = true where registration_id = $1",
+    [registrationId]
   )
 }
 

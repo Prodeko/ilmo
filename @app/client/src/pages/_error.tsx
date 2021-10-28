@@ -1,9 +1,14 @@
-import { ErrorOccurred, FourOhFour, SharedLayout } from "@app/components"
+import {
+  ErrorOccurred,
+  FourOhFour,
+  SharedLayout,
+  useTranslation,
+} from "@app/components"
 import { useSharedQuery } from "@app/graphql"
 import { Col, Row } from "antd"
-import { NextPage } from "next"
 import { Translate } from "next-translate"
-import useTranslation from "next-translate/useTranslation"
+
+import type { NextPage } from "next"
 
 interface ErrorPageProps {
   statusCode: number | null
