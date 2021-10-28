@@ -12,6 +12,7 @@ import dayjs from "dayjs"
 import faker from "faker"
 import { PoolClient } from "pg"
 import slugify from "slugify"
+
 import type { SnakeCasedProperties } from "type-fest"
 
 export type User = {
@@ -364,13 +365,12 @@ export const createQuestions = async (
 
 export const createRegistrationSecrets = async (
   client: PoolClient,
-  count: number = 1,
-  registrationId: string,
+  registrations: SnakeCasedProperties<Registration>[],
   eventId: string,
   quotaId: string
 ) => {
   const registrationSecrets = []
-  for (let i = 0; i < count; i++) {
+  for (const registration of registrations) {
     const {
       rows: [secret],
     } = await client.query(
@@ -378,7 +378,7 @@ export const createRegistrationSecrets = async (
         values ($1, $2, $3)
         returning *
       `,
-      [eventId, quotaId, registrationId]
+      [eventId, quotaId, registration.id]
     )
     registrationSecrets.push(secret)
   }

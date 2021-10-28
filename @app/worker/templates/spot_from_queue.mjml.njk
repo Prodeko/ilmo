@@ -2,7 +2,7 @@
 
 {% block content %}
 <mj-column width="100%">
-  <mj-text>Ilmoittautuminen tapahtumaan onnistui:</mj-text>
+  <mj-text><strong>Olet saanut paikan jonosta</strong> tapahtumaan {{ eventName.fi }}</mj-text>
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Nimi: {{ registrationName }} <br />
     - Kiintiö: {{ registrationQuota.fi }} <br />
@@ -18,7 +18,7 @@
   </mj-text
   >
   <mj-divider border-color="#002851" border-width="1px"></mj-divider>
-  <mj-text>Successfully registered to the event:</mj-text>
+  <mj-text><strong>You have received a spot from the queue</strong> to the event {{ eventName.en }}</mj-text>
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Name: {{ registrationName }} <br />
     - Quota: {{ registrationQuota.en }} <br />

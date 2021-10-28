@@ -61,6 +61,8 @@ export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
     `BEGIN;
+      drop function if exists app_private.tg__refresh_materialized_view cascade;
+      drop materialized view if exists app_hidden.registrations_status_and_position cascade;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
@@ -147,3 +149,35 @@ export const assertJobComplete = async (
     expect(row).toBeFalsy()
   })
 }
+
+export async function claimRegistrationToken(eventId: string, quotaId: string) {
+  const pool = poolFromUrl(TEST_DATABASE_URL!)
+  const client = await pool.connect()
+  const {
+    rows: [row],
+  } = await client.query(
+    `select * from app_public.claim_registration_token($1, $2)`,
+    [eventId, quotaId]
+  )
+  await client.release()
+  return {
+    registrationToken: row.registration_token,
+    updateToken: row.update_token,
+  }
+}
+
+export const refreshMaterializedView = async (client: PoolClient) => {
+  // Become root
+  await client.query("reset role")
+  client.query(
+    "refresh materialized view app_hidden.registrations_status_and_position"
+  )
+}
+
+export const getEmails = () => global["TEST_EMAILS"]
+
+export const clearEmails = () => {
+  global["TEST_EMAILS"] = []
+}
+
+beforeEach(clearEmails)

@@ -1,5 +1,5 @@
 --! Previous: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
---! Hash: sha1:c3e038e724e27f0a857709e19c239448f7000642
+--! Hash: sha1:f93b282bd7533cc8fd8dbcaa70ab8252405bb1c2
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -897,16 +897,7 @@ create trigger _300_registration_is_valid
   before insert on app_public.registrations for each row
   execute procedure app_private.tg__registration_is_valid();
 
-create trigger _400_send_registration_email
-  -- Send email upon successful registration. We run this trigger on update because
-  -- the registration is initially created with claim_registration_token and we
-  -- don't know the users email at that point. The registration__send_confirmation_email
-  -- task validates that only send one email per registration. This is tracked
-  -- in app_private.registration_secrets.confirmation_email_sent.
-  after update on app_public.registrations
-  for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
-
-create trigger _500_gql_registration_updated
+create trigger _400_gql_registration_updated
   -- Expose new registrations via a GraphQl subscription. Used for live updating
   -- views in the frontend application.
   after insert or update or delete on app_public.registrations
@@ -916,6 +907,15 @@ create trigger _500_gql_registration_updated
     'graphql:eventRegistrations:$1', -- the "topic" the event will be published to, as a template
     'event_id' -- If specified, `$1` above will be replaced with NEW.id or OLD.id from the trigger.
   );
+
+create trigger _500_send_registration_email
+  -- Send email upon successful registration. We run this trigger on update because
+  -- the registration is initially created with claim_registration_token and we
+  -- don't know the users email at that point. The registration__send_confirmation_email
+  -- task validates that only send one email per registration. This is tracked
+  -- in app_private.registration_secrets.confirmation_email_sent.
+  after update on app_public.registrations
+  for each row execute procedure app_private.tg__add_job('registration__send_confirmation_email');
 
 -- Computed columns (https://www.graphile.org/postgraphile/computed-columns/)
 create function app_public.registrations_full_name(registration app_public.registrations)
@@ -929,15 +929,19 @@ grant execute on function app_public.registrations_full_name(registration app_pu
 create or replace function app_public.registrations_email(registration app_public.registrations)
   returns text as $$
 begin
-  if
-    app_public.current_user_id() = registration.created_by or
-    app_public.current_user_is_admin()
-  then
-    -- Don't obfuscate email for the user that created the registration
-    -- Dont obfuscate email for admin users
-    return registration.email;
+  if not app_public.current_user_id() is null then
+    if
+      app_public.current_user_id() = registration.created_by or
+      app_public.current_user_is_admin()
+    then
+      -- Don't obfuscate email for the user that created the registration
+      -- Dont obfuscate email for admin users
+      return registration.email;
+    else
+      return '***';
+    end if;
   else
-    -- Obfuscate email for all other cases
+    -- Obfuscate email for logged out users
     return '***';
   end if;
 end;
@@ -952,7 +956,7 @@ create type app_public.registration_status as enum (
   'IN_OPEN_QUOTA'
 );
 
-create view app_public.registrations_status_and_position as
+create materialized view app_hidden.registrations_status_and_position as
   with cte1 as (
     select
       r.id,
@@ -991,6 +995,8 @@ create view app_public.registrations_status_and_position as
     from cte2
   ) select
       id,
+      event_id,
+      quota_id,
       status,
       case
         -- row_number() returns bigint but we cast it to integer to avoid
@@ -1000,13 +1006,13 @@ create view app_public.registrations_status_and_position as
         else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
       end as position
     from cte3;
-comment on view registrations_status_and_position is
+comment on materialized view app_hidden.registrations_status_and_position is
   E'Rank and position of registrations.';
-grant select on app_public.registrations_status_and_position to :DATABASE_VISITOR;
+grant select on app_hidden.registrations_status_and_position to :DATABASE_VISITOR;
 
 create function app_public.registrations_status(registration app_public.registrations)
 returns app_public.registration_status as $$
-  select status from app_public.registrations_status_and_position where id = registration.id;
+  select status from app_hidden.registrations_status_and_position where id = registration.id;
 $$ language sql stable;
 comment on function app_public.registrations_status(registration app_public.registrations) is
   E'@sortable\n@filterable\nReturns the status of the registration.';
@@ -1014,7 +1020,7 @@ grant execute on function app_public.registrations_status(registration app_publi
 
 create function app_public.registrations_position(registration app_public.registrations)
 returns integer as $$
-  select position from app_public.registrations_status_and_position where id = registration.id;
+  select position from app_hidden.registrations_status_and_position where id = registration.id;
 $$ language sql stable;
 comment on function app_public.registrations_position(registration app_public.registrations) is
   E'@sortable\n@filterable\nReturns the position of the registration.';
@@ -1069,9 +1075,10 @@ create table app_private.registration_secrets(
   registration_token text default encode(gen_random_bytes(7), 'hex'),
   update_token text default encode(gen_random_bytes(7), 'hex'),
   confirmation_email_sent boolean not null default false,
+  received_spot_from_queue_email_sent boolean not null default false,
 
   -- When a registration/event/quota is deleted, also delete the secrets
-  registration_id uuid null references app_public.registrations on delete cascade,
+  registration_id uuid not null references app_public.registrations on delete cascade,
   event_id uuid not null references app_public.events on delete cascade,
   quota_id uuid not null references app_public.quotas on delete no action,
 
@@ -1090,11 +1097,12 @@ create trigger _100_timestamps
 
 -- Indices
 create index on app_private.registration_secrets(event_id);
+create index on app_private.registration_secrets(quota_id);
 create index on app_private.registration_secrets(registration_id);
 
 -- Comments
 comment on table app_private.registration_secrets is
-  E'The contents of this table should never be visible to the user. Contains data related to event registrations.';
+  E'The contents of this table should never be visible to the user. Contains private data related to event registrations.';
 
 --! split: 0043-registrations-admin-functions.sql
 /*
@@ -1392,12 +1400,6 @@ begin
     raise exception 'Invalid event or quota id.' using errcode = 'NTFND';
   end if;
 
-  -- Create a new registration secret
-  insert into app_private.registration_secrets(event_id, quota_id)
-    values (event_id, quota_id)
-  returning
-    registration_token, update_token into v_output;
-
   -- Create a registration. This means that a spot in the specified event and
   -- quota is reserved for a user when this function is called. The user can
   -- then proceed to enter their information at their own pace without worrying
@@ -1407,10 +1409,11 @@ begin
   returning
     id into v_registration_id;
 
-  -- Set registration_id to the corresponding row in registration_secrets table
-  update app_private.registration_secrets
-    set registration_id = v_registration_id
-    where registration_token = v_output.registration_token;
+  -- Create a new registration secret
+  insert into app_private.registration_secrets(event_id, quota_id, registration_id)
+    values (event_id, quota_id, v_registration_id)
+  returning
+    registration_token, update_token into v_output;
 
   return v_output;
 end;

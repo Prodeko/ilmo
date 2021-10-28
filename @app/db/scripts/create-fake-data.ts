@@ -102,9 +102,7 @@ async function generateData(client: PoolClient) {
           q.id,
           questions
         )
-        registrations.forEach(async (r) => {
-          await createRegistrationSecrets(client, 1, r.id, e.id, q.id)
-        })
+        await createRegistrationSecrets(client, registrations, e.id, q.id)
       })
     })
   })
