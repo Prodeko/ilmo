@@ -86,7 +86,7 @@
   "removeQuota": "Remove quota",
   "timer": {
     "instructions": "The page will update automatically once the registration opens. Please do not refresh the page.",
-    "registrationStarts": "Registration opens",
+    "registrationStarts": "Opens",
     "time": "Current time",
     "title": "Registration opens soon"
   }
