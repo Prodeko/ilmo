@@ -1086,6 +1086,73 @@ COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid) IS 'Mutation o
 
 
 --
+-- Name: admin_delete_user(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_delete_user(id uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_deleted_count integer;
+begin
+  -- Check permissions
+  call app_public.check_is_admin();
+
+  if admin_delete_user.id = app_public.current_user_id() then
+    raise exception 'You may not delete yourself via this page. Please delete your account from the account settings page.' using errcode = 'DNIED';
+  end if;
+
+  delete from app_public.users where users.id = admin_delete_user.id;
+
+  get diagnostics v_deleted_count = row_count;
+  if v_deleted_count = 1 then
+    return true;
+  else
+    return false;
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_delete_user(id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_delete_user(id uuid) IS 'Delete a user. Only accessible to admin users.';
+
+
+--
+-- Name: admin_list_users(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_list_users() RETURNS SETOF app_public.users
+    LANGUAGE plpgsql STABLE
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  -- Check permissions
+  -- Cannot use call app_public.check_is_admin(); in a non volatile function
+  if not app_public.current_user_is_admin() then
+    raise exception 'Acces denied. Only admins are allowed to use this query.' using errcode = 'DNIED';
+  end if;
+
+  return query
+    select * from app_public.users;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_list_users(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_list_users() IS '@sortable
+@filterable
+List all users. Only accessible to admin users.';
+
+
+--
 -- Name: admin_update_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2874,6 +2941,42 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.resend_email_verification_code(email_id uuid) IS 'If you didn''t receive the verification code for this email, we can resend it. We silently cap the rate of resends on the backend, so calls to this function may not result in another email being sent if it has been called recently.';
+
+
+--
+-- Name: set_admin_status(uuid, boolean); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_updated_count integer;
+begin
+  -- Check permissions
+  call app_public.check_is_admin();
+
+  if set_admin_status.id = app_public.current_user_id() then
+    raise exception 'You may not change your own admin status via this mutation.' using errcode = 'DNIED';
+  end if;
+
+  update app_public.users set is_admin = set_admin_status.is_admin where users.id = set_admin_status.id;
+  get diagnostics v_updated_count = row_count;
+  if v_updated_count = 1 then
+    return true;
+  else
+    return false;
+  end if;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION set_admin_status(id uuid, is_admin boolean); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) IS 'Make an existing user admin. Only accessible to admin users.';
 
 
 --
@@ -5299,6 +5402,22 @@ GRANT ALL ON FUNCTION app_public.admin_delete_registration(id uuid) TO ilmo_visi
 
 
 --
+-- Name: FUNCTION admin_delete_user(id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_delete_user(id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_delete_user(id uuid) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_list_users(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_list_users() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_list_users() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION admin_update_registration(id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5903,6 +6022,14 @@ GRANT ALL ON FUNCTION app_public.request_account_deletion() TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_admin_status(id uuid, is_admin boolean); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) TO ilmo_visitor;
 
 
 --
