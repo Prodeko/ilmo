@@ -60,7 +60,6 @@ describe("AdminListUsers", () => {
       async (json) => {
         expect(json.errors).toBeFalsy()
         expect(json.data).toBeTruthy()
-        console.log(json.data)
         expect(json.data!.adminListUsers.nodes.length).toEqual(1)
       }
     )

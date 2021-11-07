@@ -16,7 +16,6 @@ function dirname(meta) {
 
 const __dirname = dirname(import.meta)
 const isProd = process.env.NODE_ENV === "production"
-console.log(__dirname)
 
 const manageActions = {
   type: "list",
