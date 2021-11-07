@@ -99,49 +99,49 @@ const AdminListUserInner: React.FC<AdminListUserInnerProps> = ({
 
   const columns = !isMobile
     ? [
-      actionsColumn,
-      switchAdminStatusColumn,
-      nameColumn,
-      {
-        title: t("common:username"),
-        dataIndex: ["username"],
-        key: "username",
-        ellipsis: true,
-        sorter: {
-          compare: Sorter.TEXT,
+        actionsColumn,
+        switchAdminStatusColumn,
+        nameColumn,
+        {
+          title: t("common:username"),
+          dataIndex: ["username"],
+          key: "username",
+          ellipsis: true,
+          sorter: {
+            compare: Sorter.TEXT,
+          },
         },
-      },
-      {
-        title: t("admin:users.emailVerified"),
-        dataIndex: ["isVerified"],
-        key: "isVerified",
-        render: (value: string) =>
-          value ? (
-            <Text type="success">{t("common:yes")}</Text>
-          ) : (
-            <Text type="danger">{t("common:no")}</Text>
-          ),
-      },
-      {
-        title: t("admin:users.isAdminUser"),
-        dataIndex: ["isAdmin"],
-        key: "isAdmin",
-        render: (value: string) =>
-          value ? (
-            <Text type="success">{t("common:yes")}</Text>
-          ) : (
-            <Text type="danger">{t("common:no")}</Text>
-          ),
-      },
-      {
-        title: t("common:createdAt"),
-        dataIndex: "createdAt",
-        sorter: {
-          compare: Sorter.DATE,
+        {
+          title: t("admin:users.emailVerified"),
+          dataIndex: ["isVerified"],
+          key: "isVerified",
+          render: (value: string) =>
+            value ? (
+              <Text type="success">{t("common:yes")}</Text>
+            ) : (
+              <Text type="danger">{t("common:no")}</Text>
+            ),
         },
-        render: (startTime: string) => dayjs(startTime).format("l LT"),
-      },
-    ]
+        {
+          title: t("admin:users.isAdminUser"),
+          dataIndex: ["isAdmin"],
+          key: "isAdmin",
+          render: (value: string) =>
+            value ? (
+              <Text type="success">{t("common:yes")}</Text>
+            ) : (
+              <Text type="danger">{t("common:no")}</Text>
+            ),
+        },
+        {
+          title: t("common:createdAt"),
+          dataIndex: "createdAt",
+          sorter: {
+            compare: Sorter.DATE,
+          },
+          render: (startTime: string) => dayjs(startTime).format("l LT"),
+        },
+      ]
     : [actionsColumn, nameColumn]
 
   return (
