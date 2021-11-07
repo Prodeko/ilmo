@@ -1,12 +1,7 @@
 import { Head, IlmoContext, TopProgressBar } from "@app/components"
 import { withUrql } from "@app/lib"
 import { ConfigProvider } from "antd"
-import {
-  AnimatePresence,
-  AnimateSharedLayout,
-  domMax,
-  LazyMotion,
-} from "framer-motion"
+import { AnimatePresence, domMax, LazyMotion } from "framer-motion"
 import { AppProps } from "next/app"
 import { WithUrqlProps } from "next-urql"
 
@@ -26,14 +21,12 @@ const Ilmo = (props: AppProps & WithUrqlProps) => {
         <TopProgressBar />
         <Head />
         <LazyMotion features={domMax} strict>
-          <AnimateSharedLayout>
-            <AnimatePresence
-              exitBeforeEnter
-              onExitComplete={() => window.scrollTo(0, 0)}
-            >
-              <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
-            </AnimatePresence>
-          </AnimateSharedLayout>
+          <AnimatePresence
+            exitBeforeEnter
+            onExitComplete={() => window.scrollTo(0, 0)}
+          >
+            <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
+          </AnimatePresence>
         </LazyMotion>
       </ConfigProvider>
     </IlmoContext.Provider>

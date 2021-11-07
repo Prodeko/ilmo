@@ -33,16 +33,14 @@ const Admin_ListEvents: NextPage = () => {
     title: "",
     key: "actions",
     width: !isMobile ? 160 : 1,
-    render: (_name: string, event: Event) => {
-      return (
-        <AdminTableActions
-          adminUrl="event"
-          dataType={event}
-          deleteConfirmTranslate={t("events.delete.confirmText")}
-          deleteMutation={useDeleteEventMutation}
-        />
-      )
-    },
+    render: (_name: string, event: Event) => (
+      <AdminTableActions
+        adminUrl="event"
+        dataType={event}
+        deleteConfirmTranslate={t("events.delete.confirmText")}
+        deleteMutation={useDeleteEventMutation}
+      />
+    ),
   }
   const nameColumn = {
     title: t("common:name"),

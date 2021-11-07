@@ -64,10 +64,10 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         setSuccess(true)
       } catch (e) {
         const errcode = getCodeFromError(e)
-        if (errcode === "23505") {
+        if (errcode === "NUNIQ") {
           form.setFields([
             {
-              name: t("username"),
+              name: "username",
               value: form.getFieldValue("username"),
               errors: [t("errors.usernameTaken")],
             },
@@ -112,14 +112,14 @@ function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
           <Input />
         </Form.Item>
         {error ? (
-          <Form.Item>
+          <Form.Item {...tailFormItemLayout}>
             <ErrorAlert
               error={error}
-              message={t("form.feedback.profileUpdating")}
+              message={t("errors.errorUpdatingUsername")}
             />
           </Form.Item>
         ) : success ? (
-          <Form.Item>
+          <Form.Item {...tailFormItemLayout}>
             <Alert message={t("form.feedback.profileUpdated")} type="success" />
           </Form.Item>
         ) : null}

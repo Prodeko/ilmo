@@ -15,13 +15,13 @@
     "antd": "^4.16.13",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "^1.10.7",
-    "framer-motion": "^4.1.17",
+    "framer-motion": "^5.0.0",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
     "next": "^11.1.2",
     "next-plugin-antd-less": "^1.4.4",
     "next-translate": "^1.1.1",
-    "next-transpile-modules": "^8.0.0",
+    "next-transpile-modules": "^9.0.0",
     "rc-table": "^7.19.0",
     "react": "^17.0.2",
     "react-color-palette": "^6.1.0",
@@ -29,10 +29,10 @@
     "slugify": "^1.6.1",
     "tls": "^0.0.1",
     "urql": "^2.0.5",
-    "webpack": "^5.60.0"
+    "webpack": "^5.61.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^12.0.0",
+    "@next/bundle-analyzer": "^12.0.2",
     "@types/lodash": "^4.14.176",
     "@types/node": "^16.11.6",
     "@types/react": "^17.0.33",

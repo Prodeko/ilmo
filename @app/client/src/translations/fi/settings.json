@@ -12,8 +12,9 @@
     "accountDeleteFailedOrgOwner1": "Et voi poistaa tiliäsi, kun olet organisaation omistaja.",
     "accountDeleteFailedOrgOwner2": "Määritä omistajuutesi toiselle käyttäjälle tai poista organisaatio jokaisen omistamasi organisaation kohdalla.",
     "deleteFailed": "Poistopyyntö epäonnistui",
+    "errorUpdatingUsername": "Virhe päivitettäesssä käyttäjänimeä",
     "incorrectOldPassword": "Väärä vanha salasana",
-    "usernameTaken": "Tämä käyttäjänimi on jo käytössä, valitse toinen nimi"
+    "usernameTaken": "Tämä käyttäjänimi on jo käytössä, valitse toinen käyttäjänimi"
   },
   "form": {
     "feedback": {
@@ -21,8 +22,7 @@
       "emailAddFailed": "Virhe lisättäessä sähköpostia",
       "passwordChangeFailed": "Salasanan vaihtaminen epäonnistui",
       "passwordChanged": "Salasana vaihdettu!",
-      "profileUpdated": "Profiili päivitetty",
-      "profileUpdating": "Päivitetään käyttäjänimeä"
+      "profileUpdated": "Profiili päivitetty"
     },
     "label": {
       "newEmail": "Uusi sähköpostil",

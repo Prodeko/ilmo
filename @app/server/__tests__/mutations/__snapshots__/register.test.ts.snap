@@ -1,20 +1,42 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Register 2`] = `
+exports[`Register can register with with an email address that is in REGISTER_DOMAINS_ALLOWLIST 1`] = `
 Object {
   "data": Object {
     "register": Object {
       "user": Object {
-        "avatarUrl": null,
-        "createdAt": "[timestamp-1]",
         "id": "[id-1]",
-        "isAdmin": false,
-        "isVerified": false,
-        "name": "Test User",
-        "updatedAt": "[timestamp-1]",
+        "name": "[random-1]",
         "username": "[username-1]",
       },
     },
   },
+}
+`;
+
+exports[`Register can't register from an unallowed domain 1`] = `
+Object {
+  "data": Object {
+    "register": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Registrations from this domain are not allowed",
+      "path": Array [
+        "register",
+      ],
+    },
+  ],
 }
 `;

@@ -1,5 +1,5 @@
---! Previous: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
---! Hash: sha1:f93b282bd7533cc8fd8dbcaa70ab8252405bb1c2
+--! Previous: sha1:8be526161aaecff72e09fe1be3a874a038fa9099
+--! Hash: sha1:92156bb3e88782d36f9e42c6dee2b29215f57f88
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -148,14 +148,12 @@ create table app_public.event_categories(
   name translated_field not null,
   description translated_field not null,
   owner_organization_id uuid not null references app_public.organizations on delete cascade,
-  color text,
+  color app_public.hex_color,
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
-
-  constraint _cnstr_check_color_hex check (color ~* '^#[a-f0-9]{6}$')
 );
 alter table app_public.event_categories enable row level security;
 
@@ -864,7 +862,7 @@ create table app_public.registrations(
   quota_id uuid not null references app_public.quotas on delete no action,
   first_name constrained_name,
   last_name constrained_name,
-  email citext null check (email ~ '[^@]+@[^@]+\.[^@]+'),
+  email app_public.email,
   answers jsonb,
   is_finished boolean not null default false,
 
@@ -1114,9 +1112,8 @@ declare
   v_registration_secret app_private.registration_secrets;
   v_required_question_ids uuid[];
 begin
-  if not app_public.current_user_is_admin() then
-    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   select * into v_registration_secret
     from app_private.registration_secrets
@@ -1137,9 +1134,8 @@ returns boolean as $$
 declare
   v_registration_id uuid;
 begin
-  if not app_public.current_user_is_admin() then
-    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   -- Delete registration and associated secrets (foreign key has on delete)
   delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;

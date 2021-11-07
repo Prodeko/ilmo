@@ -1,0 +1,6 @@
+mutation AdminDeleteUser($id: UUID!) {
+  adminDeleteUser(input: {id: $id}) {
+    success
+    __typename
+  }
+}

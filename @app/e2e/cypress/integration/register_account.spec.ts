@@ -1,7 +1,6 @@
 /// <reference types="Cypress" />
 
-// If process.env.ENABLE_REGISTRATION=1, remove skip
-context.skip("RegisterAccount", () => {
+context("RegisterAccount", () => {
   it("can navigate to registration page", () => {
     // Setup
     cy.visit(Cypress.env("ROOT_URL"))
@@ -12,7 +11,7 @@ context.skip("RegisterAccount", () => {
 
     // Assertions
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/register?next=%2F")
-    cy.getCy("registerpage-name-label").should("exist")
+    cy.getCy("registerpage-input-name").should("exist")
   })
 
   it("requires the form be filled", () => {
@@ -23,9 +22,9 @@ context.skip("RegisterAccount", () => {
     cy.getCy("registerpage-submit-button").click()
 
     // Assertions
-    cy.getCy("registerpage-name-label").should("exist")
-    cy.contains("input your name")
-    cy.contains("input your passphrase")
+    cy.getCy("registerpage-input-name").should("exist")
+    cy.contains("Anna nimi")
+    cy.contains("Anna salasana")
   })
 
   context("Account creation", () => {
@@ -39,7 +38,7 @@ context.skip("RegisterAccount", () => {
       // Action
       cy.getCy("registerpage-input-name").type("Test User")
       cy.getCy("registerpage-input-username").type("testuser")
-      cy.getCy("registerpage-input-email").type("testuser@example.com")
+      cy.getCy("registerpage-input-email").type("testuser@prodeko.org")
       cy.getCy("registerpage-input-password").type("Really Good Password")
       cy.getCy("registerpage-input-password2").type("Really Good Password")
       cy.getCy("registerpage-submit-button").click()
@@ -50,7 +49,7 @@ context.skip("RegisterAccount", () => {
       cy.getCy("layout-dropdown-user").should("contain", "Test User") // Should be logged in
     })
 
-    it("prevents creation if username is in use", () => {
+    it("prevents account creation if email is not from an allowed domain", () => {
       // Setup
       cy.serverCommand("createUser", { username: "testuser" })
       cy.visit(Cypress.env("ROOT_URL") + "/register")
@@ -59,6 +58,23 @@ context.skip("RegisterAccount", () => {
       cy.getCy("registerpage-input-name").type("Test User")
       cy.getCy("registerpage-input-username").type("testuser")
       cy.getCy("registerpage-input-email").type("testuser@example.com")
+      cy.getCy("registerpage-input-password").type("Really Good Password")
+      cy.getCy("registerpage-input-password2").type("Really Good Password")
+      cy.getCy("registerpage-submit-button").click()
+
+      // Assertions
+      cy.contains("Registrations from this domain are not allowed")
+    })
+
+    it("prevents account creation if username is in use", () => {
+      // Setup
+      cy.serverCommand("createUser", { username: "testuser" })
+      cy.visit(Cypress.env("ROOT_URL") + "/register")
+
+      // Action
+      cy.getCy("registerpage-input-name").type("Test User")
+      cy.getCy("registerpage-input-username").type("testuser")
+      cy.getCy("registerpage-input-email").type("testuser@prodeko.org")
       cy.getCy("registerpage-input-password").type("Really Good Password")
       cy.getCy("registerpage-input-password2").type("Really Good Password")
       cy.getCy("registerpage-submit-button").click()

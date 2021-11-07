@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AdminDeleteUser can delete a user as an admin user 1`] = `
+Object {
+  "data": Object {
+    "adminDeleteUser": Object {
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`AdminDeleteUser can't delete self via adminDeleteUser mutation 1`] = `
+Object {
+  "data": Object {
+    "adminDeleteUser": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.admin_delete_user(uuid) line 9 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "You may not delete yourself via this page. Please delete your account from the account settings page.",
+      "path": Array [
+        "adminDeleteUser",
+      ],
+    },
+  ],
+}
+`;

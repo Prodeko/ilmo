@@ -82,7 +82,7 @@ enum TAB {
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages } = initialValues || {}
-  const { supportedLanguages } = data!.languages! || {}
+  const { supportedLanguages } = data?.languages || {}
   const initialSelectedLanguages = useMemo(
     () => (type === "update" ? languages || {} : supportedLanguages),
     [type, languages, supportedLanguages]

@@ -115,7 +115,7 @@
               "omit": "all"
             }
           },
-          "user_emails_user_id_email_key": {
+          "_cnstr_user_emails_user_id_email_key": {
             "tags": {
               // We don't need custom finders/relations for this
               "omit": true
@@ -238,6 +238,16 @@
         }
       },
       "app_public.admin_delete_registration": {
+        "tags": {
+          "resultFieldName": "success"
+        }
+      },
+      "app_public.admin_delete_user": {
+        "tags": {
+          "resultFieldName": "success"
+        }
+      },
+      "app_public.set_admin_status": {
         "tags": {
           "resultFieldName": "success"
         }

@@ -1,0 +1,6 @@
+mutation SetAdminStatus($input: SetAdminStatusInput!) {
+  setAdminStatus(input: $input) {
+    success
+    __typename
+  }
+}

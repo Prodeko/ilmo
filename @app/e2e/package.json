@@ -18,6 +18,6 @@
     "neat-csv": "^7.0.0",
     "node-polyfill-webpack-plugin": "^1.1.4",
     "slugify": "^1.6.1",
-    "webpack": "^5.60.0"
+    "webpack": "^5.61.0"
   }
 }

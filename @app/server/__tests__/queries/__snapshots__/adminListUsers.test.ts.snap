@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AdminListUsers adminListUsers when logged in as admin 1`] = `
+Object {
+  "data": Object {
+    "adminListUsers": Object {
+      "nodes": Array [
+        Object {
+          "avatarUrl": null,
+          "createdAt": "[timestamp-1]",
+          "id": "[id-1]",
+          "isAdmin": true,
+          "isVerified": true,
+          "name": "[random-1]",
+          "username": "[username-1]",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`AdminListUsers adminListUsers when logged in as non-admin 1`] = `
+Object {
+  "data": Object {
+    "adminListUsers": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.admin_list_users() line 6 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Acces denied. Only admins are allowed to use this query.",
+      "path": Array [
+        "adminListUsers",
+      ],
+    },
+  ],
+}
+`;

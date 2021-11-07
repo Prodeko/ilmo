@@ -13,6 +13,7 @@ import {
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
 import { Col, PageHeader, Row, Tag } from "antd"
+import { AlignType } from "rc-table/lib/interface"
 
 import type { NextPage } from "next"
 
@@ -33,7 +34,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
   const actionsColumn = {
     title: "",
     key: "actions",
-    width: 200,
+    width: !isMobile ? 160 : 1,
     render: (_name: string, eventCategory: EventCategory) => {
       const bannerErrorText = t("eventCategories.delete.deleteFailedBADFK")
       return (
@@ -53,7 +54,7 @@ const AdminListEventCategoriesInner: React.FC = () => {
     dataIndex: ["name", lang],
     key: "name",
     width: 150,
-    align: "center",
+    align: "center" as AlignType,
     sorter: {
       compare: Sorter.TEXT,
     },

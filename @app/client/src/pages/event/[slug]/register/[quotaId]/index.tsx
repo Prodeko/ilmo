@@ -16,7 +16,7 @@ import { useRouter } from "next/router"
 import type { NextPage } from "next"
 
 const EventRegistrationPage: NextPage = () => {
-  const { t, lang } = useTranslation("register")
+  const { t, lang } = useTranslation("register_event")
   const [visible, setVisible] = useState(false)
 
   const router = useRouter()

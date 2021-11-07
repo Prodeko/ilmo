@@ -297,6 +297,7 @@ Object {
       </body>
     </html>
   ",
+          "id": "[id-1]",
           "name": "[random-1]",
           "text": "You changed your password.
 
@@ -570,6 +571,7 @@ necessary.
       </body>
     </html>
   ",
+          "id": "[id-2]",
           "name": "[random-2]",
           "text": "© Tuotantotalouden Kilta Prodeko ry.
 
@@ -898,6 +900,7 @@ necessary.
       </body>
     </html>
   ",
+          "id": "[id-3]",
           "name": "[random-3]",
           "text": "Verification code:
 
@@ -1259,6 +1262,7 @@ Confirm intent
       </body>
     </html>
   ",
+          "id": "[id-4]",
           "name": "[random-4]",
           "text": "Ilmoittautuminen tapahtumaan onnistui:
 
@@ -1604,6 +1608,7 @@ You can update or delete your registration via this link: http://localhost:5678/
       </body>
     </html>
   ",
+          "id": "[id-5]",
           "name": "[random-5]",
           "text": "You have been invited to join Webbitiimi. Please click the button below to accept the invitation. If you do not wish to
 join this organization then no action is necessary.
@@ -1957,6 +1962,7 @@ Accept invitation
       </body>
     </html>
   ",
+          "id": "[id-6]",
           "name": "[random-6]",
           "text": "Click below to reset your password.
 
@@ -2262,6 +2268,7 @@ Change Passphrase
       </body>
     </html>
   ",
+          "id": "[id-7]",
           "name": "[random-7]",
           "text": "Someone (hopefully you) tried to reset your password for http://localhost:5678, but no account is registered for this
 email address.
@@ -2622,6 +2629,7 @@ This message is purely for your information. No action is required.
       </body>
     </html>
   ",
+          "id": "[id-8]",
           "name": "[random-8]",
           "text": "Olet saanut paikan jonosta tapahtumaan Testitapahtuma
 
@@ -2995,6 +3003,7 @@ You can update or delete your registration via this link: http://localhost:5678/
       </body>
     </html>
   ",
+          "id": "[id-9]",
           "name": "[random-9]",
           "text": "Please confirm your email by clicking the link below.
 

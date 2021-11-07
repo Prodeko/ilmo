@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:9169a317f74df0f542b7c149ef9d6de44d47cd27
+--! Hash: sha1:8be526161aaecff72e09fe1be3a874a038fa9099
 
 --! split: 0001-reset.sql
 /*
@@ -284,6 +284,14 @@ begin
 end;
 $$ language plpgsql;
 
+--! split: 0060-domains.sql
+/*
+ * These DOMAIN's are used across different tables
+ */
+
+create domain app_public.email as citext check (value ~ '[^@]+@[^@]+\.[^@]+');
+create domain app_public.hex_color as text check (value ~* '^#[a-f0-9]{6}$');
+
 --! split: 1000-sessions.sql
 /*
  * The sessions table is used to track who is logged in, if there are any
@@ -500,15 +508,15 @@ create trigger _500_gql_update
 create table app_public.user_emails (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default app_public.current_user_id() references app_public.users on delete cascade,
-  email citext not null check (email ~ '[^@]+@[^@]+\.[^@]+'),
+  email app_public.email not null,
   is_verified boolean not null default false,
   is_primary boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   -- Each user can only have an email once.
-  constraint user_emails_user_id_email_key unique(user_id, email),
+  constraint _cnstr_user_emails_user_id_email_key unique(user_id, email),
   -- An unverified email cannot be set as the primary email.
-  constraint user_emails_must_be_verified_to_be_primary check(is_primary is false or is_verified is true)
+  constraint _cnstr_user_emails_must_be_verified_to_be_primary check(is_primary is false or is_verified is true)
 );
 alter table app_public.user_emails enable row level security;
 
@@ -1581,14 +1589,12 @@ create table app_public.organizations (
   id uuid primary key default gen_random_uuid(),
   slug citext not null unique,
   name text not null,
-  color text,
+  color app_public.hex_color,
 
   created_by uuid references app_public.users on delete set null,
   updated_by uuid references app_public.users on delete set null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-
-  constraint _cnstr_check_color_hex check (color ~* '^#[a-f0-9]{6}$')
+  updated_at timestamptz not null default now()
 );
 alter table app_public.organizations enable row level security;
 
@@ -1926,7 +1932,7 @@ begin
     where user_id = app_public.current_user_id()
     and is_owner is true
   ) then
-    raise exception 'You cannot delete your account until you are not the owner of any organizations.' using errcode = 'OWNER';
+    raise exception 'You cannot delete an account until it is not the owner of any organizations.' using errcode = 'OWNER';
   end if;
 
   return old;

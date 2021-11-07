@@ -188,10 +188,10 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   )
 
   add(
-    "ENABLE_REGISTRATION",
-    0,
+    "REGISTER_DOMAINS_ALLOWLIST",
+    "prodeko.org",
     `\
-# Enable / disable account registrations (0 = don't allow users to register new accounts)`
+# Comma separated list of domain from which to allow registrations`
   )
 
   add(
