@@ -1,13 +1,12 @@
-// @ts-nocheck
-/* eslint-disable */
 import { FocusEvent, useCallback, useEffect, useRef, useState } from "react"
-import { QuestionCircleOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
   ErrorAlert,
   PasswordStrength,
   Redirect,
   SharedLayout,
+  usePasswordStrength,
+  useTranslation,
 } from "@app/components"
 import { useRegisterMutation, useSharedQuery } from "@app/graphql"
 import {
@@ -17,9 +16,12 @@ import {
   resetWebsocketConnection,
   tailFormItemLayout,
 } from "@app/lib"
-import { Button, Form, Input, Tooltip } from "antd"
-import type { NextPage } from "next"
+import { Button, Form, Input } from "antd"
 import { useRouter } from "next/router"
+
+import { isSafe } from "./login"
+
+import type { GetServerSideProps, NextPage } from "next"
 
 interface RegisterProps {
   next: string | null
@@ -36,6 +38,7 @@ const Register: NextPage<RegisterProps> = ({
   resetUrqlClient,
 }) => {
   const router = useRouter()
+  const { t } = useTranslation("register_user")
   const [formValues, setFormValues] = useState()
   const { strength: passwordStrength, suggestions: passwordSuggestions } =
     usePasswordStrength(formValues, "password")
@@ -50,10 +53,7 @@ const Register: NextPage<RegisterProps> = ({
     async (values) => {
       try {
         const { error } = await register({
-          username: values.username,
-          email: values.email,
-          password: values.password,
-          name: values.name,
+          ...values,
         })
         if (error) throw error
         // Success: refetch
@@ -69,9 +69,7 @@ const Register: NextPage<RegisterProps> = ({
             {
               name: "password",
               value: form.getFieldValue("password"),
-              errors: [
-                "The server believes this passphrase is too weak, please make it stronger",
-              ],
+              errors: [t("error:weakp")],
             },
           ])
         } else if (code === "EMTKN") {
@@ -79,9 +77,7 @@ const Register: NextPage<RegisterProps> = ({
             {
               name: "email",
               value: form.getFieldValue("email"),
-              errors: [
-                "An account with this email address has already been registered, consider using the 'Forgot passphrase' function.",
-              ],
+              errors: [t("errors.emailAlreadyExists")],
             },
           ])
         } else if (code === "NUNIQ" && fields && fields[0] === "username") {
@@ -89,9 +85,7 @@ const Register: NextPage<RegisterProps> = ({
             {
               name: "username",
               value: form.getFieldValue("username"),
-              errors: [
-                "An account with this username has already been registered, please try a different username.",
-              ],
+              errors: [t("errors.usernameAlreadyExists")],
             },
           ])
         } else if (code === "23514") {
@@ -99,15 +93,13 @@ const Register: NextPage<RegisterProps> = ({
             {
               name: "username",
               value: form.getFieldValue("username"),
-              errors: [
-                "This username is not allowed; usernames must be between 2 and 24 characters long (inclusive), must start with a letter, and must contain only alphanumeric characters and underscores.",
-              ],
+              errors: [t("errors.usernameInvalid")],
             },
           ])
         }
       }
     },
-    [form, register, resetUrqlClient, next]
+    [form, register, resetUrqlClient, next, router, t]
   )
 
   const handleConfirmBlur = useCallback(
@@ -121,10 +113,10 @@ const Register: NextPage<RegisterProps> = ({
   const compareToFirstPassword = useCallback(
     async (_rule: any, value: any) => {
       if (value && value !== form.getFieldValue("password")) {
-        throw "Make sure your passphrase is the same in both passphrase boxes."
+        throw t("errors.checkpasswordMatch")
       }
     },
-    [form]
+    [form, t]
   )
 
   const focusElement = useRef<Input>(null)
@@ -162,8 +154,9 @@ const Register: NextPage<RegisterProps> = ({
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
+      noHandleErrors={!!query.data?.currentUser}
       query={query}
-      title="Register"
+      title={t("title")}
     >
       {({ currentUser }) =>
         currentUser ? (
@@ -176,19 +169,12 @@ const Register: NextPage<RegisterProps> = ({
             onValuesChange={handleValuesChange}
           >
             <Form.Item
-              label={
-                <span data-cy="registerpage-name-label">
-                  Name&nbsp;
-                  <Tooltip title="What is your name?">
-                    <QuestionCircleOutlined />
-                  </Tooltip>
-                </span>
-              }
+              label={t("common:name")}
               name="name"
               rules={[
                 {
                   required: true,
-                  message: "Please input your name.",
+                  message: t("form.messages.inputName"),
                   whitespace: true,
                 },
               ]}
@@ -200,42 +186,33 @@ const Register: NextPage<RegisterProps> = ({
               />
             </Form.Item>
             <Form.Item
-              label={
-                <span>
-                  Username&nbsp;
-                  <Tooltip title="What do you want others to call you?">
-                    <QuestionCircleOutlined />
-                  </Tooltip>
-                </span>
-              }
+              label={t("common:username")}
               name="username"
               rules={[
                 {
                   required: true,
-                  message: "Please input your username.",
+                  message: t("form.messages.inputUsername"),
                   whitespace: true,
                 },
                 {
                   min: 2,
-                  message: "Username must be at least 2 characters long.",
+                  message: t("form.messages.usernameMinLength"),
                 },
                 {
                   max: 24,
-                  message: "Username must be no more than 24 characters long.",
+                  message: t("form.messages.usernameMaxLength"),
                 },
                 {
                   pattern: /^([a-zA-Z]|$)/,
-                  message: "Username must start with a letter.",
+                  message: t("form.messages.usernameStartLetter"),
                 },
                 {
                   pattern: /^([^_]|_[^_]|_$)*$/,
-                  message:
-                    "Username must not contain two underscores next to each other.",
+                  message: t("form.messages.usernameNoTwoUnderscores"),
                 },
                 {
                   pattern: /^[a-zA-Z0-9_]*$/,
-                  message:
-                    "Username must contain only alphanumeric characters and underscores.",
+                  message: t("form.messages.usernameAlphanumeric"),
                 },
               ]}
             >
@@ -245,28 +222,28 @@ const Register: NextPage<RegisterProps> = ({
               />
             </Form.Item>
             <Form.Item
-              label="E-mail"
+              label={t("form.labels.email")}
               name="email"
               rules={[
                 {
                   type: "email",
-                  message: "The input is not valid E-mail.",
+                  message: t("form.messages.inputEmailValid"),
                 },
                 {
                   required: true,
-                  message: "Please input your E-mail.",
+                  message: t("form.messages.inputEmail"),
                 },
               ]}
             >
               <Input data-cy="registerpage-input-email" />
             </Form.Item>
-            <Form.Item label="Passphrase" required>
+            <Form.Item label={t("form.labels.passphrase")} required>
               <Form.Item
                 name="password"
                 rules={[
                   {
                     required: true,
-                    message: "Please input your passphrase.",
+                    message: t("form.messages.inputPassphrase"),
                   },
                 ]}
                 noStyle
@@ -287,12 +264,12 @@ const Register: NextPage<RegisterProps> = ({
               />
             </Form.Item>
             <Form.Item
-              label="Confirm passphrase"
+              label={t("form.labels.confirmPassphrase")}
               name="confirm"
               rules={[
                 {
                   required: true,
-                  message: "Please confirm your passphrase.",
+                  message: t("form.messages.confirmPassphrase"),
                 },
                 {
                   validator: compareToFirstPassword,
@@ -307,13 +284,16 @@ const Register: NextPage<RegisterProps> = ({
               />
             </Form.Item>
             {error && (
-              <Form.Item label="Error">
-                <ErrorAlert error={error} message="Registration failed" />
+              <Form.Item {...tailFormItemLayout}>
+                <ErrorAlert
+                  error={error}
+                  message={t("errors.registrationFailed")}
+                />
               </Form.Item>
             )}
             <Form.Item {...tailFormItemLayout}>
               <Button data-cy="registerpage-submit-button" htmlType="submit">
-                Register
+                {t("form.submit")}
               </Button>
             </Form.Item>
           </Form>
@@ -323,8 +303,15 @@ const Register: NextPage<RegisterProps> = ({
   )
 }
 
-Register.getInitialProps = async ({ query }) => ({
-  next: typeof query.next === "string" ? query.next : null,
-})
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { query } = context
+  const { next, token } = query
+  return {
+    props: {
+      next: typeof next === "string" ? next : null,
+      token: typeof token === "string" ? token : null,
+    },
+  }
+}
 
 export default Register

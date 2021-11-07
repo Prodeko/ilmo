@@ -28,7 +28,7 @@ function constructInitialValues(values: any) {
 }
 
 const UpdateEventRegistrationPage: NextPage = () => {
-  const { t, lang } = useTranslation("register")
+  const { t, lang } = useTranslation("register_event")
   const router = useRouter()
   const { updateToken } = router.query
 

@@ -3,6 +3,7 @@ import qs from "querystring"
 import { PlusCircleTwoTone } from "@ant-design/icons"
 import { AiOutlineMail } from "@react-icons/all-files/ai/AiOutlineMail"
 import { AiOutlineTag } from "@react-icons/all-files/ai/AiOutlineTag"
+import { FiUsers } from "@react-icons/all-files/fi/FiUsers"
 import { MdEvent } from "@react-icons/all-files/md/MdEvent"
 import { VscOrganization } from "@react-icons/all-files/vsc/VscOrganization"
 import { Layout } from "antd"
@@ -134,6 +135,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               cy: "admin-sider-create-event-category",
             },
           ],
+        },
+        {
+          key: "admin-menu-users",
+          title: t("sider.titles.users"),
+          icon: <FiUsers />,
+          target: "/admin/users/list",
+          cy: "admin-sider-users",
         },
         ...basicMenuItems,
       ]

@@ -7,7 +7,7 @@ import {
 } from "@app/graphql"
 import { Button, Col, message, Popconfirm, Row } from "antd"
 
-import { ErrorAlert, useTranslation } from "../."
+import { ErrorAlert, useTranslation } from ".."
 
 import { RegistrationUpdateModal } from "./RegistrationUpdateModal"
 
@@ -35,7 +35,7 @@ export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps>
         })
         if (error) throw error
         if (!data?.adminDeleteRegistration?.success) {
-          throw new Error(t("register:deleteRegistrationFailed"))
+          throw new Error(t("register_event:deleteRegistrationFailed"))
         }
         message.info(t("notifications.deleteSuccess"))
       } catch (e) {
@@ -58,12 +58,12 @@ export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps>
 
     return (
       <>
-        <Row gutter={[8, 8]}>
+        <Row gutter={[8, 8]} wrap>
           <Col flex="1 1 50%">
             <Button
               data-cy="admin-table-update-button"
               size="small"
-              style={{ minWidth: "85px" }}
+              style={{ width: "65px" }}
               type="primary"
               onClick={doUpdate}
             >
@@ -81,7 +81,7 @@ export const RegistrationsTableActions: React.FC<RegistrationsTableActionsProps>
               <Button
                 data-cy="admin-table-delete-button"
                 size="small"
-                style={{ minWidth: "85px" }}
+                style={{ minWidth: "65px" }}
                 danger
               >
                 {t("common:delete")}

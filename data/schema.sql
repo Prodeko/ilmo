@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.4
--- Dumped by pg_dump version 13.4
+-- Dumped from database version 11.13
+-- Dumped by pg_dump version 11.13
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -181,6 +181,14 @@ CREATE TYPE app_public.create_event_quotas AS (
 
 
 --
+-- Name: email; Type: DOMAIN; Schema: app_public; Owner: -
+--
+
+CREATE DOMAIN app_public.email AS public.citext
+	CONSTRAINT email_check CHECK ((VALUE OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext));
+
+
+--
 -- Name: event_input; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -200,6 +208,14 @@ CREATE TYPE app_public.event_input AS (
 	owner_organization_id uuid,
 	category_id uuid
 );
+
+
+--
+-- Name: hex_color; Type: DOMAIN; Schema: app_public; Owner: -
+--
+
+CREATE DOMAIN app_public.hex_color AS text
+	CONSTRAINT hex_color_check CHECK ((VALUE ~* '^#[a-f0-9]{6}$'::text));
 
 
 --
@@ -257,14 +273,14 @@ $$;
 
 SET default_tablespace = '';
 
-SET default_table_access_method = heap;
+SET default_with_oids = false;
 
 --
 -- Name: users; Type: TABLE; Schema: app_public; Owner: -
 --
 
 CREATE TABLE app_public.users (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     username public.citext NOT NULL,
     name text,
     avatar_url text,
@@ -432,7 +448,7 @@ COMMENT ON FUNCTION app_private.link_or_register_user(f_user_id uuid, f_service 
 --
 
 CREATE TABLE app_private.sessions (
-    uuid uuid DEFAULT gen_random_uuid() NOT NULL,
+    uuid uuid DEFAULT public.gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     last_active timestamp with time zone DEFAULT now() NOT NULL
@@ -1047,9 +1063,8 @@ CREATE FUNCTION app_public.admin_delete_registration(id uuid) RETURNS boolean
 declare
   v_registration_id uuid;
 begin
-  if not app_public.current_user_is_admin() then
-    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   -- Delete registration and associated secrets (foreign key has on delete)
   delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
@@ -1082,9 +1097,8 @@ declare
   v_registration_secret app_private.registration_secrets;
   v_required_question_ids uuid[];
 begin
-  if not app_public.current_user_is_admin() then
-    raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
-  end if;
+  -- Check permissions
+  call app_public.check_is_admin();
 
   select * into v_registration_secret
     from app_private.registration_secrets
@@ -1302,7 +1316,7 @@ COMMENT ON FUNCTION app_public.confirm_account_deletion(token text) IS 'If you''
 --
 
 CREATE TABLE app_public.events (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     slug public.citext NOT NULL,
     name app_public.translated_field NOT NULL,
     description app_public.translated_field NOT NULL,
@@ -1551,7 +1565,7 @@ $$;
 --
 
 CREATE TABLE app_public.event_questions (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     "position" smallint NOT NULL,
     type app_public.question_type NOT NULL,
@@ -1669,7 +1683,7 @@ Create multiple questions at once.';
 --
 
 CREATE TABLE app_public.quotas (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     "position" smallint NOT NULL,
     title app_public.translated_field NOT NULL,
@@ -1766,15 +1780,14 @@ Create multiple quotas at once.';
 --
 
 CREATE TABLE app_public.organizations (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     slug public.citext NOT NULL,
     name text NOT NULL,
-    color text,
+    color app_public.hex_color,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text))
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1840,19 +1853,18 @@ $$;
 --
 
 CREATE TABLE app_public.registrations (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     event_id uuid NOT NULL,
     quota_id uuid NOT NULL,
     first_name app_public.constrained_name,
     last_name app_public.constrained_name,
-    email public.citext,
+    email app_public.email,
     answers jsonb,
     is_finished boolean DEFAULT false NOT NULL,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT registrations_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext))
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -2486,15 +2498,14 @@ $$;
 --
 
 CREATE TABLE app_public.user_emails (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     user_id uuid DEFAULT app_public.current_user_id() NOT NULL,
-    email public.citext NOT NULL,
+    email app_public.email NOT NULL,
     is_verified boolean DEFAULT false NOT NULL,
     is_primary boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT user_emails_email_check CHECK ((email OPERATOR(public.~) '[^@]+@[^@]+\.[^@]+'::public.citext)),
-    CONSTRAINT user_emails_must_be_verified_to_be_primary CHECK (((is_primary IS FALSE) OR (is_verified IS TRUE)))
+    CONSTRAINT _cnstr_user_emails_must_be_verified_to_be_primary CHECK (((is_primary IS FALSE) OR (is_verified IS TRUE)))
 );
 
 
@@ -3018,7 +3029,7 @@ begin
     where user_id = app_public.current_user_id()
     and is_owner is true
   ) then
-    raise exception 'You cannot delete your account until you are not the owner of any organizations.' using errcode = 'OWNER';
+    raise exception 'You cannot delete an account until it is not the owner of any organizations.' using errcode = 'OWNER';
   end if;
 
   return old;
@@ -3549,7 +3560,7 @@ COMMENT ON MATERIALIZED VIEW app_hidden.registrations_status_and_position IS 'Ra
 --
 
 CREATE TABLE app_private.registration_secrets (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     registration_token text DEFAULT encode(public.gen_random_bytes(7), 'hex'::text),
     update_token text DEFAULT encode(public.gen_random_bytes(7), 'hex'::text),
     confirmation_email_sent boolean DEFAULT false NOT NULL,
@@ -3668,16 +3679,15 @@ COMMENT ON TABLE app_private.user_secrets IS 'The contents of this table should 
 --
 
 CREATE TABLE app_public.event_categories (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     name app_public.translated_field NOT NULL,
     description app_public.translated_field NOT NULL,
     owner_organization_id uuid NOT NULL,
-    color text,
+    color app_public.hex_color,
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT _cnstr_check_color_hex CHECK ((color ~* '^#[a-f0-9]{6}$'::text))
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -3728,7 +3738,7 @@ COMMENT ON COLUMN app_public.event_categories.color IS 'Color color the event ca
 --
 
 CREATE TABLE app_public.organization_invitations (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     organization_id uuid NOT NULL,
     code text,
     user_id uuid,
@@ -3743,7 +3753,7 @@ CREATE TABLE app_public.organization_invitations (
 --
 
 CREATE TABLE app_public.organization_memberships (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     organization_id uuid NOT NULL,
     user_id uuid NOT NULL,
     is_owner boolean DEFAULT false NOT NULL,
@@ -3756,7 +3766,7 @@ CREATE TABLE app_public.organization_memberships (
 --
 
 CREATE TABLE app_public.user_authentications (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     service text NOT NULL,
     identifier text NOT NULL,
@@ -3856,6 +3866,14 @@ ALTER TABLE ONLY app_private.user_email_secrets
 
 ALTER TABLE ONLY app_private.user_secrets
     ADD CONSTRAINT user_secrets_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: user_emails _cnstr_user_emails_user_id_email_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.user_emails
+    ADD CONSTRAINT _cnstr_user_emails_user_id_email_key UNIQUE (user_id, email);
 
 
 --
@@ -3992,14 +4010,6 @@ ALTER TABLE ONLY app_public.user_authentications
 
 ALTER TABLE ONLY app_public.user_emails
     ADD CONSTRAINT user_emails_pkey PRIMARY KEY (id);
-
-
---
--- Name: user_emails user_emails_user_id_email_key; Type: CONSTRAINT; Schema: app_public; Owner: -
---
-
-ALTER TABLE ONLY app_public.user_emails
-    ADD CONSTRAINT user_emails_user_id_email_key UNIQUE (user_id, email);
 
 
 --
@@ -4330,245 +4340,245 @@ CREATE INDEX user_authentications_user_id_idx ON app_public.user_authentications
 -- Name: registration_secrets _100_timestamps; Type: TRIGGER; Schema: app_private; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_private.registration_secrets FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_private.registration_secrets FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: event_categories _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: event_questions _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: events _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: organizations _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: quotas _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: registrations _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: user_authentications _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.user_authentications FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.user_authentications FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: user_emails _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.user_emails FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.user_emails FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: users _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.users FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.users FOR EACH ROW EXECUTE PROCEDURE app_private.tg__timestamps();
 
 
 --
 -- Name: user_emails _200_forbid_existing_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_forbid_existing_email BEFORE INSERT ON app_public.user_emails FOR EACH ROW EXECUTE FUNCTION app_public.tg_user_emails__forbid_if_verified();
+CREATE TRIGGER _200_forbid_existing_email BEFORE INSERT ON app_public.user_emails FOR EACH ROW EXECUTE PROCEDURE app_public.tg_user_emails__forbid_if_verified();
 
 
 --
 -- Name: event_categories _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_categories FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: event_questions _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.event_questions FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: events _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: organizations _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.organizations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: quotas _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: registrations _200_ownership_info; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__ownership_info();
+CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__ownership_info();
 
 
 --
 -- Name: events _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.events FOR EACH ROW EXECUTE PROCEDURE app_private.tg__refresh_materialized_view();
 
 
 --
 -- Name: quotas _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE PROCEDURE app_private.tg__refresh_materialized_view();
 
 
 --
 -- Name: registrations _300_registration_is_valid; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__registration_is_valid();
+CREATE TRIGGER _300_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__registration_is_valid();
 
 
 --
 -- Name: registrations _400_gql_registration_updated; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _400_gql_registration_updated AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_public.tg__graphql_subscription('registrationUpdated', 'graphql:eventRegistrations:$1', 'event_id');
+CREATE TRIGGER _400_gql_registration_updated AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_public.tg__graphql_subscription('registrationUpdated', 'graphql:eventRegistrations:$1', 'event_id');
 
 
 --
 -- Name: user_emails _500_audit_added; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_audit_added AFTER INSERT ON app_public.user_emails FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_audit_job('added_email', 'user_id', 'id', 'email');
+CREATE TRIGGER _500_audit_added AFTER INSERT ON app_public.user_emails FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_audit_job('added_email', 'user_id', 'id', 'email');
 
 
 --
 -- Name: user_authentications _500_audit_removed; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_authentications FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_audit_job('unlinked_account', 'user_id', 'service', 'identifier');
+CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_authentications FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_audit_job('unlinked_account', 'user_id', 'service', 'identifier');
 
 
 --
 -- Name: user_emails _500_audit_removed; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_emails FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_audit_job('removed_email', 'user_id', 'id', 'email');
+CREATE TRIGGER _500_audit_removed AFTER DELETE ON app_public.user_emails FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_audit_job('removed_email', 'user_id', 'id', 'email');
 
 
 --
 -- Name: users _500_deletion_organization_checks_and_actions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_deletion_organization_checks_and_actions BEFORE DELETE ON app_public.users FOR EACH ROW WHEN ((app_public.current_user_id() IS NOT NULL)) EXECUTE FUNCTION app_public.tg_users__deletion_organization_checks_and_actions();
+CREATE TRIGGER _500_deletion_organization_checks_and_actions BEFORE DELETE ON app_public.users FOR EACH ROW WHEN ((app_public.current_user_id() IS NOT NULL)) EXECUTE PROCEDURE app_public.tg_users__deletion_organization_checks_and_actions();
 
 
 --
 -- Name: users _500_gql_update; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_gql_update AFTER UPDATE ON app_public.users FOR EACH ROW EXECUTE FUNCTION app_public.tg__graphql_subscription('userChanged', 'graphql:user:$1', 'id');
+CREATE TRIGGER _500_gql_update AFTER UPDATE ON app_public.users FOR EACH ROW EXECUTE PROCEDURE app_public.tg__graphql_subscription('userChanged', 'graphql:user:$1', 'id');
 
 
 --
 -- Name: user_emails _500_insert_secrets; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_insert_secrets AFTER INSERT ON app_public.user_emails FOR EACH ROW EXECUTE FUNCTION app_private.tg_user_email_secrets__insert_with_user_email();
+CREATE TRIGGER _500_insert_secrets AFTER INSERT ON app_public.user_emails FOR EACH ROW EXECUTE PROCEDURE app_private.tg_user_email_secrets__insert_with_user_email();
 
 
 --
 -- Name: users _500_insert_secrets; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_insert_secrets AFTER INSERT ON app_public.users FOR EACH ROW EXECUTE FUNCTION app_private.tg_user_secrets__insert_with_user();
+CREATE TRIGGER _500_insert_secrets AFTER INSERT ON app_public.users FOR EACH ROW EXECUTE PROCEDURE app_private.tg_user_secrets__insert_with_user();
 
 
 --
 -- Name: user_emails _500_prevent_delete_last; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_prevent_delete_last AFTER DELETE ON app_public.user_emails REFERENCING OLD TABLE AS deleted FOR EACH STATEMENT EXECUTE FUNCTION app_public.tg_user_emails__prevent_delete_last_email();
+CREATE TRIGGER _500_prevent_delete_last AFTER DELETE ON app_public.user_emails REFERENCING OLD TABLE AS deleted FOR EACH STATEMENT EXECUTE PROCEDURE app_public.tg_user_emails__prevent_delete_last_email();
 
 
 --
 -- Name: organization_invitations _500_send_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_send_email AFTER INSERT ON app_public.organization_invitations FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_job('organization_invitations__send_invite');
+CREATE TRIGGER _500_send_email AFTER INSERT ON app_public.organization_invitations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_job('organization_invitations__send_invite');
 
 
 --
 -- Name: registrations _500_send_registration_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_send_registration_email AFTER UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__add_job('registration__send_confirmation_email');
+CREATE TRIGGER _500_send_registration_email AFTER UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__add_job('registration__send_confirmation_email');
 
 
 --
 -- Name: user_emails _500_verify_account_on_verified; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _500_verify_account_on_verified AFTER INSERT OR UPDATE OF is_verified ON app_public.user_emails FOR EACH ROW WHEN ((new.is_verified IS TRUE)) EXECUTE FUNCTION app_public.tg_user_emails__verify_account_on_verified();
+CREATE TRIGGER _500_verify_account_on_verified AFTER INSERT OR UPDATE OF is_verified ON app_public.user_emails FOR EACH ROW WHEN ((new.is_verified IS TRUE)) EXECUTE PROCEDURE app_public.tg_user_emails__verify_account_on_verified();
 
 
 --
 -- Name: registrations _700_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _700_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _700_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__refresh_materialized_view();
 
 
 --
 -- Name: registrations _800_process_registration_queue; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__process_queue();
+CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE PROCEDURE app_private.tg__process_queue();
 
 
 --
 -- Name: user_emails _900_send_verification_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emails FOR EACH ROW WHEN ((new.is_verified IS FALSE)) EXECUTE FUNCTION app_private.tg__add_job('user_emails__send_verification');
+CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emails FOR EACH ROW WHEN ((new.is_verified IS FALSE)) EXECUTE PROCEDURE app_private.tg__add_job('user_emails__send_verification');
 
 
 --

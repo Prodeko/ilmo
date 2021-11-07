@@ -81,6 +81,7 @@
     "createOrganization": "Create organization",
     "listEvent": "Events",
     "listEventCategory": "Event categories",
+    "listUsers": "Users",
     "updateEvent": "Update event",
     "updateEventCategory": "Update event category"
   },
@@ -104,7 +105,19 @@
       "listEventCategories": "List event categories",
       "listEvents": "List events",
       "main": "Dashboard",
-      "organizations": "Organizations"
+      "organizations": "Organizations",
+      "users": "Users"
     }
+  },
+  "users": {
+    "adminStatusUpdated": "Admin status update succeeded",
+    "delete": {
+      "confirmText": "Are you sure you want to delete this user?"
+    },
+    "emailVerified": "Email verified",
+    "errors": {
+      "adminStatusFailed": "Failed to change user's admin status: "
+    },
+    "isAdminUser": "Admin user"
   }
 }

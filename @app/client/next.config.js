@@ -25,6 +25,7 @@ const withTM = require("next-transpile-modules")([
   // inserts the required styles
   "@app/components",
   "@app/lib",
+  "@ant-design/icons",
   "rc-util",
 ])
 const withAntdLess = require("next-plugin-antd-less")
@@ -79,7 +80,6 @@ const nextOptions = {
     CI: process.env.CI,
     TZ: process.env.TZ,
     PRIVACY_URL: process.env.PRIVACY_URL,
-    ENABLE_REGISTRATION: process.env.ENABLE_REGISTRATION,
   },
 }
 

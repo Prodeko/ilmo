@@ -1,7 +1,10 @@
+import EmailValidator from "email-validator"
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors"
+
+const { REGISTER_DOMAINS_ALLOWLIST } = process.env
 
 const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
   typeDefs: gql`
@@ -91,6 +94,22 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
         const { selectGraphQLResultFromTable } = resolveInfo.graphile
         const { username, password, email, name, avatarUrl } = args.input
         const { rootPgPool, login, pgClient } = context
+
+        const isValidEmail = EmailValidator.validate(email)
+        if (!isValidEmail) {
+          const e = new Error("Email address is not valid")
+          e["code"] = "NVLID"
+          throw e
+        }
+
+        const allowedDomains = REGISTER_DOMAINS_ALLOWLIST?.split(",") || []
+        const domain = email.split("@").pop()
+        if (!allowedDomains.includes(domain)) {
+          const e = new Error("Registrations from this domain are not allowed")
+          e["code"] = "DNIED"
+          throw e
+        }
+
         try {
           // Call our login function to find out if the username/password combination exists
           const {
@@ -228,9 +247,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
         const { pgClient, logout } = context
         await pgClient.query("select app_public.logout();")
         await logout()
-        return {
-          success: true,
-        }
+        return { success: true }
       },
 
       async resetPassword(

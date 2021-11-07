@@ -1,0 +1,31 @@
+{
+  "errors": {
+    "checkpasswordMatch": "Make sure your passphrase is the same in both passphrase boxes.",
+    "emailAlreadyExists": "An account with this email address has already been registered, consider using the 'Forgot passphrase' function.",
+    "registrationFailed": "Registration failed",
+    "usernameAlreadyExists": "An account with this username has already been registered, please try a different username.",
+    "usernameInvalid": "This username is not allowed; usernames must be between 2 and 24 characters long (inclusive), must start with a letter, and must contain only alphanumeric characters and underscores."
+  },
+  "form": {
+    "labels": {
+      "confirmPassphrase": "Confirm passphrase",
+      "email": "E-mail",
+      "passphrase": "Passphrase"
+    },
+    "messages": {
+      "confirmPassphrase": "Please confirm your passphrase",
+      "inputEmail": "Please input your E-mail",
+      "inputEmailValid": "The input is not valid E-mail",
+      "inputName": "Please input your name",
+      "inputPassphrase": "Please input your passphrase",
+      "inputUsername": "Please input your username",
+      "usernameAlphanumeric": "Username must contain only alphanumeric characters and underscores",
+      "usernameMaxLength": "Username must be no more than 24 characters long",
+      "usernameMinLength": "Username must be at least 2 characters long",
+      "usernameNoTwoUnderscores": "Username must not contain two underscores next to each other",
+      "usernameStartLetter": "Username must start with a letter"
+    },
+    "submit": "Register"
+  },
+  "title": "Register"
+}

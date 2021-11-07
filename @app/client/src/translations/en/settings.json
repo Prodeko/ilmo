@@ -12,6 +12,7 @@
     "accountDeleteFailedOrgOwner1": "You cannot delete your account whilst you are the owner of an organization.",
     "accountDeleteFailedOrgOwner2": "For each organization you are the owner of, please either assign your ownership to another user or delete the organization to continue.",
     "deleteFailed": "Requesting deletion failed",
+    "errorUpdatingUsername": "Error updating username",
     "incorrectOldPassword": "Incorrect old passphrase",
     "usernameTaken": "This username is already in use, please pick a different name"
   },
@@ -21,8 +22,7 @@
       "emailAddFailed": "Error adding email",
       "passwordChangeFailed": "Changing passphrase failed",
       "passwordChanged": "Password changed!",
-      "profileUpdated": "Profile updated",
-      "profileUpdating": "Updating username"
+      "profileUpdated": "Profile updated"
     },
     "label": {
       "newEmail": "New email",

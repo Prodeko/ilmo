@@ -2,8 +2,10 @@ import { useCallback, useState } from "react"
 import {
   Event,
   EventCategory,
+  useAdminDeleteUserMutation,
   useDeleteEventCategoryMutation,
   useDeleteEventMutation,
+  User,
 } from "@app/graphql"
 import { Button, Col, message, Popconfirm, Row } from "antd"
 
@@ -12,10 +14,11 @@ import { ButtonLink, ErrorAlert, useTranslation } from "."
 interface AdminTableActionsProps {
   adminUrl: string
   bannerErrorText?: string
-  dataType: Event | EventCategory
+  dataType: Event | EventCategory | User
   deleteMutation:
     | typeof useDeleteEventMutation
     | typeof useDeleteEventCategoryMutation
+    | typeof useAdminDeleteUserMutation
   deleteConfirmTranslate: string
 }
 

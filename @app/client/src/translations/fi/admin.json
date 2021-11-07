@@ -81,6 +81,7 @@
     "createOrganization": "Luo organisaatio",
     "listEvent": "Tapahtumat",
     "listEventCategory": "Tapahtumakategoriat",
+    "listUsers": "Käyttäjät",
     "updateEvent": "Päivitä tapahtuma",
     "updateEventCategory": "Päivitä tapahtumakategoria"
   },
@@ -104,7 +105,19 @@
       "listEventCategories": "Näytä tapahtumakategoriat",
       "listEvents": "Näytä tapahtumat",
       "main": "Dashboard",
-      "organizations": "Organsaatiot"
+      "organizations": "Organsaatiot",
+      "users": "Käyttäjät"
     }
+  },
+  "users": {
+    "adminStatusUpdated": "Admin statuksen päivitys onnistui",
+    "delete": {
+      "confirmText": "Haluatko varmasti poistaa tämän käyttäjän?"
+    },
+    "emailVerified": "Sähköposti vahvistettu",
+    "errors": {
+      "adminStatusFailed": "Admin statuksen päivitys epäonnistui: "
+    },
+    "isAdminUser": "Admin käyttäjä"
   }
 }

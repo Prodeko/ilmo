@@ -43,25 +43,25 @@
     "@app/db": "workspace:@app/db",
     "abort-controller": "^3.0.0",
     "core-js": "^3.19.0",
-    "nx": "^13.0.2",
+    "nx": "^13.1.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "regenerator-runtime": "0.13.9",
     "string-width": "^5.0.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.8",
-    "@babel/preset-env": "^7.15.8",
-    "@babel/preset-typescript": "^7.15.0",
-    "@graphql-eslint/eslint-plugin": "^2.3.0",
-    "@nrwl/cli": "13.0.2",
-    "@nrwl/eslint-plugin-nx": "13.0.2",
-    "@nrwl/jest": "13.0.2",
-    "@nrwl/linter": "13.0.2",
-    "@nrwl/react": "13.0.2",
-    "@nrwl/tao": "13.0.2",
-    "@nrwl/web": "13.0.2",
-    "@nrwl/workspace": "13.0.2",
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
+    "@graphql-eslint/eslint-plugin": "^2.3.2",
+    "@nrwl/cli": "13.1.2",
+    "@nrwl/eslint-plugin-nx": "13.1.2",
+    "@nrwl/jest": "13.1.2",
+    "@nrwl/linter": "13.1.2",
+    "@nrwl/react": "13.1.2",
+    "@nrwl/tao": "13.1.2",
+    "@nrwl/web": "13.1.2",
+    "@nrwl/workspace": "13.1.2",
     "@testing-library/react": "12.1.2",
     "@testing-library/react-hooks": "7.0.2",
     "@types/faker": "^5.5.9",
@@ -86,7 +86,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "faker": "^5.5.3",
-    "graphql": "^15.7.0",
+    "graphql": "^16.0.0",
     "graphql-config": "^4.0.2",
     "inquirer": "^8.2.0",
     "jest": "^27.3.1",
@@ -98,7 +98,7 @@
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
-    "type-fest": "^2.5.1",
+    "type-fest": "^2.5.2",
     "typescript": "^4.4.4"
   },
   "resolutions": {
@@ -131,5 +131,5 @@
       }
     ]
   },
-  "packageManager": "yarn@3.0.2"
+  "packageManager": "yarn@3.1.0"
 }

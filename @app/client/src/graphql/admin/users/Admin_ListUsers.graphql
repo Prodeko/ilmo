@@ -1,0 +1,17 @@
+fragment AdminListUsers_User on User {
+  id
+  username
+  name
+  avatarUrl
+  isAdmin
+  isVerified
+  createdAt
+}
+
+query AdminListUsers {
+  adminListUsers {
+    nodes {
+      ...AdminListUsers_User
+    }
+  }
+}

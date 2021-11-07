@@ -209,5 +209,5 @@ export const withUrql = withUrqlClient(
       ].filter(Boolean) as Exchange[],
     }
   },
-  { ssr: true }
+  { ssr: false }
 )

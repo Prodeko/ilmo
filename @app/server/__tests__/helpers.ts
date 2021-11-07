@@ -65,6 +65,14 @@ interface CreateEventDataAndLogin {
     isVerified?: boolean
     isAdmin?: boolean
   }
+  organizationOptions?: {
+    create: boolean
+    amount?: number
+  }
+  eventCategoryOptions?: {
+    create: boolean
+    amount?: number
+  }
   eventOptions?: {
     create: boolean
     amount?: number
@@ -90,6 +98,14 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       amount: 1,
       isVerified: true,
       isAdmin: false,
+    },
+    organizationOptions = {
+      create: true,
+      amount: 1,
+    },
+    eventCategoryOptions = {
+      create: true,
+      amount: 1,
     },
     eventOptions = {
       create: true,
@@ -127,20 +143,32 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
 
     await becomeUser(client, session.uuid)
 
-    const [organization] = await createOrganizations(client, 1)
-    const [eventCategory] = await createEventCategories(
-      client,
-      1,
-      organization.id
-    )
+    let organizations: PromiseValue<ReturnType<typeof createOrganizations>>
+    if (organizationOptions.create) {
+      organizations = await createOrganizations(
+        client,
+        organizationOptions.amount
+      )
+    }
+    const primaryOrganization = organizations?.[0]
+
+    let eventCategories: PromiseValue<ReturnType<typeof createEventCategories>>
+    if (eventCategoryOptions.create) {
+      eventCategories = await createEventCategories(
+        client,
+        eventCategoryOptions.amount,
+        primaryOrganization.id
+      )
+    }
+    const primaryEventCategory = eventCategories?.[0]
 
     let events: PromiseValue<ReturnType<typeof createEvents>>
     if (eventOptions.create) {
       events = await createEvents(
         client,
         eventOptions.amount,
-        organization.id,
-        eventCategory.id,
+        primaryOrganization.id,
+        primaryEventCategory.id,
         eventOptions.signupOpen,
         eventOptions.isDraft,
         eventOptions.openQuotaSize,
@@ -206,8 +234,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     return {
       users,
       session,
-      organization,
-      eventCategory,
+      organization: primaryOrganization,
+      eventCategory: primaryEventCategory,
       events,
       quotas,
       questions,

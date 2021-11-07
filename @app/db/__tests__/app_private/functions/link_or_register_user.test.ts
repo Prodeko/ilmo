@@ -112,7 +112,7 @@ describe("when account doesn't already exist", () => {
         {}
       )
       await expect(promise).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"new row for relation \\"user_emails\\" violates check constraint \\"user_emails_email_check\\""`
+        `"value for domain app_public.email violates check constraint \\"email_check\\""`
       )
       await expect(promise).rejects.toMatchObject({
         code: "23514",

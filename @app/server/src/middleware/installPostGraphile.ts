@@ -31,7 +31,6 @@ import {
   PasswordStrengthPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
-  RemoveAccountRegistrationFields,
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
@@ -271,10 +270,6 @@ export function getPostGraphileOptions({
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
       RemoveOwnershipInfoForeignKeyConnections,
-
-      // If process.env.ENABLE_REGISTRATION=0, remove fields related to account
-      // registration. Must be below PassportLoginPlugin.
-      RemoveAccountRegistrationFields,
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,

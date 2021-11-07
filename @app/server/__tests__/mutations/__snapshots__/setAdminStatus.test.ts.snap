@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SetAdminStatus can toggle the admin status of a user as an admin user 1`] = `
+Object {
+  "data": Object {
+    "setAdminStatus": Object {
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`SetAdminStatus can't toggle the admin status of a user if not logged in as admin 1`] = `
+Object {
+  "data": Object {
+    "setAdminStatus": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
+SQL statement \\"CALL app_public.check_is_admin()\\"
+PL/pgSQL function app_public.set_admin_status(uuid,boolean) line 6 at CALL",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Acces denied. Only admins are allowed to use this mutation.",
+      "path": Array [
+        "setAdminStatus",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`SetAdminStatus can't update own admin status via setAdminStatus 1`] = `
+Object {
+  "data": Object {
+    "setAdminStatus": null,
+  },
+  "errors": Array [
+    Object {
+      "extensions": Object {
+        "exception": Object {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.set_admin_status(uuid,boolean) line 9 at RAISE",
+        },
+      },
+      "locations": Array [
+        Object {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "You may not change your own admin status via this mutation.",
+      "path": Array [
+        "setAdminStatus",
+      ],
+    },
+  ],
+}
+`;

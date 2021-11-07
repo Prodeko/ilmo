@@ -1,3 +1,5 @@
+import { RenderEmailTemplatesDocument } from "@app/graphql"
+
 import { deleteTestData, runGraphQLQuery, setup, teardown } from "../helpers"
 
 beforeEach(deleteTestData)
@@ -7,15 +9,7 @@ afterAll(teardown)
 test("render email templates query", async () => {
   await runGraphQLQuery(
     // GraphQL query goes here:
-    `{
-      renderEmailTemplates {
-        templates {
-          name
-          html
-          text
-        }
-      }
-    }`,
+    RenderEmailTemplatesDocument,
 
     // GraphQL variables:
     {},

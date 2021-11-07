@@ -140,7 +140,7 @@ export function SharedLayout({
       data.currentUser &&
       (forbidsLoggedIn || (forbidsNotAdmin && !data.currentUser.isAdmin))
     ) {
-      if (!isSSR) {
+      if (!isSSR && !noHandleErrors) {
         // Antd messages don't work with SSR
         message.error({
           key: "access-denied",

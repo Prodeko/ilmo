@@ -48,6 +48,31 @@ type AdminDeleteRegistrationPayload {
   success: Boolean
 }
 
+"""All input for the `adminDeleteUser` mutation."""
+input AdminDeleteUserInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our `adminDeleteUser` mutation."""
+type AdminDeleteUserPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  success: Boolean
+}
+
 """All input for the `adminUpdateRegistration` mutation."""
 input AdminUpdateRegistrationInput {
   """
@@ -665,6 +690,8 @@ type DeleteUserEmailPayload {
   ): UserEmailsEdge
 }
 
+scalar Email
+
 """The output of our `renderEmailTemplate` query."""
 type EmailTemplate {
   html: String!
@@ -910,7 +937,7 @@ enum EventCategoriesOrderBy {
 """Table for event categories."""
 type EventCategory {
   """Color color the event category."""
-  color: String
+  color: HexColor
   createdAt: Datetime!
   createdBy: UUID
 
@@ -1019,7 +1046,7 @@ input EventCategoryFilter {
 """An input for mutations affecting `EventCategory`"""
 input EventCategoryInput {
   """Color color the event category."""
-  color: String
+  color: HexColor
 
   """Short description of the event category."""
   description: TranslatedField!
@@ -1036,7 +1063,7 @@ Represents an update to a `EventCategory`. Fields that are set will be updated.
 """
 input EventCategoryPatch {
   """Color color the event category."""
-  color: String
+  color: HexColor
 
   """Short description of the event category."""
   description: TranslatedField
@@ -1377,6 +1404,8 @@ type ForgotPasswordPayload {
   query: Query
 }
 
+scalar HexColor
+
 """
 A filter to be used against Int fields. All fields are combined with a logical ‘and.’
 """
@@ -1520,6 +1549,14 @@ type Mutation {
     """
     input: AdminDeleteRegistrationInput!
   ): AdminDeleteRegistrationPayload
+
+  """Delete a user. Only accessible to admin users."""
+  adminDeleteUser(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminDeleteUserInput!
+  ): AdminDeleteUserPayload
 
   """
   Mutation only accessible to admin users. Allows updating a registration via the admin panel.
@@ -1749,6 +1786,14 @@ type Mutation {
     input: ResetPasswordInput!
   ): ResetPasswordPayload
 
+  """Make an existing user admin. Only accessible to admin users."""
+  setAdminStatus(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetAdminStatusInput!
+  ): SetAdminStatusPayload
+
   """
   The owner of an `Organization` may use this mutation to transfer ownership to a different organization member. Take care, if you assign ownership to someone who cannot or will not access their account then you may need to contact support to have ownership reassigned.
   """
@@ -1825,7 +1870,7 @@ type Mutation {
 """Main table for organizations."""
 type Organization {
   """Color for the organization."""
-  color: String
+  color: HexColor
   createdAt: Datetime!
   createdBy: UUID
   currentUserIsOwner: Boolean
@@ -2097,7 +2142,7 @@ Represents an update to a `Organization`. Fields that are set will be updated.
 """
 input OrganizationPatch {
   """Color for the organization."""
-  color: String
+  color: HexColor
 
   """Name of the organization."""
   name: String
@@ -2173,6 +2218,40 @@ type PasswordStrengthPayload {
 
 """The root query type which gives access points into the data universe."""
 type Query {
+  """List all users. Only accessible to admin users."""
+  adminListUsers(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: UserCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `User`."""
+    orderBy: [UsersOrderBy!]
+  ): UsersConnection
+
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
   event(id: UUID!): Event
@@ -2901,6 +2980,32 @@ type ResetPasswordPayload {
   success: Boolean
 }
 
+"""All input for the `setAdminStatus` mutation."""
+input SetAdminStatusInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+  isAdmin: Boolean!
+}
+
+"""The output of our `setAdminStatus` mutation."""
+type SetAdminStatusPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  success: Boolean
+}
+
 """
 A filter to be used against String fields. All fields are combined with a logical ‘and.’
 """
@@ -3056,6 +3161,40 @@ server-side event occurs. This makes them a lot more efficient than Live
 Queries, but it is still recommended that you keep payloads fairly small.
 """
 type Subscription {
+  """List all users. Only accessible to admin users. (live)"""
+  adminListUsers(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: UserCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: UserFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `User`."""
+    orderBy: [UsersOrderBy!]
+  ): UsersConnection
+
   """Returns the server time every second."""
   currentTime: Date!
 
@@ -3886,12 +4025,23 @@ enum UserAuthenticationsOrderBy {
   USER_ID_DESC
 }
 
+"""
+A condition to be used against `User` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input UserCondition {
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `username` field."""
+  username: String
+}
+
 """Information about a user's email address."""
 type UserEmail {
   createdAt: Datetime!
 
   """The users email address, in `a@b.c` format."""
-  email: String!
+  email: Email!
   id: UUID!
   isPrimary: Boolean!
 
@@ -3947,7 +4097,7 @@ input UserEmailFilter {
 """An input for mutations affecting `UserEmail`"""
 input UserEmailInput {
   """The users email address, in `a@b.c` format."""
-  email: String!
+  email: Email!
 }
 
 """A connection to a list of `UserEmail` values."""
@@ -3989,6 +4139,32 @@ enum UserEmailsOrderBy {
   USER_ID_DESC
 }
 
+"""
+A filter to be used against `User` object types. All fields are combined with a logical ‘and.’
+"""
+input UserFilter {
+  """Checks for all expressions in this list."""
+  and: [UserFilter!]
+
+  """Filter by the object’s `hasPassword` field."""
+  hasPassword: BooleanFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: UserFilter
+
+  """Checks for any expressions in this list."""
+  or: [UserFilter!]
+
+  """Filter by the object’s `primaryEmail` field."""
+  primaryEmail: StringFilter
+
+  """Filter by the object’s `username` field."""
+  username: StringFilter
+}
+
 """Represents an update to a `User`. Fields that are set will be updated."""
 input UserPatch {
   """Optional avatar URL."""
@@ -4004,6 +4180,23 @@ input UserPatch {
 type UserSubscriptionPayload {
   event: String
   user: User
+}
+
+"""A connection to a list of `User` values."""
+type UsersConnection {
+  """
+  A list of edges which contains the `User` and cursor to aid in pagination.
+  """
+  edges: [UsersEdge!]!
+
+  """A list of `User` objects."""
+  nodes: [User!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `User` you could get from the connection."""
+  totalCount: Int!
 }
 
 """A `User` edge in the connection."""

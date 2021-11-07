@@ -31,7 +31,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
           marginBottom: isMobile ? "1rem" : undefined,
           width: "100%",
         }}
-        title={t("register:sidebar.title")}
+        title={t("register_event:sidebar.title")}
         bordered
       >
         {quotas?.nodes.map((quota, i) => {

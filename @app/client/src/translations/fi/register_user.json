@@ -1,0 +1,31 @@
+{
+  "errors": {
+    "checkpasswordMatch": "Varmista, että salasanasi on sama molemmissa tunnuslauselaatikoissa.",
+    "emailAlreadyExists": "Tili tällä sähköpostiosoitteella on jo rekisteröity. Harkitse Unohdin salasana -toiminnon käyttöä.",
+    "registrationFailed": "Rekisteröityminen epäonnistui",
+    "usernameAlreadyExists": "An account with this username has already been registered, please try a different username.",
+    "usernameInvalid": "Tämä käyttäjätunnus ei ole sallittu; käyttäjätunnusten on oltava 2–24 merkkiä pitkiä, niiden on alettava kirjaimella ja niissä saa olla vain aakkosnumeerisia merkkejä ja alaviivoja."
+  },
+  "form": {
+    "labels": {
+      "confirmPassphrase": "Vahvista salasana",
+      "email": "Sähköposti",
+      "passphrase": "Salasana"
+    },
+    "messages": {
+      "confirmPassphrase": "Vahvista salasana",
+      "inputEmail": "Anna sähköpostiosoite",
+      "inputEmailValid": "Tarkista sähköpostiosoite",
+      "inputName": "Anna nimi",
+      "inputPassphrase": "Anna salasana",
+      "inputUsername": "Anna käyttäjänimi",
+      "usernameAlphanumeric": "Käytäjänimen sallitus merkit ovat kirjaimet, numerot sekä alaviivat",
+      "usernameMaxLength": "Käyttäjänimen saa olla maksimissaan 24 merkkiä pitkä",
+      "usernameMinLength": "Käyttäjänimen tulee olla vähintään kaksi merkkiä pitkä",
+      "usernameNoTwoUnderscores": "Käyttäjänimessä ei saa olla kahta alaviivaa peräkkäin",
+      "usernameStartLetter": "Käyttäjänimen ensimmäinen merkki on oltava kirjain"
+    },
+    "submit": "Luo käyttäjä"
+  },
+  "title": "Luo käyttäjä"
+}

@@ -16,7 +16,7 @@ import {
   useTranslation,
 } from "../."
 
-import { RegistrationsTableActions } from "./RegistrationTableActions"
+import { RegistrationsTableActions } from "./RegistrationsTableActions"
 
 const { Text } = Typography
 
@@ -30,13 +30,14 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
   questions,
 }) => {
   const router = useRouter()
-  const { t } = useTranslation("events")
+  const { t, lang } = useTranslation("events")
   const isMobile = useIsMobile()
 
   const commonColumns = [
     {
       title: "",
       key: "actions",
+      width: !isMobile ? 160 : 1,
       ellipsis: true,
       render: (_value: string, row: Registration) => (
         <RegistrationsTableActions questions={questions} registration={row} />
@@ -52,9 +53,10 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
       },
     },
     {
-      title: t("common:email"),
-      dataIndex: ["email"],
-      key: "email",
+      title: t("events:quota"),
+      dataIndex: ["quota", "title", lang],
+      width: 80,
+      key: "quota",
       sorter: {
         compare: Sorter.TEXT,
       },
@@ -65,10 +67,19 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
     ? [
         ...commonColumns,
         {
+          title: t("common:email"),
+          dataIndex: ["email"],
+          key: "email",
+          ellipsis: true,
+          sorter: {
+            compare: Sorter.TEXT,
+          },
+        },
+        {
           title: t("events:queued"),
           dataIndex: ["status"],
           key: "status",
-          ellipsis: true,
+          width: 80,
           render: (value: string) =>
             value === RegistrationStatus.InQueue ? (
               <Text type="danger">{t("common:yes")}</Text>
@@ -92,14 +103,12 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = ({
           title: t("common:createdAt"),
           dataIndex: ["createdAt"],
           key: "createdAt",
-          ellipsis: true,
           render: (value: string) => dayjs(value).format("l LT ss.SSS"),
         },
         {
           title: t("common:updatedAt"),
           dataIndex: ["updatedAt"],
           key: "updatedAt",
-          ellipsis: true,
           render: (value: string, row: Registration) =>
             value !== row.createdAt
               ? dayjs(value).format("l LT ss.SSS")

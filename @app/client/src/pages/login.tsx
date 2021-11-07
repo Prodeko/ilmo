@@ -45,6 +45,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
   return (
     <SharedLayout
       forbidWhen={AuthRestrict.LOGGED_IN}
+      noHandleErrors={!!query.data?.currentUser}
       query={query}
       title={t("common:signin")}
     >
@@ -82,22 +83,20 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
                     <SocialLoginOptions next={next} />
                   </Col>
                 </Row>
-                {process.env.ENABLE_ACCOUNT_REGISTER && (
-                  <Row justify="center">
-                    <Col flex={1}>
-                      <ButtonLink
-                        data-cy="loginpage-button-register"
-                        href={`/register?next=${encodeURIComponent(next)}`}
-                        icon={<UserAddOutlined />}
-                        size="large"
-                        type="default"
-                        block
-                      >
-                        {t("registerButton")}
-                      </ButtonLink>
-                    </Col>
-                  </Row>
-                )}
+                <Row justify="center">
+                  <Col flex={1}>
+                    <ButtonLink
+                      data-cy="loginpage-button-register"
+                      href={`/register?next=${encodeURIComponent(next)}`}
+                      icon={<UserAddOutlined />}
+                      size="large"
+                      type="default"
+                      block
+                    >
+                      {t("registerButton")}
+                    </ButtonLink>
+                  </Col>
+                </Row>
               </Col>
             )}
           </Row>
@@ -108,8 +107,7 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { query } = context
-  const { next } = query
+  const next = context?.query?.next
   return {
     props: {
       next: typeof next === "string" ? next : null,

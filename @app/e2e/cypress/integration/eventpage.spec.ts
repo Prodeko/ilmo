@@ -11,25 +11,19 @@ context("Events page", () => {
     cy.visit(Cypress.env("ROOT_URL"))
 
     // Action
-    cy.get("@createEventDataResult").then(
-      ({ eventCategory, event, quota }: any) => {
-        cy.getCy("homepage-signup-open-events")
-          .getCy(`eventcard-eventpage-link-${event.slug}`)
-          .click()
+    cy.get("@createEventDataResult").then(({ event, quota }: any) => {
+      cy.getCy("homepage-signup-open-events")
+        .getCy(`eventcard-eventpage-link-${event.slug}`)
+        .click()
 
-        // Assertions
-        cy.url().should(
-          "equal",
-          `${Cypress.env("ROOT_URL")}/event/${event.slug}`
-        )
-        cy.getCy("eventpage-signups-quota-0-table").should("exist")
-        cy.getCy("eventpage-quotas-card").should("exist")
+      // Assertions
+      cy.url().should("equal", `${Cypress.env("ROOT_URL")}/event/${event.slug}`)
+      cy.getCy("eventpage-signups-quota-0-table").should("exist")
+      cy.getCy("eventpage-quotas-card").should("exist")
 
-        cy.contains(event.name["fi"]).should("exist")
-        cy.contains(eventCategory.name["fi"]).should("exist")
-        cy.contains(quota.title["fi"]).should("exist")
-      }
-    )
+      cy.contains(event.name["fi"]).should("exist")
+      cy.contains(quota.title["fi"]).should("exist")
+    })
   })
 
   it("can register to an event multiple times on the same machine", () => {

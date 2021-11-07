@@ -61,7 +61,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
     setUpdateToken,
   } = props
 
-  const { t, lang } = useTranslation("register")
+  const { t, lang } = useTranslation("register_event")
   const router = useRouter()
 
   // Handling form values, errors and submission

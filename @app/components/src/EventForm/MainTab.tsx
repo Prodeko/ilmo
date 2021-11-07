@@ -47,7 +47,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
 
   function getUploadDefaultFileList(): Array<UploadFile> | undefined {
     if (type === "update") {
-      const { headerImageFile } = (data as UpdateEventPageQuery).event || {}
+      const { headerImageFile } = (data as UpdateEventPageQuery)?.event || {}
       const name = headerImageFile?.split("/")?.pop() ?? ""
       const uploadFile = {
         uid: "-1",
