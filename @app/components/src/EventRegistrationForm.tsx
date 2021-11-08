@@ -80,11 +80,15 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = (
   const [, formMutation] = useMutation(mutation)
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
+  const [hasSetinitialValues, setHasSetInitialValues] = useState(false)
 
   useEffect(() => {
     // Set form initialValues if they have changed after the initial rendering
-    form.setFieldsValue(initialValues)
-  }, [form, initialValues])
+    if (hasSetinitialValues) {
+      form.setFieldsValue(initialValues)
+      setHasSetInitialValues(true)
+    }
+  }, [form, initialValues, hasSetinitialValues])
 
   useEffect(() => {
     // Claim registration token on mount if related
