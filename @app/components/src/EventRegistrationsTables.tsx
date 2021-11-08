@@ -22,8 +22,8 @@ const getRegistrationsByQuotaPosition = (
 ) => {
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
-    // @ts-ignore
-    ;(a[key] || (a[key] = [] || [])).push(x)
+      // @ts-ignore
+      ; (a[key] || (a[key] = [] || [])).push(x)
     return a
   }, {} as { [key: number]: EventPage_RegistrationFragment })
 }
@@ -56,18 +56,16 @@ export const EventRegistrationsTables: React.FC<EventRegistrationsTablesProps> =
         title: t("common:position"),
         dataIndex: "position",
         key: "position",
+        width: 70,
         render: (position: number) => `${position}.`,
       },
       {
         title: t("common:name"),
         dataIndex: "fullName",
         key: "fullName",
+        ellipsis: true,
         render: (fullName: string) =>
-          fullName ? (
-            fullName
-          ) : (
-            <Skeleton.Input size="small" style={{ width: 120 }} active />
-          ),
+          fullName ?? <Skeleton.Input size="small" style={{ width: 120 }} active />
       },
       {
         title: t("createdAt"),
