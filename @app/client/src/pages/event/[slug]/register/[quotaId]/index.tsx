@@ -1,16 +1,17 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   EventRegistrationForm,
+  RecentRegistrationsList,
   Redirect,
   SharedLayout,
-  useEventRegistrations,
+  useLoading,
   useTranslation,
 } from "@app/components"
 import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
-import { Col, List, PageHeader, Popconfirm, Row, Typography } from "antd"
+import { Col, PageHeader, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
@@ -44,11 +45,9 @@ const EventRegistrationPage: NextPage = () => {
     email: primaryEmail,
   }
 
-  // Subscribe to registrations created after this timestamp
-  const after = useMemo(() => new Date().toISOString(), [])
-  const recentRegistrations = useEventRegistrations(event?.id as string, after)
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
+  const loadingElement = useLoading(query)
 
   const handleGoBack = useCallback(async () => {
     // Delete the pending registration if the user goes back to event page
@@ -86,56 +85,36 @@ const EventRegistrationPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title="">
-      <Row align="top" justify="center">
-        <Col sm={12} xs={24}>
-          <PageHeader title={title} onBack={showPopconfirm} />
-          <Popconfirm
-            cancelText={t("common:no")}
-            okText={t("common:yes")}
-            title={t("confirmGoBack")}
-            visible={visible}
-            onCancel={hidePopconfirm}
-            onConfirm={handleGoBack}
+      {loadingElement || (
+        <>
+          <Row align="top" justify="center">
+            <Col sm={12} xs={24}>
+              <PageHeader title={title} onBack={showPopconfirm} />
+              <Popconfirm
+                cancelText={t("common:no")}
+                okText={t("common:yes")}
+                title={t("confirmGoBack")}
+                visible={visible}
+                onCancel={hidePopconfirm}
+                onConfirm={handleGoBack}
+              />
+            </Col>
+          </Row>
+          <EventRegistrationForm
+            eventId={event?.id}
+            formRedirect={{
+              pathname: "/event/[slug]",
+              query: { slug: event?.slug },
+            }}
+            initialValues={formInitialValues}
+            questions={event?.eventQuestions?.nodes}
+            quotaId={quota?.id}
+            // Used to delete an unfinished registration
+            setUpdateToken={setUpdateToken}
+            type="create"
           />
-        </Col>
-      </Row>
-      <EventRegistrationForm
-        eventId={event?.id}
-        formRedirect={{
-          pathname: "/event/[slug]",
-          query: { slug: event?.slug },
-        }}
-        initialValues={formInitialValues}
-        questions={event?.eventQuestions?.nodes}
-        quotaId={quota?.id}
-        // Used to delete an unfinished registration
-        setUpdateToken={setUpdateToken}
-        type="create"
-      />
-      {recentRegistrations.length > 0 && (
-        <Row align="top" justify="center">
-          <Col sm={12} xs={24}>
-            <List
-              data-cy="eventregistrationpage-recent-registrations-list"
-              dataSource={recentRegistrations}
-              header={<div>{t("recentlyRegisteredHeader")}</div>}
-              renderItem={(item, i) => {
-                const name = item?.fullName
-                const quota = item?.quota?.title[lang]
-                return i === 0 || name ? (
-                  <List.Item>
-                    <Typography.Text>
-                      {i === 0
-                        ? t("you")
-                        : `${name} ${t("recentlyRegisteredListItem")} ${quota}`}
-                    </Typography.Text>
-                  </List.Item>
-                ) : null
-              }}
-              bordered
-            />
-          </Col>
-        </Row>
+          <RecentRegistrationsList eventId={event.id} />
+        </>
       )}
     </SharedLayout>
   )

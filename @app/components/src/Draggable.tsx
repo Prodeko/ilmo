@@ -1,23 +1,10 @@
-import { DragEventHandler, useRef } from "react"
+import { useRef } from "react"
 import { useDrag, useDrop, XYCoord } from "react-dnd"
 
 interface DragItem {
   index: number
   id: string
   type: string
-}
-
-interface DisableDraggableProps {
-  onDragStart: DragEventHandler<HTMLInputElement>
-  draggable: boolean
-}
-
-export const DisableDraggable: DisableDraggableProps = {
-  onDragStart(event) {
-    event.stopPropagation()
-    event.preventDefault()
-  },
-  draggable: true,
 }
 
 interface DraggableProps {

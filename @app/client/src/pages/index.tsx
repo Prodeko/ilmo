@@ -1,9 +1,7 @@
 import {
-  containerTransitions,
   EventCard,
   EventQuotaPopover,
   H3,
-  itemTransitionUp,
   Link,
   ServerPaginatedTable,
   SharedLayout,
@@ -15,7 +13,6 @@ import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql"
 import { Sorter } from "@app/lib"
 import { Col, Divider, Empty, Space, Tag } from "antd"
 import dayjs from "dayjs"
-import { AnimatePresence, m } from "framer-motion"
 
 import type { NextPage } from "next"
 
@@ -55,7 +52,7 @@ const Home: NextPage = () => {
         case "upcoming":
           return t("common:registrationUpcoming")
         default:
-          return
+          return []
       }
     })()
     const events = (() => {
@@ -65,7 +62,7 @@ const Home: NextPage = () => {
         case "upcoming":
           return signupsUpcomingEvents
         default:
-          return
+          return []
       }
     })()
 
@@ -73,22 +70,16 @@ const Home: NextPage = () => {
       <>
         <H3>{title}</H3>
         {events?.length > 0 ? (
-          <AnimatePresence>
-            <m.section
-              animate="enter"
-              data-cy={`homepage-signup-${type}-events`}
-              exit="exit"
-              initial="initial"
-              style={homeGridStyle}
-              variants={containerTransitions}
-            >
-              {events.map((event) => (
-                <m.div key={event.id} variants={itemTransitionUp}>
-                  <EventCard key={event.id} event={event as Event} />
-                </m.div>
-              ))}
-            </m.section>
-          </AnimatePresence>
+          <section
+            data-cy={`homepage-signup-${type}-events`}
+            style={homeGridStyle}
+          >
+            {events.map((event) => (
+              <div key={event.id}>
+                <EventCard key={event.id} event={event as Event} />
+              </div>
+            ))}
+          </section>
         ) : (
           <Empty
             description={<span>{t("noEvents")}</span>}

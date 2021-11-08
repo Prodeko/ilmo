@@ -24,7 +24,8 @@
       "quotas": "Kiintiöt"
     },
     "update": {
-      "showAnswers": "Näytä vastaukset"
+      "showAnswers": "Näytä vastaukset",
+      "showEvent": "Tapahtumasivulle"
     }
   },
   "notifications": {

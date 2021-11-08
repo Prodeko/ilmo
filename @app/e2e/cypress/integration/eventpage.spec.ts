@@ -148,7 +148,7 @@ context("Events page", () => {
     )
   })
 
-  it("admin can navigate to /admin/event/update from eventpage", () => {
+  it("admin can navigate to /admin/event/update from eventpage and back", () => {
     // Setup
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
       "createEventDataResult"
@@ -171,6 +171,13 @@ context("Events page", () => {
         "equal",
         `${Cypress.env("ROOT_URL")}/admin/event/update/${event.id}`
       )
+
+      // ... just cypress things
+      cy.getCy("admin-button-link-eventpage").should("not.be.disabled")
+      cy.wait(200)
+      cy.getCy("admin-button-link-eventpage").click()
+
+      cy.url().should("equal", `${Cypress.env("ROOT_URL")}/event/${event.slug}`)
     })
   })
 })

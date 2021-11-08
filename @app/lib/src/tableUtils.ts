@@ -52,12 +52,14 @@ export function downloadRegistrations(
       Object.keys(newRow).map((key) => {
         if (key === "answers") {
           const answers = newRow[key]
-          Object.keys(answers).forEach((questionId) => {
-            const questionLabel = questions?.find((q) => q.id === questionId)
-              ?.label.fi
-            const answer = answers[questionId]
-            newRow[questionLabel] = answer
-          })
+          if (answers) {
+            Object.keys(answers).forEach((questionId) => {
+              const questionLabel = questions?.find((q) => q.id === questionId)
+                ?.label.fi
+              const answer = answers[questionId]
+              newRow[questionLabel] = answer
+            })
+          }
         } else if (key === "quota") {
           newRow[key] = newRow[key]?.title.fi
         } else {

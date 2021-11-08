@@ -6,8 +6,8 @@ import {
   EventRegistrationsTables,
   SharedLayout,
   SignupState,
-  useEventLoading,
   useIsMobile,
+  useLoading,
   useQuerySlug,
   useTranslation,
 } from "@app/components"
@@ -20,7 +20,6 @@ import {
 } from "@app/graphql"
 import { Col, Divider, notification, PageHeader, Row } from "antd"
 import dayjs from "dayjs"
-import { m } from "framer-motion"
 import Image from "next/image"
 import { useRouter } from "next/router"
 
@@ -31,7 +30,7 @@ const EventPage: NextPage = () => {
   const { t, lang } = useTranslation("events")
   const [query] = useSharedQuery()
   const [subscription] = useEventPageSubscription({ variables: { slug } })
-  const eventLoadingElement = useEventLoading(subscription)
+  const loadingElement = useLoading(subscription)
   const event = subscription?.data?.eventBySlug
   const { fetching, stale } = subscription
   const title =
@@ -43,8 +42,8 @@ const EventPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title={title}>
-      {eventLoadingElement || (
-        <EventPageInner currentUser={query.data.currentUser} event={event!} />
+      {loadingElement || (
+        <EventPageInner currentUser={query.data.currentUser} event={event} />
       )}
     </SharedLayout>
   )
@@ -76,14 +75,6 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
   // heavy to render child components in React.memo. It is only active
   // 15 minutes before event registration opens.
   const [{ data }] = useCurrentTimeSubscription({ pause: pauseServerTime })
-
-  const {
-    id,
-    headerImageFile,
-    registrationStartTime,
-    registrationEndTime,
-    registrations,
-  } = event
 
   useEffect(() => {
     const onRouteChangeStart = (route: string) => {
@@ -181,6 +172,13 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
+  const {
+    headerImageFile,
+    registrationStartTime,
+    registrationEndTime,
+    registrations,
+  } = event
+
   return (
     <>
       <PageHeader
@@ -207,17 +205,15 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
           xs={{ span: 24 }}
         >
           {headerImageFile && (
-            <m.figure layoutId={`event-${id}-header-image`}>
-              <Image
-                alt={t("headerImage")}
-                data-cy="eventpage-header-image"
-                height={315}
-                objectFit="cover"
-                src={headerImageFile}
-                width={851}
-                priority
-              />
-            </m.figure>
+            <Image
+              alt={t("headerImage")}
+              data-cy="eventpage-header-image"
+              height={315}
+              objectFit="cover"
+              src={headerImageFile}
+              width={851}
+              priority
+            />
           )}
         </Col>
         <Col

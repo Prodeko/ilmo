@@ -24,7 +24,8 @@
       "quotas": "Quotas"
     },
     "update": {
-      "showAnswers": "Show answers"
+      "showAnswers": "Show answers",
+      "showEvent": "Show event"
     }
   },
   "notifications": {

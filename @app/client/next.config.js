@@ -45,7 +45,7 @@ const withAntdLessOptions = {
 const nextOptions = {
   experimental: {
     // Import @app/components and @app/lib as ES modules
-    esmExternals: true,
+    esmExternals: false,
   },
   reactStrictMode: true,
   useFileSystemPublicRoutes: true,

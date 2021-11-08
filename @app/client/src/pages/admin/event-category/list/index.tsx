@@ -98,8 +98,8 @@ const AdminListEventCategoriesInner: React.FC = () => {
           data-cy="adminpage-eventcategories"
           dataField="eventCategories"
           queryDocument={ListEventCategoriesDocument}
-          showPagination={true}
           size="middle"
+          showPagination
         />
       </Col>
     </Row>

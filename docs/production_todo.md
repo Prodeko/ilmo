@@ -8,4 +8,4 @@ make your server more efficient.
 
 ## Sessions
 
-Sessions are stored in Redis. Read more in `installSession.ts`.
+Sessions are stored in cookies. Read more in `installSession.ts`.

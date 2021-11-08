@@ -63,7 +63,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     >
       <Link href={`/event/${slug}`}>
         <a>
-          <H5 ellipsis={true} style={{ cursor: "pointer" }}>
+          <H5 style={{ cursor: "pointer" }} ellipsis>
             {title}
           </H5>
         </a>

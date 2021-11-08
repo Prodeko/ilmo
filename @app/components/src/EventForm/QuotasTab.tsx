@@ -9,7 +9,7 @@ import {
 import { Button, Form, Input, InputNumber, Space, Switch, Tooltip } from "antd"
 
 import { useTranslation } from "../."
-import { DisableDraggable, Draggable } from "../Draggable"
+import { Draggable } from "../Draggable"
 
 interface QuotasTabProps {
   initialValues?: any
@@ -68,8 +68,8 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                   <Form.Item
                     fieldKey={[fieldKey, "position"]}
                     name={[name, "position"]}
-                    required={true}
                     noStyle
+                    required
                   >
                     <Input type="hidden" />
                   </Form.Item>
@@ -96,7 +96,6 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                           placeholder={`${t(
                             "forms.placeholders.quota.title"
                           )} ${t(`common:lang.in.${l}`)}`}
-                          {...DisableDraggable}
                         />
                       </Form.Item>
                     ))}
@@ -112,7 +111,6 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                       noStyle
                     >
                       <InputNumber
-                        {...DisableDraggable}
                         data-cy={`eventform-input-quotas-size-${index}`}
                         min={1}
                         placeholder={t("forms.placeholders.quota.size")}
@@ -122,7 +120,6 @@ export const QuotasTab: React.FC<QuotasTabProps> = (props) => {
                       <Tooltip title={t("removeQuota")}>
                         <MinusCircleTwoTone
                           data-cy="eventform-quotas-remove-quota"
-                          {...DisableDraggable}
                           twoToneColor="red"
                           onClick={() => remove(name)}
                         />

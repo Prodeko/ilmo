@@ -24,15 +24,13 @@ import type { SharedLayout_QueryFragment } from "@app/graphql"
 const { Sider } = Layout
 
 const findPage = (key: string, items: MenuItem[]): MenuItem | undefined => {
-  const foundItem = items.find((item) => item.key === key)
-  if (foundItem) {
-    return foundItem
+  const found = items.find((item) => item.key === key)
+  if (found) {
+    return found
   }
-  const itemsWithChildren = items?.filter(
-    ({ target }) => typeof target !== "string" && typeof target !== "function"
-  )
-  for (let i = 0; i < itemsWithChildren?.length; i++) {
-    const res = findPage(key, itemsWithChildren[i].target as MenuItem[])
+  const itemsWithChildren = items?.filter(({ target }) => Array.isArray(target))
+  for (const item of itemsWithChildren) {
+    const res = findPage(key, item.target as MenuItem[])
     if (res) {
       return res
     }
@@ -137,7 +135,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           ],
         },
         {
-          key: "admin-menu-users",
+          key: "/admin/users/list",
           title: t("sider.titles.users"),
           icon: <FiUsers />,
           target: "/admin/users/list",
@@ -154,7 +152,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   const layoutSider = (
     <Sider breakpoint="md" collapsedWidth={40}>
-      <AdminSideMenu initialKey={href} items={items} />
+      <AdminSideMenu initialKey={page.key} items={items} />
     </Sider>
   )
 

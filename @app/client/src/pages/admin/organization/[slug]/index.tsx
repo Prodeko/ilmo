@@ -5,7 +5,7 @@ import {
   OrganizationMembers,
   Redirect,
   UpdateOrganizationForm,
-  useOrganizationLoading,
+  useLoading,
   useQuerySlug,
   useTranslation,
 } from "@app/components"
@@ -23,14 +23,14 @@ const Admin_Organizations: NextPage = () => {
   const [query] = useOrganizationPageQuery({
     variables: { slug, offset: (page - 1) * ORGANIZATION_RESULTS_PER_PAGE },
   })
-  const organizationLoadingElement = useOrganizationLoading(query)
+  const loading = useLoading(query, "large")
   const organization = query.data?.organizationBySlug
 
   const props = { page, setPage }
 
   return (
     <AdminLayout href="/admin/organization/[slug]" query={query}>
-      {organizationLoadingElement || (
+      {loading || (
         <OrganizationPageInner organization={organization!} {...props} />
       )}
     </AdminLayout>
