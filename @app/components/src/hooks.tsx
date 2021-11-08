@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import {
   EventPage_RegistrationFragment,
-  EventPage_SubscriptionFragment,
-  OrganizationPage_QueryFragment,
   useEventRegistrationsSubscription,
   usePasswordStrengthMutation,
 } from "@app/graphql"
@@ -13,6 +11,8 @@ import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 
 import { ErrorResult, FourOhFour, LoadingPadded, useBreakpoint } from "./"
+
+import type { LoadingProps } from "./"
 
 export { useTranslation as useTranslation }
 
@@ -28,16 +28,15 @@ export function useQueryId() {
   return String(rawId)
 }
 
-export function useEventLoading(
-  query: UseQueryState<EventPage_SubscriptionFragment>
+export function useLoading(
+  query: UseQueryState,
+  spinnerSize: LoadingProps["size"] = "huge"
 ) {
-  const { data, fetching, error, stale } = query
-
+  const { fetching, error, stale } = query
   let child: JSX.Element | null = null
-  const event = data?.eventBySlug
-  if (event) {
+  if (!error && !fetching && !stale) {
   } else if (fetching || stale) {
-    child = <LoadingPadded size="huge" />
+    child = <LoadingPadded size={spinnerSize} />
   } else if (error && !stale) {
     child = <ErrorResult error={error} />
   } else {
@@ -53,33 +52,8 @@ export function useEventLoading(
   )
 }
 
-export function useOrganizationLoading(
-  query: UseQueryState<OrganizationPage_QueryFragment>
-) {
-  const { data, fetching, error, stale } = query
-
-  let child: JSX.Element | null = null
-  const organization = data?.organizationBySlug
-  if (organization) {
-  } else if (fetching || stale) {
-    child = <LoadingPadded size="large" />
-  } else if (error) {
-    child = <ErrorResult error={error} />
-  } else {
-    child = <FourOhFour />
-  }
-
-  return (
-    child && (
-      <Row>
-        <Col flex={1}>{child}</Col>
-      </Row>
-    )
-  )
-}
-
 export function useEventRegistrations(
-  eventId: string,
+  eventId: string | undefined,
   after: string = new Date().toISOString(),
   initialRegistrations: EventPage_RegistrationFragment[] = []
 ) {

@@ -23,7 +23,7 @@ import {
 } from "antd"
 
 import { useTranslation } from "../."
-import { DisableDraggable, Draggable } from "../Draggable"
+import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
 
@@ -127,7 +127,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
             placeholder={inputPlaceholder}
             // Align input with with TEXT and CHECKBOX data inputs
             style={isMobile ? { transform: "translateX(24px)" } : {}}
-            {...DisableDraggable}
           />
         </Form.Item>
       )
@@ -139,7 +138,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <Tooltip title={t("addOption")}>
         <PlusCircleTwoTone
           data-cy={`eventform-questions-${index}-add-option`}
-          {...DisableDraggable}
           twoToneColor="lightgreen"
           onClick={() => handleAddOption(index)}
         />
@@ -150,7 +148,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
       <Tooltip title={t("removeOption")}>
         <MinusOutlined
           data-cy={`eventform-questions-${index}-remove-option`}
-          {...DisableDraggable}
           twoToneColor="yellow"
           onClick={() => handleRemoveOption(index, i)}
         />
@@ -184,7 +181,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                 {i > 0 && l === firstLanguage && removeDataOption(index, i)}
               </>
             }
-            {...DisableDraggable}
           />
         </Form.Item>
       )
@@ -319,8 +315,8 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                       <Form.Item
                         fieldKey={[fieldKey, "position"]}
                         name={[name, "position"]}
-                        required={true}
                         noStyle
+                        required
                       >
                         <Input type="hidden" />
                       </Form.Item>
@@ -379,7 +375,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = ({
                         <Tooltip title={t("removeQuestion")}>
                           <MinusCircleTwoTone
                             data-cy="eventform-questions-remove-question"
-                            {...DisableDraggable}
                             twoToneColor="red"
                             onClick={() => remove(name)}
                           />

@@ -35,6 +35,7 @@ type UpdateFormInitialValues = {
 function constructInitialValues(values: any) {
   const filteredValues = filterObjectByKeys(values, [
     "name",
+    "slug",
     "description",
     "location",
     "eventStartTime",

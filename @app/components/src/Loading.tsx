@@ -3,7 +3,7 @@ import { Spin } from "antd"
 
 import { DummyPage } from "./Redirect"
 
-interface LoadingProps {
+export interface LoadingProps {
   size?: "small" | "default" | "large" | "huge" | undefined
 }
 

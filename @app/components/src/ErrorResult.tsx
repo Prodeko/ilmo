@@ -48,7 +48,7 @@ export function ErrorResult({ error }: ErrorResultProps) {
     <Result
       status="error"
       subTitle={t("unknownError")}
-      title={t("ErrorResult.unexpectedError")}
+      title={<>{t("ErrorResult.unexpectedError")}</>}
     >
       <Alert message={error.message} type="error" />
     </Result>

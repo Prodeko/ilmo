@@ -78,7 +78,6 @@ const AdminListUserInner: React.FC<AdminListUserInnerProps> = ({
     title: t("common:name"),
     dataIndex: ["name"],
     key: "name",
-    ellipsis: true,
     sorter: {
       compare: Sorter.TEXT,
     },
@@ -142,7 +141,7 @@ const AdminListUserInner: React.FC<AdminListUserInnerProps> = ({
           render: (startTime: string) => dayjs(startTime).format("l LT"),
         },
       ]
-    : [actionsColumn, nameColumn]
+    : [actionsColumn, switchAdminStatusColumn, nameColumn]
 
   return (
     <Row>
@@ -153,8 +152,8 @@ const AdminListUserInner: React.FC<AdminListUserInnerProps> = ({
           data-cy="adminpage-users"
           dataField="adminListUsers"
           queryDocument={AdminListUsersDocument}
-          showPagination={true}
           size="middle"
+          showPagination
         />
       </Col>
     </Row>

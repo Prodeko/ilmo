@@ -221,9 +221,9 @@ const Admin_ListEvents: NextPage = () => {
               data-cy={`adminpage-events-${kind}`}
               dataField="events"
               queryDocument={AdminListEventsDocument}
-              showPagination={true}
               size="middle"
               variables={variables}
+              showPagination
             />
           </Col>
         ))}

@@ -8,7 +8,7 @@ import {
   UpdateEventPageQuery,
 } from "@app/graphql"
 import { filterObjectByKeys, formItemLayout } from "@app/lib"
-import { Badge, Form, Tabs } from "antd"
+import { Badge, Col, Form, Row, Tabs } from "antd"
 import dayjs from "dayjs"
 import debounce from "lodash/debounce"
 import uniq from "lodash/uniq"
@@ -16,7 +16,7 @@ import { useRouter } from "next/router"
 import slugify from "slugify"
 import { CombinedError, useMutation } from "urql"
 
-import { useTranslation } from "../."
+import { ButtonLink, useTranslation } from "../."
 
 import { EmailTab } from "./EmailTab"
 import { MainTab } from "./MainTab"
@@ -81,7 +81,7 @@ enum TAB {
 
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
-  const { languages } = initialValues || {}
+  const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
   const { supportedLanguages } = data?.languages || {}
   const initialSelectedLanguages = useMemo(
     () => (type === "update" ? languages || {} : supportedLanguages),
@@ -100,9 +100,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | CombinedError | null>(null)
   const [tabErrors, setTabErrors] = useState<any[] | null>(null)
-  const [isDraft, setIsDraft] = useState(
-    type === "create" || initialValues.isDraft
-  )
+  const [isDraft, setIsDraft] = useState(type === "create" || initialIsDraft)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     initialSelectedLanguages || []
   )
@@ -278,11 +276,28 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         defaultActiveKey="general"
         tabBarExtraContent={{
           right: (
-            <Badge
-              color={isDraft ? "yellow" : "green"}
-              style={{ marginLeft: 8 }}
-              text={isDraft ? t("forms.isDraft") : t("forms.isNotDraft")}
-            />
+            <Row gutter={16}>
+              <Col flex={1}>
+                <Badge
+                  color={isDraft ? "yellow" : "green"}
+                  style={{ marginLeft: 8 }}
+                  text={isDraft ? t("forms.isDraft") : t("forms.isNotDraft")}
+                />
+              </Col>
+              {type === "update" && (
+                <Col flex={1}>
+                  <ButtonLink
+                    data-cy="admin-button-link-eventpage"
+                    disabled={!slug ? true : false}
+                    href={`/event/${slug}`}
+                    size="small"
+                    type="success"
+                  >
+                    {t("admin:events.update.showEvent")}
+                  </ButtonLink>
+                </Col>
+              )}
+            </Row>
           ),
         }}
         onChange={(tab) => setActiveTab(tab as TAB)}

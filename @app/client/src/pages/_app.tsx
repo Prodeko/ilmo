@@ -1,7 +1,6 @@
 import { Head, IlmoContext, TopProgressBar } from "@app/components"
 import { withUrql } from "@app/lib"
 import { ConfigProvider } from "antd"
-import { AnimatePresence, domMax, LazyMotion } from "framer-motion"
 import { AppProps } from "next/app"
 import { WithUrqlProps } from "next-urql"
 
@@ -20,14 +19,7 @@ const Ilmo = (props: AppProps & WithUrqlProps) => {
       <ConfigProvider locale={antdLocale}>
         <TopProgressBar />
         <Head />
-        <LazyMotion features={domMax} strict>
-          <AnimatePresence
-            exitBeforeEnter
-            onExitComplete={() => window.scrollTo(0, 0)}
-          >
-            <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
-          </AnimatePresence>
-        </LazyMotion>
+        <Component {...pageProps} resetUrqlClient={resetUrqlClient} />
       </ConfigProvider>
     </IlmoContext.Provider>
   )

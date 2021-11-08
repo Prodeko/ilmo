@@ -198,7 +198,7 @@ export const withUrql = withUrqlClient(
             subscribe: (sink) => ({
               // TODO: remove ignore once urql types are updated
               // @ts-ignore
-              unsubscribe: wsClient!.subscribe(operation, sink),
+              unsubscribe: wsClient?.subscribe(operation, sink),
             }),
           }),
         }),

@@ -66,7 +66,7 @@ export const EventRegistrationsTables: React.FC<EventRegistrationsTablesProps> =
           fullName ? (
             fullName
           ) : (
-            <Skeleton.Input active={true} size="small" style={{ width: 120 }} />
+            <Skeleton.Input size="small" style={{ width: 120 }} active />
           ),
       },
       {
