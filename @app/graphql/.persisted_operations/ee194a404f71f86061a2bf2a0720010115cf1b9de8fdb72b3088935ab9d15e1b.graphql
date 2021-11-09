@@ -19,6 +19,7 @@ fragment ListEventRegistrations_Registration on Registration {
   fullName
   email
   answers
+  isFinished
   status
   position
   createdAt

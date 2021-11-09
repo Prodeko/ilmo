@@ -48,26 +48,29 @@ export function downloadRegistrations(
 ) {
   return (data: ListEventRegistrations_RegistrationFragment[]) => {
     return data.reduce((acc, cur) => {
-      const newRow = filterObjectByKeys(cur, registrationColsToDownload)
-      Object.keys(newRow).map((key) => {
-        if (key === "answers") {
-          const answers = newRow[key]
-          if (answers) {
-            Object.keys(answers).forEach((questionId) => {
-              const questionLabel = questions?.find((q) => q.id === questionId)
-                ?.label.fi
-              const answer = answers[questionId]
-              newRow[questionLabel] = answer
-            })
+      if (cur.isFinished) {
+        const newRow = filterObjectByKeys(cur, registrationColsToDownload)
+        Object.keys(newRow).map((key) => {
+          if (key === "answers") {
+            const answers = newRow[key]
+            if (answers) {
+              Object.keys(answers).forEach((questionId) => {
+                const questionLabel = questions?.find(
+                  (q) => q.id === questionId
+                )?.label.fi
+                const answer = answers[questionId]
+                newRow[questionLabel] = answer
+              })
+            }
+          } else if (key === "quota") {
+            newRow[key] = newRow[key]?.title.fi
+          } else {
+            newRow[key] = newRow[key]
           }
-        } else if (key === "quota") {
-          newRow[key] = newRow[key]?.title.fi
-        } else {
-          newRow[key] = newRow[key]
-        }
-      })
-      delete newRow["answers"]
-      acc.push(newRow as CsvRow)
+        })
+        delete newRow["answers"]
+        acc.push(newRow as CsvRow)
+      }
       return acc
     }, [] as CsvRow[])
   }
