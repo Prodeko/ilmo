@@ -23,7 +23,7 @@ const Admin_Organizations: NextPage = () => {
   const [query] = useOrganizationPageQuery({
     variables: { slug, offset: (page - 1) * ORGANIZATION_RESULTS_PER_PAGE },
   })
-  const loading = useLoading(query, "large")
+  const loading = useLoading(query, "organizationBySlug", "large")
   const organization = query.data?.organizationBySlug
 
   const props = { page, setPage }

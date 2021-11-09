@@ -21,7 +21,7 @@
    "UpdateOrganization": "565716f69ef0f845afbba0bb8ff6b0b2c67e10926db9646ac20350588b4c0dc1",
    "AdminDeleteRegistration": "658e6abd232060aa32b938a4d434bd5596c413246ad41bcc6ab3935ef5947517",
    "AdminUpdateRegistration": "99191cf15f4a3be32fc16c58978a443803ee3851ff40f927bfcdcaf63bb71c98",
-   "ListEventRegistrations": "79eb157a3cb1c1c5e3af96e691259e4969f82dd4f3d1b0b2f4a340b35068dc0c",
+   "ListEventRegistrations": "ee194a404f71f86061a2bf2a0720010115cf1b9de8fdb72b3088935ab9d15e1b",
    "AdminDeleteUser": "272d8236ba9669d320fc31b805cbeeb08662b4f7a510392a307694c420e030fd",
    "AdminListUsers": "9dc8f24c328dc0dc2e150a71047eecfa5bbf8e350f9fa1b3e9bd3abef4a6edc0",
    "SetAdminStatus": "9622d74eaeb7042221e04a2d63ed26a4e3c673071f7538537d36fdf1f453ba69",

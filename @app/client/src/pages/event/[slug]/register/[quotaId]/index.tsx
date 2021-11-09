@@ -47,7 +47,7 @@ const EventRegistrationPage: NextPage = () => {
 
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
-  const loadingElement = useLoading(query)
+  const loadingElement = useLoading(query, "eventBySlug")
 
   const handleGoBack = useCallback(async () => {
     // Delete the pending registration if the user goes back to event page

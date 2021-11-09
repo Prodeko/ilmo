@@ -30,11 +30,14 @@ export function useQueryId() {
 
 export function useLoading(
   query: UseQueryState,
+  dataField: string,
   spinnerSize: LoadingProps["size"] = "huge"
 ) {
-  const { fetching, error, stale } = query
+  const { data, fetching, error, stale } = query
   let child: JSX.Element | null = null
-  if (!error && !fetching && !stale) {
+  const hasData = !!data?.[dataField]
+  if (hasData) {
+  } else if (!error && !fetching && !stale && hasData) {
   } else if (fetching || stale) {
     child = <LoadingPadded size={spinnerSize} />
   } else if (error && !stale) {

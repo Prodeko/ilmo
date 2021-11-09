@@ -30,7 +30,7 @@ const EventPage: NextPage = () => {
   const { t, lang } = useTranslation("events")
   const [query] = useSharedQuery()
   const [subscription] = useEventPageSubscription({ variables: { slug } })
-  const loadingElement = useLoading(subscription)
+  const loadingElement = useLoading(subscription, "eventBySlug")
   const event = subscription?.data?.eventBySlug
   const { fetching, stale } = subscription
   const title =
@@ -39,7 +39,6 @@ const EventPage: NextPage = () => {
       : query.error
       ? ""
       : `${event?.name[lang] ?? t("eventNotFound")}`
-
   return (
     <SharedLayout query={query} title={title}>
       {loadingElement || (
