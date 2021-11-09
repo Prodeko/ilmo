@@ -1,5 +1,7 @@
 import { Pool, PoolClient } from "pg"
 
+import { toggleRefreshMaterializedViewTrigger } from "./utils"
+
 if (process.env.NODE_ENV !== "development") {
   console.error("This script should only be ran in development!")
   process.exit(0)
@@ -34,7 +36,9 @@ async function main() {
   const pgPool = new Pool({ connectionString })
   const client = await pgPool.connect()
   try {
+    await toggleRefreshMaterializedViewTrigger(client, "disable")
     await cleanData(client)
+    await toggleRefreshMaterializedViewTrigger(client, "enable")
   } catch (e) {
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
       console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"))
