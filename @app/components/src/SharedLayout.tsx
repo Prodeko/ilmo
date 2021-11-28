@@ -17,6 +17,7 @@ import {
   Menu,
   message,
   Row,
+  Space,
   Typography,
 } from "antd"
 import Head from "next/head"
@@ -48,6 +49,7 @@ export const contentMaxWidth = "75rem"
 
 export interface SharedLayoutChildProps {
   error?: CombinedError | Error
+  stale?: boolean
   fetching: boolean
   currentUser?: SharedLayout_UserFragment | null
 }
@@ -126,9 +128,10 @@ export function SharedLayout({
   }, [logout, context, router])
 
   const renderChildren = (props: SharedLayoutChildProps) => {
+    const { error, fetching, stale } = props
     const inner =
-      props.error && !props.fetching && !noHandleErrors ? (
-        <ErrorResult error={props.error} />
+      error && !fetching && !stale && !noHandleErrors ? (
+        <ErrorResult error={error} />
       ) : typeof children === "function" ? (
         children(props)
       ) : (
@@ -162,7 +165,7 @@ export function SharedLayout({
     return <StandardWidth noPad={noPad}>{inner}</StandardWidth>
   }
 
-  const { data, fetching, error } = query
+  const { data, fetching, error, stale } = query
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
@@ -226,52 +229,56 @@ export function SharedLayout({
             </Col>
           ) : null}
           <Col style={{ textAlign: "right" }}>
-            <LocaleSelect />
-            {data && data.currentUser ? (
-              <Dropdown
-                overlay={
-                  <Menu>
-                    {data.currentUser.isAdmin && (
-                      <Menu.Item key="admin">
-                        <Link href="/admin/event/list">
-                          <a data-cy="layout-link-admin">{t("admin")}</a>
+            <Space size="large">
+              <LocaleSelect />
+              {data && data.currentUser ? (
+                <Dropdown
+                  overlay={
+                    <Menu>
+                      {data.currentUser.isAdmin && (
+                        <Menu.Item key="admin">
+                          <Link href="/admin/event/list">
+                            <a data-cy="layout-link-admin">{t("admin")}</a>
+                          </Link>
+                        </Menu.Item>
+                      )}
+                      <Menu.Item key="settings">
+                        <Link href="/settings/profile">
+                          <a data-cy="layout-link-settings">
+                            <Warn okay={data.currentUser.isVerified}>
+                              {t("settings")}
+                            </Warn>
+                          </a>
                         </Link>
                       </Menu.Item>
-                    )}
-                    <Menu.Item key="settings">
-                      <Link href="/settings/profile">
-                        <a data-cy="layout-link-settings">
-                          <Warn okay={data.currentUser.isVerified}>
-                            {t("settings")}
-                          </Warn>
-                        </a>
-                      </Link>
-                    </Menu.Item>
-                    <Menu.Item key="logout">
-                      <a onClick={handleLogout}>{t("logout")}</a>
-                    </Menu.Item>
-                  </Menu>
-                }
-                trigger={["click"]}
-              >
-                <span
-                  data-cy="layout-dropdown-user"
-                  style={{ whiteSpace: "nowrap" }}
+                      <Menu.Item key="logout">
+                        <a onClick={handleLogout}>{t("logout")}</a>
+                      </Menu.Item>
+                    </Menu>
+                  }
+                  trigger={["click"]}
                 >
-                  <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
-                  <Warn okay={data.currentUser.isVerified}>
-                    <span style={{ marginLeft: 8, marginRight: 8 }}>
-                      {data.currentUser.name}
-                    </span>
-                    <DownOutlined />
-                  </Warn>
-                </span>
-              </Dropdown>
-            ) : forbidsLoggedIn ? null : (
-              <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
-                <a data-cy="header-login-button">{t("signin")}</a>
-              </Link>
-            )}
+                  <span
+                    data-cy="layout-dropdown-user"
+                    style={{ whiteSpace: "nowrap", marginRight: 12 }}
+                  >
+                    <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
+                    <Warn okay={data.currentUser.isVerified}>
+                      <span style={{ marginLeft: 8, marginRight: 8 }}>
+                        {data.currentUser.name}
+                      </span>
+                      <DownOutlined
+                        style={{ fontSize: 10, verticalAlign: "baseline" }}
+                      />
+                    </Warn>
+                  </span>
+                </Dropdown>
+              ) : forbidsLoggedIn ? null : (
+                <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
+                  <a data-cy="header-login-button">{t("signin")}</a>
+                </Link>
+              )}
+            </Space>
           </Col>
         </Row>
       </Header>
@@ -280,6 +287,7 @@ export function SharedLayout({
         <Content style={{ minHeight: contentMinHeight }}>
           {renderChildren({
             error,
+            stale,
             fetching,
             currentUser: data?.currentUser,
           })}

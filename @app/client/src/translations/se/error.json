@@ -1,0 +1,22 @@
+{
+  "404": "Sidan du försökte ladda kunde inte hittas.",
+  "ErrorOccurred": {
+    "errorInfo": "Vi är inte säkra på vad som hände där; vad pinsamt! Försök igen senare, eller om detta fortsätter att hända, låt oss veta det.",
+    "somethingWentWrong": "Något gick fel"
+  },
+  "ErrorResult": {
+    "invalidCsrfToken": "Ogiltig CSRF-token",
+    "unexpectedError": "Oväntat fel inträffade"
+  },
+  "accessDenied": "Åtkomst nekad",
+  "csrfError": "Vårt säkerhetsskydd har misslyckats med att autentisera din begäran; för att lösa detta måste du uppdatera sidan:",
+  "errorCode": "Felkod",
+  "errorOccurred": "Ett fel uppstod",
+  "incorrectToken": "Felaktig token, kontrollera och försök igen",
+  "pageNotFound": "Sidan hittades inte",
+  "refresh": "Uppdatera sidan",
+  "tryAgain": "Försök igen",
+  "unknownError": "Vi beklagar verkligen, men ett oväntat fel inträffade. <a href=\"/\">återvänd till hemsidan</a> och försök igen.",
+  "unknownLanguage": "Språket: {{language}} känns inte igen",
+  "weakp": "Servern anser att den här lösenfrasen är för svag, gör den starkare"
+}

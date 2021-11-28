@@ -1,0 +1,131 @@
+{
+  "createNewCategory": "Skapa en ny händelsekategori",
+  "createNewOrganization": "Skapa en ny organisation",
+  "editor": {
+    "changeLanguage": "Ändra språk",
+    "currentLanguage": "Aktuellt språk",
+    "placeholder": "Skriva...",
+    "translate": "Översätt till",
+    "translateSucceeded": "Översättningen från {{from}} till {{to}} lyckades. Du kan se resultatet genom att ändra redigeringsspråk"
+  },
+  "eventCategories": {
+    "delete": {
+      "confirmText": "Är du säker på att du vill ta bort den här händelsekategorin?",
+      "deleteFailedBADFK": "Vissa händelser refererar fortfarande till denna händelsekategori. Ta bort dem först."
+    }
+  },
+  "events": {
+    "delete": {
+      "confirmText": "Är du säker på att du vill ta bort denna händelse?"
+    },
+    "list": {
+      "eventStartTime": "Händelsetid",
+      "linkToEvent": "Visa händelse",
+      "linkUpdateEventCategory": "Redigera kategori",
+      "registrationStartTime": "Registreringstid"
+    },
+    "tabs": {
+      "email": "E-post",
+      "generalInfo": "Allmänt",
+      "questions": "Frågor",
+      "quotas": "Kvoter"
+    },
+    "update": {
+      "showAnswers": "Visa svar",
+      "showEvent": "Visa händelse"
+    }
+  },
+  "notifications": {
+    "deleteFailed": "Det gick inte att ta bort",
+    "deleteSuccess": "Raderades framgångsrikt",
+    "updateSuccess": "Uppdaterades framgångsrikt"
+  },
+  "organizations": {
+    "accessDenied": "Du får inte redigera organisationsinställningar. Kontakta organisationens ägare.",
+    "confirmDelete": "Är du säker på att du vill ta bort {{användarnamn}} från {{organizationName}}?",
+    "confirmTransfer": "Är du säker på att du vill överföra äganderätten till {{organizationName}} till {{användarnamn}}?",
+    "couldNotInvite": "Kunde inte bjuda in till organisation",
+    "create": {
+      "checkingName": "Kontrollerar organisationens namn",
+      "errorNameInUse": "Det organisationsnamnet används redan, välj ett annat organisationsnamn.",
+      "errorOccurred": "Fel uppstod vid kontroll av befintlig organisation med detta namn",
+      "nameInUse": "Organisationens namn används redan",
+      "urlWillBe": "Din organisations URL kommer att vara"
+    },
+    "deleteOrganization": "Ta bort organisation",
+    "deleteOrganizationConfirmText": "Är du säker på att du vill ta bort den här organisationen? Denna åtgärd kan inte ångras.",
+    "enterEmailOrUsername": "Ange användarnamn eller e-postadress",
+    "errors": {
+      "organizationCreateFailed": "Organisation luominen epäonnistui",
+      "remove": "Fel uppstod vid borttagning av medlem: ",
+      "transfer": "Fel uppstod vid överföring av ägande: "
+    },
+    "existingMembers": "Befintliga medlemmar",
+    "forms": {
+      "labels": {
+        "name": "Organisationens namn",
+        "slug": "Snigel"
+      },
+      "messages": {
+        "nameNotEmpty": "Organisationens namn får inte vara tomt",
+        "nameRequired": "Organisationens namn krävs",
+        "slugLength": "Snigel måste vara minst 2 tecken lång",
+        "slugRequired": "Slug krävs"
+      }
+    },
+    "inviteNewMember": "Bjud in ny medlem",
+    "makeOwner": "Gör ägare",
+    "messages": {
+      "deleteSuccess": "Organisationen '{{name}}' har raderats",
+      "updated": "Organisationen uppdaterad"
+    },
+    "updateOrganization": "Uppdatera organisation",
+    "updatingOrganization": "Uppdaterar organisation",
+    "usernameOrEmail": "Användarnamn eller e-post"
+  },
+  "pageTitle": {
+    "createEvent": "Skapa händelse",
+    "createEventCategory": "Skapa händelsekategori",
+    "createOrganization": "Skapa organisation",
+    "listEvent": "Händelser",
+    "listEventCategory": "Händelsekategorier",
+    "listUsers": "Användare",
+    "updateEvent": "Uppdatera händelse",
+    "updateEventCategory": "Uppdatera händelsekategori"
+  },
+  "registrations": {
+    "delete": {
+      "confirmText": "Är du säker på att du vill ta bort denna registrering?",
+      "deleteFailed": "Det gick inte att ta bort registreringen"
+    },
+    "update": {
+      "emptyAnswers": "Om svaren ser tomma ut, försök med ett annat språk."
+    }
+  },
+  "sider": {
+    "titles": {
+      "createEvent": "Skapa händelse",
+      "createEventCategory": "Skapa händelsekategori",
+      "createOrganization": "Skapa organisation",
+      "emails": "E-postmeddelanden",
+      "eventCategories": "Händelsekategorier",
+      "events": "Händelser",
+      "listEventCategories": "Lista händelsekategorier",
+      "listEvents": "Lista händelser",
+      "main": "Dashboard",
+      "organisations": "Organisationer",
+      "users": "Användare"
+    }
+  },
+  "users": {
+    "adminStatusUpdated": "Adminstatusuppdateringen lyckades",
+    "delete": {
+      "confirmText": "Är du säker på att du vill ta bort den här användaren?"
+    },
+    "emailVerified": "E-post verifierad",
+    "errors": {
+      "adminStatusFailed": "Det gick inte att ändra användarens adminstatus: "
+    },
+    "isAdminUser": "Adminanvändare"
+  }
+}

@@ -7,7 +7,7 @@ import {
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
-import { filterObjectByKeys, formItemLayout } from "@app/lib"
+import { filterObjectByKeys, formItemLayout, lowercased } from "@app/lib"
 import { Badge, Col, Form, Row, Tabs } from "antd"
 import dayjs from "dayjs"
 import debounce from "lodash/debounce"
@@ -24,19 +24,17 @@ import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
 
-const { TabPane } = Tabs
+import type { Scalars } from "@app/graphql"
+import type { JsonValue } from "type-fest"
 
-type TranslatedFormValue = {
-  fi: string
-  en: string
-}
+const { TabPane } = Tabs
 
 export type FormValues = {
   languages?: string[]
   ownerOrganizationId?: string
   categoryId?: string
-  name?: TranslatedFormValue
-  description?: TranslatedFormValue
+  name?: Scalars["TranslatedField"]
+  description?: JsonValue
   location?: string
   eventTime?: dayjs.Dayjs[]
   registrationTime?: dayjs.Dayjs[]
@@ -58,17 +56,20 @@ interface EventFormProps {
 }
 
 export function getEventSlug(
-  name?: TranslatedFormValue,
+  name?: Scalars["TranslatedField"],
   dates?: dayjs.Dayjs[]
 ) {
   const eventStartTime = dates?.[0].toISOString()
 
+  const nameFi = name?.fi
+  const nameSlug = nameFi ? nameFi : (Object.values(name)[0] as string)
+
   const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
-  const slug = slugify(`${daySlug}-${name?.["fi"]}`, {
+  const slug = slugify(`${daySlug}-${nameSlug}`, {
     lower: true,
   })
 
-  return name?.fi ? slug : ""
+  return slug
 }
 
 enum TAB {
@@ -82,10 +83,14 @@ enum TAB {
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
-  const { supportedLanguages } = data?.languages || {}
+  const { supportedLanguages } = data || {}
+  const languagesLower = useMemo(
+    () => lowercased(supportedLanguages),
+    [supportedLanguages]
+  )
   const initialSelectedLanguages = useMemo(
-    () => (type === "update" ? languages || {} : supportedLanguages),
-    [type, languages, supportedLanguages]
+    () => (type === "update" ? languages || {} : languagesLower),
+    [type, languages, languagesLower]
   )
 
   // Translations, router, urql
@@ -132,9 +137,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           eventTime,
           registrationTime,
           openQuotaSize,
-          headerImageFile: headerFile,
           quotas: formQuotas,
           questions: formQuestions,
+          headerImageFile: headerFile,
         } = values
 
         if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
@@ -254,7 +259,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     formSubmitting,
     selectedLanguages,
     setSelectedLanguages,
-    supportedLanguages,
+    supportedLanguages: languagesLower,
   }
 
   return (

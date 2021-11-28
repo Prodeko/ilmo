@@ -4,7 +4,7 @@ import { range, tailFormItemLayout } from "@app/lib"
 import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
 import dayjs from "dayjs"
 
-import { ErrorAlert, FileUpload, useTranslation } from "../index"
+import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
 
 import { FormValues } from "."
 
@@ -12,7 +12,7 @@ import type { UploadFile } from "antd/lib/upload/interface"
 import type { DisabledTimes } from "rc-picker/lib/interface"
 
 const { Option } = Select
-const { TextArea, Group } = Input
+const { Group } = Input
 const { RangePicker } = DatePicker
 
 interface MainTabProps {
@@ -113,9 +113,9 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
             <Option
               key={i}
               data-cy={`eventform-select-language-option-${l}`}
-              value={l ? l : ""}
+              value={l!}
             >
-              {t(`common:lang.${l}`)}
+              {t(`common:lang.${l!.toLowerCase()}`)}
             </Option>
           ))}
         </Select>
@@ -180,7 +180,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
             selectedLanguages.map((l, i) => (
               <Form.Item
                 key={l}
-                name={["name", l!]}
+                name={["name", l.toLowerCase()]}
                 rules={[
                   {
                     required: true,
@@ -199,34 +199,8 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           )}
         </Group>
       </Form.Item>
-      <Form.Item label={t("common:description")} required>
-        <Group compact>
-          {selectedLanguages.length === 0 ? (
-            <Form.Item noStyle>
-              <TextArea disabled />
-            </Form.Item>
-          ) : (
-            selectedLanguages.map((l, i) => (
-              <Form.Item
-                key={l}
-                name={["description", l!]}
-                rules={[
-                  {
-                    required: true,
-                    message: t("forms.rules.event.provideDescription"),
-                  },
-                ]}
-                noStyle
-              >
-                <TextArea
-                  data-cy={`eventform-input-description-${l}`}
-                  placeholder={t(`common:lang.in.${l}`)}
-                  style={i > 0 ? { marginTop: 5 } : undefined}
-                />
-              </Form.Item>
-            ))
-          )}
-        </Group>
+      <Form.Item label={t("common:description")} name="description" required>
+        <Editor selectedLanguages={selectedLanguages} />
       </Form.Item>
       <Form.Item
         label={t("common:location")}

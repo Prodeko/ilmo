@@ -39,6 +39,8 @@ context("Create event", () => {
       cy.getCy("eventform-select-language").click()
       cy.getCy("eventform-select-language-option-en").click()
       cy.getCy("eventform-select-language-option-en").click()
+      // Disable swedish
+      cy.getCy("eventform-select-language-option-sv").click()
       cy.getCy("eventform-select-language").click()
 
       cy.getCy("eventform-select-organization-id").click()
@@ -50,8 +52,10 @@ context("Create event", () => {
       cy.getCy("eventform-input-name-fi").type("Testitapahtuma")
       cy.getCy("eventform-input-name-en").type("Test event")
 
-      cy.getCy("eventform-input-description-fi").type("Testikuvaus")
-      cy.getCy("eventform-input-description-en").type("Test description")
+      cy.get("[data-slate-editor=true]").type("Testikuvaus")
+      cy.getCy("editor-languageselect-dropdown").click()
+      cy.getCy("editor-languageselect-en").click()
+      cy.get("[data-slate-editor=true]").type("Test description")
 
       cy.getCy("eventform-input-location").type("Testikatu 123")
 

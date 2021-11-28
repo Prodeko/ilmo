@@ -1,6 +1,13 @@
 {
   "createNewCategory": "Luo uusi kategoria",
   "createNewOrganization": "Luo uusi organisaatio",
+  "editor": {
+    "changeLanguage": "Vaihda kieli",
+    "currentLanguage": "Nykyinen kieli",
+    "placeholder": "Kirjoita...",
+    "translate": "Käännä",
+    "translateSucceeded": "Kääntäminen kielestä {{from}} kieleen {{to}} onnistui. Näet käännöksen vaihtamalla kieltä."
+  },
   "eventCategories": {
     "delete": {
       "confirmText": "Haluatko varmasti poistaa tämän tapahtumakategorian?",

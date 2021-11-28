@@ -1,0 +1,92 @@
+{
+  "buttons": {
+    "addEmail": "Lägg till e-post",
+    "changePassphrase": "Ändra lösenfras",
+    "permanentDelete": "RADERA MITT KONTO PERMANENT",
+    "resetPassphrase": "Återställ lösenfras",
+    "returnHome": "Återgå till hemsidan",
+    "updateProfile": "Uppdatera profil",
+    "wantToDeleteAccount": "Jag vill ta bort mitt konto"
+  },
+  "errors": {
+    "accountDeleteFailedOrgOwner1": "Du kan inte ta bort ditt konto medan du är ägare till en organisation.",
+    "accountDeleteFailedOrgOwner2": "För varje organisation du är ägare till, tilldela antingen ditt ägande till en annan användare eller ta bort organisationen för att fortsätta.",
+    "deleteFailed": "Begäran om borttagning misslyckades",
+    "errorUpdatingUsername": "Fel vid uppdatering av användarnamn",
+    "incorrectOldPassword": "Felaktig gammal lösenordsfras",
+    "usernameTaken": "Detta användarnamn används redan, välj ett annat namn"
+  },
+  "form": {
+    "feedback": {
+      "cannotDeleteAccount": "Kan inte ta bort konto",
+      "emailAddFailed": "Fel vid tillägg av e-post",
+      "passwordChangeFailed": "Det gick inte att ändra lösenordsfras",
+      "passwordChanged": "Lösenordet ändrat!",
+      "profileUpdated": "Profil uppdaterad"
+    },
+    "label": {
+      "newEmail": "Ny e-post",
+      "newPassphrase": "Ny lösenordsfras",
+      "oldPassphrase": "Gammal lösenfras"
+    },
+    "messages": {
+      "email": "Ange en e-postadress",
+      "name": "Ange ditt namn",
+      "newPassword": "Bekräfta din lösenfras",
+      "oldPassword": "Ange din lösenfras",
+      "username": "Välj ett användarnamn"
+    }
+  },
+  "pages": {
+    "accounts": {
+      "linkAccount": "Länka {{service}}-konto",
+      "linkAnother": "Länka ett annat konto",
+      "unlink": "Ta bort länk",
+      "unlinkAccountNotice": "Om du tar bort länken till det här kontot kommer du inte att kunna logga in med det längre; se till att din e-postadress är giltig."
+    },
+    "delete": {
+      "accountDeleted": "Kontot raderat",
+      "accountDeletedInfo": "Ditt konto har raderats.",
+      "confirmDelete1": "Bekräfta borttagning av konto",
+      "confirmDelete2": "Ta bort användarkonto?",
+      "confirmDeleteEmail": "Bekräfta borttagning via e-postlänk",
+      "deleteNotice1": "Om du tar bort ditt användarkonto raderas all data och kan inte ångras. Se till att du vill göra detta.",
+      "deleteNotice2": "För att skydda ditt konto kräver vi att du bekräftar att du vill ta bort ditt konto här, sedan kommer du att få ett e-postmeddelande med en bekräftelsekod (för att kontrollera din identitet) och när du klickar på den länken kommer du att bli tillfrågad för att bekräfta borttagningen av ditt konto igen.",
+      "deleteNotice3": "Tryck på den här knappen så kommer ditt konto att raderas.",
+      "deleteNotice4": "Du har fått ett e-postmeddelande med en bekräftelselänk i den, du måste klicka på den för att bekräfta att du är kontoinnehavaren så att du kan fortsätta att radera ditt konto.",
+      "deleteNotice5": "Att radera ditt konto kan inte ångras, du kommer att förlora all din data.",
+      "modals": {
+        "content1": "Innan vi kan ta bort ditt konto måste vi bekräfta att det definitivt är du. Vi skickar ett e-postmeddelande med en länk i den, som när du klickar på den ger dig möjlighet att radera ditt konto.",
+        "content2": "Du bör inte utlösa detta om du inte är säker på att du vill ta bort ditt konto.",
+        "okText": "Skicka radera konto-e-post",
+        "title": "Skicka bekräftelsemeddelande om borttagning av konto?"
+      }
+    },
+    "emails": {
+      "accountNoticeInfo1": "Kontomeddelanden kommer att skickas till din primära e-postadress.",
+      "accountNoticeInfo2": "Ytterligare e-postadresser kan läggas till för att hjälpa till med kontoåterställning (eller för att ändra din primära e-postadress), men de kan inte användas förrän de har verifierats.",
+      "alerts": {
+        "notVerified": {
+          "description": "Du har inga verifierade e-postadresser, detta kommer att göra kontoåterställning omöjlig och kan begränsa din tillgängliga funktionalitet i denna applikation. Vänligen slutför e-postverifieringen.",
+          "message": "Inga verifierade e-postmeddelanden"
+        }
+      },
+      "makePrimary": "Gör primär",
+      "pendingVerification": "Väntar på verifiering (kontrollera din inkorg / skräppostmapp)",
+      "resendVerification": "Skicka verifiering igen",
+      "unverified": "unverified",
+      "verified": "Verified"
+    },
+    "security": {
+      "linkEmailSettings": "e-postinställningar",
+      "socialLoginNoPassword": "Du registrerade ditt konto genom social inloggning, så du har för närvarande ingen lösenfras. Om du vill ha en lösenfras, tryck på knappen nedan för att begära ett e-postmeddelande för återställning av lösenfras till '{{email}}' (du kan välj en annan e-postadress genom att göra den till primär i)"
+    }
+  },
+  "titles": {
+    "accounts": "Länkade konton",
+    "delete": "Radera konto",
+    "emails": "E-postadresser",
+    "index": "Redigera profil",
+    "security": "Ändra lösenfras"
+  }
+}

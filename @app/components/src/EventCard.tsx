@@ -8,7 +8,7 @@ import dayjs from "dayjs"
 import Image from "next/image"
 
 import { H5 } from "./Text"
-import { ButtonLink, EventQuotaPopover, Link, P, useTranslation } from "."
+import { ButtonLink, EventQuotaPopover, Link, useTranslation } from "."
 
 import type { Event } from "@app/graphql"
 
@@ -30,7 +30,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     slug,
     name,
     location,
-    description,
     registrationStartTime,
     registrationEndTime,
     headerImageFile,
@@ -82,20 +81,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
       <div style={cardInfoStyle}>
         <EventQuotaPopover event={event} showText />
       </div>
-      <P
-        ellipsis={{
-          rows: 2,
-        }}
-        style={{ fontSize: 12 }}
-        type="secondary"
-      >
-        {description[lang]}
-      </P>
 
       <ButtonLink
         data-cy={`eventcard-eventpage-link-${event.slug}`}
         href={`/event/${slug}`}
         size="middle"
+        style={{ marginTop: "12px" }}
         type={signupOpen ? "success" : "default"}
         block
       >

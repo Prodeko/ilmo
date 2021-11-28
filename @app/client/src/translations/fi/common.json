@@ -27,9 +27,12 @@
     "fi": "Suomi",
     "in": {
       "en": "englanniksi",
-      "fi": "suomeksi"
-    }
+      "fi": "suomeksi",
+      "sv": "ruotsiksi"
+    },
+    "sv": "Ruotsi"
   },
+  "language": "Kieli",
   "loading": "Ladataan...",
   "location": "Paikka",
   "login": "Kirjaudu",

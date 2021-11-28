@@ -8,6 +8,7 @@ import {
 import {
   filterObjectByKeys,
   formItemLayout,
+  lowercased,
   tailFormItemLayout,
 } from "@app/lib"
 import { Button, Form, Input, Select } from "antd"
@@ -38,10 +39,11 @@ export const EventCategoryForm = ({
   initialValues,
 }: EventCategoryFormProps) => {
   const { languages } = initialValues || {}
-  const { supportedLanguages } = data?.languages || {}
-  const { organizationMemberships } = data?.currentUser || {}
+  const { currentUser, supportedLanguages } = data || {}
+  const { organizationMemberships } = currentUser || {}
   const initialSelectedLanguages = useMemo(
-    () => (type === "update" ? languages || {} : supportedLanguages),
+    () =>
+      type === "update" ? languages || {} : lowercased(supportedLanguages),
     [type, languages, supportedLanguages]
   )
 
@@ -144,9 +146,9 @@ export const EventCategoryForm = ({
             <Option
               key={i}
               data-cy={`eventcategoryform-select-language-option-${l}`}
-              value={l ? l : ""}
+              value={l!}
             >
-              {t(`common:lang.${l}`)}
+              {t(`common:lang.${l!.toLowerCase()}`)}
             </Option>
           ))}
         </Select>
@@ -186,7 +188,7 @@ export const EventCategoryForm = ({
             selectedLanguages.map((l, i) => (
               <Form.Item
                 key={l}
-                name={["name", l!]}
+                name={["name", l.toLowerCase()]}
                 rules={[
                   {
                     required: true,
@@ -215,7 +217,7 @@ export const EventCategoryForm = ({
             selectedLanguages.map((l, i) => (
               <Form.Item
                 key={l}
-                name={["description", l!]}
+                name={["description", l.toLowerCase()]}
                 rules={[
                   {
                     required: true,

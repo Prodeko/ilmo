@@ -1,0 +1,19 @@
+{
+  "forgotPassword": "Glömt lösenordsfras?",
+  "form": {
+    "errors": {
+      "incorrectCredentials": "Felaktigt användarnamn eller lösenfras"
+    },
+    "messages": {
+      "password": "Ange din lösenfras",
+      "username": "Ange ditt användarnamn eller e-postadress"
+    },
+    "placeholders": {
+      "password": "Lösenfras",
+      "username": "E-post eller användarnamn"
+    }
+  },
+  "registerButton": "Skapa ett konto",
+  "signinButton": "Logga in med e-post eller användarnamn",
+  "signinDifferent": "Använd en annan inloggningsmetod"
+}

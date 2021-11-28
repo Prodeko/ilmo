@@ -28,7 +28,11 @@ fragment HomePage_Query on Query {
     }
   }
   signupOpenEvents: events(
-    filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
+    filter: {
+      signupOpen: { equalTo: true }
+      isDraft: { equalTo: false }
+      name: { containsKey: $language }
+    }
     orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
   ) {
     nodes {
@@ -36,7 +40,11 @@ fragment HomePage_Query on Query {
     }
   }
   signupUpcomingEvents: events(
-    filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
+    filter: {
+      signupUpcoming: { equalTo: true }
+      isDraft: { equalTo: false }
+      name: { containsKey: $language }
+    }
     orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
   ) {
     nodes {
@@ -50,6 +58,6 @@ fragment HomePage_Query on Query {
   }
 }
 
-query HomePage {
+query HomePage($language: String!) {
   ...HomePage_Query
 }

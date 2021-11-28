@@ -1,0 +1,22 @@
+{
+  "alerts": {
+    "successEmail": {
+      "description": "Vi har skickat en e-poståterställningslänk till {{email}}; klicka på länken och följ instruktionerna. Om du inte får länken, se till att du har angett e-postadressen korrekt och checka in din skräppostmapp för säkerhets skull.",
+      "message": "Du har mail"
+    }
+  },
+  "form": {
+    "messages": {
+      "emailInvalid": "Inmatningen är inte ett giltigt e-postmeddelande",
+      "emailRequired": "Ange din e-post",
+      "username": "Ange ditt användarnamn eller e-postadress"
+    },
+    "placeholders": {
+      "password": "Lösenfras",
+      "username": "E-post eller användarnamn"
+    }
+  },
+  "rememberedButton": "Kommer du ihåg ditt lösenord? Logga in.",
+  "resetButton": "Återställ lösenord",
+  "title": "Glömt lösenord"
+}

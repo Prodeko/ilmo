@@ -2,7 +2,10 @@ fragment HomePageClosedEvents_Query on Query {
   signupClosedEvents: events(
     first: $first
     offset: $offset
-    filter: { signupClosed: { equalTo: true } }
+    filter: {
+      signupClosed: { equalTo: true }
+      name: { containsKey: $language }
+    }
     orderBy: EVENT_END_TIME_ASC
   ) {
     nodes {
@@ -12,6 +15,6 @@ fragment HomePageClosedEvents_Query on Query {
   }
 }
 
-query HomePageEvents($offset: Int, $first: Int) {
+query HomePageEvents($offset: Int, $first: Int, $language: String) {
   ...HomePageClosedEvents_Query
 }

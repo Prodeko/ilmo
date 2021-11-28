@@ -1,0 +1,22 @@
+{
+  "acceptInvitation": "Acceptera inbjudan",
+  "result": {
+    "dnied": {
+      "subTitle": "Du kanske borde logga ut och logga in med ett annat konto?",
+      "title": "Den inbjudan är inte för dig"
+    },
+    "error": {
+      "subtitle": "Vi kunde inte hitta information om denna inbjudan, försök igen senare"
+    },
+    "login": {
+      "title": "Logga in för att acceptera inbjudan"
+    },
+    "ntfnd": {
+      "subTitle": "Du kanske redan har accepterat det?",
+      "title": "Den inbjudan kunde inte hittas"
+    },
+    "success": {
+      "title": "Du blev inbjuden till {{organisation}}"
+    }
+  }
+}

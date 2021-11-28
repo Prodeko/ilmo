@@ -4,6 +4,7 @@ import {
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
+  Redirect,
   SharedLayout,
   SignupState,
   useIsMobile,
@@ -18,7 +19,7 @@ import {
   useEventPageSubscription,
   useSharedQuery,
 } from "@app/graphql"
-import { Col, Divider, notification, PageHeader, Row } from "antd"
+import { Col, Divider, message, notification, PageHeader, Row } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -33,12 +34,14 @@ const EventPage: NextPage = () => {
   const loadingElement = useLoading(subscription, "eventBySlug")
   const event = subscription?.data?.eventBySlug
   const { fetching, stale } = subscription
+  const name = event?.name[lang]
   const title =
     fetching || stale
       ? t("common:loading")
       : query.error
       ? ""
-      : `${event?.name[lang] ?? t("eventNotFound")}`
+      : `${name ?? t("eventNotFound")}`
+
   return (
     <SharedLayout query={query} title={title}>
       {loadingElement || (
@@ -62,7 +65,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
 }) => {
   const router = useRouter()
   const isMobile = useIsMobile()
-  const { t } = useTranslation("events")
+  const { t, lang } = useTranslation("events")
   const [pauseServerTime, setPauseServerTime] = useState(false)
   const [signupState, setSignupState] = useState<SignupState>({
     upcoming: false,
@@ -177,6 +180,16 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
     registrationEndTime,
     registrations,
   } = event
+
+  const hasNameInSelectedLocale = event?.name?.[lang]
+  if (!hasNameInSelectedLocale) {
+    message.info({
+      key: "only-in-another-language-message",
+      duration: 2.5,
+      content: t("availableOnlyInLang"),
+    })
+    return <Redirect href="/" layout />
+  }
 
   return (
     <>

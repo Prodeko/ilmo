@@ -2,9 +2,8 @@ fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
   }
-  languages {
-    ...SharedLayout_Languages
-  }
+  supportedLanguages
+  defaultLanguage
 }
 
 fragment SharedLayout_UserEmail on UserEmail {
@@ -40,11 +39,6 @@ fragment SharedLayout_User on User {
       }
     }
   }
-}
-
-fragment SharedLayout_Languages on AppLanguage {
-  supportedLanguages
-  defaultLanguage
 }
 
 query Shared {

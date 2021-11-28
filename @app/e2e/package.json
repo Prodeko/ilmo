@@ -10,14 +10,14 @@
     "depcheck": "depcheck"
   },
   "devDependencies": {
-    "@cypress/webpack-preprocessor": "^5.9.1",
-    "@types/node": "^16.11.7",
-    "cypress": "^8.7.0",
+    "@cypress/webpack-preprocessor": "^5.10.0",
+    "@types/node": "^16.11.10",
+    "cypress": "^9.1.0",
     "cypress-file-upload": "^5.0.8",
     "dayjs": "^1.10.7",
     "neat-csv": "^7.0.0",
     "node-polyfill-webpack-plugin": "^1.1.4",
-    "slugify": "^1.6.2",
-    "webpack": "^5.62.1"
+    "slugify": "^1.6.3",
+    "webpack": "^5.64.4"
   }
 }

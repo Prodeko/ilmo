@@ -10,8 +10,7 @@
     "target": "esnext",
     "module": "esnext",
     "jsx": "react-jsx",
-    "isolatedModules": true,
-    "esModuleInterop": true
+    "isolatedModules": true
   },
   "include": ["../client/next-env.d.ts", "src/**/*.ts", "src/**/*.tsx"],
   "references": [

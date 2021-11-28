@@ -1,0 +1,94 @@
+{
+  "addOpenQuota": "Lägg till öppen kvot",
+  "addOption": "Lägg till alternativ",
+  "addQuestion": "Lägg till fråga",
+  "addQuota": "Lägg till kvot",
+  "availableOnlyInLang": "Denna händelseinformation finns endast på ett annat språk",
+  "category": "Kategori",
+  "createdAt": "Tid",
+  "endTime": "Sluttid",
+  "errors": {
+    "eventCategoryCreationFailed": "Det gick inte att skapa händelsekategori",
+    "eventCreateFailed": "Det gick inte att skapa händelse",
+    "eventUpdateFailed": "Uppdateringen misslyckades",
+    "formTabErrors": "Andra fel",
+    "mustProvideEventQuota": "Måste tillhandahålla minst en kvot för evenemanget"
+  },
+  "eventName": "Händelse",
+  "eventNotFound": "Händelse hittades inte",
+  "eventSignupNotOpen": "Händelseregistreringen är inte öppen",
+  "forms": {
+    "eventTime": "Händelsetid",
+    "highlightEvent": "Markerad händelse",
+    "isDraft": "Utkast",
+    "isHighlighted": "Markerad",
+    "isNotDraft": "Publicerad",
+    "isNotHighlighted": "Inte markerad",
+    "placeholders": {
+      "event": {
+        "category": "Välj en kategori för evenemanget",
+        "organizer": "Välj en arrangör för evenemanget"
+      },
+      "eventCategory": {
+        "organizer": "Välj en arrangör för evenemangskategorin"
+      },
+      "languages": "Välj språk",
+      "questions": {
+        "data": "Fråga",
+        "label": "Etikett",
+        "type": "Typ"
+      },
+      "quota": {
+        "size": "Storlek",
+        "title": "Titel"
+      }
+    },
+    "registrationTime": "Registreringsperiod",
+    "rules": {
+      "event": {
+        "provideCategory": "Välj en kategori för evenemanget",
+        "provideDescription": "Vänligen ange en beskrivning av händelsen",
+        "provideEventTime": "Välj händelsetid",
+        "provideLocation": "Ange en plats för evenemanget",
+        "provideName": "Välj ett namn för evenemanget",
+        "provideOrganizer": "Välj en arrangör för evenemanget",
+        "provideRegistrationTime": "Välj tid för eventregistrering",
+        "provideSignupEmail": "Vänligen ange ett välkomstmail för eventet"
+      },
+      "eventCategory": {
+        "provideDescription": "Välj en beskrivning för kategorin",
+        "provideName": "Välj ett namn för kategorin",
+        "provideOrganizer": "Välj en värdorganisation för kategorin"
+      },
+      "provideLanguage": "Välj språk",
+      "questions": {
+        "provideQuestionData": "Ange frågan",
+        "provideQuestionLabel": "Ange frågeetiketten",
+        "provideQuestionType": "Ange en typ för frågan"
+      },
+      "quota": {
+        "provideQuotaSize": "Ange en storlek för kvoten",
+        "provideQuotaTitle": "Ange en beskrivning av kvoten"
+      }
+    },
+    "saveAsDraft": "Spara som utkast",
+    "signupEmail": "E-post för eventregistrering"
+  },
+  "headerImage": "Händelsehuvudbild",
+  "languages": "Språk",
+  "numRegistrations": "Registrerade personer",
+  "openQuota": "Öppen kvot",
+  "organizer": "Arrangör",
+  "queued": "Kö",
+  "quota": "Kvota",
+  "removeOption": "Ta bort alternativ",
+  "removeQuestion": "Ta bort fråga",
+  "removeQuota": "Ta bort kvot",
+  "spots": "spots",
+  "timer": {
+    "instructions": "Sidan uppdateras automatiskt när registreringen öppnas. Uppdatera inte sidan.",
+    "registrationStarts": "Öppnar",
+    "time": "Aktuell tid",
+    "title": "Registreringen öppnar snart"
+  }
+}

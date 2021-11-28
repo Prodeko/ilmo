@@ -3,6 +3,7 @@
   "addOption": "Add option",
   "addQuestion": "Add question",
   "addQuota": "Add quota",
+  "availableOnlyInLang": "This event information is only in another language",
   "category": "Category",
   "createdAt": "Time",
   "endTime": "End time",

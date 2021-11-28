@@ -1,0 +1,95 @@
+fragment HomePageClosedEvents_Query on Query {
+  signupClosedEvents: events(
+    first: $first
+    offset: $offset
+    filter: {signupClosed: {equalTo: true}, name: {containsKey: $language}}
+    orderBy: EVENT_END_TIME_ASC
+  ) {
+    nodes {
+      ...HomePage_Event
+      __typename
+    }
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment HomePage_Event on Event {
+  ...EventFields
+  ownerOrganization {
+    ...EventPage_Organization
+    __typename
+  }
+  category {
+    ...EventPage_EventCategory
+    __typename
+  }
+  quotas(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Quota
+      registrations {
+        totalCount
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  registrations {
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment EventFields on Event {
+  id
+  name
+  slug
+  description
+  location
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
+  isHighlighted
+  isDraft
+  headerImageFile
+  openQuotaSize
+  signupOpen
+  signupUpcoming
+  signupClosed
+  createdBy
+  updatedBy
+  createdAt
+  updatedAt
+  __typename
+}
+fragment EventPage_Organization on Organization {
+  id
+  name
+  slug
+  color
+  __typename
+}
+fragment EventPage_EventCategory on EventCategory {
+  id
+  description
+  name
+  color
+  ownerOrganization {
+    ...EventPage_Organization
+    __typename
+  }
+  updatedAt
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+query HomePageEvents($offset: Int, $first: Int, $language: String) {
+  ...HomePageClosedEvents_Query
+}
