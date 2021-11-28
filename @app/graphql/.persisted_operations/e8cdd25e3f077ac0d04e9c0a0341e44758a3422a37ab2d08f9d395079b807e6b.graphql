@@ -1,0 +1,58 @@
+fragment SharedLayout_Query on Query {
+  currentUser {
+    ...SharedLayout_User
+    __typename
+  }
+  supportedLanguages
+  defaultLanguage
+  __typename
+}
+fragment SharedLayout_User on User {
+  id
+  name
+  username
+  avatarUrl
+  isAdmin
+  isVerified
+  primaryEmail
+  userEmails(first: 50) {
+    nodes {
+      ...SharedLayout_UserEmail
+      __typename
+    }
+    __typename
+  }
+  organizationMemberships(first: 20) {
+    totalCount
+    nodes {
+      id
+      isOwner
+      organization {
+        id
+        name
+        slug
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment SharedLayout_UserEmail on UserEmail {
+  id
+  email
+  isVerified
+  isPrimary
+  createdAt
+  __typename
+}
+query InvitationDetail($id: UUID!, $code: String) {
+  ...SharedLayout_Query
+  organizationForInvitation(invitationId: $id, code: $code) {
+    id
+    name
+    slug
+    __typename
+  }
+}

@@ -8,7 +8,9 @@ import RateLimitPlugin from "./RateLimitPlugin"
 import RemoveOwnershipInfoForeignKeyConnections from "./RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "./RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "./SubscriptionsPlugin"
+import TranslatePlugin from "./TranslatePlugin"
 import UploadsPlugin from "./UploadsPlugin"
+import ValidateRichTextFields from "./ValidateRichTextFields"
 
 export {
   EmailsPlugin,
@@ -21,5 +23,7 @@ export {
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TranslatePlugin,
   UploadsPlugin,
+  ValidateRichTextFields,
 }

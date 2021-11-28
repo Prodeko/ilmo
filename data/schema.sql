@@ -80,13 +80,37 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- Name: app_languages; Type: TYPE; Schema: app_public; Owner: -
+-- Name: default_language; Type: TYPE; Schema: app_private; Owner: -
 --
 
-CREATE TYPE app_public.app_languages AS (
-	supported_languages text[],
-	default_language text
+CREATE TYPE app_private.default_language AS ENUM (
+    'fi'
 );
+
+
+--
+-- Name: TYPE default_language; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TYPE app_private.default_language IS '@enum';
+
+
+--
+-- Name: supported_languages; Type: TYPE; Schema: app_private; Owner: -
+--
+
+CREATE TYPE app_private.supported_languages AS ENUM (
+    'fi',
+    'en',
+    'sv'
+);
+
+
+--
+-- Name: TYPE supported_languages; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TYPE app_private.supported_languages IS '@enum';
 
 
 --
@@ -105,6 +129,13 @@ CREATE TYPE app_public.claim_registration_token_output AS (
 
 CREATE DOMAIN app_public.constrained_name AS text
 	CONSTRAINT constrained_name_check CHECK ((VALUE !~ '\s'::text));
+
+
+--
+-- Name: DOMAIN constrained_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON DOMAIN app_public.constrained_name IS 'A field which must not contain spaces';
 
 
 --
@@ -129,7 +160,7 @@ CREATE FUNCTION app_public.check_language(_column jsonb) RETURNS boolean
 declare
   v_supported_languages text[];
 begin
-  select supported_languages into v_supported_languages from app_public.languages();
+  select enum_range(null::app_private.supported_languages) into v_supported_languages;
 
   return (
     -- Check that supported_languages exist as top level keys in _column
@@ -153,7 +184,7 @@ CREATE DOMAIN app_public.translated_field AS jsonb
 -- Name: DOMAIN translated_field; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON DOMAIN app_public.translated_field IS 'A field which must not contain spaces';
+COMMENT ON DOMAIN app_public.translated_field IS 'A translated field.';
 
 
 --
@@ -195,7 +226,7 @@ CREATE DOMAIN app_public.email AS public.citext
 CREATE TYPE app_public.event_input AS (
 	slug public.citext,
 	name app_public.translated_field,
-	description app_public.translated_field,
+	description jsonb,
 	location text,
 	event_start_time timestamp with time zone,
 	event_end_time timestamp with time zone,
@@ -1386,7 +1417,7 @@ CREATE TABLE app_public.events (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     slug public.citext NOT NULL,
     name app_public.translated_field NOT NULL,
-    description app_public.translated_field NOT NULL,
+    description jsonb NOT NULL,
     location text NOT NULL,
     event_start_time timestamp with time zone NOT NULL,
     event_end_time timestamp with time zone NOT NULL,
@@ -2257,6 +2288,25 @@ $$;
 
 
 --
+-- Name: default_language(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.default_language() RETURNS app_private.default_language
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select enum_first(null::app_private.default_language);
+$$;
+
+
+--
+-- Name: FUNCTION default_language(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.default_language() IS 'Default language of the app.';
+
+
+--
 -- Name: delete_organization(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2529,17 +2579,6 @@ begin
   insert into app_public.organization_invitations(organization_id, user_id, email, code)
     values (invite_to_organization.organization_id, v_user.id, email, v_code);
 end;
-$$;
-
-
---
--- Name: languages(); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.languages() RETURNS app_public.app_languages
-    LANGUAGE sql STABLE
-    AS $$
-  select array['fi', 'en'], 'fi';
 $$;
 
 
@@ -2977,6 +3016,25 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) IS 'Make an existing user admin. Only accessible to admin users.';
+
+
+--
+-- Name: supported_languages(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.supported_languages() RETURNS app_private.supported_languages[]
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select enum_range(null::app_private.supported_languages);
+$$;
+
+
+--
+-- Name: FUNCTION supported_languages(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.supported_languages() IS 'Supported languages of the app.';
 
 
 --
@@ -4276,6 +4334,13 @@ CREATE INDEX events_is_draft_idx ON app_public.events USING btree (is_draft);
 --
 
 CREATE INDEX events_is_highlighted_idx ON app_public.events USING btree (is_highlighted);
+
+
+--
+-- Name: events_name_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX events_name_idx ON app_public.events USING btree (name);
 
 
 --
@@ -5851,6 +5916,14 @@ GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO ilmo_
 
 
 --
+-- Name: FUNCTION default_language(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.default_language() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.default_language() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION delete_organization(organization_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5904,14 +5977,6 @@ GRANT ALL ON FUNCTION app_public.forgot_password(email public.citext) TO ilmo_vi
 
 REVOKE ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.invite_to_organization(organization_id uuid, username public.citext, email public.citext) TO ilmo_visitor;
-
-
---
--- Name: FUNCTION languages(); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.languages() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.languages() TO ilmo_visitor;
 
 
 --
@@ -6030,6 +6095,14 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 
 REVOKE ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION supported_languages(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.supported_languages() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.supported_languages() TO ilmo_visitor;
 
 
 --

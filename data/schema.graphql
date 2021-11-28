@@ -98,11 +98,6 @@ type AdminUpdateRegistrationPayload {
   updateToken: String
 }
 
-type AppLanguage {
-  defaultLanguage: String
-  supportedLanguages: [String]
-}
-
 """
 A filter to be used against Boolean fields. All fields are combined with a logical ‘and.’
 """
@@ -228,6 +223,7 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
+"""A field which must not contain spaces"""
 scalar ConstrainedName
 
 """All input for the create `EventCategory` mutation."""
@@ -492,6 +488,10 @@ input DatetimeFilter {
   notIn: [Datetime!]
 }
 
+enum DefaultLanguage {
+  FI
+}
+
 """All input for the `deleteEventCategory` mutation."""
 input DeleteEventCategoryInput {
   """
@@ -733,7 +733,7 @@ type Event {
   createdBy: UUID
 
   """Description of the event."""
-  description: TranslatedField!
+  description: JSON!
 
   """Ending time of the event."""
   eventEndTime: Datetime!
@@ -1100,6 +1100,9 @@ input EventCondition {
   """Checks for equality with the object’s `isHighlighted` field."""
   isHighlighted: Boolean
 
+  """Checks for equality with the object’s `name` field."""
+  name: TranslatedField
+
   """Checks for equality with the object’s `ownerOrganizationId` field."""
   ownerOrganizationId: UUID
 
@@ -1144,6 +1147,9 @@ input EventFilter {
   """Filter by the object’s `isHighlighted` field."""
   isHighlighted: BooleanFilter
 
+  """Filter by the object’s `name` field."""
+  name: TranslatedFieldFilter
+
   """Negates the expression."""
   not: EventFilter
 
@@ -1178,7 +1184,7 @@ input EventFilter {
 """An input for mutations affecting `EventInputRecord`"""
 input EventInputRecordInput {
   categoryId: UUID
-  description: TranslatedField
+  description: JSON
   eventEndTime: Datetime
   eventStartTime: Datetime
   headerImageFile: Upload
@@ -1365,6 +1371,8 @@ enum EventsOrderBy {
   IS_DRAFT_DESC
   IS_HIGHLIGHTED_ASC
   IS_HIGHLIGHTED_DESC
+  NAME_ASC
+  NAME_DESC
   NATURAL
   OWNER_ORGANIZATION_ID_ASC
   OWNER_ORGANIZATION_ID_DESC
@@ -1803,6 +1811,7 @@ type Mutation {
     """
     input: TransferOrganizationOwnershipInput!
   ): TransferOrganizationOwnershipPayload
+  translateText(fromLanguage: SupportedLanguages!, text: String!, toLanguage: SupportedLanguages!): TranslateTextPayload!
 
   """
   Updates an event as well as any related quotas and questions with one mutation.
@@ -2254,6 +2263,9 @@ type Query {
 
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
+
+  """Default language of the app."""
+  defaultLanguage: DefaultLanguage
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 
@@ -2360,7 +2372,6 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
-  languages: AppLanguage
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 
@@ -2483,6 +2494,9 @@ type Query {
   Use this query to render all server-side email templates to html and text.
   """
   renderEmailTemplates: EmailTemplatesConnection
+
+  """Supported languages of the app."""
+  supportedLanguages: [SupportedLanguages]
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userEmail(id: UUID!): UserEmail
@@ -3204,6 +3218,9 @@ type Subscription {
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload!
 
+  """Default language of the app. (live)"""
+  defaultLanguage: DefaultLanguage
+
   """ (live)"""
   event(id: UUID!): Event
 
@@ -3322,9 +3339,6 @@ type Subscription {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
-
-  """ (live)"""
-  languages: AppLanguage
 
   """ (live)"""
   organization(id: UUID!): Organization
@@ -3458,6 +3472,9 @@ type Subscription {
   """
   renderEmailTemplates: EmailTemplatesConnection
 
+  """Supported languages of the app. (live)"""
+  supportedLanguages: [SupportedLanguages]
+
   """ (live)"""
   user(id: UUID!): User
 
@@ -3466,6 +3483,12 @@ type Subscription {
 
   """ (live)"""
   userEmail(id: UUID!): UserEmail
+}
+
+enum SupportedLanguages {
+  EN
+  FI
+  SV
 }
 
 """All input for the `transferOrganizationOwnership` mutation."""
@@ -3500,7 +3523,12 @@ type TransferOrganizationOwnershipPayload {
   query: Query
 }
 
-"""A field which must not contain spaces"""
+type TranslateTextPayload {
+  originalText: String!
+  translatedText: String!
+}
+
+"""A translated field."""
 scalar TranslatedField
 
 """

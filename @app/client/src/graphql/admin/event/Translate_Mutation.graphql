@@ -1,0 +1,10 @@
+mutation TranslateText(
+  $from: SupportedLanguages!
+  $to: SupportedLanguages!
+  $text: String!
+) {
+  translateText(fromLanguage: $from, toLanguage: $to, text: $text) {
+    originalText
+    translatedText
+  }
+}

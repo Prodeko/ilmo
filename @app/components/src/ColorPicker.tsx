@@ -40,10 +40,8 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
         data-cy={props["data-cy"]}
         height={120}
         width={isMobile ? 250 : 320}
-        hideHSB
         hideHSV
         hideRGB
-        // @ts-ignore
         onChange={handleChange}
       />
     </Space>

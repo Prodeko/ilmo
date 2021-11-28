@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import { useRenderEmailTemplateQuery } from "@app/graphql"
-import { getFormattedEventTime } from "@app/lib"
+import { arePropsEqual, getFormattedEventTime } from "@app/lib"
 import { Card, Col, Row, Switch, Typography } from "antd"
 
 import { useTranslation } from "../."
@@ -13,7 +13,7 @@ interface EmailTabProps {
   formValues: FormValues
 }
 
-export const EmailTab: React.FC<EmailTabProps> = ({ formValues }) => {
+export const EmailTab: React.FC<EmailTabProps> = memo(({ formValues }) => {
   const { t } = useTranslation("events")
 
   const [showHtml, setShowHtml] = useState(true)
@@ -62,4 +62,4 @@ export const EmailTab: React.FC<EmailTabProps> = ({ formValues }) => {
       </Col>
     </Row>
   )
-}
+}, arePropsEqual)

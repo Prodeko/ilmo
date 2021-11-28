@@ -1,0 +1,13 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "Detta kan ta en stund...",
+      "message": "Skicka in..."
+    },
+    "success": {
+      "description": "Tack för att du verifierade din e-postadress. Du kan nu stänga det här fönstret.",
+      "message": "E-post verifierad"
+    }
+  },
+  "enterCode": "Ange din e-postverifieringskod"
+}

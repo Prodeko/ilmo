@@ -193,8 +193,8 @@ export const createEvents = async (
       en: `Event ${words()} ${i}`,
     }
     const description = {
-      fi: paragraph(),
-      en: paragraph(),
+      fi: [{ type: "paragraph", children: [{ text: paragraph() }] }],
+      en: [{ type: "paragraph", children: [{ text: paragraph() }] }],
     }
     const location = faker.address.streetAddress()
 

@@ -1,6 +1,13 @@
 {
   "createNewCategory": "Create a new event category",
   "createNewOrganization": "Create a new organization",
+  "editor": {
+    "changeLanguage": "Change language",
+    "currentLanguage": "Current language",
+    "placeholder": "Enter some text…",
+    "translate": "Translate to",
+    "translateSucceeded": "Translation from {{from}} to {{to}} succeeded. You can see the result by changing editor language."
+  },
   "eventCategories": {
     "delete": {
       "confirmText": "Are you sure you want to delete this event category?",

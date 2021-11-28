@@ -1,5 +1,4 @@
 import { makeWrapResolversPlugin } from "graphile-utils"
-import { Redis } from "ioredis"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
@@ -26,65 +25,59 @@ class RateLimitException extends Error {
   }
 }
 
-async function rateLimitResolver(
+function rateLimitResolver(
   limit: number,
-  rateLimitId: string,
-  ipAddress: string,
-  fieldName: string,
-  resolve: any,
-  redisClient: Redis
+  rateLimitIdFromInputFields: string[]
 ) {
-  try {
-    // First run the resolver, if it throws an error we don't want
-    // to set a rate limit key to redis
-    const result = await resolve()
+  return async (
+    resolve,
+    _source,
+    args,
+    context: OurGraphQLContext,
+    resolveInfo
+  ) => {
+    const { pgClient, ipAddress, redisClient } = context
+    const rateLimitId = rateLimitIdFromInputFields
+      .map((field) => args.input[field])
+      .join(":")
+    const { fieldName } = resolveInfo
 
-    const key = constructRateLimitKey(fieldName, rateLimitId, ipAddress)
-    const current = Number(await redisClient.get(key))
+    // Create a savepoint we can roll back to
+    await pgClient.query("SAVEPOINT ratelimit_wrapper")
+    try {
+      // First run the resolver, if it throws an error we don't want
+      // to set a rate limit key to redis
+      const result = await resolve()
 
-    if (current >= limit) {
-      throw new RateLimitException(
-        `Too many requests. You have been rate-limited for ${RATE_LIMIT_TIMEOUT} minutes.`
-      )
+      const key = constructRateLimitKey(fieldName, rateLimitId, ipAddress)
+      const current = Number(await redisClient.get(key))
+
+      if (current >= limit) {
+        throw new RateLimitException(
+          `Too many requests. You have been rate-limited for ${RATE_LIMIT_TIMEOUT} minutes.`
+        )
+      }
+
+      if (current < limit) {
+        await redisClient.incr(key)
+        await redisClient.expire(key, RATE_LIMIT_TIMEOUT * 60)
+      }
+
+      return result
+    } catch (e) {
+      await pgClient.query("ROLLBACK TO SAVEPOINT ratelimit_wrapper")
+      // Re-throw the error so the GraphQL client knows about it
+      throw e
+    } finally {
+      await pgClient.query("RELEASE SAVEPOINT ratelimit_wrapper")
     }
-
-    if (current < limit) {
-      await redisClient.incr(key)
-      await redisClient.expire(key, RATE_LIMIT_TIMEOUT * 60)
-    }
-
-    return result
-  } catch (e) {
-    throw e
   }
 }
 
 const RateLimitPlugin = makeWrapResolversPlugin({
   Mutation: {
-    // TODO: Delete registration if the user is rate limited.
-    // Currently, a registration is created even if the user is rate limited.
-    claimRegistrationToken: async (
-      resolve,
-      _source,
-      args,
-      context: OurGraphQLContext,
-      resolveInfo
-    ) => {
-      const { ipAddress, redisClient } = context
-      const { eventId, quotaId } = args.input
-      const { fieldName } = resolveInfo
-      const rateLimitId = `${eventId}:${quotaId}`
-      return await rateLimitResolver(
-        3,
-        rateLimitId,
-        ipAddress,
-        fieldName,
-        resolve,
-        redisClient
-      )
-    },
-    // If more resolvers need rate limiting in the future
-    // they can be added here.
+    // More mutations and queries that need rate limiting can be added here
+    claimRegistrationToken: rateLimitResolver(3, ["eventId", "quotaId"]),
   },
 })
 

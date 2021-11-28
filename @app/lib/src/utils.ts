@@ -17,6 +17,16 @@ export const filterObjectByKeys = <T>(raw: T, allowed: string[]): T =>
       return obj
     }, {} as T)
 
+export const lowercaseKeys = <T>(obj: T) =>
+  obj &&
+  Object.keys(obj).reduce((acc, key) => {
+    acc[key.toLowerCase()] = obj[key]
+    return acc
+  }, {} as T)
+
+export const lowercased = (arr: any[] | string[] | undefined | null) =>
+  arr?.map((x) => x.toLowerCase())
+
 export const objectHasKey = (obj, key) =>
   Object.keys(obj).some((k) => k === key)
 

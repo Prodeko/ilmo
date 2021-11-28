@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react"
 import {
   ErrorAlert,
+  LoadingPadded,
   ProdekoIcon,
   SettingsLayout,
   SocialLoginOptions,
-  SpinPadded,
   Strong,
   useTranslation,
 } from "@app/components"
@@ -115,7 +115,7 @@ const Settings_Accounts: NextPage = () => {
 
   const linkedAccounts =
     fetching || !data || !data.currentUser ? (
-      <SpinPadded />
+      <LoadingPadded />
     ) : (
       <List
         dataSource={data.currentUser.authentications}

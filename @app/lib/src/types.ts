@@ -1,8 +1,12 @@
-import type { RegistrationStatus } from "@app/graphql"
+import type { RegistrationStatus, SupportedLanguages } from "@app/graphql"
+
+export type Languages = Lowercase<`${SupportedLanguages}`>
 
 export type ValueOf<T> = T[keyof T]
 
 export type Session = { uuid: string }
+
+export type OrNull<T> = T | null
 
 export type RegistrationSecret = {
   id: string
@@ -29,4 +33,38 @@ export type CsvRow = {
   email: string
   status: RegistrationStatus
   position: number
+}
+
+/**
+ * Slate.js editor custom types. Also used on server side
+ */
+
+export enum SlateFormatOptions {
+  Bold = "bold",
+  Italic = "italic",
+  Underline = "underline",
+  Code = "code",
+}
+
+export enum SlateSupportedTypes {
+  Paragraph = "paragraph",
+  HeadingOne = "heading-one",
+  HeadingTwo = "heading-two",
+  BlockQuote = "block-quote",
+  BulletedList = "bulleted-list",
+  ListItem = "list-item",
+  NumberedList = "numbered-list",
+}
+
+export type SlateCustomText = {
+  text: string
+  code?: boolean
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+}
+
+export type SlateCustomElement = {
+  type: SlateSupportedTypes
+  children: SlateCustomText[]
 }

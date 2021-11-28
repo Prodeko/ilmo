@@ -3,16 +3,23 @@ import {
   EventQuotaPopover,
   H3,
   Link,
+  LoadingPadded,
   ServerPaginatedTable,
   SharedLayout,
   useBreakpoint,
   useIsMobile,
   useTranslation,
 } from "@app/components"
-import { Event, HomePageEventsDocument, useHomePageQuery } from "@app/graphql"
+import {
+  Event,
+  HomePageEventsDocument,
+  HomePageQuery,
+  useHomePageQuery,
+} from "@app/graphql"
 import { Sorter } from "@app/lib"
 import { Col, Divider, Empty, Space, Tag } from "antd"
 import dayjs from "dayjs"
+import { useRouter } from "next/dist/client/router"
 
 import type { NextPage } from "next"
 
@@ -27,8 +34,9 @@ const gridTemplateColumns = {
 
 const Home: NextPage = () => {
   const { t } = useTranslation("home")
-
-  const [query] = useHomePageQuery()
+  const { locale } = useRouter()
+  const [query] = useHomePageQuery({ variables: { language: locale } })
+  const { data, fetching, stale } = query
   const screens = useBreakpoint()
   const currentBreakPoint = Object.entries(screens)
     .filter((screen) => !!screen[1])
@@ -41,8 +49,8 @@ const Home: NextPage = () => {
     gridAutoRows: "1fr",
     gridGap: 10,
   } as React.CSSProperties
-  const signupsOpenEvents = query?.data?.signupOpenEvents?.nodes
-  const signupsUpcomingEvents = query?.data?.signupUpcomingEvents?.nodes
+  const signupsOpenEvents = data?.signupOpenEvents?.nodes
+  const signupsUpcomingEvents = data?.signupUpcomingEvents?.nodes
 
   function renderEvents(type: string) {
     const title = (() => {
@@ -69,7 +77,9 @@ const Home: NextPage = () => {
     return (
       <>
         <H3>{title}</H3>
-        {events?.length > 0 ? (
+        {fetching || stale ? (
+          <LoadingPadded size="large" />
+        ) : events?.length > 0 ? (
           <section
             data-cy={`homepage-signup-${type}-events`}
             style={homeGridStyle}
@@ -97,21 +107,26 @@ const Home: NextPage = () => {
         {renderEvents("upcoming")}
         <Divider dashed />
         <Col xs={24}>
-          <Home_SignupClosedEvents />
+          <Home_SignupClosedEvents data={query?.data} />
         </Col>
       </Space>
     </SharedLayout>
   )
 }
 
-const Home_SignupClosedEvents = () => {
-  const { t, lang } = useTranslation("home")
+interface Home_SignupClosedEventsProps {
+  data: HomePageQuery
+}
 
-  const [query] = useHomePageQuery()
+const Home_SignupClosedEvents: React.FC<Home_SignupClosedEventsProps> = ({
+  data,
+}) => {
+  const { locale } = useRouter()
+  const { t, lang } = useTranslation("home")
   const isMobile = useIsMobile()
 
-  const eventCategories = query?.data?.eventCategories?.nodes
-  const organizations = query?.data?.organizations?.nodes
+  const eventCategories = data?.eventCategories?.nodes
+  const organizations = data?.organizations?.nodes
 
   const nameColumn = {
     title: t("events:eventName"),
@@ -207,6 +222,7 @@ const Home_SignupClosedEvents = () => {
         dataField="signupClosedEvents"
         queryDocument={HomePageEventsDocument}
         size="middle"
+        variables={{ language: locale }}
         showPagination
         showSizeChanger
       />

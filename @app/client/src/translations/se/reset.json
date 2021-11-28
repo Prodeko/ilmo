@@ -1,0 +1,29 @@
+{
+  "alerts": {
+    "submitting": {
+      "description": "Detta kan ta en stund...",
+      "message": "Skicka in..."
+    },
+    "success": {
+      "description": "Ditt lösenord har återställts; du kan gå och logga in nu",
+      "message": "Återställ lösenord"
+    }
+  },
+  "errors": {
+    "passwordMatch": "Se till att din lösenfras är densamma i båda lösenfrasrutorna.",
+    "unknownError": "Kontrollera felen ovan och försök igen"
+  },
+  "form": {
+    "labels": {
+      "confirm": "Bekräfta lösenordsfras",
+      "password": "Välj en ny lösenordsfras:",
+      "resetToken": "Ange din återställningstoken:"
+    },
+    "messages": {
+      "confirm": "Bekräfta din lösenfras.",
+      "password": "Vänligen ange din lösenordsfras."
+    }
+  },
+  "resetButton": "Återställ lösenordsfras",
+  "title": "Återställ lösenord"
+}

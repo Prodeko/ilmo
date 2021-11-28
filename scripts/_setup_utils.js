@@ -188,6 +188,22 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   )
 
   add(
+    "AZURE_TRANSLATE_API_URL",
+    null,
+    `\
+# API url for the Azure translation service to use.
+# See https://docs.microsoft.com/en-us/azure/cognitive-services/translator/reference/v3-0-reference#base-urls
+# for available options.`
+  )
+
+  add(
+    "AZURE_TRANSLATE_SUBSCRIPTION_KEY",
+    null,
+    `\
+# Subscription key for the Azure Translate resource.`
+  )
+
+  add(
     "REGISTER_DOMAINS_ALLOWLIST",
     "prodeko.org",
     `\
@@ -198,7 +214,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
     "PRIVACY_URL",
     null,
     `\
-  # Link to a privacy policy. Displayed in the application footer.`
+# Link to a privacy policy. Displayed in the application footer.`
   )
 }
 

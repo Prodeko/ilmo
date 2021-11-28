@@ -104,7 +104,12 @@ describe("CreateEvent", () => {
           event: {
             slug: slug,
             name: { fi: "Testitapahtuma", en: "Test event" },
-            description: { fi: "Testikuvaus", en: "Test description" },
+            description: {
+              fi: [{ type: "paragraph", children: [{ text: "Testikuvaus" }] }],
+              en: [
+                { type: "paragraph", children: [{ text: "Test description" }] },
+              ],
+            },
             location: "Testikatu 123",
             ownerOrganizationId: organization.id,
             categoryId: eventCategory.id,
@@ -181,7 +186,12 @@ describe("CreateEvent", () => {
           event: {
             slug: slug,
             name: { fi: "Testitapahtuma", en: "Test event" },
-            description: { fi: "Testikuvaus", en: "Test description" },
+            description: {
+              fi: [{ type: "paragraph", children: [{ text: "Testikuvaus" }] }],
+              en: [
+                { type: "paragraph", children: [{ text: "Test description" }] },
+              ],
+            },
             location: "Testikatu 123",
             ownerOrganizationId: organization.id,
             categoryId: eventCategory.id,
@@ -237,7 +247,12 @@ describe("CreateEvent", () => {
           event: {
             slug: slug,
             name: { fi: "Testitapahtuma", en: "Test event" },
-            description: { fi: "Testikuvaus", en: "Test description" },
+            description: {
+              fi: [{ type: "paragraph", children: [{ text: "Testikuvaus" }] }],
+              en: [
+                { type: "paragraph", children: [{ text: "Test description" }] },
+              ],
+            },
             location: "Testikatu 123",
             ownerOrganizationId: organization.id,
             categoryId: eventCategory.id,

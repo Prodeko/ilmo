@@ -1,0 +1,31 @@
+{
+  "errors": {
+    "checkpasswordMatch": "Se till att din lösenfras är densamma i båda lösenfrasrutorna.",
+    "emailAlreadyExists": "Ett konto med denna e-postadress har redan registrerats, överväg att använda funktionen 'Glömt lösenordsfras'.",
+    "registrationFailed": "Registrering misslyckades",
+    "usernameAlreadyExists": "Ett konto med detta användarnamn har redan registrerats, försök med ett annat användarnamn.",
+    "usernameInvalid": "Detta användarnamn är inte tillåtet; användarnamn måste vara mellan 2 och 24 tecken långa (inklusive), måste börja med en bokstav och får endast innehålla alfanumeriska tecken och understreck."
+  },
+  "form": {
+    "labels": {
+      "confirmPassphrase": "Bekräfta lösenfras",
+      "email": "E-post",
+      "passphrase": "Lösenfras"
+    },
+    "messages": {
+      "confirmPassphrase": "Bekräfta din lösenfras",
+      "inputEmail": "Ange din e-post",
+      "inputEmailValid": "Inmatningen är inte giltig e-post",
+      "inputName": "Ange ditt namn",
+      "inputPassphrase": "Ange din lösenfras",
+      "inputUsername": "Ange ditt användarnamn",
+      "usernameAlphanumeric": "Användarnamn får endast innehålla alfanumeriska tecken och understreck",
+      "usernameMaxLength": "Användarnamnet får inte vara mer än 24 tecken långt",
+      "usernameMinLength": "Användarnamn måste vara minst 2 tecken långt",
+      "usernameNoTwoUnderscores": "Användarnamn får inte innehålla två understreck bredvid varandra",
+      "usernameStartLetter": "Användarnamn måste börja med en bokstav"
+    },
+    "submit": "Registrera"
+  },
+  "title": "Registrera"
+}

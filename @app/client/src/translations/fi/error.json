@@ -15,6 +15,8 @@
   "incorrectToken": "Väärä palautusmerkki. Tarkista ja yritä uudestaan.",
   "pageNotFound": "Sivua ei löytynyt",
   "refresh": "Päivitä sivu",
+  "tryAgain": "Yritä uudestaan",
   "unknownError": "Pahoittelut, tuntematon virhe. Palaa <a href=\"/\">etusivulle</a> ja yritä uudestaan.",
+  "unknownLanguage": "Kieltä: {{language}} ei tunnistettu",
   "weakp": "Salasana on liian heikko. Valitse vahvempi salasana."
 }

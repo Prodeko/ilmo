@@ -1,8 +1,9 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { arePropsEqual } from "@app/lib"
 import { Badge, Descriptions } from "antd"
 import dayjs from "dayjs"
 
+import { toHtml } from "./Editor/utils"
 import { H2, P, useTranslation } from "."
 
 import type { EventPage_EventFragment } from "@app/graphql"
@@ -37,6 +38,7 @@ export const EventDescription: React.FC<EventDescriptionProps> = memo(
     } = event
 
     const { upcoming, open, closed } = signupState
+    const descriptionHtml = useMemo(() => toHtml(description), [description])
 
     return (
       <>
@@ -69,7 +71,9 @@ export const EventDescription: React.FC<EventDescriptionProps> = memo(
         </Descriptions>
 
         <br />
-        <P style={{ whiteSpace: "pre-line" }}>{description[lang]}</P>
+        <P style={{ whiteSpace: "pre-line" }}>
+          <div dangerouslySetInnerHTML={{ __html: descriptionHtml[lang] }} />
+        </P>
       </>
     )
   },

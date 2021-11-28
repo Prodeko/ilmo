@@ -14,9 +14,7 @@
   "dragToUpload": "Click or drag file to this area to upload",
   "email": "Email",
   "emailSwitchLabel": "Show html version",
-  "en": "English",
   "error": "Error",
-  "fi": "Finnish",
   "head": {
     "description": "Prodeko event registration",
     "title": "Prodeko event registration"
@@ -29,9 +27,12 @@
     "fi": "Finnish",
     "in": {
       "en": "in English",
-      "fi": "in Finnish"
-    }
+      "fi": "in Finnish",
+      "sv": "in Swedish"
+    },
+    "sv": "Swedish"
   },
+  "language": "Language",
   "loading": "Loading...",
   "location": "Location",
   "login": "Log in",

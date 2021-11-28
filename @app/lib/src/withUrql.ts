@@ -46,7 +46,7 @@ function createWsClient() {
   })
 }
 
-export function resetWebsocketConnection(): void {
+export function resetWebsocketConnection() {
   if (wsClient) {
     wsClient.dispose()
   }
@@ -79,13 +79,6 @@ export const withUrql = withUrqlClient(
         dedupExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
-          keys: {
-            // AppLanguage type does not have an 'id' field and thus cannot be
-            // cached. Here we define a new key which will be used for caching
-            // the AppLanguage type. There only exists one AppLanguage type
-            // so we can just stringify the supportedLanguages field.
-            AppLanguage: (data) => JSON.stringify(data.supportedLanguages),
-          },
           updates: {
             Mutation: {
               logout(result, _args, cache, _info) {
@@ -196,9 +189,7 @@ export const withUrql = withUrqlClient(
         subscriptionExchange({
           forwardSubscription: (operation) => ({
             subscribe: (sink) => ({
-              // TODO: remove ignore once urql types are updated
-              // @ts-ignore
-              unsubscribe: wsClient?.subscribe(operation, sink),
+              unsubscribe: wsClient!.subscribe(operation, sink),
             }),
           }),
         }),

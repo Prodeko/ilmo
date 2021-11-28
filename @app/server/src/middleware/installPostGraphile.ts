@@ -34,7 +34,9 @@ import {
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TranslatePlugin,
   UploadsPlugin,
+  ValidateRichTextFields,
 } from "../plugins"
 import { resolveUpload } from "../utils/fileUpload"
 import handleErrors from "../utils/handleErrors"
@@ -239,7 +241,7 @@ export function getPostGraphileOptions({
       // Render email templates
       EmailsPlugin,
 
-      // Handle uploads for
+      // Handle GraphQL uploads
       UploadsPlugin,
 
       // PostGraphile adds a `query: Query` field to `Query` for Relay 1
@@ -248,6 +250,9 @@ export function getPostGraphileOptions({
 
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
+
+      // Translate text with Azure Translator API
+      TranslatePlugin,
 
       // Adds a filter argument for advanced filtering of Connections
       ConnectionFilterPlugin,
@@ -270,6 +275,9 @@ export function getPostGraphileOptions({
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
       RemoveOwnershipInfoForeignKeyConnections,
+
+      // Validate that event description
+      ValidateRichTextFields,
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,

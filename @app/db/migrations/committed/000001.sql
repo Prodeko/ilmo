@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:8be526161aaecff72e09fe1be3a874a038fa9099
+--! Hash: sha1:114a5f695fb56229eabac0a48a2011be36739cbc
 
 --! split: 0001-reset.sql
 /*
@@ -249,18 +249,31 @@ comment on function app_public.tg__graphql_subscription() is
 
 --! split: 0040-languages.sql
 /*
- * These types and functions define the supported languages of the app.
+ * These types define the supported languaguages and the default
+ * language of the app.
  */
 
-create type app_languages as (supported_languages text[], default_language text);
+-- Please use ISO 639-1 two letter code for the language
+-- https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+create type app_private.supported_languages as enum ('fi', 'en', 'sv');
+comment on type app_private.supported_languages is e'@enum';
 
--- Defines supported languages and the default language
-create function app_public.languages()
-returns app_languages
-as $$
-  select array['fi', 'en'], 'fi';
-$$
-language sql stable;
+create type app_private.default_language as enum ('fi');
+comment on type app_private.default_language is e'@enum';
+
+create function app_public.supported_languages()
+returns app_private.supported_languages[] as $$
+  select enum_range(null::app_private.supported_languages);
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.supported_languages() is
+  E'Supported languages of the app.';
+
+create function app_public.default_language()
+returns app_private.default_language as $$
+  select enum_first(null::app_private.default_language);
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_public.default_language() is
+  E'Default language of the app.';
 
 --! split: 0050-permission-check-helpers.sql
 /*

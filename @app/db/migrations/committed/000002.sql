@@ -1,5 +1,5 @@
---! Previous: sha1:8be526161aaecff72e09fe1be3a874a038fa9099
---! Hash: sha1:92156bb3e88782d36f9e42c6dee2b29215f57f88
+--! Previous: sha1:114a5f695fb56229eabac0a48a2011be36739cbc
+--! Hash: sha1:cd7a81cf31eac378a1ec63bdcef1b364a239d0c2
 
 --! split: 0001-rls-helpers-1.sql
 /*
@@ -43,7 +43,7 @@ create function app_public.check_language(_column jsonb)
 declare
   v_supported_languages text[];
 begin
-  select supported_languages into v_supported_languages from app_public.languages();
+  select enum_range(null::app_private.supported_languages) into v_supported_languages;
 
   return (
     -- Check that supported_languages exist as top level keys in _column
@@ -108,13 +108,13 @@ comment on function app_public.users_primary_email(u app_public.users) is
 
 --! split: 0004-domain-types.sql
 /*
- * User-defined data type for easier handling of fields
- * with language support. The check_language constraint makes
- * sure that only valid data can can be inserted.
+ * User-defined data type for easier handling of fields with language support.
+ * The check_language constraint makes * sure that only valid data can can be
+ * inserted.
  *
  * Example usage:
  *
- * create table app_public.events(
+ * create table app_public.event_categories(
  *  ...
  *  name translated_field,
  *  description translated_field,
@@ -128,12 +128,20 @@ comment on domain translated_field is
 /*
  * Custom domain for name columns (first and last) to check that they don't
  * contain a space. This is to prevent registrations where you effectively don't
- * provide your name by entering spaces.  Can be null since claimRegistrationToken
+ * provide your name by entering spaces. Can be null since claimRegistrationToken
  * mutation creates a registration where the names are null.
+ * Example usage:
+ *
+ * create table app_public.registrations(
+ *  ...
+ *  first_name constrained_name,
+ *  last_name constrained_name,
+ *  ...
  */
 
+
 create domain constrained_name as text null check (value !~ '\s');
-comment on domain translated_field is
+comment on domain constrained_name is
   E'A field which must not contain spaces';
 
 --! split: 0010-event_categories.sql
@@ -158,10 +166,10 @@ create table app_public.event_categories(
 alter table app_public.event_categories enable row level security;
 
 -- Indices
+create index on app_public.event_categories(name);
 create index on app_public.event_categories(owner_organization_id);
 create index on app_public.event_categories(created_by);
 create index on app_public.event_categories(updated_by);
-create index on app_public.event_categories(name);
 
 -- Triggers
 create trigger _100_timestamps
@@ -209,7 +217,7 @@ create table app_public.events(
   -- didn't work with the unique constraint. No idea why...
   slug citext not null unique,
   name translated_field not null,
-  description translated_field not null,
+  description jsonb not null,
   location text not null,
   event_start_time timestamptz not null,
   event_end_time timestamptz not null,
@@ -235,6 +243,7 @@ create table app_public.events(
 alter table app_public.events enable row level security;
 
 -- Indices
+create index on app_public.events(name);
 create index on app_public.events(event_start_time);
 create index on app_public.events(event_end_time);
 create index on app_public.events(registration_start_time);
@@ -1427,7 +1436,7 @@ comment on function app_public.claim_registration_token(event_id uuid, quota_id 
 create type app_public.event_input as (
   slug citext,
   name translated_field,
-  description translated_field,
+  description jsonb,
   location text,
   event_start_time timestamptz,
   event_end_time timestamptz,

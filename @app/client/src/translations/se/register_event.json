@@ -1,0 +1,36 @@
+{
+  "confirmGoBack": "Är du säker? Du kommer att förlora din registreringsplats.",
+  "deleteRegistration": "Ta bort registrering",
+  "deleteRegistrationConfirmText": "Är du säker på att du vill ta bort din registrering?",
+  "deleteRegistrationFailed": "Det gick inte att ta bort händelseregistreringen",
+  "errors": {
+    "registrationFailed": "Registrering till evenemanget misslyckades",
+    "registrationUpdateFailed": "Det gick inte att uppdatera registreringsinformationen"
+  },
+  "eventSignupComplete": "Händelseregistrering sparad",
+  "forms": {
+    "email": "E-post",
+    "firstName": "Förnamn",
+    "lastName": "Efternamn",
+    "rules": {
+      "emailEmpty": "Ange din e-post",
+      "emailValid": "Inmatningen är inte giltig e-post",
+      "nameContainsSpace": "Namnet kan inte innehålla mellanslag",
+      "provideAnswer": "Snälla svara på frågan",
+      "provideFirstName": "Ange ditt förnamn",
+      "provideLastName": "Ange ditt efternamn"
+    }
+  },
+  "recentlyRegisteredHeader": "Nyligen registrerad:",
+  "recentlyRegisteredListItem": "nyligen registrerad till kvoten",
+  "registrationDeleteComplete": "Raderad registrering",
+  "registrationUpdateComplete": "Uppdaterad registreringsinformation",
+  "sidebar": {
+    "title": "Kvoter"
+  },
+  "title": "Registrera dig till event:",
+  "updateRegistration": {
+    "title": "Uppdatera information om händelseregistrering"
+  },
+  "you": "du!"
+}

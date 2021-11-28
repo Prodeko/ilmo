@@ -1,14 +1,20 @@
 import { useCookies } from "react-cookie"
-// @ts-ignore
-import ReactCountryFlag from "react-country-flag"
+import { SupportedLanguages } from "@app/graphql"
 import { useRouter } from "next/router"
+import { MenuInfo } from "rc-menu/es/interface"
 
-export function LocaleSelect() {
-  const [, setCookie] = useCookies(["NEXT_LOCALE"])
-  const { locales, push, pathname, query, asPath } = useRouter()
+import { LocaleMenu, useTranslation } from "."
 
-  function changeLocale(locale: string) {
-    setCookie("NEXT_LOCALE", locale, {
+const NEXT_LOCALE_COOKIE_NAME = "NEXT_LOCALE"
+
+export const LocaleSelect: React.FC = () => {
+  const { t } = useTranslation("error")
+  const [, setCookie] = useCookies([NEXT_LOCALE_COOKIE_NAME])
+  const { push, pathname, query, asPath } = useRouter()
+
+  function changeLocale(info: MenuInfo) {
+    const locale = info.key
+    setCookie(NEXT_LOCALE_COOKIE_NAME, locale, {
       path: "/",
       sameSite: true,
       secure: true,
@@ -16,22 +22,17 @@ export function LocaleSelect() {
     push({ pathname, query }, asPath, { locale })
   }
 
+  const includedLocales = Object.values(SupportedLanguages).map((l) =>
+    l.toLowerCase()
+  )
+
   return (
-    <>
-      {locales?.map((locale) => (
-        <ReactCountryFlag
-          key={locale}
-          aria-label={`${locale} flag`}
-          countryCode={locale === "en" ? "GB" : locale}
-          data-cy={`localeselect-${locale}`}
-          style={{
-            fontSize: "2rem",
-            lineHeight: "2rem",
-            marginRight: "12px",
-          }}
-          onClick={() => changeLocale(locale)}
-        />
-      ))}
-    </>
+    <LocaleMenu
+      dataCyDropdown="localeselect-dropdown"
+      dataCyMenuItem="localeselect"
+      includedLocales={includedLocales}
+      menuTitle={t("common:language")}
+      onClickHandler={changeLocale}
+    />
   )
 }

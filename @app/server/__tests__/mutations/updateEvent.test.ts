@@ -35,8 +35,18 @@ describe("UpdateEvent", () => {
           event: {
             name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
             description: {
-              fi: "Päivitetty testikuvaus",
-              en: "Updated test description",
+              fi: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Päivitetty testikuvaus" }],
+                },
+              ],
+              en: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Updated test description" }],
+                },
+              ],
             },
           },
           quotas: [
@@ -144,8 +154,18 @@ describe("UpdateEvent", () => {
           event: {
             name: { fi: "Päivitetty testitapahtuma", en: "Updated test event" },
             description: {
-              fi: "Päivitetty testikuvaus",
-              en: "Updated test description",
+              fi: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Päivitetty testikuvaus" }],
+                },
+              ],
+              en: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Updated test description" }],
+                },
+              ],
             },
           },
           quotas: [],
@@ -188,8 +208,18 @@ describe("UpdateEvent", () => {
           id: event.id,
           event: {
             description: {
-              fi: "Päivitetty testikuvaus",
-              en: "Updated test description",
+              fi: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Päivitetty testikuvaus" }],
+                },
+              ],
+              en: [
+                {
+                  type: "paragraph",
+                  children: [{ text: "Updated test description" }],
+                },
+              ],
             },
           },
           quotas: [
