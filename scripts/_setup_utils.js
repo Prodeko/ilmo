@@ -37,12 +37,10 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 
   add(
     "SUPPORTED_LANGUAGES",
-    "''fi','en''",
+    "\"'fi','en'\"",
     `\
 # Comma delimited list of languages to use. Currently supported languages are fi,en,sv
-# Please use ISO 639-1 two letter code for the language https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-# NOTE: using single quotes is required (with two quotes at the beginning and end)
-# since the value of this variable is used as is in creating an SQL enum`
+# Please use ISO 639-1 two letter code for the language https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes`
   )
 
   add(

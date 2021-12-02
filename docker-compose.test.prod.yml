@@ -43,15 +43,17 @@ services:
       - ilmo-redis:/data
 
   db:
-    image: postgres:11
+    image: debezium/postgres:11
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     env_file:
       - .env.production
     working_dir: /
     volumes:
       - ilmo-postgres:/var/lib/postgresql/data
-      - ./docker/scripts/production:/docker-entrypoint-initdb.d/
+      - ./docker/dockerfiles/scripts:/docker-entrypoint-initdb.d/
       - ./data:/data
     restart: unless-stopped
     command:
