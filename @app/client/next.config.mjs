@@ -16,7 +16,7 @@ const withTM = NextTranspileModules([
   // This is needed to have correct styling as babel-plugin-import
   // inserts the required styles
   "@app/components",
-  "@ant-design/icons",
+  "@app/lib",
   "rc-util",
 ])
 

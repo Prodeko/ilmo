@@ -8,8 +8,7 @@
     "declarationDir": ".",
     "lib": ["esnext", "esnext.asynciterable"],
     "target": "es2020",
-    "module": "commonjs",
-    "esModuleInterop": true
+    "module": "commonjs"
   },
   "include": ["index.ts", "client.json", "introspection.min.json"]
 }

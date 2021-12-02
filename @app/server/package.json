@@ -2,6 +2,7 @@
   "name": "@app/server",
   "private": true,
   "version": "0.0.0",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc -b",
     "start": "yarn node -r @app/config/env dist/index.js",

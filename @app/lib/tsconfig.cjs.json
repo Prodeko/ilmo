@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/cjs",
+    "module": "commonjs"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../graphql/client.json",
+    "../graphql/introspection.min.json"
+  ],
+  "references": [
+    {
+      "path": "../graphql"
+    }
+  ]
+}

@@ -10,7 +10,6 @@ import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-import { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import { Client, createClient } from "graphql-ws"
 import { SSRExchange, withUrqlClient } from "next-urql"
 import {
@@ -21,6 +20,8 @@ import {
 } from "urql"
 
 import { getSessionAndCSRFToken } from "."
+
+import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
