@@ -34,9 +34,7 @@ COPY package.json .yarnrc.yml yarn.lock /app/
 COPY .yarn /app/.yarn
 COPY @app/ /app/@app/
 
-# TODO: should add --immutable here but for some reason that doesn't work
-# with docker + yarn v3
-RUN yarn install
+RUN yarn install --immutable --immutable-cache
 
 COPY nx.json workspace.json /app/
 COPY tsconfig.json /app/

@@ -11,7 +11,7 @@
       "root": "@app/components",
       "sourceRoot": "@app/components/src",
       "type": "library",
-      "implicitDependencies": ["config", "graphql"]
+      "implicitDependencies": ["config", "graphql", "lib"]
     },
     "config": {
       "root": "@app/config",
@@ -22,12 +22,12 @@
     "db": {
       "root": "@app/db",
       "type": "library",
-      "implicitDependencies": ["config", "graphql"]
+      "implicitDependencies": ["config", "graphql", "lib"]
     },
     "docker-helpers": {
       "root": "docker",
       "type": "library",
-      "implicitDependencies": ["config", "graphql"]
+      "implicitDependencies": ["config"]
     },
     "e2e": {
       "root": "@app/e2e",
@@ -49,13 +49,13 @@
       "root": "@app/server",
       "sourceRoot": "@app/server/src",
       "type": "application",
-      "implicitDependencies": ["config", "graphql"]
+      "implicitDependencies": ["config", "graphql", "lib"]
     },
     "worker": {
       "root": "@app/worker",
       "sourceRoot": "@app/worker/src",
       "type": "application",
-      "implicitDependencies": ["config", "graphql"]
+      "implicitDependencies": ["config", "graphql", "lib"]
     }
   }
 }

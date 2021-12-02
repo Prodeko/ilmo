@@ -18,29 +18,26 @@ interface SaveLocalArgs {
   filename: string
 }
 
-interface SaveFileReturnValue {
-  id: string
-  filepath: string
-}
-
-const { AZURE_STORAGE_CONNECTION_STRING } = process.env
+const { AZURE_STORAGE_CONNECTION_STRING, ROOT_URL } = process.env
 
 export async function saveAzure({
   stream,
   filename,
-}: SaveLocalArgs): Promise<SaveFileReturnValue> {
+}: SaveLocalArgs): Promise<string> {
   const timestamp = new Date().toISOString().replace(/\D/g, "")
   const id = `${timestamp}_${filename}`
-  const filepath = join("ilmo/uploads", id)
+  const relativeLocalPath = join("ilmo/uploads", id)
 
   try {
     const blobServiceClient = BlobServiceClient.fromConnectionString(
       AZURE_STORAGE_CONNECTION_STRING!
     )
     const containerClient = blobServiceClient.getContainerClient("media")
-    await containerClient.getBlockBlobClient(filepath).uploadStream(stream)
+    await containerClient
+      .getBlockBlobClient(relativeLocalPath)
+      .uploadStream(stream)
 
-    return { id, filepath: `https://static.prodeko.org/media/${filepath}` }
+    return `https://static.prodeko.org/media/${relativeLocalPath}`
   } catch (e) {
     console.error(e)
     throw e
@@ -50,20 +47,24 @@ export async function saveAzure({
 export function saveLocal({
   stream,
   filename,
-}: SaveLocalArgs): Promise<SaveFileReturnValue> {
+}: SaveLocalArgs): Promise<string> {
   const timestamp = new Date().toISOString().replace(/\D/g, "")
   const id = `${timestamp}_${filename}`
-  const filepath = join("/uploads", id)
-  const fsPath = join(process.cwd(), filepath)
+  const relativeLocalPath = join("/uploads", id)
+  const absolutePath = `${ROOT_URL}/uploads/${id}`
+  const fsPath = join(process.cwd(), relativeLocalPath)
   return new Promise((resolve, reject) =>
     stream
       .on("error", (error: Error) => {
-        if (stream.truncated)
+        if (stream.truncated) {
           // Delete the truncated file
           unlinkSync(fsPath)
+        }
         reject(error)
       })
-      .on("end", () => resolve({ id, filepath }))
+      .on("end", () => {
+        resolve(absolutePath)
+      })
       .pipe(createWriteStream(fsPath))
   )
 }
@@ -74,11 +75,9 @@ export async function resolveUpload(upload: FileUpload) {
 
   if (AZURE_STORAGE_CONNECTION_STRING) {
     // Save file to Azure Blob Storage
-    const { filepath } = await saveAzure({ stream, filename })
-    return filepath
+    return await saveAzure({ stream, filename })
   } else {
     // Save file to the local filesystem
-    const { filepath } = await saveLocal({ stream, filename })
-    return filepath
+    return await saveLocal({ stream, filename })
   }
 }

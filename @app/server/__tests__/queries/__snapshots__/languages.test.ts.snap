@@ -3,13 +3,9 @@
 exports[`languages query 1`] = `
 Object {
   "data": Object {
-    "defaultLanguage": Array [
-      "FI",
-    ],
     "supportedLanguages": Array [
       "FI",
       "EN",
-      "SE",
     ],
   },
 }

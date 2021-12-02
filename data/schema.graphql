@@ -488,10 +488,6 @@ input DatetimeFilter {
   notIn: [Datetime!]
 }
 
-enum DefaultLanguage {
-  FI
-}
-
 """All input for the `deleteEventCategory` mutation."""
 input DeleteEventCategoryInput {
   """
@@ -2263,9 +2259,6 @@ type Query {
 
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
-
-  """Default language of the app."""
-  defaultLanguage: DefaultLanguage
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 
@@ -3218,9 +3211,6 @@ type Subscription {
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload!
 
-  """Default language of the app. (live)"""
-  defaultLanguage: DefaultLanguage
-
   """ (live)"""
   event(id: UUID!): Event
 
@@ -3488,7 +3478,6 @@ type Subscription {
 enum SupportedLanguages {
   EN
   FI
-  SV
 }
 
 """All input for the `transferOrganizationOwnership` mutation."""

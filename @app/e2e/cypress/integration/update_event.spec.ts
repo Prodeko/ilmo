@@ -39,15 +39,15 @@ context("Update event", () => {
           event.name["en"]
         )
         cy.get("[data-slate-editor=true]").should(
-          "have.value",
-          event.description["fi"]
+          "contain",
+          event.description["fi"][0]["children"][0]["text"]
         )
         cy.getCy("editor-languageselect-dropdown").click()
         cy.getCy("editor-languageselect-en").click()
 
         cy.get("[data-slate-editor=true]").should(
-          "have.value",
-          event.description["en"]
+          "contain",
+          event.description["en"][0]["children"][0]["text"]
         )
         cy.getCy("eventform-input-location").should(
           "have.value",

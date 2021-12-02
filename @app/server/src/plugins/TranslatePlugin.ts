@@ -8,14 +8,17 @@ import { v4 as uuidv4 } from "uuid"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
-const { AZURE_TRANSLATE_API_URL, AZURE_TRANSLATE_SUBSCRIPTION_KEY } =
+const { NODE_ENV, AZURE_TRANSLATE_API_URL, AZURE_TRANSLATE_SUBSCRIPTION_KEY } =
   process.env
+const isProd = NODE_ENV === "production"
 
-if (!AZURE_TRANSLATE_API_URL) {
-  throw new Error("AZURE_TRANSLATE_API_URL envvar is not set")
-}
-if (!AZURE_TRANSLATE_SUBSCRIPTION_KEY) {
-  throw new Error("AZURE_TRANSLATE_SUBSCRIPTION_KEY envvar is not set")
+if (isProd) {
+  if (!AZURE_TRANSLATE_API_URL) {
+    throw new Error("AZURE_TRANSLATE_API_URL envvar is not set")
+  }
+  if (!AZURE_TRANSLATE_SUBSCRIPTION_KEY) {
+    throw new Error("AZURE_TRANSLATE_SUBSCRIPTION_KEY envvar is not set")
+  }
 }
 
 // See https://docs.microsoft.com/en-us/azure/cognitive-services/translator/reference/v3-0-translate

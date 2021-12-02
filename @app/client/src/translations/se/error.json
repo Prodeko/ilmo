@@ -16,7 +16,7 @@
   "pageNotFound": "Sidan hittades inte",
   "refresh": "Uppdatera sidan",
   "tryAgain": "Försök igen",
-  "unknownError": "Vi beklagar verkligen, men ett oväntat fel inträffade. <a href=\"/\">återvänd till hemsidan</a> och försök igen.",
+  "unknownError": "Vi beklagar verkligen, men ett oväntat fel inträffade. Återvänd till hemsidan och försök igen.",
   "unknownLanguage": "Språket: {{language}} känns inte igen",
   "weakp": "Servern anser att den här lösenfrasen är för svag, gör den starkare"
 }

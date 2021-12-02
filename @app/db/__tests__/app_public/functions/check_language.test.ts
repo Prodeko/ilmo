@@ -31,27 +31,11 @@ it("en is a valid language", () =>
     expect(check_language).toEqual(true)
   }))
 
-it("se is a valid language", () =>
-  withUserDb(async (client) => {
-    const { check_language } = await checkLanguage(client, { se: "Testa" })
-    expect(check_language).toEqual(true)
-  }))
-
 it("fi and en are both valid languages", () =>
   withUserDb(async (client) => {
     const { check_language } = await checkLanguage(client, {
       fi: "Testi",
       en: "Test",
-    })
-    expect(check_language).toEqual(true)
-  }))
-
-it("fi, en and se are all valid languages", () =>
-  withUserDb(async (client) => {
-    const { check_language } = await checkLanguage(client, {
-      fi: "Testi",
-      en: "Test",
-      se: "Test",
     })
     expect(check_language).toEqual(true)
   }))
