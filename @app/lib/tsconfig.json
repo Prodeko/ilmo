@@ -3,18 +3,19 @@
   "compilerOptions": {
     "noEmit": false,
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "dist/esm",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
-    "declarationDir": "dist",
+    "declarationDir": "dist/types",
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "isolatedModules": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "../graphql/client.json"],
-  "references": [
-    {
-      "path": "../graphql"
-    }
-  ]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../graphql/client.json",
+    "../graphql/introspection.min.json"
+  ],
+  "references": [{ "path": "../graphql" }]
 }

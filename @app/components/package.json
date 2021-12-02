@@ -1,7 +1,7 @@
 {
   "name": "@app/components",
   "version": "0.0.0",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "type": "module",
   "sideEffects": false,
   "scripts": {

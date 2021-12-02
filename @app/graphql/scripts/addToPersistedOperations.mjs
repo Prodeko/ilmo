@@ -1,4 +1,4 @@
-import { promises as fsp } from "fs"
+import { promises as fsp } from "node:fs"
 import { URL } from "url"
 
 import map from "../server.json"
