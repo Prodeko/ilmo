@@ -79,6 +79,7 @@ jobs:
         run: |
           docker run --rm -d --init -p 5678:5678 \
             --env-file .env \
+            -e CI=true \
             -e NODE_ENV=production \
             -e DATABASE_HOST=172.17.0.1 \
             -e REDIS_URL=redis://172.17.0.1:6379 \
@@ -88,6 +89,7 @@ jobs:
         run: |
           docker run --rm -d --init \
             --env-file .env \
+            -e CI=true \
             -e NODE_ENV=production \
             -e DATABASE_HOST=172.17.0.1 \
             -e REDIS_URL=redis://172.17.0.1:6379 \

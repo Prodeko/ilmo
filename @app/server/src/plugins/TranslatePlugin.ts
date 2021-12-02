@@ -8,11 +8,15 @@ import { v4 as uuidv4 } from "uuid"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
-const { NODE_ENV, AZURE_TRANSLATE_API_URL, AZURE_TRANSLATE_SUBSCRIPTION_KEY } =
-  process.env
+const {
+  NODE_ENV,
+  CI,
+  AZURE_TRANSLATE_API_URL,
+  AZURE_TRANSLATE_SUBSCRIPTION_KEY,
+} = process.env
 const isProd = NODE_ENV === "production"
 
-if (isProd) {
+if (isProd && !CI) {
   if (!AZURE_TRANSLATE_API_URL) {
     throw new Error("AZURE_TRANSLATE_API_URL envvar is not set")
   }
