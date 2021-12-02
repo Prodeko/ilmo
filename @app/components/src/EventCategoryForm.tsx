@@ -41,10 +41,13 @@ export const EventCategoryForm = ({
   const { languages } = initialValues || {}
   const { currentUser, supportedLanguages } = data || {}
   const { organizationMemberships } = currentUser || {}
+  const languagesLower = useMemo(
+    () => lowercased(supportedLanguages),
+    [supportedLanguages]
+  )
   const initialSelectedLanguages = useMemo(
-    () =>
-      type === "update" ? languages || {} : lowercased(supportedLanguages),
-    [type, languages, supportedLanguages]
+    () => (type === "update" ? languages || {} : languagesLower),
+    [type, languages, languagesLower]
   )
 
   // Translations, router, urql
@@ -142,7 +145,7 @@ export const EventCategoryForm = ({
           allowClear
           onChange={(e) => setSelectedLanguages(e as string[])}
         >
-          {supportedLanguages?.map((l, i) => (
+          {languagesLower?.map((l, i) => (
             <Option
               key={i}
               data-cy={`eventcategoryform-select-language-option-${l}`}

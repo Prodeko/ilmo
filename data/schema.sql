@@ -80,29 +80,12 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
--- Name: default_language; Type: TYPE; Schema: app_private; Owner: -
---
-
-CREATE TYPE app_private.default_language AS ENUM (
-    'fi'
-);
-
-
---
--- Name: TYPE default_language; Type: COMMENT; Schema: app_private; Owner: -
---
-
-COMMENT ON TYPE app_private.default_language IS '@enum';
-
-
---
 -- Name: supported_languages; Type: TYPE; Schema: app_private; Owner: -
 --
 
 CREATE TYPE app_private.supported_languages AS ENUM (
     'fi',
-    'en',
-    'sv'
+    'en'
 );
 
 
@@ -2285,25 +2268,6 @@ CREATE FUNCTION app_public.current_user_member_organization_ids() RETURNS SETOF 
   select organization_id from app_public.organization_memberships
     where user_id = app_public.current_user_id();
 $$;
-
-
---
--- Name: default_language(); Type: FUNCTION; Schema: app_public; Owner: -
---
-
-CREATE FUNCTION app_public.default_language() RETURNS app_private.default_language
-    LANGUAGE sql STABLE SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-  select enum_first(null::app_private.default_language);
-$$;
-
-
---
--- Name: FUNCTION default_language(); Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON FUNCTION app_public.default_language() IS 'Default language of the app.';
 
 
 --
@@ -5913,14 +5877,6 @@ GRANT ALL ON FUNCTION app_public.current_user_is_owner_organization_member(owner
 
 REVOKE ALL ON FUNCTION app_public.current_user_member_organization_ids() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.current_user_member_organization_ids() TO ilmo_visitor;
-
-
---
--- Name: FUNCTION default_language(); Type: ACL; Schema: app_public; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_public.default_language() FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.default_language() TO ilmo_visitor;
 
 
 --

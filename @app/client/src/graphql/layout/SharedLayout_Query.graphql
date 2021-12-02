@@ -3,7 +3,6 @@ fragment SharedLayout_Query on Query {
     ...SharedLayout_User
   }
   supportedLanguages
-  defaultLanguage
 }
 
 fragment SharedLayout_UserEmail on UserEmail {

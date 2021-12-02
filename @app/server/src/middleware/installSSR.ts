@@ -20,8 +20,6 @@ const isDev = NODE_ENV === "development"
  * included in the CSRF-Token header when using POST (mainly to /graphql).
  */
 const SSR: FastifyPluginAsync = async (fastify) => {
-  let handler
-
   fastify
     .register(fastifyNextjs, {
       underPressure: isDev
@@ -41,16 +39,7 @@ const SSR: FastifyPluginAsync = async (fastify) => {
     .after(() => {
       fastify.next("/*", async (app, req, reply) => {
         const parsedUrl = parse(req.url, true)
-
-        if (!handler) {
-          // TODO: should be able to use app.render that gets
-          // defined in fastify.nextjs but that resulted in
-          // 404 for all client routes. So we cache the handler
-          // like this instead.
-          handler = app.getRequestHandler()
-        }
-
-        await handler(req.raw, reply.raw, parsedUrl)
+        await app.getRequestHandler()(req.raw, reply.raw, parsedUrl)
         reply.sent = true
       })
     })

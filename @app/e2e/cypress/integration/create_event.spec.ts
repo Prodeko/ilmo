@@ -39,8 +39,6 @@ context("Create event", () => {
       cy.getCy("eventform-select-language").click()
       cy.getCy("eventform-select-language-option-en").click()
       cy.getCy("eventform-select-language-option-en").click()
-      // Disable swedish
-      cy.getCy("eventform-select-language-option-sv").click()
       cy.getCy("eventform-select-language").click()
 
       cy.getCy("eventform-select-organization-id").click()
@@ -94,7 +92,9 @@ context("Create event", () => {
 
       cy.getCy("eventform-switch-save-as-draft").click()
 
-      cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg")
+      cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg", {
+        subjectType: "drag-n-drop",
+      })
       cy.get(".antd-img-crop-modal button").contains("OK").click()
 
       // Quotas tab

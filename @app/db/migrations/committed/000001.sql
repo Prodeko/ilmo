@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:114a5f695fb56229eabac0a48a2011be36739cbc
+--! Hash: sha1:2974396416345040b639d1643da640c5e8d2cfff
 
 --! split: 0001-reset.sql
 /*
@@ -255,11 +255,8 @@ comment on function app_public.tg__graphql_subscription() is
 
 -- Please use ISO 639-1 two letter code for the language
 -- https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-create type app_private.supported_languages as enum ('fi', 'en', 'sv');
+create type app_private.supported_languages as enum (:SUPPORTED_LANGUAGES);
 comment on type app_private.supported_languages is e'@enum';
-
-create type app_private.default_language as enum ('fi');
-comment on type app_private.default_language is e'@enum';
 
 create function app_public.supported_languages()
 returns app_private.supported_languages[] as $$
@@ -267,13 +264,6 @@ returns app_private.supported_languages[] as $$
 $$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.supported_languages() is
   E'Supported languages of the app.';
-
-create function app_public.default_language()
-returns app_private.default_language as $$
-  select enum_first(null::app_private.default_language);
-$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
-comment on function app_public.default_language() is
-  E'Default language of the app.';
 
 --! split: 0050-permission-check-helpers.sql
 /*

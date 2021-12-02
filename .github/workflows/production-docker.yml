@@ -39,7 +39,7 @@ jobs:
       - name: Setup database
         run: |
           cp .env.ci .env
-          yarn install
+          yarn install --immutable --immutable-cache
           CONFIRM_DROP=1 yarn setup
         env:
           CI: true

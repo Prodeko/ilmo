@@ -8,7 +8,6 @@ test("languages query", async () => {
   await runGraphQLQuery(
     // GraphQL query goes here:
     `{
-      defaultLanguage
       supportedLanguages
      }
     `,
@@ -23,8 +22,7 @@ test("languages query", async () => {
     async (json) => {
       expect(json.errors).toBeFalsy()
       expect(json.data).toBeTruthy()
-      expect(json.data!.defaultLanguage).toEqual(["FI"])
-      expect(json.data!.supportedLanguages).toEqual(["FI", "EN", "SV"])
+      expect(json.data!.supportedLanguages).toEqual(["FI", "EN"])
     }
   )
 })

@@ -44,12 +44,15 @@ jobs:
       - name: Install pg_dump
         uses: ./.github/actions/install-pg-dump
 
-      - name: yarn, lint, build and test
+      - name: Setup and build
         run: |
           cp .env.ci .env
-          yarn install
+          yarn install --immutable --immutable-cache
           CONFIRM_DROP=1 yarn setup
           yarn build
+
+      - name: Lint, test and depcheck
+        run: |
           yarn lint
           # Got errors about all replication slots being in use
           # without --runInBand. debezium/postgres image is configured

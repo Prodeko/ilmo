@@ -20,7 +20,7 @@
     "next-plugin-antd-less": "^1.5.2",
     "next-translate": "^1.2.0",
     "next-transpile-modules": "^9.0.0",
-    "rc-table": "^7.20.3",
+    "rc-table": "^7.21.0",
     "react": "^17.0.2",
     "react-color-palette": "^6.2.0",
     "react-dom": "^17.0.2",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@next/bundle-analyzer": "^12.0.4",
     "@types/lodash": "^4.14.177",
-    "@types/node": "^16.11.10",
+    "@types/node": "^16.11.11",
     "@types/react": "^17.0.37",
     "less": "^4.1.2"
   },

@@ -16,7 +16,7 @@
   "pageNotFound": "Page not found",
   "refresh": "Refresh page",
   "tryAgain": "Try again",
-  "unknownError": "We're really sorry, but an unexpected error occurred. Please <a href=\"/\">return to the homepage</a> and try again.",
+  "unknownError": "We're really sorry, but an unexpected error occurred. Please return to the homepage and try again.",
   "unknownLanguage": "The language: {{language}} is not recognized",
   "weakp": "The server believes this passphrase is too weak, please make it stronger"
 }
