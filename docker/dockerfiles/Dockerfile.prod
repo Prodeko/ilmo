@@ -34,7 +34,7 @@ COPY package.json .yarnrc.yml yarn.lock /app/
 COPY .yarn /app/.yarn
 COPY @app/ /app/@app/
 
-RUN yarn install --immutable --immutable-cache
+RUN yarn install
 
 COPY nx.json workspace.json /app/
 COPY tsconfig.json /app/

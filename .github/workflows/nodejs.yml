@@ -47,7 +47,7 @@ jobs:
       - name: Setup and build
         run: |
           cp .env.ci .env
-          yarn install --immutable --immutable-cache
+          yarn install
           CONFIRM_DROP=1 yarn setup
           yarn build
 
