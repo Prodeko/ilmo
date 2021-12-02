@@ -36,14 +36,6 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   )
 
   add(
-    "SUPPORTED_LANGUAGES",
-    "\"'fi','en'\"",
-    `\
-# Comma delimited list of languages to use. Currently supported languages are fi,en,sv
-# Please use ISO 639-1 two letter code for the language https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes`
-  )
-
-  add(
     "PORT",
     "5678",
     `\

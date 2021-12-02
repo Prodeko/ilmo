@@ -43,8 +43,7 @@
   "placeholders": {
     ":DATABASE_AUTHENTICATOR": "!ENV",
     ":DATABASE_VISITOR": "!ENV",
-    ":AZURE_DB_OWNER": "!ENV",
-    ":SUPPORTED_LANGUAGES": "!ENV"
+    ":AZURE_DB_OWNER": "!ENV"
   },
 
   /*

@@ -1,5 +1,5 @@
 --! Previous: -
---! Hash: sha1:2974396416345040b639d1643da640c5e8d2cfff
+--! Hash: sha1:6df5d8f089bb25a39c2e5bf3612c13c2dd9d0a35
 
 --! split: 0001-reset.sql
 /*
@@ -255,7 +255,9 @@ comment on function app_public.tg__graphql_subscription() is
 
 -- Please use ISO 639-1 two letter code for the language
 -- https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-create type app_private.supported_languages as enum (:SUPPORTED_LANGUAGES);
+-- By default fi and en are enabled. Swedish (sv) is supported
+-- as well but not enabled by default.
+create type app_private.supported_languages as enum ('fi', 'en');
 comment on type app_private.supported_languages is e'@enum';
 
 create function app_public.supported_languages()
