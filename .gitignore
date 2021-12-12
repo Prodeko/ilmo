@@ -1,6 +1,7 @@
 .env
 .env.production
 .next
+sentry.properties
 node_modules
 dist
 cache

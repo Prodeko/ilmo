@@ -10,9 +10,9 @@ if (!tmpRootUrl || typeof tmpRootUrl !== "string") {
 }
 const ROOT_URL = tmpRootUrl
 
-const { _SENTRY_REPORT_URI, NODE_ENV } = process.env
+const { SENTRY_REPORT_URI, NODE_ENV } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
-// const sentryReportUri = `${SENTRY_REPORT_URI}&sentry_environment=${NODE_ENV}`
+const sentryReportUri = `${SENTRY_REPORT_URI}&sentry_environment=${NODE_ENV}`
 
 const Helmet: FastifyPluginAsync = async (app) => {
   app.register(helmet, {
@@ -46,7 +46,7 @@ const Helmet: FastifyPluginAsync = async (app) => {
             ],
             "script-src": ["'self'", "https://usage.prodeko.org"],
             "frame-src": ["'self'", "https://usage.prodeko.org"],
-            // "report-uri": SENTRY_REPORT_URI ? [sentryReportUri] : [],
+            "report-uri": SENTRY_REPORT_URI ? [sentryReportUri] : [],
           },
         },
   })
