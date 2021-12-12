@@ -5,7 +5,7 @@ import {
   useCallback,
   useState,
 } from "react"
-import ReactCountryFlag from "react-country-flag"
+import { ReactCountryFlag } from "react-country-flag"
 import { SupportedLanguages, useTranslateTextMutation } from "@app/graphql"
 import { SlateSupportedTypes } from "@app/lib"
 import { css, cx } from "@emotion/css"
