@@ -1,4 +1,4 @@
-import ReactCountryFlag from "react-country-flag"
+import { ReactCountryFlag } from "react-country-flag"
 import { DownOutlined } from "@ant-design/icons"
 import { Languages } from "@app/lib"
 import { Dropdown, Menu } from "antd"

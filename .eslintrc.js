@@ -73,6 +73,7 @@ module.exports = {
       extends: [
         "plugin:react/recommended",
         "plugin:import/errors",
+        "plugin:import/recommended",
         "plugin:import/typescript",
         "prettier",
       ],
