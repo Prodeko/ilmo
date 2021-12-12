@@ -94,8 +94,8 @@ ErrorPage.getInitialProps = async ({
   const statusCode = res
     ? res.statusCode
     : err
-      ? err["statusCode"] || null
-      : null
+    ? err["statusCode"] || null
+    : null
 
   return { statusCode, ...errorInitialProps }
 }
