@@ -1,0 +1,7 @@
+# To test Sentry configuration, copy this file and name it
+# 'sentry.properties', change the token and test different
+# sentry settings in next.config.mjs
+defaults.url=https://sentry.prodeko.org/
+defaults.org=prodeko
+defaults.project=ilmo
+auth.token=yourtokenhere

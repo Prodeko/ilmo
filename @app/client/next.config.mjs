@@ -42,6 +42,9 @@ const withAntdLessOptions = {
   },
 }
 
+/**
+ * @type {import('next').NextConfig}
+ */
 const nextOptions = {
   reactStrictMode: true,
   useFileSystemPublicRoutes: true,
@@ -124,9 +127,6 @@ const nextConfig = () =>
         )
       }
 
-      /**
-       * @type {import('next').NextConfig}
-       */
       const nextConf = {
         ...config,
         plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
@@ -140,3 +140,18 @@ const nextConfig = () =>
   })
 
 export default nextConfig
+
+// To use sentry, uncomment below and move imports to the top
+//
+// import { withSentryConfig } from "@sentry/nextjs"
+// import { execSync } from "child_process"
+//
+// Get HEAD commit SHA
+// const revision = execSync("cd ../.. && git rev-parse HEAD").toString().trim()
+//
+// // Options https://github.com/getsentry/sentry-webpack-plugin#options
+// export default withSentryConfig(nextConfig, {
+//   release: revision,
+//   configFile: `${__dirname}sentry.properties`,
+//   silent: process.env.NODE_ENV !== "production",
+// })

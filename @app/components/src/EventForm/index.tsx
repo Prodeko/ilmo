@@ -62,7 +62,9 @@ export function getEventSlug(
   const eventStartTime = dates?.[0].toISOString()
 
   const nameFi = name?.fi
-  const nameSlug = nameFi ? nameFi : (Object.values(name)[0] as string)
+  const nameSlug = nameFi
+    ? nameFi
+    : Object.values(name || {})?.[0] || ("" as string)
 
   const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
   const slug = slugify(`${daySlug}-${nameSlug}`, {
