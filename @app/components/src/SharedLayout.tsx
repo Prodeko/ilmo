@@ -193,8 +193,8 @@ export function SharedLayout({
         <Head>
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
-        <Row justify="space-between" wrap={false}>
-          <Col style={{ padding: "5px 0" }}>
+        <Row wrap={false}>
+          <Col span={8} style={{ padding: "5px 0" }}>
             <Link href="/">
               <a>
                 <Image
@@ -209,7 +209,7 @@ export function SharedLayout({
             </Link>
           </Col>
           {!isMobile ? (
-            <Col>
+            <Col span={8}>
               <H3
                 data-cy="layout-header-title"
                 style={{
@@ -229,7 +229,7 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col style={{ textAlign: "right" }}>
+          <Col span={8} style={{ textAlign: "right" }}>
             <Space size="large">
               <LocaleSelect />
               {data && data.currentUser ? (
