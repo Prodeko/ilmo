@@ -4,58 +4,48 @@
     "client": {
       "root": "@app/client",
       "sourceRoot": "@app/client/src",
-      "type": "application",
-      "implicitDependencies": ["config", "graphql", "components", "lib"]
+      "type": "application"
     },
     "components": {
       "root": "@app/components",
       "sourceRoot": "@app/components/src",
-      "type": "library",
-      "implicitDependencies": ["config", "graphql", "lib"]
+      "type": "library"
     },
     "config": {
       "root": "@app/config",
       "sourceRoot": "@app/config/src",
-      "type": "library",
-      "implicitDependencies": []
+      "type": "library"
     },
     "db": {
       "root": "@app/db",
-      "type": "library",
-      "implicitDependencies": ["config", "graphql", "lib"]
+      "type": "library"
     },
     "docker-helpers": {
       "root": "docker",
-      "type": "library",
-      "implicitDependencies": ["config"]
+      "type": "library"
     },
     "e2e": {
       "root": "@app/e2e",
-      "type": "library",
-      "implicitDependencies": ["config", "graphql"]
+      "type": "library"
     },
     "graphql": {
       "root": "@app/graphql",
-      "type": "library",
-      "implicitDependencies": ["config"]
+      "type": "library"
     },
     "lib": {
       "root": "@app/lib",
       "sourceRoot": "@app/lib/src",
-      "type": "library",
-      "implicitDependencies": ["config", "graphql"]
+      "type": "library"
     },
     "server": {
       "root": "@app/server",
       "sourceRoot": "@app/server/src",
-      "type": "application",
-      "implicitDependencies": ["config", "graphql", "lib"]
+      "type": "application"
     },
     "worker": {
       "root": "@app/worker",
       "sourceRoot": "@app/worker/src",
-      "type": "application",
-      "implicitDependencies": ["config", "graphql", "lib"]
+      "type": "application"
     }
   }
 }

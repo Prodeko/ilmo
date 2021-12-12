@@ -1,6 +1,5 @@
 import React, { useCallback } from "react"
 import { DownOutlined } from "@ant-design/icons"
-import headerLogo from "@app/client/assets/images/header-logo.png"
 import { orgName, projectName } from "@app/config"
 import {
   SharedLayout_QueryFragment,
@@ -25,6 +24,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { CombinedError, UseQueryState } from "urql"
+
+import headerLogo from "../assets/header-logo.png"
 
 import {
   ErrorResult,
