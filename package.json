@@ -110,7 +110,6 @@
     "neat-csv": "6.0.1",
     "strip-bom-stream": "4.x",
     "eslint": "7.x",
-    "chalk": "4.x",
     "got": "11.x"
   },
   "workspaces": {
