@@ -1,11 +1,19 @@
 import { promises as fsp } from "node:fs"
-import { URL } from "url"
+import path from "node:path"
 
-import map from "../server.json"
+const __dirname = new URL(".", import.meta.url).pathname
+const allowedQueries = await fsp.readFile(
+  path.join(__dirname, "..", "server.json"),
+  "utf-8"
+)
+const map = JSON.parse(allowedQueries)
 
 async function main() {
-  const parent = new URL("..", import.meta.url).pathname
-  const persistedOperationsDir = `${parent}/.persisted_operations/`
+  const persistedOperationsDir = path.join(
+    __dirname,
+    "..",
+    ".persisted_operations/"
+  )
   await fsp.rmdir(persistedOperationsDir, { recursive: true })
   await fsp.mkdir(persistedOperationsDir)
   await Promise.all(

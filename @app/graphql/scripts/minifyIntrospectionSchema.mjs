@@ -1,8 +1,14 @@
 import { promises as fsp } from "node:fs"
+import path from "node:path"
 
 import { minifyIntrospectionQuery } from "@urql/introspection"
 
-import schema from "../introspection.json"
+const __dirname = new URL(".", import.meta.url).pathname
+const introspection = await fsp.readFile(
+  path.join(__dirname, "..", "introspection.json"),
+  "utf-8"
+)
+const schema = JSON.parse(introspection)
 
 async function main() {
   const minifiedSchema = minifyIntrospectionQuery(schema)
