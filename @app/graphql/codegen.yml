@@ -3,8 +3,8 @@ schema: "../../data/schema.graphql"
 documents: "../client/src/**/*.graphql"
 hooks:
   afterAllFileWrite:
-    - node --experimental-json-modules scripts/addToPersistedOperations.mjs
-    - node --experimental-json-modules scripts/minifyIntrospectionSchema.mjs
+    - node scripts/addToPersistedOperations.mjs
+    - node scripts/minifyIntrospectionSchema.mjs
 config:
   avoidOptionals: false
   noGraphQLTag: false
