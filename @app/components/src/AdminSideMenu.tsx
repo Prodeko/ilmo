@@ -1,8 +1,7 @@
-import React, { Key, ReactNode, useState } from "react"
-import { isString } from "@app/lib"
+import { memo, ReactNode } from "react"
+import { arePropsEqual, isString } from "@app/lib"
 import { Menu, Typography } from "antd"
-
-import { Link } from "."
+import { useRouter } from "next/router"
 
 import type { TextProps } from "antd/lib/typography/Text"
 
@@ -19,66 +18,39 @@ export interface MenuItem {
   icon?: ReactNode
 }
 
-const getMenuItem = (
-  item: MenuItem,
-  initialKey: Key
-): [JSX.Element, string[]] => {
+const getMenuItem = (item: MenuItem): JSX.Element => {
   const { titleProps, title, key, cy, icon, target } = item
   if (isString(target)) {
-    const initialKeyPath = key === initialKey ? [initialKey] : []
-    return [
+    return (
       <Menu.Item key={key} data-cy={cy} icon={icon}>
-        <Link href={target}>
-          <Text {...titleProps}>{title}</Text>
-        </Link>
-      </Menu.Item>,
-      initialKeyPath,
-    ]
+        <Text {...titleProps}>{title}</Text>
+      </Menu.Item>
+    )
   }
-  const children = target?.map((i) => getMenuItem(i, initialKey))
-  const keyPath = children?.find((i) => i[1].length > 0)
-  return [
+  const children = target?.map((i) => getMenuItem(i))
+  return (
     <SubMenu key={key} data-cy={cy} icon={icon} title={title}>
-      {children?.map((a) => a[0])}
-    </SubMenu>,
-    keyPath ? keyPath[1].concat(key) : [],
-  ]
+      {children}
+    </SubMenu>
+  )
 }
 
 type AdminSideMenuProps = {
   items: MenuItem[]
-  initialKey: string
 }
 
-export const AdminSideMenu: React.FC<AdminSideMenuProps> = ({
-  items,
-  initialKey,
-}) => {
-  const [openKeys, setOpenKeys] = useState<string[]>([])
-
-  const rootSubmenuKeys = items.map((item) => item.key)
-  const menuItems = items.map((item) => getMenuItem(item, initialKey))
-  const inner = menuItems.map((item) => item[0])
-
-  const onOpenChange = (keys: string[]) => {
-    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1)
-    if (rootSubmenuKeys.indexOf(latestOpenKey!) === -1) {
-      setOpenKeys(keys)
-    } else {
-      setOpenKeys(latestOpenKey ? [latestOpenKey] : [])
-    }
-  }
+export const AdminSideMenu: React.FC<AdminSideMenuProps> = memo(({ items }) => {
+  const router = useRouter()
+  const menuItems = items.map((item) => getMenuItem(item))
 
   return (
     <Menu
       mode="inline"
-      openKeys={openKeys}
-      selectedKeys={[initialKey]}
-      style={{ height: "100%" }}
-      // @ts-ignore
-      onOpenChange={onOpenChange}
+      motion={undefined}
+      style={{ height: "100%", zIndex: -1 }}
+      onClick={({ key }) => router.push(key)}
     >
-      {inner}
+      {menuItems}
     </Menu>
   )
-}
+}, arePropsEqual)

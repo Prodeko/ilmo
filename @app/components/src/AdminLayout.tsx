@@ -1,6 +1,7 @@
 import qs from "querystring"
 
 import { PlusCircleTwoTone } from "@ant-design/icons"
+import { css } from "@emotion/css"
 import { AiOutlineMail, AiOutlineTag } from "@hacknug/react-icons/ai"
 import { FiUsers } from "@hacknug/react-icons/fi"
 import { MdEvent } from "@hacknug/react-icons/md"
@@ -16,7 +17,7 @@ import {
   SharedLayout,
   SharedLayoutChildProps,
 } from "./SharedLayout"
-import { useTranslation } from "."
+import { useIsMobile, useTranslation } from "."
 
 import type { SharedLayout_QueryFragment } from "@app/graphql"
 
@@ -48,8 +49,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   href: inHref,
   children,
 }) => {
-  const { t } = useTranslation("admin")
   const router = useRouter()
+  const { t } = useTranslation("admin")
   const { data, fetching } = query
 
   const basicMenuItems = [
@@ -143,15 +144,27 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         ...basicMenuItems,
       ]
 
+  const isMobile = useIsMobile()
   const page = findPage(String(inHref), items) || items[0]
   const href = page.key
 
   const routerQuery = router?.query
   const fullHref = href + (routerQuery ? `?${qs.stringify(routerQuery)}` : "")
 
+  // Dirty hack to get antd sider to do what we want
+  const siderTransition = isMobile ? "none !important" : "all"
   const layoutSider = (
-    <Sider breakpoint="md" collapsedWidth={40}>
-      <AdminSideMenu initialKey={page.key} items={items} />
+    <Sider
+      breakpoint="md"
+      className={css`
+        transition: ${siderTransition};
+        * {
+          transition: ${siderTransition};
+        }
+      `}
+      collapsedWidth={40}
+    >
+      <AdminSideMenu items={items} />
     </Sider>
   )
 

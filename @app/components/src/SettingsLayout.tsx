@@ -7,6 +7,7 @@ import {
   TeamOutlined,
   UserDeleteOutlined,
 } from "@ant-design/icons"
+import { css } from "@emotion/css"
 import { Layout } from "antd"
 import { useRouter } from "next/router"
 import { Translate } from "next-translate"
@@ -17,7 +18,7 @@ import {
   SharedLayoutChildProps,
   SharedLayoutProps,
 } from "./SharedLayout"
-import { Redirect, SettingsSideMenu, useTranslation } from "."
+import { Redirect, SettingsSideMenu, useIsMobile, useTranslation } from "."
 
 import type { User } from "@app/graphql"
 import type { TextProps } from "antd/lib/typography/Text"
@@ -70,6 +71,7 @@ interface SettingsLayoutProps {
 }
 
 export function SettingsLayout({ query, href, children }: SettingsLayoutProps) {
+  const isMobile = useIsMobile()
   const { t } = useTranslation("settings")
   const sideMenuItems = pages(t)
   const pageTitle = sideMenuItems[href].title
@@ -77,8 +79,19 @@ export function SettingsLayout({ query, href, children }: SettingsLayoutProps) {
   const routerQuery = router?.query
   const fullHref = href + (routerQuery ? `?${qs.stringify(routerQuery)}` : "")
 
+  // Dirty hack to get antd sider to do what we want
+  const siderTransition = isMobile ? "none !important" : "all"
   const layoutSider = (
-    <Sider breakpoint="md" collapsedWidth={40}>
+    <Sider
+      breakpoint="md"
+      className={css`
+        transition: ${siderTransition};
+        * {
+          transition: ${siderTransition};
+        }
+      `}
+      collapsedWidth={40}
+    >
       <SettingsSideMenu
         currentUser={query.data?.currentUser as User}
         initialKey={href}
