@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.10.0",
-    "@types/node": "^16.11.12",
+    "@types/node": "^16.11.13",
     "cypress": "^9.1.1",
     "cypress-file-upload": "^5.0.8",
     "dayjs": "^1.10.7",
