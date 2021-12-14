@@ -194,7 +194,7 @@ export function SharedLayout({
           <title>{title ? `${title} — ${projectName}` : projectName}</title>
         </Head>
         <Row wrap={false}>
-          <Col span={8} style={{ padding: "5px 0" }}>
+          <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
             <Link href="/">
               <a>
                 <Image
@@ -229,7 +229,7 @@ export function SharedLayout({
               </H3>
             </Col>
           ) : null}
-          <Col span={8} style={{ textAlign: "right" }}>
+          <Col sm={8} style={{ textAlign: "right" }} xs={12}>
             <Space size="large">
               <LocaleSelect />
               {data && data.currentUser ? (
