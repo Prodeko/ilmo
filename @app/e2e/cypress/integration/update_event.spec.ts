@@ -98,7 +98,7 @@ context("Update event", () => {
           .type("Päivitetty testitapahtuma")
         cy.getCy("eventform-switch-highlight").click()
         cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg")
-        cy.get(".antd-img-crop-modal button").contains("OK").click()
+        cy.get(".img-crop-modal button").contains("OK").click()
 
         cy.getCy("eventform-button-submit").click()
 

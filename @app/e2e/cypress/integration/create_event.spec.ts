@@ -95,7 +95,7 @@ context("Create event", () => {
       cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg", {
         subjectType: "drag-n-drop",
       })
-      cy.get(".antd-img-crop-modal button").contains("OK").click()
+      cy.get(".img-crop-modal button").contains("OK").click()
 
       // Quotas tab
       cy.get("@tabs").eq(1).click()
