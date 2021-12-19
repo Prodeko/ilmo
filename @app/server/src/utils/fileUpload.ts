@@ -1,8 +1,8 @@
-import { createWriteStream, ReadStream, unlinkSync } from "fs"
-import { join } from "path"
-
 import { BlobServiceClient } from "@azure/storage-blob"
-import { FileUpload } from "graphql-upload"
+import { createWriteStream, ReadStream, unlinkSync } from "node:fs"
+import { join } from "node:path"
+
+import type { FileUpload } from "graphql-upload"
 
 declare module "fs" {
   interface ReadStream {

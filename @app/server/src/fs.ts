@@ -1,4 +1,4 @@
-import { promises as fsp } from "fs"
+import { promises as fsp } from "node:fs"
 
 const { utimes, open } = fsp
 

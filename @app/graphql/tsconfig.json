@@ -3,12 +3,12 @@
   "compilerOptions": {
     "noEmit": false,
     "rootDir": ".",
-    "outDir": ".",
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "outDir": "dist/esm",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "declarationDir": ".",
     "lib": ["esnext", "esnext.asynciterable"],
-    "target": "es2020",
-    "module": "commonjs"
+    "target": "esnext",
+    "module": "esnext"
   },
   "include": ["index.ts", "client.json", "introspection.min.json"]
 }

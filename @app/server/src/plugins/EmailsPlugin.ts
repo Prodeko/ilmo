@@ -1,8 +1,7 @@
-import fs from "fs"
-import path from "path"
-
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
 import html2text from "html-to-text"
+import fs from "node:fs"
+import path from "node:path"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 import { loadTemplate } from "../utils/emailUtils"

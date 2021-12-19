@@ -1,5 +1,4 @@
 import { IncomingMessage } from "http"
-import { resolve } from "path"
 
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
@@ -11,6 +10,7 @@ import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
 import { WorkerUtils } from "graphile-worker"
 import { Redis } from "ioredis"
+import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {
   enhanceHttpServerWithSubscriptions,

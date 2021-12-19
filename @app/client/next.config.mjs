@@ -16,7 +16,6 @@ const withTM = NextTranspileModules([
   // This is needed to have correct styling as babel-plugin-import
   // inserts the required styles
   "@app/components",
-  "@app/lib",
   "rc-util",
 ])
 

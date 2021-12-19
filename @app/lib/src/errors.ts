@@ -1,5 +1,5 @@
-import { GraphQLError } from "graphql"
-import { CombinedError } from "urql"
+import type { GraphQLError } from "graphql"
+import type { CombinedError } from "urql"
 
 export function extractError(error: null): null
 export function extractError(error: Error): Error

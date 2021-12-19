@@ -1,17 +1,12 @@
-import {
-  AdminListEventsDocument,
-  AdminListEventsQuery,
-  Event,
-  GraphCacheConfig,
-} from "@app/graphql"
+import { AdminListEventsDocument, AdminListEventsQuery } from "@app/graphql"
 import hashes from "@app/graphql/client.json"
 import minifiedSchema from "@app/graphql/introspection.min.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
-import { Client, createClient } from "graphql-ws"
-import { SSRExchange, withUrqlClient } from "next-urql"
+import { createClient } from "graphql-ws"
+import { withUrqlClient } from "next-urql"
 import {
   dedupExchange,
   errorExchange,
@@ -21,7 +16,10 @@ import {
 
 import { getSessionAndCSRFToken } from "."
 
+import type { Event, GraphCacheConfig } from "@app/graphql"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
+import type { Client } from "graphql-ws"
+import type { SSRExchange } from "next-urql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
