@@ -67,6 +67,7 @@ export const LocaleMenu: React.FC<LocaleMenuProps> = ({
       disabled={loading || includedLocales.length === 0}
       overlay={<Menu onClick={onClickHandler}>{menu}</Menu>}
       placement="bottomLeft"
+      trigger={["click"]}
       arrow
     >
       <span data-cy={dataCyDropdown} style={{ whiteSpace: "nowrap" }}>
