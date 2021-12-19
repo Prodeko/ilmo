@@ -106,6 +106,7 @@
   "resolutions": {
     "graphql": "15.x",
     "rc-upload": "3.x",
+    "depcheck/@babel/parser": "7.16.4",
     "antd-dayjs-webpack-plugin": "github:Chastrlove/antd-dayjs-webpack-plugin",
     "neat-csv": "6.0.1",
     "strip-bom-stream": "4.x",
