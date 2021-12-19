@@ -6,10 +6,11 @@ import {
   gql,
   makeExtendSchemaPlugin,
 } from "graphile-utils"
-// graphile-utils doesn't export this yet
-import { GraphQLResolveInfo } from "graphql"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
+
+// graphile-utils doesn't export this yet
+import type { GraphQLResolveInfo } from "graphql"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

@@ -1,6 +1,5 @@
-import { writeFileSync } from "fs"
-
 import { lexicographicSortSchema, printSchema } from "graphql"
+import { writeFileSync } from "node:fs"
 import { Pool } from "pg"
 import { createPostGraphileSchema } from "postgraphile"
 

@@ -1,8 +1,7 @@
 /// <reference types="Cypress" />
 
-import { join } from "path"
-
 import neatCsv from "neat-csv"
+import { join } from "node:path"
 
 const validateCsvList = (list, quota, question, registration) => {
   expect(list, "number of records").to.have.length(1)

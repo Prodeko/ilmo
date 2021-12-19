@@ -1,9 +1,8 @@
-import { readFileSync } from "fs"
-import { resolve } from "path"
-
 import { FastifyError, FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { template, TemplateExecutor } from "lodash"
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 
 const isDev = process.env.NODE_ENV === "development"
 

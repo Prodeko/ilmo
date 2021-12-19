@@ -1,6 +1,7 @@
 .env
 .env.production
 .next
+.tool-versions
 sentry.properties
 node_modules
 dist
