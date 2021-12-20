@@ -15,7 +15,7 @@
     "@app/lib": "workspace:*",
     "@emotion/css": "^11.7.1",
     "@hacknug/react-icons": "^4.2.1",
-    "antd": "^4.17.3",
+    "antd": "^4.17.4",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^4.0.2",
     "dayjs": "^1.10.7",
