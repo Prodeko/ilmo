@@ -4,7 +4,7 @@ runs:
   image: docker://prodekoregistry.azurecr.io/infrastructure/prodeko-ci:v1
   args:
     [
-      'bash',
-      '-c',
-      'cd /ci && ansible-playbook playbook.yml --extra-vars "@passwd.yml" --tags ilmo',
+      "bash",
+      "-c",
+      'cd /ci && ansible-playbook playbook.yml --extra-vars "@passwd.yml" --tags ilmo --limit prodeko-azure-vm',
     ]
