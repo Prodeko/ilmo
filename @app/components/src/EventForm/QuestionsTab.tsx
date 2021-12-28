@@ -116,7 +116,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         return (
           <Form.Item
             key={l}
-            fieldKey={[index, "label", l.toLowerCase()]}
             name={[index, "label", l.toLowerCase()]}
             rules={[
               {
@@ -164,7 +163,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         return (
           <Form.Item
             key={l}
-            fieldKey={[index, "data", i, l.toLowerCase()]}
             name={[index, "data", i, l.toLowerCase()]}
             rules={[
               {
@@ -298,30 +296,20 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                   <Col span="1" />
                 </Row>
                 {fields.map((field, index) => {
-                  const { name, fieldKey } = field
+                  const { name, key } = field
                   return (
                     <Draggable
                       {...field}
-                      key={fieldKey}
-                      id={fieldKey}
+                      key={key}
+                      id={key}
                       index={index}
                       move={move}
                     >
                       <Row gutter={[8, 8]} style={{ marginBottom: "12px" }}>
-                        <Form.Item
-                          fieldKey={[fieldKey, "id"]}
-                          name={[name, "id"]}
-                          required={false}
-                          noStyle
-                        >
+                        <Form.Item name={[name, "id"]} required={false} noStyle>
                           <Input type="hidden" />
                         </Form.Item>
-                        <Form.Item
-                          fieldKey={[fieldKey, "position"]}
-                          name={[name, "position"]}
-                          noStyle
-                          required
-                        >
+                        <Form.Item name={[name, "position"]} noStyle required>
                           <Input type="hidden" />
                         </Form.Item>
                         <Col
@@ -331,7 +319,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         >
                           <DragOutlined style={{ marginRight: "8px" }} />
                           <Form.Item
-                            fieldKey={[fieldKey, "type"]}
                             name={[name, "type"]}
                             rules={[
                               {
@@ -363,7 +350,6 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         {renderQuestions(index)}
                         <Col {...colSpan}>
                           <Form.Item
-                            fieldKey={[index, "isRequired"]}
                             label={t("common:required")}
                             labelAlign="left"
                             labelCol={{ flex: 1 }}

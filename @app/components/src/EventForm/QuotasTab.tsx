@@ -45,34 +45,23 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
           {(fields, { add, remove, move }) => (
             <>
               {fields.map((field, index) => {
-                const { name, fieldKey } = field
-                const { registrations } =
-                  initialValues?.quotas?.[fieldKey] || {}
+                const { key, name } = field
+                const { registrations } = initialValues?.quotas?.[key] || {}
                 const numRegistrations = registrations?.totalCount || 0
                 return (
                   <Draggable
                     {...field}
-                    key={fieldKey}
-                    id={fieldKey}
+                    key={key}
+                    id={key}
                     index={index}
                     move={move}
                   >
                     {/* These hidden form fields are needed so that the update
                       variant of the EventForm works correctly */}
-                    <Form.Item
-                      fieldKey={[fieldKey, "id"]}
-                      name={[name, "id"]}
-                      required={false}
-                      noStyle
-                    >
+                    <Form.Item name={[name, "id"]} required={false} noStyle>
                       <Input type="hidden" />
                     </Form.Item>
-                    <Form.Item
-                      fieldKey={[fieldKey, "position"]}
-                      name={[name, "position"]}
-                      noStyle
-                      required
-                    >
+                    <Form.Item name={[name, "position"]} noStyle required>
                       <Input type="hidden" />
                     </Form.Item>
                     <Space
@@ -83,7 +72,6 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                       {selectedLanguages.map((l) => (
                         <Form.Item
                           key={`${name}-${l}`}
-                          fieldKey={[fieldKey, "title", l.toLowerCase()]}
                           name={[name, "title", l.toLowerCase()]}
                           rules={[
                             {
@@ -102,7 +90,6 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                         </Form.Item>
                       ))}
                       <Form.Item
-                        fieldKey={[fieldKey, "size"]}
                         name={[name, "size"]}
                         rules={[
                           {
