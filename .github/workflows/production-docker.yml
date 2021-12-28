@@ -53,7 +53,7 @@ jobs:
           file: ./docker/dockerfiles/Dockerfile.prod
           load: true
           push: false
-          build-args: ROOT_URL=https://ilmo3.prodeko.org
+          build-args: ROOT_URL=https://ilmo.prodeko.org
           tags: |
             ilmo-server
             ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
@@ -67,7 +67,7 @@ jobs:
           file: ./docker/dockerfiles/Dockerfile.prod
           load: true
           push: false
-          build-args: ROOT_URL=https://ilmo3.prodeko.org
+          build-args: ROOT_URL=https://ilmo.prodeko.org
           tags: |
             ilmo-worker
             ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-worker
