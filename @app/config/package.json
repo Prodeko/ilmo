@@ -8,6 +8,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "dotenv": "^10.0.0"
+    "dotenv": "^11.0.0"
   }
 }

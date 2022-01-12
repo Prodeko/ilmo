@@ -34,8 +34,6 @@ import {
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
 
-import type { PromiseValue } from "type-fest"
-
 export * from "../../__tests__/helpers"
 
 const MockReq = require("mock-req")
@@ -126,7 +124,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // https://www.postgresql.org/docs/9.3/functions-admin.html
     client.query("BEGIN")
 
-    let users: PromiseValue<ReturnType<typeof createUsers>>
+    let users: Awaited<ReturnType<typeof createUsers>>
     if (userOptions.create) {
       users = await createUsers(
         client,
@@ -143,7 +141,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
 
     await becomeUser(client, session.uuid)
 
-    let organizations: PromiseValue<ReturnType<typeof createOrganizations>>
+    let organizations: Awaited<ReturnType<typeof createOrganizations>>
     if (organizationOptions.create) {
       organizations = await createOrganizations(
         client,
@@ -152,7 +150,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     }
     const primaryOrganization = organizations?.[0]
 
-    let eventCategories: PromiseValue<ReturnType<typeof createEventCategories>>
+    let eventCategories: Awaited<ReturnType<typeof createEventCategories>>
     if (eventCategoryOptions.create) {
       eventCategories = await createEventCategories(
         client,
@@ -162,7 +160,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     }
     const primaryEventCategory = eventCategories?.[0]
 
-    let events: PromiseValue<ReturnType<typeof createEvents>>
+    let events: Awaited<ReturnType<typeof createEvents>>
     if (eventOptions.create) {
       events = await createEvents(
         client,
@@ -180,7 +178,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // and app_public.quotas
     await client.query("reset role")
 
-    let quotas: PromiseValue<ReturnType<typeof createQuotas>>
+    let quotas: Awaited<ReturnType<typeof createQuotas>>
     if (quotaOptions.create) {
       quotas = await createQuotas(
         client,
@@ -190,7 +188,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       )
     }
 
-    let questions: PromiseValue<ReturnType<typeof createQuestions>>
+    let questions: Awaited<ReturnType<typeof createQuestions>>
     if (questionOptions.create) {
       questions = await createQuestions(
         client,
@@ -205,7 +203,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
     // don't want to create a registration for createRegistration.test.ts
     // since that would create another registration__send_confirmation_email
     // task.
-    let registrations: PromiseValue<ReturnType<typeof createRegistrations>>
+    let registrations: Awaited<ReturnType<typeof createRegistrations>>
     if (registrationOptions.create) {
       registrations = await createRegistrations(
         client,
@@ -216,7 +214,7 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
       )
     }
 
-    let registrationSecrets: PromiseValue<
+    let registrationSecrets: Awaited<
       ReturnType<typeof createRegistrationSecrets>
     >
     if (registrationOptions.create) {

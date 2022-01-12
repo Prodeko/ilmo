@@ -12,26 +12,26 @@
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
     "@sentry/nextjs": "^6.16.1",
-    "antd": "^4.18.1",
+    "antd": "^4.18.3",
     "antd-dayjs-webpack-plugin": "^1.0.6",
     "dayjs": "^1.10.7",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
-    "next": "^12.0.7",
-    "next-plugin-antd-less": "^1.7.0",
+    "next": "^12.0.8",
+    "next-plugin-antd-less": "^1.8.0",
     "next-translate": "^1.2.0",
     "next-transpile-modules": "^9.0.0",
-    "rc-table": "^7.21.0",
+    "rc-table": "^7.22.2",
     "react": "^17.0.2",
     "react-color-palette": "^6.2.0",
     "react-dom": "^17.0.2",
-    "slugify": "^1.6.4",
+    "slugify": "^1.6.5",
     "tls": "^0.0.1",
     "urql": "^2.0.6",
-    "webpack": "^5.65.0"
+    "webpack": "^5.66.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^12.0.7",
+    "@next/bundle-analyzer": "^12.0.8",
     "less": "^4.1.2"
   },
   "nextBundleAnalysis": {
