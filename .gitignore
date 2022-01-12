@@ -2,7 +2,7 @@
 .env.production
 .next
 .tool-versions
-sentry.properties
+.sentryclirc
 node_modules
 dist
 cache

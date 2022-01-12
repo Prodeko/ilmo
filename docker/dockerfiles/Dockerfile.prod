@@ -42,7 +42,13 @@ COPY scripts/ /app/scripts/
 COPY data/ /app/data/
 
 # Finally run the build script
-RUN NEXT_TRANSLATE_PATH=../client yarn build
+# See https://andrei-calazans.com/posts/2021-06-23/passing-secrets-github-actions-docker
+# for explanation of the --mount's
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+  --mount=type=secret,id=GITHUB_SHA \
+   export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
+   export GITHUB_SHA=$(cat /run/secrets/GITHUB_SHA) && \
+   NEXT_TRANSLATE_PATH=../client yarn build
 
 ################################################################################
 # Build stage clean - COPY the relevant things (multiple steps)

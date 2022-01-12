@@ -1,10 +1,12 @@
-import _ from "lodash"
-import localeConfig from "./i18n.js"
 import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
+import _ from "lodash"
+import { withSentryConfig } from "@sentry/nextjs"
 import BundleAnalyzer from "@next/bundle-analyzer"
 import NextTranspileModules from "next-transpile-modules"
 import withAntdLess from "next-plugin-antd-less"
 import withNextTranslate from "next-translate"
+
+import localeConfig from "./i18n.js"
 
 const __dirname = new URL(".", import.meta.url).pathname
 const { locales, defaultLocale } = localeConfig
@@ -138,19 +140,10 @@ const nextConfig = () =>
     },
   })
 
-export default nextConfig
-
-// To use sentry, uncomment below and move imports to the top
-//
-// import { withSentryConfig } from "@sentry/nextjs"
-// import { execSync } from "child_process"
-//
-// Get HEAD commit SHA
-// const revision = execSync("cd ../.. && git rev-parse HEAD").toString().trim()
-//
-// // Options https://github.com/getsentry/sentry-webpack-plugin#options
-// export default withSentryConfig(nextConfig, {
-//   release: revision,
-//   configFile: `${__dirname}sentry.properties`,
-//   silent: process.env.NODE_ENV !== "production",
-// })
+// Options https://github.com/getsentry/sentry-webpack-plugin#options
+export default withSentryConfig(nextConfig, {
+  release: process.env.GITHUB_SHA || "local",
+  configFile: `${__dirname}sentry.properties`,
+  silent: process.env.NODE_ENV !== "production",
+  environment: process.env.NODE_ENV,
+})
