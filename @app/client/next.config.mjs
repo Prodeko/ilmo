@@ -78,7 +78,6 @@ const nextOptions = {
   env: {
     ENV: NODE_ENV,
     ROOT_URL: ROOT_URL,
-    CI: process.env.CI,
     TZ: process.env.TZ,
     PRIVACY_URL: process.env.PRIVACY_URL,
   },

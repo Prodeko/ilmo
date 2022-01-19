@@ -1,7 +1,5 @@
 import Document, { Head, Html, Main, NextScript } from "next/document"
 
-const { ENV, CI } = process.env
-
 class CustomDocument extends Document {
   render() {
     return (
@@ -21,7 +19,7 @@ class CustomDocument extends Document {
             rel="preload"
             type="font/woff2"
           />
-          {ENV === "production" && !CI && (
+          {process.env.ENV === "production" && (
             <script
               data-account-id="2b404169-9d56-4686-be6c-eb30fd8cf8eb"
               src="https://usage.prodeko.org/script.js"
