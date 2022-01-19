@@ -141,9 +141,11 @@ const nextConfig = () =>
   })
 
 // Options https://github.com/getsentry/sentry-webpack-plugin#options
-export default withSentryConfig(nextConfig, {
-  release: process.env.GITHUB_SHA || "local",
-  configFile: `${__dirname}sentry.properties`,
-  silent: process.env.NODE_ENV !== "production",
-  environment: process.env.NODE_ENV,
-})
+export default process.env.DOCKER_BUILD
+  ? withSentryConfig(nextConfig, {
+      release: process.env.GITHUB_SHA || "local",
+      configFile: `${__dirname}sentry.properties`,
+      silent: process.env.NODE_ENV !== "production",
+      environment: process.env.NODE_ENV,
+    })
+  : nextConfig
