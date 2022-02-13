@@ -1,4 +1,4 @@
-import { zxcvbn, ZxcvbnOptions } from "@zxcvbn-ts/core"
+import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core"
 import zxcvbnCommonPackage from "@zxcvbn-ts/language-common"
 import zxcvbnEnPackage from "@zxcvbn-ts/language-en"
 import { makeExtendSchemaPlugin } from "graphile-utils"
@@ -14,7 +14,7 @@ const options = {
     ...zxcvbnEnPackage.dictionary,
   },
 }
-ZxcvbnOptions.setOptions(options)
+zxcvbnOptions.setOptions(options)
 
 const PasswordStrengthPlugin = makeExtendSchemaPlugin(() => {
   return {

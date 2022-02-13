@@ -6,41 +6,40 @@ Object {
     "renderEmailTemplates": Object {
       "templates": Array [
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -49,7 +48,7 @@ Object {
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -60,24 +59,24 @@ Object {
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -296,8 +295,8 @@ Object {
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-1]",
           "name": "[random-1]",
@@ -311,41 +310,40 @@ necessary.
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -354,7 +352,7 @@ necessary.
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -365,24 +363,24 @@ necessary.
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -572,8 +570,8 @@ necessary.
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-2]",
           "name": "[random-2]",
@@ -582,41 +580,40 @@ necessary.
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -625,7 +622,7 @@ necessary.
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -638,24 +635,24 @@ necessary.
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -903,8 +900,8 @@ necessary.
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-3]",
           "name": "[random-3]",
@@ -919,41 +916,40 @@ Confirm intent
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -962,7 +958,7 @@ Confirm intent
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -973,24 +969,24 @@ Confirm intent
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -1267,8 +1263,8 @@ Confirm intent
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-4]",
           "name": "[random-4]",
@@ -1302,41 +1298,40 @@ You can update or delete your registration via this link: http://localhost:5678/
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -1345,7 +1340,7 @@ You can update or delete your registration via this link: http://localhost:5678/
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -1356,24 +1351,24 @@ You can update or delete your registration via this link: http://localhost:5678/
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -1615,8 +1610,8 @@ You can update or delete your registration via this link: http://localhost:5678/
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-5]",
           "name": "[random-5]",
@@ -1630,41 +1625,40 @@ Accept invitation
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -1673,7 +1667,7 @@ Accept invitation
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -1686,24 +1680,24 @@ Accept invitation
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -1971,8 +1965,8 @@ Accept invitation
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-6]",
           "name": "[random-6]",
@@ -1989,41 +1983,40 @@ Change Passphrase
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -2032,7 +2025,7 @@ Change Passphrase
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -2043,24 +2036,24 @@ Change Passphrase
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -2279,8 +2272,8 @@ Change Passphrase
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-7]",
           "name": "[random-7]",
@@ -2294,41 +2287,40 @@ This message is purely for your information. No action is required.
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -2337,7 +2329,7 @@ This message is purely for your information. No action is required.
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -2348,24 +2340,24 @@ This message is purely for your information. No action is required.
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -2642,8 +2634,8 @@ This message is purely for your information. No action is required.
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-8]",
           "name": "[random-8]",
@@ -2677,41 +2669,40 @@ You can update or delete your registration via this link: http://localhost:5678/
 ",
         },
         Object {
-          "html": "
-    <!doctype html>
-    <html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
-      <head>
-        <title>
-          
-        </title>
-        <!--[if !mso]><!-->
-        <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
-        <!--<![endif]-->
-        <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-        <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
-        <style type=\\"text/css\\">
-          #outlook a { padding:0; }
-          body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-          table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-          img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-          p { display:block;margin:13px 0; }
-        </style>
-        <!--[if mso]>
-        <noscript>
-        <xml>
-        <o:OfficeDocumentSettings>
-          <o:AllowPNG/>
-          <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-        </xml>
-        </noscript>
-        <![endif]-->
-        <!--[if lte mso 11]>
-        <style type=\\"text/css\\">
-          .mj-outlook-group-fix { width:100% !important; }
-        </style>
-        <![endif]-->
-        
+          "html": "<!doctype html>
+<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+  <head>
+    <title>
+      
+    </title>
+    <!--[if !mso]><!-->
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <!--<![endif]-->
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1\\">
+    <style type=\\"text/css\\">
+      #outlook a { padding:0; }
+      body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
+      table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
+      img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
+      p { display:block;margin:13px 0; }
+    </style>
+    <!--[if mso]>
+    <noscript>
+    <xml>
+    <o:OfficeDocumentSettings>
+      <o:AllowPNG/>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+    </xml>
+    </noscript>
+    <![endif]-->
+    <!--[if lte mso 11]>
+    <style type=\\"text/css\\">
+      .mj-outlook-group-fix { width:100% !important; }
+    </style>
+    <![endif]-->
+    
       <!--[if !mso]><!-->
         <link href=\\"https://fonts.googleapis.com/css?family=Raleway\\" rel=\\"stylesheet\\" type=\\"text/css\\">
         <style type=\\"text/css\\">
@@ -2720,7 +2711,7 @@ You can update or delete your registration via this link: http://localhost:5678/
       <!--<![endif]-->
 
     
-        
+    
     <style type=\\"text/css\\">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -2733,24 +2724,24 @@ You can update or delete your registration via this link: http://localhost:5678/
     </style>
     
   
-        <style type=\\"text/css\\">
-        
-        
+    <style type=\\"text/css\\">
+    
+    
 
     @media only screen and (max-width:480px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
-        </style>
-        <style type=\\"text/css\\">
-        
-        </style>
-        
-      </head>
-      <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
-        
-        
+    </style>
+    <style type=\\"text/css\\">
+    
+    </style>
+    
+  </head>
+  <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
+    
+    
       <div style=\\"background-color:#e7e7e7;\\">
         
       
@@ -3018,8 +3009,8 @@ You can update or delete your registration via this link: http://localhost:5678/
     
       </div>
     
-      </body>
-    </html>
+  </body>
+</html>
   ",
           "id": "[id-9]",
           "name": "[random-9]",
