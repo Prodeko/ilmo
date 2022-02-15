@@ -78,7 +78,7 @@ export const EventRegistrationsTables: React.FC<EventRegistrationsTablesProps> =
           const cur = dayjs(createdAt)
           const commonFormat = "YYYY-MM-DD HH:mm:ss"
           const formatOptions =
-            cur.diff(registrationStart) < 1000
+            cur.isAfter(registrationStart) && cur.diff(registrationStart) < 1000
               ? `${commonFormat}.SSS`
               : `${commonFormat}`
           return cur.format(formatOptions)
