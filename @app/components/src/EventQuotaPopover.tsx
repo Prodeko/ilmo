@@ -29,7 +29,9 @@ export const EventQuotaPopover: React.FC<EventQuotaPopoverProps> = ({
     const quotaRegistrations = quota.registrations.totalCount
     return (
       <Row key={quota.id} style={{ minWidth: "20rem" }}>
-        <Col span={5}>{quota.title[lang]}</Col>
+        <Col span={5}>
+          <Text ellipsis>{quota.title[lang]}</Text>
+        </Col>
         <Col span={12} style={{ marginRight: "10px" }}>
           <Progress
             percent={(quotaRegistrations * 100) / quota.size}
