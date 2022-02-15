@@ -3,7 +3,7 @@ fragment HomePageClosedEvents_Query on Query {
     first: $first
     offset: $offset
     filter: {signupClosed: {equalTo: true}, name: {containsKey: $language}}
-    orderBy: EVENT_END_TIME_ASC
+    orderBy: EVENT_END_TIME_DESC
   ) {
     nodes {
       ...HomePage_Event
