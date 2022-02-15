@@ -58,8 +58,8 @@ jobs:
             ilmo-server
             ${{ secrets.REGISTRY_LOGIN_SERVER }}/ilmo/ilmo-server
           secrets: |
-            SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}"
-            GITHUB_SHA="${GITHUB_SHA}"
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+            GITHUB_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           target: server
