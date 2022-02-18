@@ -102,8 +102,8 @@ export const Button = forwardRef(
               ? "white"
               : "#aaa"
             : active
-              ? "black"
-              : "#707070"};
+            ? "black"
+            : "#707070"};
         `
       )}
     />
