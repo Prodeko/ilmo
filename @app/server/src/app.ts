@@ -54,7 +54,11 @@ export async function makeApp({
    */
   const app = Fastify({
     pluginTimeout: isDev ? 90000 : 10000,
-    logger: isDev ? false : true,
+    logger: isDev
+      ? false
+      : {
+          level: process.env.LOG_LEVEL || "info",
+        },
     trustProxy: !isDev,
     serverFactory,
   })
