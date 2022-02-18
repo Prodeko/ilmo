@@ -55,6 +55,7 @@ const nextOptions = {
     defaultLocale,
   },
   images: {
+    minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],
     domains: isDevOrTest
       ? ["localhost", "static.prodeko.org", "placeimg.com"]
