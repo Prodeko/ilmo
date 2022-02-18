@@ -102,8 +102,8 @@ export const Button = forwardRef(
               ? "white"
               : "#aaa"
             : active
-            ? "black"
-            : "#707070"};
+              ? "black"
+              : "#707070"};
         `
       )}
     />
@@ -217,8 +217,8 @@ export const TranslateMenu = ({
           // Success message
           message.success(
             t("admin:editor.translateSucceeded", {
-              from: t(`common:lang.${from}`),
-              to: t(`common:lang.${to}`),
+              from: t(`common:lang.${from.toLowerCase()}`),
+              to: t(`common:lang.${to.toLowerCase()}`),
             })
           )
         } catch (e) {

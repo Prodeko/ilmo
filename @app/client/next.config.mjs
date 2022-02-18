@@ -47,7 +47,6 @@ const withAntdLessOptions = {
  * @type {import('next').NextConfig}
  */
 const nextOptions = {
-  reactStrictMode: true,
   useFileSystemPublicRoutes: true,
   poweredByHeader: false,
   trailingSlash: false,
