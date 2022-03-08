@@ -21,7 +21,7 @@
     "@graphql-codegen/typescript-urql": "^3.5.3",
     "@graphql-codegen/typescript-urql-graphcache": "^2.2.6",
     "@graphql-codegen/urql-introspection": "^2.1.1",
-    "@urql/introspection": "^0.3.1",
+    "@urql/introspection": "^0.3.2",
     "graphql-codegen-persisted-query-ids": "^0.1.2"
   }
 }
