@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@app/graphql": "workspace:*",
-    "@types/pg": "^8.6.4",
+    "@types/pg": "8.6.4",
     "faker": "^6.6.6",
     "jest": "^27.5.1",
     "lodash": "^4.17.21",
