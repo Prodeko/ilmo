@@ -148,11 +148,11 @@ This main command runs a number of tasks:
   generates your TypeScript React hooks for you automatically, leading to
   strongly typed code with minimal effort
 
-**NOTE**: `docker-compose up server` also runs the PostgreSQL server that the
+**NOTE**: `docker compose up server` also runs the PostgreSQL server that the
 system connects to.
 
 You may also choose to develop locally, but use the PostgreSQL server via
-`docker-compose up -d db`.
+`docker compose up -d db`.
 
 Then for development you may need a console; you can open one with:
 

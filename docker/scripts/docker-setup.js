@@ -28,24 +28,24 @@ async function main() {
 FORCE_COLOR=2
 
 # \`pg_dump\` is run from inside container, which doesn't have pg tools installed
-# so it needs a way to still run it. \`docker-compose run\` would start an
+# so it needs a way to still run it. \`docker compose run\` would start an
 # instance inside the current running container which doesn't work with volume
-# mappings, so we must use \`docker-compose exec\`. \`-T\` is needed because our
+# mappings, so we must use \`docker compose exec\`. \`-T\` is needed because our
 # \`.gmrc\` checks for interactive TTY.
-PG_DUMP=docker-compose exec -T db pg_dump
+PG_DUMP="docker compose exec -T db pg_dump"
 
-# Drops tables without asking in \`yarn setup\`. Reasoning: 1) docker-compose is
+# Drops tables without asking in \`yarn setup\`. Reasoning: 1) docker compose is
 # not tty, 2) it's a dev env anyway.
 CONFIRM_DROP=y
 
 # POSTGRES_PASSWORD is the superuser password for PostgreSQL, it's required to
 # initialize the Postgres docker volume.
-POSTGRES_PASSWORD=${password}
+POSTGRES_PASSWORD="${password}"
 
 # We're accessing Postgres via Docker, so we must use the db host and the
 # relevant password.
 DATABASE_HOST=db
-ROOT_DATABASE_URL=postgres://postgres:${password}@db/postgres
+ROOT_DATABASE_URL="postgres://postgres:${password}@db/postgres"
 
 # Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds
 LD_TABLE_PATTERN=app_public.*
