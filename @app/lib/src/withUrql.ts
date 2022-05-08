@@ -67,8 +67,8 @@ export const withUrql = withUrqlClient(
       fetchOptions: () => {
         const [cookie, csrfToken] = getSessionAndCSRFToken(ctx)
         return {
-          // fastify-csrf reads the CSRF-Token header
-          // https://github.com/fastify/fastify-csrf#fastifycsrfprotectionrequest-reply-next
+          // @fastify/csrf reads the CSRF-Token header
+          // https://github.com/fastify/@fastify/csrf#fastifycsrfprotectionrequest-reply-next
           headers: { "CSRF-Token": csrfToken, cookie },
           credentials: "same-origin",
         }

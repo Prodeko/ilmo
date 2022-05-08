@@ -9,7 +9,6 @@ import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
 import { FormValues } from "."
 
 import type { UploadFile } from "antd/lib/upload/interface"
-import type { DisabledTimes } from "rc-picker/lib/interface"
 
 const { Option } = Select
 const { Group } = Input
@@ -59,14 +58,14 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     }
   }
 
-  function disabledDate(current: dayjs.Dayjs) {
+  function _disabledDate(current: dayjs.Dayjs) {
     const eventStartTime = formValues?.eventTime?.[0]
     return eventStartTime
       ? current.isAfter(eventStartTime.add(1, "day"))
       : false
   }
 
-  function _disabledDateTime(current: dayjs.Dayjs): DisabledTimes {
+  function _disabledDateTime(current: dayjs.Dayjs) {
     const { eventTime } = formValues || []
     const [eventStartTime, eventEndTime] = eventTime!
 
@@ -247,11 +246,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <RangePicker
           data-cy="eventform-input-registration-time"
-          // @ts-ignore: dayjs is supported, types are incorrectly specified in antd
-          disabledDate={disabledDate}
-          // TODO: Fix disableDateTime
-          // @ts-ignore
-          // disabledTime={disabledDateTime}
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,

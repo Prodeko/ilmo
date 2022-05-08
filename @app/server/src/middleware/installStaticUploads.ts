@@ -1,6 +1,6 @@
+import fastifyStatic from "@fastify/static"
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
-import fastifyStatic from "fastify-static"
 import path from "node:path"
 
 const SharedStatic: FastifyPluginAsync = async (app) => {

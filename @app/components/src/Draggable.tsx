@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { PropsWithChildren, useRef } from "react"
 import { useDrag, useDrop, XYCoord } from "react-dnd"
 
 interface DragItem {
@@ -14,7 +14,9 @@ interface DraggableProps {
   onDrop?: (item: DragItem) => void
 }
 
-export const Draggable: React.FC<DraggableProps> = (props) => {
+export const Draggable: React.FC<PropsWithChildren<DraggableProps>> = (
+  props
+) => {
   const { children } = props
   const { ref, isDragging } = useDraggable({ type: "list-draggable", ...props })
   return (

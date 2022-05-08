@@ -9,7 +9,7 @@ interface Payload {
 }
 
 const isTest = process.env.NODE_ENV === "test"
-const url = isTest ? process.env.TEST_REDIS_URL : process.env.REDIS_URL
+const url = isTest ? process.env.TEST_REDIS_URL! : process.env.REDIS_URL!
 
 const task: Task = async (inPayload, _helpers) => {
   const client = new Redis(url)

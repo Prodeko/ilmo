@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { PropsWithChildrenOnly } from "@app/lib"
 import { Skeleton } from "antd"
 import { useRouter } from "next/router"
 
@@ -10,7 +11,7 @@ interface RedirectProps {
   layout?: boolean
 }
 
-export const DummyPage: React.FC = ({ children }) => {
+export const DummyPage: React.FC<PropsWithChildrenOnly> = ({ children }) => {
   const { t } = useTranslation("common")
 
   return (

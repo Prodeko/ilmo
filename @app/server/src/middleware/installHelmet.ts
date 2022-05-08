@@ -1,7 +1,7 @@
+import helmet from "@fastify/helmet"
 import { FastifyPluginAsync } from "fastify"
-import helmet from "fastify-helmet"
 import fp from "fastify-plugin"
-import defaultHelmet from "helmet"
+import { contentSecurityPolicy } from "helmet"
 
 const tmpRootUrl = process.env.ROOT_URL
 
@@ -26,7 +26,7 @@ const Helmet: FastifyPluginAsync = async (app) => {
       ? false
       : {
           directives: {
-            ...defaultHelmet.contentSecurityPolicy.getDefaultDirectives(),
+            ...contentSecurityPolicy.getDefaultDirectives(),
             "connect-src": [
               "'self'",
               ROOT_URL.replace(/^http/, "ws"),
