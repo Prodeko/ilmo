@@ -31,7 +31,7 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 -- vim docker-compose.prod.yml
 -- Change yarn server start to yarn db migrate
--- Restart with docker-compose -f docker-compose.prod.yml up
+-- Restart with docker compose -f docker-compose.prod.yml up
 -- Migrations should run
 -- Change back to yarn server start
--- Restart with docker-compose -f docker-compose.prod.yml up
+-- Restart with docker compose -f docker-compose.prod.yml up

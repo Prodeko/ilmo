@@ -7,7 +7,7 @@
 # Then run this compose stack with server entrypoint 'yarn db migrate'
 # Then run this compose stack with server entrypoint 'yarn server start'
 #
-# The compose stack can be run with 'docker-compose -f docker-compose.test.prod.yml up'
+# The compose stack can be run with 'docker compose -f docker-compose.test.prod.yml up'
 
 version: "3.8"
 services:

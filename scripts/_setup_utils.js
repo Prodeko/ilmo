@@ -59,7 +59,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
   add("DATABASE_NAME")
   add("DATABASE_OWNER", answers.DATABASE_NAME)
   add("AZURE_DB_OWNER", answers.DATABASE_NAME)
-  add("DATABASE_OWNER_PASSWORD", safeRandomString(30))
+  add("DATABASE_OWNER_PASSWORD", `"${safeRandomString(30)}"`)
 
   add(
     "DATABASE_AUTHENTICATOR",
@@ -69,7 +69,7 @@ exports.updateDotenv = function updateDotenv(add, answers) {
 # privileges, but can switch into the DATABASE_VISITOR role`
   )
 
-  add("DATABASE_AUTHENTICATOR_PASSWORD", safeRandomString(30))
+  add("DATABASE_AUTHENTICATOR_PASSWORD", `"${safeRandomString(30)}"`)
 
   add(
     "DATABASE_VISITOR",

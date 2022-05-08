@@ -12,7 +12,7 @@
     "--DOCKER HELPERS--": "",
     "db:up": "yarn compose up -d db",
     "redis:up": "yarn compose up -d redis",
-    "compose": "docker-compose -f ../docker-compose.yml",
+    "compose": "docker compose -f ../docker-compose.yml",
     "compose:exec:dev": "yarn down && yarn compose up -d dev && yarn compose exec dev ",
     "reset:volumes": "node ./scripts/clean-volumes.js",
     "rebuild": "yarn compose build",

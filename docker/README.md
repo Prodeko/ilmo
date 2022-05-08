@@ -29,9 +29,9 @@ This feature was the result of a herculean effort from @JoeSchr.
 The docker environment (`docker-compose.yml`) is set up so you can almost work
 with this repo like you would directly.
 
-There is a `server` docker-compose service which has `node` and `yarn` already
+There is a `server` docker compose service which has `node` and `yarn` already
 installed. Once you have everything setup you can simply start it via
-`docker-compose up`, or use the the alias `yarn docker start`, which does some
+`docker compose up`, or use the the alias `yarn docker start`, which does some
 more useful stuff as well. The `yarn docker` commands are provided by
 `docker/package.json`.
 
@@ -63,11 +63,11 @@ $ psql "postgres://$DATABASE_OWNER:$DATABASE_OWNER_PASSWORD@localhost:6543/$DATA
 
 ```sh
 # make sure everything is ready to start and no ports are blocked
-$ docker-compose down
+$ docker compose down
 # start dev (and linked db) service in detached mode (so we can continue typing)
-$ docker-compose up -d dev
+$ docker compose up -d dev
 # attach to dev container shell
-$ docker-compose exec dev bash
+$ docker compose exec dev bash
 # commit migration from inside container
 @dev $ yarn db commit
 # develop on client with hot reloading
@@ -185,5 +185,5 @@ including all your `ssh` creds.
 
 ## Troubleshooting
 
-If you run `docker-compose run server` (rather than `docker-compose up server`)
+If you run `docker compose run server` (rather than `docker compose up server`)
 the ports won't be exposed, so you cannot view your server.
