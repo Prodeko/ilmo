@@ -1,12 +1,12 @@
+import { CookieSerializeOptions } from "@fastify/cookie"
+import fastifySecureSession from "@fastify/secure-session"
 import {
   FastifyInstance,
   FastifyPluginAsync,
   FastifyReply,
   FastifyRequest,
 } from "fastify"
-import { CookieSerializeOptions } from "fastify-cookie"
 import fp from "fastify-plugin"
-import fastifySecureSession from "fastify-secure-session"
 
 const { SECRET, NODE_ENV } = process.env
 if (!SECRET) {
@@ -33,8 +33,8 @@ export function handleSessionCookie(
    * the normal Fastify request-reply cycle. Instead, we use a handler provided by nextApp.getRequestHandler()
    * (defined in installSSR.ts) and then indicate that a reply has been sent by setting reply.sent = true.
    * This means that additional hooks such as 'onSend' will not be invoked (https://www.fastify.io/docs/v1.13.x/Reply/#sent).
-   * Specifically the hook from fastify-secure-session, which would use the Set-Cookie header to set a
-   * session cookie in the reply is not run (https://github.com/fastify/fastify-secure-session/blob/master/index.js#L153)
+   * Specifically the hook from @fastify/secure-session, which would use the Set-Cookie header to set a
+   * session cookie in the reply is not run (https://github.com/fastify/fastify-secure-session/blob/master/index.js#L181)
    * Thus we have to manually set the session cookie in the response. The cookie will be read in
    * @app/lib/withUrql.ts and used to protect against CSRF attacks using the Double Submit Cookie pattern:
    * https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie)

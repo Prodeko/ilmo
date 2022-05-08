@@ -1,5 +1,5 @@
+import fastifyPassport, { Strategy } from "@fastify/passport"
 import { FastifyInstance, FastifyRequest, preHandlerHookHandler } from "fastify"
-import fastifyPassport, { Strategy } from "fastify-passport"
 import { Pool } from "pg"
 
 interface DbSession {
@@ -27,7 +27,7 @@ type GetUserInformationFunction = (
   req: FastifyRequest
 ) => UserSpec | Promise<UserSpec>
 
-declare module "fastify-secure-session" {
+declare module "@fastify/secure-session" {
   interface Session {
     returnTo?: string
   }

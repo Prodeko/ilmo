@@ -338,7 +338,7 @@ export function sanitize(json: any): any {
 // Contains the PostGraphile schema and rootPgPool
 interface ICtx {
   rootPgPool: Pool
-  redisClient: Redis.Redis
+  redisClient: Redis
   workerUtils: WorkerUtils
   options: PostGraphileOptions<IncomingMessage, ServerResponse>
   schema: GraphQLSchema
@@ -401,7 +401,7 @@ export const runGraphQLQuery = async (
     result: ExecutionResult,
     context: {
       pgClient: PoolClient
-      redisClient: Redis.Redis
+      redisClient: Redis
       req: any
     }
   ) => void | ExecutionResult | Promise<void | ExecutionResult> = () => {}, // Place test assertions in this function

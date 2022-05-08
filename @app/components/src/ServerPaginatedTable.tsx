@@ -186,7 +186,6 @@ export function ServerPaginatedTable({
         dataSource={dataSource}
         loading={fetching && { indicator: <Loading /> }}
         pagination={showPagination && pagination}
-        // @ts-ignore
         rowKey={(obj) => obj.id}
         scroll={{ x: 100 }}
         size={size ?? isMobile ? "small" : "middle"}

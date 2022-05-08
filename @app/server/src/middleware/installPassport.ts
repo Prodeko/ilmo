@@ -1,5 +1,5 @@
+import fastifyPassport from "@fastify/passport"
 import { FastifyPluginAsync } from "fastify"
-import fastifyPassport from "fastify-passport"
 import fp from "fastify-plugin"
 import got from "got"
 import { Strategy as Oauth2Strategy } from "passport-oauth2"

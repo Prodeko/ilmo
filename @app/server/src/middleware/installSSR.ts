@@ -1,11 +1,11 @@
+import path from "path"
 import { parse } from "url"
 
+import fastifyNextjs from "@fastify/nextjs"
 import { FastifyPluginAsync } from "fastify"
-import fastifyNextjs from "fastify-nextjs"
 import fp from "fastify-plugin"
 
-const { NODE_ENV } = process.env || {}
-const isDev = NODE_ENV === "development"
+const isDev = process.env.NODE_ENV === "development"
 
 /**
  * The order of execution in this plugin is very important. For example,
@@ -13,13 +13,14 @@ const isDev = NODE_ENV === "development"
  * be called before fastify.next, since under the hood that function copies
  * the headers from reply to reply.raw. reply.generateCsrf() must be called
  * before handleSessionCookie because it sets the csrf token into request.session.
- * Then handleSessionCookie (which is adapted from fastify-secure-session internal code)
- * sets the Set-Cookie header and fastify.next (which calls code from fastify-nextjs)
+ * Then handleSessionCookie (which is adapted from @fastify/secure-session internal code)
+ * sets the Set-Cookie header and fastify.next (which calls code from @fastify/nextjs)
  * copies the headers from reply to reply.raw which is then sent off to the client.
  * A CSRF token which changes every request is sent to the client that must be
  * included in the CSRF-Token header when using POST (mainly to /graphql).
  */
 const SSR: FastifyPluginAsync = async (fastify) => {
+  console.log(path.resolve(`${__dirname}/../../../client`))
   fastify
     .register(fastifyNextjs, {
       underPressure: isDev
@@ -34,7 +35,8 @@ const SSR: FastifyPluginAsync = async (fastify) => {
             retryAfter: 30,
           },
       dev: isDev,
-      dir: `${__dirname}/../../../client`,
+      customServer: true,
+      dir: path.resolve(`${__dirname}/../../../client`),
     })
     .after(() => {
       fastify.next("/*", async (app, req, reply) => {
