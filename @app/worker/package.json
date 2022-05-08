@@ -13,13 +13,13 @@
   "dependencies": {
     "@app/config": "workspace:*",
     "@app/lib": "workspace:*",
-    "chalk": "^5.0.0",
-    "dayjs": "^1.10.8",
-    "graphile-worker": "^0.12.2",
-    "html-to-text": "^8.1.0",
-    "ioredis": "^4.28.5",
+    "chalk": "^5.0.1",
+    "dayjs": "^1.11.2",
+    "graphile-worker": "^0.13.0",
+    "html-to-text": "^8.2.0",
+    "ioredis": "^5.0.4",
     "mjml": "^4.12.0",
-    "nodemailer": "^6.7.2",
+    "nodemailer": "^6.7.5",
     "nunjucks": "^3.2.3"
   },
   "devDependencies": {

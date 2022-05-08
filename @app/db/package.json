@@ -16,13 +16,13 @@
     "depcheck": "depcheck --ignores=\"dayjs\""
   },
   "dependencies": {
-    "graphile-migrate": "^1.2.0"
+    "graphile-migrate": "^1.3.0"
   },
   "devDependencies": {
     "@app/graphql": "workspace:*",
-    "@types/pg": "8.6.4",
+    "@types/pg": "8.6.5",
     "faker": "^6.6.6",
-    "jest": "^27.5.1",
+    "jest": "^28.1.0",
     "lodash": "^4.17.21",
     "pg": "^8.7.3"
   }
