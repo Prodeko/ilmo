@@ -127,13 +127,6 @@ const nextConfig = () =>
         )
       }
 
-      // remove once https://github.com/react-dnd/react-dnd/issues/3416 is fixed
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "react/jsx-runtime.js": "react/jsx-runtime",
-        "react/jsx-dev-runtime.js": "react/jsx-dev-runtime",
-      }
-
       const nextConf = {
         ...config,
         plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],

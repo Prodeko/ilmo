@@ -27,12 +27,6 @@ type GetUserInformationFunction = (
   req: FastifyRequest
 ) => UserSpec | Promise<UserSpec>
 
-declare module "@fastify/secure-session" {
-  interface Session {
-    returnTo?: string
-  }
-}
-
 /*
  * Stores where to redirect the user to on authentication success.
  * Tries to avoid redirect loops or malicious redirects.

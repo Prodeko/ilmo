@@ -9,7 +9,7 @@ import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
 import { WorkerUtils } from "graphile-worker"
-import { Redis } from "ioredis"
+import { FastifyRedis } from "@fastify/redis"
 import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {
@@ -48,7 +48,7 @@ export interface OurGraphQLContext {
   sessionId: string | null
   ipAddress: string
   rootPgPool: Pool
-  redisClient: Redis
+  redisClient: FastifyRedis
   workerUtils: WorkerUtils
   login(user: any): Promise<void>
   logout(): Promise<void>
@@ -108,7 +108,7 @@ interface PostGraphileOptionsOptions {
   app?: FastifyInstance
   websocketMiddlewares?: Middleware[]
   rootPgPool: Pool
-  redisClient?: Redis
+  redisClient?: FastifyRedis
   workerUtils?: WorkerUtils
 }
 
