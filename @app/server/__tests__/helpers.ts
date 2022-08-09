@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http"
 
 import { QuestionType } from "@app/graphql"
+import { FastifyRedis } from "@fastify/redis"
 import { makeWorkerUtils, WorkerUtils } from "graphile-worker"
 import {
   DocumentNode,
@@ -33,7 +34,6 @@ import {
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
-import { FastifyRedis } from "@fastify/redis"
 
 export * from "../../__tests__/helpers"
 

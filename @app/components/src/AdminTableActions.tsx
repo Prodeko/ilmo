@@ -16,9 +16,9 @@ interface AdminTableActionsProps {
   bannerErrorText?: string
   dataType: Event | EventCategory | User
   deleteMutation:
-  | typeof useDeleteEventMutation
-  | typeof useDeleteEventCategoryMutation
-  | typeof useAdminDeleteUserMutation
+    | typeof useDeleteEventMutation
+    | typeof useDeleteEventCategoryMutation
+    | typeof useAdminDeleteUserMutation
   deleteConfirmTranslate: string
   showUpdateButton?: boolean
 }
@@ -29,7 +29,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   dataType,
   deleteMutation,
   deleteConfirmTranslate,
-  showUpdateButton = true
+  showUpdateButton = true,
 }) => {
   const { t } = useTranslation("admin")
   const [, deleteDataType] = deleteMutation()
@@ -50,7 +50,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   return (
     <>
       <Row gutter={[8, 8]} wrap>
-        {showUpdateButton &&
+        {showUpdateButton && (
           <Col flex="none">
             <ButtonLink
               as={`/admin/${adminUrl}/update/${dataType.id}`}
@@ -62,7 +62,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
               {t("common:update")}
             </ButtonLink>
           </Col>
-        }
+        )}
         <Col flex="auto">
           <Popconfirm
             cancelText={t("common:no")}
