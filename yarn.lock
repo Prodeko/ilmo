@@ -256,6 +256,7 @@ __metadata:
     faker: ^6.6.6
     fastify: ^4.4.0
     fastify-next: ^0.1.4
+    fastify-plugin: ^4.1.0
     got: ^12.3.1
     graphile-build: ^4.12.3
     graphile-build-pg: ^4.12.3
@@ -6857,14 +6858,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:8.6.4":
-  version: 8.6.4
-  resolution: "@types/pg@npm:8.6.4"
+"@types/pg@npm:8.6.5, @types/pg@npm:>=6 <9":
+  version: 8.6.5
+  resolution: "@types/pg@npm:8.6.5"
   dependencies:
     "@types/node": "*"
     pg-protocol: "*"
     pg-types: ^2.2.0
-  checksum: cebc40d6f034ff5651a8415e38aeacf86925d6a7eebfd3d20a7db9e7935b0a376a81ecdfffcbeb54425344ecc9a5a8886955bcbb3501226521209900d7a57aef
+  checksum: 49ef858d95e84a6c1be193d367996581c991cf383d8628449507cc4ce67ef43b75acb18a0f9f49f870594cdec3501ddf4d2ac3fbe0dcdaab35c295c038d47199
   languageName: node
   linkType: hard
 
@@ -12437,7 +12438,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-plugin@npm:^4.0.0":
+"fastify-plugin@npm:^4.0.0, fastify-plugin@npm:^4.1.0":
   version: 4.1.0
   resolution: "fastify-plugin@npm:4.1.0"
   checksum: 98d4041c3dc51e1146d74cc76c68d8074d4fbedc8f1094de1f4e54fc9b4a7600e64431e3937be9412f25397b7d0a7ee66be55d2e6c292b67782a5f0c40bea970
@@ -13037,7 +13038,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-stream@npm:^6.0.0":
+"get-stream@npm:^6.0.0, get-stream@npm:^6.0.1":
   version: 6.0.1
   resolution: "get-stream@npm:6.0.1"
   checksum: e04ecece32c92eebf5b8c940f51468cd53554dcbb0ea725b2748be583c9523d00128137966afce410b9b051eb2ef16d657cd2b120ca8edafcf5a65e81af63cad
@@ -17966,14 +17967,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"neat-csv@npm:6.0.1":
-  version: 6.0.1
-  resolution: "neat-csv@npm:6.0.1"
+"neat-csv@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "neat-csv@npm:7.0.0"
   dependencies:
     csv-parser: ^3.0.0
-    get-stream: ^6.0.0
-    to-readable-stream: ^2.1.0
-  checksum: 19f6a13f8493f2faf262095800f196f30352fed65e3162d781d1855ca00769ca9192bb8bd78fbd10bf72da25165c77413fc25807d18b64ae15e45bd5b3adef5c
+    get-stream: ^6.0.1
+  checksum: 5ac76697442cdd019e251944eec8c69964a397d4f9fc9b1c9144ddedd13917865fbc423f7b0bf09d29abe0d7d4d015e4ea75907b3c3fe5e4d1a9ede22fb9bff2
   languageName: node
   linkType: hard
 
@@ -21277,17 +21277,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-upload@npm:3.x":
-  version: 3.3.4
-  resolution: "rc-upload@npm:3.3.4"
+"rc-upload@npm:~4.3.0":
+  version: 4.3.4
+  resolution: "rc-upload@npm:4.3.4"
   dependencies:
-    "@babel/runtime": ^7.10.1
+    "@babel/runtime": ^7.18.3
     classnames: ^2.2.5
     rc-util: ^5.2.0
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 416c573c29bf1ae8f5f396de3dbdaa5cf4fa7c83e71e810fd2fcd9dde309447d6858c150cef44e5654adbd6a430f3e73134abae4447a0b9d9c09eaa5be32e53e
+  checksum: 59ddf31a58ce716d1ace506b1c3e36744895c24c683a17185517dab68dfbb1cf158f57ce14a8f0899e85b2924bfa0d82587771939225ea21a41b907f91779afa
   languageName: node
   linkType: hard
 
@@ -23845,13 +23845,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"to-readable-stream@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "to-readable-stream@npm:2.1.0"
-  checksum: 42039fb968a56af99a7201fe01debb0bc55a585a2ab0b1746e322c339c50f91043b1269cedcc6350d2a5f81ceaa6cff7960704f748a59542d1f2c50aca5ea7b9
-  languageName: node
-  linkType: hard
-
 "to-regex-range@npm:^5.0.1":
   version: 5.0.1
   resolution: "to-regex-range@npm:5.0.1"
@@ -24324,11 +24317,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.7.4#~builtin<compat/typescript>":
   version: 4.7.4
-  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=bda367"
+  resolution: "typescript@patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=f456af"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 96d3030cb01143570567cb4f3a616b10df65f658f0e74e853e77a089a6a954e35c800be7db8b9bfe9a1ae05d9c2897e281359f65e4caa1caf266368e1c4febd3
+  checksum: 9096d8f6c16cb80ef3bf96fcbbd055bf1c4a43bd14f3b7be45a9fbe7ada46ec977f604d5feed3263b4f2aa7d4c7477ce5f9cd87de0d6feedec69a983f3a4f93e
   languageName: node
   linkType: hard
 
