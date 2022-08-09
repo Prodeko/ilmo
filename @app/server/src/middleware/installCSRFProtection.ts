@@ -1,5 +1,5 @@
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fastifyCSRF from "@fastify/csrf-protection"
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 
 import {

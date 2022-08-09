@@ -1,5 +1,6 @@
 import { IncomingMessage } from "http"
 
+import { FastifyRedis } from "@fastify/redis"
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
 import PgSubscriptionsLds from "@graphile/subscriptions-lds"
@@ -9,7 +10,6 @@ import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
 import { WorkerUtils } from "graphile-worker"
-import { FastifyRedis } from "@fastify/redis"
 import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {

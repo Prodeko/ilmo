@@ -1,8 +1,8 @@
 import path from "path"
 
+import { FastifyPluginAsync } from "fastify"
 // TODO: Switch to @fastify/nextjs once it supports fastify v4
 import FastifyNext from "fastify-next"
-import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 
 const SSR: FastifyPluginAsync = async (fastify) => {
