@@ -16,10 +16,11 @@ interface AdminTableActionsProps {
   bannerErrorText?: string
   dataType: Event | EventCategory | User
   deleteMutation:
-    | typeof useDeleteEventMutation
-    | typeof useDeleteEventCategoryMutation
-    | typeof useAdminDeleteUserMutation
+  | typeof useDeleteEventMutation
+  | typeof useDeleteEventCategoryMutation
+  | typeof useAdminDeleteUserMutation
   deleteConfirmTranslate: string
+  showUpdateButton?: boolean
 }
 
 export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
@@ -28,6 +29,7 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   dataType,
   deleteMutation,
   deleteConfirmTranslate,
+  showUpdateButton = true
 }) => {
   const { t } = useTranslation("admin")
   const [, deleteDataType] = deleteMutation()
@@ -48,17 +50,19 @@ export const AdminTableActions: React.FC<AdminTableActionsProps> = ({
   return (
     <>
       <Row gutter={[8, 8]} wrap>
-        <Col flex="none">
-          <ButtonLink
-            as={`/admin/${adminUrl}/update/${dataType.id}`}
-            href={`/admin/${adminUrl}/update/[id]`}
-            size="small"
-            style={{ width: "65px" }}
-            type="primary"
-          >
-            {t("common:update")}
-          </ButtonLink>
-        </Col>
+        {showUpdateButton &&
+          <Col flex="none">
+            <ButtonLink
+              as={`/admin/${adminUrl}/update/${dataType.id}`}
+              href={`/admin/${adminUrl}/update/[id]`}
+              size="small"
+              style={{ width: "65px" }}
+              type="primary"
+            >
+              {t("common:update")}
+            </ButtonLink>
+          </Col>
+        }
         <Col flex="auto">
           <Popconfirm
             cancelText={t("common:no")}

@@ -1,21 +1,15 @@
 #!/usr/bin/env node
 
-import path from "node:path"
-
 import chalkPipe from "chalk-pipe"
 import dotenv from "dotenv"
 import inquirer from "inquirer"
 import pg from "pg"
-
-const DEFAULT_AVATAR_URL =
-  "https://static.prodeko.org/media/public/2020/07/07/anonymous_prodeko.jpg"
-
-function dirname(meta) {
-  return new URL(".", meta.url).pathname
-}
+import { dirname } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)
 const isProd = process.env.NODE_ENV === "production"
+const DEFAULT_AVATAR_URL =
+  "https://static.prodeko.org/media/public/2020/07/07/anonymous_prodeko.jpg"
 
 const manageActions = {
   type: "list",
@@ -29,7 +23,7 @@ let pgPool, client
 async function setupDb() {
   if (!isProd) {
     dotenv.config({ path: `${__dirname}/../.env` })
-    await import(path.resolve(`${__dirname}/../@app/config/extra.js`))
+    await import("@app/config/extra.js")
   }
   pgPool = new pg.Pool({
     connectionString: process.env.DATABASE_URL,

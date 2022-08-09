@@ -10,19 +10,19 @@
     "uncommit": "yarn gm uncommit",
     "reset": "yarn gm reset",
     "dump": "yarn gm migrate && yarn gm reset --shadow --erase && yarn gm migrate --shadow --forceActions",
-    "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env\" yarn jest",
-    "create-fake-data": "ts-node -r @app/config/env scripts/create-fake-data.ts",
-    "clean-fake-data": "ts-node -r @app/config/env scripts/clean-fake-data.ts",
+    "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env.js\" yarn jest",
+    "create-fake-data": "ts-node -r @app/config/env.js scripts/create-fake-data.ts",
+    "clean-fake-data": "ts-node -r @app/config/env.js scripts/clean-fake-data.ts",
     "depcheck": "depcheck --ignores=\"dayjs\""
   },
   "dependencies": {
-    "graphile-migrate": "^1.3.0"
+    "graphile-migrate": "^1.4.0"
   },
   "devDependencies": {
     "@app/graphql": "workspace:*",
     "@types/pg": "8.6.5",
     "faker": "^6.6.6",
-    "jest": "^28.1.0",
+    "jest": "^28.1.3",
     "lodash": "^4.17.21",
     "pg": "^8.7.3"
   }

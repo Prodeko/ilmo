@@ -33,6 +33,7 @@ import {
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
+import { FastifyRedis } from "@fastify/redis"
 
 export * from "../../__tests__/helpers"
 
@@ -338,7 +339,7 @@ export function sanitize(json: any): any {
 // Contains the PostGraphile schema and rootPgPool
 interface ICtx {
   rootPgPool: Pool
-  redisClient: Redis
+  redisClient: FastifyRedis
   workerUtils: WorkerUtils
   options: PostGraphileOptions<IncomingMessage, ServerResponse>
   schema: GraphQLSchema
@@ -349,7 +350,9 @@ export const setup = async () => {
   const rootPgPool = new Pool({
     connectionString: TEST_DATABASE_URL,
   })
-  const redisClient = new Redis(process.env.TEST_REDIS_URL)
+  const redisClient = new Redis(
+    process.env.TEST_REDIS_URL
+  ) as unknown as FastifyRedis
   const workerUtils = await makeWorkerUtils({
     connectionString: TEST_DATABASE_URL,
   })
