@@ -3,7 +3,6 @@
     "composite": true,
     "incremental": true,
     "noEmitOnError": true,
-
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -25,11 +24,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "useUnknownInCatchVariables": false,
-
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
-
     "noEmit": true,
     "declaration": true,
     "declarationMap": true,
@@ -41,11 +38,23 @@
   "include": [],
   "exclude": ["@app/e2e"],
   "references": [
-    { "path": "@app/config" },
-    { "path": "@app/components" },
-    { "path": "@app/graphql" },
-    { "path": "@app/lib" },
-    { "path": "@app/server" },
-    { "path": "@app/worker" }
+    {
+      "path": "@app/config"
+    },
+    {
+      "path": "@app/components"
+    },
+    {
+      "path": "@app/graphql"
+    },
+    {
+      "path": "@app/lib"
+    },
+    {
+      "path": "@app/server"
+    },
+    {
+      "path": "@app/worker"
+    }
   ]
 }
