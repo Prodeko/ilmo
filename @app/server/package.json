@@ -38,6 +38,7 @@
     "date-fns-tz": "^1.3.6",
     "fastify": "^4.4.0",
     "fastify-next": "^0.1.4",
+    "fastify-plugin": "^4.1.0",
     "got": "^12.3.1",
     "graphile-build": "^4.12.3",
     "graphile-build-pg": "^4.12.3",

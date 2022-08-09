@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env.js\" next build",
-    "depcheck": "depcheck --ignores=\"less,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-plugin-antd-less,next-transpile-modules\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"less,less-loader,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-plugin-antd-less,next-transpile-modules\" --ignore-patterns=.next"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
