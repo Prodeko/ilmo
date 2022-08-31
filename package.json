@@ -110,7 +110,8 @@
     "faker": "5.5.3",
     "chalk": "4.1.2",
     "antd-dayjs-webpack-plugin": "github:Chastrlove/antd-dayjs-webpack-plugin",
-    "got": "11.x"
+    "got": "11.x",
+    "dayjs": "1.11.4"
   },
   "workspaces": {
     "packages": [
