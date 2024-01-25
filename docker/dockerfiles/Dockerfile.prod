@@ -47,8 +47,7 @@ COPY data/ /app/data/
 # Finally run the build script
 # See https://andrei-calazans.com/posts/2021-06-23/passing-secrets-github-actions-docker
 # for explanation of the --mount's
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-  --mount=type=secret,id=GITHUB_SHA \
+RUN --mount=type=secret,id=GITHUB_SHA \
    export GITHUB_SHA=$(cat /run/secrets/GITHUB_SHA) && \
    NEXT_TRANSLATE_PATH=../client yarn build
 
