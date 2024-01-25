@@ -49,7 +49,6 @@ COPY data/ /app/data/
 # for explanation of the --mount's
 RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
   --mount=type=secret,id=GITHUB_SHA \
-   export SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) && \
    export GITHUB_SHA=$(cat /run/secrets/GITHUB_SHA) && \
    NEXT_TRANSLATE_PATH=../client yarn build
 
