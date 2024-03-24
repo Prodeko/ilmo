@@ -21,6 +21,7 @@
     "next-plugin-antd-less": "^1.8.0",
     "next-translate": "^1.5.0",
     "next-transpile-modules": "^9.0.0",
+    "pg": "^8.11.3",
     "rc-table": "^7.26.0",
     "react": "^18.2.0",
     "react-color-palette": "^6.2.0",
@@ -39,5 +40,12 @@
     "budget": 460800,
     "budgetPercentIncreaseRed": 20,
     "showDetails": true
-  }
+  },
+  "description": "This is the React frontend of our application, built with [Next.js](https://nextjs.org/). Next.js uses the [file-system as the main API](https://nextjs.org/docs#manual-setup) ─ files inside the [src/pages](./src/pages) folder automatically turn into routes of the same name, for example the route `/login` is provided by [src/pages/login.tsx](src/pages/login.tsx).",
+  "main": "i18n.js",
+  "directories": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC"
 }
