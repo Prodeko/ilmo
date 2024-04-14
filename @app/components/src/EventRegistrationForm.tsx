@@ -237,6 +237,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         colon={false}
         form={form}
         initialValues={initialValues}
+        layout={"vertical"}
         onFinish={handleSubmit}
       >
         <Form.Item

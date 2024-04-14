@@ -23,14 +23,13 @@ export const tailFormItemLayout = {
   },
 }
 
-// Use narrower form items for the registration form
 export const registrationFormItemLayout = {
   labelCol: {
-    xs: { span: 24 },
-    sm: { span: 6 },
+    xs: { offset: 0, span: 24 },
+    sm: { offset: 6, span: 18 },
   },
   wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 12 },
+    xs: { offset: 0, span: 24 },
+    sm: { offset: 6, span: 18 },
   },
 }
