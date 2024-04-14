@@ -45,7 +45,7 @@
     "@emotion-icons/material": "^3.14.0",
     "abort-controller": "^3.0.0",
     "core-js": "^3.24.1",
-    "nx": "14.5.4",
+    "nx": "18.2.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-is": "18.0.0",
