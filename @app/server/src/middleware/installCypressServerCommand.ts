@@ -11,7 +11,7 @@ import {
   User,
 } from "@app/graphql"
 import { RegistrationSecret, Session } from "@app/lib"
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
 import {
   FastifyPluginAsync,
