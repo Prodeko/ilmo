@@ -151,6 +151,11 @@ module.exports = {
         "react/jsx-filename-extension": [1, { extensions: [".ts", ".tsx"] }],
         "react/no-unescaped-entities": 0,
 
+        // React rules for legacy class components
+        "react/no-direct-mutation-state": 0,
+        "react/no-string-refs": 0,
+        "react/require-render-return": 0,
+
         "import/no-extraneous-dependencies": 0,
         "react/destructuring-assignment": 0,
 

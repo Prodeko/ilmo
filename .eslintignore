@@ -1,5 +1,8 @@
-node_modules
+.yarn/**
+.nx/**
+**/node_modules
 **/dist
+**/.next
 /data/schema.graphql
 /data/schema.sql
 /@app/graphql/index.*
