@@ -295,7 +295,7 @@
       "version": "15.3.0-beta.0",
       "description": "Update projects using @nx/web:rollup to @nrwl/rollup:rollup for build.",
       "factory": "./src/migrations/update-15-3-0/update-rollup-executor",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "update-rollup-executor"
     },
     {
@@ -303,7 +303,7 @@
       "version": "15.3.0-beta.0",
       "description": "Install new dependencies for React projects using Webpack or Rollup.",
       "factory": "./src/migrations/update-15-3-0/install-webpack-rollup-dependencies",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "install-webpack-rollup-dependencies"
     },
     {
@@ -311,15 +311,15 @@
       "version": "15.6.3-beta.0",
       "description": "Creates or updates webpack.config.js file with the new options for webpack.",
       "factory": "./src/migrations/update-15-6-3/webpack-config-setup",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "react-webpack-config-setup"
     },
     {
       "cli": "nx",
       "version": "16.0.0-beta.1",
-      "description": "Replace @nrwl/react with @nx/react",
+      "description": "Replace @nx/react with @nx/react",
       "implementation": "./src/migrations/update-16-0-0-add-nx-packages/update-16-0-0-add-nx-packages",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "update-16-0-0-add-nx-packages"
     },
     {
@@ -327,7 +327,7 @@
       "version": "16.2.0-beta.0",
       "description": "Remove react-test-renderer from package.json",
       "implementation": "./src/migrations/update-16-2-0-remove-package/update-16-2-0-remove-package",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "update-16-2-0-remove-package"
     },
     {
@@ -335,7 +335,7 @@
       "version": "16.3.0-beta.2",
       "description": "Remove @types/react-router-dom from package.json",
       "implementation": "./src/migrations/update-16-3-0/remove-types-react-router-dom-package",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "remove-types-react-router-dom"
     },
     {
@@ -343,7 +343,7 @@
       "version": "16.7.0-beta.2",
       "description": "Add @babel/core to package.json if @babel/preset-react is present",
       "implementation": "./src/migrations/update-16-7-0/add-babel-core",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "add-babel-core"
     },
     {
@@ -351,7 +351,7 @@
       "version": "16.7.0-beta.2",
       "description": "Add @nx/react types to tsconfig types array",
       "implementation": "./src/migrations/update-16-7-0-add-typings/update-16-7-0-add-typings",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "update-16-7-0-add-typings"
     },
     {
@@ -359,7 +359,7 @@
       "version": "18.0.0-beta.0",
       "description": "Add NX_MF_DEV_SERVER_STATIC_REMOTES to inputs for task hashing when '@nx/webpack:webpack' is used for Module Federation.",
       "factory": "./src/migrations/update-18-0-0/add-mf-env-var-to-target-defaults",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "add-module-federation-env-var-to-target-defaults"
     },
     {
@@ -367,7 +367,7 @@
       "version": "18.1.1-beta.0",
       "description": "Ensure targetDefaults inputs for task hashing when '@nx/webpack:webpack' is used are correct for Module Federation.",
       "factory": "./src/migrations/update-18-1-1/fix-target-defaults-inputs",
-      "package": "@nrwl/react",
+      "package": "@nx/react",
       "name": "fix-target-defaults-for-webpack"
     },
     {
