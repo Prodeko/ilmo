@@ -11,8 +11,8 @@ import {
   User,
 } from "@app/graphql"
 import { RegistrationSecret, Session } from "@app/lib"
+import { faker } from '@faker-js/faker';
 import dayjs from "dayjs"
-import faker from "faker"
 import {
   FastifyPluginAsync,
   FastifyReply,
@@ -702,7 +702,7 @@ export const createRegistrationSecrets = async (
 export const constructAnswersFromQuestions = (questions: any[]) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
-  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const chosenLanguage = faker.helpers.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === "TEXT") {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`

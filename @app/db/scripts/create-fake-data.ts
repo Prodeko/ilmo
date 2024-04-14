@@ -1,4 +1,4 @@
-import faker from "faker"
+import { faker } from '@faker-js/faker';
 import { random, sample } from "lodash"
 import { Pool, PoolClient } from "pg"
 
