@@ -14827,7 +14827,6 @@ __metadata:
     "@nx/react": "npm:18.2.4"
     "@nx/web": "npm:18.2.4"
     "@nx/workspace": "npm:18.2.4"
-    "@types/faker": "npm:^6.6.9"
     "@types/jest": "npm:29.4.4"
     "@types/react": "npm:18.2.24"
     "@types/react-dom": "npm:18.2.9"
