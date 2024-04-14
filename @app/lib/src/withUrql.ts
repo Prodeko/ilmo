@@ -8,7 +8,6 @@ import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
 import { createClient } from "graphql-ws"
 import { withUrqlClient } from "next-urql"
 import {
-  dedupExchange,
   errorExchange,
   Exchange,
   subscriptionExchange,
@@ -17,9 +16,9 @@ import {
 import { getSessionAndCSRFToken } from "."
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
+import type { SSRExchange } from "@urql/core"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import type { Client } from "graphql-ws"
-import type { SSRExchange } from "next-urql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -75,7 +74,6 @@ export const withUrql = withUrqlClient(
       },
       exchanges: [
         isDev && devtoolsExchange,
-        dedupExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
           updates: {
@@ -186,14 +184,18 @@ export const withUrql = withUrqlClient(
           },
         }),
         subscriptionExchange({
-          forwardSubscription: (operation) => ({
-            subscribe: (sink) => ({
-              unsubscribe: wsClient!.subscribe(operation, sink),
-            }),
-          }),
+          forwardSubscription(request) {
+            const input = { ...request, query: request.query || '' };
+            return {
+              subscribe(sink) {
+                const unsubscribe = wsClient!.subscribe(input, sink);
+                return { unsubscribe };
+              },
+            };
+          },
         }),
         errorExchange({
-          onError(_error) {},
+          onError(_error) { },
         }),
         multipartFetchExchange,
       ].filter(Boolean) as Exchange[],
