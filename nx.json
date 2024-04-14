@@ -4,14 +4,8 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": [
-          "build",
-          "test",
-          "lint"
-        ],
-        "runtimeCacheInputs": [
-          "node -v"
-        ]
+        "cacheableOperations": ["build", "test", "lint"],
+        "runtimeCacheInputs": ["node -v"]
       }
     }
   },
@@ -21,23 +15,16 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     }
   },
   "namedInputs": {
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "sharedGlobals": [
       "{workspaceRoot}/workspace.json",
       "{workspaceRoot}/tsconfig.json",
       "{workspaceRoot}/nx.json"
     ],
-    "production": [
-      "default"
-    ]
+    "production": ["default", "!{projectRoot}/src/test-setup.[jt]s"]
   }
 }
