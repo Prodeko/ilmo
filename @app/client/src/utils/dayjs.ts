@@ -1,7 +1,7 @@
+import { Locale } from "antd/lib/locale"
 import enUS from "antd/lib/locale/en_US"
 import fiFI from "antd/lib/locale/fi_FI"
 import svSE from "antd/lib/locale/sv_SE"
-import { Locale } from "antd/lib/locale-provider"
 import dayjs from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"

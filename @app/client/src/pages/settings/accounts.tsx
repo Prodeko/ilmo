@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   ErrorAlert,
   LoadingPadded,
@@ -14,7 +15,7 @@ import {
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
-import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd"
+import { Avatar, Card, List, Modal, Spin } from "antd"
 import { Translate } from "next-translate"
 
 import type { NextPage } from "next"
@@ -41,7 +42,7 @@ function authAvatar(service: string) {
         icon={icon}
         size="large"
         style={{
-          backgroundColor: "var(--primary-color)",
+          backgroundColor: "#002e7d",
           verticalAlign: "sub",
         }}
       />
@@ -74,8 +75,8 @@ function UnlinkAccountButton({ id }: { id: string }) {
   return (
     <>
       <Modal
+        open={modalOpen}
         title="Are you sure?"
-        visible={modalOpen}
         onCancel={handleCloseModal}
         onOk={handleUnlink}
       >

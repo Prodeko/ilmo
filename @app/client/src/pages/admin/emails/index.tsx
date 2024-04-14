@@ -1,7 +1,8 @@
 import { useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import { AdminLayout, ErrorResult, useTranslation } from "@app/components"
 import { useRenderEmailTemplatesQuery, useSharedQuery } from "@app/graphql"
-import { Card, Col, PageHeader, Row, Switch, Typography } from "antd"
+import { Card, Col, Row, Switch, Typography } from "antd"
 import capitalize from "lodash/capitalize"
 
 import type { NextPage } from "next"
