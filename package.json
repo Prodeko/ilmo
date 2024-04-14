@@ -92,6 +92,8 @@
     "inquirer": "^9.1.0",
     "jest": "27.5.1",
     "json-sort-cli": "^2.0.15",
+    "node-addon-api": "^8.0.0",
+    "node-gyp": "^10.1.0",
     "nodemon": "^2.0.19",
     "npm-check-updates": "^16.0.5",
     "nx": "14.5.4",
