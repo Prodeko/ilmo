@@ -172,7 +172,7 @@
       "version": "15.0.0-beta.0",
       "description": "Adds babel.config.json to the hash of all tasks",
       "factory": "./src/migrations/update-15-0-0/add-babel-inputs",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "add-babel-inputs"
     },
     {
@@ -180,15 +180,15 @@
       "version": "15.0.0-beta.1",
       "description": "Update usages of rollup executors to @nrwl/rollup",
       "factory": "./src/migrations/update-15-0-0/update-rollup-executor",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "update-rollup-executor"
     },
     {
       "cli": "nx",
       "version": "15.5.4-beta.0",
-      "description": "Update `@nrwl/web/babel` preset to `@nrwl/js/babel` for projects that have a .babelrc file.",
+      "description": "Update `@nx/web/babel` preset to `@nrwl/js/babel` for projects that have a .babelrc file.",
       "factory": "./src/migrations/update-15-5-4/update-babel-preset",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "update-babel-preset"
     },
     {
@@ -196,23 +196,23 @@
       "version": "15.9.1",
       "description": "Add @nrwl/linter, @nrwl/cypress, @nrwl/jest, @nrwl/rollup if they are used",
       "factory": "./src/migrations/update-15-9-1/add-dropped-dependencies",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "add-dropped-dependencies"
     },
     {
       "cli": "nx",
       "version": "16.0.0-beta.1",
-      "description": "Replace @nrwl/web with @nx/web",
+      "description": "Replace @nx/web with @nx/web",
       "implementation": "./src/migrations/update-16-0-0-add-nx-packages/update-16-0-0-add-nx-packages",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "update-16-0-0-add-nx-packages"
     },
     {
       "cli": "nx",
       "version": "16.0.0-beta.4",
-      "description": "Replace @nrwl/web executors with @nx/webpack and @nx/rollup",
+      "description": "Replace @nx/web executors with @nx/webpack and @nx/rollup",
       "implementation": "./src/migrations/update-16-0-0-update-executors/update-16-0-0-update-executors",
-      "package": "@nrwl/web",
+      "package": "@nx/web",
       "name": "update-16-0-0-update-executors"
     },
     {
@@ -293,7 +293,7 @@
     {
       "cli": "nx",
       "version": "15.3.0-beta.0",
-      "description": "Update projects using @nrwl/web:rollup to @nrwl/rollup:rollup for build.",
+      "description": "Update projects using @nx/web:rollup to @nrwl/rollup:rollup for build.",
       "factory": "./src/migrations/update-15-3-0/update-rollup-executor",
       "package": "@nrwl/react",
       "name": "update-rollup-executor"
