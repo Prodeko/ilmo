@@ -8,8 +8,8 @@ import {
   Registration,
 } from "@app/graphql"
 import { Session } from "@app/lib"
+import { faker } from '@faker-js/faker';
 import dayjs from "dayjs"
-import faker from "faker"
 import { PoolClient } from "pg"
 import slugify from "slugify"
 
@@ -394,7 +394,7 @@ export const constructAnswersFromQuestions = (
 ) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
-  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const chosenLanguage = faker.helpers.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === QuestionType.Text) {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
