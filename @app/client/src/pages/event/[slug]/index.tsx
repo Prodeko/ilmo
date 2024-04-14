@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   ButtonLink,
   EventDescription,
@@ -19,7 +20,7 @@ import {
   useEventPageSubscription,
   useSharedQuery,
 } from "@app/graphql"
-import { Col, Divider, message, notification, PageHeader, Row } from "antd"
+import { Col, Divider, message, notification, Row } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useRouter } from "next/router"

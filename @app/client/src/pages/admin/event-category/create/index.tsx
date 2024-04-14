@@ -1,6 +1,7 @@
+import { PageHeader } from "@ant-design/pro-layout"
 import { AdminLayout, EventCategoryForm, useTranslation } from "@app/components"
 import { useSharedQuery } from "@app/graphql"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import { useRouter } from "next/dist/client/router"
 
 import type { NextPage } from "next"

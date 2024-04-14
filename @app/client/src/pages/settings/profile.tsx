@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   ErrorAlert,
   Redirect,
@@ -11,7 +12,7 @@ import {
   useUpdateUserMutation,
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
-import { Alert, Button, Form, Input, PageHeader } from "antd"
+import { Alert, Button, Form, Input } from "antd"
 
 import type { NextPage } from "next"
 

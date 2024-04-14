@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   AdminLayout,
   ColorPicker,
@@ -17,7 +18,7 @@ import {
   primaryColor,
   tailFormItemLayout,
 } from "@app/lib"
-import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
+import { Button, Col, Form, Input, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
 import { useRouter } from "next/router"
 import slugify from "slugify"

@@ -1,3 +1,4 @@
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   AdminLayout,
   EventForm,
@@ -11,7 +12,7 @@ import {
   useUpdateEventPageQuery,
 } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import dayjs from "dayjs"
 import { useRouter } from "next/router"
 

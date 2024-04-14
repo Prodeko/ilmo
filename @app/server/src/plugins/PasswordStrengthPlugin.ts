@@ -1,17 +1,23 @@
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core"
-import zxcvbnCommonPackage from "@zxcvbn-ts/language-common"
-import zxcvbnEnPackage from "@zxcvbn-ts/language-en"
+import {
+  adjacencyGraphs,
+  dictionary as commonDictionary,
+} from "@zxcvbn-ts/language-common"
+import {
+  dictionary as enDictionary,
+  translations as enTranslations,
+} from "@zxcvbn-ts/language-en"
 import { makeExtendSchemaPlugin } from "graphile-utils"
 import { gql } from "postgraphile"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
 const options = {
-  translations: zxcvbnEnPackage.translations,
-  graphs: zxcvbnCommonPackage.adjacencyGraphs,
+  translations: enTranslations,
+  graphs: adjacencyGraphs,
   dictionary: {
-    ...zxcvbnCommonPackage.dictionary,
-    ...zxcvbnEnPackage.dictionary,
+    ...commonDictionary,
+    ...enDictionary,
   },
 }
 zxcvbnOptions.setOptions(options)

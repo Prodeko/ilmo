@@ -4,11 +4,12 @@ import { ConfigProvider } from "antd"
 import { AppProps } from "next/app"
 import { WithUrqlProps } from "next-urql"
 
+import theme from "../styles/themeConfig"
 import { setLocale } from "../utils/dayjs"
 
+import "react-color-palette/dist/css/rcp.css"
 import "../styles/fonts.css"
 import "nprogress/nprogress.css"
-import "react-color-palette/lib/css/styles.css"
 
 const Ilmo = (props: AppProps & WithUrqlProps) => {
   const { Component, pageProps, resetUrqlClient, router } = props
@@ -16,7 +17,7 @@ const Ilmo = (props: AppProps & WithUrqlProps) => {
 
   return (
     <IlmoContext.Provider value={{ resetUrqlClient }}>
-      <ConfigProvider locale={antdLocale}>
+      <ConfigProvider locale={antdLocale} theme={theme}>
         <TopProgressBar />
         <Head />
         <Component {...pageProps} resetUrqlClient={resetUrqlClient} />

@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env.js\" next build",
-    "depcheck": "depcheck --ignores=\"less,less-loader,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-plugin-antd-less,next-transpile-modules\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-transpile-modules\" --ignore-patterns=.next"
   },
   "dependencies": {
+    "@ant-design/cssinjs": "^1.19.1",
     "@ant-design/icons": "^5.3.6",
+    "@ant-design/pro-layout": "^7.19.0",
     "@app/components": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
@@ -18,7 +20,6 @@
     "lodash": "^4.17.21",
     "net": "^1.0.2",
     "next": "^14.2.1",
-    "next-plugin-antd-less": "^1.8.0",
     "next-translate": "^2.6.2",
     "next-transpile-modules": "^10.0.1",
     "pg": "^8.11.5",
@@ -32,9 +33,7 @@
     "webpack": "^5.91.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^14.2.1",
-    "less": "^4.2.0",
-    "less-loader": "^12.2.0"
+    "@next/bundle-analyzer": "^14.2.1"
   },
   "nextBundleAnalysis": {
     "budget": 460800,
@@ -42,7 +41,6 @@
     "showDetails": true
   },
   "description": "This is the React frontend of our application, built with [Next.js](https://nextjs.org/). Next.js uses the [file-system as the main API](https://nextjs.org/docs#manual-setup) ─ files inside the [src/pages](./src/pages) folder automatically turn into routes of the same name, for example the route `/login` is provided by [src/pages/login.tsx](src/pages/login.tsx).",
-  "main": "i18n.js",
   "directories": {
     "test": "test"
   },

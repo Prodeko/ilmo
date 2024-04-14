@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   AdminLayout,
   ORGANIZATION_RESULTS_PER_PAGE,
@@ -13,7 +14,7 @@ import {
   OrganizationPage_OrganizationFragment,
   useOrganizationPageQuery,
 } from "@app/graphql"
-import { Col, message, PageHeader, Row } from "antd"
+import { Col, message, Row } from "antd"
 
 import type { NextPage } from "next"
 

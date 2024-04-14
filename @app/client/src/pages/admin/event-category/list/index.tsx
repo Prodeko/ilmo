@@ -1,3 +1,4 @@
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   AdminLayout,
   AdminTableActions,
@@ -12,7 +13,7 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
-import { Col, PageHeader, Row, Tag } from "antd"
+import { Col, Row, Tag } from "antd"
 import { AlignType } from "rc-table/lib/interface"
 
 import type { NextPage } from "next"

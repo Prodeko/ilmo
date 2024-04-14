@@ -1,10 +1,9 @@
+import BundleAnalyzer from "@next/bundle-analyzer"
+import { withSentryConfig } from "@sentry/nextjs"
 import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
 import _ from "lodash"
-import { withSentryConfig } from "@sentry/nextjs"
-import BundleAnalyzer from "@next/bundle-analyzer"
-import NextTranspileModules from "next-transpile-modules"
-import withAntdLess from "next-plugin-antd-less"
 import withNextTranslate from "next-translate"
+import NextTranspileModules from "next-transpile-modules"
 
 import localeConfig from "./i18n.js"
 
@@ -13,13 +12,6 @@ const { locales, defaultLocale } = localeConfig
 const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
-const withTM = NextTranspileModules([
-  // Transpile components and lib according to @app/client/.babelrc.
-  // This is needed to have correct styling as babel-plugin-import
-  // inserts the required styles
-  "@app/components",
-  "rc-util",
-])
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck.js")) {
@@ -31,17 +23,6 @@ if (!process.env.ROOT_URL) {
 
 const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
-
-const withAntdLessOptions = {
-  lessVarsFilePath: `${__dirname}/src/styles/antd-custom.less`,
-  cssLoaderOptions: {
-    esModule: false,
-    sourceMap: false,
-    modules: {
-      mode: "local",
-    },
-  },
-}
 
 /**
  * @type {import('next').NextConfig}
@@ -85,13 +66,10 @@ const nextOptions = {
 
 const nextConfig = () =>
   _.flowRight(
-    withTM,
-    withAntdLess,
     withNextTranslate,
     withBundleAnalyzer
   )({
     ...nextOptions,
-    ...withAntdLessOptions,
     webpack(config, { webpack, dev, isServer }) {
       const makeSafe = (externals) => {
         if (Array.isArray(externals)) {

@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   EventRegistrationForm,
   RecentRegistrationsList,
@@ -11,7 +12,7 @@ import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
-import { Col, PageHeader, Popconfirm, Row } from "antd"
+import { Col, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
