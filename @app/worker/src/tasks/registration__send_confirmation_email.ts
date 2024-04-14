@@ -83,7 +83,7 @@ const task: Task = async (inPayload, { addJob, query }) => {
     options: {
       to: email,
       subject: event.name.fi
-        ? `${event.name.fi} - Rekisteröinti onnnistui`
+        ? `${event.name.fi} - Rekisteröinti onnistui`
         : `${event.name.en} - Registration successful`,
     },
     template: "event_registration.mjml.njk",
