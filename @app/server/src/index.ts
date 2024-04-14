@@ -29,8 +29,8 @@ async function main() {
       typeof address === "string"
         ? address
         : address && address.port
-        ? String(address.port)
-        : String(PORT)
+          ? String(address.port)
+          : String(PORT)
     console.log()
     console.log(
       chalk.green(

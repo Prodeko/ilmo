@@ -364,9 +364,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
               formError
                 ? false
                 : (type === "create" && !!registrationToken) ||
-                  type === "update"
-                ? false
-                : true
+                    type === "update"
+                  ? false
+                  : true
             }
             type="primary"
           >

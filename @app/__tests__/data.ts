@@ -8,7 +8,7 @@ import {
   Registration,
 } from "@app/graphql"
 import { Session } from "@app/lib"
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
 import { PoolClient } from "pg"
 import slugify from "slugify"
