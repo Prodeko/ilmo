@@ -48,8 +48,6 @@ jobs:
 
       - name: Setup node and cache
         uses: ./.github/actions/node-and-cache
-        with:
-          node-version: 14
 
       - name: Setup and build
         run: |
