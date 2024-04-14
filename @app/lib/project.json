@@ -1,0 +1,6 @@
+{
+  "name": "lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "@app/lib/src",
+  "type": "library"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "components",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "@app/components/src",
+  "type": "library"
+}

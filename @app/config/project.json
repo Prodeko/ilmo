@@ -1,0 +1,6 @@
+{
+  "name": "config",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "@app/config/src",
+  "type": "library"
+}
