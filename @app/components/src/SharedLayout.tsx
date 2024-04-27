@@ -79,8 +79,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-    | React.ReactNode
-    | ((props: SharedLayoutChildProps) => React.ReactNode)
+  | React.ReactNode
+  | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
@@ -117,7 +117,7 @@ export function SharedLayout({
     const reset = async () => {
       router.events.off("routeChangeComplete", reset)
       try {
-        await logout()
+        await logout({})
         context.resetUrqlClient()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.

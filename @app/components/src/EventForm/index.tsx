@@ -24,7 +24,7 @@ import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
 
-import type { Scalars } from "@app/graphql"
+import type { TranslatedInputField } from "@app/graphql"
 import type { JsonValue } from "type-fest"
 
 const { TabPane } = Tabs
@@ -33,7 +33,7 @@ export type FormValues = {
   languages?: string[]
   ownerOrganizationId?: string
   categoryId?: string
-  name?: Scalars["TranslatedField"]
+  name?: TranslatedInputField
   description?: JsonValue
   location?: string
   eventTime?: dayjs.Dayjs[]
@@ -56,7 +56,7 @@ interface EventFormProps {
 }
 
 export function getEventSlug(
-  name?: Scalars["TranslatedField"],
+  name?: TranslatedInputField,
   dates?: dayjs.Dayjs[]
 ) {
   const eventStartTime = dates?.[0].toISOString()
@@ -205,9 +205,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const input =
           type === "update"
             ? {
-                id: eventId,
-                ...commonInput,
-              }
+              id: eventId,
+              ...commonInput,
+            }
             : commonInput
 
         // eventId is only used in update mutation

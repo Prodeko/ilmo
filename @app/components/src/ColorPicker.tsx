@@ -1,13 +1,11 @@
 import { useCallback } from "react"
 import {
-  Color,
   ColorPicker as ReactColorPalettePicker,
+  IColor,
   useColor,
 } from "react-color-palette"
 import { primaryColor } from "@app/lib"
 import { Space, Tag } from "antd"
-
-import { useIsMobile } from "./hooks"
 
 interface ColorPickerProps {
   // These come from antd Form.Item, value is currently unused
@@ -19,11 +17,10 @@ interface ColorPickerProps {
 export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
   const { value, onChange } = props
   const initialColor = primaryColor
-  const [color, setColor] = useColor("hex", value ?? initialColor)
-  const isMobile = useIsMobile()
+  const [color, setColor] = useColor(value ?? initialColor)
 
   const handleChange = useCallback(
-    (color: Color) => {
+    (color: IColor) => {
       if (onChange) {
         onChange(color.hex)
       }
@@ -39,9 +36,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = (props) => {
         color={color}
         data-cy={props["data-cy"]}
         height={120}
-        width={isMobile ? 250 : 320}
-        hideHSV
-        hideRGB
+        hideInput={["hsv", "rgb"]}
         onChange={handleChange}
       />
     </Space>
