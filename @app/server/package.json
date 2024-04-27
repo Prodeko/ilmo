@@ -2,7 +2,6 @@
   "name": "@app/server",
   "private": true,
   "version": "0.0.0",
-  "type": "commonjs",
   "scripts": {
     "build": "tsc -b",
     "start": "yarn node -r @app/config/env.js dist/index.js",
@@ -27,7 +26,6 @@
     "@graphile/persisted-operations": "^0.1.1",
     "@graphile/pg-pubsub": "^4.13.0",
     "@graphile/subscriptions-lds": "^4.13.0",
-    "@types/graphql-upload": "^16.0.7",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",

@@ -7,8 +7,7 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "declarationDir": "dist",
     "lib": ["es2020", "esnext.asynciterable"],
-    "target": "es2020",
-    "module": "commonjs"
+    "target": "es2020"
   },
   "include": ["src"],
   "references": [{ "path": "../config" }, { "path": "../lib" }],

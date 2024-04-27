@@ -96,7 +96,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             url: process.env.ROOT_URL,
           })
           const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
-          const text = html2text.fromString(html2textableHtml, {
+          const text = html2text.htmlToText(html2textableHtml, {
             wordwrap: 120,
             tags: { img: { format: "skip" } },
           })
@@ -163,7 +163,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             const html = await templateFn(variables)
             const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
             const text = html2text
-              .fromString(html2textableHtml, {
+              .htmlToText(html2textableHtml, {
                 wordwrap: 120,
                 tags: { img: { format: "skip" } },
               })

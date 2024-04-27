@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 import { createServer } from "http"
 
-import chalk from "chalk"
 import { FastifyServerFactory } from "fastify"
 
 import { makeApp } from "./app"
@@ -18,12 +17,13 @@ const serverFactory: FastifyServerFactory = (handler, _opts) => {
 }
 
 async function main() {
+  const { default: chalk } = await import("chalk");
   // Make our application (loading all the middleware, etc)
   const app = await makeApp({ serverFactory })
 
   // And finally, we open the listen port
   const PORT = parseInt(process.env.PORT || "", 10) || 5678
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen({ port: PORT, host: "0.0.0.0" }, () => {
     const address = app.server.address()
     const actualPort: string =
       typeof address === "string"

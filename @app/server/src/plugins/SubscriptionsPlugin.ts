@@ -1,4 +1,4 @@
-import { format, utcToZonedTime } from "date-fns-tz"
+import { format, toZonedTime } from "date-fns-tz"
 import { QueryBuilder, SQL } from "graphile-build-pg"
 import {
   AugmentedGraphQLFieldResolver,
@@ -79,22 +79,22 @@ const eventRegistrationsTopicFromContext = async (
 const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
   const { pgSql: sql } = build
 
-  ;(async () => {
-    while (true) {
-      // pubsub is not available in tests and one off script such as
-      // yarn server schema:export.
-      //
-      // Need to start an actual postgraphile server so that 'pluginHooks'
-      // defined in installPostGraphile.ts are run.
-      if (pubsub) {
-        pubsub.publish(CURRENT_TIME_PUBSUB_TOPIC, new Date())
-        await sleep(CURRENT_TIME_UPDATE_INTERVAL)
-      } else {
-        // Break out of infinite loop if pubsub is not defined
-        break
+    ; (async () => {
+      while (true) {
+        // pubsub is not available in tests and one off script such as
+        // yarn server schema:export.
+        //
+        // Need to start an actual postgraphile server so that 'pluginHooks'
+        // defined in installPostGraphile.ts are run.
+        if (pubsub) {
+          pubsub.publish(CURRENT_TIME_PUBSUB_TOPIC, new Date())
+          await sleep(CURRENT_TIME_UPDATE_INTERVAL)
+        } else {
+          // Break out of infinite loop if pubsub is not defined
+          break
+        }
       }
-    }
-  })()
+    })()
 
   return {
     typeDefs: gql`
@@ -111,13 +111,13 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
       extend type Subscription {
         """Triggered when the logged in user's record is updated in some way."""
         currentUserUpdated: UserSubscriptionPayload! @pgSubscription(topic: ${embed(
-          currentUserTopicFromContext
-        )})
+      currentUserTopicFromContext
+    )})
 
         """Triggered when new event registrations are created or updated. Each event has its own subscription topic."""
         eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload! @pgSubscription(topic: ${embed(
-          eventRegistrationsTopicFromContext
-        )})
+      eventRegistrationsTopicFromContext
+    )})
 
         """Returns the server time every second."""
         currentTime: Date!
@@ -131,7 +131,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
           },
           resolve(t) {
             const pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
-            const timezonedDate = utcToZonedTime(t, process.env.TZ as string)
+            const timezonedDate = toZonedTime(t, process.env.TZ as string)
             const formatted = format(timezonedDate, pattern, {
               timeZone: process.env.TZ as string,
             })

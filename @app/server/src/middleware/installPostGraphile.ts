@@ -400,6 +400,7 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
   } = app
 
   const middleware = postgraphile(
+    // @ts-expect-error: postgraphile decorates pool with some extra stuff
     authPgPool,
     "app_public",
     getPostGraphileOptions({
