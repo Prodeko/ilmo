@@ -149,7 +149,7 @@ const Home_SignupClosedEvents: React.FC<Home_SignupClosedEventsProps> = ({
           },
         }}
       >
-        <a>{name}</a>
+        {name}
       </Link>
     ),
   }
