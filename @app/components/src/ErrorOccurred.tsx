@@ -8,9 +8,7 @@ export function ErrorOccurred() {
       <H2>{t("ErrorOccurred.somethingWentWrong")}</H2>
       <P>{t("ErrorOccurred.errorInfo")}</P>
       <P>
-        <Link href="/">
-          <a>{t("common:backHome")}</a>
-        </Link>
+        <Link href="/">{t("common:backHome")}</Link>
       </P>
     </StandardWidth>
   )

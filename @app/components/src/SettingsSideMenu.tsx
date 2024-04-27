@@ -25,16 +25,14 @@ export const SettingsSideMenu: React.FC<SettingsSideMenuProps> = ({
           items[pageHref]
         return (
           <Menu.Item key={pageHref} icon={icon}>
-            <Link href={pageHref}>
-              <a data-cy={cy}>
-                <Warn
-                  okay={
-                    !currentUser || currentUser.isVerified || !warnIfUnverified
-                  }
-                >
-                  <Text {...titleProps}>{title}</Text>
-                </Warn>
-              </a>
+            <Link data-cy={cy} href={pageHref}>
+              <Warn
+                okay={
+                  !currentUser || currentUser.isVerified || !warnIfUnverified
+                }
+              >
+                <Text {...titleProps}>{title}</Text>
+              </Warn>
             </Link>
           </Menu.Item>
         )

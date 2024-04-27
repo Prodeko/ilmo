@@ -105,9 +105,7 @@ const ForgotPassword: NextPage = () => {
             </Form.Item>
             <Form.Item>
               <p>
-                <Link href="/login">
-                  <a> {t("rememberedButton")}</a>
-                </Link>
+                <Link href="/login">{t("rememberedButton")}</Link>
               </p>
             </Form.Item>
           </Form>

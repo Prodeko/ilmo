@@ -61,11 +61,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
       style={{ display: "flex", flexDirection: "column" }}
     >
       <Link href={`/event/${slug}`}>
-        <a>
-          <H5 style={{ cursor: "pointer" }} ellipsis>
-            {title}
-          </H5>
-        </a>
+        <H5 style={{ cursor: "pointer" }} ellipsis>
+          {title}
+        </H5>
       </Link>
       <div style={cardInfoStyle}>
         <Text strong>{t("registrationTime")}:</Text>
