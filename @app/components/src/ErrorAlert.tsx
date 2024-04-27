@@ -13,7 +13,6 @@ interface ErrorAlertProps {
   style?: React.CSSProperties
 }
 
-// @ts-expect-error
 export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   banner = false,
   error,
