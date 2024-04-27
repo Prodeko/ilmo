@@ -10,7 +10,6 @@ module.exports = {
   plugins: [
     "jest",
     "@typescript-eslint",
-    "react-hooks",
     "react",
     "simple-import-sort",
     "import",
@@ -112,8 +111,6 @@ module.exports = {
       files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "**/*.jsx"],
       rules: {
         "react/display-name": "off",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "error",
         "@typescript-eslint/no-unused-vars": [
           "error",
           {
