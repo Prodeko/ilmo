@@ -36,9 +36,18 @@ const nextOptions = {
   images: {
     minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],
-    domains: isDevOrTest
-      ? ["localhost", "static.prodeko.org", "placeimg.com"]
-      : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
+    remotePatterns: isDevOrTest
+      ? [
+          {
+            hostname: "localhost",
+          },
+          { hostname: "static.prodeko.org" },
+          { hostname: "placeimg.com" },
+        ]
+      : [
+          { hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },
+          { hostname: "static.prodeko.org" },
+        ],
   },
   transpilePackages: [
     "@app/components",
