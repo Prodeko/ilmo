@@ -103,7 +103,7 @@ function Email({
         }
       />
     </List.Item>
-  );
+  )
 }
 
 const Settings_Emails: NextPage = () => {

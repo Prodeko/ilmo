@@ -17,7 +17,7 @@ const serverFactory: FastifyServerFactory = (handler, _opts) => {
 }
 
 async function main() {
-  const { default: chalk } = await import("chalk");
+  const { default: chalk } = await import("chalk")
   // Make our application (loading all the middleware, etc)
   const app = await makeApp({ serverFactory })
 

@@ -79,8 +79,8 @@ export interface SharedLayoutProps {
   titleHref?: string
   titleHrefAs?: string
   children:
-  | React.ReactNode
-  | ((props: SharedLayoutChildProps) => React.ReactNode)
+    | React.ReactNode
+    | ((props: SharedLayoutChildProps) => React.ReactNode)
   noPad?: boolean
   noHandleErrors?: boolean
   forbidWhen?: AuthRestrict
@@ -196,7 +196,6 @@ export function SharedLayout({
         <Row wrap={false}>
           <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
             <Link href="/">
-
               <Image
                 alt="Prodeko"
                 height={50}
@@ -205,7 +204,6 @@ export function SharedLayout({
                 width={50}
                 priority
               />
-
             </Link>
           </Col>
           {!isMobile ? (
@@ -220,7 +218,11 @@ export function SharedLayout({
                 }}
               >
                 {titleHref ? (
-                  <Link as={titleHrefAs} data-cy="layout-header-titlelink" href={titleHref}>
+                  <Link
+                    as={titleHrefAs}
+                    data-cy="layout-header-titlelink"
+                    href={titleHref}
+                  >
                     {title}
                   </Link>
                 ) : (
@@ -238,18 +240,22 @@ export function SharedLayout({
                     <Menu>
                       {data.currentUser.isAdmin && (
                         <Menu.Item key="admin">
-                          <Link data-cy="layout-link-admin" href="/admin/event/list">
+                          <Link
+                            data-cy="layout-link-admin"
+                            href="/admin/event/list"
+                          >
                             {t("admin")}
                           </Link>
                         </Menu.Item>
                       )}
                       <Menu.Item key="settings">
-                        <Link data-cy="layout-link-settings" href="/settings/profile">
-
+                        <Link
+                          data-cy="layout-link-settings"
+                          href="/settings/profile"
+                        >
                           <Warn okay={data.currentUser.isVerified}>
                             {t("settings")}
                           </Warn>
-
                         </Link>
                       </Menu.Item>
                       <Menu.Item key="logout">
@@ -277,7 +283,8 @@ export function SharedLayout({
               ) : forbidsLoggedIn ? null : (
                 <Link
                   data-cy="header-login-button"
-                  href={`/login?next=${encodeURIComponent(currentUrl)}`}>
+                  href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                >
                   {t("signin")}
                 </Link>
               )}
@@ -325,5 +332,5 @@ export function SharedLayout({
         </Footer>
       )}
     </Layout>
-  );
+  )
 }

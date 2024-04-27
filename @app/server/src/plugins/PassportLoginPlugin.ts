@@ -202,7 +202,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
           if (!session) {
             throw Object.assign(new Error("Incorrect username/password"), {
               code: "CREDS",
-            });
+            })
           }
 
           if (session.uuid) {

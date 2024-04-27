@@ -205,9 +205,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const input =
           type === "update"
             ? {
-              id: eventId,
-              ...commonInput,
-            }
+                id: eventId,
+                ...commonInput,
+              }
             : commonInput
 
         // eventId is only used in update mutation

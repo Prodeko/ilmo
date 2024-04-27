@@ -11,7 +11,7 @@ function fixFilePaths(connectionString) {
   return connectionString.replace(
     /\.\.\/\.\.\/data\//g,
     resolve(__dirname, "../../data") + "/"
-  );
+  )
 }
 
 process.env.DATABASE_URL = process.env.DATABASE_URL

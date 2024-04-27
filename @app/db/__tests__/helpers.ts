@@ -184,7 +184,7 @@ export const pruneUUIDs = (row: { [key: string]: unknown }) =>
       ? "[UUID]"
       : k === "gravatar" && val.match(/^[0-9a-f]{32}$/i)
         ? "[gUUID]"
-        : v;
+        : v
   })
 
 export const pruneHashes = (row: { [key: string]: unknown }) =>

@@ -30,9 +30,9 @@ type GetUserInformationFunction = (
 /*
  * Add returnTo property using [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
  */
-declare module '@fastify/secure-session' {
+declare module "@fastify/secure-session" {
   interface SessionData {
-    returnTo: string;
+    returnTo: string
   }
 }
 
@@ -101,7 +101,7 @@ export default (
           }
           let session: DbSession | null = null
           if (req?.user?.sessionId) {
-            ; ({
+            ;({
               rows: [session],
             } = await rootPgPool.query<DbSession>(
               "select * from app_private.sessions where uuid = $1",
@@ -133,10 +133,10 @@ export default (
           if (!user || !user.id) {
             throw Object.assign(new Error("Registration failed"), {
               code: "FFFFF",
-            });
+            })
           }
           if (!session) {
-            ; ({
+            ;({
               rows: [session],
             } = await rootPgPool.query<DbSession>(
               `insert into app_private.sessions (user_id) values ($1) returning *`,
@@ -146,7 +146,7 @@ export default (
           if (!session) {
             throw Object.assign(new Error("Failed to create session"), {
               code: "FFFFF",
-            });
+            })
           }
           done(null, { sessionId: session.uuid })
         } catch (e) {
@@ -162,7 +162,7 @@ export default (
       preValidation: fastifyPassport.authenticate(service, authenticateConfig),
       preHandler: setReturnTo,
     },
-    async (_req, _res) => { }
+    async (_req, _res) => {}
   )
 
   app.get(
@@ -173,6 +173,6 @@ export default (
         successReturnToOrRedirect: "/",
       }),
     },
-    async (_req, _res) => { }
+    async (_req, _res) => {}
   )
 }

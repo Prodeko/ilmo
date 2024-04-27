@@ -7,5 +7,5 @@ export const ButtonLink: React.FC<ButtonProps & LinkProps> = (props) => {
     <Link as={as} href={href} locale={locale} legacyBehavior passHref>
       <Button role="link" {...rest} />
     </Link>
-  );
+  )
 }
