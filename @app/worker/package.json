@@ -6,7 +6,7 @@
     "gw": "cd dist && NODE_OPTIONS=\"-r @app/config/env.js\" graphile-worker --crontab ../crontab",
     "build": "tsc -b",
     "start": "yarn gw",
-    "dev": "yarn run --inspect gw --watch",
+    "dev": "yarn run --inspect gw",
     "install-db-schema": "mkdirp dist && yarn gw --schema-only",
     "depcheck": "depcheck --ignores=\"tslib\""
   },

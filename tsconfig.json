@@ -9,8 +9,8 @@
     "jsx": "preserve",
     "lib": ["dom", "es2020"],
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": true,
     "preserveConstEnums": true,
     "resolveJsonModule": true,
@@ -37,23 +37,10 @@
   "include": [],
   "exclude": ["@app/e2e"],
   "references": [
-    {
-      "path": "@app/config"
-    },
-    {
-      "path": "@app/components"
-    },
-    {
-      "path": "@app/graphql"
-    },
-    {
-      "path": "@app/lib"
-    },
-    {
-      "path": "@app/server"
-    },
-    {
-      "path": "@app/worker"
-    }
+    { "path": "@app/config" },
+    { "path": "@app/components" },
+    { "path": "@app/graphql" },
+    { "path": "@app/server" },
+    { "path": "@app/worker" }
   ]
 }

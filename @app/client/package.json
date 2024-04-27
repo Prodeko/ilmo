@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env.js\" next build",
-    "depcheck": "depcheck --ignores=\"net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-transpile-modules\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer\" --ignore-patterns=.next"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.19.1",
@@ -14,14 +14,12 @@
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
     "@sentry/nextjs": "^7.110.0",
-    "antd": "^5.16.1",
-    "antd-dayjs-webpack-plugin": "^1.0.6",
+    "antd": "^5.16.4",
     "dayjs": "^1.11.10",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
-    "next": "^14.2.1",
-    "next-translate": "^2.6.2",
-    "next-transpile-modules": "^10.0.1",
+    "next": "^14.2.3",
+    "next-translate-plugin": "^2.6.2",
     "pg": "^8.11.5",
     "rc-table": "^7.45.4",
     "react": "^18.2.0",
@@ -39,11 +37,5 @@
     "budget": 460800,
     "budgetPercentIncreaseRed": 20,
     "showDetails": true
-  },
-  "description": "This is the React frontend of our application, built with [Next.js](https://nextjs.org/). Next.js uses the [file-system as the main API](https://nextjs.org/docs#manual-setup) ─ files inside the [src/pages](./src/pages) folder automatically turn into routes of the same name, for example the route `/login` is provided by [src/pages/login.tsx](src/pages/login.tsx).",
-  "directories": {
-    "test": "test"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }

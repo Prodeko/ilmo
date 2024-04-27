@@ -9,7 +9,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
     "module": "esnext",
-    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
     "isolatedModules": true
   },
   "include": ["../client/next-env.d.ts", "src/**/*.ts", "src/**/*.tsx"],

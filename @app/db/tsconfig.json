@@ -4,7 +4,6 @@
   "compilerOptions": {
     "noEmit": false,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs"
+    "allowSyntheticDefaultImports": true
   }
 }

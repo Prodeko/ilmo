@@ -1,13 +1,14 @@
+import { promises as fsp } from "fs"
+import { platform } from "os"
+import { URL } from "url"
+
+import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+
 if (parseInt(process.version.split(".")[0], 16) < 16) {
   throw new Error("This project requires Node.js >= 16.0.0")
 }
-
-import { promises as fsp } from "fs"
+export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
-export { withDotenvUpdater, readDotenv } from "./lib/dotenv.mjs"
-import { safeRandomString, safeRandomHexString } from "./lib/random.mjs"
-import { platform } from "os"
-import { URL } from "url"
 
 export function dirname(meta) {
   return new URL(".", meta.url).pathname
@@ -159,7 +160,7 @@ export function updateDotenv(add, answers) {
     "NEXT_TRANSLATE_PATH",
     "../client",
     `\
-# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly`
+# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate-plugin work properly`
   )
 
   add(

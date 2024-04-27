@@ -13,7 +13,7 @@
     "graphql"
   ],
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll": "explicit"
   },
 
   "files.insertFinalNewline": true,
@@ -33,7 +33,7 @@
 
   "[graphql]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": false
+      "source.fixAll.eslint": "never"
     }
   },
   "[markdown]": {
