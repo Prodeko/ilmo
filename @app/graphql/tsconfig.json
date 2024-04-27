@@ -8,7 +8,6 @@
     "declarationDir": ".",
     "lib": ["esnext", "esnext.asynciterable"],
     "target": "esnext",
-    "module": "esnext"
   },
   "include": ["index.ts", "client.json", "introspection.min.json"]
 }

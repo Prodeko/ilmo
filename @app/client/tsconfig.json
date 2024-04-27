@@ -5,7 +5,13 @@
     "incremental": false,
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "isolatedModules": true
+    "noEmit": true,
+    "esModuleInterop": true,
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedModules": true,
+    "module": "esnext",
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules"],
   "include": ["next-env.d.ts", "src/*.ts", "src/*.tsx"],
