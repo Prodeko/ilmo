@@ -52,7 +52,7 @@ const Passport: FastifyPluginAsync = async (app) => {
       {},
       async (_empty, accessToken, _refreshToken, _extra, _req) => {
         // eslint-disable-next-line import/no-unresolved
-        const { default: got } = await import("got");
+        const { default: got } = await import("got")
 
         const headers = {
           Authorization: `Bearer ${accessToken}`,

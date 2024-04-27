@@ -78,7 +78,7 @@ const TranslatePlugin = makeExtendSchemaPlugin(() => {
           _resolveInfo
         ) {
           // eslint-disable-next-line import/no-unresolved
-          const { default: got } = await import("got");
+          const { default: got } = await import("got")
           const { text: originalText, fromLanguage, toLanguage } = args
 
           try {
@@ -96,12 +96,12 @@ const TranslatePlugin = makeExtendSchemaPlugin(() => {
             const translateResponse = await got
               .post<TranslateResponse>(
                 `${AZURE_TRANSLATE_API_URL}?` +
-                new URLSearchParams({
-                  "api-version": "3.0",
-                  textType: "html",
-                  from: fromLanguage.toLowerCase(),
-                  to: toLanguage.toLowerCase(),
-                }),
+                  new URLSearchParams({
+                    "api-version": "3.0",
+                    textType: "html",
+                    from: fromLanguage.toLowerCase(),
+                    to: toLanguage.toLowerCase(),
+                  }),
                 {
                   responseType: "json",
                   headers,

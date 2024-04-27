@@ -14,7 +14,7 @@ let logged = false
 export default function getTransport(): Promise<nodemailer.Transporter> {
   if (!transporterPromise) {
     transporterPromise = (async () => {
-      const { default: chalk } = await import("chalk");
+      const { default: chalk } = await import("chalk")
       if (isTest) {
         return nodemailer.createTransport({
           jsonTransport: true,

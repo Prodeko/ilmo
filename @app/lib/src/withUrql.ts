@@ -7,11 +7,7 @@ import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
 import { createClient } from "graphql-ws"
 import { withUrqlClient } from "next-urql"
-import {
-  errorExchange,
-  Exchange,
-  subscriptionExchange,
-} from "urql"
+import { errorExchange, Exchange, subscriptionExchange } from "urql"
 
 import { getSessionAndCSRFToken } from "."
 
@@ -185,17 +181,17 @@ export const withUrql = withUrqlClient(
         }),
         subscriptionExchange({
           forwardSubscription(request) {
-            const input = { ...request, query: request.query || '' };
+            const input = { ...request, query: request.query || "" }
             return {
               subscribe(sink) {
-                const unsubscribe = wsClient!.subscribe(input, sink);
-                return { unsubscribe };
+                const unsubscribe = wsClient!.subscribe(input, sink)
+                return { unsubscribe }
               },
-            };
+            }
           },
         }),
         errorExchange({
-          onError(_error) { },
+          onError(_error) {},
         }),
         multipartFetchExchange,
       ].filter(Boolean) as Exchange[],

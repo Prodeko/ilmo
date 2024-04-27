@@ -38,7 +38,7 @@ export interface SendEmailPayload {
 }
 
 const task: Task = async (inPayload) => {
-  const { default: chalk } = await import("chalk");
+  const { default: chalk } = await import("chalk")
 
   const payload: SendEmailPayload = inPayload as any
   const transport = await getTransport()

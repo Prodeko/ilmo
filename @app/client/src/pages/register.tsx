@@ -300,7 +300,7 @@ const Register: NextPage<RegisterProps> = ({
         )
       }
     </SharedLayout>
-  );
+  )
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
