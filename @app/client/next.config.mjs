@@ -1,9 +1,7 @@
 import BundleAnalyzer from "@next/bundle-analyzer"
 import { withSentryConfig } from "@sentry/nextjs"
-import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
 import _ from "lodash"
-import withNextTranslate from "next-translate"
-import NextTranspileModules from "next-transpile-modules"
+import withNextTranslate from "next-translate-plugin"
 
 import localeConfig from "./i18n.js"
 
@@ -42,6 +40,16 @@ const nextOptions = {
       ? ["localhost", "static.prodeko.org", "placeimg.com"]
       : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
   },
+  transpilePackages: [
+    "@app/components",
+    "@ant-design/icons",
+    "@ant-design/icons-svg",
+    "rc-pagination",
+    "rc-picker",
+    "rc-table",
+    "rc-tree",
+    "rc-util",
+  ],
   async redirects() {
     return [
       {
@@ -75,11 +83,11 @@ const nextConfig = () =>
         if (Array.isArray(externals)) {
           return externals.map((ext) => {
             if (typeof ext === "function") {
-              return ({ request, ...rest }, callback) => {
-                if (/^@app\//.test(request)) {
+              return (obj, callback) => {
+                if (/^@app\//.test(obj.request)) {
                   callback()
                 } else {
-                  return ext({ request, ...rest }, callback)
+                  return ext(obj, callback)
                 }
               }
             } else {
@@ -95,22 +103,23 @@ const nextConfig = () =>
       if (!isServer) {
         config.resolve.fallback.fs = false
         config.plugins.push(
-          new webpack.IgnorePlugin(
+          new webpack.IgnorePlugin({
             // These modules are server-side only; we don't want webpack
             // attempting to bundle them into the client.
-            {
-              resourceRegExp: /^(ws)$/,
-            }
-          )
+            resourceRegExp: /^(node-gyp-build|bufferutil|utf-8-validate|ws)$/,
+          })
         )
       }
 
       const nextConf = {
         ...config,
-        plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
+        plugins: [...config.plugins],
         externals: [
           ...(externals || []),
           isServer ? { "pg-native": "pg/lib/client" } : null,
+          { "node:buffer": "buffer" },
+          { "node:crypto": "crypto" },
+          { "node:http": "http" },
         ].filter((_) => _),
       }
       return nextConf
