@@ -1,6 +1,5 @@
+import { GraphQLError } from "graphql"
 import { camelCase } from "lodash"
-
-import type { GraphQLError } from "graphql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isTest = process.env.NODE_ENV === "test"
@@ -8,20 +7,20 @@ const isTest = process.env.NODE_ENV === "test"
 const ERROR_PROPERTIES_TO_EXPOSE =
   isDev || isTest
     ? [
-        "code",
-        "severity",
-        "detail",
-        "hint",
-        "positon",
-        "internalPosition",
-        "internalQuery",
-        "where",
-        "schema",
-        "table",
-        "column",
-        "dataType",
-        "constraint",
-      ]
+      "code",
+      "severity",
+      "detail",
+      "hint",
+      "positon",
+      "internalPosition",
+      "internalQuery",
+      "where",
+      "schema",
+      "table",
+      "column",
+      "dataType",
+      "constraint",
+    ]
     : ["code"]
 
 // This would be better as a macro...
@@ -30,13 +29,13 @@ const pluck = (err: any): { [key: string]: any } => {
     const value =
       key === "code"
         ? // err.errcode is equivalent to err.code; replace it
-          err.code || err.errcode
+        err.code || err.errcode
         : err[key]
     if (value != null) {
       memo[key] = value
     }
     return memo
-  }, {})
+  }, Object.create(null) as Record<string, any>);
 }
 
 /**
@@ -89,21 +88,27 @@ function conflictFieldsFromError(err: any) {
   return undefined
 }
 
+
+function maskError(error: GraphQLError): GraphQLError {
+  const { message: rawMessage, originalError } = error;
+  const code = originalError ? (originalError as any)["code"] : null;
+  const localPluck = ERROR_MESSAGE_OVERRIDES[code] || pluck;
+  const exception = localPluck(originalError || error);
+  return new GraphQLError(
+    exception.message || rawMessage,
+    error.nodes,
+    error.source,
+    error.positions,
+    error.path,
+    error.originalError,
+    {
+      exception,
+    }
+  );
+}
+
 export default function handleErrors(
   errors: readonly GraphQLError[]
-): Array<any> {
-  return errors.map((error) => {
-    const { message: rawMessage, locations, path, originalError } = error
-    const code = originalError ? originalError["code"] : null
-    const localPluck = ERROR_MESSAGE_OVERRIDES[code] || pluck
-    const exception = localPluck(originalError || error)
-    return {
-      message: exception.message || rawMessage,
-      locations,
-      path,
-      extensions: {
-        exception,
-      },
-    }
-  })
+): GraphQLError[] {
+  return errors.map(maskError);
 }

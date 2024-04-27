@@ -1,7 +1,6 @@
 import fastifyPassport from "@fastify/passport"
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
-import got from "got"
 import { Strategy as Oauth2Strategy } from "passport-oauth2"
 
 import installPassportStrategy from "./installPassportStrategy"
@@ -52,6 +51,9 @@ const Passport: FastifyPluginAsync = async (app) => {
       },
       {},
       async (_empty, accessToken, _refreshToken, _extra, _req) => {
+        // eslint-disable-next-line import/no-unresolved
+        const { default: got } = await import("got");
+
         const headers = {
           Authorization: `Bearer ${accessToken}`,
         }

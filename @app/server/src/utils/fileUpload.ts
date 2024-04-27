@@ -2,8 +2,6 @@ import { BlobServiceClient } from "@azure/storage-blob"
 import { createWriteStream, ReadStream, unlinkSync } from "node:fs"
 import { join } from "node:path"
 
-import type { FileUpload } from "graphql-upload"
-
 declare module "fs" {
   interface ReadStream {
     /**
@@ -69,7 +67,7 @@ export function saveLocal({
   )
 }
 
-export async function resolveUpload(upload: FileUpload) {
+export async function resolveUpload(upload: any) {
   const { filename, createReadStream } = upload
   const stream = createReadStream()
 
