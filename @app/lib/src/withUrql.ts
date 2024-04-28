@@ -3,12 +3,15 @@ import hashes from "@app/graphql/client.json"
 import minifiedSchema from "@app/graphql/introspection.min.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
-import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
-import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
+import { persistedExchange } from "@urql/exchange-persisted"
 import { createClient } from "graphql-ws"
-import Cookies from "js-cookie"
 import { withUrqlClient } from "next-urql"
-import { errorExchange, Exchange, subscriptionExchange } from "urql"
+import {
+  errorExchange,
+  Exchange,
+  fetchExchange,
+  subscriptionExchange,
+} from "urql"
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
 import type { SSRExchange } from "@urql/core"
@@ -159,7 +162,7 @@ export const withUrql = withUrqlClient(
           },
         }),
         ssrExchange,
-        persistedFetchExchange({
+        persistedExchange({
           // Urql persisted queries support. We have pregenerated the query hashes
           // with 'graphql-codegen-persisted-query-ids' graphql-codegen plugin.
           // More information: https://formidable.com/open-source/urql/docs/advanced/persistence-and-uploads/#customizing-hashing
@@ -168,6 +171,9 @@ export const withUrql = withUrqlClient(
             const queryName = operation?.name?.value
             return queryName ? hashes[queryName] : ""
           },
+          enforcePersistedQueries: true,
+          enableForMutation: true,
+          enableForSubscriptions: true,
         }),
         subscriptionExchange({
           forwardSubscription(request) {
@@ -183,7 +189,7 @@ export const withUrql = withUrqlClient(
         errorExchange({
           onError(_error) { },
         }),
-        multipartFetchExchange,
+        fetchExchange,
       ].filter(Boolean) as Exchange[],
     }
   },
