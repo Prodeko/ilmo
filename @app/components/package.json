@@ -13,10 +13,10 @@
     "@app/lib": "workspace:*",
     "@emotion/css": "^11.11.2",
     "@hacknug/react-icons": "^4.2.1",
-    "antd": "^5.16.4",
+    "antd": "^5.16.5",
     "antd-button-color": "^1.0.4",
     "antd-img-crop": "^4.21.0",
-    "dayjs": "^1.11.10",
+    "dayjs": "^1.11.11",
     "escape-html": "^1.0.3",
     "is-hotkey": "^0.2.0",
     "lodash": "^4.17.21",
@@ -43,6 +43,6 @@
   "devDependencies": {
     "@types/nprogress": "^0.2.3",
     "@types/react-dom": "18.3.0",
-    "type-fest": "^4.17.0"
+    "type-fest": "^4.18.0"
   }
 }
