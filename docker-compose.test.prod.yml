@@ -9,7 +9,6 @@
 #
 # The compose stack can be run with 'docker compose -f docker-compose.test.prod.yml up'
 
-version: "3.8"
 services:
   server:
     image: ilmo-server
