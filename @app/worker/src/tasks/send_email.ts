@@ -54,8 +54,7 @@ const task: Task = async (inPayload) => {
     const text = htmlToText(html2textableHtml, {
       wordwrap: 120,
       tags: { img: { format: "skip" } },
-    })
-      .replace(/\n\s+\n/g, "\n\n")
+    }).replace(/\n\s+\n/g, "\n\n")
     Object.assign(options, { html, text })
   }
   const info = await transport.sendMail(options)
