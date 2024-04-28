@@ -7,6 +7,12 @@ const theme: ThemeConfig = {
     colorPrimary: "#002e7d",
     colorText: "rgb(10, 10, 10)",
   },
+  components: {
+    Layout: {
+      headerBg: "#fff",
+      bodyBg: "#fff",
+    },
+  },
 }
 
 export default theme
