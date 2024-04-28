@@ -3,7 +3,7 @@ import {
   fromEmail,
   projectName,
 } from "@app/config"
-import html2text from "html-to-text"
+import { htmlToText } from "html-to-text"
 import mjml2html from "mjml"
 import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
@@ -51,11 +51,10 @@ const task: Task = async (inPayload) => {
     const templateFn = await loadTemplate(template)
     const html = await templateFn(variables)
     const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
-    const text = html2text
-      .htmlToText(html2textableHtml, {
-        wordwrap: 120,
-        tags: { img: { format: "skip" } },
-      })
+    const text = htmlToText(html2textableHtml, {
+      wordwrap: 120,
+      tags: { img: { format: "skip" } },
+    })
       .replace(/\n\s+\n/g, "\n\n")
     Object.assign(options, { html, text })
   }

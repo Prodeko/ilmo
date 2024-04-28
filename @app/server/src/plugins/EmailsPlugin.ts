@@ -1,5 +1,5 @@
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
-import html2text from "html-to-text"
+import { htmlToText } from "html-to-text"
 import fs from "node:fs"
 import path from "node:path"
 
@@ -96,7 +96,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             url: process.env.ROOT_URL,
           })
           const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
-          const text = html2text.htmlToText(html2textableHtml, {
+          const text = htmlToText(html2textableHtml, {
             wordwrap: 120,
             tags: { img: { format: "skip" } },
           })
@@ -162,12 +162,10 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             const templateFn = await loadTemplate(filename)
             const html = await templateFn(variables)
             const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
-            const text = html2text
-              .htmlToText(html2textableHtml, {
-                wordwrap: 120,
-                tags: { img: { format: "skip" } },
-              })
-              .replace(/\n\s+\n/g, "\n\n")
+            const text = htmlToText(html2textableHtml, {
+              wordwrap: 120,
+              tags: { img: { format: "skip" } },
+            }).replace(/\n\s+\n/g, "\n\n")
 
             // All templates end in .mjml.njk, remove the file extension
             const name = filename.slice(0, -9).replace(/_/g, " ")
