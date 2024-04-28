@@ -187,7 +187,7 @@ export const withUrql = withUrqlClient(
           },
         }),
         errorExchange({
-          onError(_error) { },
+          onError(_error) {},
         }),
         fetchExchange,
       ].filter(Boolean) as Exchange[],
