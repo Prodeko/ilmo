@@ -28,8 +28,8 @@ declare module "fastify" {
  */
 export const convertHandler =
   (handler: (res: PostGraphileResponse) => Promise<void>) =>
-  (request: FastifyRequest, reply: FastifyReply) =>
-    handler(new PostGraphileResponseFastify3(request, reply))
+    (request: FastifyRequest, reply: FastifyReply) =>
+      handler(new PostGraphileResponseFastify3(request, reply))
 
 export async function makeApp({
   serverFactory,
@@ -57,8 +57,8 @@ export async function makeApp({
     logger: isDev
       ? false
       : {
-          level: process.env.LOG_LEVEL || "info",
-        },
+        level: process.env.LOG_LEVEL || "info",
+      },
     trustProxy: !isDev,
     serverFactory,
   })
@@ -96,7 +96,7 @@ export async function makeApp({
   await app.register(middleware.installHelmet)
   await app.register(middleware.installSameOrigin)
   await app.register(middleware.installSession)
-  await app.register(middleware.installCSRFProtection)
+
   await app.register(middleware.installPassport)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {

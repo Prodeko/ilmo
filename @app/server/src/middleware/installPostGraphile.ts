@@ -208,18 +208,11 @@ export function getPostGraphileOptions({
     persistedOperationsDirectory: resolve(
       `${__dirname}../../../../graphql/.persisted_operations/`
     ),
-    allowUnpersistedOperation(req, payload) {
+    allowUnpersistedOperation(req) {
       const query = req?.body?.query
-      // urql doesn't support persisted mutations: https://github.com/FormidableLabs/urql/issues/1287.
-      const isMutation = query?.startsWith("mutation")
-      // Postgraphile 4.12.4 adds support for persisted subscriptions via graphql-ws
-      // but urql doesn't support it
-      const isSubscription = (payload?.query as string)?.startsWith(
-        "subscription"
-      )
       const isIntroSpectionQuery = query?.startsWith("query IntrospectionQuery")
 
-      if (isMutation || isSubscription || isIntroSpectionQuery) {
+      if (isIntroSpectionQuery) {
         return true
       }
       // Allow arbitrary requests to be made via GraphiQL in development

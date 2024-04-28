@@ -6,10 +6,9 @@ import { cacheExchange } from "@urql/exchange-graphcache"
 import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
 import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
 import { createClient } from "graphql-ws"
+import Cookies from "js-cookie"
 import { withUrqlClient } from "next-urql"
 import { errorExchange, Exchange, subscriptionExchange } from "urql"
-
-import { getSessionAndCSRFToken } from "."
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
 import type { SSRExchange } from "@urql/core"
@@ -48,7 +47,7 @@ export function resetWebsocketConnection() {
 }
 
 export const withUrql = withUrqlClient(
-  (ssrExchange: SSRExchange, ctx) => {
+  (ssrExchange: SSRExchange, _ctx) => {
     const ROOT_URL = process.env.ROOT_URL
     if (!ROOT_URL) {
       throw new Error("ROOT_URL envvar is not set")
@@ -59,15 +58,6 @@ export const withUrql = withUrqlClient(
 
     return {
       url: `${rootURL}/graphql`,
-      fetchOptions: () => {
-        const [cookie, csrfToken] = getSessionAndCSRFToken(ctx)
-        return {
-          // @fastify/csrf reads the CSRF-Token header
-          // https://github.com/fastify/@fastify/csrf#fastifycsrfprotectionrequest-reply-next
-          headers: { "CSRF-Token": csrfToken, cookie },
-          credentials: "same-origin",
-        }
-      },
       exchanges: [
         isDev && devtoolsExchange,
         cacheExchange<GraphCacheConfig>({
@@ -191,7 +181,7 @@ export const withUrql = withUrqlClient(
           },
         }),
         errorExchange({
-          onError(_error) {},
+          onError(_error) { },
         }),
         multipartFetchExchange,
       ].filter(Boolean) as Exchange[],
