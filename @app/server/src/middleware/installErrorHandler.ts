@@ -19,13 +19,6 @@ function parseError(error: FastifyError): ParsedError {
    * You should override this for specific classes of errors below.
    */
 
-  if (error["message"]?.includes("csrf")) {
-    return {
-      message: "Invalid CSRF token: please reload the page.",
-      status: 403,
-    }
-  }
-
   // TODO: process certain errors
   const code = error["statusCode"] || error["status"] || error["code"]
   const codeAsFloat = parseInt(code, 10)

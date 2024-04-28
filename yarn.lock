@@ -327,8 +327,8 @@ __metadata:
     "@azure/storage-blob": "npm:^12.17.0"
     "@faker-js/faker": "npm:^8.4.1"
     "@fastify/cookie": "npm:^9.3.1"
-    "@fastify/csrf-protection": "npm:^6.4.1"
     "@fastify/helmet": "npm:^11.1.1"
+    "@fastify/nextjs": "npm:^10.0.1"
     "@fastify/passport": "npm:^2.4.0"
     "@fastify/redis": "npm:^6.1.1"
     "@fastify/secure-session": "npm:^7.5.1"
@@ -353,7 +353,6 @@ __metadata:
     date-fns-tz: "npm:^3.1.3"
     email-validator: "npm:^2.0.4"
     fastify: "npm:^4.26.2"
-    fastify-next: "npm:^0.2.1"
     fastify-plugin: "npm:^4.5.1"
     got: "npm:^14.2.1"
     graphile-build: "npm:^4.13.0"
@@ -2442,24 +2441,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/csrf-protection@npm:^6.4.1":
-  version: 6.4.1
-  resolution: "@fastify/csrf-protection@npm:6.4.1"
-  dependencies:
-    "@fastify/csrf": "npm:^6.0.0"
-    "@fastify/error": "npm:^3.0.0"
-    fastify-plugin: "npm:^4.0.0"
-  checksum: 10/253c912e96bf910cd04f42acfb19502a234784ba2098e51d849faca526b45f1215cebcb5582b555aaacbe6a4462fda4fdeaa5cdb0ebb7bbd81464449b661c45c
-  languageName: node
-  linkType: hard
-
-"@fastify/csrf@npm:^6.0.0":
-  version: 6.3.0
-  resolution: "@fastify/csrf@npm:6.3.0"
-  checksum: 10/9d88ba596935e499ba1f8e53db245b6a735bd0c6c697d1349e437e55e559923963dee155e201c1c26e2bb86b44143f18630deb8a7415b0454fc0d624fc8ca307
-  languageName: node
-  linkType: hard
-
 "@fastify/error@npm:^3.0.0, @fastify/error@npm:^3.3.0, @fastify/error@npm:^3.4.0":
   version: 3.4.1
   resolution: "@fastify/error@npm:3.4.1"
@@ -2501,6 +2482,18 @@ __metadata:
   dependencies:
     fast-deep-equal: "npm:^3.1.3"
   checksum: 10/99d0795f8dde75c204ee86fd2d42d8b24da3818c4bb6de8e3d595da1b123e678dcf832d14bd8ab3167fc22e36762ecd5b473ef764888a04dd94831befadac7f0
+  languageName: node
+  linkType: hard
+
+"@fastify/nextjs@npm:^10.0.1":
+  version: 10.0.1
+  resolution: "@fastify/nextjs@npm:10.0.1"
+  dependencies:
+    "@fastify/under-pressure": "npm:^8.0.0"
+    fastify-plugin: "npm:^4.0.0"
+  peerDependencies:
+    next: 12.x.x || 13.x.x
+  checksum: 10/a5aa1dc74dac0f57440e7582c00de707786251886c041a8c48e3ad38af79fc26bd586a5a54767bdd69a3b9ab3c5a1e995b3b5ba2f6982bc1227a60864c5dcbb0
   languageName: node
   linkType: hard
 
@@ -2561,6 +2554,16 @@ __metadata:
     fastq: "npm:^1.17.0"
     glob: "npm:^10.3.4"
   checksum: 10/c7b9fb2aeff68904698412134535a4ca769d02d73b7e42a3aecf23539c3f89803c5b5ed6e2502f8d2ae94db0fc66f4280c64abf1fa799649609576164e754e25
+  languageName: node
+  linkType: hard
+
+"@fastify/under-pressure@npm:^8.0.0":
+  version: 8.3.0
+  resolution: "@fastify/under-pressure@npm:8.3.0"
+  dependencies:
+    "@fastify/error": "npm:^3.0.0"
+    fastify-plugin: "npm:^4.0.0"
+  checksum: 10/52703e1f2f2a36fa538de1d068ac3b154b8f2d83eba7a7cf7d7fa283f252fafb8ef640cdf9e405ae15a5b3028b77678757a64155598a0579d2da30f6c8075172
   languageName: node
   linkType: hard
 
@@ -11758,17 +11761,6 @@ __metadata:
   version: 1.0.16
   resolution: "fastest-levenshtein@npm:1.0.16"
   checksum: 10/ee85d33b5cef592033f70e1c13ae8624055950b4eb832435099cd56aa313d7f251b873bedbc06a517adfaff7b31756d139535991e2406967438e03a1bf1b008e
-  languageName: node
-  linkType: hard
-
-"fastify-next@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "fastify-next@npm:0.2.1"
-  dependencies:
-    fastify-plugin: "npm:^4.5.1"
-  peerDependencies:
-    next: 12.x || 13.x || 14.x
-  checksum: 10/cbd9586c6fa693a3fccec8ef3d6e0d36c31e41ec525c46571259311f21632c6a77f273dd0499304f211564695481fec7211486896ace8075bbc28eec9a369c89
   languageName: node
   linkType: hard
 

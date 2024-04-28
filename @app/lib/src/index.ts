@@ -1,6 +1,5 @@
 export * from "./colors"
 export * from "./constants"
-export * from "./cookies"
 export * from "./dates"
 export * from "./errors"
 export * from "./forms"

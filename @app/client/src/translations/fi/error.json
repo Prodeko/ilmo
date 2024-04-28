@@ -5,11 +5,9 @@
     "somethingWentWrong": "Jotain meni pieleen"
   },
   "ErrorResult": {
-    "invalidCsrfToken": "Väärä CSRF-tunnus",
     "unexpectedError": "Tapahtui odottamaton virhe"
   },
   "accessDenied": "Pääsy kielletty",
-  "csrfError": "Sivuston suojaus ei onnistunut todentamaan kyselyäsi. Yritä uudestaan päivittämällä sivu.",
   "errorCode": "Virhekoodi",
   "errorOccurred": "Tapahtui virhe",
   "incorrectToken": "Väärä palautusmerkki. Tarkista ja yritä uudestaan.",
