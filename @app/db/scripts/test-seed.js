@@ -12,7 +12,7 @@ async function main() {
   }
   const pgPool = new pg.Pool({ connectionString })
   try {
-    await pgPool.query("delete from graphile_worker.jobs;")
+    await pgPool.query("delete from graphile_worker._private_jobs;")
     await writeFile(
       `${__dirname}/../__tests__/jest.watch.hack.ts`,
       `export const ts = ${Date.now()}\n`
