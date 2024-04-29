@@ -4,13 +4,13 @@ description: Sets up Node.js and caches yarn installs
 inputs:
   node-version:
     description: Node version to use with actions/setup-node
-    default: 14.x
+    default: 21.x
 
 runs:
   using: composite
   steps:
     - name: Use Node.js ${{ inputs.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
 
@@ -20,7 +20,7 @@ runs:
       shell: bash
 
     - name: Cache node_modules
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: yarn-cache
       with:
         path: |

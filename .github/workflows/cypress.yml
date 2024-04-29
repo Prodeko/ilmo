@@ -9,9 +9,9 @@ on:
 
 jobs:
   cypress-run:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container:
-      image: cypress/browsers:node14.17.0-chrome91-ff89
+      image: cypress/browsers:latest
     strategy:
       fail-fast: false
       matrix:
@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup node and cache
         uses: ./.github/actions/node-and-cache
@@ -65,7 +65,7 @@ jobs:
         run: yarn worker start &
 
       - name: Cypress run
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         with:
           command: yarn run:ci
           working-directory: "@app/e2e"
@@ -76,13 +76,13 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
           path: "@app/e2e/cypress/screenshots"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos
