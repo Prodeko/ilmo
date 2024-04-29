@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DeleteRegistration can delete a registration with a valid updateToken 1`] = `
-Object {
-  "data": Object {
-    "deleteRegistration": Object {
+{
+  "data": {
+    "deleteRegistration": {
       "success": true,
     },
   },
@@ -11,27 +11,27 @@ Object {
 `;
 
 exports[`DeleteRegistration can't delete registration if registration token is not valid 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "deleteRegistration": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "NTFND",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.delete_registration(text) line 12 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Registration matching token was not found.",
-      "path": Array [
+      "path": [
         "deleteRegistration",
       ],
     },
@@ -40,27 +40,27 @@ Object {
 `;
 
 exports[`DeleteRegistration can't delete registration once event signup has closed 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "deleteRegistration": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "DNIED",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.delete_registration(text) line 19 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.",
-      "path": Array [
+      "path": [
         "deleteRegistration",
       ],
     },

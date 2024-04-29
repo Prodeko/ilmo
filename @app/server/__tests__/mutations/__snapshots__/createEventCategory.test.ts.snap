@@ -23,27 +23,27 @@ Object {
 `;
 
 exports[`CreateEventCategory can't create an event category while logged in as non admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "createEventCategory": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "42501",
           "message": "Permission denied (by RLS)",
           "severity": "ERROR",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Permission denied (by RLS)",
-      "path": Array [
+      "path": [
         "createEventCategory",
       ],
     },
@@ -52,27 +52,27 @@ Object {
 `;
 
 exports[`CreateEventCategory can't create an event category while logged out 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "createEventCategory": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "42501",
           "message": "Permission denied (by RLS)",
           "severity": "ERROR",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Permission denied (by RLS)",
-      "path": Array [
+      "path": [
         "createEventCategory",
       ],
     },

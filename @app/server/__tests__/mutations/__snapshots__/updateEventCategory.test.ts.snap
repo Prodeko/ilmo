@@ -23,23 +23,23 @@ Object {
 `;
 
 exports[`UpdateEventCategory can't update an event category while logged in as non admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "updateEventCategory": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {},
+  "errors": [
+    {
+      "extensions": {
+        "exception": {},
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "No values were updated in collection 'event_categories' because no values you can update were found matching these criteria.",
-      "path": Array [
+      "path": [
         "updateEventCategory",
       ],
     },

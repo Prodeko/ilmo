@@ -32,29 +32,29 @@ Object {
 `;
 
 exports[`CreateEvent can't create an event if not an admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "createEvent": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "DNIED",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
-SQL statement \\"CALL app_public.check_is_admin()\\"
+SQL statement "call app_public.check_is_admin()"
 PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 7 at CALL",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Acces denied. Only admins are allowed to use this mutation.",
-      "path": Array [
+      "path": [
         "createEvent",
       ],
     },

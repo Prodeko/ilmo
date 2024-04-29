@@ -11,29 +11,29 @@ Object {
 `;
 
 exports[`AdminUpdateRegistration can't get an updateToken related to a registration if the user is not an admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "adminUpdateRegistration": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "DNIED",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
-SQL statement \\"CALL app_public.check_is_admin()\\"
+SQL statement "call app_public.check_is_admin()"
 PL/pgSQL function app_public.admin_update_registration(uuid) line 7 at CALL",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Acces denied. Only admins are allowed to use this mutation.",
-      "path": Array [
+      "path": [
         "adminUpdateRegistration",
       ],
     },

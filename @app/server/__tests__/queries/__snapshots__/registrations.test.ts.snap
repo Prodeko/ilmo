@@ -55,11 +55,11 @@ Object {
 `;
 
 exports[`Registration email obfuscation masks email values when user is logged out 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
@@ -70,19 +70,19 @@ Object {
 `;
 
 exports[`Registration email obfuscation masks email values when user is not an admin 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
-        Object {
+        {
           "email": "[email-1]",
           "id": "[id-2]",
         },
-        Object {
+        {
           "email": "[email-1]",
           "id": "[id-3]",
         },

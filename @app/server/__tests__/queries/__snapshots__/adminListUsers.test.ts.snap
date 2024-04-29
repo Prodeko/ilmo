@@ -21,27 +21,27 @@ Object {
 `;
 
 exports[`AdminListUsers adminListUsers when logged in as non-admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "adminListUsers": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "DNIED",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.admin_list_users() line 6 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Acces denied. Only admins are allowed to use this query.",
-      "path": Array [
+      "path": [
         "adminListUsers",
       ],
     },
