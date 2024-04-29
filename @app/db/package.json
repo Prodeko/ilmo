@@ -10,7 +10,7 @@
     "uncommit": "yarn gm uncommit",
     "reset": "yarn gm reset",
     "dump": "yarn gm migrate && yarn gm reset --shadow --erase && yarn gm migrate --shadow --forceActions",
-    "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env.js\" yarn jest",
+    "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env.js --experimental-vm-modules\" yarn jest --runInBand",
     "create-fake-data": "ts-node -r @app/config/env.js scripts/create-fake-data.ts",
     "clean-fake-data": "ts-node -r @app/config/env.js scripts/clean-fake-data.ts",
     "depcheck": "depcheck --ignores=\"dayjs\""

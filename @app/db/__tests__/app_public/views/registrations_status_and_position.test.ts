@@ -33,10 +33,9 @@ async function setupData(client: PoolClient, opts) {
   await becomeRoot(client)
   return { event, quotas }
 }
+beforeEach(deleteTestData)
 
 describe("registrations_status_and_position", () => {
-  beforeEach(deleteTestData)
-
   it("SIMPLE CASE: shows correct rank and position for registrations", () =>
     withUserDb(async (client) => {
       // Spots in quotas: 1 + open quota: 1 = total spots: 2

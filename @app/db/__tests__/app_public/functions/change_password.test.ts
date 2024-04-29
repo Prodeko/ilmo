@@ -1,6 +1,12 @@
 import { PoolClient } from "pg"
 
-import { asRoot, becomeUser, withRootDb, withUserDb } from "../../helpers"
+import {
+  asRoot,
+  becomeUser,
+  deleteTestData,
+  withRootDb,
+  withUserDb,
+} from "../../helpers"
 
 async function changePassword(
   client: PoolClient,
@@ -20,6 +26,8 @@ async function changePassword(
   )
   return row
 }
+
+beforeEach(deleteTestData)
 
 it("can change password", () =>
   withUserDb(async (client, user) => {

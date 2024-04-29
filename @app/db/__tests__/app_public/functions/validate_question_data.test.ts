@@ -1,7 +1,9 @@
 import { QuestionType } from "@app/graphql"
 import { PoolClient } from "pg"
 
-import { withUserDb } from "../../helpers"
+import { deleteTestData, withUserDb } from "../../helpers"
+
+beforeAll(deleteTestData)
 
 async function checkQuestionData(
   client: PoolClient,
