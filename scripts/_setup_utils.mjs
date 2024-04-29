@@ -2,12 +2,12 @@ import { promises as fsp } from "fs"
 import { platform } from "os"
 import { URL } from "url"
 
-import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+import { safeRandomHexString, safeRandomString } from "./lib/random.mjs"
 
 if (parseInt(process.version.split(".")[0], 16) < 16) {
   throw new Error("This project requires Node.js >= 16.0.0")
 }
-export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
+export { readDotenv, withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
@@ -20,6 +20,13 @@ export const yarnCmd = platform() === "win32" ? "yarn.cmd" : "yarn"
 export const projectName = process.env.PROJECT_NAME
 
 export function updateDotenv(add, answers) {
+  add(
+    "NX_REJECT_UNKNOWN_LOCAL_CACHE",
+    "0",
+    `\
+# Silence nx unknown local cache warnings (https://nx.dev/troubleshooting/unknown-local-cache)`
+  )
+
   add(
     "NODE_ENV",
     "development",

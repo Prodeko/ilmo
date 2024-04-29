@@ -27,6 +27,9 @@ async function main() {
     // Does not exist, write it
     const password = safeRandomString(30)
     const data = `
+# Silence nx unknown local cache warnings (https://nx.dev/troubleshooting/unknown-local-cache)
+NX_REJECT_UNKNOWN_LOCAL_CACHE=0
+
 # We'd like scripts ran through Docker to pretend they're in a normal
 # interactive terminal.
 FORCE_COLOR=2
