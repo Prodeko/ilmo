@@ -12,9 +12,10 @@ import i18nConfig from "../../i18n"
 import theme from "../styles/themeConfig"
 import { setLocale } from "../utils/dayjs"
 
+import "antd-button-color/dist/css/style.css"
 import "react-color-palette/dist/css/rcp.css"
-import "../styles/fonts.css"
 import "nprogress/nprogress.css"
+import "../styles/fonts.css"
 
 dayjs.extend(localizedFormat)
 
