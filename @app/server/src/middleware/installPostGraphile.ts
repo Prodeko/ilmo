@@ -5,7 +5,6 @@ import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
 import PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
-import { parse } from "cookie"
 import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import { NodePlugin } from "graphile-build"
@@ -60,24 +59,8 @@ const TagsFilePlugin = makePgSmartTagsFromFilePlugin(
   resolve(__dirname, "../../postgraphile.tags.jsonc")
 )
 
-type UUID = string
-
 const isDev = process.env.NODE_ENV === "development"
 const isJestTest = process.env.IN_TESTS === "1"
-
-function uuidOrNull(input: string | number | null | undefined): UUID | null {
-  if (!input) return null
-  const str = String(input)
-  if (
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      str
-    )
-  ) {
-    return str
-  } else {
-    return null
-  }
-}
 
 function sessionIdFromRequest(
   app: FastifyInstance,
@@ -86,10 +69,8 @@ function sessionIdFromRequest(
   // If we are in Jest tests, return sessionId from MockReq options
   // @ts-ignore
   if (isJestTest) return req?.user?.sessionId
-  const sessionCookie = parse(req.headers?.cookie || "")?.["session"]
-  const decodedSession = app.decodeSecureSession(sessionCookie)
-  const sessionId = uuidOrNull(decodedSession?.get("passport"))
-  return sessionId
+  // @ts-ignore
+  return req?._fastifyRequest?.session?.get("passport")
 }
 
 const pluginHook = makePluginHook([
