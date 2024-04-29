@@ -11,23 +11,23 @@ Object {
 `;
 
 exports[`DeleteEvent can't delete an event while logged in as non admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "deleteEvent": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {},
+  "errors": [
+    {
+      "extensions": {
+        "exception": {},
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "No values were deleted in collection 'events' because no values you can delete were found matching these criteria.",
-      "path": Array [
+      "path": [
         "deleteEvent",
       ],
     },

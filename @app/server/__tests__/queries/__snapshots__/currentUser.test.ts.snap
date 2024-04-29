@@ -11,8 +11,8 @@ Object {
 `;
 
 exports[`currentUser when logged out 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "currentUser": null,
   },
 }
