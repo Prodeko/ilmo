@@ -2,8 +2,10 @@ import { Head, IlmoContext, TopProgressBar } from "@app/components"
 import { withUrql } from "@app/lib"
 import { ConfigProvider } from "antd"
 import { AppProps } from "next/app"
+import appWithI18n from "next-translate/appWithI18n"
 import { WithUrqlProps } from "next-urql"
 
+import i18nConfig from "../../i18n"
 import theme from "../styles/themeConfig"
 import { setLocale } from "../utils/dayjs"
 
@@ -26,4 +28,9 @@ const Ilmo = (props: AppProps & WithUrqlProps) => {
   )
 }
 
-export default withUrql(Ilmo)
+export default appWithI18n(withUrql(Ilmo) as any, {
+  ...i18nConfig,
+  loadLocaleFrom: (lang, ns) => {
+    return import(`../translations/${lang}/${ns}.json`)
+  },
+})
