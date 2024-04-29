@@ -118,7 +118,10 @@ export const getJobs = async (
 ) => {
   const { rows } = await asRoot(client, () =>
     client.query(
-      "select * from graphile_worker.jobs where $1::text is null or task_identifier = $1::text order by id asc",
+      `select * from graphile_worker._private_jobs AS jobs
+      join graphile_worker._private_tasks AS tasks
+      on jobs.task_id = tasks.id
+      where $1::text is null or tasks.identifier = $1::text order by jobs.id asc`,
       [taskIdentifier]
     )
   )

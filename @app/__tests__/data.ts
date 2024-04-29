@@ -7,7 +7,7 @@ import {
   Quota,
   Registration,
 } from "@app/graphql"
-import { Session } from "@app/lib"
+import { RegistrationSecret, Session } from "@app/lib"
 import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
 import { PoolClient } from "pg"
@@ -367,7 +367,7 @@ export const createRegistrationSecrets = async (
   registrations: SnakeCasedProperties<Registration>[],
   eventId: string,
   quotaId: string
-) => {
+): Promise<SnakeCasedProperties<RegistrationSecret>[]> => {
   const registrationSecrets = []
   for (const registration of registrations) {
     const {

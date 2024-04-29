@@ -33,16 +33,16 @@ it("can add an email (unverified), receive code, verify email (and marks account
     expect(email).toBeTruthy()
     expect(email.user_id).toEqual(user.id)
     expect(snapshotSafe(email)).toMatchInlineSnapshot(`
-      Object {
-        "created_at": "[DATE]",
-        "email": "newemail@example.com",
-        "id": "[ID]",
-        "is_primary": false,
-        "is_verified": false,
-        "updated_at": "[DATE]",
-        "user_id": "[ID]",
-      }
-    `)
+{
+  "created_at": "[DATE]",
+  "email": "newemail@example.com",
+  "id": "[ID]",
+  "is_primary": false,
+  "is_verified": false,
+  "updated_at": "[DATE]",
+  "user_id": "[ID]",
+}
+`)
   }))
 
 it("cannot manually create a verified email", () =>

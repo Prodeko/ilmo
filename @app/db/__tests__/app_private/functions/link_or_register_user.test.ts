@@ -1,6 +1,6 @@
 import { PoolClient } from "pg"
 
-import { snapshotSafe, withRootDb } from "../../helpers"
+import { deleteTestData, snapshotSafe, withRootDb } from "../../helpers"
 
 async function linkOrRegisterUser(
   client: PoolClient,
@@ -25,6 +25,8 @@ async function linkOrRegisterUser(
   return row
 }
 
+beforeEach(deleteTestData)
+
 describe("when account doesn't already exist", () => {
   it("can login with full oauth details", () =>
     withRootDb(async (client) => {
@@ -48,17 +50,17 @@ describe("when account doesn't already exist", () => {
       expect(user.is_admin).toEqual(false)
       expect(user.is_verified).toEqual(true)
       expect(snapshotSafe(user)).toMatchInlineSnapshot(`
-        Object {
-          "avatar_url": "http://example.com/avatar.jpg",
-          "created_at": "[DATE]",
-          "id": "[ID]",
-          "is_admin": false,
-          "is_verified": true,
-          "name": "Webbitiimi",
-          "updated_at": "[DATE]",
-          "username": "webbitiimi",
-        }
-      `)
+{
+  "avatar_url": "http://example.com/avatar.jpg",
+  "created_at": "[DATE]",
+  "id": "[ID]",
+  "is_admin": false,
+  "is_verified": true,
+  "name": "Webbitiimi",
+  "updated_at": "[DATE]",
+  "username": "webbitiimi",
+}
+`)
     }))
 
   it("can login with minimal oauth details", () =>
@@ -112,7 +114,7 @@ describe("when account doesn't already exist", () => {
         {}
       )
       await expect(promise).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"value for domain app_public.email violates check constraint \\"email_check\\""`
+        `"value for domain app_public.email violates check constraint "email_check""`
       )
       await expect(promise).rejects.toMatchObject({
         code: "23514",
