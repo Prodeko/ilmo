@@ -1,6 +1,9 @@
+import React from "react"
 import { Head, IlmoContext, TopProgressBar } from "@app/components"
 import { withUrql } from "@app/lib"
 import { ConfigProvider } from "antd"
+import dayjs from "dayjs"
+import localizedFormat from "dayjs/plugin/localizedFormat"
 import { AppProps } from "next/app"
 import appWithI18n from "next-translate/appWithI18n"
 import { WithUrqlProps } from "next-urql"
@@ -12,6 +15,8 @@ import { setLocale } from "../utils/dayjs"
 import "react-color-palette/dist/css/rcp.css"
 import "../styles/fonts.css"
 import "nprogress/nprogress.css"
+
+dayjs.extend(localizedFormat)
 
 const Ilmo = (props: AppProps & WithUrqlProps) => {
   const { Component, pageProps, resetUrqlClient, router } = props
