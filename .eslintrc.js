@@ -1,4 +1,40 @@
 module.exports = {
+  root: true,
+  parser: "@typescript-eslint/parser",
+  extends: [
+    "plugin:react/recommended",
+    "plugin:import/errors",
+    "plugin:import/typescript",
+    "prettier",
+  ],
+  plugins: [
+    "jest",
+    "@typescript-eslint",
+    "react",
+    "simple-import-sort",
+    "import",
+  ],
+  parserOptions: {
+    ecmaVersion: 2018,
+    sourceType: "module",
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
+    next: {
+      rootDir: "@app/client/",
+    },
+  },
+  env: {
+    browser: true,
+    node: true,
+    jest: true,
+    es6: true,
+  },
   overrides: [
     {
       files: ["@app/e2e/cypress/**"],
@@ -6,6 +42,10 @@ module.exports = {
       env: {
         "cypress/globals": true,
       },
+    },
+    {
+      files: ["@app/client/**", "@app/components/**"],
+      extends: ["next"],
     },
     {
       files: ["*.graphql"],
@@ -69,44 +109,8 @@ module.exports = {
     },
     {
       files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "**/*.jsx"],
-      parser: "@typescript-eslint/parser",
-      extends: [
-        "plugin:react/recommended",
-        "plugin:import/errors",
-        "plugin:import/recommended",
-        "plugin:import/typescript",
-        "prettier",
-      ],
-      plugins: [
-        "jest",
-        "@typescript-eslint",
-        "react-hooks",
-        "react",
-        "simple-import-sort",
-        "import",
-      ],
-      parserOptions: {
-        ecmaVersion: 2018,
-        sourceType: "module",
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-      settings: {
-        react: {
-          version: "detect",
-        },
-      },
-      env: {
-        browser: true,
-        node: true,
-        jest: true,
-        es6: true,
-      },
       rules: {
         "react/display-name": "off",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "error",
         "@typescript-eslint/no-unused-vars": [
           "error",
           {
@@ -150,6 +154,11 @@ module.exports = {
         "react/react-in-jsx-scope": "off",
         "react/jsx-filename-extension": [1, { extensions: [".ts", ".tsx"] }],
         "react/no-unescaped-entities": 0,
+
+        // React rules for legacy class components
+        "react/no-direct-mutation-state": 0,
+        "react/no-string-refs": 0,
+        "react/require-render-return": 0,
 
         "import/no-extraneous-dependencies": 0,
         "react/destructuring-assignment": 0,

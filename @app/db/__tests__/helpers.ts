@@ -183,8 +183,8 @@ export const pruneUUIDs = (row: { [key: string]: unknown }) =>
     return ["uuid", "queue_name"].includes(k) && v.match(uuidRegexp)
       ? "[UUID]"
       : k === "gravatar" && val.match(/^[0-9a-f]{32}$/i)
-      ? "[gUUID]"
-      : v
+        ? "[gUUID]"
+        : v
   })
 
 export const pruneHashes = (row: { [key: string]: unknown }) =>

@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   ErrorAlert,
   P,
@@ -16,7 +17,7 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
-import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd"
+import { Alert, Avatar, Button, Form, Input, List } from "antd"
 
 import type { NextPage } from "next"
 

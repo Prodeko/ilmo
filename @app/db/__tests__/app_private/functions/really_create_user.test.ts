@@ -44,17 +44,17 @@ test("can register user with a password", () =>
     )
     expect(user).not.toBeNull()
     expect(snapshotSafe(user)).toMatchInlineSnapshot(`
-      Object {
-        "avatar_url": "http://example.com",
-        "created_at": "[DATE]",
-        "id": "[ID]",
-        "is_admin": false,
-        "is_verified": false,
-        "name": "Test One",
-        "updated_at": "[DATE]",
-        "username": "testuser",
-      }
-    `)
+{
+  "avatar_url": "http://example.com",
+  "created_at": "[DATE]",
+  "id": "[ID]",
+  "is_admin": false,
+  "is_verified": false,
+  "name": "Test One",
+  "updated_at": "[DATE]",
+  "username": "testuser",
+}
+`)
   }))
 
 test("cannot register with a weak password", () =>
@@ -86,17 +86,17 @@ test("can register user with just a username and email", () =>
     )
     expect(user).not.toBeNull()
     expect(snapshotSafe(user)).toMatchInlineSnapshot(`
-      Object {
-        "avatar_url": null,
-        "created_at": "[DATE]",
-        "id": "[ID]",
-        "is_admin": false,
-        "is_verified": false,
-        "name": null,
-        "updated_at": "[DATE]",
-        "username": "testuser",
-      }
-    `)
+{
+  "avatar_url": null,
+  "created_at": "[DATE]",
+  "id": "[ID]",
+  "is_admin": false,
+  "is_verified": false,
+  "name": null,
+  "updated_at": "[DATE]",
+  "username": "testuser",
+}
+`)
   }))
 
 test("cannot register user without email", () =>

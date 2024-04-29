@@ -1,38 +1,33 @@
 {
-  "npmScope": "ilmo",
-  "implicitDependencies": {
-    "workspace.json": "*",
-    "package.json": {
-      "dependencies": "*",
-      "devDependencies": "*"
-    },
-    "tsconfig.json": "*",
-    "nx.json": "*"
-  },
   "tasksRunnerOptions": {
     "default": {
-      "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": [
-          "build",
-          "test",
-          "lint"
-        ],
-        "runtimeCacheInputs": [
-          "node -v"
-        ]
+        "runtimeCacheInputs": ["node -v"]
       }
     }
-  },
-  "affected": {
-    "defaultBase": "main"
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "targetDefaults": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "test": {
+      "cache": true
+    },
+    "lint": {
+      "cache": true
     }
-  }
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "sharedGlobals": [
+      "{workspaceRoot}/workspace.json",
+      "{workspaceRoot}/tsconfig.json",
+      "{workspaceRoot}/nx.json"
+    ],
+    "production": ["default", "!{projectRoot}/src/test-setup.[jt]s"]
+  },
+  "useInferencePlugins": false,
+  "defaultBase": "main"
 }

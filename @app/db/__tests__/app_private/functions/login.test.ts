@@ -35,13 +35,13 @@ it("can login with username+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
-        "created_at": "[DATE]",
-        "last_active": "[DATE]",
-        "user_id": "[ID]",
-        "uuid": "[UUID]",
-      }
-    `)
+{
+  "created_at": "[DATE]",
+  "last_active": "[DATE]",
+  "user_id": "[ID]",
+  "uuid": "[UUID]",
+}
+`)
   }))
 
 it("can login with uSeRnAmE+password", () =>
@@ -51,13 +51,13 @@ it("can login with uSeRnAmE+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
-        "created_at": "[DATE]",
-        "last_active": "[DATE]",
-        "user_id": "[ID]",
-        "uuid": "[UUID]",
-      }
-    `)
+{
+  "created_at": "[DATE]",
+  "last_active": "[DATE]",
+  "user_id": "[ID]",
+  "uuid": "[UUID]",
+}
+`)
   }))
 
 it("can login with email+password", () =>
@@ -67,13 +67,13 @@ it("can login with email+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
-        "created_at": "[DATE]",
-        "last_active": "[DATE]",
-        "user_id": "[ID]",
-        "uuid": "[UUID]",
-      }
-    `)
+{
+  "created_at": "[DATE]",
+  "last_active": "[DATE]",
+  "user_id": "[ID]",
+  "uuid": "[UUID]",
+}
+`)
   }))
 
 it("can login with EmAiL+password", () =>
@@ -83,13 +83,13 @@ it("can login with EmAiL+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
-        "created_at": "[DATE]",
-        "last_active": "[DATE]",
-        "user_id": "[ID]",
-        "uuid": "[UUID]",
-      }
-    `)
+{
+  "created_at": "[DATE]",
+  "last_active": "[DATE]",
+  "user_id": "[ID]",
+  "uuid": "[UUID]",
+}
+`)
   }))
 
 it("cannot login with wrong password", () =>
@@ -128,20 +128,20 @@ it("too many login attempts resets after 5 minutes", () =>
       [testUser.id]
     )
     expect(snapshotSafe(secrets)).toMatchInlineSnapshot(`
-      Object {
-        "delete_account_token": null,
-        "delete_account_token_generated": null,
-        "failed_password_attempts": 3,
-        "failed_reset_password_attempts": 0,
-        "first_failed_password_attempt": "[DATE]",
-        "first_failed_reset_password_attempt": null,
-        "last_login_at": "[DATE]",
-        "password_hash": "[hash]",
-        "reset_password_token": null,
-        "reset_password_token_generated": null,
-        "user_id": "[ID]",
-      }
-    `)
+{
+  "delete_account_token": null,
+  "delete_account_token_generated": null,
+  "failed_password_attempts": 3,
+  "failed_reset_password_attempts": 0,
+  "first_failed_password_attempt": "[DATE]",
+  "first_failed_reset_password_attempt": null,
+  "last_login_at": "[DATE]",
+  "password_hash": "[hash]",
+  "reset_password_token": null,
+  "reset_password_token_generated": null,
+  "user_id": "[ID]",
+}
+`)
     const {
       rows: [{ now }],
     } = await client.query("select now()")

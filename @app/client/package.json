@@ -4,48 +4,40 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env.js\" next build",
-    "depcheck": "depcheck --ignores=\"less,less-loader,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-plugin-antd-less,next-transpile-modules\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer\" --ignore-patterns=.next"
   },
   "dependencies": {
-    "@ant-design/icons": "^4.7.0",
+    "@ant-design/cssinjs": "^1.20.0",
+    "@ant-design/icons": "^5.3.6",
+    "@ant-design/pro-layout": "^7.19.0",
     "@app/components": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
-    "@sentry/nextjs": "^7.9.0",
-    "antd": "^4.22.4",
-    "antd-dayjs-webpack-plugin": "^1.0.6",
-    "dayjs": "^1.11.4",
+    "@sentry/nextjs": "^7.112.2",
+    "antd": "^5.16.5",
+    "antd-button-color": "^1.0.4",
+    "dayjs": "^1.11.11",
     "lodash": "^4.17.21",
     "net": "^1.0.2",
-    "next": "^12.2.4",
-    "next-plugin-antd-less": "^1.8.0",
-    "next-translate": "^1.5.0",
-    "next-transpile-modules": "^9.0.0",
-    "pg": "^8.11.3",
-    "rc-table": "^7.26.0",
-    "react": "^18.2.0",
-    "react-color-palette": "^6.2.0",
-    "react-dom": "^18.2.0",
-    "slugify": "^1.6.5",
+    "next": "^14.2.3",
+    "next-translate": "^2.6.2",
+    "next-translate-plugin": "^2.6.2",
+    "pg": "^8.11.5",
+    "rc-table": "^7.45.4",
+    "react": "^18.3.1",
+    "react-color-palette": "^7.1.1",
+    "react-dom": "^18.3.1",
+    "slugify": "^1.6.6",
     "tls": "^0.0.1",
-    "urql": "^2.2.3",
-    "webpack": "^5.74.0"
+    "urql": "^4.0.7",
+    "webpack": "^5.91.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^12.2.4",
-    "less": "^4.1.3",
-    "less-loader": "^11.0.0"
+    "@next/bundle-analyzer": "^14.2.3"
   },
   "nextBundleAnalysis": {
     "budget": 460800,
     "budgetPercentIncreaseRed": 20,
     "showDetails": true
-  },
-  "description": "This is the React frontend of our application, built with [Next.js](https://nextjs.org/). Next.js uses the [file-system as the main API](https://nextjs.org/docs#manual-setup) ─ files inside the [src/pages](./src/pages) folder automatically turn into routes of the same name, for example the route `/login` is provided by [src/pages/login.tsx](src/pages/login.tsx).",
-  "main": "i18n.js",
-  "directories": {
-    "test": "test"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }

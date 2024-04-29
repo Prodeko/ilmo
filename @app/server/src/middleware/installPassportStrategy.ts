@@ -28,6 +28,15 @@ type GetUserInformationFunction = (
 ) => UserSpec | Promise<UserSpec>
 
 /*
+ * Add returnTo property using [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html).
+ */
+declare module "@fastify/secure-session" {
+  interface SessionData {
+    returnTo: string
+  }
+}
+
+/*
  * Stores where to redirect the user to on authentication success.
  * Tries to avoid redirect loops or malicious redirects.
  */
@@ -42,6 +51,7 @@ const setReturnTo: preHandlerHookHandler = (req, _res, done) => {
   if (
     returnTo &&
     returnTo[0] === "/" &&
+    returnTo[1] !== "/" && // Prevent protocol-relative URLs
     !returnTo.match(BLOCKED_REDIRECT_PATHS)
   ) {
     req.session.returnTo = returnTo
@@ -121,9 +131,9 @@ export default (
             ]
           )
           if (!user || !user.id) {
-            const e = new Error("Registration failed")
-            e["code"] = "FFFFF"
-            throw e
+            throw Object.assign(new Error("Registration failed"), {
+              code: "FFFFF",
+            })
           }
           if (!session) {
             ;({
@@ -134,9 +144,9 @@ export default (
             ))
           }
           if (!session) {
-            const e = new Error("Failed to create session")
-            e["code"] = "FFFFF"
-            throw e
+            throw Object.assign(new Error("Failed to create session"), {
+              code: "FFFFF",
+            })
           }
           done(null, { sessionId: session.uuid })
         } catch (e) {

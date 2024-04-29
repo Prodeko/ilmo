@@ -133,7 +133,7 @@ export const Editor: React.FC<EditorProps> = ({
       >
         <Slate
           editor={editor}
-          value={emptyNode}
+          initialValue={emptyNode}
           onChange={(value) => {
             onChange!({ ...formValue, [editorLanguage]: value })
           }}

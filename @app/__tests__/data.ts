@@ -7,9 +7,9 @@ import {
   Quota,
   Registration,
 } from "@app/graphql"
-import { Session } from "@app/lib"
+import { RegistrationSecret, Session } from "@app/lib"
+import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
-import faker from "faker"
 import { PoolClient } from "pg"
 import slugify from "slugify"
 
@@ -196,7 +196,7 @@ export const createEvents = async (
       fi: [{ type: "paragraph", children: [{ text: paragraph() }] }],
       en: [{ type: "paragraph", children: [{ text: paragraph() }] }],
     }
-    const location = faker.address.streetAddress()
+    const location = faker.location.streetAddress()
 
     let [
       registrationStartTime,
@@ -208,27 +208,26 @@ export const createEvents = async (
       const now = dayjs()
       const dayAdjustment = signupOpen ? -1 : 1
       registrationStartTime = dayjs(now).add(dayAdjustment, "day").toDate()
-      registrationEndTime = faker.date.between(
-        dayjs(registrationStartTime).add(1, "day").toDate(),
-        dayjs(registrationStartTime).add(7, "day").toDate()
-      )
+      registrationEndTime = faker.date.between({
+        from: dayjs(registrationStartTime).add(1, "day").toDate(),
+        to: dayjs(registrationStartTime).add(7, "day").toDate(),
+      })
 
-      eventStartTime = faker.date.between(
-        registrationEndTime,
-        dayjs(registrationEndTime).add(7, "day").toDate()
-      )
-      eventEndTime = faker.date.between(
-        eventStartTime,
-        dayjs(eventStartTime).add(1, "day").toDate()
-      )
+      eventStartTime = faker.date.between({
+        from: registrationEndTime,
+        to: dayjs(registrationEndTime).add(7, "day").toDate(),
+      })
+      eventEndTime = faker.date.between({
+        from: eventStartTime,
+        to: dayjs(eventStartTime).add(1, "day").toDate(),
+      })
     }
 
     const eventCategoryId = categoryId
-    const headerImageFile = faker.image.imageUrl(
-      851,
-      315,
-      `nature?random=${Math.round(Math.random() * 1000)}`
-    )
+    const headerImageFile = faker.image.urlPicsumPhotos({
+      width: 851,
+      height: 315,
+    })
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
@@ -292,7 +291,7 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const s = size
       ? size
-      : faker.datatype.number({
+      : faker.number.int({
           min: 3,
           max: 20,
         })
@@ -315,7 +314,7 @@ export const createQuotas = async (
 // Questions
 
 const getRandomQuestionData = () => {
-  const number = faker.datatype.number({ min: 1, max: 5 })
+  const number = faker.number.int({ min: 1, max: 5 })
   return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
 }
 
@@ -368,7 +367,7 @@ export const createRegistrationSecrets = async (
   registrations: SnakeCasedProperties<Registration>[],
   eventId: string,
   quotaId: string
-) => {
+): Promise<SnakeCasedProperties<RegistrationSecret>[]> => {
   const registrationSecrets = []
   for (const registration of registrations) {
     const {
@@ -394,7 +393,7 @@ export const constructAnswersFromQuestions = (
 ) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
-  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const chosenLanguage = faker.helpers.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === QuestionType.Text) {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
@@ -420,8 +419,8 @@ export const createRegistrations = async (
 ): Promise<SnakeCasedProperties<Registration>[]> => {
   const registrations = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName()
-    const lastName = faker.name.lastName()
+    const firstName = faker.person.firstName()
+    const lastName = faker.person.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
     const isFinished = true

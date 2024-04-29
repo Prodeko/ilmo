@@ -58,7 +58,7 @@ const Register: NextPage<RegisterProps> = ({
         if (error) throw error
         // Success: refetch
         resetWebsocketConnection()
-        resetUrqlClient()
+        resetUrqlClient?.()
         router.push(next)
       } catch (e) {
         const code = getCodeFromError(e)

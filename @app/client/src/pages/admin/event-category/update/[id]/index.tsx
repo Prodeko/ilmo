@@ -1,3 +1,4 @@
+import { PageHeader } from "@ant-design/pro-layout"
 import {
   AdminLayout,
   EventCategoryForm,
@@ -8,7 +9,7 @@ import {
 } from "@app/components"
 import { useUpdateEventCategoryPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"

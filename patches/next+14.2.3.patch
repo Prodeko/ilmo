@@ -1,0 +1,14 @@
+diff --git a/node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/ReactRefreshModule.runtime.js b/node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/ReactRefreshModule.runtime.js
+index 0c26fb6..d526201 100644
+--- a/node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/ReactRefreshModule.runtime.js
++++ b/node_modules/next/dist/compiled/@next/react-refresh-utils/dist/internal/ReactRefreshModule.runtime.js
+@@ -32,7 +32,8 @@ function default_1() {
+                 // Unconditionally accept an update to this module, we'll check if it's
+                 // still a Refresh Boundary later.
+                 // @ts-ignore importMeta is replaced in the loader
+-                global.importMeta.webpackHot.accept();
++                __webpack_module__.hot.accept()
++
+                 // This field is set when the previous version of this module was a
+                 // Refresh Boundary, letting us know we need to check for invalidation or
+                 // enqueue an update.

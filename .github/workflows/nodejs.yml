@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [21.x]
 
     services:
       redis:
@@ -23,7 +23,7 @@ jobs:
           - 6379:6379
       postgres:
         # Use a Postgres image that has wal2json installed
-        image: debezium/postgres:11
+        image: debezium/postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup node and cache
         uses: ./.github/actions/node-and-cache

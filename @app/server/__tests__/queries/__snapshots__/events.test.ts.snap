@@ -53,20 +53,20 @@ Object {
 `;
 
 exports[`events when logged in, NOT admin and NOT member of the owner organization (RLS policy) 1`] = `
-Object {
-  "data": Object {
-    "events": Object {
-      "nodes": Array [],
+{
+  "data": {
+    "events": {
+      "nodes": [],
     },
   },
 }
 `;
 
 exports[`events when logged out (RLS policy) 1`] = `
-Object {
-  "data": Object {
-    "events": Object {
-      "nodes": Array [],
+{
+  "data": {
+    "events": {
+      "nodes": [],
     },
   },
 }

@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   server:
     build:
@@ -127,9 +126,8 @@ services:
     networks:
       - default
     command:
-      postgres -c logging_collector=on -c log_destination=stderr -c
-      log_directory=/var/lib/postgresql/data/logs -c log_rotation_age=60 -c
-      log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
+      postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/var/lib/postgresql/data/logs -c
+      log_rotation_age=60 -c log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
 
 networks:
   default:

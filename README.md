@@ -3,8 +3,8 @@
 ## Requirements
 
 - yarn
-- Node v14
-- Postgresql 11
+- Node v21
+- Postgresql 16
 - Redis
 - (wal2json)
 
@@ -81,7 +81,7 @@ containers.
 
 Requires:
 
-- Node.js v10+ must be installed (v12 recommended)
+- Node.js v16+ must be installed (v21 recommended)
 - PostgreSQL v10+ server must be available
 - `pg_dump` command must be available (or you can remove this functionality)
 - VSCode is recommended, but any editor will do

@@ -5,11 +5,9 @@
     "somethingWentWrong": "Något gick fel"
   },
   "ErrorResult": {
-    "invalidCsrfToken": "Ogiltig CSRF-token",
     "unexpectedError": "Oväntat fel inträffade"
   },
   "accessDenied": "Åtkomst nekad",
-  "csrfError": "Vårt säkerhetsskydd har misslyckats med att autentisera din begäran; för att lösa detta måste du uppdatera sidan:",
   "errorCode": "Felkod",
   "errorOccurred": "Ett fel uppstod",
   "incorrectToken": "Felaktig token, kontrollera och försök igen",

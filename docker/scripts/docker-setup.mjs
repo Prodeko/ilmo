@@ -1,9 +1,10 @@
-import { runSync } from "../../scripts/lib/run.mjs"
-import { basename, dirname, resolve } from "path"
-import { platform } from "os"
-import { safeRandomString } from "../../scripts/lib/random.mjs"
 import fs from "fs"
+import { platform } from "os"
+import { basename, dirname, resolve } from "path"
 import { fileURLToPath } from "url"
+
+import { safeRandomString } from "../../scripts/lib/random.mjs"
+import { runSync } from "../../scripts/lib/run.mjs"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -26,6 +27,9 @@ async function main() {
     // Does not exist, write it
     const password = safeRandomString(30)
     const data = `
+# Silence nx unknown local cache warnings (https://nx.dev/troubleshooting/unknown-local-cache)
+NX_REJECT_UNKNOWN_LOCAL_CACHE=0
+
 # We'd like scripts ran through Docker to pretend they're in a normal
 # interactive terminal.
 FORCE_COLOR=2
@@ -53,7 +57,7 @@ ROOT_DATABASE_URL="postgres://postgres:${password}@db/postgres"
 # Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds
 LD_TABLE_PATTERN=app_public.*
 
-# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate work properly
+# Since we are using a custom server, we need to specify the folder in which the frontend lives to make next-translate-plugin work properly
 NEXT_TRANSLATE_PATH=../client
 
 # Redis is used for session storage and as a rate limiting store

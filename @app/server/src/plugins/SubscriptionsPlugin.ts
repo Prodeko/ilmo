@@ -1,4 +1,4 @@
-import { format, utcToZonedTime } from "date-fns-tz"
+import { toZonedTime } from "date-fns-tz"
 import { QueryBuilder, SQL } from "graphile-build-pg"
 import {
   AugmentedGraphQLFieldResolver,
@@ -130,12 +130,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
             return pubsub.asyncIterator(CURRENT_TIME_PUBSUB_TOPIC)
           },
           resolve(t) {
-            const pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
-            const timezonedDate = utcToZonedTime(t, process.env.TZ as string)
-            const formatted = format(timezonedDate, pattern, {
-              timeZone: process.env.TZ as string,
-            })
-            return formatted
+            return toZonedTime(t, process.env.TZ as string)
           },
         },
       },

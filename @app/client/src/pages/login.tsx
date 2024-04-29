@@ -207,9 +207,7 @@ function LoginForm({
         />
       </Form.Item>
       <Form.Item>
-        <Link href="/forgot">
-          <a>{t("forgotPassword")}</a>
-        </Link>
+        <Link href="/forgot">{t("forgotPassword")}</Link>
       </Form.Item>
       {error && code !== "CREDS" && (
         <Form.Item>

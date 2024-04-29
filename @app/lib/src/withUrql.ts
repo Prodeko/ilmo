@@ -3,23 +3,20 @@ import hashes from "@app/graphql/client.json"
 import minifiedSchema from "@app/graphql/introspection.min.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
-import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
-import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
+import { persistedExchange } from "@urql/exchange-persisted"
 import { createClient } from "graphql-ws"
 import { withUrqlClient } from "next-urql"
 import {
-  dedupExchange,
   errorExchange,
   Exchange,
+  fetchExchange,
   subscriptionExchange,
 } from "urql"
 
-import { getSessionAndCSRFToken } from "."
-
 import type { Event, GraphCacheConfig } from "@app/graphql"
+import type { SSRExchange } from "@urql/core"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import type { Client } from "graphql-ws"
-import type { SSRExchange } from "next-urql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -53,7 +50,7 @@ export function resetWebsocketConnection() {
 }
 
 export const withUrql = withUrqlClient(
-  (ssrExchange: SSRExchange, ctx) => {
+  (ssrExchange: SSRExchange, _ctx) => {
     const ROOT_URL = process.env.ROOT_URL
     if (!ROOT_URL) {
       throw new Error("ROOT_URL envvar is not set")
@@ -64,18 +61,8 @@ export const withUrql = withUrqlClient(
 
     return {
       url: `${rootURL}/graphql`,
-      fetchOptions: () => {
-        const [cookie, csrfToken] = getSessionAndCSRFToken(ctx)
-        return {
-          // @fastify/csrf reads the CSRF-Token header
-          // https://github.com/fastify/@fastify/csrf#fastifycsrfprotectionrequest-reply-next
-          headers: { "CSRF-Token": csrfToken, cookie },
-          credentials: "same-origin",
-        }
-      },
       exchanges: [
         isDev && devtoolsExchange,
-        dedupExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
           updates: {
@@ -175,7 +162,7 @@ export const withUrql = withUrqlClient(
           },
         }),
         ssrExchange,
-        persistedFetchExchange({
+        persistedExchange({
           // Urql persisted queries support. We have pregenerated the query hashes
           // with 'graphql-codegen-persisted-query-ids' graphql-codegen plugin.
           // More information: https://formidable.com/open-source/urql/docs/advanced/persistence-and-uploads/#customizing-hashing
@@ -184,18 +171,25 @@ export const withUrql = withUrqlClient(
             const queryName = operation?.name?.value
             return queryName ? hashes[queryName] : ""
           },
+          enforcePersistedQueries: true,
+          enableForMutation: true,
+          enableForSubscriptions: true,
         }),
         subscriptionExchange({
-          forwardSubscription: (operation) => ({
-            subscribe: (sink) => ({
-              unsubscribe: wsClient!.subscribe(operation, sink),
-            }),
-          }),
+          forwardSubscription(request) {
+            const input = { ...request, query: request.query || "" }
+            return {
+              subscribe(sink) {
+                const unsubscribe = wsClient!.subscribe(input, sink)
+                return { unsubscribe }
+              },
+            }
+          },
         }),
         errorExchange({
           onError(_error) {},
         }),
-        multipartFetchExchange,
+        fetchExchange,
       ].filter(Boolean) as Exchange[],
     }
   },

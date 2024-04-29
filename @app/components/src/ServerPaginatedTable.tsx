@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Key, useCallback, useEffect, useRef, useState } from "react"
 import CsvDownloader from "react-csv-downloader"
 import { Sorter, ValueOf } from "@app/lib"
 import { Button, Table } from "antd"
@@ -149,7 +149,7 @@ export function ServerPaginatedTable({
           ...otherColumnProps,
           filters,
           dataIndex,
-          onFilter: (value: string | number | boolean, record: RecordType) =>
+          onFilter: (value: boolean | Key, record: RecordType) =>
             get(record, dataIndex!).indexOf(value) === 0,
         }
       }

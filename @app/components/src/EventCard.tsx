@@ -42,30 +42,32 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
   const card = (
     <Card
-      // bodyStyle and style are used to position the signup button on the same row
-      // even if the description of some event would be very short.
-      bodyStyle={{ display: "flex", flexDirection: "column", flex: "1" }}
       cover={
         <Link href={`/event/${slug}`}>
           <div style={{ cursor: "pointer" }}>
             <Image
               alt={t("events:headerImage")}
               height={315}
-              objectFit="cover"
+              sizes="100vw"
               src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
               width={851}
             />
           </div>
         </Link>
       }
+      // bodyStyle and style are used to position the signup button on the same row
+      // even if the description of some event would be very short.
       style={{ display: "flex", flexDirection: "column" }}
+      styles={{ body: { display: "flex", flexDirection: "column", flex: "1" } }}
     >
       <Link href={`/event/${slug}`}>
-        <a>
-          <H5 style={{ cursor: "pointer" }} ellipsis>
-            {title}
-          </H5>
-        </a>
+        <H5 style={{ cursor: "pointer" }} ellipsis>
+          {title}
+        </H5>
       </Link>
       <div style={cardInfoStyle}>
         <Text strong>{t("registrationTime")}:</Text>

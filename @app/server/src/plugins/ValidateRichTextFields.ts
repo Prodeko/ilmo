@@ -47,10 +47,13 @@ const elementSchema: JSONSchemaType<Array<SlateCustomElement>> = {
   },
 }
 
-const props = Object.values(SupportedLanguages).reduce((acc, lang) => {
-  acc[lang.toLowerCase()] = elementSchema
-  return acc
-}, {} as { [key in Languages]: typeof elementSchema })
+const props = Object.values(SupportedLanguages).reduce(
+  (acc, lang) => {
+    acc[lang.toLowerCase()] = elementSchema
+    return acc
+  },
+  {} as { [key in Languages]: typeof elementSchema }
+)
 
 // TODO: ajv complains in tests about strictNullChecks: false
 // @ts-ignore

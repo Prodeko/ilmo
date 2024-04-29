@@ -1,10 +1,7 @@
-import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
-import _ from "lodash"
-import { withSentryConfig } from "@sentry/nextjs"
 import BundleAnalyzer from "@next/bundle-analyzer"
-import NextTranspileModules from "next-transpile-modules"
-import withAntdLess from "next-plugin-antd-less"
-import withNextTranslate from "next-translate"
+import { withSentryConfig } from "@sentry/nextjs"
+import _ from "lodash"
+import withNextTranslate from "next-translate-plugin"
 
 import localeConfig from "./i18n.js"
 
@@ -13,13 +10,6 @@ const { locales, defaultLocale } = localeConfig
 const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
-const withTM = NextTranspileModules([
-  // Transpile components and lib according to @app/client/.babelrc.
-  // This is needed to have correct styling as babel-plugin-import
-  // inserts the required styles
-  "@app/components",
-  "rc-util",
-])
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck.js")) {
@@ -31,17 +21,6 @@ if (!process.env.ROOT_URL) {
 
 const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
-
-const withAntdLessOptions = {
-  lessVarsFilePath: `${__dirname}/src/styles/antd-custom.less`,
-  cssLoaderOptions: {
-    esModule: false,
-    sourceMap: false,
-    modules: {
-      mode: "local",
-    },
-  },
-}
 
 /**
  * @type {import('next').NextConfig}
@@ -57,10 +36,29 @@ const nextOptions = {
   images: {
     minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],
-    domains: isDevOrTest
-      ? ["localhost", "static.prodeko.org", "placeimg.com"]
-      : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
+    remotePatterns: isDevOrTest
+      ? [
+          {
+            hostname: "localhost",
+          },
+          { hostname: "static.prodeko.org" },
+          { hostname: "picsum.photos" },
+        ]
+      : [
+          { hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },
+          { hostname: "static.prodeko.org" },
+        ],
   },
+  transpilePackages: [
+    "@app/components",
+    "@ant-design/icons",
+    "@ant-design/icons-svg",
+    "rc-pagination",
+    "rc-picker",
+    "rc-table",
+    "rc-tree",
+    "rc-util",
+  ],
   async redirects() {
     return [
       {
@@ -85,23 +83,20 @@ const nextOptions = {
 
 const nextConfig = () =>
   _.flowRight(
-    withTM,
-    withAntdLess,
     withNextTranslate,
     withBundleAnalyzer
   )({
     ...nextOptions,
-    ...withAntdLessOptions,
     webpack(config, { webpack, dev, isServer }) {
       const makeSafe = (externals) => {
         if (Array.isArray(externals)) {
           return externals.map((ext) => {
             if (typeof ext === "function") {
-              return ({ request, ...rest }, callback) => {
-                if (/^@app\//.test(request)) {
+              return (obj, callback) => {
+                if (/^@app\//.test(obj.request)) {
                   callback()
                 } else {
-                  return ext({ request, ...rest }, callback)
+                  return ext(obj, callback)
                 }
               }
             } else {
@@ -117,22 +112,23 @@ const nextConfig = () =>
       if (!isServer) {
         config.resolve.fallback.fs = false
         config.plugins.push(
-          new webpack.IgnorePlugin(
+          new webpack.IgnorePlugin({
             // These modules are server-side only; we don't want webpack
             // attempting to bundle them into the client.
-            {
-              resourceRegExp: /^(ws)$/,
-            }
-          )
+            resourceRegExp: /^(node-gyp-build|bufferutil|utf-8-validate|ws)$/,
+          })
         )
       }
 
       const nextConf = {
         ...config,
-        plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
+        plugins: [...config.plugins],
         externals: [
           ...(externals || []),
           isServer ? { "pg-native": "pg/lib/client" } : null,
+          { "node:buffer": "buffer" },
+          { "node:crypto": "crypto" },
+          { "node:http": "http" },
         ].filter((_) => _),
       }
       return nextConf

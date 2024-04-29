@@ -3,8 +3,7 @@ import {
   fromEmail,
   projectName,
 } from "@app/config"
-import chalk from "chalk"
-import html2text from "html-to-text"
+import { htmlToText } from "html-to-text"
 import mjml2html from "mjml"
 import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
@@ -39,6 +38,8 @@ export interface SendEmailPayload {
 }
 
 const task: Task = async (inPayload) => {
+  const { default: chalk } = await import("chalk")
+
   const payload: SendEmailPayload = inPayload as any
   const transport = await getTransport()
   const { options: inOptions, template, variables } = payload
@@ -50,12 +51,10 @@ const task: Task = async (inPayload) => {
     const templateFn = await loadTemplate(template)
     const html = await templateFn(variables)
     const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
-    const text = html2text
-      .fromString(html2textableHtml, {
-        wordwrap: 120,
-        tags: { img: { format: "skip" } },
-      })
-      .replace(/\n\s+\n/g, "\n\n")
+    const text = htmlToText(html2textableHtml, {
+      wordwrap: 120,
+      tags: { img: { format: "skip" } },
+    }).replace(/\n\s+\n/g, "\n\n")
     Object.assign(options, { html, text })
   }
   const info = await transport.sendMail(options)

@@ -1,6 +1,5 @@
 import { URLSearchParams } from "url"
 
-import got from "got"
 import { makeExtendSchemaPlugin } from "graphile-utils"
 import { gql } from "postgraphile"
 import sanitizeHtml from "sanitize-html"
@@ -78,6 +77,8 @@ const TranslatePlugin = makeExtendSchemaPlugin(() => {
           _context: OurGraphQLContext,
           _resolveInfo
         ) {
+          // eslint-disable-next-line import/no-unresolved
+          const { default: got } = await import("got")
           const { text: originalText, fromLanguage, toLanguage } = args
 
           try {

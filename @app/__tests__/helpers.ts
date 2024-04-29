@@ -72,7 +72,7 @@ export const deleteTestEventData = (pool: Pool) => {
       delete from app_private.sessions;
 
       -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;
+      delete from graphile_worker._private_jobs;
     COMMIT;`
   )
 }
@@ -107,7 +107,9 @@ export const asRoot = async <T>(
 // Job helpers
 
 export const clearJobs = async (client: PoolClient) => {
-  await asRoot(client, () => client.query("delete from graphile_worker.jobs"))
+  await asRoot(client, () =>
+    client.query("delete from graphile_worker._private_jobs")
+  )
 }
 
 export const getJobs = async (
@@ -116,7 +118,10 @@ export const getJobs = async (
 ) => {
   const { rows } = await asRoot(client, () =>
     client.query(
-      "select * from graphile_worker.jobs where $1::text is null or task_identifier = $1::text order by id asc",
+      `select * from graphile_worker._private_jobs AS jobs
+      join graphile_worker._private_tasks AS tasks
+      on jobs.task_id = tasks.id
+      where $1::text is null or tasks.identifier = $1::text order by jobs.id asc`,
       [taskIdentifier]
     )
   )

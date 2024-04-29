@@ -1,6 +1,7 @@
+import { PageHeader } from "@ant-design/pro-layout"
 import { AdminLayout, EventForm, useTranslation } from "@app/components"
 import { useCreateEventPageQuery } from "@app/graphql"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
