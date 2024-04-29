@@ -3,8 +3,8 @@
 ## Requirements
 
 - yarn
-- Node v14
-- Postgresql 11
+- Node v21
+- Postgresql 16
 - Redis
 - (wal2json)
 
