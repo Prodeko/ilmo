@@ -41,7 +41,7 @@ describe("Registration email obfuscation", () => {
       async (json) => {
         expect(json.errors).toBeFalsy()
         expect(json.data).toBeTruthy()
-        expect(json.data.registrations.nodes[0].email).toEqual("***")
+        expect(json.data?.registrations.nodes[0].email).toEqual("***")
       }
     )
   })

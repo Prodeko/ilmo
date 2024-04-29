@@ -150,7 +150,7 @@ async function runCommand(
       delete from app_public.organizations;
 
       -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;`
+      delete from graphile_worker._private_jobs;`
     )
     return { success: true }
   } else if (command === "createUser") {

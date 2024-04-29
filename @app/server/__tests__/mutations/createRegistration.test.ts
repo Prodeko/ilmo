@@ -554,7 +554,7 @@ describe("CreateRegistration", () => {
 
     const { registrationToken } = await claimRegistrationToken(eventId, quotaId)
 
-    const radioId = questions.find((q) => q.type === QuestionType.Radio).id
+    const radioId = questions.find((q) => q.type === QuestionType.Radio)?.id
     const answers = constructAnswersFromQuestions(questions)
     const answersInvalidRadio = {
       ...answers,
