@@ -222,8 +222,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
               alt={t("headerImage")}
               data-cy="eventpage-header-image"
               height={315}
-              objectFit="cover"
               src={headerImageFile}
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
               width={851}
               priority
             />
