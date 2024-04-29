@@ -22,7 +22,7 @@ describe("calculatePasswordStrength", () => {
       async (json) => {
         expect(json.errors).toBeFalsy()
         expect(json.data).toBeTruthy()
-        const { score, feedback } = json.data.calculatePasswordStrength
+        const { score, feedback } = json.data?.calculatePasswordStrength
         expect(score).toEqual(1)
         expect(feedback.suggestions).toEqual([
           "Add more words that are less common.",
@@ -48,7 +48,7 @@ describe("calculatePasswordStrength", () => {
       async (json) => {
         expect(json.errors).toBeFalsy()
         expect(json.data).toBeTruthy()
-        const { score, feedback } = json.data.calculatePasswordStrength
+        const { score, feedback } = json.data?.calculatePasswordStrength
         expect(score).toEqual(4)
         expect(feedback.suggestions).toEqual([])
       }
