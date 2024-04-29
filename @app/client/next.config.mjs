@@ -42,7 +42,7 @@ const nextOptions = {
             hostname: "localhost",
           },
           { hostname: "static.prodeko.org" },
-          { hostname: "placeimg.com" },
+          { hostname: "picsum.photos" },
         ]
       : [
           { hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },

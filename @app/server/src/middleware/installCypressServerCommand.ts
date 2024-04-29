@@ -517,7 +517,7 @@ export const createEvents = async (
       fi: [{ type: "paragraph", children: [{ text: paragraph() }] }],
       en: [{ type: "paragraph", children: [{ text: paragraph() }] }],
     }
-    const location = faker.address.streetAddress()
+    const location = faker.location.streetAddress()
 
     // By default create events that are open to registration (-1)
     const now = new Date()
@@ -531,11 +531,10 @@ export const createEvents = async (
     const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate()
 
     const eventCategoryId = categoryId
-    const headerImageFile = faker.image.imageUrl(
-      851,
-      315,
-      `nature?random=${Math.round(Math.random() * 1000)}`
-    )
+    const headerImageFile = faker.image.urlPicsumPhotos({
+      width: 851,
+      height: 315,
+    })
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
@@ -600,7 +599,7 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const s = size
       ? size
-      : faker.datatype.number({
+      : faker.number.int({
           min: 3,
           max: 20,
         })
@@ -623,7 +622,7 @@ export const createQuotas = async (
 // Questions
 
 const getRandomQuestionData = () => {
-  const number = faker.datatype.number({ min: 1, max: 5 })
+  const number = faker.number.int({ min: 1, max: 5 })
   return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
 }
 
@@ -728,8 +727,8 @@ export const createRegistrations = async (
 ) => {
   const registrations: SnakeCasedProperties<Registration>[] = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName()
-    const lastName = faker.name.lastName()
+    const firstName = faker.person.firstName()
+    const lastName = faker.person.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
     const isFinished = true
