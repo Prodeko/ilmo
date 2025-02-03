@@ -50,10 +50,10 @@ const Home: NextPage = () => {
     gridGap: 10,
   } as React.CSSProperties
   const signupsOpenEvents = data?.signupOpenEvents?.nodes.filter(
-    (event) => !(event.name["en"] as string).toLowerCase().includes("[hidden]")
+    (event) => !event.name["en"]?.toLowerCase().includes("[hidden]")
   )
   const signupsUpcomingEvents = data?.signupUpcomingEvents?.nodes.filter(
-    (event) => !(event.name["en"] as string).toLowerCase().includes("[hidden]")
+    (event) => !event.name["en"]?.toLowerCase().includes("[hidden]")
   )
 
   function renderEvents(type: string) {
