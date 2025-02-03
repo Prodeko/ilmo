@@ -132,7 +132,12 @@ You can bring up the stack with:
 | `yarn start` | or  | `export UID; yarn docker start` |
 
 After a short period you should be able to load the application at
-http://localhost:5678
+http://localhost:5678. To seed the database with data:
+
+```bash
+$ yarn docker bash
+$ yarn db create-fake-data webbitiimi 20
+```
 
 This main command runs a number of tasks:
 
