@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AdminListUsers adminListUsers when logged in as admin 1`] = `
-Object {
-  "data": Object {
-    "adminListUsers": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "adminListUsers": {
+      "nodes": [
+        {
           "avatarUrl": null,
           "createdAt": "[timestamp-1]",
           "id": "[id-1]",

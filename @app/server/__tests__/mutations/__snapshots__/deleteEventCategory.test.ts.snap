@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DeleteEventCategory can delete an event category as admin 1`] = `
-Object {
-  "data": Object {
-    "deleteEventCategory": Object {
+{
+  "data": {
+    "deleteEventCategory": {
       "clientMutationId": null,
     },
   },

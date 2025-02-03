@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DeleteEvent can delete an event as admin 1`] = `
-Object {
-  "data": Object {
-    "deleteEvent": Object {
+{
+  "data": {
+    "deleteEvent": {
       "clientMutationId": null,
     },
   },

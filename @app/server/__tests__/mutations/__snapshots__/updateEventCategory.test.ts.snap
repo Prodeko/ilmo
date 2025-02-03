@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UpdateEventCategory can update an existing event category as admin 1`] = `
-Object {
-  "data": Object {
-    "updateEventCategory": Object {
-      "eventCategory": Object {
+{
+  "data": {
+    "updateEventCategory": {
+      "eventCategory": {
         "color": "[random-3]",
         "description": "[random-1]",
         "id": "[id-1]",
         "name": "[random-2]",
-        "ownerOrganization": Object {
+        "ownerOrganization": {
           "color": "[random-6]",
           "id": "[id-2]",
           "name": "[random-4]",

@@ -1,17 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CreateOrganization can create an organization when logged in as admin 1`] = `
-Object {
-  "data": Object {
-    "createOrganization": Object {
-      "organization": Object {
+{
+  "data": {
+    "createOrganization": {
+      "organization": {
         "color": "[random-3]",
         "id": "[id-1]",
         "name": "[random-1]",
         "slug": "[random-2]",
       },
-      "query": Object {
-        "organizationBySlug": Object {
+      "query": {
+        "organizationBySlug": {
           "color": "[random-3]",
           "id": "[id-1]",
           "name": "[random-1]",

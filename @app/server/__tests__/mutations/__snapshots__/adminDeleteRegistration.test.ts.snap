@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AdminDeleteRegistration can delete a registration as an admin user 1`] = `
-Object {
-  "data": Object {
-    "adminDeleteRegistration": Object {
+{
+  "data": {
+    "adminDeleteRegistration": {
       "success": true,
     },
   },
@@ -42,27 +42,27 @@ PL/pgSQL function app_public.admin_delete_registration(uuid) line 6 at CALL",
 `;
 
 exports[`AdminDeleteRegistration returns an error if registration is not found 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "adminDeleteRegistration": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "NTFND",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 12 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Registration was not found.",
-      "path": Array [
+      "path": [
         "adminDeleteRegistration",
       ],
     },
