@@ -29,5 +29,6 @@
     "production": ["default", "!{projectRoot}/src/test-setup.[jt]s"]
   },
   "useInferencePlugins": false,
-  "defaultBase": "main"
+  "defaultBase": "main",
+  "useLegacyCache": true
 }

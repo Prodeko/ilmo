@@ -6,6 +6,8 @@
 node_modules
 dist
 cache
+.nx/cache
+.nx/workspace-data
 /heroku-setup
 /yarn-error.log
 /@app/e2e/cypress/videos
