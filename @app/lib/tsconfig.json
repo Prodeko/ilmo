@@ -8,7 +8,9 @@
     "declarationDir": "dist/types",
     "lib": ["dom", "dom.iterable", "esnext"],
     "target": "esnext",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   },
   "include": [
     "src/**/*.ts",

@@ -9,8 +9,6 @@
     "jsx": "preserve",
     "lib": ["dom", "es2020"],
     "target": "esnext",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
     "noFallthroughCasesInSwitch": true,
     "preserveConstEnums": true,
     "resolveJsonModule": true,

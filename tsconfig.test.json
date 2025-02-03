@@ -2,8 +2,8 @@
   "compilerOptions": {
     "noEmit": true,
     "types": ["jest"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "allowJs": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
