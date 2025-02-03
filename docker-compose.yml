@@ -105,7 +105,7 @@ services:
   db:
     build:
       context: .
-      dockerfile: docker/dockerfiles/Dockerfile.dev.db
+      dockerfile: docker/dockerfiles/Dockerfile.db.dev
     env_file:
       - docker/.env
 
