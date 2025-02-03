@@ -1,15 +1,16 @@
-FROM postgres:16-bullseye
+FROM postgres:17-bookworm
 
-ENV PG_VERSION 16
-ENV WAL2JSON_VERSION 2_5
+ENV PG_VERSION 17
+ENV WAL2JSON_VERSION 2_6
 
-RUN deps="curl build-essential ca-certificates git pkg-config glib2.0" \
+RUN deps="curl build-essential ca-certificates git pkg-config libglib2.0-dev" \
     && apt-get update \
     && apt-get install -y --no-install-recommends ${deps} \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-    && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -s https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/postgresql-archive-keyring.gpg] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends --allow-downgrades libldap2-dev libpq5=16.2-1.pgdg100+1 libc++1 postgresql-server-dev-$PG_VERSION \
+    && apt-get install -y --no-install-recommends --allow-downgrades libldap2-dev libpq-dev libc++1 postgresql-server-dev-$PG_VERSION \
     && mkdir -p /tmp/build \
     && curl -so /tmp/build/${WAL2JSON_VERSION}.tar.gz -SL "https://github.com/eulerto/wal2json/archive/wal2json_${WAL2JSON_VERSION}.tar.gz" \
     && cd /tmp/build/ \
