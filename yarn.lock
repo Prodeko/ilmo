@@ -178,7 +178,7 @@ __metadata:
     next-translate: "npm:^2.6.2"
     next-translate-plugin: "npm:^2.6.2"
     pg: "npm:^8.11.5"
-    rc-table: "npm:^7.45.4"
+    rc-table: "npm:^7.50.2"
     react: "npm:^18.3.1"
     react-color-palette: "npm:^7.1.1"
     react-dom: "npm:^18.3.1"
@@ -21225,7 +21225,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-table@npm:^7.45.4, rc-table@npm:~7.45.4":
+"rc-table@npm:^7.50.2":
+  version: 7.50.2
+  resolution: "rc-table@npm:7.50.2"
+  dependencies:
+    "@babel/runtime": "npm:^7.10.1"
+    "@rc-component/context": "npm:^1.4.0"
+    classnames: "npm:^2.2.5"
+    rc-resize-observer: "npm:^1.1.0"
+    rc-util: "npm:^5.44.3"
+    rc-virtual-list: "npm:^3.14.2"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/f4b79a3d711152ed0fce5dd9f8758a2c1e68583fc04b0bd228459420107d51559385c79056546431f3d5c6586b95feb0faab4002c4069f2f811f26713c87f21e
+  languageName: node
+  linkType: hard
+
+"rc-table@npm:~7.45.4":
   version: 7.45.4
   resolution: "rc-table@npm:7.45.4"
   dependencies:
@@ -21349,6 +21366,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rc-util@npm:^5.44.3":
+  version: 5.44.3
+  resolution: "rc-util@npm:5.44.3"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    react-is: "npm:^18.2.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/d254f339b10d7bb850cf3d792371a3ae569a4d768ceccbd5dc52779ac6edcd2aa2eb94859b10fce782f2baee4fdf5582a3d8a2293208a77edd07309c577e55f8
+  languageName: node
+  linkType: hard
+
 "rc-virtual-list@npm:^3.11.1, rc-virtual-list@npm:^3.5.1, rc-virtual-list@npm:^3.5.2":
   version: 3.11.5
   resolution: "rc-virtual-list@npm:3.11.5"
@@ -21361,6 +21391,21 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 10/0e8c27c7a3c14ae7c71906d3d7589b438b338d7e859aa7a634ddc235a33d42b04632115a1d1c46822db96becade84bd87801453bcf09061a3f3ba47c6a769419
+  languageName: node
+  linkType: hard
+
+"rc-virtual-list@npm:^3.14.2":
+  version: 3.18.1
+  resolution: "rc-virtual-list@npm:3.18.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.20.0"
+    classnames: "npm:^2.2.6"
+    rc-resize-observer: "npm:^1.0.0"
+    rc-util: "npm:^5.36.0"
+  peerDependencies:
+    react: ">=16.9.0"
+    react-dom: ">=16.9.0"
+  checksum: 10/3b7d4cf52e885d039b4b96d59fa5901070497bbed2845ae192b3410b3a195aeb51606fbafb7efc968b18b0209c7640bc61bf4fdcb48ca241b05ec591d7b2bd79
   languageName: node
   linkType: hard
 

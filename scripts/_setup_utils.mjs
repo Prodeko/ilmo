@@ -21,13 +21,6 @@ export const projectName = process.env.PROJECT_NAME
 
 export function updateDotenv(add, answers) {
   add(
-    "NX_REJECT_UNKNOWN_LOCAL_CACHE",
-    "0",
-    `\
-# Silence nx unknown local cache warnings (https://nx.dev/troubleshooting/unknown-local-cache)`
-  )
-
-  add(
     "NODE_ENV",
     "development",
     `\
