@@ -182,7 +182,7 @@ export function ServerPaginatedTable({
         </CsvDownloader>
       )}
       <Table
-        columns={transformedColumns as ColumnsType<object>}
+        columns={transformedColumns as ColumnsType<any>}
         dataSource={dataSource}
         loading={fetching && { indicator: <Loading /> }}
         pagination={showPagination && pagination}
