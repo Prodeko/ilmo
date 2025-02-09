@@ -52,7 +52,7 @@ context("Update event category", () => {
           .clear()
           .type("Päivitetty testikategoria")
 
-        cy.get(".rcp-fields-element-input").clear().type("#000000")
+        cy.get(".rcp-field-input").clear().type("#000000")
 
         cy.getCy("eventcategoryform-button-submit").click()
 

@@ -65,7 +65,7 @@ context("Update event registration", () => {
         cy.getCy("eventregistrationform-button-delete-registration").click()
 
         // Assertion
-        cy.get(".ant-popover-buttons button").contains("Kyllä").click()
+        cy.get(".ant-btn").contains("Kyllä").click()
         cy.get(".ant-message").contains(
           "Ilmoittautuminen poistettu onnistuneesti"
         )

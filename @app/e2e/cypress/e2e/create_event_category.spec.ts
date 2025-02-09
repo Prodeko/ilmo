@@ -48,7 +48,7 @@ context("Create event category", () => {
         "Test description"
       )
 
-      cy.get(".rcp-fields-element-input").clear().type("#ffffff")
+      cy.get(".rcp-field-input").clear().type("#ffffff")
 
       cy.getCy("eventcategoryform-button-submit").click()
 
