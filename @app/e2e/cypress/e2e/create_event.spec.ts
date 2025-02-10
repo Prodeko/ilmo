@@ -60,34 +60,39 @@ context("Create event", () => {
       const format = "YYYY-MM-DD HH:MM:ss"
       const today = dayjs()
 
-      cy.getCy("eventform-input-event-time").eq(0).click()
-      cy.getCy("eventform-input-event-time").within(() => {
-        cy.get("input[id='eventTime']").type(
-          today.add(2, "day").format(format),
-          {
-            force: true,
-          }
-        )
-        cy.get("input")
-          .eq(1)
-          .click()
-          .type(today.add(3, "day").format(format), { force: true })
-      })
+      cy.getCy("eventform-input-event-time").eq(0).click().type(
+        today.add(2, "day").format(format),
+        {
+          force: true,
+        }
+      )
+
       cy.get(".ant-picker-footer button").click()
 
-      cy.getCy("eventform-input-registration-time").eq(0).click()
-      cy.getCy("eventform-input-registration-time").within(() => {
-        cy.get("input[id='registrationTime']").type(
-          today.add(-1, "day").format(format),
-          {
-            force: true,
-          }
-        )
-        cy.get("input")
-          .eq(1)
-          .click()
-          .type(today.add(1, "day").format(format), { force: true })
-      })
+      cy.getCy("eventform-input-event-time").eq(1).click().type(
+        today.add(3, "day").format(format),
+        {
+          force: true
+        }
+      )
+
+      cy.get(".ant-picker-footer button").click()
+
+      cy.getCy("eventform-input-registration-time").eq(0).click().type(
+        today.add(-1, "day").format(format),
+        {
+          force: true,
+        }
+      )
+
+      cy.get(".ant-picker-footer button").eq(1).click()
+
+      cy.getCy("eventform-input-registration-time").eq(1).click().type(
+        today.add(1, "day").format(format),
+        {
+          force: true,
+        }
+      )
       cy.get(".ant-picker-footer button").eq(1).click()
 
       cy.getCy("eventform-switch-save-as-draft").click()
