@@ -2,14 +2,14 @@
 
 import { join } from "path"
 
-import neatCsv from "neat-csv"
+import Papa from "papaparse"
 
 const validateCsvList = (list, quota, question, registration) => {
   expect(list, "number of records").to.have.length(1)
   expect(list[0], "first record").to.deep.equal({
     // This \ufeff is some BOM stuff. See
     // https://github.com/mafintosh/csv-parser#byte-order-marks for an explanation.
-    "\ufefffullName": registration.first_name + " " + registration.last_name,
+    fullName: registration.first_name + " " + registration.last_name,
     email: registration.email,
     status: "IN_QUOTA",
     position: "1",
@@ -55,7 +55,13 @@ context("Admin csv download", () => {
         cy.readFile(filename, { timeout: 15000 })
           .should("have.length.gt", 50)
           // parse CSV text into objects
-          .then((data) => neatCsv(data, { separator: ";" }))
+          .then(
+            (data) =>
+              Papa.parse(data, {
+                header: true, // Converts CSV headers to object keys
+                skipEmptyLines: true,
+              }).data
+          )
           .then((list) => validateCsvList(list, quota, question, registration))
       }
     )

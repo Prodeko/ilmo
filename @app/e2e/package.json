@@ -12,11 +12,13 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^6.0.1",
     "@types/node": "^20.12.7",
+    "@types/papaparse": "^5",
     "cypress": "^13.8.1",
     "cypress-file-upload": "^5.0.8",
     "dayjs": "^1.11.11",
     "neat-csv": "^7.0.0",
     "node-polyfill-webpack-plugin": "^3.0.0",
+    "papaparse": "^5.5.2",
     "slugify": "^1.6.6",
     "webpack": "^5.91.0"
   }

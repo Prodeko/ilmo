@@ -259,11 +259,13 @@ __metadata:
   dependencies:
     "@cypress/webpack-preprocessor": "npm:^6.0.1"
     "@types/node": "npm:^20.12.7"
+    "@types/papaparse": "npm:^5"
     cypress: "npm:^13.8.1"
     cypress-file-upload: "npm:^5.0.8"
     dayjs: "npm:^1.11.11"
     neat-csv: "npm:^7.0.0"
     node-polyfill-webpack-plugin: "npm:^3.0.0"
+    papaparse: "npm:^5.5.2"
     slugify: "npm:^1.6.6"
     webpack: "npm:^5.91.0"
   languageName: unknown
@@ -6604,6 +6606,15 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/1754d34e18e89e1e5a576f290e7ae58f6506b9976b363c391f21d4e92b5defb0b26f425dd83c023f690453f88f6dc89c4701c7b578e3460e0c540ba633050736
+  languageName: node
+  linkType: hard
+
+"@types/papaparse@npm:^5":
+  version: 5.3.15
+  resolution: "@types/papaparse@npm:5.3.15"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/1321b54c80e59b7ac24b15297af8b2b9dc9d83c2d293c8f8acfd7e25d89e9f1efbac2a69940ffb3ff13d387f0e5fbd50c8a4a362849ff789dbeab7931a9e3290
   languageName: node
   linkType: hard
 
@@ -19552,6 +19563,13 @@ __metadata:
   version: 1.0.11
   resolution: "pako@npm:1.0.11"
   checksum: 10/1ad07210e894472685564c4d39a08717e84c2a68a70d3c1d9e657d32394ef1670e22972a433cbfe48976cb98b154ba06855dcd3fcfba77f60f1777634bec48c0
+  languageName: node
+  linkType: hard
+
+"papaparse@npm:^5.5.2":
+  version: 5.5.2
+  resolution: "papaparse@npm:5.5.2"
+  checksum: 10/f5d25ccb10b1b9e87a0fe2d2965c7f8a83223cd79ec8963dd7e8766e8e97a6228dc6c20738a78148dfc74f32b2372003de732a7d50593f38b6a2bb5092710bc7
   languageName: node
   linkType: hard
 
