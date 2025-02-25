@@ -33,7 +33,7 @@ jobs:
           - 6379:6379
       postgres:
         # Use a Postgres image that has wal2json installed
-        image: debezium/postgres:16
+        image: debezium/postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
