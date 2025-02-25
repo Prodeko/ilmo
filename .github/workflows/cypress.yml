@@ -62,10 +62,10 @@ jobs:
       - name: Start worker in background
         run: yarn worker start &
 
-       - name: Sleep for 30 seconds
-         uses: jakejarvis/wait-action@master
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
         with:
-         time: '10s'
+          time: "10s"
 
       - name: Test server availability 1
         run: curl http://0.0.0.0:5678
