@@ -62,33 +62,12 @@ jobs:
       - name: Start worker in background
         run: yarn worker start &
 
-      - name: Sleep for 30 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: "10s"
-
-      - name: Install curl
-        run: |
-          apt-get update && apt-get install -y curl
-
-      - name: Test server availability 1
-        run: curl --retry 3 --max-time 7 --fail-with-body http://0.0.0.0:5678 || true
-
-      - name: Test server availability 2
-        run: curl --retry 3 --max-time 7 --fail-with-body http://127.0.0.1:5678 || true
-
-      - name: Test server availability 3
-        run: curl --retry 3 --max-time 7 --fail-with-body http://[::1]:5678 || true
-
-      - name: Test server availability 4
-        run: curl --retry 3 --max-time 7 --fail-with-body http://localhost:5678 || true
-
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           command: yarn run:ci
           working-directory: "@app/e2e"
-          wait-on: http://localhost:5678
+          wait-on: http://0.0.0.0:5678
           parallel: true
           install: false
         env:
