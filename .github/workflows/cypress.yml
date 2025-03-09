@@ -59,9 +59,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          start: |
-            yarn server start &
-            yarn worker start &
+          start: yarn server start & yarn worker start
           command: yarn --cwd '@app/e2e' run:ci
           wait-on: 'http://0.0.0.0:5678'
           wait-on-timeout: 120
