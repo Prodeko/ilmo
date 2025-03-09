@@ -6,7 +6,7 @@ import {
 } from "@app/graphql"
 import { Col, Row } from "antd"
 import debounce from "lodash/debounce"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import useTranslation from "next-translate/useTranslation"
 import { UseQueryState } from "urql"
 

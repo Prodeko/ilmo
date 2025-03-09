@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons"
 import { css } from "@emotion/css"
 import { Layout } from "antd"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import { Translate } from "next-translate"
 
 import {

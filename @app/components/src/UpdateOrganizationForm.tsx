@@ -6,7 +6,7 @@ import {
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
 import { Button, Form, Input, message, Popconfirm } from "antd"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { ColorPicker, ErrorAlert, useTranslation } from "."
 

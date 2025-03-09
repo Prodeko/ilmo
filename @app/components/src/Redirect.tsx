@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { PropsWithChildrenOnly } from "@app/lib"
 import { Skeleton } from "antd"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 import { H3, SharedLayout, StandardWidth, useTranslation } from "."
 

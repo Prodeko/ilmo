@@ -1,5 +1,5 @@
 import { notification } from "antd"
-import Router from "next/router"
+import Router from "next/navigation"
 import NProgress from "nprogress"
 
 NProgress.configure({
