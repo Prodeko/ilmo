@@ -66,8 +66,8 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           start: |
-            yarn workspace @app/server start &
-            yarn workspace @app/worker start &
+            bash -c "yarn workspace @app/server start &"
+            bash -c "yarn workspace @app/worker start &"
           command: yarn run:ci
           working-directory: "@app/e2e"
           wait-on: "http://0.0.0.0:5678"
