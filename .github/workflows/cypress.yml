@@ -56,6 +56,30 @@ jobs:
           yarn setup
           yarn build
 
+      - name: Start server in background
+        run: yarn server start &
+
+      - name: Start worker in background
+        run: yarn worker start &
+
+      - name: Sleep for 30 seconds
+        uses: jakejarvis/wait-action@master
+        with:
+          time: "10s"
+
+      - name: Install curl
+        run: |
+          apt-get update && apt-get install -y curl
+
+      - name: Test server availability 1
+        run: curl http://0.0.0.0:5678
+
+      - name: Test server availability 2
+        run: curl http://127.0.0.1:5678
+
+      - name: Test server availability 3
+        run: curl http://[::1]:5678
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
