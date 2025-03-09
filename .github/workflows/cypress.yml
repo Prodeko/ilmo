@@ -85,9 +85,7 @@ jobs:
         with:
           command: yarn run:ci
           working-directory: "@app/e2e"
-          start: |
-            yarn server start
-            yarn worker start
+          wait-on: http://0.0.0.0:5678
           parallel: true
           install: false
         env:
