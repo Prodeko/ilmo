@@ -56,18 +56,15 @@ jobs:
           yarn setup
           yarn build
 
-      - name: Start server in background
-        run: yarn server start --host 0.0.0.0 &
-
-      - name: Start worker in background
-        run: yarn worker start &
-
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          command: yarn run:ci
-          working-directory: "@app/e2e"
-          wait-on: "http://0.0.0.0:5678"
+          start: |
+            yarn server start &
+            yarn worker start &
+          command: yarn --cwd '@app/e2e' run:ci
+          wait-on: 'http://0.0.0.0:5678'
+          wait-on-timeout: 120
           parallel: true
           install: false
         env:
