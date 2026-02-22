@@ -35,6 +35,11 @@ export interface SendEmailPayload {
   variables: {
     [varName: string]: any
   }
+  attachments?: Array<{
+    filename: string
+    content: string | Buffer
+    contentType?: string
+  }>
 }
 
 const task: Task = async (inPayload) => {
@@ -42,10 +47,11 @@ const task: Task = async (inPayload) => {
 
   const payload: SendEmailPayload = inPayload as any
   const transport = await getTransport()
-  const { options: inOptions, template, variables } = payload
+  const { options: inOptions, template, variables, attachments } = payload
   const options = {
     from: fromEmail,
     ...inOptions,
+    ...(attachments ? { attachments } : {}),
   }
   if (template) {
     const templateFn = await loadTemplate(template)

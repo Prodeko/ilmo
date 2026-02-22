@@ -1,3 +1,5 @@
+import { generateCalendarInvite } from "@app/lib"
+
 import { getFormattedEventTime } from "./registration__send_confirmation_email"
 
 import type { SendEmailPayload } from "./send_email"
@@ -60,6 +62,15 @@ const task: Task = async (inPayload, { addJob, query }) => {
     return
   }
 
+  // Generate calendar invite
+  let calendarAttachment
+  try {
+    calendarAttachment = await generateCalendarInvite(event)
+  } catch (error) {
+    console.error("Failed to generate calendar invite:", error)
+    // Continue without calendar attachment
+  }
+
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -78,6 +89,7 @@ const task: Task = async (inPayload, { addJob, query }) => {
       eventLocation: event.location,
       eventRegistrationUpdateLink: `update-registration/${registrationSecret.update_token}`,
     },
+    ...(calendarAttachment ? { attachments: [calendarAttachment] } : {}),
   }
 
   await addJob("send_email", sendEmailPayload)
