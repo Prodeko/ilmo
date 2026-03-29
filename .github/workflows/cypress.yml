@@ -23,7 +23,7 @@ jobs:
       DATABASE_HOST: postgres
       ROOT_DATABASE_URL: postgres://postgres:postgres@postgres/template1
       REDIS_URL: redis://redis:6379
-      ROOT_URL: http://0.0.0.0:5678
+      ROOT_URL: http://localhost:5678
 
     services:
       redis:
@@ -62,17 +62,13 @@ jobs:
       - name: Start worker in background
         run: yarn worker start &
 
-      - name: Sleep for 30 seconds
-        uses: jakejarvis/wait-action@master
-        with:
-          time: "10s"
-
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           command: yarn run:ci
           working-directory: "@app/e2e"
-          wait-on: "http://0.0.0.0:5678"
+          wait-on: "http://localhost:5678"
+          wait-on-timeout: 120
           parallel: true
           install: false
         env:
