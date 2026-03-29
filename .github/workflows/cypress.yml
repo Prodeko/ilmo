@@ -67,9 +67,6 @@ jobs:
         with:
           time: "10s"
 
-      - name: Check open ports
-        run: ss -tulnp
-
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
