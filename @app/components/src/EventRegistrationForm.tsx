@@ -208,7 +208,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const validateName: Rule = () => ({
       validator(_, value) {
         // firstName and lastName are not allowed to contain spaces
-        if (/\s/.test(value)) {
+        if (/^\s+$/.test(value)) {
           return Promise.reject(new Error(t("forms.rules.nameContainsSpace")))
         }
         return Promise.resolve()

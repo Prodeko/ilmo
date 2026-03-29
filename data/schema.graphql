@@ -223,7 +223,7 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
-"""A field which must not contain spaces"""
+"""A field which must not contain only whitespace"""
 scalar ConstrainedName
 
 """All input for the create `EventCategory` mutation."""

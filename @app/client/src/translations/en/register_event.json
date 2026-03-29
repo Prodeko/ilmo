@@ -15,7 +15,7 @@
     "rules": {
       "emailEmpty": "Please input your E-mail",
       "emailValid": "The input is not valid E-mail",
-      "nameContainsSpace": "Name cannot contain spaces",
+      "nameContainsSpace": "Name cannot contain only spaces",
       "provideAnswer": "Please answer the question",
       "provideFirstName": "Please enter your first name",
       "provideLastName": "Please enter your last name"
