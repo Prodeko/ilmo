@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import "@app/config/env.js"
 import { execSync, spawnSync as rawSpawnSync } from "child_process"
+
 import concurrently from "concurrently"
+
+import "@app/config/env.js"
 
 function spawnSync(cmd, args, options) {
   const result = rawSpawnSync(cmd, args, {
@@ -55,6 +57,9 @@ process.env.NODE_ENV = "test"
 
 // Don't log graphile-worker job successes in tests
 process.env.NO_LOG_SUCCESS = true
+
+// Required for graphile-worker to load ESM task files via dynamic import in Jest's VM
+process.env.NODE_OPTIONS = `--experimental-vm-modules ${process.env.NODE_OPTIONS ?? ""}`
 
 const cmdArgs = process.argv.slice(2)
 const watchMode = cmdArgs.find(

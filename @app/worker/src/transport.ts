@@ -14,12 +14,12 @@ let logged = false
 export default function getTransport(): Promise<nodemailer.Transporter> {
   if (!transporterPromise) {
     transporterPromise = (async () => {
-      const { default: chalk } = await import("chalk")
       if (isTest) {
         return nodemailer.createTransport({
           jsonTransport: true,
         })
       } else if (isDev) {
+        const { default: chalk } = await import("chalk")
         let account
         try {
           const testAccountJson = await readFile(etherealFilename, "utf8")

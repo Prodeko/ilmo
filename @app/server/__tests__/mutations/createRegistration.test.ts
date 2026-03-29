@@ -373,7 +373,7 @@ describe("CreateRegistration", () => {
     )
   })
 
-  it("can't create a registration if first or last name contains spaces", async () => {
+  it("can't create a registration if first or last name is only whitespace", async () => {
     const { quotas, events } = await createEventDataAndLogin({
       questionOptions: { create: false },
       registrationOptions: { create: false },
@@ -426,7 +426,7 @@ describe("CreateRegistration", () => {
           quotaId,
           registrationToken,
           firstName: "Testname",
-          lastName: "Last name",
+          lastName: "   ",
           email: "testuser@example.com",
         },
       },

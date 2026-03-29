@@ -43,8 +43,6 @@ export interface SendEmailPayload {
 }
 
 const task: Task = async (inPayload) => {
-  const { default: chalk } = await import("chalk")
-
   const payload: SendEmailPayload = inPayload as any
   const transport = await getTransport()
   const { options: inOptions, template, variables, attachments } = payload
@@ -69,6 +67,7 @@ const task: Task = async (inPayload) => {
   } else if (isDev) {
     const url = nodemailer.getTestMessageUrl(info)
     if (url) {
+      const { default: chalk } = await import("chalk")
       console.log(`Development email preview: ${chalk.blue.underline(url)}`)
     }
   }
