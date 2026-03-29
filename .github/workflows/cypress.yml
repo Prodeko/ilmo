@@ -56,14 +56,17 @@ jobs:
           yarn setup
           yarn build
 
+      - name: Start server in background
+        run: yarn server start > /tmp/server.log 2>&1 &
+
+      - name: Start worker in background
+        run: yarn worker start > /tmp/worker.log 2>&1 &
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
           command: yarn run:ci
           working-directory: "@app/e2e"
-          start: |
-            yarn server start
-            yarn worker start
           wait-on: "http://localhost:5678"
           wait-on-timeout: 120
           parallel: true
@@ -72,14 +75,22 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Print server logs
+        if: failure()
+        run: cat /tmp/server.log || true
+
+      - name: Print worker logs
+        if: failure()
+        run: cat /tmp/worker.log || true
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ matrix.containers }}
           path: "@app/e2e/cypress/screenshots"
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-videos
+          name: cypress-videos-${{ matrix.containers }}
           path: "@app/e2e/cypress/videos"
