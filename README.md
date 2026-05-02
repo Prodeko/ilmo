@@ -3,7 +3,7 @@
 ## Requirements
 
 - Node.js v20 LTS
-- pnpm 10 (installable via `corepack enable`)
+- pnpm 10 (`npm install -g pnpm`)
 - Docker (for db + redis services)
 - PostgreSQL with wal2json — the project ships a Docker image with wal2json included, so no host install is needed
 
@@ -44,7 +44,6 @@ aforementioned tutorial, but it's still an incredibly valuable resource.
 ## Quickstart
 
 ```bash
-corepack enable
 docker compose up -d db redis
 cp .env.ci .env  # or run `pnpm setup` for interactive config
 pnpm install
@@ -65,11 +64,10 @@ services run in Docker; everything else runs on the host.
 
 ## Getting started
 
-This project uses [pnpm](https://pnpm.io/). Enable it via corepack (ships with
-Node.js 20):
+Install [pnpm](https://pnpm.io/) globally:
 
 ```sh
-corepack enable
+npm install -g pnpm
 ```
 
 Then install dependencies:

@@ -10,7 +10,7 @@ RUN apk add --no-cache tini bash tzdata && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone
 
-RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
+RUN npm install -g pnpm@10
 
 WORKDIR /app
 

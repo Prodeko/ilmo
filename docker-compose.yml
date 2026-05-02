@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   redis:
     image: redis:6-alpine
@@ -9,8 +8,7 @@ services:
     restart: unless-stopped
 
   db:
-    build:
-      context: ./docker/postgres
+    image: debezium/postgres:11
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -18,6 +16,7 @@ services:
     volumes:
       - db-volume:/var/lib/postgresql/data
       - ./data:/data
+      - ./docker/postgres/db_setup.dev.sh:/docker-entrypoint-initdb.d/db_setup.dev.sh
     ports:
       - "6543:5432"
     restart: unless-stopped
