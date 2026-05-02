@@ -7,9 +7,9 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "yarn codegen && tsc -b && tsc --project tsconfig.cjs.json",
+    "build": "pnpm codegen && tsc -b && tsc --project tsconfig.cjs.json",
+    "watch": "pnpm codegen --watch",
     "dev": "exit 0",
-    "watch": "yarn codegen --watch",
     "codegen": "graphql-codegen --config codegen.yml",
     "depcheck": "depcheck --ignores=\"@graphql-codegen/*,@urql/*,urql,graphql-tag,graphql-codegen-persisted-query-ids,tslib\""
   },

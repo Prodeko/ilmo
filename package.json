@@ -3,39 +3,40 @@
   "version": "0.0.1",
   "private": true,
   "description": "Ilmoittaudu tapahtumiin",
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "setup": "yarn && yarn setup:env auto && yarn setup:db",
+    "setup": "pnpm install && pnpm setup:env auto && pnpm setup:db",
     "setup:env": "node ./scripts/setup_env.mjs",
     "setup:db": "node ./scripts/setup_db.mjs",
     "start": "node ./scripts/start.mjs",
     "test": "node scripts/test.mjs",
     "test:watch": "node scripts/test.mjs --watch",
-    "lint": "tsc -b && yarn prettier:all --check && yarn eslint .",
-    "lint:fix": "yarn eslint --fix . && yarn prettier:all --write && jsonsort @app/client/src/translations",
+    "lint": "tsc -b && pnpm prettier:all --check && pnpm eslint .",
+    "lint:fix": "pnpm eslint --fix . && pnpm prettier:all --write && jsonsort @app/client/src/translations",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.graphql",
     "prettier:all": "prettier --ignore-path .eslintignore \"**/*.{js,jsx,ts,tsx,graphql,md}\"",
-    "build": "yarn workspaces foreach -pt run build",
+    "build": "pnpm -r --workspace-concurrency=1 run build",
     "clean": "node ./scripts/clean.mjs",
-    "reset": "yarn clean && node ./scripts/delete-env-file.mjs",
+    "reset": "pnpm clean && node ./scripts/delete-env-file.mjs",
     "tsc": "tsc -b ./@app/lib/tsconfig.cjs.json tsconfig.json",
-    "dev": "yarn graphql build && yarn tsc && yarn concurrently",
-    "concurrently": "concurrently --kill-others-on-fail --names \"TSC,WATCH,RUN\" --prefix \"({name})\" --prefix-colors \"yellow.bold,yellow.bold,cyan.bold,greenBright.bold\" \"tsc -b --watch --preserveWatchOutput\" \"yarn workspaces foreach -p run watch\" \"yarn workspaces foreach -p run dev\"",
-    "depcheck": "yarn workspaces foreach -p run depcheck",
+    "dev": "pnpm --filter @app/graphql run build && pnpm tsc && pnpm concurrently",
+    "concurrently": "concurrently --kill-others-on-fail --names \"TSC,WATCH,RUN\" --prefix \"({name})\" --prefix-colors \"yellow.bold,yellow.bold,cyan.bold,greenBright.bold\" \"tsc -b --watch --preserveWatchOutput\" \"pnpm -r --parallel run watch\" \"pnpm -r --parallel run dev\"",
+    "depcheck": "pnpm -r run depcheck",
     "upgrade-packages": "ncu --deep -u",
     "--shortcuts to run commands in workspaces--": "",
-    "client": "yarn workspace @app/client",
-    "components": "yarn workspace @app/components",
-    "db": "yarn workspace @app/db",
-    "graphql": "yarn workspace @app/graphql",
-    "lib": "yarn workspace @app/lib",
-    "server": "yarn workspace @app/server",
-    "worker": "yarn workspace @app/worker",
+    "client": "pnpm --filter @app/client",
+    "components": "pnpm --filter @app/components",
+    "db": "pnpm --filter @app/db",
+    "graphql": "pnpm --filter @app/graphql",
+    "lib": "pnpm --filter @app/lib",
+    "server": "pnpm --filter @app/server",
+    "worker": "pnpm --filter @app/worker",
     "postinstall": "npx next telemetry disable"
   },
   "author": "Prodeko webbitiimi <cto@prodeko.org>",
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
-    "@app/db": "workspace:@app/db",
+    "@app/db": "workspace:*",
     "@emotion-icons/material": "^3.14.0",
     "abort-controller": "^3.0.0",
     "core-js": "^3.24.1",
@@ -89,19 +90,16 @@
     "type-fest": "^2.18.0",
     "typescript": "4.7.4"
   },
-  "resolutions": {
-    "graphql": "15.x",
-    "graphql-upload": "13.x",
-    "faker": "5.5.3",
-    "chalk": "4.1.2",
-    "antd-dayjs-webpack-plugin": "github:Chastrlove/antd-dayjs-webpack-plugin",
-    "got": "11.x",
-    "dayjs": "1.11.4"
-  },
-  "workspaces": {
-    "packages": [
-      "@app/*"
-    ]
+  "pnpm": {
+    "overrides": {
+      "graphql": "15.x",
+      "graphql-upload": "13.x",
+      "faker": "5.5.3",
+      "chalk": "4.1.2",
+      "antd-dayjs-webpack-plugin": "github:Chastrlove/antd-dayjs-webpack-plugin",
+      "got": "11.x",
+      "dayjs": "1.11.4"
+    }
   },
   "prettier": {
     "trailingComma": "es5",
@@ -119,7 +117,6 @@
       }
     ]
   },
-  "packageManager": "yarn@3.2.2",
   "engines": {
     "node": ">=14"
   }

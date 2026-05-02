@@ -22,11 +22,6 @@
     ".gmrc": "jsonc"
   },
 
-  "search.exclude": {
-    "**/.yarn": true,
-    "**/.pnp.*": true
-  },
-
   "prettier.disableLanguages": [],
 
   "typescript.tsdk": "./node_modules/typescript/lib",

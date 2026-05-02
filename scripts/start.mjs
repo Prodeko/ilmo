@@ -7,11 +7,11 @@ const __dirname = dirname(import.meta)
 const ENVFILE = `${__dirname}/../.env`
 
 if (!existsSync(ENVFILE)) {
-  console.error("🛠️  Please run 'yarn setup' before running 'yarn start'")
+  console.error("🛠️  Please run 'pnpm setup' before running 'pnpm start'")
   process.exit(1)
 }
 
-spawn("yarn", ["dev"], {
+spawn("pnpm", ["dev"], {
   stdio: "inherit",
   env: {
     ...process.env,

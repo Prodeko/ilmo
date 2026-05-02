@@ -19,7 +19,7 @@ normal users often don't have sufficient permissions to install extensions.
 This is where your new database changes go. They need to be idempotent (for
 explanation
 [read the Graphile Migrate README](https://github.com/graphile/migrate/blob/main/README.md)).
-The `yarn start` command will automatically watch these files and re-run them
+The `pnpm start` command will automatically watch these files and re-run them
 whenever they change, updating your database in realtime. Each file needs a
 unique positive integer prefix, we've started you off with
 `current/1-current.sql` but you can add more if it helps you structure your
@@ -51,7 +51,7 @@ When you're happy with the changes you have made, you can commit your migration
 with
 
 ```
-yarn db commit
+pnpm db commit
 ```
 
 This will call `graphile-migrate commit` which involves merging the
@@ -63,7 +63,7 @@ If you've not yet merged your changes (and no-one else has ran them) then you
 can run
 
 ```
-yarn db uncommit
+pnpm db uncommit
 ```
 
 and it will perform the reverse of this process so that you may modify the

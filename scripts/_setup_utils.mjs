@@ -15,7 +15,7 @@ export function dirname(meta) {
 
 const __dirname = dirname(import.meta)
 // fixes runSync not throwing ENOENT on windows
-export const yarnCmd = platform() === "win32" ? "yarn.cmd" : "yarn"
+export const pnpmCmd = platform() === "win32" ? "pnpm.cmd" : "pnpm"
 export const projectName = process.env.PROJECT_NAME
 
 export function updateDotenv(add, answers) {

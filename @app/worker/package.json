@@ -5,10 +5,10 @@
   "scripts": {
     "gw": "cd dist && NODE_OPTIONS=\"-r @app/config/env.js\" graphile-worker --crontab ../crontab",
     "build": "tsc -b",
-    "start": "yarn gw",
-    "dev": "yarn run --inspect gw --watch",
+    "start": "pnpm gw",
+    "dev": "cd dist && NODE_OPTIONS=\"--inspect -r @app/config/env.js\" pnpm exec graphile-worker --crontab ../crontab --watch",
     "watch": "exit 0",
-    "install-db-schema": "mkdirp dist && yarn gw --schema-only",
+    "install-db-schema": "mkdirp dist && pnpm gw --schema-only",
     "depcheck": "depcheck --ignores=\"tslib\""
   },
   "dependencies": {

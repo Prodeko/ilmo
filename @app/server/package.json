@@ -5,11 +5,11 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc -b",
-    "start": "yarn node -r @app/config/env.js dist/index.js",
+    "start": "node -r @app/config/env.js dist/index.js",
     "dev": "nodemon --signal SIGINT --watch 'dist/**/*.js' -x \"node --max_old_space_size=8192 --inspect=9678 -r @app/config/env.js -r source-map-support/register\" dist/index.js",
     "watch": "exit 0",
-    "test": "NODE_OPTIONS=\"-r @app/config/env.js\" NODE_ENV=test yarn jest",
-    "schema:export": "NODE_OPTIONS=\"-r @app/config/env.js\" yarn ts-node --log-error scripts/schema-export.ts",
+    "test": "NODE_OPTIONS=\"-r @app/config/env.js\" NODE_ENV=test pnpm exec jest",
+    "schema:export": "NODE_OPTIONS=\"-r @app/config/env.js\" pnpm exec ts-node --log-error scripts/schema-export.ts",
     "depcheck": "depcheck --ignores=\"sharp,source-map-support,tslib,graphql,dayjs,type-fest\""
   },
   "dependencies": {
