@@ -1,20 +1,16 @@
 import { BlobServiceClient } from "@azure/storage-blob"
-import { createWriteStream, ReadStream, unlinkSync } from "node:fs"
+import { createWriteStream, unlinkSync } from "node:fs"
 import { join } from "node:path"
+import { Readable } from "node:stream"
 
 import type { FileUpload } from "graphql-upload"
 
-declare module "fs" {
-  interface ReadStream {
-    /**
-     * True if the request is a multipart request
-     */
-    truncated?: boolean
-  }
+interface UploadStream extends Readable {
+  truncated?: boolean
 }
 
 interface SaveLocalArgs {
-  stream: ReadStream
+  stream: UploadStream
   filename: string
 }
 

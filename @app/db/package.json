@@ -20,6 +20,7 @@
     "graphile-migrate": "^1.4.0"
   },
   "devDependencies": {
+    "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@types/pg": "8.6.5",
     "faker": "^6.6.6",

@@ -11,6 +11,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@app/components": "workspace:*",
+    "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
     "@sentry/nextjs": "^7.9.0",
