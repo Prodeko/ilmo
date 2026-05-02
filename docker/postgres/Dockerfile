@@ -22,4 +22,4 @@ RUN deps="curl build-essential ca-certificates git pkg-config glib2.0" \
     && apt-get autoremove -y --purge \
     && rm -rf /var/lib/apt/lists/
 
-COPY ./docker/dockerfiles/scripts/db_setup.dev.sh /docker-entrypoint-initdb.d/db_setup.dev.sh
+COPY db_setup.dev.sh /docker-entrypoint-initdb.d/db_setup.dev.sh

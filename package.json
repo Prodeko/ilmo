@@ -30,8 +30,6 @@
     "lib": "yarn workspace @app/lib",
     "server": "yarn workspace @app/server",
     "worker": "yarn workspace @app/worker",
-    "docker": "cd ./docker && yarn",
-    "docker-compose": "cd ./docker yarn compose",
     "postinstall": "npx next telemetry disable"
   },
   "author": "Prodeko webbitiimi <cto@prodeko.org>",
@@ -102,8 +100,7 @@
   },
   "workspaces": {
     "packages": [
-      "@app/*",
-      "docker"
+      "@app/*"
     ]
   },
   "prettier": {
