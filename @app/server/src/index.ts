@@ -23,33 +23,32 @@ async function main() {
 
   // And finally, we open the listen port
   const PORT = parseInt(process.env.PORT || "", 10) || 5678
-  app.listen(PORT, "0.0.0.0", () => {
-    const address = app.server.address()
-    const actualPort: string =
-      typeof address === "string"
-        ? address
-        : address && address.port
-        ? String(address.port)
-        : String(PORT)
-    console.log()
-    console.log(
-      chalk.green(
-        `${chalk.bold(packageJson.name)} listening on port ${chalk.bold(
-          actualPort
-        )}`
-      )
-    )
-    console.log()
-    console.log(
-      `  Site:     ${chalk.bold.underline(`http://localhost:${actualPort}`)}`
-    )
-    console.log(
-      `  GraphiQL: ${chalk.bold.underline(
-        `http://localhost:${actualPort}/graphiql`
+  await app.listen({ port: PORT, host: "0.0.0.0" })
+  const address = app.server.address()
+  const actualPort: string =
+    typeof address === "string"
+      ? address
+      : address && address.port
+      ? String(address.port)
+      : String(PORT)
+  console.log()
+  console.log(
+    chalk.green(
+      `${chalk.bold(packageJson.name)} listening on port ${chalk.bold(
+        actualPort
       )}`
     )
-    console.log()
-  })
+  )
+  console.log()
+  console.log(
+    `  Site:     ${chalk.bold.underline(`http://localhost:${actualPort}`)}`
+  )
+  console.log(
+    `  GraphiQL: ${chalk.bold.underline(
+      `http://localhost:${actualPort}/graphiql`
+    )}`
+  )
+  console.log()
 
   // Nodemon SIGUSR2 handling
   const shutdownActions = app.shutdownActions

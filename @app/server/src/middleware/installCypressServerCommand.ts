@@ -93,7 +93,7 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
          * response. This allows commands to do things like redirect to new
          * pages when they're done.
          */
-        res.redirect(204, payload.next || "/")
+        res.redirect(payload.next || "/", 204)
       } else {
         /*
          * The command returned a result, send it back to the test suite.

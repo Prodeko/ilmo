@@ -146,10 +146,21 @@ export default (
     )
   )
 
+  // @fastify/passport's authenticate() returns a RouteHandlerMethod (its
+  // return type is `unknown`), but fastify v5's preValidation slot wants a
+  // hook handler that returns void. Wrap to discard the return value.
+  const authenticate = fastifyPassport.authenticate(service, authenticateConfig)
+  const authenticateCallback = fastifyPassport.authenticate(service, {
+    failureRedirect: "/login",
+    successReturnToOrRedirect: "/",
+  })
+
   app.get(
     `/auth/${service}`,
     {
-      preValidation: fastifyPassport.authenticate(service, authenticateConfig),
+      preValidation: async (req, reply) => {
+        await authenticate.call(app, req, reply)
+      },
       preHandler: setReturnTo,
     },
     async (_req, _res) => {}
@@ -158,10 +169,9 @@ export default (
   app.get(
     `/auth/${service}/callback`,
     {
-      preValidation: fastifyPassport.authenticate(service, {
-        failureRedirect: "/login",
-        successReturnToOrRedirect: "/",
-      }),
+      preValidation: async (req, reply) => {
+        await authenticateCallback.call(app, req, reply)
+      },
     },
     async (_req, _res) => {}
   )
