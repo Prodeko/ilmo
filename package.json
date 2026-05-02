@@ -26,6 +26,7 @@
     "client": "pnpm --filter @app/client",
     "components": "pnpm --filter @app/components",
     "db": "pnpm --filter @app/db",
+    "e2e": "pnpm --filter @app/e2e",
     "graphql": "pnpm --filter @app/graphql",
     "lib": "pnpm --filter @app/lib",
     "server": "pnpm --filter @app/server",
@@ -101,7 +102,10 @@
       "antd-dayjs-webpack-plugin": "github:Chastrlove/antd-dayjs-webpack-plugin",
       "got": "11.x",
       "dayjs": "1.11.4"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "cypress"
+    ]
   },
   "prettier": {
     "trailingComma": "es5",

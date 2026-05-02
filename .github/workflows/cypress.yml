@@ -1,0 +1,87 @@
+name: End-to-end tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2, 3, 4, 5]
+
+    env:
+      NODE_ENV: test
+      CONFIRM_DROP: 1
+      DATABASE_HOST: postgres
+      ROOT_DATABASE_URL: postgres://postgres:postgres@postgres/template1
+      REDIS_URL: redis://redis:6379
+      ROOT_URL: http://0.0.0.0:5678
+
+    services:
+      redis:
+        image: redis
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        # Use a Postgres image that has wal2json installed
+        image: debezium/postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node and cache
+        uses: ./.github/actions/node-and-cache
+        with:
+          node-version: 20.x
+
+      - name: Setup and build
+        run: |
+          cp .env.ci .env
+          CONFIRM_DROP=1 pnpm setup
+          pnpm build
+
+      - name: Start server in background
+        run: pnpm --filter @app/server run start &
+
+      - name: Start worker in background
+        run: pnpm --filter @app/worker run start &
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          command: pnpm --filter @app/e2e run run:ci
+          working-directory: "@app/e2e"
+          wait-on: http://0.0.0.0:5678
+          parallel: true
+          install: false
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-${{ matrix.containers }}
+          path: "@app/e2e/cypress/screenshots"
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-${{ matrix.containers }}
+          path: "@app/e2e/cypress/videos"

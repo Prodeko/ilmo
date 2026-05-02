@@ -12,6 +12,9 @@ try {
   rimraf.sync(`${__dirname}/../@app/graphql/index.*`)
   rimraf.sync(`${__dirname}/../@app/graphql/introspection.json`)
   rimraf.sync(`${__dirname}/../@app/graphql/introspection.min.json`)
+  rimraf.sync(`${__dirname}/../@app/e2e/cypress/downloads/*`)
+  rimraf.sync(`${__dirname}/../@app/e2e/cypress/screenshots/*`)
+  rimraf.sync(`${__dirname}/../@app/e2e/cypress/videos/*`)
 } catch (e) {
   console.error("Failed to clean up, perhaps rimraf isn't installed?")
   console.error(e)

@@ -1,6 +1,13 @@
 module.exports = {
   overrides: [
     {
+      files: ["@app/e2e/cypress/**"],
+      plugins: ["cypress"],
+      env: {
+        "cypress/globals": true,
+      },
+    },
+    {
       files: ["*.graphql"],
       rules: {
         "prettier/prettier": 0,

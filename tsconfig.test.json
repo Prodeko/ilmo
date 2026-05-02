@@ -9,5 +9,5 @@
     "strictNullChecks": false,
     "noImplicitAny": false
   },
-  "exclude": []
+  "exclude": ["@app/e2e"]
 }
