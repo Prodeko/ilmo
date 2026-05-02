@@ -7,6 +7,7 @@
     "build": "tsc -b",
     "start": "yarn gw",
     "dev": "yarn run --inspect gw --watch",
+    "watch": "exit 0",
     "install-db-schema": "mkdirp dist && yarn gw --schema-only",
     "depcheck": "depcheck --ignores=\"tslib\""
   },

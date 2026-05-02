@@ -5,6 +5,7 @@
   "scripts": {
     "gm": "NODE_OPTIONS=\"-r @app/config/env\" yarn graphile-migrate",
     "migrate": "yarn gm migrate",
+    "dev": "exit 0",
     "watch": "yarn gm watch",
     "commit": "yarn gm commit",
     "uncommit": "yarn gm uncommit",

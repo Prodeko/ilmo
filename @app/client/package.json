@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"-r @app/config/env.js\" next build",
+    "dev": "NODE_OPTIONS=\"-r @app/config/env.js\" next dev",
+    "watch": "exit 0",
     "depcheck": "depcheck --ignores=\"less,less-loader,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer,antd-dayjs-webpack-plugin,next-plugin-antd-less,next-transpile-modules\" --ignore-patterns=.next"
   },
   "dependencies": {

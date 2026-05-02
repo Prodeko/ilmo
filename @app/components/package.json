@@ -6,6 +6,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsc -b",
+    "dev": "exit 0",
+    "watch": "exit 0",
     "depcheck": "depcheck --ignores=\"graphql\""
   },
   "dependencies": {
