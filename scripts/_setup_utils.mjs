@@ -1,5 +1,5 @@
-if (parseInt(process.version.split(".")[0], 16) < 16) {
-  throw new Error("This project requires Node.js >= 16.0.0")
+if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
+  throw new Error("This project requires Node.js >= 20.0.0")
 }
 
 import { promises as fsp } from "fs"
@@ -136,16 +136,11 @@ export function updateDotenv(add, answers) {
 # IMPORTANT: must NOT end with a slash`
   )
 
-  const nodeVersion = parseInt(
-    process.version.replace(/\..*$/, "").replace(/[^0-9]/g, ""),
-    10
-  )
-
   add(
     "GRAPHILE_TURBO",
-    nodeVersion >= 14 ? "1" : "",
+    "1",
     `\
-# Set to 1 only if you're on Node v14 of higher; enables advanced optimisations`
+# Enables advanced PostGraphile optimisations`
   )
 
   add(
