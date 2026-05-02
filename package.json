@@ -35,8 +35,10 @@
   "author": "Prodeko webbitiimi <cto@prodeko.org>",
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
+    "@app/components": "workspace:*",
     "@app/config": "workspace:*",
     "@app/db": "workspace:*",
+    "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
     "@emotion-icons/material": "^3.14.0",
     "abort-controller": "^3.0.0",

@@ -5,7 +5,8 @@
 - Node.js v20 LTS
 - pnpm 10 (`npm install -g pnpm`)
 - Docker (for db + redis services)
-- PostgreSQL with wal2json — the project ships a Docker image with wal2json included, so no host install is needed
+- PostgreSQL with wal2json — the project ships a Docker image with wal2json
+  included, so no host install is needed
 
 ## NOT FOR BEGINNERS
 
@@ -118,9 +119,9 @@ http://localhost:5678
 
 This main command runs a number of tasks:
 
-- uses [`graphile-migrate`](https://github.com/graphile/migrate) to watch
-  the `migrations/current.sql` file for changes, and automatically runs it
-  against your database when it changes
+- uses [`graphile-migrate`](https://github.com/graphile/migrate) to watch the
+  `migrations/current.sql` file for changes, and automatically runs it against
+  your database when it changes
 - watches the TypeScript source code of the server, and compiles it from
   `@app/*/src` to `@app/*/dist` so node/`graphile-worker`/etc. can run the
   compiled code directly

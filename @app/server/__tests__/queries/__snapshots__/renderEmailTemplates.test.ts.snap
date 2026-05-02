@@ -7,11 +7,9 @@ Object {
       "templates": Array [
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -58,26 +56,24 @@ Object {
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -103,7 +99,7 @@ Object {
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -311,11 +307,9 @@ necessary.
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -362,26 +356,24 @@ necessary.
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -407,7 +399,7 @@ necessary.
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -581,11 +573,9 @@ necessary.
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -634,26 +624,24 @@ necessary.
 .moz-text-html .mj-column-per-50 { width:50% !important; max-width: 50%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -679,7 +667,7 @@ necessary.
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -775,7 +763,7 @@ necessary.
         <tbody>
           
               <tr>
-                <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
         <tbody>
@@ -917,11 +905,9 @@ Confirm intent
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -968,26 +954,24 @@ Confirm intent
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -1013,7 +997,7 @@ Confirm intent
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -1299,11 +1283,9 @@ You can update or delete your registration via this link: http://localhost:5678/
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -1350,26 +1332,24 @@ You can update or delete your registration via this link: http://localhost:5678/
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -1395,7 +1375,7 @@ You can update or delete your registration via this link: http://localhost:5678/
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -1485,7 +1465,7 @@ You can update or delete your registration via this link: http://localhost:5678/
         <tbody>
           
               <tr>
-                <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
         <tbody>
@@ -1626,11 +1606,9 @@ Accept invitation
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -1679,26 +1657,24 @@ Accept invitation
 .moz-text-html .mj-column-per-50 { width:50% !important; max-width: 50%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -1724,7 +1700,7 @@ Accept invitation
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -1840,7 +1816,7 @@ Accept invitation
         <tbody>
           
               <tr>
-                <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
         <tbody>
@@ -1984,11 +1960,9 @@ Change Passphrase
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -2035,26 +2009,24 @@ Change Passphrase
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -2080,7 +2052,7 @@ Change Passphrase
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -2288,11 +2260,9 @@ This message is purely for your information. No action is required.
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -2339,26 +2309,24 @@ This message is purely for your information. No action is required.
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -2384,7 +2352,7 @@ This message is purely for your information. No action is required.
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -2670,11 +2638,9 @@ You can update or delete your registration via this link: http://localhost:5678/
         },
         Object {
           "html": "<!doctype html>
-<html xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
+<html lang=\\"und\\" dir=\\"auto\\" xmlns=\\"http://www.w3.org/1999/xhtml\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:o=\\"urn:schemas-microsoft-com:office:office\\">
   <head>
-    <title>
-      
-    </title>
+    <title></title>
     <!--[if !mso]><!-->
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
     <!--<![endif]-->
@@ -2723,26 +2689,24 @@ You can update or delete your registration via this link: http://localhost:5678/
 .moz-text-html .mj-column-per-50 { width:50% !important; max-width: 50%; }
     </style>
     
+    
   
+    
     <style type=\\"text/css\\">
-    
-    
 
-    @media only screen and (max-width:480px) {
+    @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
   
     </style>
-    <style type=\\"text/css\\">
     
-    </style>
     
   </head>
   <body style=\\"word-spacing:normal;background-color:#e7e7e7;\\">
     
     
-      <div style=\\"background-color:#e7e7e7;\\">
+      <div aria-roledescription=\\"email\\" style=\\"background-color:#e7e7e7;\\" role=\\"article\\" lang=\\"und\\" dir=\\"auto\\">
         
       
       <!--[if mso | IE]><table align=\\"center\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"\\" role=\\"presentation\\" style=\\"width:600px;\\" width=\\"600\\" ><tr><td style=\\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\\"><v:rect style=\\"width:600px;\\" xmlns:v=\\"urn:schemas-microsoft-com:vml\\" fill=\\"true\\" stroke=\\"false\\"><v:fill origin=\\"0.5, 0\\" position=\\"0.5, 0\\" src=\\"https://static.prodeko.org/static/images/backgrounds/bg-white.jpg\\" type=\\"tile\\" /><v:textbox style=\\"mso-fit-shape-to-text:true\\" inset=\\"0,0,0,0\\"><![endif]-->
@@ -2768,7 +2732,7 @@ You can update or delete your registration via this link: http://localhost:5678/
           <tr>
             <td style=\\"width:200px;\\">
               
-      <img height=\\"auto\\" src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\">
+      <img alt src=\\"https://static.prodeko.org/static/images/logos/prodeko-logo-text-blue.png\\" style=\\"border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;\\" width=\\"200\\" height=\\"auto\\">
     
             </td>
           </tr>
@@ -2884,7 +2848,7 @@ You can update or delete your registration via this link: http://localhost:5678/
         <tbody>
           
               <tr>
-                <td align=\\"center\\" vertical-align=\\"middle\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
+                <td align=\\"center\\" style=\\"font-size:0px;padding:10px 25px;word-break:break-word;\\">
                   
       <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" role=\\"presentation\\" style=\\"border-collapse:separate;line-height:100%;\\">
         <tbody>

@@ -1,12 +1,22 @@
 # Phase 1 Implementation Plan: yarn to pnpm and toolchain simplification
 
-> For agentic workers: REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> For agentic workers: REQUIRED SUB-SKILL: Use
+> superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
 
-Goal: Replace Yarn 3 with pnpm 10, bump Node 14 to 20, remove Nx, Cypress, the dev-container pattern, and the multi-stage Dockerfile. After this plan lands, a fresh clone runs with `pnpm i && pnpm dev`.
+Goal: Replace Yarn 3 with pnpm 10, bump Node 14 to 20, remove Nx, Cypress, the
+dev-container pattern, and the multi-stage Dockerfile. After this plan lands, a
+fresh clone runs with `pnpm i && pnpm dev`.
 
-Architecture: Nine sequential commits, each leaving the repo in a buildable state on the migration branch. The yarn-to-pnpm cutover (Task 4) is atomic. Cypress, Nx, and the dev container are removed first while still on yarn so each commit is reviewable in isolation. Docker and CI changes follow once pnpm works locally.
+Architecture: Nine sequential commits, each leaving the repo in a buildable
+state on the migration branch. The yarn-to-pnpm cutover (Task 4) is atomic.
+Cypress, Nx, and the dev container are removed first while still on yarn so each
+commit is reviewable in isolation. Docker and CI changes follow once pnpm works
+locally.
 
-Tech Stack: pnpm 10, Node 20 LTS, Docker, GitHub Actions, postgres (wal2json), redis, graphile-worker, postgraphile, Next.js, fastify.
+Tech Stack: pnpm 10, Node 20 LTS, Docker, GitHub Actions, postgres (wal2json),
+redis, graphile-worker, postgraphile, Next.js, fastify.
 
 Reference for the why: `ADR-001-toolchain-rework.md` at repo root.
 
@@ -19,18 +29,26 @@ Created:
 - `pnpm-workspace.yaml`
 - `.npmrc`
 - `Dockerfile` (replaces `docker/dockerfiles/Dockerfile.prod`)
-- `docker/postgres/Dockerfile` (relocated from `docker/dockerfiles/Dockerfile.dev.db`)
-- `docker/postgres/db_setup.dev.sh` (relocated from `docker/dockerfiles/scripts/db_setup.dev.sh`)
+- `docker/postgres/Dockerfile` (relocated from
+  `docker/dockerfiles/Dockerfile.dev.db`)
+- `docker/postgres/db_setup.dev.sh` (relocated from
+  `docker/dockerfiles/scripts/db_setup.dev.sh`)
 
 Modified:
 
 - `package.json` (root)
-- `@app/server/package.json`, `@app/worker/package.json`, `@app/db/package.json`, `@app/graphql/package.json`, `@app/client/package.json`, `@app/components/package.json`, `@app/lib/package.json`, `@app/config/package.json`
+- `@app/server/package.json`, `@app/worker/package.json`,
+  `@app/db/package.json`, `@app/graphql/package.json`,
+  `@app/client/package.json`, `@app/components/package.json`,
+  `@app/lib/package.json`, `@app/config/package.json`
 - `@app/db/.gmrc`
-- `scripts/_setup_utils.mjs`, `scripts/setup_env.mjs`, `scripts/setup_db.mjs`, `scripts/test.mjs`, `scripts/start.mjs`, `scripts/clean.mjs`
-- `docker-compose.yml`, `docker-compose.prod.yml`, `docker-compose.test.prod.yml`
+- `scripts/_setup_utils.mjs`, `scripts/setup_env.mjs`, `scripts/setup_db.mjs`,
+  `scripts/test.mjs`, `scripts/start.mjs`, `scripts/clean.mjs`
+- `docker-compose.yml`, `docker-compose.prod.yml`,
+  `docker-compose.test.prod.yml`
 - `.gitignore`, `.dockerignore`
-- `.github/workflows/nodejs.yml`, `.github/workflows/production-docker.yml`, `.github/workflows/nextjs_bundle_analysis.yml`
+- `.github/workflows/nodejs.yml`, `.github/workflows/production-docker.yml`,
+  `.github/workflows/nextjs_bundle_analysis.yml`
 - `.github/actions/node-and-cache/action.yml`
 - `README.md`
 
@@ -39,13 +57,15 @@ Deleted:
 - `.yarn/` (entire directory)
 - `yarn.lock`, `.yarnrc.yml`
 - `nx.json`, `workspace.json`
-- `apollo.config.js` (only used by the VSCode Apollo extension that nobody is running)
+- `apollo.config.js` (only used by the VSCode Apollo extension that nobody is
+  running)
 - `@app/e2e/` (entire workspace)
 - `.github/workflows/cypress.yml`
 - `docker/package.json`, `docker/README.md`
 - `docker/dockerfiles/Dockerfile.dev`
 - `docker/dockerfiles/Dockerfile.prod` (replaced by root `Dockerfile`)
-- `docker/scripts/setup.sh`, `docker/scripts/clean-volumes.mjs`, `docker/scripts/docker-setup.mjs`
+- `docker/scripts/setup.sh`, `docker/scripts/clean-volumes.mjs`,
+  `docker/scripts/docker-setup.mjs`
 - `docker/dockerfiles/scripts/` (after `db_setup.dev.sh` is moved)
 - `.devcontainer/`
 
@@ -76,13 +96,13 @@ In `package.json`, delete this line from the `scripts` block:
 
 - [ ] Step 3: Verify nothing else references `@app/e2e`
 
-Run: `grep -rn "@app/e2e\|app/e2e" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" --include="*.yml" .`
+Run:
+`grep -rn "@app/e2e\|app/e2e" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" --include="*.yml" .`
 Expected: no matches outside of `yarn.lock` and the deleted files.
 
 - [ ] Step 4: Sanity-check that yarn install still works
 
-Run: `yarn install`
-Expected: clean install, no errors.
+Run: `yarn install` Expected: clean install, no errors.
 
 - [ ] Step 5: Commit
 
@@ -96,7 +116,8 @@ git commit -m "Remove Cypress and @app/e2e workspace"
 Files:
 
 - Delete: `nx.json`, `workspace.json`
-- Modify: `package.json` (root) - remove nx packages from `dependencies` and `devDependencies`, remove `nxmany` and Nx-using scripts
+- Modify: `package.json` (root) - remove nx packages from `dependencies` and
+  `devDependencies`, remove `nxmany` and Nx-using scripts
 - Modify: `scripts/clean.mjs` - remove the `nx clear-cache` call
 
 - [ ] Step 1: Delete the Nx config files
@@ -128,7 +149,9 @@ From `devDependencies`, remove:
 
 - [ ] Step 3: Replace Nx-driven scripts in root `package.json`
 
-Replace the `nxmany`, `build`, `test:`, `posttest`, `setup:packages`, `dev`, `concurrently`, and `depcheck` scripts. After this step the scripts block looks like:
+Replace the `nxmany`, `build`, `test:`, `posttest`, `setup:packages`, `dev`,
+`concurrently`, and `depcheck` scripts. After this step the scripts block looks
+like:
 
 ```json
 "setup": "yarn && yarn setup:env auto && yarn setup:db",
@@ -160,17 +183,27 @@ Replace the `nxmany`, `build`, `test:`, `posttest`, `setup:packages`, `dev`, `co
 "postinstall": "npx next telemetry disable"
 ```
 
-Note: the `docker` and `docker-compose` shortcuts are also removed because the `docker/` workspace is deleted in Task 3. The `posttest` script is dropped because nothing in the project actually defined a `posttest` target.
+Note: the `docker` and `docker-compose` shortcuts are also removed because the
+`docker/` workspace is deleted in Task 3. The `posttest` script is dropped
+because nothing in the project actually defined a `posttest` target.
 
 - [ ] Step 4: Add `watch` and `dev` scripts to workspaces that need them
 
-Several workspaces previously inherited their `watch`/`dev` targets from Nx target defaults. Verify by inspection: `@app/graphql` already has `watch`. Add a no-op `watch`/`dev` to workspaces that don't define them so `yarn workspaces foreach -p run dev` does not error. In each of `@app/server/package.json`, `@app/worker/package.json`, `@app/client/package.json`, `@app/components/package.json`, `@app/lib/package.json`, `@app/config/package.json`, `@app/db/package.json`, ensure a `watch` script exists; if absent, add:
+Several workspaces previously inherited their `watch`/`dev` targets from Nx
+target defaults. Verify by inspection: `@app/graphql` already has `watch`. Add a
+no-op `watch`/`dev` to workspaces that don't define them so
+`yarn workspaces foreach -p run dev` does not error. In each of
+`@app/server/package.json`, `@app/worker/package.json`,
+`@app/client/package.json`, `@app/components/package.json`,
+`@app/lib/package.json`, `@app/config/package.json`, `@app/db/package.json`,
+ensure a `watch` script exists; if absent, add:
 
 ```json
 "watch": "exit 0",
 ```
 
-And ensure each that should not run `dev` defines `"dev": "exit 0"`. The workspaces that should actually do something on `dev`:
+And ensure each that should not run `dev` defines `"dev": "exit 0"`. The
+workspaces that should actually do something on `dev`:
 
 - `@app/server`: keeps existing `dev` (the nodemon line).
 - `@app/client`: add `"dev": "NODE_OPTIONS=\"-r @app/config/env.js\" next dev"`.
@@ -211,11 +244,14 @@ yarn build
 yarn lint
 ```
 
-Expected: build and lint complete without errors. `dev` is not validated yet because `yarn workspaces foreach` orchestration may need tuning, which is left for the smoke test in Task 9.
+Expected: build and lint complete without errors. `dev` is not validated yet
+because `yarn workspaces foreach` orchestration may need tuning, which is left
+for the smoke test in Task 9.
 
 - [ ] Step 7: Confirm no Nx remnants
 
-Run: `grep -rn "nx\|nrwl" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" --include="*.yml" .`
+Run:
+`grep -rn "nx\|nrwl" --include="*.json" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.mjs" --include="*.yml" .`
 Expected: no remaining matches outside `yarn.lock`.
 
 - [ ] Step 8: Commit
@@ -229,12 +265,17 @@ git commit -m "Remove Nx and switch to yarn workspaces foreach"
 
 Files:
 
-- Delete: `.devcontainer/`, `docker/package.json`, `docker/README.md`, `docker/dockerfiles/Dockerfile.dev`, `docker/scripts/`
+- Delete: `.devcontainer/`, `docker/package.json`, `docker/README.md`,
+  `docker/dockerfiles/Dockerfile.dev`, `docker/scripts/`
 - Move: `docker/dockerfiles/Dockerfile.dev.db` → `docker/postgres/Dockerfile`
-- Move: `docker/dockerfiles/scripts/db_setup.dev.sh` → `docker/postgres/db_setup.dev.sh`
-- Modify: `docker/postgres/Dockerfile` (update the `COPY` path now that the script lives next to it)
-- Modify: `docker-compose.yml` (strip `server` and `dev` services, repoint `db` build context)
-- Modify: `package.json` (root) - remove `docker` and `docker-compose` shortcut scripts (already done in Task 2)
+- Move: `docker/dockerfiles/scripts/db_setup.dev.sh` →
+  `docker/postgres/db_setup.dev.sh`
+- Modify: `docker/postgres/Dockerfile` (update the `COPY` path now that the
+  script lives next to it)
+- Modify: `docker-compose.yml` (strip `server` and `dev` services, repoint `db`
+  build context)
+- Modify: `package.json` (root) - remove `docker` and `docker-compose` shortcut
+  scripts (already done in Task 2)
 
 - [ ] Step 1: Move the wal2json Postgres files
 
@@ -325,17 +366,24 @@ git commit -m "Slim docker-compose to db+redis, remove dev container"
 
 ## Task 4: Migrate yarn to pnpm
 
-This is the atomic cutover. The repo is unbuildable mid-task; commit only when every step in this task passes.
+This is the atomic cutover. The repo is unbuildable mid-task; commit only when
+every step in this task passes.
 
 Files:
 
 - Create: `pnpm-workspace.yaml`, `.npmrc`
-- Modify: `package.json` (root) - convert `workspaces` to nothing (handled in pnpm-workspace.yaml), `resolutions` to `pnpm.overrides`, fix `workspace:@app/db` reference, replace yarn refs in scripts, set `packageManager`
+- Modify: `package.json` (root) - convert `workspaces` to nothing (handled in
+  pnpm-workspace.yaml), `resolutions` to `pnpm.overrides`, fix
+  `workspace:@app/db` reference, replace yarn refs in scripts, set
+  `packageManager`
 - Modify: every `@app/*/package.json` - replace yarn refs in scripts
 - Modify: `@app/db/.gmrc` - replace `yarn workspace` with `pnpm --filter`
-- Modify: `scripts/_setup_utils.mjs` - rename `yarnCmd` to `pnpmCmd` and update value
-- Modify: `scripts/setup_env.mjs`, `scripts/setup_db.mjs` - update import and usage
-- Modify: `scripts/test.mjs` - replace `yarn db ...` and `yarn node ...` with pnpm equivalents
+- Modify: `scripts/_setup_utils.mjs` - rename `yarnCmd` to `pnpmCmd` and update
+  value
+- Modify: `scripts/setup_env.mjs`, `scripts/setup_db.mjs` - update import and
+  usage
+- Modify: `scripts/test.mjs` - replace `yarn db ...` and `yarn node ...` with
+  pnpm equivalents
 - Modify: `scripts/start.mjs` - spawn `pnpm` instead of `yarn`
 - Modify: `.gitignore` - remove yarn-specific patterns, add pnpm-specific
 - Modify: `.dockerignore` - remove yarn-specific patterns
@@ -355,7 +403,9 @@ node-linker=hoisted
 auto-install-peers=true
 ```
 
-`hoisted` is chosen for the lowest risk of latent transitive-dep bugs surfacing on day one. After phase 1 stabilizes, this can be removed to use pnpm's default symlinked layout.
+`hoisted` is chosen for the lowest risk of latent transitive-dep bugs surfacing
+on day one. After phase 1 stabilizes, this can be removed to use pnpm's default
+symlinked layout.
 
 - [ ] Step 3: Update root `package.json`
 
@@ -369,7 +419,8 @@ a) Set `packageManager`:
 
 b) Remove the `workspaces` field entirely.
 
-c) Rename `resolutions` to `pnpm.overrides` and put it inside a top-level `pnpm` object:
+c) Rename `resolutions` to `pnpm.overrides` and put it inside a top-level `pnpm`
+object:
 
 ```json
 "pnpm": {
@@ -397,7 +448,8 @@ to:
 "@app/db": "workspace:*",
 ```
 
-e) Replace every `yarn` reference in `scripts` with `pnpm`. Final `scripts` block:
+e) Replace every `yarn` reference in `scripts` with `pnpm`. Final `scripts`
+block:
 
 ```json
 "setup": "pnpm install && pnpm setup:env auto && pnpm setup:db",
@@ -429,14 +481,18 @@ e) Replace every `yarn` reference in `scripts` with `pnpm`. Final `scripts` bloc
 "postinstall": "npx next telemetry disable"
 ```
 
-`--workspace-concurrency=1` for `build` enforces topological order. The watch and dev orchestration uses `--parallel`.
+`--workspace-concurrency=1` for `build` enforces topological order. The watch
+and dev orchestration uses `--parallel`.
 
 - [ ] Step 4: Update each workspace `package.json`
 
-Replace every `yarn X` with `pnpm X` and every `yarn workspace @app/foo` with `pnpm --filter @app/foo`. Notable substitutions:
+Replace every `yarn X` with `pnpm X` and every `yarn workspace @app/foo` with
+`pnpm --filter @app/foo`. Notable substitutions:
 
 - `yarn node` → `node` (no PnP loader, plain `node` works).
-- `yarn run --inspect gw --watch` (in `@app/worker`) → `node --inspect node_modules/.bin/graphile-worker --crontab ./crontab --watch`. Verify by reading the binary path in `node_modules/.bin/`.
+- `yarn run --inspect gw --watch` (in `@app/worker`) →
+  `node --inspect node_modules/.bin/graphile-worker --crontab ./crontab --watch`.
+  Verify by reading the binary path in `node_modules/.bin/`.
 - `yarn ts-node` → `pnpm exec ts-node`.
 - `yarn jest` → `pnpm exec jest`.
 
@@ -462,7 +518,9 @@ Replace every `yarn X` with `pnpm X` and every `yarn workspace @app/foo` with `p
 "depcheck": "depcheck --ignores=\"tslib\""
 ```
 
-Note: `@app/worker` may not have its own `node_modules/.bin/graphile-worker` if hoisted; if `--inspect` cannot find the binary, replace the `dev` line with `pnpm exec graphile-worker --inspect ...` and fall back to running through pnpm.
+Note: `@app/worker` may not have its own `node_modules/.bin/graphile-worker` if
+hoisted; if `--inspect` cannot find the binary, replace the `dev` line with
+`pnpm exec graphile-worker --inspect ...` and fall back to running through pnpm.
 
 `@app/db/package.json` final scripts:
 
@@ -489,7 +547,9 @@ Note: `@app/worker` may not have its own `node_modules/.bin/graphile-worker` if 
 "depcheck": "depcheck --ignores=\"@graphql-codegen/*,@urql/*,urql,graphql-tag,graphql-codegen-persisted-query-ids,tslib\""
 ```
 
-The remaining workspaces (`@app/client`, `@app/components`, `@app/lib`, `@app/config`) have no `yarn` references in their scripts and need no changes other than the `dev`/`watch` no-ops added in Task 2 step 4.
+The remaining workspaces (`@app/client`, `@app/components`, `@app/lib`,
+`@app/config`) have no `yarn` references in their scripts and need no changes
+other than the `dev`/`watch` no-ops added in Task 2 step 4.
 
 - [ ] Step 5: Update `@app/db/.gmrc`
 
@@ -530,7 +590,9 @@ import {
 } from "./_setup_utils.mjs"
 ```
 
-Replace each `runSync(yarnCmd, [...])` call with `runSync(pnpmCmd, ["--filter", "@app/<name>", "run", "build"])`. The three lines become:
+Replace each `runSync(yarnCmd, [...])` call with
+`runSync(pnpmCmd, ["--filter", "@app/<name>", "run", "build"])`. The three lines
+become:
 
 ```javascript
 runSync(pnpmCmd, ["--filter", "@app/graphql", "run", "build"])
@@ -538,7 +600,8 @@ runSync(pnpmCmd, ["--filter", "@app/lib", "run", "build"])
 runSync(pnpmCmd, ["--filter", "@app/server", "run", "build"])
 ```
 
-Replace the `${yarnCmd} setup:db` reference in the outro template literal with `${pnpmCmd} setup:db`.
+Replace the `${yarnCmd} setup:db` reference in the outro template literal with
+`${pnpmCmd} setup:db`.
 
 - [ ] Step 8: Update `scripts/setup_db.mjs`
 
@@ -572,7 +635,9 @@ runSync(pnpmCmd, ["--filter", "@app/db", "run", "reset", "--erase"])
 runSync(pnpmCmd, ["--filter", "@app/db", "run", "reset", "--shadow", "--erase"])
 ```
 
-The outro template `${yarnCmd} start` becomes `${pnpmCmd} start`. Drop the `export UID; yarn docker start` branch entirely; replace with `${pnpmCmd} start` since the docker-helpers workspace is gone.
+The outro template `${yarnCmd} start` becomes `${pnpmCmd} start`. Drop the
+`export UID; yarn docker start` branch entirely; replace with `${pnpmCmd} start`
+since the docker-helpers workspace is gone.
 
 - [ ] Step 9: Update `scripts/test.mjs`
 
@@ -656,7 +721,8 @@ Remove the yarn-specific block:
 yarn-error.log
 ```
 
-The `yarn-error.log` line appears twice; remove both. No pnpm-specific entries are required because pnpm-lock.yaml should be committed.
+The `yarn-error.log` line appears twice; remove both. No pnpm-specific entries
+are required because pnpm-lock.yaml should be committed.
 
 - [ ] Step 12: Update `.dockerignore`
 
@@ -668,7 +734,8 @@ No yarn-specific entries are present. Add:
 yarn.lock
 ```
 
-This is defensive: if any of these files survive uncommitted on a contributor's machine, they will not bleed into Docker builds.
+This is defensive: if any of these files survive uncommitted on a contributor's
+machine, they will not bleed into Docker builds.
 
 - [ ] Step 13: Delete yarn artifacts
 
@@ -685,7 +752,8 @@ corepack prepare pnpm@10.0.0 --activate
 pnpm install
 ```
 
-Expected: `pnpm-lock.yaml` is created at the repo root, no peer dependency errors that block install. Warnings are acceptable.
+Expected: `pnpm-lock.yaml` is created at the repo root, no peer dependency
+errors that block install. Warnings are acceptable.
 
 - [ ] Step 15: Run the build
 
@@ -693,7 +761,9 @@ Expected: `pnpm-lock.yaml` is created at the repo root, no peer dependency error
 pnpm build
 ```
 
-Expected: every workspace builds. If a workspace fails because a transitive dep is no longer hoisted to the workspace's `node_modules`, add the missing dep to that workspace's `package.json` `dependencies` and re-run.
+Expected: every workspace builds. If a workspace fails because a transitive dep
+is no longer hoisted to the workspace's `node_modules`, add the missing dep to
+that workspace's `package.json` `dependencies` and re-run.
 
 - [ ] Step 16: Run lint
 
@@ -712,7 +782,8 @@ pnpm setup:db
 pnpm dev
 ```
 
-Expected: server starts on :5678 and responds to `curl http://localhost:5678/`. Worker starts. Watchers are running. Stop with Ctrl-C.
+Expected: server starts on :5678 and responds to `curl http://localhost:5678/`.
+Worker starts. Watchers are running. Stop with Ctrl-C.
 
 - [ ] Step 18: Commit
 
@@ -754,7 +825,8 @@ if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
 }
 ```
 
-The original used base 16 parsing of `v14.x.x`, which is a bug; it parsed the leading `v` and got NaN, so the check never fired. This step fixes that too.
+The original used base 16 parsing of `v14.x.x`, which is a bug; it parsed the
+leading `v` and got NaN, so the check never fired. This step fixes that too.
 
 - [ ] Step 3: Run install with Node 20 locally
 
@@ -768,7 +840,8 @@ pnpm build
 pnpm lint
 ```
 
-Expected: all green. If a dependency complains about Node 20, note it for the smoke test in Task 9 but do not chase it during this commit.
+Expected: all green. If a dependency complains about Node 20, note it for the
+smoke test in Task 9 but do not chase it during this commit.
 
 - [ ] Step 4: Commit
 
@@ -783,7 +856,8 @@ Files:
 
 - Create: `Dockerfile` (at repo root)
 - Delete: `docker/dockerfiles/Dockerfile.prod`
-- Modify: `docker-compose.prod.yml` and `docker-compose.test.prod.yml` - update entrypoints
+- Modify: `docker-compose.prod.yml` and `docker-compose.test.prod.yml` - update
+  entrypoints
 
 - [ ] Step 1: Create `Dockerfile` at repo root
 
@@ -842,9 +916,13 @@ CMD ["pnpm", "--filter", "@app/server", "run", "start"]
 
 Three deliberate changes from the previous Dockerfile:
 
-- Single stage. The previous build/clean/env multi-stage saved disk but added complexity that nobody is reading. With Node 20's prebuilt binaries, the build stage no longer needs `alpine-sdk`, `libtool`, or `python3`.
-- `tini` as PID 1 via `ENTRYPOINT ["/sbin/tini", "--"]` and exec-form `CMD`. This is the fix for the unkillable-container behavior.
-- `CMD` is the server target by default. The worker image overrides via the compose file.
+- Single stage. The previous build/clean/env multi-stage saved disk but added
+  complexity that nobody is reading. With Node 20's prebuilt binaries, the build
+  stage no longer needs `alpine-sdk`, `libtool`, or `python3`.
+- `tini` as PID 1 via `ENTRYPOINT ["/sbin/tini", "--"]` and exec-form `CMD`.
+  This is the fix for the unkillable-container behavior.
+- `CMD` is the server target by default. The worker image overrides via the
+  compose file.
 
 - [ ] Step 2: Delete the old multi-stage Dockerfile
 
@@ -854,7 +932,8 @@ rm docker/dockerfiles/Dockerfile.prod
 
 - [ ] Step 3: Update `docker-compose.prod.yml`
 
-Replace `entrypoint: yarn server start` and `entrypoint: yarn worker start` with `command` overrides (because the entrypoint is now `tini`):
+Replace `entrypoint: yarn server start` and `entrypoint: yarn worker start` with
+`command` overrides (because the entrypoint is now `tini`):
 
 ```yaml
 server:
@@ -879,11 +958,18 @@ worker:
     - server
 ```
 
-Note that today the production compose builds a single image as both `ilmo-server` and `ilmo-worker` (via the `target` argument). Phase 1 keeps this; phase 3 may collapse to a single image with two compose services pointing at it.
+Note that today the production compose builds a single image as both
+`ilmo-server` and `ilmo-worker` (via the `target` argument). Phase 1 keeps this;
+phase 3 may collapse to a single image with two compose services pointing at it.
 
 - [ ] Step 4: Update `docker-compose.test.prod.yml`
 
-Same treatment for the `server` and `worker` services. Replace `entrypoint: yarn server start` with `command: ["pnpm", "--filter", "@app/server", "run", "start"]` and the worker analogue. Update the volume `./docker/dockerfiles/scripts:/docker-entrypoint-initdb.d/` to `./docker/postgres:/docker-entrypoint-initdb.d/` to reflect Task 3's relocation.
+Same treatment for the `server` and `worker` services. Replace
+`entrypoint: yarn server start` with
+`command: ["pnpm", "--filter", "@app/server", "run", "start"]` and the worker
+analogue. Update the volume
+`./docker/dockerfiles/scripts:/docker-entrypoint-initdb.d/` to
+`./docker/postgres:/docker-entrypoint-initdb.d/` to reflect Task 3's relocation.
 
 - [ ] Step 5: Build and verify locally
 
@@ -892,7 +978,8 @@ docker build --build-arg ROOT_URL="http://localhost:5678" --tag ilmo-server .
 docker run --rm ilmo-server pnpm --filter @app/server run start --help || true
 ```
 
-Expected: image builds. The container does not need to be functional without env vars; the goal here is verifying the build itself.
+Expected: image builds. The container does not need to be functional without env
+vars; the goal here is verifying the build itself.
 
 - [ ] Step 6: Verify the container is killable
 
@@ -902,7 +989,8 @@ docker stop ilmo-test
 docker rm ilmo-test
 ```
 
-Expected: `docker stop` returns within ~2 seconds. This validates the `tini` PID 1 fix.
+Expected: `docker stop` returns within ~2 seconds. This validates the `tini` PID
+1 fix.
 
 - [ ] Step 7: Commit
 
@@ -951,7 +1039,8 @@ runs:
       run: pnpm install --frozen-lockfile
 ```
 
-`actions/setup-node@v4` understands `cache: pnpm` natively, so no separate cache step is needed.
+`actions/setup-node@v4` understands `cache: pnpm` natively, so no separate cache
+step is needed.
 
 - [ ] Step 2: Update `.github/workflows/nodejs.yml`
 
@@ -978,7 +1067,8 @@ Replace the install/setup/lint block with pnpm equivalents:
     pnpm depcheck
 ```
 
-Note that `pnpm install` is now part of the composite action, so the workflow no longer calls it explicitly.
+Note that `pnpm install` is now part of the composite action, so the workflow no
+longer calls it explicitly.
 
 - [ ] Step 3: Update `.github/workflows/production-docker.yml`
 
@@ -993,7 +1083,11 @@ Replace the `Setup database` step:
     CI: true
 ```
 
-Replace both `docker/build-push-action` blocks. Drop the `target: server` and `target: worker` because the new Dockerfile is single-stage; the same image runs both. Change the `file` to `./Dockerfile`. Drop the `Build worker` step entirely (the image is one). The compose file already differentiates by `command:`. Tag the single build as both:
+Replace both `docker/build-push-action` blocks. Drop the `target: server` and
+`target: worker` because the new Dockerfile is single-stage; the same image runs
+both. Change the `file` to `./Dockerfile`. Drop the `Build worker` step entirely
+(the image is one). The compose file already differentiates by `command:`. Tag
+the single build as both:
 
 ```yaml
 - name: Build production image
@@ -1014,7 +1108,8 @@ Replace both `docker/build-push-action` blocks. Drop the `target: server` and `t
     cache-to: type=gha,mode=max
 ```
 
-Update the `Start server` and `Start worker` `docker run` invocations to drop `--init` (it is now baked into the image via `tini`) and to match the new `CMD`:
+Update the `Start server` and `Start worker` `docker run` invocations to drop
+`--init` (it is now baked into the image via `tini`) and to match the new `CMD`:
 
 ```yaml
 - name: Start server
@@ -1063,7 +1158,8 @@ Replace `yarn install` and `yarn build --skip-nx-cache`:
   working-directory: .
 ```
 
-The composite action handles install. Drop `--skip-nx-cache` (Nx is gone). The build now targets the client workspace directly because Nx's run-many is gone.
+The composite action handles install. Drop `--skip-nx-cache` (Nx is gone). The
+build now targets the client workspace directly because Nx's run-many is gone.
 
 - [ ] Step 5: Commit
 
@@ -1080,8 +1176,8 @@ Files:
 
 - [ ] Step 1: Replace yarn references in the README
 
-Run: `grep -n "yarn" README.md`
-For each occurrence, replace the command appropriately:
+Run: `grep -n "yarn" README.md` For each occurrence, replace the command
+appropriately:
 
 - `yarn` (bare) → `pnpm install`
 - `yarn setup` → `pnpm setup`
@@ -1094,7 +1190,8 @@ For each occurrence, replace the command appropriately:
 
 - [ ] Step 2: Update the requirements section
 
-Change "Node v14" to "Node v20 LTS" and remove "yarn" from the requirements (replace with "pnpm 10, installed via `corepack enable`").
+Change "Node v14" to "Node v20 LTS" and remove "yarn" from the requirements
+(replace with "pnpm 10, installed via `corepack enable`").
 
 - [ ] Step 3: Update the bootstrap section
 
@@ -1117,7 +1214,9 @@ Server is on http://localhost:5678.
 
 - [ ] Step 4: Remove the docker-mode vs local-mode dichotomy
 
-The "Local mode | Docker mode" table and the warning about not mixing modes no longer apply. Delete or replace those sections with a brief note that the data services run in Docker and the application runs on the host.
+The "Local mode | Docker mode" table and the warning about not mixing modes no
+longer apply. Delete or replace those sections with a brief note that the data
+services run in Docker and the application runs on the host.
 
 - [ ] Step 5: Commit
 
@@ -1140,7 +1239,8 @@ cp .env.ci .env
 pnpm install
 ```
 
-Expected: `pnpm install` completes, `node_modules/` is populated, no peer-dep errors blocking install.
+Expected: `pnpm install` completes, `node_modules/` is populated, no peer-dep
+errors blocking install.
 
 - [ ] Step 2: Bootstrap the database
 
@@ -1156,7 +1256,8 @@ Expected: roles created, migrations run, no errors.
 pnpm dev
 ```
 
-Expected: server reachable at http://localhost:5678, worker logs show jobs being processed.
+Expected: server reachable at http://localhost:5678, worker logs show jobs being
+processed.
 
 - [ ] Step 4: Run tests
 
@@ -1172,7 +1273,8 @@ Expected: all tests pass.
 docker build --build-arg ROOT_URL=http://localhost:5678 --tag ilmo-prod .
 ```
 
-Expected: image builds, size noticeably smaller than the previous multi-stage image.
+Expected: image builds, size noticeably smaller than the previous multi-stage
+image.
 
 - [ ] Step 6: Verify the image starts and responds to SIGTERM
 
@@ -1186,7 +1288,8 @@ sleep 10
 time docker stop ilmo-prod-test
 ```
 
-Expected: `docker stop` returns within 2 seconds. This is the proof that the unkillable-container fix worked.
+Expected: `docker stop` returns within 2 seconds. This is the proof that the
+unkillable-container fix worked.
 
 - [ ] Step 7: Open the PR
 
@@ -1214,17 +1317,28 @@ EOF
 
 ## Risks and rollback
 
-If install or build fails on a workspace because pnpm's hoisting differs from yarn's, the fix is to add the missing dep to that workspace's `package.json`. This is benign and expected.
+If install or build fails on a workspace because pnpm's hoisting differs from
+yarn's, the fix is to add the missing dep to that workspace's `package.json`.
+This is benign and expected.
 
-If the production image fails to start because environment variables that yarn's shell wrapper provided are missing, the failure surfaces immediately at container start; logs will show the exact missing variable. None are expected, but the previous shell-form ENTRYPOINT did inherit the full shell environment, while exec-form does not.
+If the production image fails to start because environment variables that yarn's
+shell wrapper provided are missing, the failure surfaces immediately at
+container start; logs will show the exact missing variable. None are expected,
+but the previous shell-form ENTRYPOINT did inherit the full shell environment,
+while exec-form does not.
 
-Rollback is `git revert` of the merge commit. The branch can also be left unmerged indefinitely; the migration is on a single branch and does not affect main until merged.
+Rollback is `git revert` of the merge commit. The branch can also be left
+unmerged indefinitely; the migration is on a single branch and does not affect
+main until merged.
 
 ## What is explicitly not in this plan
 
-- Updating any non-toolchain dependency. PostGraphile, Next.js, ESLint, Jest, TypeScript stay on their current versions.
-- Changing application code, including the `SubscriptionsPlugin` that depends on wal2json.
+- Updating any non-toolchain dependency. PostGraphile, Next.js, ESLint, Jest,
+  TypeScript stay on their current versions.
+- Changing application code, including the `SubscriptionsPlugin` that depends on
+  wal2json.
 - Reworking the Ansible self-deploy pattern.
-- Adding observability or addressing the every-two-weeks crash beyond what falls out of the Node bump and the tini PID 1 fix.
+- Adding observability or addressing the every-two-weeks crash beyond what falls
+  out of the Node bump and the tini PID 1 fix.
 
 These belong to phases 2 and 3.

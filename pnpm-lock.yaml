@@ -17,12 +17,18 @@ importers:
 
   .:
     dependencies:
+      '@app/components':
+        specifier: workspace:*
+        version: link:@app/components
       '@app/config':
         specifier: workspace:*
         version: link:@app/config
       '@app/db':
         specifier: workspace:*
         version: link:@app/db
+      '@app/graphql':
+        specifier: workspace:*
+        version: link:@app/graphql
       '@app/lib':
         specifier: workspace:*
         version: link:@app/lib

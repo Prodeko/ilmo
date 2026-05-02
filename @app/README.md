@@ -3,8 +3,8 @@
 This folder contains the various components (aka "packages") of our project. We
 use [pnpm workspaces](https://pnpm.io/workspaces) to manage this monorepo, to
 help us to keep things separate without slowing development speed. All
-components of this project are named `@app/*` so that we can reference them
-from each other in a straightforward manner, e.g.
+components of this project are named `@app/*` so that we can reference them from
+each other in a straightforward manner, e.g.
 
 ```ts
 import { useAppQuery } from "@app/graphql"
