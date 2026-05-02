@@ -16,7 +16,7 @@
     "@app/lib": "workspace:*",
     "chalk": "^5.0.1",
     "dayjs": "^1.11.4",
-    "graphile-worker": "^0.13.0",
+    "graphile-worker": "^0.16.6",
     "html-to-text": "^8.2.1",
     "ioredis": "^5.2.2",
     "mjml": "^4.13.0",

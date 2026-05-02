@@ -44,7 +44,7 @@
     "graphile-build": "^4.12.3",
     "graphile-build-pg": "^4.12.3",
     "graphile-utils": "^4.12.3",
-    "graphile-worker": "^0.13.0",
+    "graphile-worker": "^0.16.6",
     "graphql-upload": "^16.0.1",
     "helmet": "^8.0.0",
     "html-to-text": "^8.2.1",
