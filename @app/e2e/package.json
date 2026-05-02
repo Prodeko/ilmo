@@ -22,8 +22,6 @@
     "cypress-file-upload": "^5.0.8",
     "dayjs": "^1.11.4",
     "depcheck": "^1.4.3",
-    "neat-csv": "^7.0.0",
-    "node-polyfill-webpack-plugin": "^2.0.1",
     "slugify": "^1.6.5",
     "webpack": "^5.74.0"
   }

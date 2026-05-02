@@ -1,8 +1,6 @@
 /// <reference types="cypress" />
 
 const wp = require("@cypress/webpack-preprocessor")
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
-const webpack = require("webpack")
 
 /**
  * @type {Cypress.PluginConfig}
@@ -10,24 +8,6 @@ const webpack = require("webpack")
 module.exports = (on, config) => {
   const options = {
     webpackOptions: {
-      plugins: [
-        new webpack.DefinePlugin({
-          // neat-csv uses process.versions.node which is not
-          // defined in a browser environment. So we define that
-          // here.
-          "process.versions.node": JSON.stringify(
-            process.versions.node || "0.0.0"
-          ),
-        }),
-        // node-polyfill-webpack-plugin handles bare specifiers
-        // (`require("buffer")`) but not the `node:` URI scheme that
-        // newer transitive deps emit. Strip the prefix so the polyfill
-        // plugin's bare-specifier mappings apply.
-        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
-          resource.request = resource.request.replace(/^node:/, "")
-        }),
-        new NodePolyfillPlugin(),
-      ],
       resolve: {
         extensions: [".ts", ".js"],
       },

@@ -1,8 +1,23 @@
 /// <reference types="Cypress" />
 
-import { join } from "path"
-
-import neatCsv from "neat-csv"
+// Minimal CSV parser. Replaces `neat-csv`, which transitively pulled
+// `node-polyfill-webpack-plugin` → `console-browserify` → broken `assert`
+// at runtime. The downloaded admin CSV is a single header line plus
+// rows separated by `;`, no quoted fields, no embedded newlines.
+const parseCsv = (
+  text: string,
+  separator = ";"
+): Array<Record<string, string>> => {
+  const [headerLine, ...rows] = text.replace(/\r\n/g, "\n").split("\n")
+  if (!headerLine) return []
+  const headers = headerLine.split(separator)
+  return rows
+    .filter((row) => row.length > 0)
+    .map((row) => {
+      const cells = row.split(separator)
+      return Object.fromEntries(headers.map((h, i) => [h, cells[i] ?? ""]))
+    })
+}
 
 const validateCsvList = (list, quota, question, registration) => {
   expect(list, "number of records").to.have.length(1)
@@ -44,10 +59,7 @@ context("Admin csv download", () => {
         cy.getCy("button-download-csv").should("exist")
         cy.getCy("button-download-csv").click()
 
-        const filename = join(
-          downloadsFolder,
-          `${event.slug}-registrations.csv`
-        )
+        const filename = `${downloadsFolder}/${event.slug}-registrations.csv`
 
         // browser might take a while to download the file,
         // so use "cy.readFile" to retry until the file exists
@@ -55,7 +67,7 @@ context("Admin csv download", () => {
         cy.readFile(filename, { timeout: 15000 })
           .should("have.length.gt", 50)
           // parse CSV text into objects
-          .then((data) => neatCsv(data, { separator: ";" }))
+          .then((data) => parseCsv(data as string, ";"))
           .then((list) => validateCsvList(list, quota, question, registration))
       }
     )

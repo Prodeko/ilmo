@@ -86,6 +86,10 @@ context("Create event registration", () => {
       cy.visit(
         Cypress.env("ROOT_URL") + `/event/${event.slug}/register/${quota.id}`
       )
+
+      // Wait a moment for the form to autofill before submitting
+      cy.wait(1000)
+
       cy.getCy("eventregistrationform-button-submit").click()
 
       // Assertion
