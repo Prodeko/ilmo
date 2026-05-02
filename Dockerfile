@@ -16,6 +16,7 @@ WORKDIR /app
 
 ARG NODE_ENV
 ARG ROOT_URL
+ARG PORT
 ENV NODE_ENV=${NODE_ENV}
 ENV ROOT_URL=${ROOT_URL}
 ENV GRAPHILE_TURBO=1
@@ -43,7 +44,7 @@ RUN --mount=type=secret,id=GITHUB_SHA \
     export GITHUB_SHA=$(cat /run/secrets/GITHUB_SHA 2>/dev/null || echo "unknown") && \
     NEXT_TRANSLATE_PATH=../client pnpm build
 
-RUN pnpm prune --prod
+RUN CI=true pnpm prune --prod
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
