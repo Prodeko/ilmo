@@ -1,23 +1,20 @@
 # Docker-compose file to debug production build issues.
-# Build containers first:
+# Build the image first:
 #
-# $ docker build --file docker/dockerfiles/Dockerfile.prod --build-arg ROOT_URL="http://localhost:5678" --target server --tag ilmo-server .
-# $ docker build --file docker/dockerfiles/Dockerfile.prod --build-arg ROOT_URL="http://localhost:5678" --target worker --tag ilmo-worker .
+# $ docker build --build-arg ROOT_URL="http://localhost:5678" --tag ilmo-server .
+# $ docker tag ilmo-server ilmo-worker
 #
-# Then run this compose stack with server entrypoint 'yarn db migrate'
-# Then run this compose stack with server entrypoint 'yarn server start'
+# Then run this compose stack with 'docker compose -f docker-compose.test.prod.yml up'
 #
-# The compose stack can be run with 'docker compose -f docker-compose.test.prod.yml up'
+# To run migrations on first start, override the server command to:
+# pnpm --filter @app/db run migrate
 
 version: "3.8"
 services:
   server:
     image: ilmo-server
     container_name: ilmo_server
-    # When starting the server for the first time change the
-    # entrypoint to 'yarn db migrate' manually. TODO: Figure out a better
-    # way to run migrations on initial deployment.
-    entrypoint: yarn server start
+    command: ["pnpm", "--filter", "@app/server", "run", "start"]
     ports:
       - "5678:5678"
     env_file:
@@ -28,8 +25,8 @@ services:
 
   worker:
     image: ilmo-worker
-    entrypoint: yarn worker start
     container_name: ilmo_worker
+    command: ["pnpm", "--filter", "@app/worker", "run", "start"]
     env_file:
       - .env.production
     depends_on:
@@ -53,7 +50,7 @@ services:
     working_dir: /
     volumes:
       - ilmo-postgres:/var/lib/postgresql/data
-      - ./docker/dockerfiles/scripts:/docker-entrypoint-initdb.d/
+      - ./docker/postgres:/docker-entrypoint-initdb.d/
       - ./data:/data
     restart: unless-stopped
     command:
