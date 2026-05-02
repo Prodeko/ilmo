@@ -23,7 +23,7 @@ const getRegistrationsByQuotaPosition = (
   return arr.reduce((a, x) => {
     const key = x?.quota?.position
     // @ts-ignore
-    ;(a[key] || (a[key] = [] || [])).push(x)
+    ;(a[key] || (a[key] = [])).push(x)
     return a
   }, {} as { [key: number]: EventPage_RegistrationFragment })
 }

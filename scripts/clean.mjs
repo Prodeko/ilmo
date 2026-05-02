@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import rimraf from "rimraf"
+
 import { dirname } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)

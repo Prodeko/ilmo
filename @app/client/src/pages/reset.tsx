@@ -72,7 +72,7 @@ const ResetPage: NextPage<Props> = ({ userId: rawUserId, token: rawToken }) => {
           })
           if (result?.data?.resetPassword?.success) {
             setState(State.SUCCESS)
-          } else if (!!result.error) {
+          } else if (result.error) {
             const code = getCodeFromError(result.error)
             if (code === "WEAKP") {
               setError(new Error(t("error:weakp")))

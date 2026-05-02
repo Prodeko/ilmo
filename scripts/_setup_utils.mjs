@@ -1,13 +1,14 @@
+import { promises as fsp } from "fs"
+import { platform } from "os"
+import { URL } from "url"
+
+import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+
 if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
   throw new Error("This project requires Node.js >= 20.0.0")
 }
-
-import { promises as fsp } from "fs"
+export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
-export { withDotenvUpdater, readDotenv } from "./lib/dotenv.mjs"
-import { safeRandomString, safeRandomHexString } from "./lib/random.mjs"
-import { platform } from "os"
-import { URL } from "url"
 
 export function dirname(meta) {
   return new URL(".", meta.url).pathname

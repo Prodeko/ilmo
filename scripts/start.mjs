@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { existsSync } from "fs"
 import { spawn } from "child_process"
+import { existsSync } from "fs"
+
 import { dirname } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)

@@ -59,7 +59,6 @@ const Settings_Security: NextPage = () => {
               errors: [t("errors.incorrectOldPassword")],
             },
           ])
-        } else {
         }
       }
     },

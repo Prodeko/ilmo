@@ -1,15 +1,16 @@
 #!/usr/bin/env node
+import inquirer from "inquirer"
+
 import {
-  pnpmCmd,
-  runMain,
   checkGit,
   outro,
-  withDotenvUpdater,
-  updateDotenv,
+  pnpmCmd,
   readDotenv,
+  runMain,
   runSync,
+  updateDotenv,
+  withDotenvUpdater,
 } from "./_setup_utils.mjs"
-import inquirer from "inquirer"
 
 runMain(async () => {
   await checkGit()

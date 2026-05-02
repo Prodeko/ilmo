@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import "@app/config/env.js"
 import { execSync, spawnSync as rawSpawnSync } from "child_process"
+
 import concurrently from "concurrently"
+
+import "@app/config/env.js"
 
 function spawnSync(cmd, args, options) {
   const result = rawSpawnSync(cmd, args, {

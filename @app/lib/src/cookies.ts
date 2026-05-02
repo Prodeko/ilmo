@@ -46,7 +46,7 @@ function handleCookiesSSR(ctx: NextPageContext | undefined) {
     // the Set-Cookie header. Read the cookies from the response header
     // and serialize them
     const setCookie = ctx?.res?.getHeaders()["set-cookie"]
-    if (!!setCookie) {
+    if (setCookie) {
       if (typeof setCookie === "string") {
         // When Set-Cookie contains only a single cookie, it is of type string
         handleCookie(setCookie)

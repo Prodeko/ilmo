@@ -1,12 +1,11 @@
-import path from "node:path"
-
+import BundleAnalyzer from "@next/bundle-analyzer"
+import { withSentryConfig } from "@sentry/nextjs"
 import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
 import _ from "lodash"
-import { withSentryConfig } from "@sentry/nextjs"
-import BundleAnalyzer from "@next/bundle-analyzer"
-import NextTranspileModules from "next-transpile-modules"
 import withAntdLess from "next-plugin-antd-less"
 import withNextTranslate from "next-translate"
+import NextTranspileModules from "next-transpile-modules"
+import path from "node:path"
 
 import localeConfig from "./i18n.js"
 

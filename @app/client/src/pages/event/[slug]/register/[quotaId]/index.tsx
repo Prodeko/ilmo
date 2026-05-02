@@ -37,7 +37,7 @@ const EventRegistrationPage: NextPage = () => {
   const { name, primaryEmail } = currentUser || {}
   // TODO: The users table schema could be changed to include first
   // and last names. For now infer first and last name like this...
-  const [firstName, lastName] = name ? name?.split(" ") : []
+  const [firstName, lastName] = name ? name.split(" ") : []
 
   const formInitialValues = {
     firstName,

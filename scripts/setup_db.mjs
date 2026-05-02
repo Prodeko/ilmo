@@ -1,15 +1,14 @@
 #!/usr/bin/env node
+import dotenv from "dotenv"
+import inquirer from "inquirer"
+import pg from "pg"
+
 import {
+  checkGit,
+ dirname,  outro,
   pnpmCmd,
   runMain,
-  checkGit,
-  outro,
-  runSync,
-} from "./_setup_utils.mjs"
-import inquirer from "inquirer"
-import dotenv from "dotenv"
-import pg from "pg"
-import { dirname } from "./_setup_utils.mjs"
+  runSync } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)
 

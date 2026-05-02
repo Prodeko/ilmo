@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+
 import { createServer } from "http"
 
 import chalk from "chalk"

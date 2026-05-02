@@ -64,8 +64,6 @@ export function downloadRegistrations(
             }
           } else if (key === "quota") {
             newRow[key] = newRow[key]?.title.fi
-          } else {
-            newRow[key] = newRow[key]
           }
         })
         delete newRow["answers"]
