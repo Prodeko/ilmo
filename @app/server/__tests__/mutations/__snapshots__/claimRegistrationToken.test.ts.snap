@@ -1,35 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ClaimRegistrationToken can claim a registration token 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "claimRegistrationToken": "[id-1]",
   },
 }
 `;
 
 exports[`ClaimRegistrationToken can't claim a token when eventId and quotaId don't match 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "claimRegistrationToken": "[id-1]",
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "NTFND",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 24 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Invalid event or quota id.",
-      "path": Array [
+      "path": [
         "claimRegistrationToken",
       ],
     },
@@ -38,27 +38,27 @@ Object {
 `;
 
 exports[`ClaimRegistrationToken can't claim a token when eventId is incorrect 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "claimRegistrationToken": "[id-1]",
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "NTFND",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 13 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Invalid event id.",
-      "path": Array [
+      "path": [
         "claimRegistrationToken",
       ],
     },
@@ -67,27 +67,27 @@ Object {
 `;
 
 exports[`ClaimRegistrationToken can't claim a token when quotaId is incorrect 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "claimRegistrationToken": "[id-1]",
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
           "code": "NTFND",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.claim_registration_token(uuid,uuid) line 24 at RAISE",
         },
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "Invalid event or quota id.",
-      "path": Array [
+      "path": [
         "claimRegistrationToken",
       ],
     },

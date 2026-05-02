@@ -13,14 +13,5 @@ module.exports = (dir) => {
 
     rootDir: dir,
     displayName: pkg.name,
-
-    // jest 29's resolver does not honour the `exports` field, so bare
-    // subpath imports like `@typespec/ts-http-runtime/internal/logger`
-    // (used transitively by @azure/storage-blob) fail to resolve. Map them
-    // to their on-disk CJS paths.
-    moduleNameMapper: {
-      "^@typespec/ts-http-runtime/internal/(.+)$":
-        "@typespec/ts-http-runtime/dist/commonjs/$1/internal.js",
-    },
   }
 }

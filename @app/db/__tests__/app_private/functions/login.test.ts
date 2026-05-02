@@ -35,7 +35,7 @@ it("can login with username+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
+      {
         "created_at": "[DATE]",
         "last_active": "[DATE]",
         "user_id": "[ID]",
@@ -51,7 +51,7 @@ it("can login with uSeRnAmE+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
+      {
         "created_at": "[DATE]",
         "last_active": "[DATE]",
         "user_id": "[ID]",
@@ -67,7 +67,7 @@ it("can login with email+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
+      {
         "created_at": "[DATE]",
         "last_active": "[DATE]",
         "user_id": "[ID]",
@@ -83,7 +83,7 @@ it("can login with EmAiL+password", () =>
     expect(session).toBeTruthy()
     expect(session.user_id).toEqual(testUser.id)
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
-      Object {
+      {
         "created_at": "[DATE]",
         "last_active": "[DATE]",
         "user_id": "[ID]",
@@ -128,7 +128,7 @@ it("too many login attempts resets after 5 minutes", () =>
       [testUser.id]
     )
     expect(snapshotSafe(secrets)).toMatchInlineSnapshot(`
-      Object {
+      {
         "delete_account_token": null,
         "delete_account_token_generated": null,
         "failed_password_attempts": 3,
