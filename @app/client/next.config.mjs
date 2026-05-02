@@ -1,3 +1,5 @@
+import path from "node:path"
+
 import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
 import _ from "lodash"
 import { withSentryConfig } from "@sentry/nextjs"
@@ -9,6 +11,11 @@ import withNextTranslate from "next-translate"
 import localeConfig from "./i18n.js"
 
 const __dirname = new URL(".", import.meta.url).pathname
+const antdLibPath = path.resolve(__dirname, "../../node_modules/antd/lib")
+// next-transpile-modules can't resolve workspace packages from
+// `@app/server`'s working dir (where fastify-next bootstraps the config),
+// so pass the resolved absolute path instead of the package name.
+const componentsPath = path.resolve(__dirname, "../components")
 const { locales, defaultLocale } = localeConfig
 const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -17,8 +24,13 @@ const withTM = NextTranspileModules([
   // Transpile components and lib according to @app/client/.babelrc.
   // This is needed to have correct styling as babel-plugin-import
   // inserts the required styles
-  "@app/components",
+  componentsPath,
   "rc-util",
+  // antd-img-crop's published bundles hardcode `require('antd/es/modal')`
+  // etc. The antd `es/` build uses extensionless relative imports that
+  // Node's strict ESM resolver rejects. Bundle antd-img-crop through
+  // webpack so the antd/es → antd/lib alias below applies.
+  "antd-img-crop",
 ])
 
 if (!process.env.ROOT_URL) {
@@ -114,7 +126,21 @@ const nextConfig = () =>
       const externals =
         isServer && dev ? makeSafe(config.externals) : config.externals
 
-      if (!isServer) {
+      // Redirect any explicit `antd/es/...` import to the equivalent
+      // `antd/lib/...` CJS path. The two trees mirror each other but the es/
+      // build uses extensionless imports that Node's strict ESM resolver
+      // rejects.
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "antd/es": antdLibPath,
+      }
+
+      if (isServer) {
+        // For bare specifiers (e.g. `antd`, `rc-notification`), prefer the
+        // CJS `main` field over the `module` field so externals resolve to
+        // `lib/` instead of `es/`.
+        config.resolve.mainFields = ["main", "module"]
+      } else {
         config.resolve.fallback.fs = false
         config.plugins.push(
           new webpack.IgnorePlugin(
