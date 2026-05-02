@@ -35,7 +35,7 @@ exports[`CreateOrganization can create an organization when logged in as non adm
           "code": "DNIED",
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
-SQL statement "CALL app_public.check_is_admin()"
+SQL statement "call app_public.check_is_admin()"
 PL/pgSQL function app_public.create_organization(citext,text,text) line 6 at CALL",
         },
       },

@@ -1,4 +1,6 @@
-import { getTasks, runTaskListOnce, SharedOptions } from "graphile-worker"
+import { runTaskListOnce, SharedOptions, Task, TaskList } from "graphile-worker"
+import { readdirSync } from "node:fs"
+import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 
 export {
@@ -71,8 +73,8 @@ export const deleteTestEventData = (pool: Pool) => {
 
       delete from app_private.sessions;
 
-      -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;
+      -- Delete graphile worker jobs (storage moved to _private_jobs in 0.16)
+      delete from graphile_worker._private_jobs;
     COMMIT;`
   )
 }
@@ -107,30 +109,60 @@ export const asRoot = async <T>(
 // Job helpers
 
 export const clearJobs = async (client: PoolClient) => {
-  await asRoot(client, () => client.query("delete from graphile_worker.jobs"))
+  await asRoot(client, () =>
+    client.query("delete from graphile_worker._private_jobs")
+  )
 }
 
 export const getJobs = async (
   client: PoolClient,
   taskIdentifier: string | null = null
 ) => {
+  // graphile-worker 0.16 stores jobs in _private_jobs (task is a FK to
+  // _private_tasks). The public `jobs` view does not expose `payload`, so
+  // join the underlying tables directly to keep payload-based assertions
+  // working.
   const { rows } = await asRoot(client, () =>
     client.query(
-      "select * from graphile_worker.jobs where $1::text is null or task_identifier = $1::text order by id asc",
+      `select
+         jobs.*,
+         tasks.identifier as task_identifier
+       from graphile_worker._private_jobs as jobs
+       inner join graphile_worker._private_tasks as tasks
+         on tasks.id = jobs.task_id
+       where $1::text is null or tasks.identifier = $1::text
+       order by jobs.id asc`,
       [taskIdentifier]
     )
   )
   return rows
 }
 
+// graphile-worker 0.16's getTasks loads task files via dynamic `import()`,
+// which jest 29 won't run without --experimental-vm-modules. Build the task
+// list by requiring the compiled CJS tasks directly — it sidesteps the
+// experimental flag and keeps the test runner in plain CJS.
+const loadCompiledTasks = (): TaskList => {
+  const tasksDir = resolve(`${__dirname}/../worker/dist/tasks`)
+  const taskList: TaskList = {}
+  for (const file of readdirSync(tasksDir)) {
+    if (!file.endsWith(".js")) continue
+    const name = file.slice(0, -3)
+    const mod: { default?: Task } & Record<string, unknown> = require(resolve(
+      tasksDir,
+      file
+    ))
+    const task = mod.default
+    if (typeof task !== "function") continue
+    taskList[name] = task
+  }
+  return taskList
+}
+
 export const runJobs = async (client: PoolClient) => {
   return asRoot(client, async (client) => {
     const sharedOptions: SharedOptions = {}
-    const taskList = await getTasks(
-      sharedOptions,
-      `${__dirname}/../worker/dist/tasks`
-    )
-    await runTaskListOnce(sharedOptions, taskList.tasks, client)
+    await runTaskListOnce(sharedOptions, loadCompiledTasks(), client)
   })
 }
 

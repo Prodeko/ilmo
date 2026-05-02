@@ -25,8 +25,13 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
           const ipAddress = context.ipAddress
           const { eventId, quotaId } = args.input
 
-          // After successfull registration delete the rate limit key from redis
-          workerUtils.addJob("registration__delete_rate_limit_key", {
+          // After successfull registration delete the rate limit key from redis.
+          // Awaiting here ensures the job row is committed before this resolver
+          // returns; under graphile-worker 0.16 the add_job SQL function does
+          // more work (normalizing into _private_tasks) than in 0.13, and the
+          // unawaited fire-and-forget pattern raced the test queries that
+          // immediately read the queue.
+          await workerUtils.addJob("registration__delete_rate_limit_key", {
             eventId,
             quotaId,
             ipAddress,

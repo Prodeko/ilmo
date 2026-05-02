@@ -12,7 +12,10 @@ async function main() {
   }
   const pgPool = new pg.Pool({ connectionString })
   try {
-    await pgPool.query("delete from graphile_worker.jobs;")
+    // graphile-worker 0.16 split storage into _private_jobs and exposed
+    // jobs as a non-updatable view. Targeting the storage table directly is
+    // the supported way to wipe the queue for tests.
+    await pgPool.query("delete from graphile_worker._private_jobs;")
     await writeFile(
       `${__dirname}/../__tests__/jest.watch.hack.ts`,
       `export const ts = ${Date.now()}\n`

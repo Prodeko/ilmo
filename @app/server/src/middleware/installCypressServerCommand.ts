@@ -149,8 +149,8 @@ async function runCommand(
       delete from app_public.event_questions;
       delete from app_public.organizations;
 
-      -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;`
+      -- Delete graphile worker jobs (storage moved to _private_jobs in 0.16)
+      delete from graphile_worker._private_jobs;`
     )
     return { success: true }
   } else if (command === "createUser") {
