@@ -15,19 +15,17 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup node and cache
         uses: ./.github/actions/node-and-cache
 
       - name: Install dependencies
-        run: |
-          cp .env.ci .env
-          yarn install
+        run: cp .env.ci .env
         working-directory: .
 
       - name: Restore next build
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: restore-build-cache
         env:
           cache-name: cache-next-build
@@ -38,7 +36,7 @@ jobs:
 
       - name: Build next.js app
         # change this if your site requires a custom build command
-        run: yarn build --skip-nx-cache
+        run: pnpm --filter @app/client run build
         working-directory: .
 
       # Here's the first place where next-bundle-analysis' own script is used
@@ -47,13 +45,13 @@ jobs:
         run: npx -p nextjs-bundle-analysis report
 
       - name: Upload bundle
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: bundle
           path: "@app/client/.next/analyze/__bundle_analysis.json"
 
       - name: Download base branch bundle stats
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         if: success() && github.event.number
         with:
           workflow: nextjs_bundle_analysis.yml

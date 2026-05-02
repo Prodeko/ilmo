@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [20.x]
 
     services:
       redis:
@@ -47,15 +47,14 @@ jobs:
       - name: Setup and build
         run: |
           cp .env.ci .env
-          yarn install
-          CONFIRM_DROP=1 yarn setup
-          yarn build
+          CONFIRM_DROP=1 pnpm setup
+          pnpm build
 
       - name: Lint, test and depcheck
         run: |
-          yarn lint
+          pnpm lint
           # Got errors about all replication slots being in use
           # without --runInBand. debezium/postgres image is configured
           # by default to have only a single replication slot.
-          yarn test --ci --runInBand
-          yarn depcheck
+          pnpm test --ci --runInBand
+          pnpm depcheck
