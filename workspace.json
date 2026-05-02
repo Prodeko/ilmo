@@ -29,11 +29,6 @@
       "root": "docker",
       "type": "library"
     },
-    "e2e": {
-      "$schema": "../../node_modules/nx/schemas/project-schema.json",
-      "root": "@app/e2e",
-      "type": "library"
-    },
     "graphql": {
       "$schema": "../../node_modules/nx/schemas/project-schema.json",
       "root": "@app/graphql",

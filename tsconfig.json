@@ -36,7 +36,7 @@
     }
   },
   "include": [],
-  "exclude": ["@app/e2e"],
+  "exclude": [],
   "references": [
     {
       "path": "@app/config"
