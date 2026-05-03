@@ -29,8 +29,13 @@ const remoteImageHosts = isDevOrTest
   ? [
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "static.prodeko.org" },
-      { protocol: "http", hostname: "placeimg.com" },
-      { protocol: "https", hostname: "placeimg.com" },
+      // Hosts that @faker-js/faker.image.* may return when seeding dev data.
+      { protocol: "https", hostname: "loremflickr.com" },
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "cdn.jsdelivr.net" },
+      { protocol: "https", hostname: "via.placeholder.com" },
+      { protocol: "https", hostname: "cloudflare-ipfs.com" },
     ]
   : [
       { protocol: "https", hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },

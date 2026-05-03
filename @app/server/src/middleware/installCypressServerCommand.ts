@@ -11,8 +11,8 @@ import {
   User,
 } from "@app/graphql"
 import { RegistrationSecret, Session } from "@app/lib"
+import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
-import faker from "faker"
 import {
   FastifyPluginAsync,
   FastifyReply,
@@ -437,7 +437,7 @@ export const createOrganizations = async (
     const random = words()
     const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
-    const color = faker.internet.color()
+    const color = faker.color.rgb()
 
     // Become root to bypass RLS policies
     await client.query("reset role")
@@ -479,7 +479,7 @@ export const createEventCategories = async (
       fi: paragraph(),
       en: paragraph(),
     }
-    const color = faker.internet.color()
+    const color = faker.color.rgb()
     const {
       rows: [category],
     } = await client.query(
@@ -517,7 +517,7 @@ export const createEvents = async (
       fi: [{ type: "paragraph", children: [{ text: paragraph() }] }],
       en: [{ type: "paragraph", children: [{ text: paragraph() }] }],
     }
-    const location = faker.address.streetAddress()
+    const location = faker.location.streetAddress()
 
     // By default create events that are open to registration (-1)
     const now = new Date()
@@ -531,11 +531,7 @@ export const createEvents = async (
     const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate()
 
     const eventCategoryId = categoryId
-    const headerImageFile = faker.image.imageUrl(
-      851,
-      315,
-      `nature?random=${Math.round(Math.random() * 1000)}`
-    )
+    const headerImageFile = faker.image.url({ width: 851, height: 315 })
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
@@ -600,7 +596,7 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const s = size
       ? size
-      : faker.datatype.number({
+      : faker.number.int({
           min: 3,
           max: 20,
         })
@@ -623,7 +619,7 @@ export const createQuotas = async (
 // Questions
 
 const getRandomQuestionData = () => {
-  const number = faker.datatype.number({ min: 1, max: 5 })
+  const number = faker.number.int({ min: 1, max: 5 })
   return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
 }
 
@@ -712,7 +708,7 @@ export const createRegistrationSecrets = async (
 export const constructAnswersFromQuestions = (questions: any[]) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
-  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const chosenLanguage = faker.helpers.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === "TEXT") {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
@@ -738,8 +734,8 @@ export const createRegistrations = async (
 ) => {
   const registrations: SnakeCasedProperties<Registration>[] = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName()
-    const lastName = faker.name.lastName()
+    const firstName = faker.person.firstName()
+    const lastName = faker.person.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
     const isFinished = true

@@ -76,7 +76,6 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.14.0",
-    "faker": "^6.6.6",
     "graphql": "^16.5.0",
     "graphql-config": "^4.3.3",
     "inquirer": "^9.1.0",
@@ -96,11 +95,7 @@
   "pnpm": {
     "overrides": {
       "graphql": "15.x",
-      "graphql-upload": "13.x",
-      "faker": "5.5.3",
-      "chalk": "4.1.2",
-      "got": "11.x",
-      "dayjs": "1.11.4"
+      "graphql-upload": "13.x"
     },
     "onlyBuiltDependencies": [
       "@sentry/cli",
