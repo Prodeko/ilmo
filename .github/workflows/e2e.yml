@@ -48,8 +48,16 @@ jobs:
           cp .env.ci .env
           CONFIRM_DROP=1 pnpm run setup
 
-      - name: Build
-        run: pnpm build
+      - name: Build server-side TypeScript
+        # Mirror `pnpm dev`'s preamble: build @app/graphql (codegen + tsc) and
+        # the rest of the workspace via project-references. Skip `pnpm build`
+        # / `next build` deliberately — the server drives Next in dev mode
+        # against source files (NODE_ENV != production in installSSR.ts), and
+        # leaving production .next/ artifacts around makes Next 16 + Turbopack
+        # 500 on the homepage.
+        run: |
+          pnpm --filter @app/graphql run build
+          pnpm tsc
 
       - name: Start server in background
         run: pnpm --filter @app/server run start &

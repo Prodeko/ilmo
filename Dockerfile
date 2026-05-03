@@ -2,11 +2,13 @@ ARG PORT=5678
 ARG NODE_ENV="production"
 ARG ROOT_URL="http://localhost:${PORT}"
 
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 
 ENV TZ=Europe/Helsinki
 
-RUN apk add --no-cache tini bash tzdata && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tini bash tzdata ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone
 
@@ -46,6 +48,6 @@ RUN --mount=type=secret,id=GITHUB_SHA \
 
 RUN CI=true pnpm prune --prod
 
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 CMD ["pnpm", "--filter", "@app/server", "run", "start"]
