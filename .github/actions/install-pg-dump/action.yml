@@ -1,5 +1,5 @@
 name: Install pg_dump
-description: Installs the pg_dump utility (postgresql-client-11) from the PGDG apt repo
+description: Installs the pg_dump utility (postgresql-client-14) from the PGDG apt repo
 
 runs:
   using: composite
@@ -15,4 +15,4 @@ runs:
         echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" \
           | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
         sudo apt-get update -qq
-        sudo apt-get install -yqq postgresql-client-11
+        sudo apt-get install -yqq postgresql-client-14

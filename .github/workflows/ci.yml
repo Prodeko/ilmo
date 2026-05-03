@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       redis:
-        image: redis:7
+        image: redis:6-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -28,7 +28,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: debezium/postgres:11
+        image: debezium/postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       redis:
-        image: redis:7
+        image: redis:6-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -84,7 +84,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: debezium/postgres:11
+        image: debezium/postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -114,7 +114,7 @@ jobs:
         run: pnpm build
 
       - name: Test
-        # --runInBand: debezium/postgres:11 only has one replication slot,
+        # --runInBand: debezium/postgres has a single replication slot,
         # so parallel jest workers race on it.
         run: pnpm test --ci --runInBand
 
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       redis:
-        image: redis:7
+        image: redis:6-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -132,7 +132,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: debezium/postgres:11
+        image: debezium/postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

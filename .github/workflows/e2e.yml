@@ -13,7 +13,7 @@ jobs:
         containers: [1, 2, 3, 4, 5]
     services:
       redis:
-        image: redis:7
+        image: redis:6-alpine
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -22,7 +22,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: debezium/postgres:11
+        image: debezium/postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
