@@ -6,7 +6,7 @@ import {
 } from "@app/components"
 import { useSharedQuery } from "@app/graphql"
 import { Col, Row } from "antd"
-import { useRouter } from "next/dist/client/router"
+import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
 

@@ -19,7 +19,7 @@ import {
 import { Sorter } from "@app/lib"
 import { Col, Divider, Empty, Space, Tag } from "antd"
 import dayjs from "dayjs"
-import { useRouter } from "next/dist/client/router"
+import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
 
