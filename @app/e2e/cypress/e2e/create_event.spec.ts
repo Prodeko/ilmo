@@ -60,35 +60,40 @@ context("Create event", () => {
       const format = "YYYY-MM-DD HH:MM:ss"
       const today = dayjs()
 
+      // antd v5 RangePicker quirks vs v4:
+      // - data-cy is spread onto BOTH inner inputs, so the selector matches
+      //   twice; index directly instead of using within().
+      // - With showTime, the OK button needs two clicks to close: first
+      //   acknowledges the date pane, second commits the time pane.
+      // - Multiple picker portals are mounted; filter to the visible dropdown.
+      const confirmPicker = () => {
+        cy.get(
+          ".ant-picker-dropdown:not(.ant-picker-dropdown-hidden) .ant-picker-ok button"
+        ).click()
+        cy.get(
+          ".ant-picker-dropdown:not(.ant-picker-dropdown-hidden) .ant-picker-ok button"
+        ).click()
+      }
+
       cy.getCy("eventform-input-event-time").eq(0).click()
-      cy.getCy("eventform-input-event-time").within(() => {
-        cy.get("input[id='eventTime']").type(
-          today.add(2, "day").format(format),
-          {
-            force: true,
-          }
-        )
-        cy.get("input")
-          .eq(1)
-          .click()
-          .type(today.add(3, "day").format(format), { force: true })
-      })
-      cy.get(".ant-picker-footer button").click()
+      cy.getCy("eventform-input-event-time")
+        .eq(0)
+        .type(today.add(2, "day").format(format), { force: true })
+      cy.getCy("eventform-input-event-time")
+        .eq(1)
+        .click()
+        .type(today.add(3, "day").format(format), { force: true })
+      confirmPicker()
 
       cy.getCy("eventform-input-registration-time").eq(0).click()
-      cy.getCy("eventform-input-registration-time").within(() => {
-        cy.get("input[id='registrationTime']").type(
-          today.add(-1, "day").format(format),
-          {
-            force: true,
-          }
-        )
-        cy.get("input")
-          .eq(1)
-          .click()
-          .type(today.add(1, "day").format(format), { force: true })
-      })
-      cy.get(".ant-picker-footer button").eq(1).click()
+      cy.getCy("eventform-input-registration-time")
+        .eq(0)
+        .type(today.add(-1, "day").format(format), { force: true })
+      cy.getCy("eventform-input-registration-time")
+        .eq(1)
+        .click()
+        .type(today.add(1, "day").format(format), { force: true })
+      confirmPicker()
 
       cy.getCy("eventform-switch-save-as-draft").click()
 

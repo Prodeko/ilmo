@@ -2,13 +2,14 @@ import {
   AdminLayout,
   EventCategoryForm,
   LoadingPadded,
+  PageHeader,
   Redirect,
   useQueryId,
   useTranslation,
 } from "@app/components"
 import { useUpdateEventCategoryPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"

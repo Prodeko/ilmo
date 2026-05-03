@@ -48,8 +48,8 @@ export function PasswordStrength({
 
   if (!isDirty) return null
 
-  const handleVisibleChange = (visible: boolean) => {
-    setVisible(visible)
+  const handleOpenChange = (next: boolean) => {
+    setVisible(next)
   }
 
   const content = (
@@ -74,8 +74,8 @@ export function PasswordStrength({
           placement="bottomRight"
           title={t("passwordHints")}
           trigger="click"
-          visible={visible}
-          onVisibleChange={handleVisibleChange}
+          open={visible}
+          onOpenChange={handleOpenChange}
         >
           <div
             style={{

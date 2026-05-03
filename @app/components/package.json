@@ -11,15 +11,14 @@
     "depcheck": "depcheck --ignores=\"graphql\""
   },
   "dependencies": {
-    "@ant-design/icons": "^4.7.0",
+    "@ant-design/icons": "^5.5.2",
     "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
     "@emotion/css": "^11.10.0",
     "@hacknug/react-icons": "^4.2.1",
-    "antd": "^4.22.4",
-    "antd-button-color": "^1.0.4",
-    "antd-img-crop": "^4.2.3",
+    "antd": "^5.22.5",
+    "antd-img-crop": "^4.21.0",
     "dayjs": "^1.11.4",
     "escape-html": "^1.0.3",
     "is-hotkey": "^0.2.0",

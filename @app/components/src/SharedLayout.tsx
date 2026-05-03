@@ -13,12 +13,13 @@ import {
   Dropdown,
   Grid,
   Layout,
-  Menu,
   message,
   Row,
   Space,
   Typography,
 } from "antd"
+
+import type { MenuProps } from "antd"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
@@ -234,29 +235,40 @@ export function SharedLayout({
               <LocaleSelect />
               {data && data.currentUser ? (
                 <Dropdown
-                  overlay={
-                    <Menu>
-                      {data.currentUser.isAdmin && (
-                        <Menu.Item key="admin">
-                          <Link href="/admin/event/list">
-                            <a data-cy="layout-link-admin">{t("admin")}</a>
+                  menu={{
+                    items: [
+                      ...(data.currentUser.isAdmin
+                        ? [
+                            {
+                              key: "admin",
+                              label: (
+                                <Link href="/admin/event/list">
+                                  <a data-cy="layout-link-admin">{t("admin")}</a>
+                                </Link>
+                              ),
+                            },
+                          ]
+                        : []),
+                      {
+                        key: "settings",
+                        label: (
+                          <Link href="/settings/profile">
+                            <a data-cy="layout-link-settings">
+                              <Warn okay={data.currentUser.isVerified}>
+                                {t("settings")}
+                              </Warn>
+                            </a>
                           </Link>
-                        </Menu.Item>
-                      )}
-                      <Menu.Item key="settings">
-                        <Link href="/settings/profile">
-                          <a data-cy="layout-link-settings">
-                            <Warn okay={data.currentUser.isVerified}>
-                              {t("settings")}
-                            </Warn>
-                          </a>
-                        </Link>
-                      </Menu.Item>
-                      <Menu.Item key="logout">
-                        <a onClick={handleLogout}>{t("logout")}</a>
-                      </Menu.Item>
-                    </Menu>
-                  }
+                        ),
+                      },
+                      {
+                        key: "logout",
+                        label: (
+                          <a onClick={handleLogout}>{t("logout")}</a>
+                        ),
+                      },
+                    ] satisfies MenuProps["items"],
+                  }}
                   trigger={["click"]}
                 >
                   <span

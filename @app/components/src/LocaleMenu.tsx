@@ -1,15 +1,16 @@
 import { ReactCountryFlag } from "react-country-flag"
 import { DownOutlined } from "@ant-design/icons"
 import { Languages } from "@app/lib"
-import { Dropdown, Menu } from "antd"
+import { Dropdown } from "antd"
 import { useRouter } from "next/router"
-import { MenuClickEventHandler } from "rc-menu/es/interface"
 
 import { Loading, useTranslation } from "."
 
+import type { MenuProps } from "antd"
+
 interface LocaleMenuProps {
   menuTitle: string
-  onClickHandler: MenuClickEventHandler
+  onClickHandler: NonNullable<MenuProps["onClick"]>
   includedLocales?: (Languages | string)[]
   dataCyDropdown: string
   dataCyMenuItem: string
@@ -33,39 +34,40 @@ export const LocaleMenu: React.FC<LocaleMenuProps> = ({
   const { t } = useTranslation("error")
   const { locales } = useRouter()
 
-  const menu = locales
-    ?.map((locale) => {
-      const { name, flag } = localeMap[locale]
-      if (includedLocales.includes(name)) {
-        return (
-          <Menu.Item
-            key={locale}
-            data-cy={`${dataCyMenuItem}-${name}`}
-            disabled={loading}
-            icon={
-              <ReactCountryFlag
-                key={name}
-                aria-label={`${name} flag`}
-                countryCode={flag}
-                style={{
-                  fontSize: "2rem",
-                  lineHeight: "2rem",
-                  marginRight: "12px",
-                }}
-              />
-            }
-          >
+  const items: MenuProps["items"] = (locales ?? [])
+    .map((locale) => {
+      const entry = localeMap[locale as keyof typeof localeMap]
+      if (!entry) return null
+      const { name, flag } = entry
+      if (!includedLocales.includes(name)) return null
+      return {
+        key: locale,
+        disabled: loading,
+        icon: (
+          <ReactCountryFlag
+            key={name}
+            aria-label={`${name} flag`}
+            countryCode={flag}
+            style={{
+              fontSize: "2rem",
+              lineHeight: "2rem",
+              marginRight: "12px",
+            }}
+          />
+        ),
+        label: (
+          <span data-cy={`${dataCyMenuItem}-${name}`}>
             {t(`common:lang.${name}`)}
-          </Menu.Item>
-        )
+          </span>
+        ),
       }
     })
-    .filter(Boolean)
+    .filter(Boolean) as MenuProps["items"]
 
   return (
     <Dropdown
       disabled={loading || includedLocales.length === 0}
-      overlay={<Menu onClick={onClickHandler}>{menu}</Menu>}
+      menu={{ items, onClick: onClickHandler }}
       placement="bottomLeft"
       trigger={["click"]}
       arrow

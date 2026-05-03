@@ -38,10 +38,7 @@ context("CSRF protection", () => {
 
       // Can recover from csrf error
       cy.getCy("error-csrf-refresh").click()
-      cy.get(".ant-page-header-heading").should(
-        "contain",
-        "Ilmoittaudu tapahtumaan"
-      )
+      cy.contains("h3", "Ilmoittaudu tapahtumaan").should("be.visible")
     })
   })
 })

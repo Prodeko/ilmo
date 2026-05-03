@@ -1,8 +1,6 @@
 import BundleAnalyzer from "@next/bundle-analyzer"
 import { withSentryConfig } from "@sentry/nextjs"
-import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
 import _ from "lodash"
-import withAntdLess from "next-plugin-antd-less"
 import withNextTranslate from "next-translate"
 import NextTranspileModules from "next-transpile-modules"
 import path from "node:path"
@@ -10,9 +8,8 @@ import path from "node:path"
 import localeConfig from "./i18n.js"
 
 const __dirname = new URL(".", import.meta.url).pathname
-const antdLibPath = path.resolve(__dirname, "../../node_modules/antd/lib")
 // next-transpile-modules can't resolve workspace packages from
-// `@app/server`'s working dir (where fastify-next bootstraps the config),
+// `@app/server`'s working dir (where the SSR bridge bootstraps the config),
 // so pass the resolved absolute path instead of the package name.
 const componentsPath = path.resolve(__dirname, "../components")
 const { locales, defaultLocale } = localeConfig
@@ -20,15 +17,17 @@ const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
 const withTM = NextTranspileModules([
-  // Transpile components and lib according to @app/client/.babelrc.
-  // This is needed to have correct styling as babel-plugin-import
-  // inserts the required styles
   componentsPath,
+  // antd, @ant-design/icons, and friends ship ESM builds (`es/`) with
+  // extensionless relative imports that Node's strict ESM resolver rejects.
+  // Bundling them through webpack on both client and server keeps Node
+  // out of the resolution path during page data collection.
+  "antd",
+  "@ant-design/icons",
+  "@ant-design/cssinjs",
   "rc-util",
-  // antd-img-crop's published bundles hardcode `require('antd/es/modal')`
-  // etc. The antd `es/` build uses extensionless relative imports that
-  // Node's strict ESM resolver rejects. Bundle antd-img-crop through
-  // webpack so the antd/es → antd/lib alias below applies.
+  "rc-pagination",
+  "rc-picker",
   "antd-img-crop",
 ])
 
@@ -42,17 +41,6 @@ if (!process.env.ROOT_URL) {
 
 const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
-
-const withAntdLessOptions = {
-  lessVarsFilePath: `${__dirname}/src/styles/antd-custom.less`,
-  cssLoaderOptions: {
-    esModule: false,
-    sourceMap: false,
-    modules: {
-      mode: "local",
-    },
-  },
-}
 
 /**
  * @type {import('next').NextConfig}
@@ -97,12 +85,10 @@ const nextOptions = {
 const nextConfig = () =>
   _.flowRight(
     withTM,
-    withAntdLess,
     withNextTranslate,
     withBundleAnalyzer
   )({
     ...nextOptions,
-    ...withAntdLessOptions,
     webpack(config, { webpack, dev, isServer }) {
       const makeSafe = (externals) => {
         if (Array.isArray(externals)) {
@@ -125,19 +111,11 @@ const nextConfig = () =>
       const externals =
         isServer && dev ? makeSafe(config.externals) : config.externals
 
-      // Redirect any explicit `antd/es/...` import to the equivalent
-      // `antd/lib/...` CJS path. The two trees mirror each other but the es/
-      // build uses extensionless imports that Node's strict ESM resolver
-      // rejects.
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "antd/es": antdLibPath,
-      }
-
       if (isServer) {
-        // For bare specifiers (e.g. `antd`, `rc-notification`), prefer the
-        // CJS `main` field over the `module` field so externals resolve to
-        // `lib/` instead of `es/`.
+        // For bare specifiers (e.g. `@ant-design/icons`), prefer the CJS
+        // `main` field over the `module` field. The ESM builds of these
+        // packages use extensionless relative imports that Node's strict
+        // ESM resolver rejects when Next collects page data.
         config.resolve.mainFields = ["main", "module"]
       } else {
         config.resolve.fallback.fs = false
@@ -152,15 +130,13 @@ const nextConfig = () =>
         )
       }
 
-      const nextConf = {
+      return {
         ...config,
-        plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
         externals: [
           ...(externals || []),
           isServer ? { "pg-native": "pg/lib/client" } : null,
         ].filter((_) => _),
       }
-      return nextConf
     },
   })
 

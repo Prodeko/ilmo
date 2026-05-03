@@ -42,9 +42,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
   const card = (
     <Card
-      // bodyStyle and style are used to position the signup button on the same row
+      // styles.body and style are used to position the signup button on the same row
       // even if the description of some event would be very short.
-      bodyStyle={{ display: "flex", flexDirection: "column", flex: "1" }}
+      styles={{
+        body: { display: "flex", flexDirection: "column", flex: "1" },
+      }}
       cover={
         <Link href={`/event/${slug}`}>
           <div style={{ cursor: "pointer" }}>
@@ -87,7 +89,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         href={`/event/${slug}`}
         size="middle"
         style={{ marginTop: "12px" }}
-        type={signupOpen ? "success" : "default"}
+        type={signupOpen ? "primary" : "default"}
         block
       >
         {signupOpen ? t("registerToAnEvent") : t("common:moreInfo")}

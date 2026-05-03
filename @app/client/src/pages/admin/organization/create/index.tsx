@@ -4,6 +4,7 @@ import {
   ColorPicker,
   ErrorAlert,
   Loading,
+  PageHeader,
   useTranslation,
 } from "@app/components"
 import {
@@ -17,7 +18,7 @@ import {
   primaryColor,
   tailFormItemLayout,
 } from "@app/lib"
-import { Button, Col, Form, Input, PageHeader, Row, Typography } from "antd"
+import { Button, Col, Form, Input, Row, Typography } from "antd"
 import debounce from "lodash/debounce"
 import { useRouter } from "next/router"
 import slugify from "slugify"

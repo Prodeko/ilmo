@@ -3,6 +3,7 @@ import {
   AdminLayout,
   ORGANIZATION_RESULTS_PER_PAGE,
   OrganizationMembers,
+  PageHeader,
   Redirect,
   UpdateOrganizationForm,
   useLoading,
@@ -13,7 +14,7 @@ import {
   OrganizationPage_OrganizationFragment,
   useOrganizationPageQuery,
 } from "@app/graphql"
-import { Col, message, PageHeader, Row } from "antd"
+import { Col, message, Row } from "antd"
 
 import type { NextPage } from "next"
 

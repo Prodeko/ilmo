@@ -2,6 +2,7 @@ import { useCallback } from "react"
 import {
   AdminLayout,
   AdminTableActions,
+  PageHeader,
   ServerPaginatedTable,
   useIsMobile,
   useTranslation,
@@ -15,7 +16,7 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { Sorter } from "@app/lib"
-import { Col, message, PageHeader, Row, Switch, Typography } from "antd"
+import { Col, message, Row, Switch, Typography } from "antd"
 import dayjs from "dayjs"
 
 import type { NextPage } from "next"

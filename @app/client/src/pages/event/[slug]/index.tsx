@@ -4,6 +4,7 @@ import {
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
+  PageHeader,
   Redirect,
   SharedLayout,
   SignupState,
@@ -19,7 +20,7 @@ import {
   useEventPageSubscription,
   useSharedQuery,
 } from "@app/graphql"
-import { Col, Divider, message, notification, PageHeader, Row } from "antd"
+import { Col, Divider, message, notification, Row } from "antd"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useRouter } from "next/router"
@@ -84,7 +85,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         // Stop subscription and close notification if the route
         // is changed to another page
         setPauseServerTime(true)
-        notification.close(NOTIFICATION_KEY)
+        notification.destroy(NOTIFICATION_KEY)
       }
     }
     router.events.on("routeChangeStart", onRouteChangeStart)
@@ -137,12 +138,12 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         // Just in case. Can happen if the registration times are changed within
         // one hour of the registration opening and someone has the page open
         // for a long time
-        notification.close(NOTIFICATION_KEY)
+        notification.destroy(NOTIFICATION_KEY)
       } else if (time.isAfter(startTime)) {
         // Pause fetching server time after and stop displaying the notification
         // after registration has opened
         setPauseServerTime(true)
-        notification.close(NOTIFICATION_KEY)
+        notification.destroy(NOTIFICATION_KEY)
       } else if (time.isAfter(startTime.subtract(10, "minute"))) {
         // Show a notification with the current server time 1 minute before
         // the registration to an event opens
@@ -200,7 +201,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
               data-cy="eventpage-button-admin-link"
               href={`/admin/event/update/${event.id}`}
               size="large"
-              type="success"
+              type="primary"
               block
             >
               {t("common:modify")}
