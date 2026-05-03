@@ -44,8 +44,8 @@ const EventPage: NextPage = () => {
     fetching || stale
       ? t("common:loading")
       : query.error
-      ? ""
-      : `${name ?? t("eventNotFound")}`
+        ? ""
+        : `${name ?? t("eventNotFound")}`
 
   return (
     <SharedLayout query={query} title={title}>

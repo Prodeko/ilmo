@@ -188,7 +188,7 @@ export function ServerPaginatedTable({
         pagination={showPagination && pagination}
         rowKey="id"
         scroll={{ x: 100 }}
-        size={size ?? isMobile ? "small" : "middle"}
+        size={(size ?? isMobile) ? "small" : "middle"}
         onChange={handleTableChange}
         {...props}
       />

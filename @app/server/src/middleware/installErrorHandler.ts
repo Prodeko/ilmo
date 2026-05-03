@@ -26,8 +26,8 @@ function toFiniteHttpStatus(value: unknown): number | undefined {
     typeof value === "number"
       ? value
       : typeof value === "string"
-      ? parseInt(value, 10)
-      : NaN
+        ? parseInt(value, 10)
+        : NaN
   return isFinite(parsed) && parsed >= 400 && parsed < 600 ? parsed : undefined
 }
 

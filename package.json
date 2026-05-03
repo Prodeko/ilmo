@@ -84,7 +84,7 @@
     "json-sort-cli": "^2.0.15",
     "nodemon": "^2.0.19",
     "npm-check-updates": "^16.0.5",
-    "prettier": "2.7.1",
+    "prettier": "3.4.2",
     "react-test-renderer": "18.0.0",
     "rimraf": "^3.0.2",
     "ts-jest": "^29.2.5",

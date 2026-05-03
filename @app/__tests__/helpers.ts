@@ -148,10 +148,9 @@ const loadCompiledTasks = (): TaskList => {
   for (const file of readdirSync(tasksDir)) {
     if (!file.endsWith(".js")) continue
     const name = file.slice(0, -3)
-    const mod: { default?: Task } & Record<string, unknown> = require(resolve(
-      tasksDir,
-      file
-    ))
+    const mod: { default?: Task } & Record<string, unknown> = require(
+      resolve(tasksDir, file)
+    )
     const task = mod.default
     if (typeof task !== "function") continue
     taskList[name] = task

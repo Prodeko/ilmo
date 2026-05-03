@@ -274,9 +274,7 @@ export function SharedLayout({
                       },
                       {
                         key: "logout",
-                        label: (
-                          <a onClick={handleLogout}>{t("logout")}</a>
-                        ),
+                        label: <a onClick={handleLogout}>{t("logout")}</a>,
                       },
                     ],
                   }}
