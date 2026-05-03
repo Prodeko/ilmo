@@ -52,7 +52,7 @@ jobs:
       - name: Setup environment and database
         run: |
           cp .env.ci .env
-          CONFIRM_DROP=1 pnpm setup
+          CONFIRM_DROP=1 pnpm run setup
 
       - name: Verify data/schema.sql is up to date
         run: |
@@ -108,7 +108,7 @@ jobs:
       - name: Setup environment and database
         run: |
           cp .env.ci .env
-          CONFIRM_DROP=1 pnpm setup
+          CONFIRM_DROP=1 pnpm run setup
 
       - name: Build
         run: pnpm build
@@ -156,7 +156,7 @@ jobs:
       - name: Setup environment and database
         run: |
           cp .env.ci .env
-          CONFIRM_DROP=1 pnpm setup
+          CONFIRM_DROP=1 pnpm run setup
         env:
           CI: "true"
 
@@ -244,6 +244,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextcache-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-nextcache-
+
+      - name: Build workspace dependencies
+        run: pnpm -r --workspace-concurrency=1 --filter "!@app/client" run build
+        working-directory: .
 
       - name: Build Next.js app
         run: pnpm --filter @app/client run build

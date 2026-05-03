@@ -46,7 +46,7 @@ jobs:
       - name: Setup environment and database
         run: |
           cp .env.ci .env
-          CONFIRM_DROP=1 pnpm setup
+          CONFIRM_DROP=1 pnpm run setup
 
       - name: Build
         run: pnpm build
