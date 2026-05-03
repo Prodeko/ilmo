@@ -60,10 +60,31 @@ jobs:
           pnpm tsc
 
       - name: Start server in background
-        run: pnpm --filter @app/server run start &
+        # Redirect to a log file so output isn't lost when this step's shell
+        # exits — the cypress action's wait-on then either succeeds or trips
+        # a 500, and we dump the server log on always() to see why.
+        run: pnpm --filter @app/server run start > /tmp/server.log 2>&1 &
 
       - name: Start worker in background
-        run: pnpm --filter @app/worker run start &
+        run: pnpm --filter @app/worker run start > /tmp/worker.log 2>&1 &
+
+      - name: Probe homepage response
+        # Captures the actual 500 body (Next dev mode renders the error into
+        # the response). Always run, never fail the job — this is just for
+        # diagnostics.
+        if: always()
+        continue-on-error: true
+        run: |
+          set +e
+          for i in 1 2 3 4 5; do
+            if curl -sS -o /tmp/homepage-response.txt -w "HTTP %{http_code}\n" http://localhost:5678; then
+              break
+            fi
+            sleep 2
+          done
+          echo "::group::homepage response"
+          head -c 8000 /tmp/homepage-response.txt 2>/dev/null || echo "(no response captured)"
+          echo "::endgroup::"
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
@@ -76,6 +97,16 @@ jobs:
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dump server and worker logs
+        if: always()
+        run: |
+          echo "::group::server log (tail 300)"
+          tail -300 /tmp/server.log 2>/dev/null || echo "(no server log)"
+          echo "::endgroup::"
+          echo "::group::worker log (tail 300)"
+          tail -300 /tmp/worker.log 2>/dev/null || echo "(no worker log)"
+          echo "::endgroup::"
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
