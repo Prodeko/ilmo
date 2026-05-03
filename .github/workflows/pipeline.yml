@@ -1,0 +1,41 @@
+name: Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+
+  all-checks:
+    name: All checks passed
+    runs-on: ubuntu-latest
+    needs: [ci, e2e]
+    if: always()
+    steps:
+      - name: Verify all required jobs succeeded
+        run: |
+          set -euo pipefail
+          if [ "${{ needs.ci.result }}" != "success" ] || [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "ci=${{ needs.ci.result }} e2e=${{ needs.e2e.result }}"
+            exit 1
+          fi

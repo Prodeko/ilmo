@@ -30,9 +30,6 @@ importers:
       '@emotion-icons/material':
         specifier: ^3.14.0
         version: 3.14.0(@emotion/react@11.14.0(@types/react@18.0.15)(react@18.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.0.15)(react@18.2.0))(@types/react@18.0.15)(react@18.2.0))(react@18.2.0)
-      abort-controller:
-        specifier: ^3.0.0
-        version: 3.0.0
       core-js:
         specifier: ^3.24.1
         version: 3.49.0
@@ -3673,10 +3670,6 @@ packages:
     resolution: {integrity: sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  abort-controller@3.0.0:
-    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
-    engines: {node: '>=6.5'}
-
   abstract-logging@2.0.1:
     resolution: {integrity: sha512-2BjRTZxTPvheOvGbBslFSYOUkr+SjPtOnrLP33f+VIWLzezQpZcqVg7ja3L4dBXmzzgwT+a029jRx5PCi3JuiA==}
 
@@ -5153,10 +5146,6 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
-
-  event-target-shim@5.0.1:
-    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
-    engines: {node: '>=6'}
 
   eventemitter2@6.4.7:
     resolution: {integrity: sha512-tYUSVOGeQPKt/eC1ABfhHy5Xd96N3oIijJvN3O9+TsC28T5V9yX9oEfEK5faP0EFSNVOG97qtAS68GBrQB2hDg==}
@@ -13336,10 +13325,6 @@ snapshots:
 
   abbrev@2.0.0: {}
 
-  abort-controller@3.0.0:
-    dependencies:
-      event-target-shim: 5.0.1
-
   abstract-logging@2.0.1: {}
 
   acorn-import-attributes@1.9.5(acorn@8.16.0):
@@ -15106,8 +15091,6 @@ snapshots:
   estree-walker@2.0.2: {}
 
   esutils@2.0.3: {}
-
-  event-target-shim@5.0.1: {}
 
   eventemitter2@6.4.7: {}
 

@@ -1,0 +1,300 @@
+name: CI
+
+on:
+  workflow_call:
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run actionlint
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo \
+            rhysd/actionlint:1.7.7 -color
+
+  lint:
+    name: Lint & depcheck
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        run: |
+          cp .env.ci .env
+          CONFIRM_DROP=1 pnpm setup
+
+      - name: Verify data/schema.sql is up to date
+        run: |
+          if ! git diff --exit-code -- data/schema.sql; then
+            echo "::error::data/schema.sql is stale. Run 'pnpm --filter @app/db run dump' locally and commit the result."
+            exit 1
+          fi
+
+      - name: Build
+        run: pnpm build
+
+      - name: Lint (tsc + prettier + eslint)
+        run: pnpm lint
+
+      - name: Depcheck
+        run: pnpm depcheck
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        run: |
+          cp .env.ci .env
+          CONFIRM_DROP=1 pnpm setup
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        # --runInBand: debezium/postgres:11 only has one replication slot,
+        # so parallel jest workers race on it.
+        run: pnpm test --ci --runInBand
+
+  docker:
+    name: Production Docker build
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        run: |
+          cp .env.ci .env
+          CONFIRM_DROP=1 pnpm setup
+        env:
+          CI: "true"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./Dockerfile
+          load: true
+          push: false
+          build-args: ROOT_URL=https://ilmo.prodeko.org
+          tags: |
+            ilmo-server:ci
+            ilmo-worker:ci
+          secrets: |
+            GITHUB_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start server container
+        run: |
+          docker run --rm -d -p 5678:5678 \
+            --add-host=host.docker.internal:host-gateway \
+            --env-file .env \
+            -e CI=true \
+            -e NODE_ENV=production \
+            -e DATABASE_HOST=host.docker.internal \
+            -e REDIS_URL=redis://host.docker.internal:6379 \
+            --name ilmo-server ilmo-server:ci
+
+      - name: Start worker container
+        run: |
+          docker run --rm -d \
+            --add-host=host.docker.internal:host-gateway \
+            --env-file .env \
+            -e CI=true \
+            -e NODE_ENV=production \
+            -e DATABASE_HOST=host.docker.internal \
+            -e REDIS_URL=redis://host.docker.internal:6379 \
+            --name ilmo-worker ilmo-worker:ci \
+            pnpm --filter @app/worker run start
+
+      - name: Wait for server to come up
+        run: |
+          curl --fail --retry 30 --retry-delay 1 --retry-all-errors \
+            --silent --show-error http://localhost:5678 > /tmp/homepage.html
+
+      - name: Assert homepage rendered
+        run: grep -q Prodeko /tmp/homepage.html
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          docker logs ilmo-server || true
+          docker logs ilmo-worker || true
+
+      - name: Tear down containers
+        if: always()
+        run: |
+          docker kill ilmo-server ilmo-worker 2>/dev/null || true
+
+  bundle:
+    name: Next.js bundle analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./@app/client
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Prepare CI env file
+        run: cp .env.ci .env
+        working-directory: .
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: "@app/client/.next/cache"
+          key: ${{ runner.os }}-nextcache-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('@app/client/**/*.{js,jsx,ts,tsx,json}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextcache-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextcache-
+
+      - name: Build Next.js app
+        run: pnpm --filter @app/client run build
+        working-directory: .
+
+      - name: Analyze bundle
+        run: npx -p nextjs-bundle-analysis report
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle
+          path: "@app/client/.next/analyze/__bundle_analysis.json"
+
+      - name: Download base branch bundle stats
+        if: github.event_name == 'pull_request'
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          workflow: pipeline.yml
+          branch: ${{ github.event.pull_request.base.ref }}
+          name: bundle
+          path: "@app/client/.next/analyze/base"
+
+      - name: Compare with base branch bundle
+        if: github.event_name == 'pull_request'
+        run: npx -p nextjs-bundle-analysis compare
+
+      - name: Read comment body
+        id: get-comment-body
+        if: github.event_name == 'pull_request'
+        run: |
+          {
+            echo 'body<<EOF'
+            cat .next/analyze/__bundle_analysis_comment.txt
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Find existing comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "<!-- __NEXTJS_BUNDLE -->"
+
+      - name: Create or update bundle comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: ${{ steps.get-comment-body.outputs.body }}
+          edit-mode: replace
