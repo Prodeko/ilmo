@@ -41,7 +41,7 @@
     "slate-hyperscript": "^0.77.0",
     "slate-react": "^0.82.0",
     "slugify": "^1.6.5",
-    "urql": "^2.2.3"
+    "urql": "^4.2.2"
   },
   "devDependencies": {
     "@types/nprogress": "^0.2.0",

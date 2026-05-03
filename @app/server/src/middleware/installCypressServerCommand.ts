@@ -634,8 +634,16 @@ export const createQuestions = async (
   isRequired?: boolean,
   type?: "CHECKBOX" | "RADIO" | "TEXT"
 ) => {
+  // The SQL below selects `data::text[]`, so the row's `data` arrives as a
+  // string array of JSON-encoded entries rather than the parsed shape that
+  // EventQuestion declares. Model that honestly here, then parse to the
+  // GraphQL shape in one transform.
+  type SqlQuestionRow = Omit<SnakeCasedProperties<EventQuestion>, "data"> & {
+    data: string[] | null
+  }
+
   const questionTypes = ["CHECKBOX", "RADIO", "TEXT"]
-  let questions: SnakeCasedProperties<EventQuestion>[] = []
+  const rawQuestions: SqlQuestionRow[] = []
   for (let i = 0; i < count; i++) {
     const t = type ? type : questionTypes[i % 3]
     const label = { fi: words(), en: words() }
@@ -649,7 +657,7 @@ export const createQuestions = async (
     }
     const {
       rows: [question],
-    } = await client.query(
+    } = await client.query<SqlQuestionRow>(
       `with r1 as (
         insert into app_public.event_questions(event_id, position, type, label, is_required, data)
         values ($1, $2, $3, $4, $5, $6)
@@ -659,13 +667,15 @@ export const createQuestions = async (
       `,
       [eventId, i, t, label, isRequired, data]
     )
-    questions.push(question)
+    rawQuestions.push(question)
   }
 
-  questions = questions.map((q) => ({
-    ...q,
-    data: q?.data?.map((d: string) => JSON.parse(d)),
-  })) as SnakeCasedProperties<EventQuestion>[]
+  const questions: SnakeCasedProperties<EventQuestion>[] = rawQuestions.map(
+    (q) => ({
+      ...q,
+      data: q.data?.map((d) => JSON.parse(d)),
+    })
+  )
 
   return questions
 }

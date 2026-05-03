@@ -123,7 +123,7 @@ export function SharedLayout({
     const reset = async () => {
       router.events.off("routeChangeComplete", reset)
       try {
-        await logout()
+        await logout({})
         context.resetUrqlClient()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.

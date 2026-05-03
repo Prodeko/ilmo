@@ -31,7 +31,7 @@ export type FormValues = {
   languages?: string[]
   ownerOrganizationId?: string
   categoryId?: string
-  name?: Scalars["TranslatedField"]
+  name?: Scalars["TranslatedField"]["input"]
   description?: JsonValue
   location?: string
   eventTime?: dayjs.Dayjs[]
@@ -54,7 +54,7 @@ interface EventFormProps {
 }
 
 export function getEventSlug(
-  name?: Scalars["TranslatedField"],
+  name?: Scalars["TranslatedField"]["input"],
   dates?: dayjs.Dayjs[]
 ) {
   const eventStartTime = dates?.[0].toISOString()
