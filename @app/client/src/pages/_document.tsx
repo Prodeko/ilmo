@@ -31,8 +31,8 @@ class CustomDocument extends Document {
         <>
           {initialProps.styles}
           <style
-            data-antd-cssinjs
             dangerouslySetInnerHTML={{ __html: style }}
+            data-antd-cssinjs
           />
         </>
       ),

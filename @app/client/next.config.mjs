@@ -1,35 +1,18 @@
 import BundleAnalyzer from "@next/bundle-analyzer"
 import { withSentryConfig } from "@sentry/nextjs"
-import _ from "lodash"
-import withNextTranslate from "next-translate"
-import NextTranspileModules from "next-transpile-modules"
-import path from "node:path"
+import nextTranslate from "next-translate-plugin"
 
 import localeConfig from "./i18n.js"
 
-const __dirname = new URL(".", import.meta.url).pathname
-// next-transpile-modules can't resolve workspace packages from
-// `@app/server`'s working dir (where the SSR bridge bootstraps the config),
-// so pass the resolved absolute path instead of the package name.
-const componentsPath = path.resolve(__dirname, "../components")
 const { locales, defaultLocale } = localeConfig
 const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
-const withTM = NextTranspileModules([
-  componentsPath,
-  // antd, @ant-design/icons, and friends ship ESM builds (`es/`) with
-  // extensionless relative imports that Node's strict ESM resolver rejects.
-  // Bundling them through webpack on both client and server keeps Node
-  // out of the resolution path during page data collection.
-  "antd",
-  "@ant-design/icons",
-  "@ant-design/cssinjs",
-  "rc-util",
-  "rc-pagination",
-  "rc-picker",
-  "antd-img-crop",
-])
+
+// Turbopack is the default in Next 16. Detect the `--webpack` opt-out so
+// next-translate-plugin can inject the right loader path; without this it
+// emits webpack config that breaks Turbopack startup.
+const isTurbopack = !process.argv.includes("--webpack")
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck.js")) {
@@ -42,6 +25,18 @@ if (!process.env.ROOT_URL) {
 const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
 
+const remoteImageHosts = isDevOrTest
+  ? [
+      { protocol: "http", hostname: "localhost" },
+      { protocol: "https", hostname: "static.prodeko.org" },
+      { protocol: "http", hostname: "placeimg.com" },
+      { protocol: "https", hostname: "placeimg.com" },
+    ]
+  : [
+      { protocol: "https", hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },
+      { protocol: "https", hostname: "static.prodeko.org" },
+    ]
+
 /**
  * @type {import('next').NextConfig}
  */
@@ -53,12 +48,36 @@ const nextOptions = {
     locales,
     defaultLocale,
   },
+  // antd, @ant-design/icons, and friends ship ESM with extensionless
+  // relative imports that Node's strict ESM resolver rejects during page
+  // data collection. Keep them on the bundler path on both client and
+  // server.
+  transpilePackages: [
+    "@app/components",
+    "antd",
+    "@ant-design/icons",
+    "@ant-design/cssinjs",
+    "rc-util",
+    "rc-pagination",
+    "rc-picker",
+    "antd-img-crop",
+    "next-translate",
+  ],
+  turbopack: {
+    resolveAlias: {
+      // pg-native is an optional native binding that the `pg` driver tries
+      // to resolve at runtime. We never install it; redirect to the JS
+      // client so resolution succeeds.
+      "pg-native": "pg/lib/client",
+      // `ws` is a server-only dep pulled in transitively. Stub it out for
+      // the browser bundle so Turbopack doesn't try to bundle it client-side.
+      ws: { browser: "./empty.js" },
+    },
+  },
   images: {
     minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],
-    domains: isDevOrTest
-      ? ["localhost", "static.prodeko.org", "placeimg.com"]
-      : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
+    remotePatterns: remoteImageHosts,
   },
   async redirects() {
     return [
@@ -82,70 +101,17 @@ const nextOptions = {
   },
 }
 
-const nextConfig = () =>
-  _.flowRight(
-    withTM,
-    withNextTranslate,
-    withBundleAnalyzer
-  )({
-    ...nextOptions,
-    webpack(config, { webpack, dev, isServer }) {
-      const makeSafe = (externals) => {
-        if (Array.isArray(externals)) {
-          return externals.map((ext) => {
-            if (typeof ext === "function") {
-              return ({ request, ...rest }, callback) => {
-                if (/^@app\//.test(request)) {
-                  callback()
-                } else {
-                  return ext({ request, ...rest }, callback)
-                }
-              }
-            } else {
-              return ext
-            }
-          })
-        }
-      }
+const nextConfig = withBundleAnalyzer(
+  nextTranslate(nextOptions, { turbopack: isTurbopack })
+)
 
-      const externals =
-        isServer && dev ? makeSafe(config.externals) : config.externals
+const sentryOptions = {
+  org: "prodeko",
+  project: "ilmo",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: process.env.NODE_ENV !== "production",
+}
 
-      if (isServer) {
-        // For bare specifiers (e.g. `@ant-design/icons`), prefer the CJS
-        // `main` field over the `module` field. The ESM builds of these
-        // packages use extensionless relative imports that Node's strict
-        // ESM resolver rejects when Next collects page data.
-        config.resolve.mainFields = ["main", "module"]
-      } else {
-        config.resolve.fallback.fs = false
-        config.plugins.push(
-          new webpack.IgnorePlugin(
-            // These modules are server-side only; we don't want webpack
-            // attempting to bundle them into the client.
-            {
-              resourceRegExp: /^(ws)$/,
-            }
-          )
-        )
-      }
-
-      return {
-        ...config,
-        externals: [
-          ...(externals || []),
-          isServer ? { "pg-native": "pg/lib/client" } : null,
-        ].filter((_) => _),
-      }
-    },
-  })
-
-// Options https://github.com/getsentry/sentry-webpack-plugin#options
 export default process.env.DOCKER_BUILD
-  ? withSentryConfig(nextConfig, {
-      release: process.env.GITHUB_SHA || "local",
-      configFile: `${__dirname}sentry.properties`,
-      silent: process.env.NODE_ENV !== "production",
-      environment: process.env.NODE_ENV,
-    })
+  ? withSentryConfig(nextConfig, sentryOptions)
   : nextConfig

@@ -94,8 +94,8 @@ const EventRegistrationPage: NextPage = () => {
               <Popconfirm
                 cancelText={t("common:no")}
                 okText={t("common:yes")}
-                title={t("confirmGoBack")}
                 open={visible}
+                title={t("confirmGoBack")}
                 onCancel={hidePopconfirm}
                 onConfirm={handleGoBack}
               />

@@ -22,10 +22,14 @@ import {
 } from "@app/graphql"
 import { Col, Divider, message, notification, Row } from "antd"
 import dayjs from "dayjs"
-import Image from "next/image"
+import * as NextImage from "next/image"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
+
+// See SharedLayout.tsx — namespace-then-default access works around a
+// Next 16 webpack default-import bundling bug.
+const Image = NextImage.default
 
 const EventPage: NextPage = () => {
   const slug = useQuerySlug()
@@ -222,8 +226,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
               alt={t("headerImage")}
               data-cy="eventpage-header-image"
               height={315}
-              objectFit="cover"
               src={headerImageFile}
+              style={{ objectFit: "cover" }}
               width={851}
               priority
             />

@@ -75,8 +75,8 @@ function UnlinkAccountButton({ id }: { id: string }) {
   return (
     <>
       <Modal
-        title="Are you sure?"
         open={modalOpen}
+        title="Are you sure?"
         onCancel={handleCloseModal}
         onOk={handleUnlink}
       >

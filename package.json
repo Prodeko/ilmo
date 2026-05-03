@@ -103,7 +103,10 @@
       "dayjs": "1.11.4"
     },
     "onlyBuiltDependencies": [
-      "cypress"
+      "@sentry/cli",
+      "cypress",
+      "next-translate-plugin",
+      "sharp"
     ]
   },
   "prettier": {

@@ -18,11 +18,9 @@ import {
   Space,
   Typography,
 } from "antd"
-
-import type { MenuProps } from "antd"
-import Head from "next/head"
-import Image from "next/image"
-import Link from "next/link"
+import * as NextHead from "next/head"
+import * as NextImage from "next/image"
+import * as NextLink from "next/link"
 import { useRouter } from "next/router"
 import { CombinedError, UseQueryState } from "urql"
 
@@ -42,6 +40,13 @@ import {
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
+
+// Namespace-then-default access defeats webpack's broken optimization that
+// would otherwise leave these as the entire module object (an `object`
+// React rejects as a JSX type) instead of the actual default export.
+const Head = NextHead.default
+const Image = NextImage.default
+const Link = NextLink.default
 
 export { Link }
 export const { useBreakpoint } = Grid
@@ -197,16 +202,14 @@ export function SharedLayout({
         <Row wrap={false}>
           <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
             <Link href="/">
-              <a>
-                <Image
-                  alt="Prodeko"
-                  height={50}
-                  placeholder="blur"
-                  src={headerLogo}
-                  width={50}
-                  priority
-                />
-              </a>
+              <Image
+                alt="Prodeko"
+                height={50}
+                placeholder="blur"
+                src={headerLogo}
+                width={50}
+                priority
+              />
             </Link>
           </Col>
           {!isMobile ? (
@@ -221,8 +224,12 @@ export function SharedLayout({
                 }}
               >
                 {titleHref ? (
-                  <Link as={titleHrefAs} href={titleHref}>
-                    <a data-cy="layout-header-titlelink">{title}</a>
+                  <Link
+                    as={titleHrefAs}
+                    data-cy="layout-header-titlelink"
+                    href={titleHref}
+                  >
+                    {title}
                   </Link>
                 ) : (
                   title
@@ -242,8 +249,11 @@ export function SharedLayout({
                             {
                               key: "admin",
                               label: (
-                                <Link href="/admin/event/list">
-                                  <a data-cy="layout-link-admin">{t("admin")}</a>
+                                <Link
+                                  data-cy="layout-link-admin"
+                                  href="/admin/event/list"
+                                >
+                                  {t("admin")}
                                 </Link>
                               ),
                             },
@@ -252,12 +262,13 @@ export function SharedLayout({
                       {
                         key: "settings",
                         label: (
-                          <Link href="/settings/profile">
-                            <a data-cy="layout-link-settings">
-                              <Warn okay={data.currentUser.isVerified}>
-                                {t("settings")}
-                              </Warn>
-                            </a>
+                          <Link
+                            data-cy="layout-link-settings"
+                            href="/settings/profile"
+                          >
+                            <Warn okay={data.currentUser.isVerified}>
+                              {t("settings")}
+                            </Warn>
                           </Link>
                         ),
                       },
@@ -267,7 +278,7 @@ export function SharedLayout({
                           <a onClick={handleLogout}>{t("logout")}</a>
                         ),
                       },
-                    ] satisfies MenuProps["items"],
+                    ],
                   }}
                   trigger={["click"]}
                 >
@@ -287,8 +298,11 @@ export function SharedLayout({
                   </span>
                 </Dropdown>
               ) : forbidsLoggedIn ? null : (
-                <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
-                  <a data-cy="header-login-button">{t("signin")}</a>
+                <Link
+                  data-cy="header-login-button"
+                  href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                >
+                  {t("signin")}
                 </Link>
               )}
             </Space>

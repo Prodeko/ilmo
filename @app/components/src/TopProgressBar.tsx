@@ -1,6 +1,10 @@
 import { notification } from "antd"
-import Router from "next/router"
+import * as NextRouter from "next/router"
 import NProgress from "nprogress"
+
+// Namespace-then-default access defeats Next 16 webpack's broken default-
+// import bundling for next/router (see SharedLayout.tsx for context).
+const Router = NextRouter.default
 
 NProgress.configure({
   showSpinner: false,

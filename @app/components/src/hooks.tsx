@@ -14,7 +14,7 @@ import { ErrorResult, FourOhFour, LoadingPadded, useBreakpoint } from "./"
 
 import type { LoadingProps } from "./"
 
-export { useTranslation as useTranslation }
+export { useTranslation }
 
 export function useQuerySlug() {
   const router = useRouter()

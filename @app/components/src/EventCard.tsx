@@ -5,12 +5,16 @@ import {
 } from "@app/lib"
 import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
-import Image from "next/image"
+import * as NextImage from "next/image"
 
 import { H5 } from "./Text"
 import { ButtonLink, EventQuotaPopover, Link, useTranslation } from "."
 
 import type { Event } from "@app/graphql"
+
+// See SharedLayout.tsx — namespace-then-default access works around a
+// Next 16 webpack default-import bundling bug.
+const Image = NextImage.default
 
 const { Text } = Typography
 const { Ribbon } = Badge
@@ -44,30 +48,28 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     <Card
       // styles.body and style are used to position the signup button on the same row
       // even if the description of some event would be very short.
-      styles={{
-        body: { display: "flex", flexDirection: "column", flex: "1" },
-      }}
       cover={
         <Link href={`/event/${slug}`}>
           <div style={{ cursor: "pointer" }}>
             <Image
               alt={t("events:headerImage")}
               height={315}
-              objectFit="cover"
               src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
+              style={{ objectFit: "cover" }}
               width={851}
             />
           </div>
         </Link>
       }
       style={{ display: "flex", flexDirection: "column" }}
+      styles={{
+        body: { display: "flex", flexDirection: "column", flex: "1" },
+      }}
     >
       <Link href={`/event/${slug}`}>
-        <a>
-          <H5 style={{ cursor: "pointer" }} ellipsis>
-            {title}
-          </H5>
-        </a>
+        <H5 style={{ cursor: "pointer" }} ellipsis>
+          {title}
+        </H5>
       </Link>
       <div style={cardInfoStyle}>
         <Text strong>{t("registrationTime")}:</Text>

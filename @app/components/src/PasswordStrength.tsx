@@ -71,10 +71,10 @@ export function PasswordStrength({
       <Col span={3}>
         <Popover
           content={content}
+          open={visible}
           placement="bottomRight"
           title={t("passwordHints")}
           trigger="click"
-          open={visible}
           onOpenChange={handleOpenChange}
         >
           <div

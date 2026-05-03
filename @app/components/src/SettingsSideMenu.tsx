@@ -3,8 +3,8 @@ import { Menu, Typography } from "antd"
 import { pages } from "./SettingsLayout"
 import { Link, Warn } from "."
 
-import type { MenuProps } from "antd"
 import type { User } from "@app/graphql"
+import type { MenuProps } from "antd"
 
 const { Text } = Typography
 
@@ -25,16 +25,12 @@ export const SettingsSideMenu: React.FC<SettingsSideMenuProps> = ({
       key: pageHref,
       icon,
       label: (
-        <Link href={pageHref}>
-          <a data-cy={cy}>
-            <Warn
-              okay={
-                !currentUser || currentUser.isVerified || !warnIfUnverified
-              }
-            >
-              <Text {...titleProps}>{title}</Text>
-            </Warn>
-          </a>
+        <Link data-cy={cy} href={pageHref}>
+          <Warn
+            okay={!currentUser || currentUser.isVerified || !warnIfUnverified}
+          >
+            <Text {...titleProps}>{title}</Text>
+          </Warn>
         </Link>
       ),
     }

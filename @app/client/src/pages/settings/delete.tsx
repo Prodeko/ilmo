@@ -143,8 +143,8 @@ const Settings_Accounts: NextPage = () => {
         okButtonProps={{ danger: true }}
         okText={t("pages.delete.modals.okText")}
         okType="primary"
-        title={t("pages.delete.modals.title")}
         open={confirmOpen}
+        title={t("pages.delete.modals.title")}
         onCancel={closeModal}
         onOk={doIt}
       >
@@ -165,8 +165,8 @@ const Settings_Accounts: NextPage = () => {
             </Button>
           </div>
         }
-        title={t("pages.delete.accountDeleted")}
         open={deleted}
+        title={t("pages.delete.accountDeleted")}
       >
         {t("pages.delete.accountDeletedInfo")}
       </Modal>

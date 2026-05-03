@@ -18,7 +18,9 @@ export interface MenuItem {
   icon?: ReactNode
 }
 
-const toAntdItem = (item: MenuItem): NonNullable<MenuProps["items"]>[number] => {
+const toAntdItem = (
+  item: MenuItem
+): NonNullable<MenuProps["items"]>[number] => {
   const { titleProps, title, key, cy, icon, target } = item
   if (isString(target)) {
     return {

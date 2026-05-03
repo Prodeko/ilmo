@@ -60,7 +60,7 @@ const Admin_ListEvents: NextPage = () => {
             },
           }}
         >
-          <a>{name}</a>
+          {name}
         </Link>
       </Popover>
     ),
@@ -130,15 +130,13 @@ const Admin_ListEvents: NextPage = () => {
                     },
                   }}
                 >
-                  <a>
-                    <Tag
-                      key={`${record.id}-${index}`}
-                      color={record.category.color}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {name?.toUpperCase()}
-                    </Tag>
-                  </a>
+                  <Tag
+                    key={`${record.id}-${index}`}
+                    color={record.category.color}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {name?.toUpperCase()}
+                  </Tag>
                 </Link>
               </Popover>
             )

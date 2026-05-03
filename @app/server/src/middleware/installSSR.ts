@@ -6,7 +6,11 @@ import path from "node:path"
 const SSR: FastifyPluginAsync = async (fastify) => {
   const dev = process.env.NODE_ENV !== "production"
   const dir = path.resolve(__dirname, "../../../client")
-  const nextApp = nextFactory({ dev, dir, customServer: true })
+  const nextApp = nextFactory({
+    dev,
+    dir,
+    customServer: true,
+  })
   const handle = nextApp.getRequestHandler()
 
   await nextApp.prepare()
