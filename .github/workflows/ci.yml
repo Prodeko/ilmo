@@ -180,7 +180,7 @@ jobs:
 
       - name: Start server container
         run: |
-          docker run --rm -d -p 5678:5678 \
+          docker run -d -p 5678:5678 \
             --add-host=host.docker.internal:host-gateway \
             --env-file .env \
             -e CI=true \
@@ -191,7 +191,7 @@ jobs:
 
       - name: Start worker container
         run: |
-          docker run --rm -d \
+          docker run -d \
             --add-host=host.docker.internal:host-gateway \
             --env-file .env \
             -e CI=true \
@@ -209,16 +209,21 @@ jobs:
       - name: Assert homepage rendered
         run: grep -q Prodeko /tmp/homepage.html
 
-      - name: Dump container logs on failure
-        if: failure()
+      - name: Dump container logs
+        if: always()
         run: |
+          echo "::group::ilmo-server logs"
           docker logs ilmo-server || true
+          echo "::endgroup::"
+          echo "::group::ilmo-worker logs"
           docker logs ilmo-worker || true
+          echo "::endgroup::"
 
       - name: Tear down containers
         if: always()
         run: |
-          docker kill ilmo-server ilmo-worker 2>/dev/null || true
+          docker stop ilmo-server ilmo-worker 2>/dev/null || true
+          docker rm ilmo-server ilmo-worker 2>/dev/null || true
 
   bundle:
     name: Next.js bundle analysis
@@ -270,7 +275,7 @@ jobs:
           workflow: pipeline.yml
           branch: ${{ github.event.pull_request.base.ref }}
           name: bundle
-          path: "@app/client/.next/analyze/base"
+          path: "@app/client/.next/analyze/base/bundle"
 
       - name: Compare with base branch bundle
         if: github.event_name == 'pull_request'
