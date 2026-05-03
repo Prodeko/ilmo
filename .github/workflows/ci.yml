@@ -268,6 +268,7 @@ jobs:
           path: "@app/client/.next/analyze/__bundle_analysis.json"
 
       - name: Download base branch bundle stats
+        id: download-base
         if: github.event_name == 'pull_request'
         uses: dawidd6/action-download-artifact@v6
         continue-on-error: true
@@ -277,13 +278,25 @@ jobs:
           name: bundle
           path: "@app/client/.next/analyze/base/bundle"
 
-      - name: Compare with base branch bundle
+      - name: Check baseline presence
+        id: baseline
         if: github.event_name == 'pull_request'
+        run: |
+          if [ -f "@app/client/.next/analyze/base/bundle/__bundle_analysis.json" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No baseline bundle artifact for ${{ github.event.pull_request.base.ref }}; skipping comparison."
+          fi
+        working-directory: .
+
+      - name: Compare with base branch bundle
+        if: steps.baseline.outputs.found == 'true'
         run: npx -p nextjs-bundle-analysis compare
 
       - name: Read comment body
         id: get-comment-body
-        if: github.event_name == 'pull_request'
+        if: steps.baseline.outputs.found == 'true'
         run: |
           {
             echo 'body<<EOF'
@@ -292,7 +305,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Find existing comment
-        if: github.event_name == 'pull_request'
+        if: steps.baseline.outputs.found == 'true'
         uses: peter-evans/find-comment@v3
         id: fc
         with:
@@ -300,7 +313,7 @@ jobs:
           body-includes: "<!-- __NEXTJS_BUNDLE -->"
 
       - name: Create or update bundle comment
-        if: github.event_name == 'pull_request'
+        if: steps.baseline.outputs.found == 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}

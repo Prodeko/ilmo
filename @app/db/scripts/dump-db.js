@@ -19,7 +19,8 @@ if (!connectionString) {
 //   -- Dumped from database version ...      (server build string)
 //   -- Dumped by pg_dump version ...         (client build string)
 //   SET transaction_timeout = 0;             (only emitted by pg_dump 17+)
-const NOISE = /^(\\restrict\s|\\unrestrict\s|-- Dumped (from|by)\s|SET transaction_timeout\b)/
+const NOISE =
+  /^(\\restrict\s|\\unrestrict\s|-- Dumped (from|by)\s|SET transaction_timeout\b)/
 
 const outPath = "../../data/schema.sql"
 const out = fs.createWriteStream(outPath)
