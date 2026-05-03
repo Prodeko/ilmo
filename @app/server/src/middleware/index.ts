@@ -1,5 +1,4 @@
 import installCSRFProtection from "./installCSRFProtection"
-import installCypressServerCommand from "./installCypressServerCommand"
 import installDatabasePools from "./installDatabasePools"
 import installErrorHandler from "./installErrorHandler"
 import installFileUpload from "./installFileUpload"
@@ -15,7 +14,6 @@ import installWorkerUtils from "./installWorkerUtils"
 
 export {
   installCSRFProtection,
-  installCypressServerCommand,
   installDatabasePools,
   installErrorHandler,
   installFileUpload,

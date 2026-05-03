@@ -10,7 +10,7 @@
     "build": "exit 0",
     "watch": "exit 0",
     "dev": "exit 0",
-    "depcheck": "depcheck"
+    "depcheck": "depcheck --ignores=\"@app/config,@types/node\""
   },
   "dependencies": {
     "@app/config": "workspace:*"

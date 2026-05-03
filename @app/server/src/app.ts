@@ -100,7 +100,14 @@ export async function makeApp({
   await app.register(middleware.installPassport)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
-    await app.register(middleware.installCypressServerCommand)
+    // Loaded dynamically so the production bundle never imports
+    // installCypressServerCommand.ts (which top-level requires
+    // @faker-js/faker — a devDependency that gets pruned from the
+    // production docker image).
+    const { default: installCypressServerCommand } = await import(
+      "./middleware/installCypressServerCommand"
+    )
+    await app.register(installCypressServerCommand)
   }
   await app.register(middleware.installPostGraphile)
   await app.register(middleware.installFileUpload)
