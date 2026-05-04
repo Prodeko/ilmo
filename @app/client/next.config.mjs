@@ -49,6 +49,13 @@ const nextOptions = {
   useFileSystemPublicRoutes: true,
   poweredByHeader: false,
   trailingSlash: false,
+  // Bundle SSR deps into .next/server/ instead of leaving them as external
+  // imports resolved against node_modules at runtime. Turbopack tags
+  // externals with content hashes (e.g. `graphql-ws-f6eccf6a82a4080a`);
+  // when the prod docker image's `pnpm prune --prod` removes a hoisted
+  // version that a devDep had pinned, the tagged name no longer resolves
+  // and SSR returns 500. Matches the App Router default.
+  bundlePagesRouterDependencies: true,
   i18n: {
     locales,
     defaultLocale,
