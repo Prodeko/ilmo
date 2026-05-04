@@ -6,7 +6,7 @@
     "build": "NODE_ENV=production NODE_OPTIONS=\"--require=@app/config/env.js\" next build",
     "dev": "exit 0",
     "watch": "exit 0",
-    "depcheck": "depcheck --ignores=\"@app/config,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"@app/config,net,tls,webpack,net,tls,next-urql,nprogress\" --ignore-patterns=.next"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.21.0",
@@ -15,6 +15,7 @@
     "@app/config": "workspace:*",
     "@app/graphql": "workspace:*",
     "@app/lib": "workspace:*",
+    "@next/bundle-analyzer": "^16.2.4",
     "@sentry/nextjs": "^10.51.0",
     "antd": "^5.22.5",
     "dayjs": "^1.11.4",
@@ -22,6 +23,7 @@
     "net": "^1.0.2",
     "next": "^16.2.4",
     "next-translate": "^3.1.3",
+    "next-translate-plugin": "^3.1.3",
     "pg": "^8.11.3",
     "rc-table": "^7.26.0",
     "react": "^18.2.0",
@@ -32,10 +34,7 @@
     "urql": "^4.2.2",
     "webpack": "^5.74.0"
   },
-  "devDependencies": {
-    "@next/bundle-analyzer": "^16.2.4",
-    "next-translate-plugin": "^3.1.3"
-  },
+  "devDependencies": {},
   "nextBundleAnalysis": {
     "budget": 460800,
     "budgetPercentIncreaseRed": 20,
