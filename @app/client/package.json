@@ -6,7 +6,7 @@
     "build": "NODE_ENV=production NODE_OPTIONS=\"--require=@app/config/env.js\" next build",
     "dev": "exit 0",
     "watch": "exit 0",
-    "depcheck": "depcheck --ignores=\"net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer\" --ignore-patterns=.next"
+    "depcheck": "depcheck --ignores=\"@app/config,net,tls,webpack,net,tls,next-urql,nprogress,@next/bundle-analyzer\" --ignore-patterns=.next"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.21.0",

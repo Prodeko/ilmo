@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          for i in 1 2 3 4 5; do
+          for _ in 1 2 3 4 5; do
             if curl -sS -o /tmp/homepage-response.txt -w "HTTP %{http_code}\n" http://localhost:5678; then
               break
             fi
@@ -85,6 +85,17 @@ jobs:
           echo "::group::homepage response"
           head -c 8000 /tmp/homepage-response.txt 2>/dev/null || echo "(no response captured)"
           echo "::endgroup::"
+
+      - name: Ensure Cypress binary is installed
+        # `pnpm install` runs cypress's postinstall on a cold pnpm-store cache,
+        # which downloads the binary to ~/.cache/Cypress. setup-node@v4's
+        # `cache: pnpm` only caches the pnpm store though — on a store cache
+        # hit pnpm sees nothing to (re)install and skips postinstalls, but the
+        # ephemeral runner has no Cypress cache, so the binary is missing.
+        # `cypress install` is idempotent: no-op when the binary is present,
+        # downloads it when it isn't.
+        working-directory: "@app/e2e"
+        run: pnpm exec cypress install
 
       - name: Cypress run
         uses: cypress-io/github-action@v6

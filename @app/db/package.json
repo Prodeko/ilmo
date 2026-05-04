@@ -14,7 +14,7 @@
     "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env.js\" pnpm exec jest",
     "create-fake-data": "ts-node -r @app/config/env.js scripts/create-fake-data.ts",
     "clean-fake-data": "ts-node -r @app/config/env.js scripts/clean-fake-data.ts",
-    "depcheck": "depcheck --ignores=\"dayjs\""
+    "depcheck": "depcheck --ignores=\"dayjs,@app/config\""
   },
   "dependencies": {
     "graphile-migrate": "^1.4.0"
