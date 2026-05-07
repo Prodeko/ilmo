@@ -90,6 +90,10 @@ export async function makeApp({
   // Error handling middleware
   await app.register(middleware.installErrorHandler)
 
+  // Lightweight liveness probe; registered before heavier plugins so the
+  // route stays available even if a downstream plugin is slow to start.
+  await app.register(middleware.installHealth)
+
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)

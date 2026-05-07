@@ -2,6 +2,7 @@ import installCSRFProtection from "./installCSRFProtection"
 import installDatabasePools from "./installDatabasePools"
 import installErrorHandler from "./installErrorHandler"
 import installFileUpload from "./installFileUpload"
+import installHealth from "./installHealth"
 import installHelmet from "./installHelmet"
 import installPassport from "./installPassport"
 import installPostGraphile from "./installPostGraphile"
@@ -17,6 +18,7 @@ export {
   installDatabasePools,
   installErrorHandler,
   installFileUpload,
+  installHealth,
   installHelmet,
   installPassport,
   installPostGraphile,
