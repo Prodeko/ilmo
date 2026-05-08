@@ -3,6 +3,7 @@ import fiFI from "antd/lib/locale/fi_FI"
 import svSE from "antd/lib/locale/sv_SE"
 import { Locale } from "antd/lib/locale-provider"
 import dayjs from "dayjs"
+import localizedFormat from "dayjs/plugin/localizedFormat"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
 
@@ -14,6 +15,8 @@ import "dayjs/locale/sv-fi"
 // https://day.js.org/docs/en/plugin/timezone
 dayjs.extend(utc)
 dayjs.extend(timezone)
+// Required for L/LL/LLL/LT format tokens used in EventCard, tables, etc.
+dayjs.extend(localizedFormat)
 
 const locales = {
   fi: ["fi", fiFI],

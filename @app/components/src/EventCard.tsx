@@ -55,7 +55,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               alt={t("events:headerImage")}
               height={315}
               src={headerImageFile ?? DEFAULT_HEADER_IMAGE}
-              style={{ objectFit: "cover" }}
+              style={{
+                width: "100%",
+                height: "auto",
+                objectFit: "cover",
+              }}
               width={851}
             />
           </div>
