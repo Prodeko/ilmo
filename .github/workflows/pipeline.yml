@@ -39,3 +39,10 @@ jobs:
             echo "ci=${{ needs.ci.result }} e2e=${{ needs.e2e.result }}"
             exit 1
           fi
+
+  deploy:
+    name: Deploy
+    needs: [all-checks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.all-checks.result == 'success'
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
