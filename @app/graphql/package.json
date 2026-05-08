@@ -7,21 +7,27 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "yarn codegen && tsc -b && tsc --project tsconfig.cjs.json",
-    "watch": "yarn codegen --watch",
+    "build": "pnpm codegen && tsc -b && tsc --project tsconfig.cjs.json",
+    "watch": "pnpm codegen --watch",
+    "dev": "exit 0",
     "codegen": "graphql-codegen --config codegen.yml",
     "depcheck": "depcheck --ignores=\"@graphql-codegen/*,@urql/*,urql,graphql-tag,graphql-codegen-persisted-query-ids,tslib\""
   },
+  "dependencies": {
+    "graphql-tag": "^2.12.6",
+    "tslib": "^2.6.0",
+    "urql": "^4.2.2"
+  },
   "devDependencies": {
-    "@graphql-codegen/add": "^3.2.1",
-    "@graphql-codegen/cli": "^2.11.5",
-    "@graphql-codegen/introspection": "^2.2.1",
-    "@graphql-codegen/typescript": "^2.7.3",
-    "@graphql-codegen/typescript-operations": "^2.5.3",
-    "@graphql-codegen/typescript-urql": "^3.6.4",
-    "@graphql-codegen/typescript-urql-graphcache": "^2.3.3",
-    "@graphql-codegen/urql-introspection": "^2.2.1",
-    "@urql/introspection": "^0.3.3",
-    "graphql-codegen-persisted-query-ids": "^0.1.2"
+    "@graphql-codegen/add": "^5.0.3",
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/introspection": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@graphql-codegen/typescript-urql": "^5.0.1",
+    "@graphql-codegen/typescript-urql-graphcache": "^4.0.2",
+    "@graphql-codegen/urql-introspection": "^4.0.1",
+    "@urql/introspection": "^1.2.1",
+    "graphql-codegen-persisted-query-ids": "^0.2.0"
   }
 }

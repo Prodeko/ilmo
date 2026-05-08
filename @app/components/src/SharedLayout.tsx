@@ -13,15 +13,14 @@ import {
   Dropdown,
   Grid,
   Layout,
-  Menu,
   message,
   Row,
   Space,
   Typography,
 } from "antd"
-import Head from "next/head"
-import Image from "next/image"
-import Link from "next/link"
+import * as NextHead from "next/head"
+import * as NextImage from "next/image"
+import * as NextLink from "next/link"
 import { useRouter } from "next/router"
 import { CombinedError, UseQueryState } from "urql"
 
@@ -41,6 +40,13 @@ import {
 
 const { Header, Content, Footer } = Layout
 const { Text } = Typography
+
+// Namespace-then-default access defeats webpack's broken optimization that
+// would otherwise leave these as the entire module object (an `object`
+// React rejects as a JSX type) instead of the actual default export.
+const Head = NextHead.default
+const Image = NextImage.default
+const Link = NextLink.default
 
 export { Link }
 export const { useBreakpoint } = Grid
@@ -117,7 +123,7 @@ export function SharedLayout({
     const reset = async () => {
       router.events.off("routeChangeComplete", reset)
       try {
-        await logout()
+        await logout({})
         context.resetUrqlClient()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
@@ -196,16 +202,14 @@ export function SharedLayout({
         <Row wrap={false}>
           <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
             <Link href="/">
-              <a>
-                <Image
-                  alt="Prodeko"
-                  height={50}
-                  placeholder="blur"
-                  src={headerLogo}
-                  width={50}
-                  priority
-                />
-              </a>
+              <Image
+                alt="Prodeko"
+                height={50}
+                placeholder="blur"
+                src={headerLogo}
+                width={50}
+                priority
+              />
             </Link>
           </Col>
           {!isMobile ? (
@@ -220,8 +224,12 @@ export function SharedLayout({
                 }}
               >
                 {titleHref ? (
-                  <Link as={titleHrefAs} href={titleHref}>
-                    <a data-cy="layout-header-titlelink">{title}</a>
+                  <Link
+                    as={titleHrefAs}
+                    data-cy="layout-header-titlelink"
+                    href={titleHref}
+                  >
+                    {title}
                   </Link>
                 ) : (
                   title
@@ -234,29 +242,42 @@ export function SharedLayout({
               <LocaleSelect />
               {data && data.currentUser ? (
                 <Dropdown
-                  overlay={
-                    <Menu>
-                      {data.currentUser.isAdmin && (
-                        <Menu.Item key="admin">
-                          <Link href="/admin/event/list">
-                            <a data-cy="layout-link-admin">{t("admin")}</a>
-                          </Link>
-                        </Menu.Item>
-                      )}
-                      <Menu.Item key="settings">
-                        <Link href="/settings/profile">
-                          <a data-cy="layout-link-settings">
+                  menu={{
+                    items: [
+                      ...(data.currentUser.isAdmin
+                        ? [
+                            {
+                              key: "admin",
+                              label: (
+                                <Link
+                                  data-cy="layout-link-admin"
+                                  href="/admin/event/list"
+                                >
+                                  {t("admin")}
+                                </Link>
+                              ),
+                            },
+                          ]
+                        : []),
+                      {
+                        key: "settings",
+                        label: (
+                          <Link
+                            data-cy="layout-link-settings"
+                            href="/settings/profile"
+                          >
                             <Warn okay={data.currentUser.isVerified}>
                               {t("settings")}
                             </Warn>
-                          </a>
-                        </Link>
-                      </Menu.Item>
-                      <Menu.Item key="logout">
-                        <a onClick={handleLogout}>{t("logout")}</a>
-                      </Menu.Item>
-                    </Menu>
-                  }
+                          </Link>
+                        ),
+                      },
+                      {
+                        key: "logout",
+                        label: <a onClick={handleLogout}>{t("logout")}</a>,
+                      },
+                    ],
+                  }}
                   trigger={["click"]}
                 >
                   <span
@@ -275,8 +296,11 @@ export function SharedLayout({
                   </span>
                 </Dropdown>
               ) : forbidsLoggedIn ? null : (
-                <Link href={`/login?next=${encodeURIComponent(currentUrl)}`}>
-                  <a data-cy="header-login-button">{t("signin")}</a>
+                <Link
+                  data-cy="header-login-button"
+                  href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                >
+                  {t("signin")}
                 </Link>
               )}
             </Space>

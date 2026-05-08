@@ -48,8 +48,8 @@ export function PasswordStrength({
 
   if (!isDirty) return null
 
-  const handleVisibleChange = (visible: boolean) => {
-    setVisible(visible)
+  const handleOpenChange = (next: boolean) => {
+    setVisible(next)
   }
 
   const content = (
@@ -71,11 +71,11 @@ export function PasswordStrength({
       <Col span={3}>
         <Popover
           content={content}
+          open={visible}
           placement="bottomRight"
           title={t("passwordHints")}
           trigger="click"
-          visible={visible}
-          onVisibleChange={handleVisibleChange}
+          onOpenChange={handleOpenChange}
         >
           <div
             style={{

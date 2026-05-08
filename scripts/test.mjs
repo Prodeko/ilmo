@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import "@app/config/env.js"
 import { execSync, spawnSync as rawSpawnSync } from "child_process"
+
 import concurrently from "concurrently"
+
+import "@app/config/env.js"
 
 function spawnSync(cmd, args, options) {
   const result = rawSpawnSync(cmd, args, {
@@ -79,8 +81,8 @@ function main() {
   }
 
   // Reset the test database
-  execSync("yarn db gm reset --shadow --erase", opts)
-  execSync("yarn db watch --once --shadow", opts)
+  execSync("pnpm --filter @app/db run gm reset --shadow --erase", opts)
+  execSync("pnpm --filter @app/db run watch --once --shadow", opts)
 
   if (watchMode) {
     // We're in watch mode, so keep watching the `current.sql` file
@@ -88,12 +90,12 @@ function main() {
       [
         {
           name: "jest",
-          command: `yarn node --inspect=9876 ./node_modules/jest/bin/jest.js -i ${watchMode}`,
+          command: `node --inspect=9876 ./node_modules/jest/bin/jest.js -i ${watchMode}`,
           prefixColor: "greenBright",
         },
         {
           name: "testdb",
-          command: "yarn db watch --shadow",
+          command: "pnpm --filter @app/db run watch --shadow",
           prefixColor: "blue",
         },
       ],

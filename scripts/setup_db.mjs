@@ -1,16 +1,14 @@
 #!/usr/bin/env node
-import {
-  yarnCmd,
-  runMain,
-  checkGit,
-  outro,
-  runSync,
-  projectName,
-} from "./_setup_utils.mjs"
-import inquirer from "inquirer"
 import dotenv from "dotenv"
+import inquirer from "inquirer"
 import pg from "pg"
-import { dirname } from "./_setup_utils.mjs"
+
+import {
+  checkGit,
+ dirname,  outro,
+  pnpmCmd,
+  runMain,
+  runSync } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)
 
@@ -20,9 +18,9 @@ runMain(async () => {
   await checkGit()
 
   // Ensure server build has been run
-  runSync(yarnCmd, ["graphql", "build"])
-  runSync(yarnCmd, ["lib", "build"])
-  runSync(yarnCmd, ["server", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/graphql", "run", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/lib", "run", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/server", "run", "build"])
 
   // Source our environment
   dotenv.config({ path: `${__dirname}/../.env` })
@@ -130,18 +128,13 @@ runMain(async () => {
   }
   await pgPool.end()
 
-  runSync(yarnCmd, ["db", "reset", "--erase"])
-  runSync(yarnCmd, ["db", "reset", "--shadow", "--erase"])
+  runSync(pnpmCmd, ["--filter", "@app/db", "run", "reset", "--erase"])
+  runSync(pnpmCmd, ["--filter", "@app/db", "run", "reset", "--shadow", "--erase"])
 
   outro(`\
 ✅ Setup success
 
 🚀 To get started, run:
 
-${
-  projectName
-    ? // Probably Docker setup
-      "  export UID; yarn docker start"
-    : `  ${yarnCmd} start`
-}`)
+${`  ${pnpmCmd} start`}`)
 })

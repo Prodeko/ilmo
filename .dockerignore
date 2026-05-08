@@ -14,3 +14,7 @@
 **/node_modules
 **/dist
 **/__tests__
+
+.yarn
+.yarnrc.yml
+yarn.lock

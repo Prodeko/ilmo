@@ -3,23 +3,22 @@ import hashes from "@app/graphql/client.json"
 import minifiedSchema from "@app/graphql/introspection.min.json"
 import { devtoolsExchange } from "@urql/devtools"
 import { cacheExchange } from "@urql/exchange-graphcache"
-import { multipartFetchExchange } from "@urql/exchange-multipart-fetch"
-import { persistedFetchExchange } from "@urql/exchange-persisted-fetch"
+import { persistedExchange } from "@urql/exchange-persisted"
 import { createClient } from "graphql-ws"
 import { withUrqlClient } from "next-urql"
 import {
-  dedupExchange,
   errorExchange,
   Exchange,
+  fetchExchange,
   subscriptionExchange,
 } from "urql"
 
 import { getSessionAndCSRFToken } from "."
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
+import type { SSRExchange } from "@urql/core"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import type { Client } from "graphql-ws"
-import type { SSRExchange } from "next-urql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
@@ -75,7 +74,6 @@ export const withUrql = withUrqlClient(
       },
       exchanges: [
         isDev && devtoolsExchange,
-        dedupExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
           updates: {
@@ -175,10 +173,13 @@ export const withUrql = withUrqlClient(
           },
         }),
         ssrExchange,
-        persistedFetchExchange({
+        errorExchange({
+          onError(_error) {},
+        }),
+        persistedExchange({
           // Urql persisted queries support. We have pregenerated the query hashes
           // with 'graphql-codegen-persisted-query-ids' graphql-codegen plugin.
-          // More information: https://formidable.com/open-source/urql/docs/advanced/persistence-and-uploads/#customizing-hashing
+          // More information: https://urql-graphql.github.io/urql/advanced/persistence-and-uploads/#customizing-hashing
           generateHash: async (_, document) => {
             const operation = document.definitions[0] as OperationDefinitionNode
             const queryName = operation?.name?.value
@@ -186,16 +187,16 @@ export const withUrql = withUrqlClient(
           },
         }),
         subscriptionExchange({
-          forwardSubscription: (operation) => ({
+          forwardSubscription: (request) => ({
             subscribe: (sink) => ({
-              unsubscribe: wsClient!.subscribe(operation, sink),
+              unsubscribe: wsClient!.subscribe(
+                { ...request, query: request.query || "" },
+                sink
+              ),
             }),
           }),
         }),
-        errorExchange({
-          onError(_error) {},
-        }),
-        multipartFetchExchange,
+        fetchExchange,
       ].filter(Boolean) as Exchange[],
     }
   },

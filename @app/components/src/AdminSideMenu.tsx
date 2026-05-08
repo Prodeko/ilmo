@@ -3,10 +3,10 @@ import { arePropsEqual, isString } from "@app/lib"
 import { Menu, Typography } from "antd"
 import { useRouter } from "next/router"
 
+import type { MenuProps } from "antd"
 import type { TextProps } from "antd/lib/typography/Text"
 
 const { Text } = Typography
-const { SubMenu } = Menu
 
 export interface MenuItem {
   key: string
@@ -18,21 +18,27 @@ export interface MenuItem {
   icon?: ReactNode
 }
 
-const getMenuItem = (item: MenuItem): JSX.Element => {
+const toAntdItem = (
+  item: MenuItem
+): NonNullable<MenuProps["items"]>[number] => {
   const { titleProps, title, key, cy, icon, target } = item
   if (isString(target)) {
-    return (
-      <Menu.Item key={key} data-cy={cy} icon={icon}>
-        <Text {...titleProps}>{title}</Text>
-      </Menu.Item>
-    )
+    return {
+      key,
+      icon,
+      label: (
+        <span data-cy={cy}>
+          <Text {...titleProps}>{title}</Text>
+        </span>
+      ),
+    }
   }
-  const children = target?.map((i) => getMenuItem(i))
-  return (
-    <SubMenu key={key} data-cy={cy} icon={icon} title={title}>
-      {children}
-    </SubMenu>
-  )
+  return {
+    key,
+    icon,
+    label: <span data-cy={cy}>{title}</span>,
+    children: target?.map(toAntdItem),
+  }
 }
 
 type AdminSideMenuProps = {
@@ -41,16 +47,12 @@ type AdminSideMenuProps = {
 
 export const AdminSideMenu: React.FC<AdminSideMenuProps> = memo(({ items }) => {
   const router = useRouter()
-  const menuItems = items.map((item) => getMenuItem(item))
-
   return (
     <Menu
+      items={items.map(toAntdItem)}
       mode="inline"
-      motion={undefined}
       style={{ height: "100%", zIndex: -1 }}
       onClick={({ key }) => router.push(key)}
-    >
-      {menuItems}
-    </Menu>
+    />
   )
 }, arePropsEqual)

@@ -50,19 +50,19 @@ const Admin_ListEvents: NextPage = () => {
       compare: Sorter.TEXT,
     },
     render: (name: string, event: Event) => (
-      <Link
-        as={`/event/${event.slug}`}
-        href={{
-          pathname: "/event/[slug]",
-          query: {
-            slug: event.slug,
-          },
-        }}
-      >
-        <Popover content={t("events.list.linkToEvent")}>
-          <a>{name}</a>
-        </Popover>
-      </Link>
+      <Popover content={t("events.list.linkToEvent")}>
+        <Link
+          as={`/event/${event.slug}`}
+          href={{
+            pathname: "/event/[slug]",
+            query: {
+              slug: event.slug,
+            },
+          }}
+        >
+          {name}
+        </Link>
+      </Popover>
     ),
   }
 
@@ -120,16 +120,16 @@ const Admin_ListEvents: NextPage = () => {
           },
           render: (name: string, record: Event, index: number) => {
             return (
-              <Link
-                as={`/admin/event-category/update/${record?.category?.id}`}
-                href={{
-                  pathname: "/admin/event-category/update/[id]",
-                  query: {
-                    id: record?.category?.id,
-                  },
-                }}
-              >
-                <Popover content={t("events.list.linkUpdateEventCategory")}>
+              <Popover content={t("events.list.linkUpdateEventCategory")}>
+                <Link
+                  as={`/admin/event-category/update/${record?.category?.id}`}
+                  href={{
+                    pathname: "/admin/event-category/update/[id]",
+                    query: {
+                      id: record?.category?.id,
+                    },
+                  }}
+                >
                   <Tag
                     key={`${record.id}-${index}`}
                     color={record.category.color}
@@ -137,8 +137,8 @@ const Admin_ListEvents: NextPage = () => {
                   >
                     {name?.toUpperCase()}
                   </Tag>
-                </Popover>
-              </Link>
+                </Link>
+              </Popover>
             )
           },
         },

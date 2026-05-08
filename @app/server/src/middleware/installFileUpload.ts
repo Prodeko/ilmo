@@ -12,8 +12,12 @@ declare module "fastify" {
 }
 
 const FileUpload: FastifyPluginAsync = async (app, options = {}) => {
+  // fastify v5 requires content type to be a full string or RegExp; the bare
+  // "multipart" string accepted by v4 is no longer valid. Match every
+  // multipart/* subtype so multipart/form-data, multipart/mixed, etc. all
+  // route through here.
   app.addContentTypeParser(
-    "multipart",
+    /^multipart\//,
     async (request: FastifyRequest, _payload: {}) => {
       request.isMultipart = true
     }

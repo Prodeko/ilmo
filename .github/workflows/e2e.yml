@@ -1,0 +1,134 @@
+name: E2E
+
+on:
+  workflow_call:
+
+jobs:
+  cypress:
+    name: Cypress (shard ${{ matrix.containers }}/5)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        containers: [1, 2, 3, 4, 5]
+    services:
+      redis:
+        image: redis:6-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        run: |
+          cp .env.ci .env
+          CONFIRM_DROP=1 pnpm run setup
+
+      - name: Build server-side TypeScript
+        # Mirror `pnpm dev`'s preamble: build @app/graphql (codegen + tsc) and
+        # the rest of the workspace via project-references. Skip `pnpm build`
+        # / `next build` deliberately — the server drives Next in dev mode
+        # against source files (NODE_ENV != production in installSSR.ts), and
+        # leaving production .next/ artifacts around makes Next 16 + Turbopack
+        # 500 on the homepage.
+        run: |
+          pnpm --filter @app/graphql run build
+          pnpm tsc
+
+      - name: Start server in background
+        # Redirect to a log file so output isn't lost when this step's shell
+        # exits — the cypress action's wait-on then either succeeds or trips
+        # a 500, and we dump the server log on always() to see why.
+        run: pnpm --filter @app/server run start > /tmp/server.log 2>&1 &
+
+      - name: Start worker in background
+        run: pnpm --filter @app/worker run start > /tmp/worker.log 2>&1 &
+
+      - name: Probe homepage response
+        # Captures the actual 500 body (Next dev mode renders the error into
+        # the response). Always run, never fail the job — this is just for
+        # diagnostics.
+        if: always()
+        continue-on-error: true
+        run: |
+          set +e
+          for _ in 1 2 3 4 5; do
+            if curl -sS -o /tmp/homepage-response.txt -w "HTTP %{http_code}\n" http://localhost:5678; then
+              break
+            fi
+            sleep 2
+          done
+          echo "::group::homepage response"
+          head -c 8000 /tmp/homepage-response.txt 2>/dev/null || echo "(no response captured)"
+          echo "::endgroup::"
+
+      - name: Ensure Cypress binary is installed
+        # `pnpm install` runs cypress's postinstall on a cold pnpm-store cache,
+        # which downloads the binary to ~/.cache/Cypress. setup-node@v4's
+        # `cache: pnpm` only caches the pnpm store though — on a store cache
+        # hit pnpm sees nothing to (re)install and skips postinstalls, but the
+        # ephemeral runner has no Cypress cache, so the binary is missing.
+        # `cypress install` is idempotent: no-op when the binary is present,
+        # downloads it when it isn't.
+        working-directory: "@app/e2e"
+        run: pnpm exec cypress install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          command: pnpm --filter @app/e2e run run:ci
+          working-directory: "@app/e2e"
+          wait-on: http://localhost:5678
+          parallel: true
+          install: false
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dump server and worker logs
+        if: always()
+        run: |
+          echo "::group::server log (tail 300)"
+          tail -300 /tmp/server.log 2>/dev/null || echo "(no server log)"
+          echo "::endgroup::"
+          echo "::group::worker log (tail 300)"
+          tail -300 /tmp/worker.log 2>/dev/null || echo "(no worker log)"
+          echo "::endgroup::"
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-${{ matrix.containers }}
+          path: "@app/e2e/cypress/screenshots"
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-${{ matrix.containers }}
+          path: "@app/e2e/cypress/videos"

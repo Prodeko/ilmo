@@ -4,6 +4,7 @@ import {
   ErrorResult,
   Link,
   P,
+  PageHeader,
   PasswordStrength,
   SettingsLayout,
   usePasswordStrength,
@@ -16,7 +17,7 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
-import { Alert, Button, Form, Input, PageHeader } from "antd"
+import { Alert, Button, Form, Input } from "antd"
 
 import type { NextPage } from "next"
 
@@ -59,7 +60,6 @@ const Settings_Security: NextPage = () => {
               errors: [t("errors.incorrectOldPassword")],
             },
           ])
-        } else {
         }
       }
     },

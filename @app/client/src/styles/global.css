@@ -1,0 +1,67 @@
+/* Global styles previously authored as Less.
+ *
+ * antd theme variables (primary-color, font-family, layout backgrounds)
+ * have moved to a ConfigProvider theme token in _app.tsx — antd v5 no
+ * longer exposes Less variables. The :root --primary-color shim below
+ * keeps the few hand-written `style={{ backgroundColor: "var(--primary-color)" }}`
+ * usages in components working without rewiring them through the theme
+ * hook.
+ */
+
+:root {
+  --primary-color: #002e7d;
+  --layout-footer-background: #f5faff;
+}
+
+body {
+  background: var(--layout-footer-background);
+}
+
+.ant-typography blockquote {
+  background: #f9f9f9;
+  border-left: 6px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+  quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+.ant-typography blockquote:before {
+  color: #ccc;
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
+}
+
+.ant-typography blockquote p {
+  display: inline;
+}
+
+.ant-layout-sider-zero-width-trigger-left {
+  /* positioning and color for responsive admin sider collapse trigger */
+  top: 0px !important;
+  background: var(--primary-color) !important;
+}
+
+.ant-upload-list-picture-card {
+  /* Some margin between Dragger and file list */
+  margin-top: 8px;
+}
+
+.ant-form-item-label {
+  /* To wrap lines for long form labels */
+  white-space: normal;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

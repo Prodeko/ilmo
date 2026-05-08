@@ -1,4 +1,4 @@
-import { FastifyError, FastifyPluginAsync } from "fastify"
+import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { template, TemplateExecutor } from "lodash"
 import { readFileSync } from "node:fs"
@@ -12,14 +12,37 @@ interface ParsedError {
   extensions?: { code?: string }
 }
 
-function parseError(error: FastifyError): ParsedError {
+function isErrorLike(error: unknown): error is {
+  message?: string
+  statusCode?: unknown
+  status?: unknown
+  code?: unknown
+} {
+  return typeof error === "object" && error !== null
+}
+
+function toFiniteHttpStatus(value: unknown): number | undefined {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? parseInt(value, 10)
+        : NaN
+  return isFinite(parsed) && parsed >= 400 && parsed < 600 ? parsed : undefined
+}
+
+function parseError(error: unknown): ParsedError {
   /*
    * Because an error may contain confidential information or information that
    * might help attackers, by default we don't output the error message at all.
    * You should override this for specific classes of errors below.
    */
 
-  if (error["message"]?.includes("csrf")) {
+  if (!isErrorLike(error)) {
+    return { message: "An unknown error occurred", status: 500 }
+  }
+
+  if (error.message?.includes("csrf")) {
     return {
       message: "Invalid CSRF token: please reload the page.",
       status: 403,
@@ -27,12 +50,11 @@ function parseError(error: FastifyError): ParsedError {
   }
 
   // TODO: process certain errors
-  const code = error["statusCode"] || error["status"] || error["code"]
-  const codeAsFloat = parseInt(code, 10)
   const httpCode =
-    isFinite(codeAsFloat) && codeAsFloat >= 400 && codeAsFloat < 600
-      ? codeAsFloat
-      : 500
+    toFiniteHttpStatus(error.statusCode) ??
+    toFiniteHttpStatus(error.status) ??
+    toFiniteHttpStatus(error.code) ??
+    500
 
   return {
     message: "An unknown error occurred",

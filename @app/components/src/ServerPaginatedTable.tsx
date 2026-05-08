@@ -181,14 +181,14 @@ export function ServerPaginatedTable({
           </div>
         </CsvDownloader>
       )}
-      <Table
-        columns={transformedColumns as ColumnsType<object>}
+      <Table<RecordType>
+        columns={transformedColumns as ColumnsType<RecordType>}
         dataSource={dataSource}
         loading={fetching && { indicator: <Loading /> }}
         pagination={showPagination && pagination}
-        rowKey={(obj) => obj.id}
+        rowKey="id"
         scroll={{ x: 100 }}
-        size={size ?? isMobile ? "small" : "middle"}
+        size={(size ?? isMobile) ? "small" : "middle"}
         onChange={handleTableChange}
         {...props}
       />

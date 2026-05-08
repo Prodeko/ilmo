@@ -21,6 +21,7 @@ export const DummyPage: React.FC<PropsWithChildrenOnly> = ({ children }) => {
         data: undefined,
         error: undefined,
         stale: false,
+        hasNext: false,
       }}
       title={t("redirect")}
     >

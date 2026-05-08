@@ -170,34 +170,36 @@ const OrganizationMemberListItem: React.FC<OrganizationMemberListItemProps> = (
   return (
     <List.Item
       actions={[
-        organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
-          <Popconfirm
-            key="remove"
-            cancelText={t("common:no")}
-            okText={t("common:yes")}
-            title={t("organizations.confirmDelete", {
-              organizationName: organization.name,
-              username: node.user?.name as string,
-            })}
-            onConfirm={handleRemove}
-          >
-            <a>{t("common:remove")}</a>
-          </Popconfirm>
-        ),
-        organization.currentUserIsOwner && node.user?.id !== currentUser?.id && (
-          <Popconfirm
-            key="transfer"
-            cancelText={t("common:no")}
-            okText={t("common:yes")}
-            title={t("organizations.confirmTransfer", {
-              organizationName: organization.name,
-              username: node.user?.name as string,
-            })}
-            onConfirm={handleTransfer}
-          >
-            <a>{t("organizations.makeOwner")}</a>
-          </Popconfirm>
-        ),
+        organization.currentUserIsOwner &&
+          node.user?.id !== currentUser?.id && (
+            <Popconfirm
+              key="remove"
+              cancelText={t("common:no")}
+              okText={t("common:yes")}
+              title={t("organizations.confirmDelete", {
+                organizationName: organization.name,
+                username: node.user?.name as string,
+              })}
+              onConfirm={handleRemove}
+            >
+              <a>{t("common:remove")}</a>
+            </Popconfirm>
+          ),
+        organization.currentUserIsOwner &&
+          node.user?.id !== currentUser?.id && (
+            <Popconfirm
+              key="transfer"
+              cancelText={t("common:no")}
+              okText={t("common:yes")}
+              title={t("organizations.confirmTransfer", {
+                organizationName: organization.name,
+                username: node.user?.name as string,
+              })}
+              onConfirm={handleTransfer}
+            >
+              <a>{t("organizations.makeOwner")}</a>
+            </Popconfirm>
+          ),
       ].filter(Boolean)}
     >
       <List.Item.Meta

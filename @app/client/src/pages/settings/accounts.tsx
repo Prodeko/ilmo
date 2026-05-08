@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import {
   ErrorAlert,
   LoadingPadded,
+  PageHeader,
   ProdekoIcon,
   SettingsLayout,
   SocialLoginOptions,
@@ -14,7 +15,7 @@ import {
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
-import { Avatar, Card, List, Modal, PageHeader, Spin } from "antd"
+import { Avatar, Card, List, Modal, Spin } from "antd"
 import { Translate } from "next-translate"
 
 import type { NextPage } from "next"
@@ -74,8 +75,8 @@ function UnlinkAccountButton({ id }: { id: string }) {
   return (
     <>
       <Modal
+        open={modalOpen}
         title="Are you sure?"
-        visible={modalOpen}
         onCancel={handleCloseModal}
         onOk={handleUnlink}
       >

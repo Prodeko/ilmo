@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import {
   EventRegistrationForm,
+  PageHeader,
   RecentRegistrationsList,
   Redirect,
   SharedLayout,
@@ -11,7 +12,7 @@ import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
-import { Col, PageHeader, Popconfirm, Row } from "antd"
+import { Col, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
@@ -37,7 +38,7 @@ const EventRegistrationPage: NextPage = () => {
   const { name, primaryEmail } = currentUser || {}
   // TODO: The users table schema could be changed to include first
   // and last names. For now infer first and last name like this...
-  const [firstName, lastName] = name ? name?.split(" ") : []
+  const [firstName, lastName] = name ? name.split(" ") : []
 
   const formInitialValues = {
     firstName,
@@ -93,8 +94,8 @@ const EventRegistrationPage: NextPage = () => {
               <Popconfirm
                 cancelText={t("common:no")}
                 okText={t("common:yes")}
+                open={visible}
                 title={t("confirmGoBack")}
-                visible={visible}
                 onCancel={hidePopconfirm}
                 onConfirm={handleGoBack}
               />

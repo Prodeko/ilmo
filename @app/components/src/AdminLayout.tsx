@@ -75,7 +75,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           cy: "admin-sider-organizations",
           target: organizationMemberships
             ? [
-                ...organizationMemberships?.map((organization): MenuItem => {
+                ...organizationMemberships.map((organization): MenuItem => {
                   const title = organization.organization?.name || ""
                   const slug = organization.organization?.slug
                   return {

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import {
   ErrorAlert,
+  PageHeader,
   Redirect,
   SettingsLayout,
   useTranslation,
@@ -11,7 +12,7 @@ import {
   useUpdateUserMutation,
 } from "@app/graphql"
 import { formItemLayout, getCodeFromError, tailFormItemLayout } from "@app/lib"
-import { Alert, Button, Form, Input, PageHeader } from "antd"
+import { Alert, Button, Form, Input } from "antd"
 
 import type { NextPage } from "next"
 

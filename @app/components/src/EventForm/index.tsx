@@ -27,13 +27,11 @@ import { RegistrationsTab } from "./RegistrationsTab"
 import type { Scalars } from "@app/graphql"
 import type { JsonValue } from "type-fest"
 
-const { TabPane } = Tabs
-
 export type FormValues = {
   languages?: string[]
   ownerOrganizationId?: string
   categoryId?: string
-  name?: Scalars["TranslatedField"]
+  name?: Scalars["TranslatedField"]["input"]
   description?: JsonValue
   location?: string
   eventTime?: dayjs.Dayjs[]
@@ -56,7 +54,7 @@ interface EventFormProps {
 }
 
 export function getEventSlug(
-  name?: Scalars["TranslatedField"],
+  name?: Scalars["TranslatedField"]["input"],
   dates?: dayjs.Dayjs[]
 ) {
   const eventStartTime = dates?.[0].toISOString()
@@ -281,6 +279,63 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     >
       <Tabs
         defaultActiveKey="general"
+        items={[
+          {
+            key: TAB.General,
+            label: t("admin:events.tabs.generalInfo"),
+            forceRender: true,
+            children: <MainTab {...mainTabProps} />,
+          },
+          {
+            key: TAB.Quotas,
+            label: t("admin:events.tabs.quotas"),
+            forceRender: true,
+            children: (
+              <QuotasTab
+                initialValues={initialValues}
+                selectedLanguages={selectedLanguages}
+              />
+            ),
+          },
+          {
+            key: TAB.Questions,
+            label: t("admin:events.tabs.questions"),
+            forceRender: true,
+            children: (
+              <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
+            ),
+          },
+          ...(type === "update"
+            ? [
+                {
+                  key: TAB.Registrations,
+                  label: t("common:registrations"),
+                  forceRender: true,
+                  children: (
+                    <RegistrationsTab
+                      eventSlug={
+                        (data as UpdateEventPageQuery)?.event?.slug as string
+                      }
+                      questions={
+                        (data as UpdateEventPageQuery)?.event?.eventQuestions
+                          ?.nodes
+                      }
+                    />
+                  ),
+                },
+              ]
+            : []),
+          {
+            key: TAB.Email,
+            label: t("admin:events.tabs.email"),
+            // Only render the email tab body when it is the active tab to
+            // avoid spamming renderEmailTemplate queries on every form change.
+            children:
+              activeTab === TAB.Email ? (
+                <EmailTab formValues={formValues} />
+              ) : null,
+          },
+        ]}
         tabBarExtraContent={{
           right: (
             <Row gutter={16}>
@@ -298,7 +353,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                     disabled={!slug ? true : false}
                     href={`/event/${slug}`}
                     size="small"
-                    type="success"
+                    type="primary"
                   >
                     {t("admin:events.update.showEvent")}
                   </ButtonLink>
@@ -308,55 +363,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           ),
         }}
         onChange={(tab) => setActiveTab(tab as TAB)}
-      >
-        <TabPane
-          key={TAB.General}
-          tab={t("admin:events.tabs.generalInfo")}
-          forceRender
-        >
-          <MainTab {...mainTabProps} />
-        </TabPane>
-        <TabPane
-          key={TAB.Quotas}
-          tab={t("admin:events.tabs.quotas")}
-          forceRender
-        >
-          <QuotasTab
-            initialValues={initialValues}
-            selectedLanguages={selectedLanguages}
-          />
-        </TabPane>
-        <TabPane
-          key={TAB.Questions}
-          tab={t("admin:events.tabs.questions")}
-          forceRender
-        >
-          <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
-        </TabPane>
-        {type === "update" && (
-          <TabPane
-            key={TAB.Registrations}
-            tab={t("common:registrations")}
-            forceRender
-          >
-            <RegistrationsTab
-              eventSlug={(data as UpdateEventPageQuery)?.event?.slug as string}
-              questions={
-                (data as UpdateEventPageQuery)?.event?.eventQuestions?.nodes
-              }
-            />
-          </TabPane>
-        )}
-        <TabPane key={TAB.Email} tab={t("admin:events.tabs.email")}>
-          {/*
-            Only display email tab when activeTab is 'email' to reduce
-            the number of api requests. EmailTab calls the renderEmailTemplate
-            query to show what the email looks like that gets sent to event
-            attendees.
-          */}
-          {activeTab === TAB.Email && <EmailTab formValues={formValues} />}
-        </TabPane>
-      </Tabs>
+      />
     </Form>
   )
 }

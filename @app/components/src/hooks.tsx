@@ -14,7 +14,7 @@ import { ErrorResult, FourOhFour, LoadingPadded, useBreakpoint } from "./"
 
 import type { LoadingProps } from "./"
 
-export { useTranslation as useTranslation }
+export { useTranslation }
 
 export function useQuerySlug() {
   const router = useRouter()
@@ -36,14 +36,14 @@ export function useLoading(
   const { data, fetching, error, stale } = query
   let child: JSX.Element | null = null
   const hasData = !!data?.[dataField]
-  if (hasData) {
-  } else if (!error && !fetching && !stale && hasData) {
-  } else if (fetching || stale) {
-    child = <LoadingPadded size={spinnerSize} />
-  } else if (error && !stale) {
-    child = <ErrorResult error={error} />
-  } else {
-    child = <FourOhFour />
+  if (!hasData) {
+    if (fetching || stale) {
+      child = <LoadingPadded size={spinnerSize} />
+    } else if (error) {
+      child = <ErrorResult error={error} />
+    } else {
+      child = <FourOhFour />
+    }
   }
 
   return (

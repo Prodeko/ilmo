@@ -1,13 +1,18 @@
 name: Install pg_dump
-description: Installs the pg_dump utility
+description: Installs the pg_dump utility (postgresql-client-14) from the PGDG apt repo
 
 runs:
   using: composite
   steps:
     - name: Install pg_dump
-      run: |
-        sudo bash -c "echo deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main >> /etc/apt/sources.list.d/pgdg.list"
-        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-        sudo apt-get update
-        sudo apt-get -yqq install postgresql-client-11
       shell: bash
+      run: |
+        set -euo pipefail
+        sudo install -d -m 0755 /etc/apt/keyrings
+        curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+          | sudo gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+        codename="$(lsb_release -cs)"
+        echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ ${codename}-pgdg main" \
+          | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+        sudo apt-get update -qq
+        sudo apt-get install -yqq postgresql-client-14

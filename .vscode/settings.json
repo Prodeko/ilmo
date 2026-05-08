@@ -13,7 +13,7 @@
     "graphql"
   ],
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
+    "source.fixAll": "explicit"
   },
 
   "files.insertFinalNewline": true,
@@ -22,18 +22,13 @@
     ".gmrc": "jsonc"
   },
 
-  "search.exclude": {
-    "**/.yarn": true,
-    "**/.pnp.*": true
-  },
-
   "prettier.disableLanguages": [],
 
   "typescript.tsdk": "./node_modules/typescript/lib",
 
   "[graphql]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": false
+      "source.fixAll.eslint": "never"
     }
   },
   "[markdown]": {

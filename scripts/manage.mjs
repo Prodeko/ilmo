@@ -4,6 +4,7 @@ import chalkPipe from "chalk-pipe"
 import dotenv from "dotenv"
 import inquirer from "inquirer"
 import pg from "pg"
+
 import { dirname } from "./_setup_utils.mjs"
 
 const __dirname = dirname(import.meta)
@@ -114,7 +115,7 @@ function createUser() {
         message: "Please enter the email address of the user",
         default: () => {},
         validate: (email) => {
-          const valid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+          const valid = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(
             email
           )
           if (valid) {

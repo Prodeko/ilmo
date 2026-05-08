@@ -1,13 +1,14 @@
-if (parseInt(process.version.split(".")[0], 16) < 16) {
-  throw new Error("This project requires Node.js >= 16.0.0")
-}
-
 import { promises as fsp } from "fs"
-export { runSync } from "./lib/run.mjs"
-export { withDotenvUpdater, readDotenv } from "./lib/dotenv.mjs"
-import { safeRandomString, safeRandomHexString } from "./lib/random.mjs"
 import { platform } from "os"
 import { URL } from "url"
+
+import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+
+if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
+  throw new Error("This project requires Node.js >= 20.0.0")
+}
+export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
+export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
   return new URL(".", meta.url).pathname
@@ -15,7 +16,7 @@ export function dirname(meta) {
 
 const __dirname = dirname(import.meta)
 // fixes runSync not throwing ENOENT on windows
-export const yarnCmd = platform() === "win32" ? "yarn.cmd" : "yarn"
+export const pnpmCmd = platform() === "win32" ? "pnpm.cmd" : "pnpm"
 export const projectName = process.env.PROJECT_NAME
 
 export function updateDotenv(add, answers) {
@@ -136,16 +137,11 @@ export function updateDotenv(add, answers) {
 # IMPORTANT: must NOT end with a slash`
   )
 
-  const nodeVersion = parseInt(
-    process.version.replace(/\..*$/, "").replace(/[^0-9]/g, ""),
-    10
-  )
-
   add(
     "GRAPHILE_TURBO",
-    nodeVersion >= 14 ? "1" : "",
+    "1",
     `\
-# Set to 1 only if you're on Node v14 of higher; enables advanced optimisations`
+# Enables advanced PostGraphile optimisations`
   )
 
   add(

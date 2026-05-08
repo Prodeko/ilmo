@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import {
   ErrorAlert,
   P,
+  PageHeader,
   Redirect,
   SettingsLayout,
   Strong,
@@ -16,7 +17,7 @@ import {
   useSharedQuery,
 } from "@app/graphql"
 import { formItemLayout, tailFormItemLayout } from "@app/lib"
-import { Alert, Avatar, Button, Form, Input, List, PageHeader } from "antd"
+import { Alert, Avatar, Button, Form, Input, List } from "antd"
 
 import type { NextPage } from "next"
 

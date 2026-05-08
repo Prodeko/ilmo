@@ -25,4 +25,21 @@ Cypress.on("uncaught:exception", (err) => {
   if (resizeObserverLoopErrRe.test(err.message)) {
     return false
   }
+  // antd-img-crop calls ctx.drawImage on the cropper's <img> before
+  // the element is in the DOM in some Electron versions. The crop
+  // still produces a valid blob, so swallow the exception.
+  if (
+    /drawImage|HTMLImageElement|CanvasRenderingContext2D/i.test(err.message)
+  ) {
+    return false
+  }
+})
+
+// Hide the Next.js dev error overlay so it doesn't cover elements the test
+// is trying to click. The overlay is rendered into <nextjs-portal>.
+Cypress.on("window:before:load", (win) => {
+  const style = win.document.createElement("style")
+  style.textContent =
+    "nextjs-portal, [data-nextjs-dialog-overlay] { display: none !important; }"
+  ;(win.document.head || win.document.documentElement).appendChild(style)
 })

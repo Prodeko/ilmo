@@ -11,8 +11,8 @@ import {
   User,
 } from "@app/graphql"
 import { RegistrationSecret, Session } from "@app/lib"
+import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
-import faker from "faker"
 import {
   FastifyPluginAsync,
   FastifyReply,
@@ -93,7 +93,7 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
          * response. This allows commands to do things like redirect to new
          * pages when they're done.
          */
-        res.redirect(204, payload.next || "/")
+        res.redirect(payload.next || "/", 204)
       } else {
         /*
          * The command returned a result, send it back to the test suite.
@@ -149,8 +149,8 @@ async function runCommand(
       delete from app_public.event_questions;
       delete from app_public.organizations;
 
-      -- Delete graphile worker jobs
-      delete from graphile_worker.jobs;`
+      -- Delete graphile worker jobs (storage moved to _private_jobs in 0.16)
+      delete from graphile_worker._private_jobs;`
     )
     return { success: true }
   } else if (command === "createUser") {
@@ -437,7 +437,7 @@ export const createOrganizations = async (
     const random = words()
     const slug = slugify(`organization-${random}`)
     const name = `Organization ${random}`
-    const color = faker.internet.color()
+    const color = faker.color.rgb()
 
     // Become root to bypass RLS policies
     await client.query("reset role")
@@ -479,7 +479,7 @@ export const createEventCategories = async (
       fi: paragraph(),
       en: paragraph(),
     }
-    const color = faker.internet.color()
+    const color = faker.color.rgb()
     const {
       rows: [category],
     } = await client.query(
@@ -517,7 +517,7 @@ export const createEvents = async (
       fi: [{ type: "paragraph", children: [{ text: paragraph() }] }],
       en: [{ type: "paragraph", children: [{ text: paragraph() }] }],
     }
-    const location = faker.address.streetAddress()
+    const location = faker.location.streetAddress()
 
     // By default create events that are open to registration (-1)
     const now = new Date()
@@ -531,11 +531,7 @@ export const createEvents = async (
     const eventEndTime = dayjs(eventStartTime).add(1, "day").toDate()
 
     const eventCategoryId = categoryId
-    const headerImageFile = faker.image.imageUrl(
-      851,
-      315,
-      `nature?random=${Math.round(Math.random() * 1000)}`
-    )
+    const headerImageFile = faker.image.url({ width: 851, height: 315 })
 
     const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
     const slug = slugify(`${daySlug}-${name["fi"]}`, {
@@ -600,7 +596,7 @@ export const createQuotas = async (
     const title = { fi: `Kiintiö ${i}`, en: `Quota ${i}` }
     const s = size
       ? size
-      : faker.datatype.number({
+      : faker.number.int({
           min: 3,
           max: 20,
         })
@@ -623,7 +619,7 @@ export const createQuotas = async (
 // Questions
 
 const getRandomQuestionData = () => {
-  const number = faker.datatype.number({ min: 1, max: 5 })
+  const number = faker.number.int({ min: 1, max: 5 })
   return new Array(number).fill(null).map((_) => ({ fi: word(), en: word() }))
 }
 
@@ -634,8 +630,16 @@ export const createQuestions = async (
   isRequired?: boolean,
   type?: "CHECKBOX" | "RADIO" | "TEXT"
 ) => {
+  // The SQL below selects `data::text[]`, so the row's `data` arrives as a
+  // string array of JSON-encoded entries rather than the parsed shape that
+  // EventQuestion declares. Model that honestly here, then parse to the
+  // GraphQL shape in one transform.
+  type SqlQuestionRow = Omit<SnakeCasedProperties<EventQuestion>, "data"> & {
+    data: string[] | null
+  }
+
   const questionTypes = ["CHECKBOX", "RADIO", "TEXT"]
-  let questions: SnakeCasedProperties<EventQuestion>[] = []
+  const rawQuestions: SqlQuestionRow[] = []
   for (let i = 0; i < count; i++) {
     const t = type ? type : questionTypes[i % 3]
     const label = { fi: words(), en: words() }
@@ -649,7 +653,7 @@ export const createQuestions = async (
     }
     const {
       rows: [question],
-    } = await client.query(
+    } = await client.query<SqlQuestionRow>(
       `with r1 as (
         insert into app_public.event_questions(event_id, position, type, label, is_required, data)
         values ($1, $2, $3, $4, $5, $6)
@@ -659,13 +663,15 @@ export const createQuestions = async (
       `,
       [eventId, i, t, label, isRequired, data]
     )
-    questions.push(question)
+    rawQuestions.push(question)
   }
 
-  questions = questions.map((q) => ({
-    ...q,
-    data: q?.data?.map((d: string) => JSON.parse(d)),
-  })) as SnakeCasedProperties<EventQuestion>[]
+  const questions: SnakeCasedProperties<EventQuestion>[] = rawQuestions.map(
+    (q) => ({
+      ...q,
+      data: q.data?.map((d) => JSON.parse(d)),
+    })
+  )
 
   return questions
 }
@@ -702,7 +708,7 @@ export const createRegistrationSecrets = async (
 export const constructAnswersFromQuestions = (questions: any[]) => {
   let i = 0
   // Choose random language to simulate finnish and english registrations
-  const chosenLanguage = faker.random.arrayElement(["fi", "en"])
+  const chosenLanguage = faker.helpers.arrayElement(["fi", "en"])
   const answers = questions?.reduce((acc, cur) => {
     if (cur.type === "TEXT") {
       acc[cur.id] = chosenLanguage === "en" ? `Answer ${i}` : `Vastaus ${i}`
@@ -728,8 +734,8 @@ export const createRegistrations = async (
 ) => {
   const registrations: SnakeCasedProperties<Registration>[] = []
   for (let i = 0; i < count; i++) {
-    const firstName = faker.name.firstName()
-    const lastName = faker.name.lastName()
+    const firstName = faker.person.firstName()
+    const lastName = faker.person.lastName()
     const email = faker.internet.email()
     const answers = constructAnswersFromQuestions(questions)
     const isFinished = true

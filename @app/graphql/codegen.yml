@@ -11,7 +11,12 @@ config:
   withHOC: false
   withComponent: false
   withHooks: true
-  preResolveTypes: true
+  # TranslatedField is a scalar at the GraphQL layer but is consumed across
+  # the codebase as a structured object with `fi`/`en` keys (matching the
+  # TranslatedInputField input type). Mapping it here keeps form/handler code
+  # type-safe instead of forcing `any` at every call site.
+  scalars:
+    TranslatedField: "{ fi?: string | null; en?: string | null }"
 generates:
   introspection.json:
     plugins:

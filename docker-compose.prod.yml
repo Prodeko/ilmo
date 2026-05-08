@@ -4,10 +4,7 @@ services:
     image: prodekoregistry.azurecr.io/ilmo/ilmo-server
     container_name: ilmo_server
     restart: unless-stopped
-    # When starting the server for the first time change the
-    # entrypoint to 'yarn db migrate' manually. TODO: Figure out a better
-    # way to run migrations on initial deployment.
-    entrypoint: yarn server start
+    command: ["pnpm", "--filter", "@app/server", "run", "start"]
     env_file:
       - .env.production
     depends_on:
@@ -17,7 +14,7 @@ services:
     image: prodekoregistry.azurecr.io/ilmo/ilmo-worker
     container_name: ilmo_worker
     restart: unless-stopped
-    entrypoint: yarn worker start
+    command: ["pnpm", "--filter", "@app/worker", "run", "start"]
     env_file:
       - .env.production
     depends_on:

@@ -12,6 +12,12 @@ context("CSRF protection", () => {
 
     // Action
     cy.get("@createEventDataResult").then(({ event }: any) => {
+      // Wait for the homepage to fully render before tampering with the
+      // CSRF cookie. Otherwise background fetches (HMR, polling) retry
+      // with the bad cookie and the global error boundary swaps the page
+      // for the CSRF error before we get to click.
+      cy.getCy(`eventcard-eventpage-link-${event.slug}`).should("be.visible")
+
       cy.getCookie("csrfToken")
         .should("exist")
         .then((cookie) => {
@@ -32,10 +38,7 @@ context("CSRF protection", () => {
 
       // Can recover from csrf error
       cy.getCy("error-csrf-refresh").click()
-      cy.get(".ant-page-header-heading").should(
-        "contain",
-        "Ilmoittaudu tapahtumaan"
-      )
+      cy.contains("h3", "Ilmoittaudu tapahtumaan").should("be.visible")
     })
   })
 })

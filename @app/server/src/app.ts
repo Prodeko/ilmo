@@ -90,6 +90,10 @@ export async function makeApp({
   // Error handling middleware
   await app.register(middleware.installErrorHandler)
 
+  // Lightweight liveness probe; registered before heavier plugins so the
+  // route stays available even if a downstream plugin is slow to start.
+  await app.register(middleware.installHealth)
+
   await app.register(middleware.installDatabasePools)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
@@ -100,7 +104,14 @@ export async function makeApp({
   await app.register(middleware.installPassport)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
-    await app.register(middleware.installCypressServerCommand)
+    // Loaded dynamically so the production bundle never imports
+    // installCypressServerCommand.ts (which top-level requires
+    // @faker-js/faker — a devDependency that gets pruned from the
+    // production docker image).
+    const { default: installCypressServerCommand } = await import(
+      "./middleware/installCypressServerCommand"
+    )
+    await app.register(installCypressServerCommand)
   }
   await app.register(middleware.installPostGraphile)
   await app.register(middleware.installFileUpload)

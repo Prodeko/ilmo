@@ -35,9 +35,14 @@ async function handleCsrfToken(request: FastifyRequest, reply: FastifyReply) {
     request.method === "GET"
   ) {
     // Generate a new CSRF token if one does not yet exist in the session
-    // or if the request did not contain a token and the request method is GET
+    // or if the request did not contain a token and the request method is GET.
+    // Same reasoning as handleSessionCookie: write directly to reply.raw so
+    // the cookie survives reply.hijack() on the SSR path.
     const csrfToken = await reply.generateCsrf(cookieOptions)
-    reply.setCookie("csrfToken", csrfToken, cookieOptions)
+    reply.raw.appendHeader(
+      "Set-Cookie",
+      request.server.serializeCookie("csrfToken", csrfToken, cookieOptions)
+    )
   }
 }
 

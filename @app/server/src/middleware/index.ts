@@ -1,8 +1,8 @@
 import installCSRFProtection from "./installCSRFProtection"
-import installCypressServerCommand from "./installCypressServerCommand"
 import installDatabasePools from "./installDatabasePools"
 import installErrorHandler from "./installErrorHandler"
 import installFileUpload from "./installFileUpload"
+import installHealth from "./installHealth"
 import installHelmet from "./installHelmet"
 import installPassport from "./installPassport"
 import installPostGraphile from "./installPostGraphile"
@@ -15,10 +15,10 @@ import installWorkerUtils from "./installWorkerUtils"
 
 export {
   installCSRFProtection,
-  installCypressServerCommand,
   installDatabasePools,
   installErrorHandler,
   installFileUpload,
+  installHealth,
   installHelmet,
   installPassport,
   installPostGraphile,

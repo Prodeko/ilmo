@@ -1,0 +1,8 @@
+node_modules
+**/dist
+/data/schema.graphql
+/data/schema.sql
+/@app/graphql/index.*
+/@app/graphql/.persisted_operations
+/@app/client/.next
+/@app/client/next-env.d.ts

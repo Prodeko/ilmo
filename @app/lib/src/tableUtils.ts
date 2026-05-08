@@ -49,7 +49,10 @@ export function downloadRegistrations(
   return (data: ListEventRegistrations_RegistrationFragment[]) => {
     return data.reduce((acc, cur) => {
       if (cur.isFinished) {
-        const newRow = filterObjectByKeys(cur, registrationColsToDownload)
+        const newRow: Record<string, any> = filterObjectByKeys(
+          cur,
+          registrationColsToDownload
+        )
         Object.keys(newRow).map((key) => {
           if (key === "answers") {
             const answers = newRow[key]
@@ -57,15 +60,15 @@ export function downloadRegistrations(
               Object.keys(answers).forEach((questionId) => {
                 const questionLabel = questions?.find(
                   (q) => q.id === questionId
-                )?.label.fi
+                )?.label?.fi
                 const answer = answers[questionId]
-                newRow[questionLabel] = answer
+                if (questionLabel) {
+                  newRow[questionLabel] = answer
+                }
               })
             }
           } else if (key === "quota") {
-            newRow[key] = newRow[key]?.title.fi
-          } else {
-            newRow[key] = newRow[key]
+            newRow[key] = newRow[key]?.title?.fi
           }
         })
         delete newRow["answers"]

@@ -7,7 +7,6 @@ node_modules
 dist
 cache
 /heroku-setup
-/yarn-error.log
 /@app/e2e/cypress/videos
 /@app/e2e/cypress/screenshots
 /@app/e2e/cypress/downloads
@@ -17,12 +16,4 @@ cache
 .agignore
 *.tsbuildinfo
 .ethereal
-yarn-error.log
 .DS_Store
-.yarn/*
-!.yarn/cache
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions

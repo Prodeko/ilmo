@@ -297,15 +297,17 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             input = (
               <Radio.Group data-cy={`eventregistrationform-questions-${i}`}>
                 <Space direction="vertical">
-                  {data?.map((val, j) => (
-                    <Radio
-                      key={j}
-                      data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
-                      value={val[lang]}
-                    >
-                      {val[lang]}
-                    </Radio>
-                  ))}
+                  {data?.map((val, j) =>
+                    val ? (
+                      <Radio
+                        key={j}
+                        data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
+                        value={val[lang]}
+                      >
+                        {val[lang]}
+                      </Radio>
+                    ) : null
+                  )}
                 </Space>
               </Radio.Group>
             )
@@ -313,15 +315,17 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             input = (
               <Checkbox.Group>
                 <Space direction="vertical">
-                  {data?.map((val, j) => (
-                    <Checkbox
-                      key={j}
-                      data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
-                      value={val[lang]}
-                    >
-                      {val[lang]}
-                    </Checkbox>
-                  ))}
+                  {data?.map((val, j) =>
+                    val ? (
+                      <Checkbox
+                        key={j}
+                        data-cy={`eventregistrationform-questions-${i}-input-option-${j}`}
+                        value={val[lang]}
+                      >
+                        {val[lang]}
+                      </Checkbox>
+                    ) : null
+                  )}
                 </Space>
               </Checkbox.Group>
             )
@@ -364,9 +368,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
               formError
                 ? false
                 : (type === "create" && !!registrationToken) ||
-                  type === "update"
-                ? false
-                : true
+                    type === "update"
+                  ? false
+                  : true
             }
             type="primary"
           >

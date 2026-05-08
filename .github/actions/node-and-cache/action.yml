@@ -1,31 +1,26 @@
-name: Setup Node.js and cache
-description: Sets up Node.js and caches yarn installs
+name: Setup Node.js and pnpm
+description: Sets up Node.js and pnpm with a cached store
 
 inputs:
   node-version:
     description: Node version to use with actions/setup-node
-    default: 14.x
+    default: 20.x
 
 runs:
   using: composite
   steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+        run_install: false
+
     - name: Use Node.js ${{ inputs.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
+        cache: pnpm
 
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+    - name: Install dependencies
       shell: bash
-
-    - name: Cache node_modules
-      uses: actions/cache@v2
-      id: yarn-cache
-      with:
-        path: |
-          **/node_modules
-          ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: yarn-cache-folder-os-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          yarn-cache-folder-os-${{ runner.os }}-
+      run: pnpm install --frozen-lockfile

@@ -1,15 +1,16 @@
 #!/usr/bin/env node
+import inquirer from "inquirer"
+
 import {
-  yarnCmd,
-  runMain,
   checkGit,
   outro,
-  withDotenvUpdater,
-  updateDotenv,
+  pnpmCmd,
   readDotenv,
+  runMain,
   runSync,
+  updateDotenv,
+  withDotenvUpdater,
 } from "./_setup_utils.mjs"
-import inquirer from "inquirer"
 
 runMain(async () => {
   await checkGit()
@@ -69,9 +70,9 @@ runMain(async () => {
   )
 
   // And perform setup
-  runSync(yarnCmd, ["graphql", "build"])
-  runSync(yarnCmd, ["lib", "build"])
-  runSync(yarnCmd, ["server", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/graphql", "run", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/lib", "run", "build"])
+  runSync(pnpmCmd, ["--filter", "@app/server", "run", "build"])
 
   if (process.argv[2] === "auto") {
     // We're advancing automatically
@@ -83,7 +84,7 @@ runMain(async () => {
 
 🚀 The next step is to set up the database, run:
 
-  ${yarnCmd} setup:db
+  ${pnpmCmd} setup:db
 
 If you're not using graphile-migrate, then you should run your preferred migration framework now.  This step should also include creating the necessary schemas and roles.  Consult the generated .env file for what is needed.`)
   }

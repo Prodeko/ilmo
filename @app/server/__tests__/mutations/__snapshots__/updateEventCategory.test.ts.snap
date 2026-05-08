@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UpdateEventCategory can update an existing event category as admin 1`] = `
-Object {
-  "data": Object {
-    "updateEventCategory": Object {
-      "eventCategory": Object {
+{
+  "data": {
+    "updateEventCategory": {
+      "eventCategory": {
         "color": "[random-3]",
         "description": "[random-1]",
         "id": "[id-1]",
         "name": "[random-2]",
-        "ownerOrganization": Object {
+        "ownerOrganization": {
           "color": "[random-6]",
           "id": "[id-2]",
           "name": "[random-4]",
@@ -23,23 +23,23 @@ Object {
 `;
 
 exports[`UpdateEventCategory can't update an event category while logged in as non admin 1`] = `
-Object {
-  "data": Object {
+{
+  "data": {
     "updateEventCategory": null,
   },
-  "errors": Array [
-    Object {
-      "extensions": Object {
-        "exception": Object {},
+  "errors": [
+    {
+      "extensions": {
+        "exception": {},
       },
-      "locations": Array [
-        Object {
+      "locations": [
+        {
           "column": 3,
           "line": 2,
         },
       ],
       "message": "No values were updated in collection 'event_categories' because no values you can update were found matching these criteria.",
-      "path": Array [
+      "path": [
         "updateEventCategory",
       ],
     },

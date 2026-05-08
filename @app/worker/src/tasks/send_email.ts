@@ -78,14 +78,14 @@ export function loadTemplate(template: string) {
       if (!template.match(/^[a-zA-Z0-9_.-]+$/)) {
         throw new Error(`Disallowed template name '${template}'`)
       }
-      return (variables: { [varName: string]: any }) => {
+      return async (variables: { [varName: string]: any }) => {
         const mjml = njk.render(template, {
           projectName,
           footerText,
           ...variables,
         })
 
-        const { html, errors } = mjml2html(mjml)
+        const { html, errors } = await mjml2html(mjml)
         if (errors && errors.length) {
           console.error(errors)
         }

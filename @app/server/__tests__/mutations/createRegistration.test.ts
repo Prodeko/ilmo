@@ -140,7 +140,7 @@ describe("CreateRegistration", () => {
         // `runJobs` that executes a graphile-worker function called `runTaskListOnce`.
         // This function calls a graphile-worker database function graphile_worker.get_job
         // which only returns a task to run if run_at <= now(). As explained earlier, we are
-        // inside a transaction and calls to now() return the timestamp of when the
+        // inside a transaction and calls to now() return the timestamp of when the
         // transaction was created (which is before the mutation is run). Thus
         // run_at >= now() and the task is not executed if we don't end the transaction here.
         await pgClient.query("commit")

@@ -1,6 +1,11 @@
-import NextHead from "next/head"
+import * as NextHeadMod from "next/head"
 
 import { useTranslation } from "."
+
+// See SharedLayout.tsx — webpack mishandles default imports of next/* CJS
+// shims and renders the entire module object as JSX type, so use
+// namespace-then-default access.
+const NextHead = NextHeadMod.default
 
 export const Head: React.FC = () => {
   const { t, lang } = useTranslation("common")

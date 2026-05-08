@@ -1,7 +1,12 @@
-import { AdminLayout, EventCategoryForm, useTranslation } from "@app/components"
+import {
+  AdminLayout,
+  EventCategoryForm,
+  PageHeader,
+  useTranslation,
+} from "@app/components"
 import { useSharedQuery } from "@app/graphql"
-import { Col, PageHeader, Row } from "antd"
-import { useRouter } from "next/dist/client/router"
+import { Col, Row } from "antd"
+import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
 

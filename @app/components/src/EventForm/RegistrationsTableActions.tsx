@@ -98,9 +98,9 @@ export const RegistrationsTableActions: React.FC<
       ) : null}
       {showModal ? (
         <RegistrationUpdateModal
+          open={showModal}
           setShowModal={setShowModal}
           updateToken={updateToken!}
-          visible={showModal}
           {...props}
         />
       ) : null}

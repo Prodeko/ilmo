@@ -1,12 +1,18 @@
 import { useCallback, useState } from "react"
-import { ErrorAlert, P, SettingsLayout, useTranslation } from "@app/components"
+import {
+  ErrorAlert,
+  P,
+  PageHeader,
+  SettingsLayout,
+  useTranslation,
+} from "@app/components"
 import {
   useConfirmAccountDeletionMutation,
   useRequestAccountDeletionMutation,
   useSharedQuery,
 } from "@app/graphql"
 import { getCodeFromError } from "@app/lib"
-import { Alert, Button, Modal, PageHeader, Typography } from "antd"
+import { Alert, Button, Modal, Typography } from "antd"
 import { useRouter } from "next/router"
 import { CombinedError } from "urql"
 
@@ -137,8 +143,8 @@ const Settings_Accounts: NextPage = () => {
         okButtonProps={{ danger: true }}
         okText={t("pages.delete.modals.okText")}
         okType="primary"
+        open={confirmOpen}
         title={t("pages.delete.modals.title")}
-        visible={confirmOpen}
         onCancel={closeModal}
         onOk={doIt}
       >
@@ -159,8 +165,8 @@ const Settings_Accounts: NextPage = () => {
             </Button>
           </div>
         }
+        open={deleted}
         title={t("pages.delete.accountDeleted")}
-        visible={deleted}
       >
         {t("pages.delete.accountDeletedInfo")}
       </Modal>

@@ -1,25 +1,18 @@
-import AntDDayjsWebpackPlugin from "antd-dayjs-webpack-plugin"
-import _ from "lodash"
-import { withSentryConfig } from "@sentry/nextjs"
 import BundleAnalyzer from "@next/bundle-analyzer"
-import NextTranspileModules from "next-transpile-modules"
-import withAntdLess from "next-plugin-antd-less"
-import withNextTranslate from "next-translate"
+import { withSentryConfig } from "@sentry/nextjs"
+import nextTranslate from "next-translate-plugin"
 
 import localeConfig from "./i18n.js"
 
-const __dirname = new URL(".", import.meta.url).pathname
 const { locales, defaultLocale } = localeConfig
 const withBundleAnalyzer = BundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 })
-const withTM = NextTranspileModules([
-  // Transpile components and lib according to @app/client/.babelrc.
-  // This is needed to have correct styling as babel-plugin-import
-  // inserts the required styles
-  "@app/components",
-  "rc-util",
-])
+
+// Turbopack is the default in Next 16. Detect the `--webpack` opt-out so
+// next-translate-plugin can inject the right loader path; without this it
+// emits webpack config that breaks Turbopack startup.
+const isTurbopack = !process.argv.includes("--webpack")
 
 if (!process.env.ROOT_URL) {
   if (process.argv[1].endsWith("/depcheck.js")) {
@@ -32,16 +25,22 @@ if (!process.env.ROOT_URL) {
 const { NODE_ENV, ROOT_URL } = process.env
 const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
 
-const withAntdLessOptions = {
-  lessVarsFilePath: `${__dirname}/src/styles/antd-custom.less`,
-  cssLoaderOptions: {
-    esModule: false,
-    sourceMap: false,
-    modules: {
-      mode: "local",
-    },
-  },
-}
+const remoteImageHosts = isDevOrTest
+  ? [
+      { protocol: "http", hostname: "localhost" },
+      { protocol: "https", hostname: "static.prodeko.org" },
+      // Hosts that @faker-js/faker.image.* may return when seeding dev data.
+      { protocol: "https", hostname: "loremflickr.com" },
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "cdn.jsdelivr.net" },
+      { protocol: "https", hostname: "via.placeholder.com" },
+      { protocol: "https", hostname: "cloudflare-ipfs.com" },
+    ]
+  : [
+      { protocol: "https", hostname: ROOT_URL.replace(/(^\w+:|^)\/\//, "") },
+      { protocol: "https", hostname: "static.prodeko.org" },
+    ]
 
 /**
  * @type {import('next').NextConfig}
@@ -50,16 +49,47 @@ const nextOptions = {
   useFileSystemPublicRoutes: true,
   poweredByHeader: false,
   trailingSlash: false,
+  // Bundle SSR deps into .next/server/ instead of leaving them as external
+  // imports resolved against node_modules at runtime. Turbopack tags
+  // externals with content hashes (e.g. `graphql-ws-f6eccf6a82a4080a`);
+  // when the prod docker image's `pnpm prune --prod` removes a hoisted
+  // version that a devDep had pinned, the tagged name no longer resolves
+  // and SSR returns 500. Matches the App Router default.
+  bundlePagesRouterDependencies: true,
   i18n: {
     locales,
     defaultLocale,
   },
+  // antd, @ant-design/icons, and friends ship ESM with extensionless
+  // relative imports that Node's strict ESM resolver rejects during page
+  // data collection. Keep them on the bundler path on both client and
+  // server.
+  transpilePackages: [
+    "@app/components",
+    "antd",
+    "@ant-design/icons",
+    "@ant-design/cssinjs",
+    "rc-util",
+    "rc-pagination",
+    "rc-picker",
+    "antd-img-crop",
+    "next-translate",
+  ],
+  turbopack: {
+    resolveAlias: {
+      // pg-native is an optional native binding that the `pg` driver tries
+      // to resolve at runtime. We never install it; redirect to the JS
+      // client so resolution succeeds.
+      "pg-native": "pg/lib/client",
+      // `ws` is a server-only dep pulled in transitively. Stub it out for
+      // the browser bundle so Turbopack doesn't try to bundle it client-side.
+      ws: { browser: "./empty.js" },
+    },
+  },
   images: {
     minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],
-    domains: isDevOrTest
-      ? ["localhost", "static.prodeko.org", "placeimg.com"]
-      : [ROOT_URL.replace(/(^\w+:|^)\/\//, ""), "static.prodeko.org"],
+    remotePatterns: remoteImageHosts,
   },
   async redirects() {
     return [
@@ -83,68 +113,17 @@ const nextOptions = {
   },
 }
 
-const nextConfig = () =>
-  _.flowRight(
-    withTM,
-    withAntdLess,
-    withNextTranslate,
-    withBundleAnalyzer
-  )({
-    ...nextOptions,
-    ...withAntdLessOptions,
-    webpack(config, { webpack, dev, isServer }) {
-      const makeSafe = (externals) => {
-        if (Array.isArray(externals)) {
-          return externals.map((ext) => {
-            if (typeof ext === "function") {
-              return ({ request, ...rest }, callback) => {
-                if (/^@app\//.test(request)) {
-                  callback()
-                } else {
-                  return ext({ request, ...rest }, callback)
-                }
-              }
-            } else {
-              return ext
-            }
-          })
-        }
-      }
+const nextConfig = withBundleAnalyzer(
+  nextTranslate(nextOptions, { turbopack: isTurbopack })
+)
 
-      const externals =
-        isServer && dev ? makeSafe(config.externals) : config.externals
+const sentryOptions = {
+  org: "prodeko",
+  project: "ilmo",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: process.env.NODE_ENV !== "production",
+}
 
-      if (!isServer) {
-        config.resolve.fallback.fs = false
-        config.plugins.push(
-          new webpack.IgnorePlugin(
-            // These modules are server-side only; we don't want webpack
-            // attempting to bundle them into the client.
-            {
-              resourceRegExp: /^(ws)$/,
-            }
-          )
-        )
-      }
-
-      const nextConf = {
-        ...config,
-        plugins: [...config.plugins, new AntDDayjsWebpackPlugin()],
-        externals: [
-          ...(externals || []),
-          isServer ? { "pg-native": "pg/lib/client" } : null,
-        ].filter((_) => _),
-      }
-      return nextConf
-    },
-  })
-
-// Options https://github.com/getsentry/sentry-webpack-plugin#options
 export default process.env.DOCKER_BUILD
-  ? withSentryConfig(nextConfig, {
-      release: process.env.GITHUB_SHA || "local",
-      configFile: `${__dirname}sentry.properties`,
-      silent: process.env.NODE_ENV !== "production",
-      environment: process.env.NODE_ENV,
-    })
+  ? withSentryConfig(nextConfig, sentryOptions)
   : nextConfig

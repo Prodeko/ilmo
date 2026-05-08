@@ -1,12 +1,13 @@
 import {
   EventRegistrationForm,
+  PageHeader,
   Redirect,
   SharedLayout,
   useTranslation,
 } from "@app/components"
 import { useUpdateEventRegistrationPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import { Col, PageHeader, Row } from "antd"
+import { Col, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"

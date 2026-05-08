@@ -1,27 +1,27 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Registration email obfuscation displays email values when user is an admin 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
-        Object {
+        {
           "email": "[email-2]",
           "id": "[id-2]",
         },
-        Object {
+        {
           "email": "[email-3]",
           "id": "[id-3]",
         },
-        Object {
+        {
           "email": "[email-4]",
           "id": "[id-4]",
         },
-        Object {
+        {
           "email": "[email-5]",
           "id": "[id-5]",
         },
@@ -32,19 +32,19 @@ Object {
 `;
 
 exports[`Registration email obfuscation displays own registration email address but hides others for a logged in user that is not admin 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
-        Object {
+        {
           "email": "[email-2]",
           "id": "[id-2]",
         },
-        Object {
+        {
           "email": "[email-2]",
           "id": "[id-3]",
         },
@@ -55,11 +55,11 @@ Object {
 `;
 
 exports[`Registration email obfuscation masks email values when user is logged out 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
@@ -70,19 +70,19 @@ Object {
 `;
 
 exports[`Registration email obfuscation masks email values when user is not an admin 1`] = `
-Object {
-  "data": Object {
-    "registrations": Object {
-      "nodes": Array [
-        Object {
+{
+  "data": {
+    "registrations": {
+      "nodes": [
+        {
           "email": "[email-1]",
           "id": "[id-1]",
         },
-        Object {
+        {
           "email": "[email-1]",
           "id": "[id-2]",
         },
-        Object {
+        {
           "email": "[email-1]",
           "id": "[id-3]",
         },
