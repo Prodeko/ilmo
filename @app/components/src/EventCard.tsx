@@ -58,6 +58,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
               style={{
                 width: "100%",
                 height: "auto",
+                aspectRatio: "851 / 315",
                 objectFit: "cover",
               }}
               width={851}
