@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  dayjs: ^1.11.20
   graphql: 15.x
   graphql-upload: 13.x
 
@@ -200,8 +201,8 @@ importers:
         specifier: ^5.22.5
         version: 5.29.3(date-fns@2.30.0)(moment@2.30.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       dayjs:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.20
+        version: 1.11.20
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -272,8 +273,8 @@ importers:
         specifier: ^4.21.0
         version: 4.30.0(antd@5.29.3(date-fns@2.30.0)(moment@2.30.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       dayjs:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.20
+        version: 1.11.20
       escape-html:
         specifier: ^1.0.3
         version: 1.0.3
@@ -404,8 +405,8 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(cypress@10.11.0)
       dayjs:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.20
+        version: 1.11.20
       depcheck:
         specifier: ^1.4.3
         version: 1.4.7
@@ -483,8 +484,8 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0
       dayjs:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.20
+        version: 1.11.20
       graphql-ws:
         specifier: ^5.9.1
         version: 5.16.2(graphql@15.10.2)
@@ -723,8 +724,8 @@ importers:
         specifier: ^4.1.2
         version: 4.1.2
       dayjs:
-        specifier: ^1.11.4
-        version: 1.11.4
+        specifier: ^1.11.20
+        version: 1.11.20
       graphile-worker:
         specifier: ^0.16.6
         version: 0.16.6(typescript@5.9.3)
@@ -4635,9 +4636,6 @@ packages:
   dayjs@1.11.20:
     resolution: {integrity: sha512-YbwwqR/uYpeoP4pu043q+LTDLFBLApUP6VxRihdfNTqu4ubqMlGDLd6ErXhEgsyvY0K6nCs7nggYumAN+9uEuQ==}
 
-  dayjs@1.11.4:
-    resolution: {integrity: sha512-Zj/lPM5hOvQ1Bf7uAvewDaUcsJoI6JmNqmHhHl3nyumwe0XHwt8sWdOVAPACJzCebL8gQCi+K49w7iKWnGwX9g==}
-
   debounce@1.2.1:
     resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
 
@@ -7855,7 +7853,7 @@ packages:
     engines: {node: '>=8.x'}
     peerDependencies:
       date-fns: '>= 2.x'
-      dayjs: '>= 1.x'
+      dayjs: ^1.11.20
       luxon: '>= 3.x'
       moment: '>= 2.x'
       react: '>=16.9.0'
@@ -14438,7 +14436,7 @@ snapshots:
       cli-table3: 0.6.5
       commander: 5.1.0
       common-tags: 1.8.2
-      dayjs: 1.11.4
+      dayjs: 1.11.20
       debug: 4.4.3(supports-color@8.1.1)
       enquirer: 2.4.1
       eventemitter2: 6.4.7
@@ -14502,8 +14500,6 @@ snapshots:
       '@babel/runtime': 7.29.2
 
   dayjs@1.11.20: {}
-
-  dayjs@1.11.4: {}
 
   debounce@1.2.1: {}
 

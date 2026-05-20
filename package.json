@@ -93,6 +93,7 @@
   },
   "pnpm": {
     "overrides": {
+      "dayjs": "^1.11.20",
       "graphql": "15.x",
       "graphql-upload": "13.x"
     },
