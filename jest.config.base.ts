@@ -7,7 +7,12 @@ module.exports = (dir) => {
     // https://kulshekhar.github.io/ts-jest/docs/getting-started/options
     transform: {
       "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
-      "^.+\\.m?js$": [
+      // openid-client and its dependencies are ESM-only; compile just those
+      // three packages to CJS. The pattern must not capture any other .js —
+      // a broad `.m?js$` key routes the lazily-required @app/worker/dist
+      // tasks through a cold ts-jest transform inside the first test that
+      // runs jobs, which alone exceeds jest's 5s test timeout.
+      "node_modules[/\\\\](openid-client|oauth4webapi|jose)[/\\\\].+\\.m?js$": [
         "ts-jest",
         { tsconfig: "tsconfig.test.json", diagnostics: false },
       ],
