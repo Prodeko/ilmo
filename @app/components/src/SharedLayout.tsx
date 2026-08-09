@@ -123,7 +123,12 @@ export function SharedLayout({
     const reset = async () => {
       router.events.off("routeChangeComplete", reset)
       try {
-        await logout({})
+        const { data } = await logout({})
+        const redirectTo = data?.logout?.redirectTo
+        if (redirectTo) {
+          window.location.href = redirectTo
+          return
+        }
         context.resetUrqlClient()
       } catch (e) {
         // Something went wrong; redirect to /logout to force logout.
@@ -299,6 +304,12 @@ export function SharedLayout({
                 <Link
                   data-cy="header-login-button"
                   href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    router.push(
+                      `/login?local=1&next=${encodeURIComponent(currentUrl)}`
+                    )
+                  }}
                 >
                   {t("signin")}
                 </Link>

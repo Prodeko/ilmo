@@ -5,7 +5,6 @@ import {
   PageHeader,
   ProdekoIcon,
   SettingsLayout,
-  SocialLoginOptions,
   Strong,
   useTranslation,
 } from "@app/components"
@@ -15,17 +14,14 @@ import {
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
-import { Avatar, Card, List, Modal, Spin } from "antd"
+import { Avatar, Button, Card, List, Modal, Spin } from "antd"
 import { Translate } from "next-translate"
 
 import type { NextPage } from "next"
 
 const AUTH_NAME_LOOKUP = {
-  // Could add more login options in the future
-  // github: "GitHub",
-  // facebook: "Facebook",
-  // twitter: "Twitter",
   oauth2: "Prodeko",
+  keycloak: "Prodeko ID",
 }
 function authName(service: string) {
   return AUTH_NAME_LOOKUP[service] || service
@@ -33,6 +29,7 @@ function authName(service: string) {
 
 const AUTH_ICON_LOOKUP = {
   oauth2: <ProdekoIcon size="25px" />,
+  keycloak: <ProdekoIcon size="25px" />,
 }
 function authAvatar(service: string) {
   const icon = AUTH_ICON_LOOKUP[service] || null
@@ -134,12 +131,15 @@ const Settings_Accounts: NextPage = () => {
         style={{ marginTop: "2rem" }}
         title={t("pages.accounts.linkAnother")}
       >
-        <SocialLoginOptions
-          buttonTextFromService={(service) =>
-            t("pages.accounts.linkAccount", { service })
-          }
-          next="/settings/accounts"
-        />
+        <Button
+          href={`/auth/keycloak?next=${encodeURIComponent(
+            "/settings/accounts"
+          )}`}
+          icon={<ProdekoIcon size="20px" style={{ verticalAlign: "middle" }} />}
+          type="primary"
+        >
+          {t("pages.accounts.linkProdekoId")}
+        </Button>
       </Card>
     </SettingsLayout>
   )

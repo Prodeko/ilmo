@@ -13,7 +13,15 @@
       "username": "Sähköposti tai käyttäjänimi"
     }
   },
-  "registerButton": "Luo käyttäjä",
-  "signinButton": "Kirjaudu sisään",
-  "signinDifferent": "Käytä toista kirjautumistapaa"
+  "signinDifferent": "Käytä toista kirjautumistapaa",
+  "signinWithProdekoId": "Kirjaudu Prodeko ID:llä",
+  "ssoError": {
+    "account_conflict": "Tätä identiteettiä ei voi yhdistää pyydettyyn tiliin. Ota yhteyttä ylläpitoon.",
+    "code_exchange_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
+    "email_not_verified": "Sähköpostiosoitettasi ei ole vahvistettu. Vahvista se ensin osoitteessa id.prodeko.org.",
+    "login_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
+    "sso_unavailable": "Kirjautumispalvelu ei ole juuri nyt saatavilla. Yritä hetken kuluttua uudelleen.",
+    "state_mismatch": "Kirjautumisyritys vanheni. Yritä uudelleen."
+  },
+  "tryAgain": "Yritä kirjautumista uudelleen"
 }

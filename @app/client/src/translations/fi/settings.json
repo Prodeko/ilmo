@@ -39,8 +39,8 @@
   },
   "pages": {
     "accounts": {
-      "linkAccount": "Linkitä {{service}} käyttäjä",
       "linkAnother": "Linkitä toinen käyttäjä",
+      "linkProdekoId": "Yhdistä Prodeko ID",
       "unlink": "Poista linkitys",
       "unlinkAccountNotice": "Jos poistat tämän tilin linkityksen, et voi kirjautua siihen enää. Varmista, että sähköpostiosoitteesi on kelvollinen."
     },

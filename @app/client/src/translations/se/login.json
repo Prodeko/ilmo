@@ -13,7 +13,15 @@
       "username": "E-post eller användarnamn"
     }
   },
-  "registerButton": "Skapa ett konto",
-  "signinButton": "Logga in med e-post eller användarnamn",
-  "signinDifferent": "Använd en annan inloggningsmetod"
+  "signinDifferent": "Använd en annan inloggningsmetod",
+  "signinWithProdekoId": "Logga in med Prodeko ID",
+  "ssoError": {
+    "account_conflict": "Denna identitet kan inte länkas till det begärda kontot. Kontakta administratörerna.",
+    "code_exchange_failed": "Inloggningen misslyckades. Försök igen.",
+    "email_not_verified": "Din e-postadress är inte verifierad. Verifiera den först på id.prodeko.org.",
+    "login_failed": "Inloggningen misslyckades. Försök igen.",
+    "sso_unavailable": "Inloggningstjänsten är inte tillgänglig just nu. Försök igen om en stund.",
+    "state_mismatch": "Inloggningsförsöket föråldrades. Försök igen."
+  },
+  "tryAgain": "Försök logga in igen"
 }

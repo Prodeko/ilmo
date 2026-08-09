@@ -39,8 +39,8 @@
   },
   "pages": {
     "accounts": {
-      "linkAccount": "Link {{service}} account",
       "linkAnother": "Link another account",
+      "linkProdekoId": "Link Prodeko ID",
       "unlink": "Unlink",
       "unlinkAccountNotice": "If you unlink this account you won't be able to log in with it any more; please make sure your email is valid."
     },

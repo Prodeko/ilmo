@@ -39,8 +39,8 @@
   },
   "pages": {
     "accounts": {
-      "linkAccount": "Länka {{service}}-konto",
       "linkAnother": "Länka ett annat konto",
+      "linkProdekoId": "Länka Prodeko ID",
       "unlink": "Ta bort länk",
       "unlinkAccountNotice": "Om du tar bort länken till det här kontot kommer du inte att kunna logga in med det längre; se till att din e-postadress är giltig."
     },
