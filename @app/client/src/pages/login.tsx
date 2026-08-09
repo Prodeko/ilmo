@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons"
+import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
-  ButtonLink,
   ErrorAlert,
   Link,
   Redirect,
@@ -81,20 +80,6 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
                 <Row style={{ marginBottom: 8 }}>
                   <Col span={24}>
                     <SocialLoginOptions next={next} />
-                  </Col>
-                </Row>
-                <Row justify="center">
-                  <Col flex={1}>
-                    <ButtonLink
-                      data-cy="loginpage-button-register"
-                      href={`/register?next=${encodeURIComponent(next)}`}
-                      icon={<UserAddOutlined />}
-                      size="large"
-                      type="default"
-                      block
-                    >
-                      {t("registerButton")}
-                    </ButtonLink>
                   </Col>
                 </Row>
               </Col>

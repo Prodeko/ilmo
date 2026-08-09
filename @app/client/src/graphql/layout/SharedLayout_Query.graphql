@@ -2,6 +2,7 @@ fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
   }
+  ssoLoginEnabled
   supportedLanguages
 }
 

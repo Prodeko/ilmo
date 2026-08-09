@@ -15,6 +15,7 @@ fragment SharedLayout_Query on Query {
     ...SharedLayout_User
     __typename
   }
+  ssoLoginEnabled
   supportedLanguages
   __typename
 }

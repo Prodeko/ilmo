@@ -1,6 +1,7 @@
 mutation Logout {
   logout {
     success
+    redirectTo
     __typename
   }
 }
