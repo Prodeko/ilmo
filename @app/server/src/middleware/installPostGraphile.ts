@@ -52,6 +52,7 @@ export interface OurGraphQLContext {
   workerUtils: WorkerUtils
   login(user: any): Promise<void>
   logout(): Promise<void>
+  isSsoSession(): boolean
 }
 
 const TagsFilePlugin = makePgSmartTagsFromFilePlugin(
@@ -384,6 +385,11 @@ export function getPostGraphileOptions({
         // Use these to tell Passport.js we're logged in / out
         login: async (user: any) => await fastifyRequest.logIn(user),
         logout: () => fastifyRequest.logOut(),
+
+        // True when this session was created by the Keycloak SSO callback.
+        // Optional chaining: Jest integration tests use mock requests
+        // without a secure-session.
+        isSsoSession: () => fastifyRequest?.session?.get?.("sso") === true,
       }
     },
   }

@@ -7,7 +7,14 @@ module.exports = (dir) => {
     // https://kulshekhar.github.io/ts-jest/docs/getting-started/options
     transform: {
       "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
+      "^.+\\.m?js$": [
+        "ts-jest",
+        { tsconfig: "tsconfig.test.json", diagnostics: false },
+      ],
     },
+    transformIgnorePatterns: [
+      "/node_modules/(?!(openid-client|oauth4webapi|jose)/)",
+    ],
     testMatch: ["<rootDir>/**/__tests__/**/*.test.[jt]s?(x)"],
     roots: [`<rootDir>`],
 

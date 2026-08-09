@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import * as oidc from "openid-client"
+import { Pool } from "pg"
 
 import {
   BREAK_GLASS_USERNAMES,
@@ -54,6 +55,38 @@ export function getKeycloakConfig(): Promise<oidc.Configuration> {
 
 export function resetKeycloakConfigForTests(): void {
   configPromise = null
+}
+
+/**
+ * End-session URL for RP-initiated logout, or null when the user has no
+ * Keycloak identity or Keycloak is unreachable — logout must never fail
+ * because the IdP is down.
+ */
+export async function buildKeycloakLogoutUrl(
+  rootPgPool: Pool,
+  userId: string
+): Promise<string | null> {
+  if (!keycloakEnabled()) return null
+  try {
+    const {
+      rows: [row],
+    } = await rootPgPool.query(
+      `select uas.details->>'id_token' as id_token
+         from app_private.user_authentication_secrets uas
+         join app_public.user_authentications ua
+           on ua.id = uas.user_authentication_id
+        where ua.user_id = $1 and ua.service = 'keycloak'`,
+      [userId]
+    )
+    if (!row?.id_token) return null
+    const config = await getKeycloakConfig()
+    return oidc.buildEndSessionUrl(config, {
+      id_token_hint: row.id_token,
+      post_logout_redirect_uri: `${process.env.ROOT_URL}/`,
+    }).href
+  } catch {
+    return null
+  }
 }
 
 const InstallKeycloak: FastifyPluginAsync = async (app) => {

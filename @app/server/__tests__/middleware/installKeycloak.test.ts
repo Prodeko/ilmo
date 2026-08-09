@@ -5,6 +5,7 @@ import * as oidc from "openid-client"
 import { Pool } from "pg"
 
 import installKeycloak, {
+  buildKeycloakLogoutUrl,
   OidcSessionData,
   resetKeycloakConfigForTests,
 } from "../../src/middleware/installKeycloak"
@@ -318,6 +319,53 @@ describe("GET /auth/keycloak/callback", () => {
       headers: { cookie: cookieHeader(failed) },
     })
     expect(replay.headers.location).toBe("/login?error=state_mismatch")
+  })
+})
+
+describe("buildKeycloakLogoutUrl", () => {
+  it("builds an end-session url from the stored id token", async () => {
+    await doCallback() // seeds user + id_token
+    const {
+      rows: [ua],
+    } = await pool.query(
+      `select user_id from app_public.user_authentications where identifier = 'kc-sub-1'`
+    )
+    mockOidc.buildEndSessionUrl.mockReturnValue(
+      new URL("http://kc.test/logout?id_token_hint=fake-id-token")
+    )
+    const url = await buildKeycloakLogoutUrl(pool, ua.user_id)
+    expect(url).toBe("http://kc.test/logout?id_token_hint=fake-id-token")
+    expect(mockOidc.buildEndSessionUrl).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        id_token_hint: "fake-id-token",
+        post_logout_redirect_uri: `${process.env.ROOT_URL}/`,
+      })
+    )
+  })
+
+  it("returns null when the user has no keycloak identity", async () => {
+    const {
+      rows: [u],
+    } = await pool.query(
+      `select id from app_private.really_create_user(
+         username => 'plainlocal', email => 'plain@example.com', name => 'Plain',
+         avatar_url => null, password => 'SuperSecret!123', email_is_verified => true)`
+    )
+    expect(await buildKeycloakLogoutUrl(pool, u.id)).toBeNull()
+    await pool.query(`delete from app_public.users where id = $1`, [u.id])
+  })
+
+  it("returns null instead of throwing when discovery fails", async () => {
+    await doCallback()
+    resetKeycloakConfigForTests()
+    mockOidc.discovery.mockRejectedValue(new Error("down"))
+    const {
+      rows: [ua],
+    } = await pool.query(
+      `select user_id from app_public.user_authentications where identifier = 'kc-sub-1'`
+    )
+    expect(await buildKeycloakLogoutUrl(pool, ua.user_id)).toBeNull()
   })
 })
 
