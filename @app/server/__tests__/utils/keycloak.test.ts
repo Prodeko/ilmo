@@ -91,7 +91,8 @@ describe("keycloakEnabled", () => {
     process.env = { ...OLD }
   })
   it("is true only when all three vars are set", () => {
-    process.env.KEYCLOAK_ISSUER = "http://localhost:8180/realms/membership-registry"
+    process.env.KEYCLOAK_ISSUER =
+      "http://localhost:8180/realms/membership-registry"
     process.env.KEYCLOAK_CLIENT_ID = "ilmokilke"
     process.env.KEYCLOAK_CLIENT_SECRET = "s3cret"
     expect(keycloakEnabled()).toBe(true)
