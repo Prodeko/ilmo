@@ -2,7 +2,12 @@ import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import * as oidc from "openid-client"
 
-import { keycloakEnabled, sanitizeNext } from "../utils/keycloak"
+import {
+  BREAK_GLASS_USERNAMES,
+  keycloakEnabled,
+  mapKeycloakClaims,
+  sanitizeNext,
+} from "../utils/keycloak"
 
 export interface OidcSessionData {
   verifier: string
@@ -83,6 +88,118 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       nonce,
     })
     return reply.redirect(authUrl.href)
+  })
+
+  app.get("/auth/keycloak/callback", async (request, reply) => {
+    const oidcData = request.session.get("oidc") as OidcSessionData | undefined
+    request.session.set("oidc", undefined)
+    if (!oidcData) {
+      return reply.redirect("/login?error=state_mismatch")
+    }
+
+    let config: oidc.Configuration
+    try {
+      config = await getKeycloakConfig()
+    } catch (e) {
+      request.log.error({ err: e }, "keycloak discovery failed")
+      return reply.redirect("/login?error=sso_unavailable")
+    }
+
+    let idToken: string
+    let claims: Record<string, unknown>
+    try {
+      const currentUrl = new URL(request.raw.url!, process.env.ROOT_URL)
+      const tokens = await oidc.authorizationCodeGrant(config, currentUrl, {
+        pkceCodeVerifier: oidcData.verifier,
+        expectedState: oidcData.state,
+        expectedNonce: oidcData.nonce,
+        idTokenExpected: true,
+      })
+      idToken = tokens.id_token!
+      claims = tokens.claims()! as Record<string, unknown>
+    } catch (e) {
+      request.log.error({ err: e }, "keycloak code exchange failed")
+      return reply.redirect("/login?error=code_exchange_failed")
+    }
+
+    try {
+      const profile = mapKeycloakClaims(claims)
+      if (!profile.emailVerified) {
+        return reply.redirect("/login?error=email_not_verified")
+      }
+
+      const rootPgPool = app.rootPgPool
+
+      // If already logged in, link the Keycloak identity to that account
+      // (settings/accounts flow) instead of switching accounts.
+      let existingUserId: string | null = null
+      if (request.user?.sessionId) {
+        const {
+          rows: [existing],
+        } = await rootPgPool.query(
+          "select user_id from app_private.sessions where uuid = $1",
+          [request.user.sessionId]
+        )
+        existingUserId = existing?.user_id ?? null
+      }
+
+      const {
+        rows: [user],
+      } = await rootPgPool.query(
+        `select * from app_private.link_or_register_user($1, $2, $3, $4, $5)`,
+        [
+          existingUserId,
+          "keycloak",
+          profile.sub,
+          JSON.stringify({
+            username: profile.username,
+            email: profile.email,
+            name: profile.name,
+          }),
+          JSON.stringify({ id_token: idToken }),
+        ]
+      )
+      if (!user?.id) {
+        throw new Error("link_or_register_user returned no user")
+      }
+
+      if (BREAK_GLASS_USERNAMES.includes(String(user.username).toLowerCase())) {
+        request.log.error(
+          { userId: user.id },
+          "keycloak login collided with a break-glass account"
+        )
+        return reply.redirect("/login?error=account_conflict")
+      }
+
+      await rootPgPool.query(
+        `update app_public.users set is_admin = $1 where id = $2`,
+        [profile.isAdmin, user.id]
+      )
+
+      const {
+        rows: [session],
+      } = await rootPgPool.query(
+        `insert into app_private.sessions (user_id) values ($1) returning *`,
+        [user.id]
+      )
+      await request.logIn({ sessionId: session.uuid })
+      request.session.set("sso", true)
+
+      if (profile.locale) {
+        reply.setCookie("NEXT_LOCALE", profile.locale, {
+          path: "/",
+          maxAge: 60 * 60 * 24 * 365,
+          sameSite: "lax",
+        })
+      }
+      return reply.redirect(oidcData.next)
+    } catch (e) {
+      // TAKEN (identity already linked to a different account) and any
+      // unexpected DB failure land here; details go to logs only.
+      request.log.error({ err: e }, "keycloak login failed")
+      const code = e["code"] === "TAKEN" ? "account_conflict" : "login_failed"
+      return reply.redirect(`/login?error=${code}`)
+    }
   })
 }
 

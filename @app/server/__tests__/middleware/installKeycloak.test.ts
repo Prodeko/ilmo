@@ -141,3 +141,185 @@ describe("GET /auth/keycloak", () => {
     expect(mockOidc.discovery).toHaveBeenCalledTimes(2)
   })
 })
+
+function fakeTokens(claimOverrides: Record<string, unknown> = {}) {
+  const claims = {
+    sub: "kc-sub-1",
+    email: "test.user@example.com",
+    email_verified: true,
+    name: "Test User",
+    locale: "en",
+    realm_access: { roles: ["membership"] },
+    ...claimOverrides,
+  }
+  return { id_token: "fake-id-token", claims: () => claims } as any
+}
+
+async function doCallback(
+  claimOverrides: Record<string, unknown> = {},
+  next = "/event/foo"
+) {
+  mockOidc.discovery.mockResolvedValue({} as any)
+  mockOidc.buildAuthorizationUrl.mockReturnValue(new URL("http://kc.test/auth"))
+  const login = await app.inject({ url: `/auth/keycloak?next=${next}` })
+  const cookies = login.headers["set-cookie"]
+  mockOidc.authorizationCodeGrant.mockResolvedValue(fakeTokens(claimOverrides))
+  return app.inject({
+    url: "/auth/keycloak/callback?code=fake&state=test-state",
+    headers: {
+      cookie: ([] as string[])
+        .concat(cookies!)
+        .map((c) => c.split(";")[0])
+        .join("; "),
+    },
+  })
+}
+
+describe("GET /auth/keycloak/callback", () => {
+  it("creates a user, session, sso flag and locale cookie, then redirects to next", async () => {
+    const res = await doCallback()
+    expect(res.statusCode).toBe(302)
+    expect(res.headers.location).toBe("/event/foo")
+    const setCookies = ([] as string[]).concat(res.headers["set-cookie"]!)
+    expect(setCookies.some((c) => c.startsWith("NEXT_LOCALE=en"))).toBe(true)
+    const session = sessionFromResponse(res)!
+    expect(session.get("sso")).toBe(true)
+    const {
+      rows: [ua],
+    } = await pool.query(
+      `select ua.user_id, u.username, u.is_admin
+         from app_public.user_authentications ua
+         join app_public.users u on u.id = ua.user_id
+        where ua.service = 'keycloak' and ua.identifier = 'kc-sub-1'`
+    )
+    expect(ua).toBeTruthy()
+    expect(ua.is_admin).toBe(false)
+    const {
+      rows: [secret],
+    } = await pool.query(
+      `select uas.details->>'id_token' as id_token
+         from app_private.user_authentication_secrets uas
+         join app_public.user_authentications ua on ua.id = uas.user_authentication_id
+        where ua.identifier = 'kc-sub-1'`
+    )
+    expect(secret.id_token).toBe("fake-id-token")
+    const {
+      rows: [dbSession],
+    } = await pool.query(
+      `select * from app_private.sessions where user_id = $1`,
+      [ua.user_id]
+    )
+    expect(dbSession).toBeTruthy()
+    expect(session.get("passport")).toBe(dbSession.uuid)
+  })
+
+  it("stamps is_admin true when ilmo-admin role is present, and false again when it disappears", async () => {
+    let res = await doCallback({
+      realm_access: { roles: ["membership", "ilmo-admin"] },
+    })
+    expect(res.statusCode).toBe(302)
+    let {
+      rows: [user],
+    } = await pool.query(
+      `select u.is_admin from app_public.users u
+         join app_public.user_authentications ua on ua.user_id = u.id
+        where ua.identifier = 'kc-sub-1'`
+    )
+    expect(user.is_admin).toBe(true)
+    res = await doCallback({ realm_access: { roles: ["membership"] } })
+    expect(res.statusCode).toBe(302)
+    ;({
+      rows: [user],
+    } = await pool.query(
+      `select u.is_admin from app_public.users u
+         join app_public.user_authentications ua on ua.user_id = u.id
+        where ua.identifier = 'kc-sub-1'`
+    ))
+    expect(user.is_admin).toBe(false)
+  })
+
+  it("refuses unverified emails", async () => {
+    const res = await doCallback({ email_verified: false })
+    expect(res.headers.location).toBe("/login?error=email_not_verified")
+    const { rowCount } = await pool.query(
+      `select 1 from app_public.user_authentications where service = 'keycloak'`
+    )
+    expect(rowCount).toBe(0)
+  })
+
+  it("refuses logins that land on a break-glass row", async () => {
+    await pool.query(
+      `select app_private.really_create_user(
+         username => 'ProdekoCTO', email => 'cto@prodeko.fi', name => 'CTO',
+         avatar_url => null, password => 'SuperSecret!123', email_is_verified => true,
+         is_admin => true)`
+    )
+    const res = await doCallback({ email: "cto@prodeko.fi" })
+    expect(res.headers.location).toBe("/login?error=account_conflict")
+    const {
+      rows: [user],
+    } = await pool.query(
+      `select is_admin from app_public.users where username = 'ProdekoCTO'`
+    )
+    expect(user.is_admin).toBe(true) // untouched
+    await pool.query(
+      `delete from app_public.users where username = 'ProdekoCTO'`
+    )
+  })
+
+  it("rejects a callback with no oidc state in the session", async () => {
+    const res = await app.inject({
+      url: "/auth/keycloak/callback?code=fake&state=test-state",
+    })
+    expect(res.headers.location).toBe("/login?error=state_mismatch")
+  })
+
+  it("redirects with code_exchange_failed when the grant fails", async () => {
+    mockOidc.discovery.mockResolvedValue({} as any)
+    mockOidc.buildAuthorizationUrl.mockReturnValue(
+      new URL("http://kc.test/auth")
+    )
+    const login = await app.inject({ url: "/auth/keycloak" })
+    const cookies = login.headers["set-cookie"]
+    mockOidc.authorizationCodeGrant.mockRejectedValue(
+      new Error("invalid_grant")
+    )
+    const res = await app.inject({
+      url: "/auth/keycloak/callback?code=bad&state=test-state",
+      headers: {
+        cookie: ([] as string[])
+          .concat(cookies!)
+          .map((c) => c.split(";")[0])
+          .join("; "),
+      },
+    })
+    expect(res.headers.location).toBe("/login?error=code_exchange_failed")
+  })
+})
+
+describe("when Keycloak is not configured", () => {
+  it("mounts no routes at all", async () => {
+    const saved = {
+      KEYCLOAK_ISSUER: process.env.KEYCLOAK_ISSUER,
+      KEYCLOAK_CLIENT_ID: process.env.KEYCLOAK_CLIENT_ID,
+      KEYCLOAK_CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET,
+    }
+    delete process.env.KEYCLOAK_ISSUER
+    delete process.env.KEYCLOAK_CLIENT_ID
+    delete process.env.KEYCLOAK_CLIENT_SECRET
+    const disabledApp = fastify()
+    try {
+      await disabledApp.register(installKeycloak)
+      await disabledApp.ready()
+      const login = await disabledApp.inject({ url: "/auth/keycloak" })
+      expect(login.statusCode).toBe(404)
+      const callback = await disabledApp.inject({
+        url: "/auth/keycloak/callback",
+      })
+      expect(callback.statusCode).toBe(404)
+    } finally {
+      await disabledApp.close()
+      Object.assign(process.env, saved)
+    }
+  })
+})
