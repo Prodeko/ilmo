@@ -44,7 +44,10 @@ as "Admin access to ilmokilke".
 Assign and revoke the role in the registry UI, either directly on a member or
 through a role group. Ilmo re-stamps `users.is_admin` from the ID token on every
 SSO login, so both promotion and demotion take effect the next time the member
-logs in to ilmo. There is no live re-check.
+logs in to ilmo. There is no live re-check. The re-stamp only runs when the ID
+token actually carries a `realm_access.roles` claim: if the client's realm-roles
+mapper is missing, ilmo leaves every user's `is_admin` untouched and logs an
+error on each login instead of silently demoting the admins one by one.
 
 Ilmo has its own admin toggle on `/admin/users/list`, backed by
 `app_public.set_admin_status`, which writes `users.is_admin` directly. The
@@ -61,13 +64,25 @@ database.
 
 ## Account linking
 
-A signed-in user links a Keycloak identity to their existing ilmo account from
-`/settings/accounts`, which sends them to `/auth/keycloak?link=1&next=...`. The
-`link=1` flag is what authorises the link; the callback never links implicitly,
-and a plain `/auth/keycloak` visit while signed in just redirects to `next`. The
-flag only counts on a same-origin navigation (`Sec-Fetch-Site`, with a referer
-fallback) — a cross-site page cannot forge the link intent for a visitor who
-happens to be signed in to both ilmo and Keycloak.
+A first SSO login binds to an existing ilmo account in two ways. When the
+Keycloak identity is already linked, the login lands on the linked account.
+Otherwise `app_private.link_or_register_user` adopts an existing account whose
+*verified* ilmo email matches the Keycloak email — this is what lets members
+with pre-SSO accounts keep them — and only when neither matches does it create
+a new account. Adoption re-stamps `is_admin` like any login, which is why the
+rollout audit below covers every admin account, not just the break-glass pair.
+
+Separately, a signed-in user attaches a Keycloak identity to *the account they
+are currently signed into* from `/settings/accounts`, which sends them to
+`/auth/keycloak?link=1&next=...`. The `link=1` flag is what authorises binding
+to the session's account; a plain `/auth/keycloak` visit while signed in just
+redirects to `next`. The flag only counts on a same-origin navigation
+(`Sec-Fetch-Site`, with a referer fallback) — a cross-site page cannot forge
+the link intent for a visitor who happens to be signed in to both ilmo and
+Keycloak. A link request that cannot be honoured fails visibly rather than
+degrading to a plain login: an unverifiable navigation returns to
+`/settings/accounts` with an error, and a session that expired mid-flow lands
+on `/login?error=link_session_lost`.
 
 Linking re-stamps `users.is_admin` from the ID token exactly as a login does, so
 a local admin who links an identity that lacks `ilmo-admin` loses admin rights
@@ -85,15 +100,22 @@ client settings ilmo requires:
 - Valid post-logout redirect URI `${ROOT_URL}/`.
 - Web origins set to the ilmo origin.
 
-Then add one protocol mapper to the client: type
-`oidc-usermodel-attribute-mapper`, user attribute `locale`, token claim name
-`locale`, added to the ID token. The registry syncs each member's language into
-that user attribute but maps the claim only on its own client, so without this
-mapper every member lands in the default UI language. Ilmo understands the
-values `fi`, `en` and `se`; any other value, and a missing claim, fall back to
-the default UI language. Roles need no mapper — `realm_access.roles` arrives
-through the client's default full-scope configuration and already contains the
-effective set, including roles inherited from groups and composites.
+Then add two protocol mappers to the client, mirroring
+`@app/e2e/keycloak/realm-ci.json`:
+
+- Roles: type `oidc-usermodel-realm-role-mapper`, token claim name
+  `realm_access.roles`, multivalued, **added to the ID token**. Keycloak's
+  default `roles` client scope puts realm roles in the access token only, and
+  ilmo reads them from the ID token — without this mapper the token carries no
+  `realm_access` at all, nobody gets admin, and every login logs an error.
+  The mapper delivers the effective role set, including roles inherited from
+  groups and composites.
+- Locale: type `oidc-usermodel-attribute-mapper`, user attribute `locale`,
+  token claim name `locale`, added to the ID token. The registry syncs each
+  member's language into that user attribute but maps the claim only on its
+  own client. Ilmo understands the values `fi`, `en` and `se`; on any other
+  value, or a missing claim, ilmo sets no language and the member keeps
+  whatever their browser negotiated.
 
 Finally copy the client secret into the ilmo secret store as
 `KEYCLOAK_CLIENT_SECRET`.
@@ -107,8 +129,9 @@ point `KEYCLOAK_ISSUER` at `http://localhost:8180/realms/membership-registry`.
 With SSO enabled, `/login` sends visitors straight to Keycloak and the password
 form is not linked from anywhere. Two entry points reveal it:
 
-- `/login?local=1`, which renders the password form directly. This is the path
-  for runbooks, for mobile, and for a standing start.
+- `/login?local=1`, which renders the password form directly. This is the entry
+  point runbooks should reference: it works with no Keycloak reachable and no
+  prior session.
 - A failed SSO attempt. Any `/login?error=...` stops the automatic bounce to
   Keycloak and renders the error instead, and the `sso_unavailable` error offers
   a visible link to `/login?local=1`.
@@ -130,20 +153,34 @@ to `/forgot`; `/reset` is reached from the emailed reset link, and
 A failed SSO attempt returns to `/login?error=<code>` with a message. What each
 code means on the operator's side:
 
-- `sso_unavailable` — OIDC discovery failed. Keycloak is unreachable, the issuer
-  URL is wrong, or the client credentials are rejected.
-- `state_mismatch` — the callback arrived with no matching state in the session,
-  typically a bookmarked or replayed callback URL.
-- `code_exchange_failed` — the authorization code, PKCE verifier or nonce did
-  not validate at the token endpoint.
+- `sso_unavailable` — the authorization request could not be built or the token
+  endpoint could not be reached. Keycloak is unreachable or the issuer URL is
+  wrong — but a failure in ilmo's own database while preparing the redirect
+  lands here too, so check both before chasing Keycloak. This is the only error
+  page that offers the local sign-in link.
+- `state_mismatch` — the callback arrived with no in-flight login state in the
+  session: a bookmarked or replayed callback URL, or a session cookie that was
+  dropped or rotated mid-flow.
+- `code_exchange_failed` — the token endpoint rejected the exchange: the
+  authorization code, PKCE verifier or nonce did not validate, or the client
+  credentials are rejected (check `KEYCLOAK_CLIENT_SECRET` after a rotation).
 - `missing_claims` — the ID token carries no `sub` or no `email`. The client
   scope in Keycloak is missing the corresponding mapper.
-- `email_not_verified` — the member's registry email address is not verified.
-  This is a hard gate: the login is refused, and the fix is in the registry, not
-  in ilmo. Expect this to be the most common support ticket.
+- `email_not_verified` — the member's registry email address is not verified,
+  *or* the ID token carries no `email_verified` claim at all. The second case
+  is a client-scope mapper problem, not a registry one, and the server log says
+  which occurred — check it first during initial client setup. For a verified
+  member the fix is in the registry, not in ilmo. Expect this to be the most
+  common support ticket.
 - `account_conflict` — the login landed on a break-glass account, or the
   Keycloak identity is already linked to a different ilmo account.
+- `link_session_lost` — an account-link attempt whose app session had expired
+  by the time the flow finished. The user signs in again and retries from
+  `/settings/accounts`.
 - `login_failed` — anything else. Details are in the server log only.
+
+A member who presses Cancel on the Keycloak page is sent to the front page with
+no error; only actual failures reach `/login?error=`.
 
 ## Rollout
 
@@ -151,11 +188,14 @@ code means on the operator's side:
    and no user-visible behaviour depends on Keycloak yet.
 2. Create the `ilmo-admin` role in the membership-registry admin UI and assign
    it to the members who need admin access.
-3. Register the `ilmokilke` client in the realm, add the `locale` mapper, and
-   copy the secret into the secret store.
+3. Register the `ilmokilke` client in the realm, add the realm-roles and
+   `locale` mappers, and copy the secret into the secret store.
 4. Verify that neither ProdekoCTO nor ProdekoToimari carries an email address
    that collides with a member's Keycloak email, and rotate both passwords into
-   the break-glass credential store.
+   the break-glass credential store. Then audit every other local account with
+   `is_admin` whose verified email matches a realm member: the member's first
+   SSO login adopts that account and re-stamps its admin flag, so grant those
+   members `ilmo-admin` in the registry before cutover or they are demoted.
 5. Set the three `KEYCLOAK_*` variables in production and restart. SSO is now
    the login path.
 6. Expect 404s on `/register`: there is no registration page, so bookmarks and
@@ -164,10 +204,11 @@ code means on the operator's side:
 
 SSO touches only existing tables and functions —
 `app_private.link_or_register_user`, `app_public.users`,
-`app_public.user_authentications` and `app_private.sessions` — so there is no
-migration to run, and rollback is unsetting the three variables. The callback
-does all of that work in one transaction, so a refused login leaves no rows
-behind.
+`app_public.user_authentications`, `app_private.user_authentication_secrets`
+(where the ID token used as the logout hint is stored) and
+`app_private.sessions` — so there is no migration to run, and rollback is
+unsetting the three variables. The callback does all of that work in one
+transaction, so a refused login leaves no rows behind.
 
 ## Staging checklist
 
