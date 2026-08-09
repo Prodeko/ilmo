@@ -84,7 +84,10 @@ export async function buildKeycloakLogoutUrl(
       id_token_hint: row.id_token,
       post_logout_redirect_uri: `${process.env.ROOT_URL}/`,
     }).href
-  } catch {
+  } catch (e) {
+    // Without this a database outage or an unreachable Keycloak is
+    // indistinguishable from "this user has no Keycloak identity".
+    console.error("keycloak logout url could not be built", e)
     return null
   }
 }
@@ -127,6 +130,9 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
     const oidcData = request.session.get("oidc") as OidcSessionData | undefined
     request.session.set("oidc", undefined)
     if (!oidcData) {
+      request.log.warn(
+        "keycloak callback without oidc state in the session; refusing"
+      )
       return reply.redirect("/login?error=state_mismatch")
     }
 
@@ -158,6 +164,10 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
     try {
       const profile = mapKeycloakClaims(claims)
       if (!profile.emailVerified) {
+        request.log.warn(
+          { sub: profile.sub },
+          "keycloak login refused: email is not verified"
+        )
         return reply.redirect("/login?error=email_not_verified")
       }
 

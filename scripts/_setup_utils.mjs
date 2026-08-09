@@ -196,13 +196,6 @@ export function updateDotenv(add, answers) {
   )
 
   add(
-    "REGISTER_DOMAINS_ALLOWLIST",
-    "prodeko.org",
-    `\
-# Comma separated list of domain from which to allow registrations`
-  )
-
-  add(
     "PRIVACY_URL",
     null,
     `\
