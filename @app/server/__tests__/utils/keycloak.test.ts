@@ -20,7 +20,7 @@ describe("mapKeycloakClaims", () => {
       email: "matti.meikalainen@example.com",
       emailVerified: true,
       name: "Matti Meikäläinen",
-      username: "matti.meikalainen",
+      usernameSuggestion: "matti.meikalainen",
       locale: "fi",
       isAdmin: true,
     })
@@ -34,6 +34,27 @@ describe("mapKeycloakClaims", () => {
   it("is not admin when realm_access is absent", () => {
     const { realm_access: _dropped, ...claims } = baseClaims
     expect(mapKeycloakClaims(claims).isAdmin).toBe(false)
+  })
+
+  it("warns when the realm_access claim is missing entirely", () => {
+    const logger = { warn: jest.fn() }
+    const { realm_access: _dropped, ...claims } = baseClaims
+    mapKeycloakClaims(claims, logger)
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith(
+      { sub: "kc-uuid-1" },
+      expect.stringContaining("realm_access")
+    )
+  })
+
+  it("does not warn when realm_access is present but the role is not", () => {
+    const logger = { warn: jest.fn() }
+    mapKeycloakClaims({ ...baseClaims, realm_access: { roles: [] } }, logger)
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
+  it.each(["fi", "en", "se"])("keeps the supported locale %p", (locale) => {
+    expect(mapKeycloakClaims({ ...baseClaims, locale }).locale).toBe(locale)
   })
 
   it("returns null locale for unsupported locales", () => {
@@ -52,10 +73,13 @@ describe("mapKeycloakClaims", () => {
     expect(mapKeycloakClaims(claims).name).toBe("matti.meikalainen")
   })
 
-  it("throws KCCLM when sub or email is missing", () => {
+  it("throws KCCLM naming the missing claims", () => {
     const { email: _dropped, ...noEmail } = baseClaims
     const { sub: _dropped2, ...noSub } = baseClaims
-    for (const claims of [noEmail, noSub]) {
+    for (const [claims, missing] of [
+      [noEmail, ["email"]],
+      [noSub, ["sub"]],
+    ] as const) {
       let thrown: any = null
       try {
         mapKeycloakClaims(claims)
@@ -64,6 +88,9 @@ describe("mapKeycloakClaims", () => {
       }
       expect(thrown).not.toBeNull()
       expect(thrown.code).toBe("KCCLM")
+      expect(thrown.missingClaims).toEqual(missing)
+      // Claim values are identity data; only the names may be logged.
+      expect(thrown.message).not.toContain(baseClaims.email)
     }
   })
 })
@@ -82,6 +109,10 @@ describe("sanitizeNext", () => {
     ["//evil.example.com"],
     ["/auth/keycloak"],
     ["/logout"],
+    // A signed-in visit to /auth/keycloak redirects to `next`, so /login as a
+    // destination would bounce between the two forever.
+    ["/login"],
+    ["/login?local=1"],
     ["/"],
     // Browsers normalise "\" to "/" before resolving, so these are
     // protocol-relative URLs pointing at another origin.

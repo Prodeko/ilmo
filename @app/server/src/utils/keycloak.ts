@@ -1,3 +1,10 @@
+import { keycloakEnabled, sanitizeNext } from "@app/lib"
+import { FastifyBaseLogger } from "fastify"
+
+// The login page renders the same error codes and computes the same `next`,
+// so both live in @app/lib; server code keeps importing them from here.
+export { keycloakEnabled, sanitizeNext }
+
 export const ILMO_ADMIN_ROLE = "ilmo-admin"
 
 // Local accounts kept for break-glass access; an SSO login must never link
@@ -5,35 +12,44 @@ export const ILMO_ADMIN_ROLE = "ilmo-admin"
 export const BREAK_GLASS_USERNAMES = ["prodekocto", "prodekotoimari"]
 
 export interface KeycloakProfile {
-  sub: string
-  email: string
-  emailVerified: boolean
-  name: string
-  username: string
-  locale: "fi" | "en" | null
-  isAdmin: boolean
-}
-
-export function keycloakEnabled(): boolean {
-  return !!(
-    process.env.KEYCLOAK_ISSUER &&
-    process.env.KEYCLOAK_CLIENT_ID &&
-    process.env.KEYCLOAK_CLIENT_SECRET
-  )
+  readonly sub: string
+  readonly email: string
+  readonly emailVerified: boolean
+  readonly name: string
+  /**
+   * The raw email localpart. It is *not* a valid app username: register_user
+   * strips and slugifies it and appends a counter to break ties, so only the
+   * username the database hands back may be compared against
+   * BREAK_GLASS_USERNAMES.
+   */
+  readonly usernameSuggestion: string
+  readonly locale: "fi" | "en" | "se" | null
+  readonly isAdmin: boolean
 }
 
 export function mapKeycloakClaims(
-  claims: Record<string, unknown>
+  claims: Record<string, unknown>,
+  logger?: Pick<FastifyBaseLogger, "warn">
 ): KeycloakProfile {
   const sub = typeof claims.sub === "string" ? claims.sub : null
   const email = typeof claims.email === "string" ? claims.email : null
   if (!sub || !email) {
     const e = new Error("ID token is missing required sub/email claims")
     e["code"] = "KCCLM"
+    // Names only: claim values are identity data and stay out of the logs.
+    e["missingClaims"] = [!sub && "sub", !email && "email"].filter(Boolean)
     throw e
   }
   const localpart = email.split("@")[0]
   const realmAccess = claims.realm_access as { roles?: unknown } | undefined
+  if (realmAccess === undefined) {
+    // A missing role claim is indistinguishable from "this user has no roles",
+    // so a dropped realm_access mapper would quietly demote every admin.
+    logger?.warn(
+      { sub },
+      "keycloak id token has no realm_access claim; every user will be mapped as non-admin"
+    )
+  }
   const roles = Array.isArray(realmAccess?.roles)
     ? realmAccess!.roles.filter((r): r is string => typeof r === "string")
     : []
@@ -43,27 +59,13 @@ export function mapKeycloakClaims(
     email,
     emailVerified: claims.email_verified === true,
     name: typeof claims.name === "string" ? claims.name : localpart,
-    username: localpart,
-    locale: rawLocale === "fi" || rawLocale === "en" ? rawLocale : null,
+    usernameSuggestion: localpart,
+    // The app ships fi/en/se; anything else has no translations to fall back
+    // on, so the user keeps whatever locale the browser negotiated.
+    locale:
+      rawLocale === "fi" || rawLocale === "en" || rawLocale === "se"
+        ? rawLocale
+        : null,
     isAdmin: roles.includes(ILMO_ADMIN_ROLE),
   }
-}
-
-// Same rules as the legacy setReturnTo: relative paths only, and never
-// redirect back into the auth flow or logout.
-const BLOCKED_REDIRECT_PATHS = /^\/+(|auth.*|logout)(\?.*)?$/
-
-export function sanitizeNext(raw: unknown): string {
-  if (typeof raw !== "string") return "/"
-  // Browsers strip tab/CR/LF and treat "\" as "/" when parsing a URL, so
-  // "/\evil.com" and "/<TAB>/evil.com" both resolve to another origin.
-  const candidate = raw.replace(/[\t\r\n]/g, "")
-  // A single leading slash followed by something that is neither "/" nor "\".
-  // Also rejects "" and a bare "/", both of which mean "no destination".
-  if (!/^\/[^/\\]/.test(candidate)) return "/"
-  // Remaining control characters have no place in a Location header.
-  // eslint-disable-next-line no-control-regex -- matching them is the point
-  if (/[\u0000-\u001f\u007f]/.test(candidate)) return "/"
-  if (BLOCKED_REDIRECT_PATHS.test(candidate)) return "/"
-  return candidate
 }
