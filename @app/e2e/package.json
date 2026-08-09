@@ -7,6 +7,7 @@
     "open": "pnpm cy open",
     "run:local": "pnpm cy run",
     "run:ci": "pnpm cy run --record --parallel --browser chrome",
+    "run:sso": "pnpm cy run --browser chrome --config specPattern=cypress/e2e-sso/**/*.spec.ts",
     "build": "exit 0",
     "watch": "exit 0",
     "dev": "exit 0",

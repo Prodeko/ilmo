@@ -132,3 +132,95 @@ jobs:
         with:
           name: cypress-videos-${{ matrix.containers }}
           path: "@app/e2e/cypress/videos"
+
+  cypress-sso:
+    name: Cypress (SSO enabled)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        # SSO is gated on the presence of the three variables, not on the
+        # issuer being reachable. Port 8180 has nothing listening on it, so
+        # discovery fails and the login chain ends on the error page while
+        # every step before the discovery call is the production path. The
+        # sharded job above runs with SSO off, which is why this is a separate
+        # server.
+        run: |
+          cp .env.ci .env
+          {
+            echo "KEYCLOAK_ISSUER=http://localhost:8180/realms/ci"
+            echo "KEYCLOAK_CLIENT_ID=ci"
+            echo "KEYCLOAK_CLIENT_SECRET=ci"
+          } >> .env
+          CONFIRM_DROP=1 pnpm run setup
+
+      - name: Build server-side TypeScript
+        run: |
+          pnpm --filter @app/graphql run build
+          pnpm tsc
+
+      - name: Start server in background
+        run: pnpm --filter @app/server run start > /tmp/server.log 2>&1 &
+
+      - name: Ensure Cypress binary is installed
+        working-directory: "@app/e2e"
+        run: pnpm exec cypress install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          command: pnpm --filter @app/e2e run run:sso
+          working-directory: "@app/e2e"
+          wait-on: http://localhost:5678
+          install: false
+
+      - name: Dump server log
+        if: always()
+        run: |
+          echo "::group::server log (tail 300)"
+          tail -300 /tmp/server.log 2>/dev/null || echo "(no server log)"
+          echo "::endgroup::"
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-sso-screenshots
+          path: "@app/e2e/cypress/screenshots"
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-sso-videos
+          path: "@app/e2e/cypress/videos"
