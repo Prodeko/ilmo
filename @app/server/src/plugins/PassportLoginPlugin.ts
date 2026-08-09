@@ -16,7 +16,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
     }
 
     type LogoutPayload {
-      success: Boolean
+      success: Boolean!
       redirectTo: String
     }
 
@@ -142,19 +142,34 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
       },
 
       async logout(_mutation, _args, context: OurGraphQLContext, _resolveInfo) {
-        const { pgClient, logout, rootPgPool, isSsoSession } = context
+        const { pgClient, logout, rootPgPool, isSsoSession, logger } = context
         let redirectTo: string | null = null
-        if (isSsoSession()) {
-          // The ID token has to be read while the session still resolves to a
-          // user; app_public.logout() clears the transaction's session claim.
-          const {
-            rows: [row],
-          } = await pgClient.query(
-            "select app_public.current_user_id() as user_id"
-          )
-          if (row?.user_id) {
-            redirectTo = await buildKeycloakLogoutUrl(rootPgPool, row.user_id)
+        try {
+          if (isSsoSession()) {
+            // The user id has to be read before app_public.logout() runs: that
+            // function deletes the session row and clears the transaction's
+            // session claim, after which current_user_id() is null.
+            const {
+              rows: [row],
+            } = await pgClient.query(
+              "select app_public.current_user_id() as user_id"
+            )
+            if (row?.user_id) {
+              redirectTo = await buildKeycloakLogoutUrl(
+                rootPgPool,
+                row.user_id,
+                logger
+              )
+            }
           }
+        } catch (e) {
+          // Skipping the Keycloak round-trip leaves the user logged in at the
+          // IdP; skipping the lines below would leave them logged in here.
+          logger.error(
+            { err: e },
+            "keycloak logout redirect could not be resolved"
+          )
+          redirectTo = null
         }
         await pgClient.query("select app_public.logout();")
         await logout()

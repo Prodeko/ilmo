@@ -20,9 +20,15 @@ const Passport: FastifyPluginAsync = async (app) => {
   app.register(fastifyPassport.initialize())
   app.register(fastifyPassport.secureSession())
 
-  app.get("/logout", (req, res) => {
-    req.logout()
-    res.redirect("/")
+  // Force-logout entry point for clients that cannot trust the `logout`
+  // mutation to have cleared their session.
+  app.get("/logout", async (req, res) => {
+    try {
+      await req.logout()
+    } catch (e) {
+      req.log.error({ err: e }, "force logout failed to clear the session")
+    }
+    return res.redirect("/")
   })
 }
 

@@ -1,9 +1,10 @@
 import { LogoutDocument } from "@app/graphql"
 import * as oidc from "openid-client"
-import { Pool } from "pg"
+import { Pool, PoolClient } from "pg"
 
 import { resetKeycloakConfigForTests } from "../../src/middleware/installKeycloak"
 import {
+  asRoot,
   createUserAndLogIn,
   deleteTestData,
   runGraphQLQuery,
@@ -31,6 +32,14 @@ const END_SESSION_URL = "http://kc.test/logout?id_token_hint=fake-id-token"
 
 let pool: Pool
 
+// Jest shares one process between the test files of a worker, so the Keycloak
+// settings this suite needs have to be handed back exactly as they were found.
+const keycloakEnv = {
+  KEYCLOAK_ISSUER: process.env.KEYCLOAK_ISSUER,
+  KEYCLOAK_CLIENT_ID: process.env.KEYCLOAK_CLIENT_ID,
+  KEYCLOAK_CLIENT_SECRET: process.env.KEYCLOAK_CLIENT_SECRET,
+}
+
 beforeAll(async () => {
   process.env.KEYCLOAK_ISSUER =
     "http://localhost:8180/realms/membership-registry"
@@ -41,6 +50,14 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
+  for (const [key, value] of Object.entries(keycloakEnv)) {
+    if (value === undefined) {
+      delete process.env[key]
+    } else {
+      process.env[key] = value
+    }
+  }
+  resetKeycloakConfigForTests()
   await pool.end()
   await teardown()
 })
@@ -79,8 +96,11 @@ async function createSsoUser() {
  * `runGraphQLQuery` replaces its whole `_fastifyRequest` stub with whatever we
  * pass, so the fields the logout resolver needs have to be repeated here:
  * `logOut` for Passport and `session.get("sso")` for `isSsoSession`.
+ *
+ * `sso: "broken"` stands in for a secure-session that cannot be read, which is
+ * how the SSO pre-step is made to fail.
  */
-function requestOptions(sessionId: string, sso: boolean) {
+function requestOptions(sessionId: string, sso: boolean | "broken") {
   return {
     user: { sessionId },
     _fastifyRequest: {
@@ -93,9 +113,32 @@ function requestOptions(sessionId: string, sso: boolean) {
       },
       logIn: () => null,
       logOut: () => null,
-      session: { get: (key: string) => (key === "sso" ? sso : undefined) },
+      session: {
+        get: (key: string) => {
+          if (sso === "broken") throw new Error("session decode failed")
+          return key === "sso" ? sso : undefined
+        },
+      },
     },
   }
+}
+
+/**
+ * The mutation is only honest if the session is really gone: the transaction
+ * has no user left and the row backing it has been deleted.
+ */
+async function expectLoggedOut(pgClient: PoolClient, sessionUuid: string) {
+  const {
+    rows: [claims],
+  } = await pgClient.query("select app_public.current_user_id() as user_id")
+  expect(claims.user_id).toBeNull()
+
+  const { rows: sessionRows } = await asRoot(pgClient, () =>
+    pgClient.query("select uuid from app_private.sessions where uuid = $1", [
+      sessionUuid,
+    ])
+  )
+  expect(sessionRows).toEqual([])
 }
 
 describe("Logout", () => {
@@ -106,7 +149,7 @@ describe("Logout", () => {
       LogoutDocument,
       {},
       requestOptions(session.uuid, true),
-      async (json) => {
+      async (json, { pgClient }) => {
         expect(json.errors).toBeFalsy()
         expect(json.data!.logout.success).toBe(true)
         expect(json.data!.logout.redirectTo).toBe(END_SESSION_URL)
@@ -117,6 +160,7 @@ describe("Logout", () => {
             post_logout_redirect_uri: `${process.env.ROOT_URL}/`,
           })
         )
+        await expectLoggedOut(pgClient, session.uuid)
       }
     )
   })
@@ -128,11 +172,12 @@ describe("Logout", () => {
       LogoutDocument,
       {},
       requestOptions(session.uuid, false),
-      async (json) => {
+      async (json, { pgClient }) => {
         expect(json.errors).toBeFalsy()
         expect(json.data!.logout.success).toBe(true)
         expect(json.data!.logout.redirectTo).toBeNull()
         expect(mockOidc.buildEndSessionUrl).not.toHaveBeenCalled()
+        await expectLoggedOut(pgClient, session.uuid)
       }
     )
   })
@@ -144,12 +189,37 @@ describe("Logout", () => {
       LogoutDocument,
       {},
       requestOptions(session.uuid, true),
-      async (json) => {
+      async (json, { pgClient }) => {
         expect(json.errors).toBeFalsy()
         expect(json.data!.logout.success).toBe(true)
         expect(json.data!.logout.redirectTo).toBeNull()
         expect(mockOidc.buildEndSessionUrl).not.toHaveBeenCalled()
+        await expectLoggedOut(pgClient, session.uuid)
       }
     )
+  })
+
+  it("logs the user out even when the sso pre-step throws", async () => {
+    const { session } = await createSsoUser()
+    const consoleError = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {})
+
+    try {
+      await runGraphQLQuery(
+        LogoutDocument,
+        {},
+        requestOptions(session.uuid, "broken"),
+        async (json, { pgClient }) => {
+          expect(json.errors).toBeFalsy()
+          expect(json.data!.logout.success).toBe(true)
+          expect(json.data!.logout.redirectTo).toBeNull()
+          expect(consoleError).toHaveBeenCalled()
+          await expectLoggedOut(pgClient, session.uuid)
+        }
+      )
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })

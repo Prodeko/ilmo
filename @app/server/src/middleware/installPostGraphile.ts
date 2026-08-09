@@ -41,6 +41,8 @@ import {
 import { resolveUpload } from "../utils/fileUpload"
 import handleErrors from "../utils/handleErrors"
 
+import { RequestLogger } from "./installKeycloak"
+
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
 
 export interface OurGraphQLContext {
@@ -53,6 +55,7 @@ export interface OurGraphQLContext {
   login(user: any): Promise<void>
   logout(): Promise<void>
   isSsoSession(): boolean
+  logger: RequestLogger
 }
 
 const TagsFilePlugin = makePgSmartTagsFromFilePlugin(
@@ -365,6 +368,9 @@ export function getPostGraphileOptions({
       const sessionId = sessionIdFromRequest(app!, req)
       const fastifyRequest = req._fastifyRequest as FastifyRequest
       const ipAddress = fastifyRequest?.ip
+      // The schema-export path and jest's hand-rolled requests carry no
+      // fastify logger; everything else gets request-correlated logging.
+      const logger: RequestLogger = fastifyRequest?.log ?? console
 
       return {
         // The current session id
@@ -387,9 +393,22 @@ export function getPostGraphileOptions({
         logout: () => fastifyRequest.logOut(),
 
         // True when this session was created by the Keycloak SSO callback.
-        // Optional chaining: Jest integration tests use mock requests
-        // without a secure-session.
-        isSsoSession: () => fastifyRequest?.session?.get?.("sso") === true,
+        isSsoSession: () => {
+          const session = fastifyRequest?.session
+          if (!session) {
+            // Every request goes through @fastify/secure-session, so a missing
+            // session is a broken plugin chain rather than a password login.
+            // Treating it as "not SSO" would silently stop logging anyone out
+            // of Keycloak, hence the error.
+            logger.error(
+              "request has no secure-session; treating it as a non-sso session"
+            )
+            return false
+          }
+          return session.get("sso") === true
+        },
+
+        logger,
       }
     },
   }

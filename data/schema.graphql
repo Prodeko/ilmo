@@ -1494,7 +1494,7 @@ type LoginPayload {
 
 type LogoutPayload {
   redirectTo: String
-  success: Boolean
+  success: Boolean!
 }
 
 """All input for the `makeEmailPrimary` mutation."""

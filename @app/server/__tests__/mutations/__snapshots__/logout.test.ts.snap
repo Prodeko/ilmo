@@ -1,5 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Logout logs the user out even when the sso pre-step throws 1`] = `
+{
+  "data": {
+    "logout": {
+      "redirectTo": null,
+      "success": true,
+    },
+  },
+}
+`;
+
 exports[`Logout returns a Keycloak end-session url for an sso session 1`] = `
 {
   "data": {
