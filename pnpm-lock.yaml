@@ -378,7 +378,7 @@ importers:
         version: 8.20.0
       jest:
         specifier: ^29.7.0
-        version: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+        version: 29.7.0(@types/node@22.19.17)(babel-plugin-macros@3.1.0)(ts-node@10.8.2(@types/node@22.19.17)(typescript@5.7.3))
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -646,6 +646,9 @@ importers:
       nunjucks:
         specifier: ^3.2.3
         version: 3.2.4(chokidar@3.6.0)
+      openid-client:
+        specifier: ^6.8.4
+        version: 6.8.4
       passport-oauth2:
         specifier: ^1.6.1
         version: 1.8.0
@@ -6382,6 +6385,9 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
+  jose@6.2.8:
+    resolution: {integrity: sha512-Bsdjwm3Qsd/P0jR+BHDe3LytDfY7WBq2HmCCLIwuVRHMuEC9ae7/R474GIUdF1NgCyZjzVo/A9DOiOBtXq8ZoQ==}
+
   js-beautify@1.15.4:
     resolution: {integrity: sha512-9/KXeZUKKJwqCXUdBxFJ3vPh467OCckSBmYDwSK/EtV090K+iMJ7zx2S3HLVDIWFQdqMIsZWbnaGiba18aWhaA==}
     engines: {node: '>=14'}
@@ -7217,6 +7223,9 @@ packages:
       chokidar:
         optional: true
 
+  oauth4webapi@3.8.6:
+    resolution: {integrity: sha512-iwemM91xz8nryHti2yTmg5fhyEMVOkOXwHNqbvcATjyajb5oQxCQzrNOA6uElRHuMhQQTKUyFKV9y/CNyg25BQ==}
+
   oauth@0.10.2:
     resolution: {integrity: sha512-JtFnB+8nxDEXgNyniwz573xxbKSOu3R8D40xQKqcjwJ2CDkYqUDI53o6IuzDJBx60Z8VKCm271+t8iFjakrl8Q==}
 
@@ -7274,6 +7283,9 @@ packages:
   opener@1.5.2:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
     hasBin: true
+
+  openid-client@6.8.4:
+    resolution: {integrity: sha512-QSw0BA08piujetEwfZsHoTrDpMEha7GDZDicQqVwX4u0ChCjefvjDB++TZ8BTg76UpwhzIQgdvvfgfl3HpCSAw==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -14905,7 +14917,7 @@ snapshots:
 
   eslint-import-resolver-node@0.3.10:
     dependencies:
-      debug: 3.2.7(supports-color@5.5.0)
+      debug: 3.2.7(supports-color@8.1.1)
       is-core-module: 2.16.1
       resolve: 2.0.0-next.6
     transitivePeerDependencies:
@@ -14913,7 +14925,7 @@ snapshots:
 
   eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.7.3))(eslint-import-resolver-node@0.3.10)(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
-      debug: 3.2.7(supports-color@5.5.0)
+      debug: 3.2.7(supports-color@8.1.1)
     optionalDependencies:
       '@typescript-eslint/parser': 8.59.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.7.3)
       eslint: 9.39.4(jiti@2.6.1)
@@ -14933,7 +14945,7 @@ snapshots:
       array.prototype.findlastindex: 1.2.6
       array.prototype.flat: 1.3.3
       array.prototype.flatmap: 1.3.3
-      debug: 3.2.7(supports-color@5.5.0)
+      debug: 3.2.7(supports-color@8.1.1)
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
@@ -16822,6 +16834,8 @@ snapshots:
 
   jose@5.10.0: {}
 
+  jose@6.2.8: {}
+
   js-beautify@1.15.4:
     dependencies:
       config-chain: 1.1.13
@@ -17924,6 +17938,8 @@ snapshots:
     optionalDependencies:
       chokidar: 3.6.0
 
+  oauth4webapi@3.8.6: {}
+
   oauth@0.10.2: {}
 
   object-assign@4.1.1: {}
@@ -17985,6 +18001,11 @@ snapshots:
       mimic-fn: 2.1.0
 
   opener@1.5.2: {}
+
+  openid-client@6.8.4:
+    dependencies:
+      jose: 6.2.8
+      oauth4webapi: 3.8.6
 
   optionator@0.9.4:
     dependencies:
