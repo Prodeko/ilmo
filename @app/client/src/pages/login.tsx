@@ -30,8 +30,18 @@ interface LoginProps {
   resetUrqlClient?: () => void
 }
 
+/**
+ * Mirrors `sanitizeNext` on the server: a destination is safe only when it is
+ * a single-slash relative path. Browsers strip tab/CR/LF and treat "\" as "/"
+ * when parsing a URL, so "/\evil.com" and "/<TAB>/evil.com" both resolve to
+ * another origin.
+ */
 export function isSafe(nextUrl: string | null) {
-  return (nextUrl && nextUrl[0] === "/") || false
+  if (typeof nextUrl !== "string") return false
+  const candidate = nextUrl.replace(/[\t\r\n]/g, "")
+  if (!/^\/[^/\\]/.test(candidate)) return false
+  // eslint-disable-next-line no-control-regex -- matching them is the point
+  return !/[\u0000-\u001f\u007f]/.test(candidate)
 }
 
 /**

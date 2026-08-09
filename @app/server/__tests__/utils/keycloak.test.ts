@@ -72,6 +72,9 @@ describe("sanitizeNext", () => {
   it("accepts a normal relative path", () => {
     expect(sanitizeNext("/event/foo")).toBe("/event/foo")
   })
+  it("accepts a path containing a percent-encoded query", () => {
+    expect(sanitizeNext("/event/foo?a=b%20c")).toBe("/event/foo?a=b%20c")
+  })
   it.each([
     [undefined],
     [null],
@@ -80,8 +83,21 @@ describe("sanitizeNext", () => {
     ["/auth/keycloak"],
     ["/logout"],
     ["/"],
+    // Browsers normalise "\" to "/" before resolving, so these are
+    // protocol-relative URLs pointing at another origin.
+    ["/\\evil.example.com"],
+    ["/\\\\evil.example.com"],
+    // Tab, CR and LF are stripped by the browser's URL parser, which turns
+    // these back into "//evil.example.com".
+    ["/\t/evil.example.com"],
+    ["/\r\n/evil.example.com"],
+    ["/\r/evil.example.com"],
+    ["/\t\\evil.example.com"],
   ])("falls back to / for %p", (value) => {
     expect(sanitizeNext(value)).toBe("/")
+  })
+  it("strips embedded tab/CR/LF from an otherwise safe path", () => {
+    expect(sanitizeNext("/event\t/foo")).toBe("/event/foo")
   })
 })
 

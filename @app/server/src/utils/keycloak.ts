@@ -54,13 +54,16 @@ export function mapKeycloakClaims(
 const BLOCKED_REDIRECT_PATHS = /^\/+(|auth.*|logout)(\?.*)?$/
 
 export function sanitizeNext(raw: unknown): string {
-  if (
-    typeof raw !== "string" ||
-    raw[0] !== "/" ||
-    raw[1] === "/" || // reject protocol-relative URLs like //evil.example.com
-    BLOCKED_REDIRECT_PATHS.test(raw)
-  ) {
-    return "/"
-  }
-  return raw
+  if (typeof raw !== "string") return "/"
+  // Browsers strip tab/CR/LF and treat "\" as "/" when parsing a URL, so
+  // "/\evil.com" and "/<TAB>/evil.com" both resolve to another origin.
+  const candidate = raw.replace(/[\t\r\n]/g, "")
+  // A single leading slash followed by something that is neither "/" nor "\".
+  // Also rejects "" and a bare "/", both of which mean "no destination".
+  if (!/^\/[^/\\]/.test(candidate)) return "/"
+  // Remaining control characters have no place in a Location header.
+  // eslint-disable-next-line no-control-regex -- matching them is the point
+  if (/[\u0000-\u001f\u007f]/.test(candidate)) return "/"
+  if (BLOCKED_REDIRECT_PATHS.test(candidate)) return "/"
+  return candidate
 }
