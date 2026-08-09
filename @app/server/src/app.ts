@@ -102,6 +102,7 @@ export async function makeApp({
   await app.register(middleware.installSession)
   await app.register(middleware.installCSRFProtection)
   await app.register(middleware.installPassport)
+  await app.register(middleware.installKeycloak)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
     // Loaded dynamically so the production bundle never imports

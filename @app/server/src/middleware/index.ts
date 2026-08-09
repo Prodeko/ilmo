@@ -4,6 +4,7 @@ import installErrorHandler from "./installErrorHandler"
 import installFileUpload from "./installFileUpload"
 import installHealth from "./installHealth"
 import installHelmet from "./installHelmet"
+import installKeycloak from "./installKeycloak"
 import installPassport from "./installPassport"
 import installPostGraphile from "./installPostGraphile"
 import installRedis from "./installRedis"
@@ -20,6 +21,7 @@ export {
   installFileUpload,
   installHealth,
   installHelmet,
+  installKeycloak,
   installPassport,
   installPostGraphile,
   installRedis,
