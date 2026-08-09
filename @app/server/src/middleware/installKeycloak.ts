@@ -164,6 +164,16 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       }
 
       if (BREAK_GLASS_USERNAMES.includes(String(user.username).toLowerCase())) {
+        // link_or_register_user has already attached the identity (and stored
+        // the ID token) by this point. Undo that: leaving the row would let
+        // this Keycloak subject into the break-glass account the moment the
+        // username left the block list. Cascades to
+        // app_private.user_authentication_secrets.
+        await rootPgPool.query(
+          `delete from app_public.user_authentications
+            where service = 'keycloak' and identifier = $1`,
+          [profile.sub]
+        )
         request.log.error(
           { userId: user.id },
           "keycloak login collided with a break-glass account"

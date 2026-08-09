@@ -155,6 +155,14 @@ function fakeTokens(claimOverrides: Record<string, unknown> = {}) {
   return { id_token: "fake-id-token", claims: () => claims } as any
 }
 
+// Replays the cookies a response set back as a request `cookie` header.
+function cookieHeader(res: { headers: Record<string, unknown> }) {
+  return ([] as string[])
+    .concat(res.headers["set-cookie"] as string | string[])
+    .map((c) => c.split(";")[0])
+    .join("; ")
+}
+
 async function doCallback(
   claimOverrides: Record<string, unknown> = {},
   next = "/event/foo"
@@ -162,16 +170,10 @@ async function doCallback(
   mockOidc.discovery.mockResolvedValue({} as any)
   mockOidc.buildAuthorizationUrl.mockReturnValue(new URL("http://kc.test/auth"))
   const login = await app.inject({ url: `/auth/keycloak?next=${next}` })
-  const cookies = login.headers["set-cookie"]
   mockOidc.authorizationCodeGrant.mockResolvedValue(fakeTokens(claimOverrides))
   return app.inject({
     url: "/auth/keycloak/callback?code=fake&state=test-state",
-    headers: {
-      cookie: ([] as string[])
-        .concat(cookies!)
-        .map((c) => c.split(";")[0])
-        .join("; "),
-    },
+    headers: { cookie: cookieHeader(login) },
   })
 }
 
@@ -262,6 +264,21 @@ describe("GET /auth/keycloak/callback", () => {
       `select is_admin from app_public.users where username = 'ProdekoCTO'`
     )
     expect(user.is_admin).toBe(true) // untouched
+    // The identity link that link_or_register_user created must be undone,
+    // otherwise this Keycloak subject owns the break-glass account the moment
+    // the username leaves the block list.
+    const { rowCount } = await pool.query(
+      `select 1 from app_public.user_authentications
+        where service = 'keycloak' and identifier = 'kc-sub-1'`
+    )
+    expect(rowCount).toBe(0)
+    const { rowCount: secretCount } = await pool.query(
+      `select 1 from app_private.user_authentication_secrets uas
+         join app_public.user_authentications ua
+           on ua.id = uas.user_authentication_id
+        where ua.identifier = 'kc-sub-1'`
+    )
+    expect(secretCount).toBe(0)
     await pool.query(
       `delete from app_public.users where username = 'ProdekoCTO'`
     )
@@ -280,20 +297,27 @@ describe("GET /auth/keycloak/callback", () => {
       new URL("http://kc.test/auth")
     )
     const login = await app.inject({ url: "/auth/keycloak" })
-    const cookies = login.headers["set-cookie"]
     mockOidc.authorizationCodeGrant.mockRejectedValue(
       new Error("invalid_grant")
     )
     const res = await app.inject({
       url: "/auth/keycloak/callback?code=bad&state=test-state",
-      headers: {
-        cookie: ([] as string[])
-          .concat(cookies!)
-          .map((c) => c.split(";")[0])
-          .join("; "),
-      },
+      headers: { cookie: cookieHeader(login) },
     })
     expect(res.headers.location).toBe("/login?error=code_exchange_failed")
+  })
+
+  it("consumes the oidc session key even when the login fails, so the code cannot be replayed", async () => {
+    const failed = await doCallback({ email_verified: false })
+    expect(failed.headers.location).toBe("/login?error=email_not_verified")
+    expect(sessionFromResponse(failed)!.get("oidc")).toBeUndefined()
+    // Replaying the same session against the callback now has no state to
+    // match against.
+    const replay = await app.inject({
+      url: "/auth/keycloak/callback?code=fake&state=test-state",
+      headers: { cookie: cookieHeader(failed) },
+    })
+    expect(replay.headers.location).toBe("/login?error=state_mismatch")
   })
 })
 
