@@ -44,6 +44,12 @@ SSO login, so both promotion and demotion take effect the next time the member
 logs in to ilmo. There is no live re-check and no way to grant admin from within
 ilmo itself.
 
+The same re-stamp runs when a user who is already logged in links a Keycloak
+identity from `/settings/accounts`. A local admin who links an identity that
+lacks `ilmo-admin` therefore loses admin rights on the spot. The two break-glass
+accounts are exempt: an SSO login that would land on them is refused and their
+`is_admin` is left alone.
+
 Organization membership is unrelated to Keycloak and stays in ilmo's own
 database.
 
@@ -78,11 +84,15 @@ point `KEYCLOAK_ISSUER` at `http://localhost:8180/realms/membership-registry`.
 ## Break-glass login
 
 With SSO enabled, `/login` sends visitors straight to Keycloak and the password
-form is not linked from anywhere. Two paths reveal it:
+form is not linked from anywhere. Three paths reveal it:
 
-- Right-click the sign-in button on `/login`.
+- Right-click the sign-in link in the page header. This works from any page and
+  is the path to reach for first.
 - Open `/login?local=1` directly, which is the path to use on mobile and in
   runbooks.
+- Right-click the sign-in button on the login page. That button only renders
+  when `/login` carries an error code, so this path is available after a failed
+  SSO attempt rather than from a standing start.
 
 The form accepts any local account and is the ordinary password login, rate
 limiting and lockout included. It exists for the operations accounts ProdekoCTO
@@ -124,7 +134,7 @@ Run these manually against staging before the production cutover:
 - A member whose language is English lands in an English UI, a Finnish member in
   a Finnish one.
 - The event registration form prefills name and email for a logged-in member.
-- Break-glass login works both by right-clicking the sign-in button and via
+- Break-glass login works both by right-clicking the header sign-in link and via
   `/login?local=1`, and ProdekoCTO still has admin.
 - Logging out of an SSO session round-trips through Keycloak and ends both
   sessions; logging out of a break-glass session leaves Keycloak untouched.
