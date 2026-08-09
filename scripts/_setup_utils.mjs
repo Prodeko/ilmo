@@ -98,9 +98,11 @@ export function updateDotenv(add, answers) {
 # This port is the one you'll connect to`
   )
 
+  const rootUrl = answers.ROOT_URL || "http://localhost:5678"
+
   add(
     "ROOT_URL",
-    "http://localhost:5678",
+    rootUrl,
     `\
 # This is needed any time we use absolute URLs
 # IMPORTANT: must NOT end with a slash`
@@ -114,7 +116,7 @@ export function updateDotenv(add, answers) {
 # membership-registry realm following docs/keycloak-clients.md in the
 # membership-registry repo, then fill in these three values.
 #
-#   Valid redirect URIs:        http://localhost:5678/auth/keycloak/callback
+#   Valid redirect URIs:        ${rootUrl}/auth/keycloak/callback
 #   Local dev issuer:           http://localhost:8180/realms/membership-registry
 #   Production issuer:          https://id.prodeko.org/realms/membership-registry
 #
