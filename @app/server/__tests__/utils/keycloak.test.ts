@@ -31,9 +31,23 @@ describe("mapKeycloakClaims", () => {
     expect(mapKeycloakClaims(claims).isAdmin).toBe(false)
   })
 
-  it("is not admin when realm_access is absent", () => {
+  it("maps admin status to unknown when realm_access is absent", () => {
+    // "No roles claim" and "no roles" are indistinguishable in the payload;
+    // null is what lets the callback skip the re-stamp instead of demoting.
     const { realm_access: _dropped, ...claims } = baseClaims
-    expect(mapKeycloakClaims(claims).isAdmin).toBe(false)
+    expect(mapKeycloakClaims(claims).isAdmin).toBeNull()
+  })
+
+  it("maps admin status to unknown when roles is not an array", () => {
+    expect(
+      mapKeycloakClaims({ ...baseClaims, realm_access: {} }).isAdmin
+    ).toBeNull()
+    expect(
+      mapKeycloakClaims({
+        ...baseClaims,
+        realm_access: { roles: "ilmo-admin" },
+      }).isAdmin
+    ).toBeNull()
   })
 
   it("warns when the realm_access claim is missing entirely", () => {
@@ -50,6 +64,27 @@ describe("mapKeycloakClaims", () => {
   it("does not warn when realm_access is present but the role is not", () => {
     const logger = { warn: jest.fn() }
     mapKeycloakClaims({ ...baseClaims, realm_access: { roles: [] } }, logger)
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
+  it("warns when the email_verified claim is missing entirely", () => {
+    // Without the mapper every login is refused as unverified while the
+    // member's registry email is fine; the warn is what points the operator
+    // at the client scope instead of the registry.
+    const logger = { warn: jest.fn() }
+    const { email_verified: _dropped, ...claims } = baseClaims
+    const profile = mapKeycloakClaims(claims, logger)
+    expect(profile.emailVerified).toBe(false)
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith(
+      { sub: "kc-uuid-1" },
+      expect.stringContaining("email_verified")
+    )
+  })
+
+  it("does not warn when email_verified is explicitly false", () => {
+    const logger = { warn: jest.fn() }
+    mapKeycloakClaims({ ...baseClaims, email_verified: false }, logger)
     expect(logger.warn).not.toHaveBeenCalled()
   })
 
@@ -113,7 +148,14 @@ describe("sanitizeNext", () => {
     // destination would bounce between the two forever.
     ["/login"],
     ["/login?local=1"],
+    // Trailing slash and fragment both still resolve to the login page.
+    ["/login/"],
+    ["/login#form"],
     ["/"],
+    // NUL and DEL pass the tab/CR/LF strip and must be caught by the control
+    // character check on their own.
+    ["/event/\u0000foo"],
+    ["/event/\u007ffoo"],
     // Browsers normalise "\" to "/" before resolving, so these are
     // protocol-relative URLs pointing at another origin.
     ["/\\evil.example.com"],

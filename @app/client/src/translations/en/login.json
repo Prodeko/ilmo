@@ -19,6 +19,7 @@
     "account_conflict": "This identity cannot be linked to the requested account. Contact the administrators.",
     "code_exchange_failed": "Sign-in failed. Please try again.",
     "email_not_verified": "Your email address is not verified. Verify it at id.prodeko.org first.",
+    "link_session_lost": "Your session ended before the account could be linked. Sign in and try linking again from account settings.",
     "login_failed": "Sign-in failed. Please try again.",
     "missing_claims": "Prodeko ID did not return the information needed to sign you in. Please contact the administrators.",
     "sso_unavailable": "The Prodeko ID sign-in service is temporarily unavailable. Try again in a moment, or sign in with your local username and passphrase.",

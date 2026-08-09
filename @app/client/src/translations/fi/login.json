@@ -19,6 +19,7 @@
     "account_conflict": "Tätä identiteettiä ei voi yhdistää pyydettyyn tiliin. Ota yhteyttä ylläpitoon.",
     "code_exchange_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
     "email_not_verified": "Sähköpostiosoitettasi ei ole vahvistettu. Vahvista se ensin osoitteessa id.prodeko.org.",
+    "link_session_lost": "Istuntosi päättyi ennen kuin tili ehdittiin yhdistää. Kirjaudu sisään ja yritä yhdistämistä uudelleen tilin asetuksista.",
     "login_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
     "missing_claims": "Prodeko ID ei palauttanut kirjautumiseen tarvittavia tietoja. Ota yhteyttä ylläpitoon.",
     "sso_unavailable": "Prodeko ID -kirjautumispalvelu ei ole juuri nyt saatavilla. Yritä hetken kuluttua uudelleen tai kirjaudu paikallisella käyttäjätunnuksella ja salasanalla.",

@@ -14,7 +14,8 @@ import {
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
-import { Avatar, Button, Card, List, Modal, Spin } from "antd"
+import { Alert, Avatar, Button, Card, List, message, Modal, Spin } from "antd"
+import { useRouter } from "next/router"
 import { Translate } from "next-translate"
 
 import type { NextPage } from "next"
@@ -64,12 +65,14 @@ function UnlinkAccountButton({ id }: { id: string }) {
   const handleUnlink = useCallback(async () => {
     setModalOpen(false)
     setDeleting(true)
-    try {
-      await unlinkUserAuthentication({ id })
-    } catch (e) {
+    // urql resolves with an error instead of rejecting, so this is the
+    // failure path that actually fires.
+    const result = await unlinkUserAuthentication({ id })
+    if (result.error) {
       setDeleting(false)
+      message.error(t("pages.accounts.unlinkError"))
     }
-  }, [id, unlinkUserAuthentication])
+  }, [id, t, unlinkUserAuthentication])
 
   return (
     <>
@@ -112,6 +115,11 @@ const Settings_Accounts: NextPage = () => {
   const [query] = useSharedQuery()
   const [{ data, fetching, error }] = useCurrentUserAuthenticationsQuery()
   const { t } = useTranslation("settings")
+  const router = useRouter()
+  // Set by /auth/keycloak when a link=1 request could not be verified as a
+  // same-origin navigation; the flow was refused rather than silently
+  // degraded to a plain login.
+  const linkIntentFailed = router.query.linkError === "intent"
 
   const linkedAccounts =
     fetching || !data || !data.currentUser ? (
@@ -136,6 +144,14 @@ const Settings_Accounts: NextPage = () => {
           style={{ marginTop: "2rem" }}
           title={t("pages.accounts.linkAnother")}
         >
+          {linkIntentFailed && (
+            <Alert
+              data-cy="settingsaccounts-alert-linkintent"
+              message={t("pages.accounts.linkIntentError")}
+              style={{ marginBottom: 16 }}
+              type="error"
+            />
+          )}
           <Button
             href={`/auth/keycloak?link=1&next=${encodeURIComponent(
               "/settings/accounts"

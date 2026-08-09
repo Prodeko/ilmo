@@ -1,9 +1,17 @@
 import { keycloakEnabled, sanitizeNext } from "@app/lib"
 import { FastifyBaseLogger } from "fastify"
 
-// The login page renders the same error codes and computes the same `next`,
-// so both live in @app/lib; server code keeps importing them from here.
+// The login page computes the same `next` and needs the same enable check, so
+// both live in @app/lib. Server code imports them through this module
+// alongside the server-only helpers below.
 export { keycloakEnabled, sanitizeNext }
+
+/**
+ * The slice of a fastify logger the SSO code needs. `console` satisfies it,
+ * which is what lets helpers fall back to a bare `console` when no
+ * request-correlated logger is available.
+ */
+export type RequestLogger = Pick<FastifyBaseLogger, "debug" | "warn" | "error">
 
 export const ILMO_ADMIN_ROLE = "ilmo-admin"
 
@@ -24,12 +32,18 @@ export interface KeycloakProfile {
    */
   readonly usernameSuggestion: string
   readonly locale: "fi" | "en" | "se" | null
-  readonly isAdmin: boolean
+  /**
+   * `null` when the ID token carried no usable `realm_access.roles` claim.
+   * That means the client's role mapper is misconfigured and the roles are
+   * unknown — which must not be read as "not an admin", or a dropped mapper
+   * quietly demotes every admin on their next login.
+   */
+  readonly isAdmin: boolean | null
 }
 
 export function mapKeycloakClaims(
   claims: Record<string, unknown>,
-  logger?: Pick<FastifyBaseLogger, "warn">
+  logger?: Pick<RequestLogger, "warn">
 ): KeycloakProfile {
   const sub = typeof claims.sub === "string" ? claims.sub : null
   const email = typeof claims.email === "string" ? claims.email : null
@@ -42,17 +56,25 @@ export function mapKeycloakClaims(
   }
   const localpart = email.split("@")[0]
   const realmAccess = claims.realm_access as { roles?: unknown } | undefined
-  if (realmAccess === undefined) {
-    // A missing role claim is indistinguishable from "this user has no roles",
-    // so a dropped realm_access mapper would quietly demote every admin.
-    logger?.warn(
-      { sub },
-      "keycloak id token has no realm_access claim; every user will be mapped as non-admin"
-    )
-  }
   const roles = Array.isArray(realmAccess?.roles)
     ? realmAccess!.roles.filter((r): r is string => typeof r === "string")
-    : []
+    : null
+  if (roles === null) {
+    // "No roles claim" and "no roles" are indistinguishable in the payload,
+    // so the missing claim maps to isAdmin: null rather than false.
+    logger?.warn(
+      { sub },
+      "keycloak id token has no usable realm_access.roles claim; admin status is unknown — check the client's realm-roles mapper"
+    )
+  }
+  if (claims.email_verified === undefined) {
+    // Same shape of failure as the roles claim: without the mapper every
+    // login is refused as unverified, and the member's registry email is fine.
+    logger?.warn(
+      { sub },
+      "keycloak id token has no email_verified claim; every login will be refused as unverified — check the client scope's mappers"
+    )
+  }
   const rawLocale = typeof claims.locale === "string" ? claims.locale : null
   return {
     sub,
@@ -66,6 +88,6 @@ export function mapKeycloakClaims(
       rawLocale === "fi" || rawLocale === "en" || rawLocale === "se"
         ? rawLocale
         : null,
-    isAdmin: roles.includes(ILMO_ADMIN_ROLE),
+    isAdmin: roles === null ? null : roles.includes(ILMO_ADMIN_ROLE),
   }
 }

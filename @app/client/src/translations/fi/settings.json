@@ -40,9 +40,11 @@
   "pages": {
     "accounts": {
       "linkAnother": "Linkitä toinen käyttäjä",
+      "linkIntentError": "Yhdistämispyyntöä ei voitu varmistaa tältä sivustolta tulleeksi, joten mitään ei yhdistetty. Yritä uudelleen alla olevalla painikkeella.",
       "linkProdekoId": "Yhdistä Prodeko ID",
       "unlink": "Poista linkitys",
-      "unlinkAccountNotice": "Jos poistat tämän tilin linkityksen, et voi kirjautua siihen enää. Varmista, että sähköpostiosoitteesi on kelvollinen."
+      "unlinkAccountNotice": "Jos poistat tämän tilin linkityksen, et voi kirjautua siihen enää. Varmista, että sähköpostiosoitteesi on kelvollinen.",
+      "unlinkError": "Linkityksen poisto epäonnistui. Yritä uudelleen."
     },
     "delete": {
       "accountDeleted": "Tili poistettu",

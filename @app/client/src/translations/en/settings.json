@@ -40,9 +40,11 @@
   "pages": {
     "accounts": {
       "linkAnother": "Link another account",
+      "linkIntentError": "The link request could not be verified as coming from this site, so nothing was linked. Use the button below to try again.",
       "linkProdekoId": "Link Prodeko ID",
       "unlink": "Unlink",
-      "unlinkAccountNotice": "If you unlink this account you won't be able to log in with it any more; please make sure your email is valid."
+      "unlinkAccountNotice": "If you unlink this account you won't be able to log in with it any more; please make sure your email is valid.",
+      "unlinkError": "Unlinking failed. Please try again."
     },
     "delete": {
       "accountDeleted": "Account deleted",

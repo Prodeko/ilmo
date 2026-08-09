@@ -17,6 +17,11 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
 
     type LogoutPayload {
       success: Boolean!
+      """
+      When present, the Keycloak end-session URL. Navigate the browser there
+      instead of only clearing client state — otherwise the user stays signed
+      in at the IdP and the next visit to /login signs them straight back in.
+      """
       redirectTo: String
     }
 
@@ -67,7 +72,9 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
       login(input: LoginInput!): LoginPayload
 
       """
-      Use this mutation to logout from your account. Don't forget to clear the client state!
+      Use this mutation to logout from your account. Clear the client state, and
+      when the payload carries a redirectTo, navigate there to end the SSO
+      session as well.
       """
       logout: LogoutPayload
 
@@ -87,7 +94,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
       async login(_mutation, args, context: OurGraphQLContext, resolveInfo) {
         const { selectGraphQLResultFromTable } = resolveInfo.graphile
         const { username, password } = args.input
-        const { rootPgPool, login, pgClient } = context
+        const { rootPgPool, login, pgClient, logger } = context
         try {
           // Call our login function to find out if the username/password combination exists
           const {
@@ -133,7 +140,7 @@ const PassportLoginPlugin = makeExtendSchemaPlugin((build) => ({
           if (safeErrorCodes.includes(code)) {
             throw e
           } else {
-            console.error(e)
+            logger.error({ err: e }, "login failed")
             const error = new Error("Login failed")
             error["code"] = e.code
             throw error

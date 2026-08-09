@@ -40,9 +40,11 @@
   "pages": {
     "accounts": {
       "linkAnother": "Länka ett annat konto",
+      "linkIntentError": "Länkningsbegäran kunde inte verifieras som kommande från den här webbplatsen, så inget länkades. Försök igen med knappen nedan.",
       "linkProdekoId": "Länka Prodeko ID",
       "unlink": "Ta bort länk",
-      "unlinkAccountNotice": "Om du tar bort länken till det här kontot kommer du inte att kunna logga in med det längre; se till att din e-postadress är giltig."
+      "unlinkAccountNotice": "Om du tar bort länken till det här kontot kommer du inte att kunna logga in med det längre; se till att din e-postadress är giltig.",
+      "unlinkError": "Det gick inte att ta bort länken. Försök igen."
     },
     "delete": {
       "accountDeleted": "Kontot raderat",

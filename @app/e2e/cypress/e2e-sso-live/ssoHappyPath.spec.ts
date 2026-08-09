@@ -110,15 +110,31 @@ context("SSO login against a live Keycloak", () => {
   it("re-authenticates silently while the keycloak session lives", () => {
     loginThroughKeycloak(MEMBER)
 
-    // /logout drops the app session without touching the provider, which is
-    // exactly the state that proves the round trip below is silent: the
-    // browser goes out to Keycloak and comes back signed in, no form.
-    goTo("/logout")
+    // Dropping the app's session cookie leaves the provider session intact,
+    // which is exactly the state that proves the round trip below is silent:
+    // the browser goes out to Keycloak and comes back signed in, no form.
+    cy.clearCookie("session")
+    goTo("/")
     cy.getCy("header-login-button").should("be.visible")
 
     goTo("/login")
     cy.url().should("equal", ROOT_URL + "/")
     cy.getCy("layout-dropdown-user").should("contain", MEMBER.name)
+  })
+
+  it("ends the keycloak session on a force logout", () => {
+    loginThroughKeycloak(MEMBER)
+
+    // GET /logout is the recovery path for a failed logout mutation, so it
+    // has to end the provider session too — otherwise /login would sign the
+    // next visitor on this browser straight back in.
+    goTo("/logout")
+    cy.url().should("equal", ROOT_URL + "/")
+    cy.getCy("header-login-button").should("be.visible")
+
+    goTo("/login")
+    cy.url().should("include", KEYCLOAK_ORIGIN)
+    cy.get("#username").should("be.visible")
   })
 
   it("ends the keycloak session when the user logs out", () => {

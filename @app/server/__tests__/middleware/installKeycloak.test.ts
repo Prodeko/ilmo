@@ -21,6 +21,15 @@ jest.mock("openid-client", () => ({
   authorizationCodeGrant: jest.fn(),
   buildEndSessionUrl: jest.fn(),
   allowInsecureRequests: Symbol("allowInsecureRequests"),
+  // The callback branches on this class (user pressed Cancel at the
+  // provider), so the mock has to expose a real constructor for instanceof.
+  AuthorizationResponseError: class AuthorizationResponseError extends Error {
+    error: string
+    constructor(error: string) {
+      super(`authorization response error: ${error}`)
+      this.error = error
+    }
+  },
 }))
 
 const mockOidc = oidc as jest.Mocked<typeof oidc>
@@ -278,21 +287,24 @@ describe("GET /auth/keycloak", () => {
     expect(sessionFromResponse(plain)!.get("oidc")!.link).toBeUndefined()
   })
 
-  it("ignores a link intent that did not arrive on a same-origin navigation", async () => {
+  it("refuses a link intent that did not arrive on a same-origin navigation", async () => {
     const userId = await createLocalUser({
       username: "crosssite",
       email: "crosssite@example.com",
     })
     const cookie = cookieHeader(await loginAs(userId))
-    // A cross-site top-level navigation: sec-fetch-site says so.
+    // A cross-site top-level navigation: sec-fetch-site says so. The refusal
+    // must be visible — a silent redirect to `next` reads as "linked" to the
+    // user — and must not degrade into a plain login round trip.
     const crossSite = await startLogin(
       `link=1&next=${encodeURIComponent("/event/foo")}`,
       cookie,
       { "sec-fetch-site": "cross-site" }
     )
-    // Demoted to a plain login; the user is signed in, so no OIDC either.
     expect(crossSite.statusCode).toBe(302)
-    expect(crossSite.headers.location).toBe("/event/foo")
+    expect(crossSite.headers.location).toBe(
+      "/settings/accounts?linkError=intent"
+    )
     expect(mockOidc.buildAuthorizationUrl).not.toHaveBeenCalled()
 
     // No sec-fetch-site and no referer is just as unverifiable.
@@ -300,7 +312,53 @@ describe("GET /auth/keycloak", () => {
       `link=1&next=${encodeURIComponent("/event/foo")}`,
       cookie
     )
-    expect(headerless.headers.location).toBe("/event/foo")
+    expect(headerless.headers.location).toBe(
+      "/settings/accounts?linkError=intent"
+    )
+
+    // A foreign-origin referer must not vouch for the navigation: with
+    // sec-fetch-site absent it is the only check standing between a
+    // cross-site page and a forged link intent.
+    const foreignReferer = await startLogin(
+      `link=1&next=${encodeURIComponent("/event/foo")}`,
+      cookie,
+      { referer: "https://evil.example.com/attack" }
+    )
+    expect(foreignReferer.headers.location).toBe(
+      "/settings/accounts?linkError=intent"
+    )
+    expect(mockOidc.buildAuthorizationUrl).not.toHaveBeenCalled()
+  })
+
+  it("refuses a link intent when there is no live session to link onto", async () => {
+    // No session at all: there is no account to bind the identity to, and
+    // falling through to a plain login would sign the user into (or create)
+    // a different account than the one they meant to extend.
+    const anonymous = await startLogin(
+      `link=1&next=${encodeURIComponent("/settings/accounts")}`,
+      undefined,
+      SAME_ORIGIN
+    )
+    expect(anonymous.headers.location).toBe("/login?error=link_session_lost")
+    expect(mockOidc.buildAuthorizationUrl).not.toHaveBeenCalled()
+
+    // A stale cookie is the same case, reachable by construction: the session
+    // row died while the settings page was open.
+    const userId = await createLocalUser({
+      username: "stalelink",
+      email: "stalelink@example.com",
+    })
+    const cookie = cookieHeader(await loginAs(userId))
+    await pool.query(`delete from app_private.sessions where user_id = $1`, [
+      userId,
+    ])
+    const stale = await startLogin(
+      `link=1&next=${encodeURIComponent("/settings/accounts")}`,
+      cookie,
+      SAME_ORIGIN
+    )
+    expect(stale.headers.location).toBe("/login?error=link_session_lost")
+    expect(mockOidc.buildAuthorizationUrl).not.toHaveBeenCalled()
   })
 
   it("accepts a link intent vouched for by a same-origin referer", async () => {
@@ -384,6 +442,59 @@ describe("GET /auth/keycloak", () => {
     const res = await startLogin()
     expect(res.headers.location).toBe("http://kc.test/auth")
     expect(mockOidc.discovery).toHaveBeenCalledTimes(2)
+  })
+
+  // The gate on allowInsecureRequests is what keeps the client secret off a
+  // cleartext wire in production; each of the three cases is pinned because
+  // inverting the boolean, or dropping the NODE_ENV term, must fail a test.
+  describe("plaintext-http gate on discovery", () => {
+    // NODE_ENV is typed read-only in the project env typings; the gate reads
+    // it at discovery time, so the test has to write through a cast.
+    const env = process.env as Record<string, string | undefined>
+    const savedNodeEnv = env.NODE_ENV
+    afterEach(() => {
+      env.NODE_ENV = savedNodeEnv
+      process.env.KEYCLOAK_ISSUER =
+        "http://localhost:8180/realms/membership-registry"
+    })
+
+    it("allows insecure requests for an http issuer outside production", async () => {
+      await startLogin()
+      expect(mockOidc.discovery).toHaveBeenCalledWith(
+        expect.anything(),
+        "ilmokilke",
+        "test-secret",
+        undefined,
+        { execute: [mockOidc.allowInsecureRequests] }
+      )
+    })
+
+    it("does not allow insecure requests for an http issuer in production", async () => {
+      env.NODE_ENV = "production"
+      resetKeycloakConfigForTests()
+      await startLogin()
+      expect(mockOidc.discovery).toHaveBeenCalledWith(
+        expect.anything(),
+        "ilmokilke",
+        "test-secret",
+        undefined,
+        undefined
+      )
+    })
+
+    it("does not allow insecure requests for an https issuer", async () => {
+      process.env.KEYCLOAK_ISSUER =
+        "https://id.prodeko.org/realms/membership-registry"
+      resetKeycloakConfigForTests()
+      await startLogin()
+      expect(mockOidc.discovery).toHaveBeenCalledWith(
+        expect.anything(),
+        "ilmokilke",
+        "test-secret",
+        undefined,
+        undefined
+      )
+    })
   })
 })
 
@@ -473,6 +584,86 @@ describe("GET /auth/keycloak/callback", () => {
         where ua.identifier = 'kc-sub-1'`
     ))
     expect(user.is_admin).toBe(false)
+  })
+
+  it("leaves is_admin untouched when the id token has no realm_access claim", async () => {
+    // A dropped realm-roles mapper makes the roles unknown, which must not
+    // read as "not an admin": stamping false here would demote every admin
+    // one login at a time with nothing visible to the user.
+    let res = await doCallback({
+      realm_access: { roles: ["membership", "ilmo-admin"] },
+    })
+    expect(res.statusCode).toBe(302)
+    res = await doCallback({ realm_access: undefined })
+    expect(res.statusCode).toBe(302)
+    expect(res.headers.location).toBe("/event/foo") // login still works
+    const {
+      rows: [user],
+    } = await pool.query(
+      `select u.is_admin from app_public.users u
+         join app_public.user_authentications ua on ua.user_id = u.id
+        where ua.identifier = 'kc-sub-1'`
+    )
+    expect(user.is_admin).toBe(true)
+  })
+
+  it("sends a cancelled sign-in home without an error", async () => {
+    const login = await startLogin()
+    mockOidc.authorizationCodeGrant.mockRejectedValue(
+      new (oidc.AuthorizationResponseError as any)("access_denied")
+    )
+    const res = await app.inject({
+      url: CALLBACK_URL,
+      headers: { cookie: cookieHeader(login) },
+    })
+    expect(res.statusCode).toBe(302)
+    expect(res.headers.location).toBe("/")
+  })
+
+  it("maps an unreachable token endpoint to sso_unavailable", async () => {
+    // fetch signals network failure with a TypeError; sso_unavailable is the
+    // code whose error page offers the local sign-in escape hatch, which is
+    // exactly what a user needs during a Keycloak outage.
+    const login = await startLogin()
+    mockOidc.authorizationCodeGrant.mockRejectedValue(
+      new TypeError("fetch failed")
+    )
+    const res = await app.inject({
+      url: CALLBACK_URL,
+      headers: { cookie: cookieHeader(login) },
+    })
+    expect(res.headers.location).toBe("/login?error=sso_unavailable")
+  })
+
+  it("re-sanitizes a hostile next read back from the session", async () => {
+    // The sealed cookie cannot be authored by an attacker, but a session
+    // written before the current sanitization rules can hold a value they
+    // would now reject; the redirect must not trust it on the way out either.
+    const login = await startLogin()
+    const session = sessionFromResponse(login)!
+    session.set("oidc", {
+      ...session.get("oidc")!,
+      next: "/\\evil.example.com",
+    })
+    mockOidc.authorizationCodeGrant.mockResolvedValue(fakeTokens())
+    const res = await app.inject({
+      url: CALLBACK_URL,
+      headers: { cookie: sessionCookie(session) },
+    })
+    expect(res.statusCode).toBe(302)
+    expect(res.headers.location).toBe("/")
+  })
+
+  it("rejects a stored oidc state whose link flag has an unexpected shape", async () => {
+    const login = await startLogin()
+    const session = sessionFromResponse(login)!
+    session.set("oidc", { ...session.get("oidc")!, link: "yes" } as any)
+    const res = await app.inject({
+      url: CALLBACK_URL,
+      headers: { cookie: sessionCookie(session) },
+    })
+    expect(res.headers.location).toBe("/login?error=state_mismatch")
+    expect(mockOidc.authorizationCodeGrant).not.toHaveBeenCalled()
   })
 
   it("adopts an existing local account by verified email and re-stamps its admin flag", async () => {
@@ -660,6 +851,32 @@ describe("account linking", () => {
     expect(after.rows[0].n).toBe(before.rows[0].n)
   })
 
+  it("fails a link whose session died between the two round trips", async () => {
+    const userId = await createLocalUser({
+      username: "linkraces",
+      email: "linkraces@example.com",
+    })
+    const cookie = cookieHeader(await loginAs(userId))
+    const login = await startLogin(
+      `link=1&next=${encodeURIComponent("/settings/accounts")}`,
+      cookie,
+      SAME_ORIGIN
+    )
+    // The session the link was meant to extend dies while the user is at
+    // Keycloak. Proceeding as a plain login would silently sign them in as
+    // (or create) a different account than the one they asked to extend.
+    await pool.query(`delete from app_private.sessions where user_id = $1`, [
+      userId,
+    ])
+    const res = await finishLogin(login, { email: "someone.else@example.com" })
+    expect(res.headers.location).toBe("/login?error=link_session_lost")
+    const { rowCount } = await pool.query(
+      `select 1 from app_public.user_authentications
+        where service = 'keycloak' and identifier = 'kc-sub-1'`
+    )
+    expect(rowCount).toBe(0)
+  })
+
   it("never links onto a live session that did not ask for it", async () => {
     const userId = await createLocalUser({
       username: "bystander",
@@ -809,7 +1026,7 @@ describe("buildKeycloakLogoutUrl", () => {
       username: "plainlocal",
       email: "plain@example.com",
     })
-    const logger = { debug: jest.fn(), error: jest.fn() }
+    const logger = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() }
     expect(await buildKeycloakLogoutUrl(pool, userId, logger)).toBeNull()
     expect(logger.debug).toHaveBeenCalledTimes(1)
     expect(logger.error).not.toHaveBeenCalled()
@@ -824,7 +1041,7 @@ describe("buildKeycloakLogoutUrl", () => {
     } = await pool.query(
       `select user_id from app_public.user_authentications where identifier = 'kc-sub-1'`
     )
-    const logger = { debug: jest.fn(), error: jest.fn() }
+    const logger = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() }
     expect(await buildKeycloakLogoutUrl(pool, ua.user_id, logger)).toBeNull()
     // A dead IdP must be distinguishable in the logs from "no identity".
     expect(logger.error).toHaveBeenCalledTimes(1)
@@ -837,7 +1054,7 @@ describe("buildKeycloakLogoutUrl", () => {
         throw new Error("connection terminated")
       }),
     } as unknown as Pool
-    const logger = { debug: jest.fn(), error: jest.fn() }
+    const logger = { debug: jest.fn(), warn: jest.fn(), error: jest.fn() }
     expect(
       await buildKeycloakLogoutUrl(
         brokenPool,

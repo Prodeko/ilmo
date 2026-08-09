@@ -1,5 +1,5 @@
 import { SsoLoginError } from "@app/lib"
-import { FastifyBaseLogger, FastifyPluginAsync, FastifyRequest } from "fastify"
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 import * as oidc from "openid-client"
 import { Pool, PoolClient } from "pg"
@@ -9,10 +9,22 @@ import {
   keycloakEnabled,
   KeycloakProfile,
   mapKeycloakClaims,
+  RequestLogger,
   sanitizeNext,
 } from "../utils/keycloak"
 
 import { cookieOptions } from "./installSession"
+
+export type { RequestLogger }
+
+/**
+ * Every failure redirect goes through here so the code is compile-checked
+ * against the shared SsoLoginError union — a typo'd literal would otherwise
+ * render as the generic failure message with no warning anywhere.
+ */
+function loginErrorRedirect(reply: FastifyReply, code: SsoLoginError) {
+  return reply.redirect(`/login?error=${code}`)
+}
 
 export interface OidcSessionData {
   verifier: string
@@ -38,15 +50,19 @@ declare module "@fastify/secure-session" {
 }
 
 /**
- * The session is attacker-supplied input once the cookie leaves our process,
- * and an older release may have written a different shape. Everything the
- * callback relies on has to be proven present before it is trusted.
+ * The session cookie round-trips through the client, and its contents can
+ * predate the shape the current deployment writes. Everything the callback
+ * relies on is proven present — and `link`, which carries an authorization
+ * decision, proven exact — before any of it is trusted.
  */
 function isOidcSessionData(value: unknown): value is OidcSessionData {
   if (typeof value !== "object" || value === null) return false
   const data = value as Record<string, unknown>
-  return (["verifier", "state", "nonce", "next"] as const).every(
-    (key) => typeof data[key] === "string" && data[key] !== ""
+  return (
+    (["verifier", "state", "nonce", "next"] as const).every(
+      (key) => typeof data[key] === "string" && data[key] !== ""
+    ) &&
+    (data.link === undefined || data.link === true)
   )
 }
 
@@ -55,7 +71,9 @@ let configPromise: Promise<oidc.Configuration> | null = null
 /**
  * Lazy, memoized OIDC discovery. Never called at boot so a Keycloak outage
  * cannot prevent the server from starting; a failed attempt resets the cache
- * so the next request retries.
+ * so the next request retries. The KEYCLOAK_* credentials are captured at the
+ * first successful call and frozen into the memoized configuration — rotating
+ * them requires a restart.
  */
 export function getKeycloakConfig(): Promise<oidc.Configuration> {
   if (!configPromise) {
@@ -88,12 +106,11 @@ export function resetKeycloakConfigForTests(): void {
   configPromise = null
 }
 
-export type RequestLogger = Pick<FastifyBaseLogger, "debug" | "error">
-
 /**
- * End-session URL for RP-initiated logout, or null when the user has no
- * Keycloak identity or Keycloak is unreachable — logout must never fail
- * because the IdP is down.
+ * End-session URL for RP-initiated logout, or null whenever one cannot be
+ * constructed: SSO is disabled, the user has no Keycloak identity, the stored
+ * token could not be read, or Keycloak is unreachable. Null uniformly means
+ * "just log out locally" — logout must never fail because the IdP is down.
  *
  * Callers pass the logger of whatever is handling the request; `console`
  * stands in only so a caller without one still leaves a trace.
@@ -110,8 +127,8 @@ export async function buildKeycloakLogoutUrl(
     const {
       rows: [row],
     } = await rootPgPool.query(
-      // A user can hold more than one Keycloak identity; the newest one is
-      // the only ID token that can still be a valid hint.
+      // A user can hold more than one Keycloak identity; any one valid hint
+      // is enough for RP-initiated logout, so use the most recently linked.
       `select uas.details->>'id_token' as id_token
          from app_private.user_authentication_secrets uas
          join app_public.user_authentications ua
@@ -169,7 +186,13 @@ function isSameOriginNavigation(request: FastifyRequest): boolean {
   if (typeof referer === "string") {
     try {
       return new URL(referer).origin === new URL(process.env.ROOT_URL!).origin
-    } catch {
+    } catch (e) {
+      // An unparseable ROOT_URL is our own misconfiguration, not a cross-site
+      // request; it must not hide behind the same `false` an attacker gets.
+      request.log.error(
+        { err: e, referer },
+        "referer or ROOT_URL could not be parsed while verifying a same-origin navigation"
+      )
       return false
     }
   }
@@ -204,13 +227,9 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
     // provably started on this origin — otherwise a cross-site page could
     // silently link its visitor's Keycloak identity onto their account.
     const wantsLink = query.link === "1" && isSameOriginNavigation(request)
-    if (query.link === "1" && !wantsLink) {
-      request.log.warn(
-        "keycloak link intent from a cross-site navigation ignored; proceeding as a plain login"
-      )
-    }
 
     try {
+      let sessionAlive = false
       if (request.user?.sessionId) {
         // The cookie alone doesn't prove the session still exists; a
         // signed-in short-circuit on a stale cookie would bounce between
@@ -222,12 +241,31 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           [request.user.sessionId]
         )
         if (live) {
-          if (!wantsLink) {
-            return reply.redirect(next)
-          }
+          sessionAlive = true
         } else {
           await request.logOut()
         }
+      }
+
+      if (query.link === "1") {
+        // A link request that cannot be honoured must fail visibly. Falling
+        // through to a plain login would either sign the user into a
+        // different account or, for an unverifiable navigation, quietly
+        // reload the page with nothing linked.
+        if (!sessionAlive) {
+          request.log.warn(
+            "keycloak link requested without a live app session; the user must sign in before linking"
+          )
+          return loginErrorRedirect(reply, "link_session_lost")
+        }
+        if (!wantsLink) {
+          request.log.warn(
+            "keycloak link intent could not be verified as a same-origin navigation; refusing to link"
+          )
+          return reply.redirect("/settings/accounts?linkError=intent")
+        }
+      } else if (sessionAlive) {
+        return reply.redirect(next)
       }
 
       const config = await getKeycloakConfig()
@@ -257,7 +295,7 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
         { err: e },
         "keycloak authorization request could not be built"
       )
-      return reply.redirect("/login?error=sso_unavailable")
+      return loginErrorRedirect(reply, "sso_unavailable")
     }
   })
 
@@ -268,7 +306,7 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       request.log.warn(
         "keycloak callback without usable oidc state in the session; refusing"
       )
-      return reply.redirect("/login?error=state_mismatch")
+      return loginErrorRedirect(reply, "state_mismatch")
     }
     const oidcData = stored
 
@@ -277,7 +315,7 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       config = await getKeycloakConfig()
     } catch (e) {
       request.log.error({ err: e }, "keycloak discovery failed")
-      return reply.redirect("/login?error=sso_unavailable")
+      return loginErrorRedirect(reply, "sso_unavailable")
     }
 
     let idToken: string
@@ -290,11 +328,35 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
         expectedNonce: oidcData.nonce,
         idTokenExpected: true,
       })
-      idToken = tokens.id_token!
-      claims = tokens.claims()! as Record<string, unknown>
+      const tokenClaims = tokens.claims()
+      if (!tokens.id_token || !tokenClaims) {
+        throw new Error("token response carried no id token")
+      }
+      idToken = tokens.id_token
+      claims = tokenClaims as Record<string, unknown>
     } catch (e) {
+      // The provider reported an outcome of its own — most commonly the user
+      // pressing Cancel on the Keycloak page. That is not a failure to retry,
+      // so it goes home without an alert.
+      if (
+        e instanceof oidc.AuthorizationResponseError &&
+        e.error === "access_denied"
+      ) {
+        request.log.info("keycloak sign-in cancelled at the provider")
+        return reply.redirect("/")
+      }
+      // The token endpoint could not be reached at all. This is the same
+      // outage sso_unavailable already describes, and that code is the one
+      // whose error page offers the local sign-in escape hatch.
+      if (e instanceof TypeError) {
+        request.log.error(
+          { err: e },
+          "keycloak token endpoint could not be reached"
+        )
+        return loginErrorRedirect(reply, "sso_unavailable")
+      }
       request.log.error({ err: e }, "keycloak code exchange failed")
-      return reply.redirect("/login?error=code_exchange_failed")
+      return loginErrorRedirect(reply, "code_exchange_failed")
     }
 
     let profile: KeycloakProfile
@@ -306,18 +368,21 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           { missingClaims: e["missingClaims"] },
           "keycloak id token is missing required claims; check the client's protocol mappers"
         )
-        return reply.redirect("/login?error=missing_claims")
+        return loginErrorRedirect(reply, "missing_claims")
       }
       request.log.error({ err: e }, "keycloak claim mapping failed")
-      return reply.redirect("/login?error=login_failed")
+      return loginErrorRedirect(reply, "login_failed")
     }
 
     if (!profile.emailVerified) {
       request.log.warn(
-        { sub: profile.sub },
+        {
+          sub: profile.sub,
+          emailVerifiedClaimPresent: "email_verified" in claims,
+        },
         "keycloak login refused: email is not verified"
       )
-      return reply.redirect("/login?error=email_not_verified")
+      return loginErrorRedirect(reply, "email_not_verified")
     }
 
     // Registering the identity, the break-glass veto, the is_admin stamp and
@@ -330,11 +395,16 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       // saturation), and that failure must land on the error page like any
       // other, not surface as a raw 500.
       let client: PoolClient | undefined
+      // A connection whose ROLLBACK failed may still hold an open transaction,
+      // and releasing it normally would hand that transaction to the next
+      // checkout. Destroying the connection is the only safe disposal.
+      let rollbackFailed = false
       const rollback = async () => {
         if (!client) return
         try {
           await client.query("rollback")
         } catch (e) {
+          rollbackFailed = true
           request.log.error(
             { err: e, sub: profile.sub },
             "keycloak login: ROLLBACK FAILED; a keycloak identity may be left linked to an account it must not reach"
@@ -347,16 +417,29 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
 
         // Only an explicit link request may attach this subject to the
         // account that is already signed in; a plain login must resolve the
-        // user from the Keycloak identity alone.
+        // user from the Keycloak identity alone. A link request whose session
+        // died mid-round-trip must fail rather than fall through to a plain
+        // login — the user asked to link onto an account, not to be signed in
+        // as whoever this subject resolves to.
         let existingUserId: string | null = null
-        if (oidcData.link && request.user?.sessionId) {
-          const {
-            rows: [existing],
-          } = await client.query(
-            "select user_id from app_private.sessions where uuid = $1",
-            [request.user.sessionId]
-          )
-          existingUserId = existing?.user_id ?? null
+        if (oidcData.link) {
+          if (request.user?.sessionId) {
+            const {
+              rows: [existing],
+            } = await client.query(
+              "select user_id from app_private.sessions where uuid = $1",
+              [request.user.sessionId]
+            )
+            existingUserId = existing?.user_id ?? null
+          }
+          if (!existingUserId) {
+            request.log.warn(
+              { sub: profile.sub },
+              "keycloak link requested but the app session was gone by callback time; refusing"
+            )
+            await rollback()
+            return { error: "link_session_lost" }
+          }
         }
 
         const {
@@ -397,12 +480,22 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           return { error: "account_conflict" }
         }
 
-        // The registry is the source of truth for admin rights, so this
-        // both grants and revokes.
-        await client.query(
-          `update app_public.users set is_admin = $1 where id = $2`,
-          [profile.isAdmin, user.id]
-        )
+        // The registry is the source of truth for admin rights, so this both
+        // grants and revokes — but only when the token actually answered the
+        // roles question. isAdmin: null means the mapper is broken and the
+        // roles are unknown; stamping false here would demote every admin one
+        // login at a time.
+        if (profile.isAdmin === null) {
+          request.log.error(
+            { sub: profile.sub, userId: user.id },
+            "keycloak id token carried no usable realm_access.roles claim; leaving is_admin untouched — check the client's realm-roles mapper"
+          )
+        } else {
+          await client.query(
+            `update app_public.users set is_admin = $1 where id = $2`,
+            [profile.isAdmin, user.id]
+          )
+        }
 
         const {
           rows: [session],
@@ -410,24 +503,31 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           `insert into app_private.sessions (user_id) values ($1) returning *`,
           [user.id]
         )
+        // Read before COMMIT: a failure after the commit would reach the
+        // catch below and be reported as a rolled-back login while the rows
+        // are durably in place.
+        const sessionUuid: string | undefined = session?.uuid
+        if (!sessionUuid) {
+          throw new Error("session insert returned no uuid")
+        }
         await client.query("commit")
-        return { sessionUuid: session.uuid }
+        return { sessionUuid }
       } catch (e) {
         await rollback()
         // TAKEN (identity already linked to a different account) and any
         // unexpected DB failure land here; details go to logs only.
-        request.log.error({ err: e }, "keycloak login failed")
+        request.log.error({ err: e, sub: profile.sub }, "keycloak login failed")
         return {
           error: e?.["code"] === "TAKEN" ? "account_conflict" : "login_failed",
         }
       } finally {
-        client?.release()
+        client?.release(rollbackFailed)
       }
     }
 
     const outcome = await establishSession()
     if ("error" in outcome) {
-      return reply.redirect(`/login?error=${outcome.error}`)
+      return loginErrorRedirect(reply, outcome.error)
     }
 
     try {
@@ -440,7 +540,7 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
         { err: e },
         "keycloak login: establishing the app session failed"
       )
-      return reply.redirect("/login?error=login_failed")
+      return loginErrorRedirect(reply, "login_failed")
     }
 
     try {
@@ -464,7 +564,10 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
         "keycloak login succeeded but post-login session bookkeeping failed"
       )
     }
-    return reply.redirect(oidcData.next)
+    // Re-sanitized on the way out: the guard above only proves `next` is a
+    // non-empty string, and a session written by an older deployment may
+    // carry a value the current rules would reject.
+    return reply.redirect(sanitizeNext(oidcData.next))
   })
 }
 
