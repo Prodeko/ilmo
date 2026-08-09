@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Logout returns a Keycloak end-session url for an sso session 1`] = `
+{
+  "data": {
+    "logout": {
+      "redirectTo": "http://kc.test/logout?id_token_hint=fake-id-token",
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`Logout returns no redirect for a password session on the same account 1`] = `
+{
+  "data": {
+    "logout": {
+      "redirectTo": null,
+      "success": true,
+    },
+  },
+}
+`;
+
+exports[`Logout returns no redirect for an sso session on an account with no keycloak identity 1`] = `
+{
+  "data": {
+    "logout": {
+      "redirectTo": null,
+      "success": true,
+    },
+  },
+}
+`;
