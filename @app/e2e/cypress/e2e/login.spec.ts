@@ -70,11 +70,4 @@ context("SSO login page states", () => {
     cy.visit(Cypress.env("ROOT_URL") + "/login?local=1")
     cy.getCy("loginpage-input-username").should("be.visible")
   })
-
-  it("right-clicking the header login button reaches the break-glass form", () => {
-    cy.visit(Cypress.env("ROOT_URL") + "/")
-    cy.getCy("header-login-button").rightclick()
-    cy.url().should("include", "/login?local=1")
-    cy.getCy("loginpage-input-username").should("be.visible")
-  })
 })

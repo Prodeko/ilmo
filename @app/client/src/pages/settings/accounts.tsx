@@ -20,6 +20,8 @@ import { Translate } from "next-translate"
 import type { NextPage } from "next"
 
 const AUTH_NAME_LOOKUP = {
+  // `oauth2` rows exist in production data and are display-only; new links are
+  // always `keycloak`.
   oauth2: "Prodeko",
   keycloak: "Prodeko ID",
 }
@@ -127,20 +129,26 @@ const Settings_Accounts: NextPage = () => {
     <SettingsLayout href="/settings/accounts" query={query}>
       <PageHeader title={t("titles.accounts")} />
       {error && !fetching ? <ErrorAlert error={error} /> : linkedAccounts}
-      <Card
-        style={{ marginTop: "2rem" }}
-        title={t("pages.accounts.linkAnother")}
-      >
-        <Button
-          href={`/auth/keycloak?next=${encodeURIComponent(
-            "/settings/accounts"
-          )}`}
-          icon={<ProdekoIcon size="20px" style={{ verticalAlign: "middle" }} />}
-          type="primary"
+      {/* Without Keycloak configured the `/auth/keycloak` route is absent, so
+          the link affordance would lead to a 404. */}
+      {query.data?.ssoLoginEnabled ? (
+        <Card
+          style={{ marginTop: "2rem" }}
+          title={t("pages.accounts.linkAnother")}
         >
-          {t("pages.accounts.linkProdekoId")}
-        </Button>
-      </Card>
+          <Button
+            href={`/auth/keycloak?link=1&next=${encodeURIComponent(
+              "/settings/accounts"
+            )}`}
+            icon={
+              <ProdekoIcon size="20px" style={{ verticalAlign: "middle" }} />
+            }
+            type="primary"
+          >
+            {t("pages.accounts.linkProdekoId")}
+          </Button>
+        </Card>
+      ) : null}
     </SettingsLayout>
   )
 }

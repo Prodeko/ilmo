@@ -11,7 +11,14 @@ import {
   useTranslation,
 } from "@app/components"
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
-import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
+import {
+  getCodeFromError,
+  keycloakEnabled,
+  KNOWN_SSO_ERRORS,
+  resetWebsocketConnection,
+  sanitizeNext,
+  SsoLoginError,
+} from "@app/lib"
 import { Alert, Button, Col, Form, Input, Row } from "antd"
 import { useRouter } from "next/router"
 
@@ -31,31 +38,12 @@ interface LoginProps {
 }
 
 /**
- * Mirrors `sanitizeNext` on the server: a destination is safe only when it is
- * a single-slash relative path. Browsers strip tab/CR/LF and treat "\" as "/"
- * when parsing a URL, so "/\evil.com" and "/<TAB>/evil.com" both resolve to
- * another origin.
+ * Narrows an `?error=` value from the `/auth/keycloak` callback to a code we
+ * hold a translation for; anything else falls back to the generic message.
  */
-export function isSafe(nextUrl: string | null) {
-  if (typeof nextUrl !== "string") return false
-  const candidate = nextUrl.replace(/[\t\r\n]/g, "")
-  if (!/^\/[^/\\]/.test(candidate)) return false
-  // eslint-disable-next-line no-control-regex -- matching them is the point
-  return !/[\u0000-\u001f\u007f]/.test(candidate)
+function toSsoError(code: string | null): SsoLoginError | undefined {
+  return KNOWN_SSO_ERRORS.find((known) => known === code)
 }
-
-/**
- * Error codes the `/auth/keycloak` callback may redirect back with. Anything
- * else falls back to the generic message.
- */
-const KNOWN_SSO_ERRORS = [
-  "sso_unavailable",
-  "state_mismatch",
-  "code_exchange_failed",
-  "email_not_verified",
-  "account_conflict",
-  "login_failed",
-]
 
 /**
  * Login page just renders the standard layout and embeds the login form
@@ -72,16 +60,24 @@ const Login: NextPage<LoginProps> = ({
   const [query] = useSharedQuery()
   // Urql runs with `ssr: false`, so `ssoLoginEnabled` is only known once the
   // shared query resolves in the browser. `ssoAvailable` carries the same
-  // answer through the server render, keeping the break-glass form hidden
+  // answer through the server render, keeping the local sign-in form hidden
   // until then.
   const ssoEnabled = query.data?.ssoLoginEnabled ?? ssoAvailable
 
-  const next: string = isSafe(rawNext) ? rawNext! : "/"
+  const next = sanitizeNext(rawNext)
   const ssoHref = `/auth/keycloak?next=${encodeURIComponent(next)}`
-  const errorKey =
-    errorCode && KNOWN_SSO_ERRORS.includes(errorCode)
-      ? errorCode
-      : "login_failed"
+  const localHref = `/login?local=1&next=${encodeURIComponent(next)}`
+  const ssoError = toSsoError(errorCode)
+  const errorKey: SsoLoginError = ssoError ?? "login_failed"
+  const showLocalForm = showLogin || !ssoEnabled
+
+  useEffect(() => {
+    if (errorCode && !ssoError && process.env.NODE_ENV !== "production") {
+      console.warn(
+        `Unrecognised SSO error code "${errorCode}"; showing the generic sign-in failure. Add it to KNOWN_SSO_ERRORS and the login translations.`
+      )
+    }
+  }, [errorCode, ssoError])
 
   return (
     <SharedLayout
@@ -99,12 +95,23 @@ const Login: NextPage<LoginProps> = ({
               {errorCode && (
                 <Alert
                   data-cy="loginpage-error-alert"
+                  description={
+                    errorKey === "sso_unavailable" && !showLocalForm ? (
+                      <Link
+                        data-cy="loginpage-link-local"
+                        href={localHref}
+                        onClick={() => setShowLogin(true)}
+                      >
+                        {t("useLocalSignin")}
+                      </Link>
+                    ) : undefined
+                  }
                   message={t(`ssoError.${errorKey}`)}
                   style={{ marginBottom: 16 }}
                   type="error"
                 />
               )}
-              {showLogin || !ssoEnabled ? (
+              {showLocalForm ? (
                 <LoginForm
                   resetUrqlClient={resetUrqlClient}
                   onCancel={ssoEnabled ? () => setShowLogin(false) : undefined}
@@ -123,10 +130,6 @@ const Login: NextPage<LoginProps> = ({
                   size="large"
                   type="primary"
                   block
-                  onContextMenu={(e) => {
-                    e.preventDefault()
-                    setShowLogin(true)
-                  }}
                 >
                   {errorCode ? t("tryAgain") : t("signinWithProdekoId")}
                 </Button>
@@ -142,18 +145,15 @@ const Login: NextPage<LoginProps> = ({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { next: rawNext, error, local } = context.query
   const next = typeof rawNext === "string" ? rawNext : null
-  const ssoEnabled = !!(
-    process.env.KEYCLOAK_ISSUER &&
-    process.env.KEYCLOAK_CLIENT_ID &&
-    process.env.KEYCLOAK_CLIENT_SECRET
-  )
+  const ssoEnabled = keycloakEnabled()
   // SSO is the only visible login path: bounce straight to Keycloak unless
-  // we need to show an error or the break-glass form.
+  // we need to show an error or the local sign-in form.
   if (ssoEnabled && !error && !local) {
-    const safeNext = isSafe(next) ? next! : "/"
     return {
       redirect: {
-        destination: `/auth/keycloak?next=${encodeURIComponent(safeNext)}`,
+        destination: `/auth/keycloak?next=${encodeURIComponent(
+          sanitizeNext(next)
+        )}`,
         permanent: false,
       },
     }

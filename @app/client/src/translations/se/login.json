@@ -20,8 +20,10 @@
     "code_exchange_failed": "Inloggningen misslyckades. Försök igen.",
     "email_not_verified": "Din e-postadress är inte verifierad. Verifiera den först på id.prodeko.org.",
     "login_failed": "Inloggningen misslyckades. Försök igen.",
-    "sso_unavailable": "Inloggningstjänsten är inte tillgänglig just nu. Försök igen om en stund.",
+    "missing_claims": "Prodeko ID returnerade inte den information som behövs för inloggningen. Kontakta administratörerna.",
+    "sso_unavailable": "Inloggningstjänsten Prodeko ID är inte tillgänglig just nu. Försök igen om en stund eller logga in med ditt lokala användarnamn och lösenfras.",
     "state_mismatch": "Inloggningsförsöket föråldrades. Försök igen."
   },
-  "tryAgain": "Försök logga in igen"
+  "tryAgain": "Försök logga in igen",
+  "useLocalSignin": "Använd lokal inloggning"
 }

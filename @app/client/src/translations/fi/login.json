@@ -20,8 +20,10 @@
     "code_exchange_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
     "email_not_verified": "Sähköpostiosoitettasi ei ole vahvistettu. Vahvista se ensin osoitteessa id.prodeko.org.",
     "login_failed": "Kirjautuminen epäonnistui. Yritä uudelleen.",
-    "sso_unavailable": "Kirjautumispalvelu ei ole juuri nyt saatavilla. Yritä hetken kuluttua uudelleen.",
+    "missing_claims": "Prodeko ID ei palauttanut kirjautumiseen tarvittavia tietoja. Ota yhteyttä ylläpitoon.",
+    "sso_unavailable": "Prodeko ID -kirjautumispalvelu ei ole juuri nyt saatavilla. Yritä hetken kuluttua uudelleen tai kirjaudu paikallisella käyttäjätunnuksella ja salasanalla.",
     "state_mismatch": "Kirjautumisyritys vanheni. Yritä uudelleen."
   },
-  "tryAgain": "Yritä kirjautumista uudelleen"
+  "tryAgain": "Yritä kirjautumista uudelleen",
+  "useLocalSignin": "Käytä paikallista kirjautumista"
 }

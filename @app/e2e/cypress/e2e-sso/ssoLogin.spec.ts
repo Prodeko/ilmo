@@ -38,6 +38,23 @@ context("SSO enabled login", () => {
     cy.getCy("loginpage-input-username").should("not.exist")
   })
 
+  it("offers local sign-in from the sso_unavailable alert", () => {
+    cy.visit(Cypress.env("ROOT_URL") + "/login?error=sso_unavailable")
+    cy.getCy("loginpage-link-local").click()
+    cy.getCy("loginpage-input-username").should("be.visible")
+  })
+
+  it("sanitizes a hostile next before handing it to the keycloak route", () => {
+    cy.request({
+      url: Cypress.env("ROOT_URL") + "/login?next=//evil.example.com",
+      followRedirect: false,
+    }).then((response) => {
+      expect(response.status).to.be.oneOf([302, 307])
+      expect(response.redirectedToUrl).to.contain("/auth/keycloak")
+      expect(response.redirectedToUrl).to.not.contain("evil.example.com")
+    })
+  })
+
   it("still reaches the break-glass form through the local param", () => {
     cy.visit(Cypress.env("ROOT_URL") + "/login?local=1")
     cy.getCy("loginpage-input-username").should("be.visible")
