@@ -35,7 +35,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -98,7 +98,7 @@ jobs:
         run: pnpm exec cypress install
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           command: pnpm --filter @app/e2e run run:ci
           working-directory: "@app/e2e"
@@ -120,14 +120,14 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshots-${{ matrix.containers }}
           path: "@app/e2e/cypress/screenshots"
 
       - name: Upload videos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-videos-${{ matrix.containers }}
@@ -160,7 +160,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -198,7 +198,7 @@ jobs:
         run: pnpm exec cypress install
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           command: pnpm --filter @app/e2e run run:sso
           working-directory: "@app/e2e"
@@ -213,14 +213,14 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-sso-screenshots
           path: "@app/e2e/cypress/screenshots"
 
       - name: Upload videos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-sso-videos
@@ -253,7 +253,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -312,7 +312,7 @@ jobs:
         run: pnpm exec cypress install
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           command: pnpm --filter @app/e2e run run:sso-live
           working-directory: "@app/e2e"
@@ -330,14 +330,14 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-sso-live-screenshots
           path: "@app/e2e/cypress/screenshots"
 
       - name: Upload videos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-sso-live-videos

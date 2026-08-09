@@ -8,7 +8,7 @@ jobs:
     name: actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run actionlint
         run: |
           docker run --rm -v "$PWD:/repo" -w /repo \
@@ -41,7 +41,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -97,7 +97,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -145,7 +145,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -161,10 +161,10 @@ jobs:
           CI: "true"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build production image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: ./Dockerfile
           load: true
@@ -232,7 +232,7 @@ jobs:
       run:
         working-directory: ./@app/client
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -242,7 +242,7 @@ jobs:
         working-directory: .
 
       - name: Restore Next.js build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: "@app/client/.next/cache"
           key: ${{ runner.os }}-nextcache-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('@app/client/**/*.{js,jsx,ts,tsx,json}') }}
@@ -262,7 +262,7 @@ jobs:
         run: npx -p nextjs-bundle-analysis report
 
       - name: Upload bundle stats
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bundle
           path: "@app/client/.next/analyze/__bundle_analysis.json"
@@ -270,7 +270,7 @@ jobs:
       - name: Download base branch bundle stats
         id: download-base
         if: github.event_name == 'pull_request'
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         continue-on-error: true
         with:
           workflow: pipeline.yml
@@ -306,7 +306,7 @@ jobs:
 
       - name: Find existing comment
         if: steps.baseline.outputs.found == 'true'
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -314,7 +314,7 @@ jobs:
 
       - name: Create or update bundle comment
         if: steps.baseline.outputs.found == 'true'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.fc.outputs.comment-id }}
