@@ -67,22 +67,22 @@ database.
 A first SSO login binds to an existing ilmo account in two ways. When the
 Keycloak identity is already linked, the login lands on the linked account.
 Otherwise `app_private.link_or_register_user` adopts an existing account whose
-*verified* ilmo email matches the Keycloak email — this is what lets members
-with pre-SSO accounts keep them — and only when neither matches does it create
-a new account. Adoption re-stamps `is_admin` like any login, which is why the
+_verified_ ilmo email matches the Keycloak email — this is what lets members
+with pre-SSO accounts keep them — and only when neither matches does it create a
+new account. Adoption re-stamps `is_admin` like any login, which is why the
 rollout audit below covers every admin account, not just the break-glass pair.
 
-Separately, a signed-in user attaches a Keycloak identity to *the account they
-are currently signed into* from `/settings/accounts`, which sends them to
+Separately, a signed-in user attaches a Keycloak identity to _the account they
+are currently signed into_ from `/settings/accounts`, which sends them to
 `/auth/keycloak?link=1&next=...`. The `link=1` flag is what authorises binding
 to the session's account; a plain `/auth/keycloak` visit while signed in just
 redirects to `next`. The flag only counts on a same-origin navigation
-(`Sec-Fetch-Site`, with a referer fallback) — a cross-site page cannot forge
-the link intent for a visitor who happens to be signed in to both ilmo and
-Keycloak. A link request that cannot be honoured fails visibly rather than
-degrading to a plain login: an unverifiable navigation returns to
-`/settings/accounts` with an error, and a session that expired mid-flow lands
-on `/login?error=link_session_lost`.
+(`Sec-Fetch-Site`, with a referer fallback) — a cross-site page cannot forge the
+link intent for a visitor who happens to be signed in to both ilmo and Keycloak.
+A link request that cannot be honoured fails visibly rather than degrading to a
+plain login: an unverifiable navigation returns to `/settings/accounts` with an
+error, and a session that expired mid-flow lands on
+`/login?error=link_session_lost`.
 
 Linking re-stamps `users.is_admin` from the ID token exactly as a login does, so
 a local admin who links an identity that lacks `ilmo-admin` loses admin rights
@@ -107,15 +107,15 @@ Then add two protocol mappers to the client, mirroring
   `realm_access.roles`, multivalued, **added to the ID token**. Keycloak's
   default `roles` client scope puts realm roles in the access token only, and
   ilmo reads them from the ID token — without this mapper the token carries no
-  `realm_access` at all, nobody gets admin, and every login logs an error.
-  The mapper delivers the effective role set, including roles inherited from
-  groups and composites.
-- Locale: type `oidc-usermodel-attribute-mapper`, user attribute `locale`,
-  token claim name `locale`, added to the ID token. The registry syncs each
-  member's language into that user attribute but maps the claim only on its
-  own client. Ilmo understands the values `fi`, `en` and `se`; on any other
-  value, or a missing claim, ilmo sets no language and the member keeps
-  whatever their browser negotiated.
+  `realm_access` at all, nobody gets admin, and every login logs an error. The
+  mapper delivers the effective role set, including roles inherited from groups
+  and composites.
+- Locale: type `oidc-usermodel-attribute-mapper`, user attribute `locale`, token
+  claim name `locale`, added to the ID token. The registry syncs each member's
+  language into that user attribute but maps the claim only on its own client.
+  Ilmo understands the values `fi`, `en` and `se`; on any other value, or a
+  missing claim, ilmo sets no language and the member keeps whatever their
+  browser negotiated.
 
 Finally copy the client secret into the ilmo secret store as
 `KEYCLOAK_CLIENT_SECRET`.
@@ -167,15 +167,15 @@ code means on the operator's side:
 - `missing_claims` — the ID token carries no `sub` or no `email`. The client
   scope in Keycloak is missing the corresponding mapper.
 - `email_not_verified` — the member's registry email address is not verified,
-  *or* the ID token carries no `email_verified` claim at all. The second case
-  is a client-scope mapper problem, not a registry one, and the server log says
+  _or_ the ID token carries no `email_verified` claim at all. The second case is
+  a client-scope mapper problem, not a registry one, and the server log says
   which occurred — check it first during initial client setup. For a verified
   member the fix is in the registry, not in ilmo. Expect this to be the most
   common support ticket.
 - `account_conflict` — the login landed on a break-glass account, or the
   Keycloak identity is already linked to a different ilmo account.
-- `link_session_lost` — an account-link attempt whose app session had expired
-  by the time the flow finished. The user signs in again and retries from
+- `link_session_lost` — an account-link attempt whose app session had expired by
+  the time the flow finished. The user signs in again and retries from
   `/settings/accounts`.
 - `login_failed` — anything else. Details are in the server log only.
 
