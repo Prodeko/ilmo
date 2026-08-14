@@ -14,7 +14,7 @@ context("Login", () => {
       password: PASSWORD,
     })
     cy.visit(Cypress.env("ROOT_URL") + "/login")
-    cy.getCy("loginpage-button-withusername").click()
+    cy.getCy("loginpage-input-username").should("be.visible") // Without SSO the password form is rendered directly
     cy.getCy("header-login-button").should("not.exist") // No login button on login page
 
     // Action
@@ -37,7 +37,7 @@ context("Login", () => {
       password: PASSWORD,
     })
     cy.visit(Cypress.env("ROOT_URL") + "/login")
-    cy.getCy("loginpage-button-withusername").click()
+    cy.getCy("loginpage-input-username").should("be.visible")
 
     // Action
     cy.getCy("loginpage-input-username").type("testuser")
@@ -57,5 +57,17 @@ context("Login", () => {
     cy.url().should("equal", Cypress.env("ROOT_URL") + "/") // Should be on homepage
     cy.getCy("header-login-button").should("not.exist") // Should be logged in
     cy.getCy("layout-dropdown-user").should("contain", "Test User") // Should be logged in
+  })
+})
+
+context("SSO login page states", () => {
+  it("shows a localized error for sso error codes", () => {
+    cy.visit(Cypress.env("ROOT_URL") + "/login?error=email_not_verified")
+    cy.getCy("loginpage-error-alert").should("be.visible")
+  })
+
+  it("shows the password form via the local param", () => {
+    cy.visit(Cypress.env("ROOT_URL") + "/login?local=1")
+    cy.getCy("loginpage-input-username").should("be.visible")
   })
 })

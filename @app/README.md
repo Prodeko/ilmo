@@ -25,8 +25,10 @@ import { useAppQuery } from "@app/graphql"
   [graphql-code-generator](https://github.com/dotansimha/graphql-code-generator)
 - [@app/lib](./lib/README.md) - Code sharing between various components
 - [@app/server](./server/README.md) - the Node.js backend and tests, powered by
-  [Fastify](https://www.fastify.io/), [Passport](http://www.passportjs.org/) and
-  [PostGraphile](https://www.graphile.org/postgraphile/) (provides auth,
+  [Fastify](https://www.fastify.io/),
+  [@fastify/passport](https://github.com/fastify/fastify-passport) and
+  [PostGraphile](https://www.graphile.org/postgraphile/) (provides auth via
+  Keycloak OIDC single sign-on with a local username/password break-glass path,
   GraphQL, SSR, etc)
 - [@app/worker](./worker/README.md) - job queue (e.g. for sending emails),
   powered by [graphile-worker](https://github.com/graphile/worker)

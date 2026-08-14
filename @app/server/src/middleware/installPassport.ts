@@ -1,23 +1,8 @@
 import fastifyPassport from "@fastify/passport"
 import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
-import got from "got"
-import { Strategy as Oauth2Strategy } from "passport-oauth2"
 
-import installPassportStrategy from "./installPassportStrategy"
-
-const { NODE_ENV } = process.env
-const isDevOrTest = NODE_ENV === "development" || NODE_ENV === "test"
-
-interface ProdekoUser {
-  pk: string
-  email: string
-  first_name: string
-  last_name: string
-  has_accepted_policies: boolean
-  is_staff: boolean
-  is_superuser: boolean
-}
+import { buildKeycloakLogoutUrl } from "./installKeycloak"
 
 declare module "fastify" {
   interface PassportUser {
@@ -37,70 +22,43 @@ const Passport: FastifyPluginAsync = async (app) => {
   app.register(fastifyPassport.initialize())
   app.register(fastifyPassport.secureSession())
 
-  if (process.env.PRODEKO_OAUTH_KEY) {
-    installPassportStrategy(
-      app,
-      app.rootPgPool,
-      "oauth2",
-      // @ts-ignore
-      Oauth2Strategy,
-      {
-        clientID: process.env.PRODEKO_OAUTH_KEY,
-        clientSecret: process.env.PRODEKO_OAUTH_SECRET,
-        authorizationURL: `${process.env.PRODEKO_OAUTH_ROOT_URL}/oauth2/auth`,
-        tokenURL: `${process.env.PRODEKO_OAUTH_ROOT_URL}/oauth2/token`,
-      },
-      {},
-      async (_empty, accessToken, _refreshToken, _extra, _req) => {
-        const headers = {
-          Authorization: `Bearer ${accessToken}`,
-        }
-
-        // Get user details
-        const userResponse = await got<ProdekoUser>(
-          `${process.env.PRODEKO_OAUTH_ROOT_URL}/oauth2/user_details/`,
-          {
-            method: "GET",
-            headers,
-            responseType: "json",
-            https: {
-              rejectUnauthorized: !isDevOrTest,
-            },
-          }
+  // Force-logout entry point for clients that cannot trust the `logout`
+  // mutation to have cleared their session. It ends the Keycloak session too
+  // when there is one: /login bounces straight back to Keycloak, so a
+  // surviving IdP session would sign the next visitor on this browser right
+  // back in as this user.
+  app.get("/logout", async (req, res) => {
+    let redirectTo: string | null = null
+    try {
+      const sessionId = req.user?.sessionId
+      if (sessionId) {
+        const {
+          rows: [row],
+        } = await app.rootPgPool.query(
+          "select user_id from app_private.sessions where uuid = $1",
+          [sessionId]
         )
-
-        const { pk, email, first_name, last_name, has_accepted_policies } =
-          userResponse.body
-
-        if (!has_accepted_policies) {
-          const e = new Error(
-            `You have not accepted Prodeko's privacy policy.
-Please accept our privacy policy in order to use the site while logged in.
-You may accept the policy by logging in via https://prodeko.org/login,
-and clicking 'I agree' on the displayed prompt.`.replace(/\n/g, " ")
+        if (row?.user_id) {
+          redirectTo = await buildKeycloakLogoutUrl(
+            app.rootPgPool,
+            row.user_id,
+            req.log
           )
-          e["code"] = "PRPOL"
-          throw e
         }
-
-        // Use email as username since that is the
-        // unique field in prodeko.org authentication
-        return {
-          id: pk,
-          displayName: `${first_name} ${last_name}`,
-          username: email,
-          avatarUrl:
-            "https://static.prodeko.org/media/public/2020/07/07/anonymous_prodeko.jpg",
-          email: email,
-        }
-      },
-      ["token", "tokenSecret"]
-    )
-  }
-
-  app.get("/logout", (req, res) => {
-    req.logout()
-    res.redirect("/")
+      }
+    } catch (e) {
+      // The local logout below must run no matter what happened here.
+      req.log.error(
+        { err: e },
+        "force logout: keycloak end-session url could not be resolved"
+      )
+    }
+    try {
+      await req.logout()
+    } catch (e) {
+      req.log.error({ err: e }, "force logout failed to clear the session")
+    }
+    return res.redirect(redirectTo ?? "/")
   })
 }
 

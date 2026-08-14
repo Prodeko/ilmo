@@ -2,7 +2,9 @@
 
 The server is responsible for:
 
-- authentication (via [Passport](http://www.passportjs.org/))
+- authentication (Keycloak OIDC single sign-on, with a local username/password
+  break-glass path; sessions via
+  [@fastify/passport](https://github.com/fastify/fastify-passport))
 - serving the GraphQL endpoint (via
   [PostGraphile](https://graphile.org/postgraphile/), based on database in
   `@app/db`)

@@ -1,0 +1,114 @@
+{
+  "realm": "ilmo-ci",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "ilmo-admin",
+        "description": "Maps to app_public.users.is_admin; the name is ILMO_ADMIN_ROLE in @app/server/src/utils/keycloak.ts"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ilmo-ci",
+      "name": "ilmokilke (CI)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "secret": "ilmo-ci-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false,
+      "redirectUris": ["http://localhost:5678/auth/keycloak/callback"],
+      "webOrigins": ["http://localhost:5678"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5678/"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "locale",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "locale",
+            "claim.name": "locale",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "ci-member",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "ci-member@example.com",
+      "firstName": "CI",
+      "lastName": "Member",
+      "attributes": { "locale": ["fi"] },
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ci-member-password",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "ci-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "ci-admin@example.com",
+      "firstName": "CI",
+      "lastName": "Admin",
+      "attributes": { "locale": ["en"] },
+      "requiredActions": [],
+      "realmRoles": ["ilmo-admin"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ci-admin-password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

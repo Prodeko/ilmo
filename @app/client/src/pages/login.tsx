@@ -1,19 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { LockOutlined, UserAddOutlined, UserOutlined } from "@ant-design/icons"
+import { LockOutlined, UserOutlined } from "@ant-design/icons"
 import {
   AuthRestrict,
-  ButtonLink,
   ErrorAlert,
   Link,
+  ProdekoIcon,
   Redirect,
   SharedLayout,
   SharedLayoutChildProps,
-  SocialLoginOptions,
   useTranslation,
 } from "@app/components"
 import { useLoginMutation, useSharedQuery } from "@app/graphql"
-import { getCodeFromError, resetWebsocketConnection } from "@app/lib"
-import { Button, Col, Form, Input, Row } from "antd"
+import {
+  getCodeFromError,
+  keycloakEnabled,
+  KNOWN_SSO_ERRORS,
+  resetWebsocketConnection,
+  sanitizeNext,
+  SsoLoginError,
+} from "@app/lib"
+import { Alert, Button, Col, Form, Input, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { GetServerSideProps, NextPage } from "next"
@@ -24,23 +30,54 @@ function hasErrors(fieldsError: Object) {
 
 interface LoginProps {
   next: string | null
+  errorCode: string | null
+  local: boolean
+  ssoAvailable: boolean
   // Comes from _app.tsx withUrql HOC
   resetUrqlClient?: () => void
 }
 
-export function isSafe(nextUrl: string | null) {
-  return (nextUrl && nextUrl[0] === "/") || false
+/**
+ * Narrows an `?error=` value from the `/auth/keycloak` callback to a code we
+ * hold a translation for; anything else falls back to the generic message.
+ */
+function toSsoError(code: string | null): SsoLoginError | undefined {
+  return KNOWN_SSO_ERRORS.find((known) => known === code)
 }
 
 /**
  * Login page just renders the standard layout and embeds the login form
  */
-const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
+const Login: NextPage<LoginProps> = ({
+  next: rawNext,
+  errorCode,
+  local,
+  ssoAvailable,
+  resetUrqlClient,
+}) => {
   const { t } = useTranslation("login")
-  const [showLogin, setShowLogin] = useState(false)
+  const [showLogin, setShowLogin] = useState(local)
   const [query] = useSharedQuery()
+  // Urql runs with `ssr: false`, so `ssoLoginEnabled` is only known once the
+  // shared query resolves in the browser. `ssoAvailable` carries the same
+  // answer through the server render, keeping the local sign-in form hidden
+  // until then.
+  const ssoEnabled = query.data?.ssoLoginEnabled ?? ssoAvailable
 
-  const next: string = isSafe(rawNext) ? rawNext! : "/"
+  const next = sanitizeNext(rawNext)
+  const ssoHref = `/auth/keycloak?next=${encodeURIComponent(next)}`
+  const localHref = `/login?local=1&next=${encodeURIComponent(next)}`
+  const ssoError = toSsoError(errorCode)
+  const errorKey: SsoLoginError = ssoError ?? "login_failed"
+  const showLocalForm = showLogin || !ssoEnabled
+
+  useEffect(() => {
+    if (errorCode && !ssoError && process.env.NODE_ENV !== "production") {
+      console.warn(
+        `Unrecognised SSO error code "${errorCode}"; showing the generic sign-in failure. Add it to KNOWN_SSO_ERRORS and the login translations.`
+      )
+    }
+  }, [errorCode, ssoError])
 
   return (
     <SharedLayout
@@ -54,51 +91,50 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
           <Redirect href={next} />
         ) : (
           <Row justify="center" style={{ marginTop: 32 }}>
-            {showLogin ? (
-              <Col sm={12} xs={24}>
+            <Col sm={12} xs={24}>
+              {errorCode && (
+                <Alert
+                  data-cy="loginpage-error-alert"
+                  description={
+                    errorKey === "sso_unavailable" && !showLocalForm ? (
+                      <Link
+                        data-cy="loginpage-link-local"
+                        href={localHref}
+                        onClick={() => setShowLogin(true)}
+                      >
+                        {t("useLocalSignin")}
+                      </Link>
+                    ) : undefined
+                  }
+                  message={t(`ssoError.${errorKey}`)}
+                  style={{ marginBottom: 16 }}
+                  type="error"
+                />
+              )}
+              {showLocalForm ? (
                 <LoginForm
                   resetUrqlClient={resetUrqlClient}
-                  onCancel={() => setShowLogin(false)}
+                  onCancel={ssoEnabled ? () => setShowLogin(false) : undefined}
                   onSuccessRedirectTo={next}
                 />
-              </Col>
-            ) : (
-              <Col sm={12} xs={24}>
-                <Row style={{ marginBottom: 8 }}>
-                  <Col span={24}>
-                    <Button
-                      data-cy="loginpage-button-withusername"
-                      icon={<UserOutlined />}
-                      size="large"
-                      type="primary"
-                      block
-                      onClick={() => setShowLogin(true)}
-                    >
-                      {t("signinButton")}
-                    </Button>
-                  </Col>
-                </Row>
-                <Row style={{ marginBottom: 8 }}>
-                  <Col span={24}>
-                    <SocialLoginOptions next={next} />
-                  </Col>
-                </Row>
-                <Row justify="center">
-                  <Col flex={1}>
-                    <ButtonLink
-                      data-cy="loginpage-button-register"
-                      href={`/register?next=${encodeURIComponent(next)}`}
-                      icon={<UserAddOutlined />}
-                      size="large"
-                      type="default"
-                      block
-                    >
-                      {t("registerButton")}
-                    </ButtonLink>
-                  </Col>
-                </Row>
-              </Col>
-            )}
+              ) : (
+                <Button
+                  data-cy="loginpage-button-sso"
+                  href={ssoHref}
+                  icon={
+                    <ProdekoIcon
+                      size="20px"
+                      style={{ verticalAlign: "middle" }}
+                    />
+                  }
+                  size="large"
+                  type="primary"
+                  block
+                >
+                  {errorCode ? t("tryAgain") : t("signinWithProdekoId")}
+                </Button>
+              )}
+            </Col>
           </Row>
         )
       }
@@ -107,10 +143,27 @@ const Login: NextPage<LoginProps> = ({ next: rawNext, resetUrqlClient }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const next = context?.query?.next
+  const { next: rawNext, error, local } = context.query
+  const next = typeof rawNext === "string" ? rawNext : null
+  const ssoEnabled = keycloakEnabled()
+  // SSO is the only visible login path: bounce straight to Keycloak unless
+  // we need to show an error or the local sign-in form.
+  if (ssoEnabled && !error && !local) {
+    return {
+      redirect: {
+        destination: `/auth/keycloak?next=${encodeURIComponent(
+          sanitizeNext(next)
+        )}`,
+        permanent: false,
+      },
+    }
+  }
   return {
     props: {
-      next: typeof next === "string" ? next : null,
+      next,
+      errorCode: typeof error === "string" ? error : null,
+      local: local === "1",
+      ssoAvailable: ssoEnabled,
     },
   }
 }
@@ -119,7 +172,7 @@ export default Login
 
 interface LoginFormProps {
   onSuccessRedirectTo: string
-  onCancel: () => void
+  onCancel?: () => void
   resetUrqlClient: () => void
 }
 
@@ -223,9 +276,11 @@ function LoginForm({
         >
           {t("common:signin")}
         </Button>
-        <a style={{ marginLeft: 16 }} onClick={onCancel}>
-          {t("signinDifferent")}
-        </a>
+        {onCancel && (
+          <a style={{ marginLeft: 16 }} onClick={onCancel}>
+            {t("signinDifferent")}
+          </a>
+        )}
       </Form.Item>
     </Form>
   )

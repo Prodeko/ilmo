@@ -5,7 +5,6 @@ import {
   PageHeader,
   ProdekoIcon,
   SettingsLayout,
-  SocialLoginOptions,
   Strong,
   useTranslation,
 } from "@app/components"
@@ -15,17 +14,17 @@ import {
   useSharedQuery,
   useUnlinkUserAuthenticationMutation,
 } from "@app/graphql"
-import { Avatar, Card, List, Modal, Spin } from "antd"
+import { Alert, Avatar, Button, Card, List, message, Modal, Spin } from "antd"
+import { useRouter } from "next/router"
 import { Translate } from "next-translate"
 
 import type { NextPage } from "next"
 
 const AUTH_NAME_LOOKUP = {
-  // Could add more login options in the future
-  // github: "GitHub",
-  // facebook: "Facebook",
-  // twitter: "Twitter",
+  // `oauth2` rows exist in production data and are display-only; new links are
+  // always `keycloak`.
   oauth2: "Prodeko",
+  keycloak: "Prodeko ID",
 }
 function authName(service: string) {
   return AUTH_NAME_LOOKUP[service] || service
@@ -33,6 +32,7 @@ function authName(service: string) {
 
 const AUTH_ICON_LOOKUP = {
   oauth2: <ProdekoIcon size="25px" />,
+  keycloak: <ProdekoIcon size="25px" />,
 }
 function authAvatar(service: string) {
   const icon = AUTH_ICON_LOOKUP[service] || null
@@ -65,12 +65,14 @@ function UnlinkAccountButton({ id }: { id: string }) {
   const handleUnlink = useCallback(async () => {
     setModalOpen(false)
     setDeleting(true)
-    try {
-      await unlinkUserAuthentication({ id })
-    } catch (e) {
+    // urql resolves with an error instead of rejecting, so this is the
+    // failure path that actually fires.
+    const result = await unlinkUserAuthentication({ id })
+    if (result.error) {
       setDeleting(false)
+      message.error(t("pages.accounts.unlinkError"))
     }
-  }, [id, unlinkUserAuthentication])
+  }, [id, t, unlinkUserAuthentication])
 
   return (
     <>
@@ -113,6 +115,11 @@ const Settings_Accounts: NextPage = () => {
   const [query] = useSharedQuery()
   const [{ data, fetching, error }] = useCurrentUserAuthenticationsQuery()
   const { t } = useTranslation("settings")
+  const router = useRouter()
+  // Set by /auth/keycloak when a link=1 request could not be verified as a
+  // same-origin navigation; the flow was refused rather than silently
+  // degraded to a plain login.
+  const linkIntentFailed = router.query.linkError === "intent"
 
   const linkedAccounts =
     fetching || !data || !data.currentUser ? (
@@ -130,17 +137,34 @@ const Settings_Accounts: NextPage = () => {
     <SettingsLayout href="/settings/accounts" query={query}>
       <PageHeader title={t("titles.accounts")} />
       {error && !fetching ? <ErrorAlert error={error} /> : linkedAccounts}
-      <Card
-        style={{ marginTop: "2rem" }}
-        title={t("pages.accounts.linkAnother")}
-      >
-        <SocialLoginOptions
-          buttonTextFromService={(service) =>
-            t("pages.accounts.linkAccount", { service })
-          }
-          next="/settings/accounts"
-        />
-      </Card>
+      {/* Without Keycloak configured the `/auth/keycloak` route is absent, so
+          the link affordance would lead to a 404. */}
+      {query.data?.ssoLoginEnabled ? (
+        <Card
+          style={{ marginTop: "2rem" }}
+          title={t("pages.accounts.linkAnother")}
+        >
+          {linkIntentFailed && (
+            <Alert
+              data-cy="settingsaccounts-alert-linkintent"
+              message={t("pages.accounts.linkIntentError")}
+              style={{ marginBottom: 16 }}
+              type="error"
+            />
+          )}
+          <Button
+            href={`/auth/keycloak?link=1&next=${encodeURIComponent(
+              "/settings/accounts"
+            )}`}
+            icon={
+              <ProdekoIcon size="20px" style={{ verticalAlign: "middle" }} />
+            }
+            type="primary"
+          >
+            {t("pages.accounts.linkProdekoId")}
+          </Button>
+        </Card>
+      ) : null}
     </SettingsLayout>
   )
 }

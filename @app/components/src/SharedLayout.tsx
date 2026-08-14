@@ -123,10 +123,25 @@ export function SharedLayout({
     const reset = async () => {
       router.events.off("routeChangeComplete", reset)
       try {
-        await logout({})
+        const { data, error } = await logout({})
+        if (error) {
+          // urql resolves with an error instead of rejecting, so this is the
+          // failure path that actually fires. The server and Keycloak sessions
+          // are still alive; let /logout force them down rather than clearing
+          // the client and calling the user logged out.
+          console.error(error)
+          window.location.href = "/logout"
+          return
+        }
+        const redirectTo = data?.logout?.redirectTo
+        if (redirectTo) {
+          window.location.href = redirectTo
+          return
+        }
         context.resetUrqlClient()
       } catch (e) {
-        // Something went wrong; redirect to /logout to force logout.
+        // Network-level throw or a bug in the branches above.
+        console.error(e)
         window.location.href = "/logout"
       }
     }

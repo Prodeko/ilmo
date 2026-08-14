@@ -98,43 +98,43 @@ export function updateDotenv(add, answers) {
 # This port is the one you'll connect to`
   )
 
+  const rootUrl = answers.ROOT_URL || "http://localhost:5678"
+
   add(
     "ROOT_URL",
-    "http://localhost:5678",
+    rootUrl,
     `\
 # This is needed any time we use absolute URLs
 # IMPORTANT: must NOT end with a slash`
   )
 
   add(
-    "PRODEKO_OAUTH_KEY",
+    "KEYCLOAK_ISSUER",
     null,
     `\
-# To enable login with Prodeko credentials, create a Oauth2 application by visiting
-# https://prodeko.org/oauth2/applications/register/ and then enter the Client
-# ID/Secret and auth root url (dev: http://localhost:8000, prod: https://prodeko.org) below
+# Keycloak SSO (id.prodeko.org). To enable, register an OIDC client in the
+# membership-registry realm following docs/keycloak-clients.md in the
+# membership-registry repo, then fill in these three values.
 #
-#   Name: Ilmo
-#   Client type: 'confidential'
-#   Authorization grant type: 'Authorization code'
-#   Redirect uris: http://localhost:5678/auth/oauth2/callback
+#   Valid redirect URIs:        ${rootUrl}/auth/keycloak/callback
+#   Local dev issuer:           http://localhost:8180/realms/membership-registry
+#   Production issuer:          https://id.prodeko.org/realms/membership-registry
 #
-# Client ID:`
+# IMPORTANT: KEYCLOAK_ISSUER must NOT end with a slash.`
   )
 
   add(
-    "PRODEKO_OAUTH_SECRET",
+    "KEYCLOAK_CLIENT_ID",
     null,
     `\
-# Client Secret:`
+# Client ID (e.g. ilmokilke):`
   )
 
   add(
-    "PRODEKO_OAUTH_ROOT_URL",
+    "KEYCLOAK_CLIENT_SECRET",
     null,
     `\
-# Oauth root url:
-# IMPORTANT: must NOT end with a slash`
+# Client secret from the Keycloak admin console:`
   )
 
   add(
@@ -195,13 +195,6 @@ export function updateDotenv(add, answers) {
     null,
     `\
 # Subscription key for the Azure Translate resource.`
-  )
-
-  add(
-    "REGISTER_DOMAINS_ALLOWLIST",
-    "prodeko.org",
-    `\
-# Comma separated list of domain from which to allow registrations`
   )
 
   add(

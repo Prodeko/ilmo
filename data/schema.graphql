@@ -1493,7 +1493,13 @@ type LoginPayload {
 }
 
 type LogoutPayload {
-  success: Boolean
+  """
+  When present, the Keycloak end-session URL. Navigate the browser there
+  instead of only clearing client state — otherwise the user stays signed
+  in at the IdP and the next visit to /login signs them straight back in.
+  """
+  redirectTo: String
+  success: Boolean!
 }
 
 """All input for the `makeEmailPrimary` mutation."""
@@ -1728,7 +1734,9 @@ type Mutation {
   ): LoginPayload
 
   """
-  Use this mutation to logout from your account. Don't forget to clear the client state!
+  Use this mutation to logout from your account. Clear the client state, and
+  when the payload carries a redirectTo, navigate there to end the SSO
+  session as well.
   """
   logout: LogoutPayload
 
@@ -1741,16 +1749,6 @@ type Mutation {
     """
     input: MakeEmailPrimaryInput!
   ): MakeEmailPrimaryPayload
-
-  """
-  Use this mutation to create an account on our system. This may only be used if you are logged out.
-  """
-  register(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: RegisterInput!
-  ): RegisterPayload
 
   """
   The owner of an `Organization` may remove an `OrganizationMember` with this mutation.
@@ -2488,6 +2486,9 @@ type Query {
   """
   renderEmailTemplates: EmailTemplatesConnection
 
+  """True when Keycloak SSO login is configured on this server."""
+  ssoLoginEnabled: Boolean!
+
   """Supported languages of the app."""
   supportedLanguages: [SupportedLanguages]
   user(id: UUID!): User
@@ -2649,18 +2650,6 @@ enum QuotasOrderBy {
   PRIMARY_KEY_DESC
   UPDATED_BY_ASC
   UPDATED_BY_DESC
-}
-
-input RegisterInput {
-  avatarUrl: String
-  email: String!
-  name: String
-  password: String!
-  username: String!
-}
-
-type RegisterPayload {
-  user: User!
 }
 
 """Main table for registrations."""
@@ -3461,6 +3450,9 @@ type Subscription {
   Use this query to render all server-side email templates to html and text. (live)
   """
   renderEmailTemplates: EmailTemplatesConnection
+
+  """True when Keycloak SSO login is configured on this server. (live)"""
+  ssoLoginEnabled: Boolean!
 
   """Supported languages of the app. (live)"""
   supportedLanguages: [SupportedLanguages]

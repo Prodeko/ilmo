@@ -1,0 +1,191 @@
+import {
+  keycloakEnabled,
+  mapKeycloakClaims,
+  sanitizeNext,
+} from "../../src/utils/keycloak"
+
+const baseClaims = {
+  sub: "kc-uuid-1",
+  email: "matti.meikalainen@example.com",
+  email_verified: true,
+  name: "Matti Meikäläinen",
+  locale: "fi",
+  realm_access: { roles: ["membership", "ilmo-admin"] },
+}
+
+describe("mapKeycloakClaims", () => {
+  it("maps a full admin claim set", () => {
+    expect(mapKeycloakClaims(baseClaims)).toEqual({
+      sub: "kc-uuid-1",
+      email: "matti.meikalainen@example.com",
+      emailVerified: true,
+      name: "Matti Meikäläinen",
+      usernameSuggestion: "matti.meikalainen",
+      locale: "fi",
+      isAdmin: true,
+    })
+  })
+
+  it("is not admin without the ilmo-admin role", () => {
+    const claims = { ...baseClaims, realm_access: { roles: ["membership"] } }
+    expect(mapKeycloakClaims(claims).isAdmin).toBe(false)
+  })
+
+  it("maps admin status to unknown when realm_access is absent", () => {
+    // "No roles claim" and "no roles" are indistinguishable in the payload;
+    // null is what lets the callback skip the re-stamp instead of demoting.
+    const { realm_access: _dropped, ...claims } = baseClaims
+    expect(mapKeycloakClaims(claims).isAdmin).toBeNull()
+  })
+
+  it("maps admin status to unknown when roles is not an array", () => {
+    expect(
+      mapKeycloakClaims({ ...baseClaims, realm_access: {} }).isAdmin
+    ).toBeNull()
+    expect(
+      mapKeycloakClaims({
+        ...baseClaims,
+        realm_access: { roles: "ilmo-admin" },
+      }).isAdmin
+    ).toBeNull()
+  })
+
+  it("warns when the realm_access claim is missing entirely", () => {
+    const logger = { warn: jest.fn() }
+    const { realm_access: _dropped, ...claims } = baseClaims
+    mapKeycloakClaims(claims, logger)
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith(
+      { sub: "kc-uuid-1" },
+      expect.stringContaining("realm_access")
+    )
+  })
+
+  it("does not warn when realm_access is present but the role is not", () => {
+    const logger = { warn: jest.fn() }
+    mapKeycloakClaims({ ...baseClaims, realm_access: { roles: [] } }, logger)
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
+  it("warns when the email_verified claim is missing entirely", () => {
+    // Without the mapper every login is refused as unverified while the
+    // member's registry email is fine; the warn is what points the operator
+    // at the client scope instead of the registry.
+    const logger = { warn: jest.fn() }
+    const { email_verified: _dropped, ...claims } = baseClaims
+    const profile = mapKeycloakClaims(claims, logger)
+    expect(profile.emailVerified).toBe(false)
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith(
+      { sub: "kc-uuid-1" },
+      expect.stringContaining("email_verified")
+    )
+  })
+
+  it("does not warn when email_verified is explicitly false", () => {
+    const logger = { warn: jest.fn() }
+    mapKeycloakClaims({ ...baseClaims, email_verified: false }, logger)
+    expect(logger.warn).not.toHaveBeenCalled()
+  })
+
+  it.each(["fi", "en", "se"])("keeps the supported locale %p", (locale) => {
+    expect(mapKeycloakClaims({ ...baseClaims, locale }).locale).toBe(locale)
+  })
+
+  it("returns null locale for unsupported locales", () => {
+    expect(mapKeycloakClaims({ ...baseClaims, locale: "de" }).locale).toBeNull()
+    const { locale: _dropped, ...noLocale } = baseClaims
+    expect(mapKeycloakClaims(noLocale).locale).toBeNull()
+  })
+
+  it("reports unverified email", () => {
+    const claims = { ...baseClaims, email_verified: false }
+    expect(mapKeycloakClaims(claims).emailVerified).toBe(false)
+  })
+
+  it("falls back to email localpart when name is missing", () => {
+    const { name: _dropped, ...claims } = baseClaims
+    expect(mapKeycloakClaims(claims).name).toBe("matti.meikalainen")
+  })
+
+  it("throws KCCLM naming the missing claims", () => {
+    const { email: _dropped, ...noEmail } = baseClaims
+    const { sub: _dropped2, ...noSub } = baseClaims
+    for (const [claims, missing] of [
+      [noEmail, ["email"]],
+      [noSub, ["sub"]],
+    ] as const) {
+      let thrown: any = null
+      try {
+        mapKeycloakClaims(claims)
+      } catch (e) {
+        thrown = e
+      }
+      expect(thrown).not.toBeNull()
+      expect(thrown.code).toBe("KCCLM")
+      expect(thrown.missingClaims).toEqual(missing)
+      // Claim values are identity data; only the names may be logged.
+      expect(thrown.message).not.toContain(baseClaims.email)
+    }
+  })
+})
+
+describe("sanitizeNext", () => {
+  it("accepts a normal relative path", () => {
+    expect(sanitizeNext("/event/foo")).toBe("/event/foo")
+  })
+  it("accepts a path containing a percent-encoded query", () => {
+    expect(sanitizeNext("/event/foo?a=b%20c")).toBe("/event/foo?a=b%20c")
+  })
+  it.each([
+    [undefined],
+    [null],
+    ["https://evil.example.com"],
+    ["//evil.example.com"],
+    ["/auth/keycloak"],
+    ["/logout"],
+    // A signed-in visit to /auth/keycloak redirects to `next`, so /login as a
+    // destination would bounce between the two forever.
+    ["/login"],
+    ["/login?local=1"],
+    // Trailing slash and fragment both still resolve to the login page.
+    ["/login/"],
+    ["/login#form"],
+    ["/"],
+    // NUL and DEL pass the tab/CR/LF strip and must be caught by the control
+    // character check on their own.
+    ["/event/\u0000foo"],
+    ["/event/\u007ffoo"],
+    // Browsers normalise "\" to "/" before resolving, so these are
+    // protocol-relative URLs pointing at another origin.
+    ["/\\evil.example.com"],
+    ["/\\\\evil.example.com"],
+    // Tab, CR and LF are stripped by the browser's URL parser, which turns
+    // these back into "//evil.example.com".
+    ["/\t/evil.example.com"],
+    ["/\r\n/evil.example.com"],
+    ["/\r/evil.example.com"],
+    ["/\t\\evil.example.com"],
+  ])("falls back to / for %p", (value) => {
+    expect(sanitizeNext(value)).toBe("/")
+  })
+  it("strips embedded tab/CR/LF from an otherwise safe path", () => {
+    expect(sanitizeNext("/event\t/foo")).toBe("/event/foo")
+  })
+})
+
+describe("keycloakEnabled", () => {
+  const OLD = { ...process.env }
+  afterEach(() => {
+    process.env = { ...OLD }
+  })
+  it("is true only when all three vars are set", () => {
+    process.env.KEYCLOAK_ISSUER =
+      "http://localhost:8180/realms/membership-registry"
+    process.env.KEYCLOAK_CLIENT_ID = "ilmokilke"
+    process.env.KEYCLOAK_CLIENT_SECRET = "s3cret"
+    expect(keycloakEnabled()).toBe(true)
+    delete process.env.KEYCLOAK_CLIENT_SECRET
+    expect(keycloakEnabled()).toBe(false)
+  })
+})

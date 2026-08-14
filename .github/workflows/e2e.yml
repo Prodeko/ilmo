@@ -35,7 +35,7 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and pnpm
         uses: ./.github/actions/node-and-cache
@@ -98,7 +98,7 @@ jobs:
         run: pnpm exec cypress install
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           command: pnpm --filter @app/e2e run run:ci
           working-directory: "@app/e2e"
@@ -120,15 +120,225 @@ jobs:
           echo "::endgroup::"
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshots-${{ matrix.containers }}
           path: "@app/e2e/cypress/screenshots"
 
       - name: Upload videos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-videos-${{ matrix.containers }}
+          path: "@app/e2e/cypress/videos"
+
+  cypress-sso:
+    name: Cypress (SSO enabled)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Setup environment and database
+        # SSO is gated on the presence of the three variables, not on the
+        # issuer being reachable. Port 8180 has nothing listening on it, so
+        # discovery fails and the login chain ends on the error page while
+        # every step before the discovery call is the production path. The
+        # sharded job above runs with SSO off, which is why this is a separate
+        # server, and the reachable-provider half lives in its own job below
+        # because these specs need discovery to fail.
+        run: |
+          cp .env.ci .env
+          {
+            echo "KEYCLOAK_ISSUER=http://localhost:8180/realms/ci"
+            echo "KEYCLOAK_CLIENT_ID=ci"
+            echo "KEYCLOAK_CLIENT_SECRET=ci"
+          } >> .env
+          CONFIRM_DROP=1 pnpm run setup
+
+      - name: Build server-side TypeScript
+        run: |
+          pnpm --filter @app/graphql run build
+          pnpm tsc
+
+      - name: Start server in background
+        run: pnpm --filter @app/server run start > /tmp/server.log 2>&1 &
+
+      - name: Ensure Cypress binary is installed
+        working-directory: "@app/e2e"
+        run: pnpm exec cypress install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v7
+        with:
+          command: pnpm --filter @app/e2e run run:sso
+          working-directory: "@app/e2e"
+          wait-on: http://localhost:5678
+          install: false
+
+      - name: Dump server log
+        if: always()
+        run: |
+          echo "::group::server log (tail 300)"
+          tail -300 /tmp/server.log 2>/dev/null || echo "(no server log)"
+          echo "::endgroup::"
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: cypress-sso-screenshots
+          path: "@app/e2e/cypress/screenshots"
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: cypress-sso-videos
+          path: "@app/e2e/cypress/videos"
+
+  cypress-sso-live:
+    name: Cypress (SSO live)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:6-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+      postgres:
+        image: debezium/postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/node-and-cache
+
+      - name: Install pg_dump
+        uses: ./.github/actions/install-pg-dump
+
+      - name: Start Keycloak
+        # Not a service container like redis and postgres above: services are
+        # created before the checkout step runs, so the realm fixture that has
+        # to be mounted into the container does not exist yet at that point.
+        run: |
+          docker run -d --name keycloak -p 8080:8080 \
+            -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+            -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+            -v "$PWD/@app/e2e/keycloak/realm-ci.json:/opt/keycloak/data/import/realm-ci.json:ro" \
+            quay.io/keycloak/keycloak:26.0 start-dev --import-realm
+
+      - name: Wait for Keycloak
+        # The discovery document is what the server asks Keycloak for first, so
+        # serving it is the readiness signal worth waiting on: it proves both
+        # that Keycloak is up and that the realm import landed.
+        run: |
+          for _ in $(seq 1 60); do
+            if curl -sfo /dev/null http://localhost:8080/realms/ilmo-ci/.well-known/openid-configuration; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "keycloak never served the ilmo-ci discovery document"
+          docker logs keycloak
+          exit 1
+
+      - name: Setup environment and database
+        # Realm name, client id and secret are the ones the fixture defines;
+        # its redirect URIs are pinned to .env.ci's ROOT_URL.
+        run: |
+          cp .env.ci .env
+          {
+            echo "KEYCLOAK_ISSUER=http://localhost:8080/realms/ilmo-ci"
+            echo "KEYCLOAK_CLIENT_ID=ilmo-ci"
+            echo "KEYCLOAK_CLIENT_SECRET=ilmo-ci-secret"
+          } >> .env
+          CONFIRM_DROP=1 pnpm run setup
+
+      - name: Build server-side TypeScript
+        run: |
+          pnpm --filter @app/graphql run build
+          pnpm tsc
+
+      - name: Start server in background
+        run: pnpm --filter @app/server run start > /tmp/server.log 2>&1 &
+
+      - name: Ensure Cypress binary is installed
+        working-directory: "@app/e2e"
+        run: pnpm exec cypress install
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v7
+        with:
+          command: pnpm --filter @app/e2e run run:sso-live
+          working-directory: "@app/e2e"
+          wait-on: http://localhost:5678
+          install: false
+
+      - name: Dump server and Keycloak logs
+        if: always()
+        run: |
+          echo "::group::server log (tail 300)"
+          tail -300 /tmp/server.log 2>/dev/null || echo "(no server log)"
+          echo "::endgroup::"
+          echo "::group::keycloak log (tail 300)"
+          docker logs --tail 300 keycloak 2>&1 || echo "(no keycloak log)"
+          echo "::endgroup::"
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: cypress-sso-live-screenshots
+          path: "@app/e2e/cypress/screenshots"
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: cypress-sso-live-videos
           path: "@app/e2e/cypress/videos"

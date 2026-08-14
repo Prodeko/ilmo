@@ -13,7 +13,18 @@
       "username": "E-mail or Username"
     }
   },
-  "registerButton": "Create an account",
-  "signinButton": "Sign in with E-mail or Username",
-  "signinDifferent": "Use a different sign in method"
+  "signinDifferent": "Use a different sign in method",
+  "signinWithProdekoId": "Sign in with Prodeko ID",
+  "ssoError": {
+    "account_conflict": "This identity cannot be linked to the requested account. Contact the administrators.",
+    "code_exchange_failed": "Sign-in failed. Please try again.",
+    "email_not_verified": "Your email address is not verified. Verify it at id.prodeko.org first.",
+    "link_session_lost": "Your session ended before the account could be linked. Sign in and try linking again from account settings.",
+    "login_failed": "Sign-in failed. Please try again.",
+    "missing_claims": "Prodeko ID did not return the information needed to sign you in. Please contact the administrators.",
+    "sso_unavailable": "The Prodeko ID sign-in service is temporarily unavailable. Try again in a moment, or sign in with your local username and passphrase.",
+    "state_mismatch": "The sign-in attempt expired. Please try again."
+  },
+  "tryAgain": "Try signing in again",
+  "useLocalSignin": "Use local sign-in"
 }

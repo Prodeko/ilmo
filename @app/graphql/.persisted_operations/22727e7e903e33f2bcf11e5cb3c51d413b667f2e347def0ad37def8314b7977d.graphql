@@ -1,36 +1,13 @@
-fragment HomePage_Query on Query {
+fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  organizations {
-    nodes {
-      id
-      name
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Registration
+    quota {
+      ...EventPage_Quota
       __typename
     }
-    __typename
-  }
-  signupOpenEvents: events(
-    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}, name: {containsKey: $language}}
-    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
-    __typename
-  }
-  signupUpcomingEvents: events(
-    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}, name: {containsKey: $language}}
-    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
-    __typename
-  }
-  eventCategories {
-    nodes {
-      ...EventPage_EventCategory
+    event {
+      ...EventPage_Event
       __typename
     }
     __typename
@@ -42,6 +19,7 @@ fragment SharedLayout_Query on Query {
     ...SharedLayout_User
     __typename
   }
+  ssoLoginEnabled
   supportedLanguages
   __typename
 }
@@ -85,29 +63,49 @@ fragment SharedLayout_UserEmail on UserEmail {
   createdAt
   __typename
 }
-fragment HomePage_Event on Event {
+fragment UpdateEventRegistrationPage_Registration on Registration {
+  id
+  firstName
+  lastName
+  answers
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  __typename
+}
+fragment EventPage_Event on Event {
   ...EventFields
-  ownerOrganization {
-    ...EventPage_Organization
-    __typename
-  }
   category {
     ...EventPage_EventCategory
+    __typename
+  }
+  ownerOrganization {
+    ...EventPage_Organization
     __typename
   }
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      registrations {
-        totalCount
-        __typename
-      }
       __typename
     }
     __typename
   }
-  registrations {
-    totalCount
+  registrations(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Registration
+      __typename
+    }
+    __typename
+  }
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
+      __typename
+    }
     __typename
   }
   __typename
@@ -135,13 +133,6 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
-fragment EventPage_Organization on Organization {
-  id
-  name
-  slug
-  color
-  __typename
-}
 fragment EventPage_EventCategory on EventCategory {
   id
   description
@@ -154,13 +145,34 @@ fragment EventPage_EventCategory on EventCategory {
   updatedAt
   __typename
 }
-fragment EventPage_Quota on Quota {
+fragment EventPage_Organization on Organization {
   id
-  position
-  title
-  size
+  name
+  slug
+  color
   __typename
 }
-query HomePage($language: String!) {
-  ...HomePage_Query
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  status
+  position
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment EventPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+  __typename
+}
+query UpdateEventRegistrationPage($updateToken: String!) {
+  ...UpdateEventRegistrationPage_Query
 }

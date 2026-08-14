@@ -5,7 +5,6 @@ module.exports = {
     "*": ["common", "error"],
     "/": ["home", "events"],
     "/login": ["login"],
-    "/register": ["register_user"],
     "/reset": ["reset"],
     "/forgot": ["forgot"],
     "/verify": ["verify"],
