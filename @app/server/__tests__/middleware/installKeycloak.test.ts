@@ -939,7 +939,7 @@ describe("account linking", () => {
 
   it("still refuses a break-glass account on the linking path", async () => {
     const breakGlassId = await createLocalUser({
-      username: "ProdekoToimari",
+      username: "Toimari",
       email: "toimari@prodeko.fi",
       isAdmin: true,
     })
