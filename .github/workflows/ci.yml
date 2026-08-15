@@ -298,10 +298,17 @@ jobs:
         id: get-comment-body
         if: steps.baseline.outputs.found == 'true'
         run: |
+          # nextjs-bundle-analysis writes the comment with no trailing newline,
+          # so the closing delimiter has to be preceded by one of its own or it
+          # lands on the same line as the last byte and is never recognised.
+          # The delimiter is randomised because the comment body is generated
+          # content that must not be able to terminate its own heredoc.
+          delimiter="bundle_$(openssl rand -hex 16)"
           {
-            echo 'body<<EOF'
+            echo "body<<${delimiter}"
             cat .next/analyze/__bundle_analysis_comment.txt
-            echo 'EOF'
+            echo
+            echo "${delimiter}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Find existing comment
