@@ -133,13 +133,19 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           data-cy="eventform-select-organization-id"
           placeholder={t("forms.placeholders.event.organizer")}
         >
-          {data?.currentUser?.organizationMemberships?.nodes?.map((o, i) => (
+          {/*
+            Every organization is offered. The event forms are admin-only, and
+            `manage_admin` on app_public.events already lets an admin own an
+            event for any organization; listing only their memberships left the
+            dropdown empty for admins who hold none.
+          */}
+          {data?.organizations?.nodes?.map((o, i) => (
             <Option
-              key={o.organization?.id}
+              key={o.id}
               data-cy={`eventform-select-organization-id-option-${i}`}
-              value={o.organization?.id}
+              value={o.id}
             >
-              {o.organization?.name}
+              {o.name}
             </Option>
           ))}
         </Select>

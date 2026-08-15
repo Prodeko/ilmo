@@ -1,6 +1,17 @@
+fragment SharedLayout_Organization on Organization {
+  id
+  name
+  slug
+}
+
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
+  }
+  organizations(orderBy: SLUG_ASC) {
+    nodes {
+      ...SharedLayout_Organization
+    }
   }
   ssoLoginEnabled
   supportedLanguages

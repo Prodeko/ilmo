@@ -21,12 +21,6 @@ fragment HomePage_Event on Event {
 
 fragment HomePage_Query on Query {
   ...SharedLayout_Query
-  organizations {
-    nodes {
-      id
-      name
-    }
-  }
   signupOpenEvents: events(
     filter: {
       signupOpen: { equalTo: true }
