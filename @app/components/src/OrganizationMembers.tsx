@@ -90,24 +90,31 @@ export const OrganizationMembers: React.FC<OrganizationMembersProps> = (
 
   return (
     <>
-      <Card title={t("organizations.inviteNewMember")}>
-        <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
-          <Form.Item
-            label={t("organizations.usernameOrEmail")}
-            name="inviteText"
-          >
-            <Input
-              disabled={inviteInProgress}
-              placeholder={t("organizations.enterEmailOrUsername")}
-            />
-          </Form.Item>
-          <Form.Item {...tailFormItemLayout}>
-            <Button disabled={inviteInProgress} htmlType="submit">
-              {t("common:invite")}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+      {/*
+        `app_public.invite_to_organization` refuses anyone who is not the owner
+        of this organization, admin or not, so the form is shown to the owner
+        only rather than offered to everyone and failing on submit.
+      */}
+      {organization.currentUserIsOwner && (
+        <Card title={t("organizations.inviteNewMember")}>
+          <Form {...formItemLayout} form={form} onFinish={handleInviteSubmit}>
+            <Form.Item
+              label={t("organizations.usernameOrEmail")}
+              name="inviteText"
+            >
+              <Input
+                disabled={inviteInProgress}
+                placeholder={t("organizations.enterEmailOrUsername")}
+              />
+            </Form.Item>
+            <Form.Item {...tailFormItemLayout}>
+              <Button disabled={inviteInProgress} htmlType="submit">
+                {t("common:invite")}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+      )}
       <List
         dataSource={organization.organizationMemberships?.nodes ?? []}
         header={

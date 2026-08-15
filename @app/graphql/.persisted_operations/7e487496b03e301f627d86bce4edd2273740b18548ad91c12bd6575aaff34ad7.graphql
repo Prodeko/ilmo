@@ -1,11 +1,14 @@
-fragment CreateEventRegistrationPage_Query on Query {
+fragment UpdateEventPage_Query on Query {
   ...SharedLayout_Query
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
+  event(id: $id) {
+    ...UpdateEventPage_Event
     __typename
   }
-  quota(id: $quotaId) {
-    ...EventPage_Quota
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
+      __typename
+    }
     __typename
   }
   __typename
@@ -13,6 +16,13 @@ fragment CreateEventRegistrationPage_Query on Query {
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
+    __typename
+  }
+  organizations(orderBy: SLUG_ASC) {
+    nodes {
+      ...SharedLayout_Organization
+      __typename
+    }
     __typename
   }
   ssoLoginEnabled
@@ -59,7 +69,13 @@ fragment SharedLayout_UserEmail on UserEmail {
   createdAt
   __typename
 }
-fragment EventPage_Event on Event {
+fragment SharedLayout_Organization on Organization {
+  id
+  name
+  slug
+  __typename
+}
+fragment UpdateEventPage_Event on Event {
   ...EventFields
   category {
     ...EventPage_EventCategory
@@ -72,13 +88,10 @@ fragment EventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      __typename
-    }
-    __typename
-  }
-  registrations(orderBy: POSITION_ASC) {
-    nodes {
-      ...EventPage_Registration
+      registrations {
+        totalCount
+        __typename
+      }
       __typename
     }
     __typename
@@ -141,18 +154,6 @@ fragment EventPage_Quota on Quota {
   size
   __typename
 }
-fragment EventPage_Registration on Registration {
-  id
-  fullName
-  status
-  position
-  createdAt
-  quota {
-    ...EventPage_Quota
-    __typename
-  }
-  __typename
-}
 fragment EventPage_Question on EventQuestion {
   id
   position
@@ -162,6 +163,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
-  ...CreateEventRegistrationPage_Query
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
 }

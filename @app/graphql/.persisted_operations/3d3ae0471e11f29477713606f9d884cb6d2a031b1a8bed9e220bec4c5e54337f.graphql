@@ -3,6 +3,13 @@ fragment SharedLayout_Query on Query {
     ...SharedLayout_User
     __typename
   }
+  organizations(orderBy: SLUG_ASC) {
+    nodes {
+      ...SharedLayout_Organization
+      __typename
+    }
+    __typename
+  }
   ssoLoginEnabled
   supportedLanguages
   __typename
@@ -47,6 +54,18 @@ fragment SharedLayout_UserEmail on UserEmail {
   createdAt
   __typename
 }
-query Shared {
+fragment SharedLayout_Organization on Organization {
+  id
+  name
+  slug
+  __typename
+}
+query InvitationDetail($id: UUID!, $code: String) {
   ...SharedLayout_Query
+  organizationForInvitation(invitationId: $id, code: $code) {
+    id
+    name
+    slug
+    __typename
+  }
 }

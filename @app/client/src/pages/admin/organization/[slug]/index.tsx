@@ -26,13 +26,18 @@ const Admin_Organizations: NextPage = () => {
   })
   const loading = useLoading(query, "organizationBySlug", "large")
   const organization = query.data?.organizationBySlug
+  const isAdmin = query.data?.currentUser?.isAdmin ?? false
 
   const props = { page, setPage }
 
   return (
     <AdminLayout href="/admin/organization/[slug]" query={query}>
       {loading || (
-        <OrganizationPageInner organization={organization!} {...props} />
+        <OrganizationPageInner
+          isAdmin={isAdmin}
+          organization={organization!}
+          {...props}
+        />
       )}
     </AdminLayout>
   )
@@ -40,15 +45,19 @@ const Admin_Organizations: NextPage = () => {
 
 interface OrganizationPageInnerProps {
   organization: OrganizationPage_OrganizationFragment
+  isAdmin: boolean
   page: number
   setPage: React.Dispatch<React.SetStateAction<number>>
 }
 
 const OrganizationPageInner: React.FC<OrganizationPageInnerProps> = (props) => {
   const { t } = useTranslation("admin")
-  const { organization, ...rest } = props
+  const { organization, isAdmin, ...rest } = props
 
-  if (!organization.currentUserIsOwner) {
+  // Mirrors the database: `manage_admin` lets an admin update any organization,
+  // `update_owner` covers the owner of this one. Member management stays with
+  // the owner alone, which OrganizationMembers enforces separately.
+  if (!organization.currentUserIsOwner && !isAdmin) {
     message.warning({
       key: "organizations-access-denied",
       content: t("organizations.accessDenied"),

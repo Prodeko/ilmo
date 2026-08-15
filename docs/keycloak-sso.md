@@ -138,7 +138,7 @@ form is not linked from anywhere. Two entry points reveal it:
 
 The form accepts any local account and is the ordinary password login, rate
 limiting and lockout included. It exists for the operations accounts ProdekoCTO
-and ProdekoToimari, whose passwords live in the credential store rather than in
+and Toimari, whose passwords live in the credential store rather than in
 Keycloak. Those two usernames are blocked from SSO: a Keycloak login that would
 land on them is refused with `account_conflict` and the whole callback
 transaction is rolled back, so no identity link is left behind and their admin
@@ -190,9 +190,9 @@ no error; only actual failures reach `/login?error=`.
    it to the members who need admin access.
 3. Register the `ilmokilke` client in the realm, add the realm-roles and
    `locale` mappers, and copy the secret into the secret store.
-4. Verify that neither ProdekoCTO nor ProdekoToimari carries an email address
-   that collides with a member's Keycloak email, and rotate both passwords into
-   the break-glass credential store. Then audit every other local account with
+4. Verify that neither ProdekoCTO nor Toimari carries an email address that
+   collides with a member's Keycloak email, and rotate both passwords into the
+   break-glass credential store. Then audit every other local account with
    `is_admin` whose verified email matches a realm member: the member's first
    SSO login adopts that account and re-stamps its admin flag, so grant those
    members `ilmo-admin` in the registry before cutover or they are demoted.

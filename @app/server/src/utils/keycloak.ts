@@ -16,8 +16,11 @@ export type RequestLogger = Pick<FastifyBaseLogger, "debug" | "warn" | "error">
 export const ILMO_ADMIN_ROLE = "ilmo-admin"
 
 // Local accounts kept for break-glass access; an SSO login must never link
-// onto (or flip is_admin on) these rows. Compared lowercase (username is citext).
-export const BREAK_GLASS_USERNAMES = ["prodekocto", "prodekotoimari"]
+// onto (or flip is_admin on) these rows. Compared lowercase (username is citext),
+// and the values are the usernames as they exist in app_public.users — "Toimari"
+// holds ownership of most organizations, so a mistyped entry here is what would
+// let an SSO identity be adopted onto it.
+export const BREAK_GLASS_USERNAMES = ["prodekocto", "toimari"]
 
 export interface KeycloakProfile {
   readonly sub: string

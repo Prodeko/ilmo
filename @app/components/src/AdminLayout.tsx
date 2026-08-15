@@ -62,8 +62,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     },
   ]
 
-  const organizationMemberships =
-    data?.currentUser?.organizationMemberships.nodes || []
+  // Every organization, not just the ones the user is a member of: this menu
+  // only renders behind AuthRestrict.NOT_ADMIN, and an admin manages all of
+  // them. Membership grants a *non*-admin rights over a single organization.
+  const organizations = data?.organizations?.nodes || []
 
   const items: MenuItem[] = fetching
     ? [...basicMenuItems]
@@ -73,11 +75,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           title: t("sider.titles.organizations"),
           icon: <VscOrganization />,
           cy: "admin-sider-organizations",
-          target: organizationMemberships
+          target: organizations
             ? [
-                ...organizationMemberships.map((organization): MenuItem => {
-                  const title = organization.organization?.name || ""
-                  const slug = organization.organization?.slug
+                ...organizations.map((organization): MenuItem => {
+                  const title = organization.name || ""
+                  const slug = organization.slug
                   return {
                     title,
                     key: `/admin/organization/${slug}`,
