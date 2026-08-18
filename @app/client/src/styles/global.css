@@ -54,6 +54,13 @@ body {
   white-space: normal;
 }
 
+.ant-form-item .ant-form-item-label-wrap > label {
+  /* antd's labelWrap wraps the label text but keeps the label at a fixed
+     control height, so extra lines spill over adjacent fields */
+  height: auto;
+  min-height: 32px;
+}
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
