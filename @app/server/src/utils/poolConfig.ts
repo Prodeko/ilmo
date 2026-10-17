@@ -8,7 +8,8 @@ export interface PoolConfig {
 /*
  * The defaults fit the server and worker into a budget of 10 Postgres
  * connections: root 2 + auth 5 (one of which is held by @graphile/pg-pubsub
- * for LISTEN) + worker 2 (WORKER_POOL_MAX).
+ * for LISTEN) + worker 2 (WORKER_POOL_MAX, which the worker's start scripts
+ * read from the process environment rather than from .env).
  */
 const DEFAULT_MAX: Record<PoolKind, number> = {
   root: 2,
