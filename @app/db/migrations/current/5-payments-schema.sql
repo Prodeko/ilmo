@@ -24,9 +24,12 @@ drop function if exists app_public.registrations_payment_status(app_public.regis
 drop function if exists app_hidden.backfill_registration_prices(uuid);
 drop function if exists app_private.current_user_can_manage_event_payments(uuid);
 drop function if exists app_private.queue_registration_refund(uuid);
+drop trigger if exists _200_queue_payment_refund on app_public.registrations;
+drop function if exists app_private.tg_registrations__queue_payment_refund();
 drop trigger if exists _250_snapshot_price on app_public.registrations;
 drop function if exists app_private.tg_registrations__snapshot_price();
 drop function if exists app_public.admin_delete_registration(uuid, boolean);
+drop function if exists app_private.delete_registration_without_refund(uuid);
 
 drop table if exists app_private.stripe_events;
 drop table if exists app_public.payments;
@@ -132,10 +135,10 @@ on app_public.events to :DATABASE_VISITOR;
 
 alter table app_public.quotas
   add column price_cents integer not null default 0
-    constraint quotas_price_cents_check check (price_cents = 0 or price_cents >= 25);
+    constraint quotas_price_cents_check check (price_cents = 0 or price_cents between 25 and 1000000);
 
 comment on column app_public.quotas.price_cents is
-  E'Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe''s minimum.';
+  E'Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe''s minimum, and at most 1 000 000 cents (10 000 €).';
 
 grant
   insert(price_cents),
@@ -554,35 +557,89 @@ create trigger _250_snapshot_price
   execute procedure app_private.tg_registrations__snapshot_price();
 
 /*
- * Queues a refund of the ticket price when the registration has a card
- * payment. Must run before the registration is deleted: afterwards the
- * payment row's registration_id is null. The payment row itself survives the
- * delete (on delete set null) for bookkeeping.
+ * Refunds on delete. A registration that was paid by card gets its ticket
+ * price refunded whenever it is deleted, whichever way that happens: by the
+ * participant (delete_registration), by an organizer
+ * (admin_delete_registration), or as part of deleting its quota or its whole
+ * event (on delete cascade). Doing this in one before delete trigger covers
+ * every path exactly once: a row can only be deleted once, so concurrent
+ * deletes can't queue two refunds.
+ *
+ * The refund itself is made by the payment__refund worker job, so a Stripe
+ * outage can't block deletions. The payment row survives the delete (on
+ * delete set null) for bookkeeping. Manual payments are never refunded by
+ * Ilmo.
+ *
+ * Deleting without a refund is opted into for the rest of the current
+ * transaction with the transaction-local setting
+ *
+ *   select set_config('ilmo.refund_deleted_registrations', 'off', true)
+ *
+ * admin_delete_registration(refund => false) does this around its own delete
+ * only (see app_private.delete_registration_without_refund), and the GDPR job
+ * does it because registrations deleted 60 days after the event are not
+ * cancellations.
  */
-create function app_private.queue_registration_refund(registration_id uuid)
-returns void as $$
+create function app_private.tg_registrations__queue_payment_refund() returns trigger as $$
 declare
   v_payment_id uuid;
 begin
-  select p.id into v_payment_id
+  if coalesce(current_setting('ilmo.refund_deleted_registrations', true), '') = 'off' then
+    return OLD;
+  end if;
+
+  for v_payment_id in
+    select p.id
     from app_public.payments as p
     where
-      p.registration_id = queue_registration_refund.registration_id
+      p.registration_id = OLD.id
       and p.status = 'PAID'
-      and p.method = 'STRIPE';
-
-  if v_payment_id is not null then
+      and p.method = 'STRIPE'
+  loop
     perform graphile_worker.add_job(
       'payment__refund',
       json_build_object('paymentId', v_payment_id)
     );
-  end if;
+  end loop;
+
+  return OLD;
 end;
 $$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
-comment on function app_private.queue_registration_refund(registration_id uuid) is
-  E'Queues payment__refund for the registration''s paid Stripe payment, if it has one. Manual payments are never refunded by Ilmo.';
+comment on function app_private.tg_registrations__queue_payment_refund() is
+  E'Queues payment__refund for the paid Stripe payment of a registration being deleted, unless ilmo.refund_deleted_registrations is ''off'' in this transaction. Manual payments are never refunded by Ilmo.';
+
+create trigger _200_queue_payment_refund
+  before delete on app_public.registrations
+  for each row
+  execute procedure app_private.tg_registrations__queue_payment_refund();
 
 drop function if exists app_public.admin_delete_registration(uuid);
+
+/*
+ * Deletes a registration without refunding its card payment: switches the
+ * _200_queue_payment_refund trigger off for this one delete and restores the
+ * previous setting afterwards. Returns the id of the deleted registration, or
+ * null if there was none.
+ */
+create function app_private.delete_registration_without_refund(registration_id uuid)
+returns uuid as $$
+declare
+  v_previous_setting text := current_setting('ilmo.refund_deleted_registrations', true);
+  v_registration_id uuid;
+begin
+  perform set_config('ilmo.refund_deleted_registrations', 'off', true);
+
+  delete from app_public.registrations r
+    where r.id = delete_registration_without_refund.registration_id
+    returning r.id into v_registration_id;
+
+  perform set_config('ilmo.refund_deleted_registrations', coalesce(v_previous_setting, ''), true);
+
+  return v_registration_id;
+end;
+$$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_private.delete_registration_without_refund(registration_id uuid) is
+  E'Deletes a registration without queueing a refund for its card payment. Returns the deleted registration''s id.';
 
 create function app_public.admin_delete_registration(id uuid, refund boolean default true)
 returns boolean as $$
@@ -592,13 +649,13 @@ begin
   -- Check permissions
   call app_public.check_is_admin();
 
-  -- Refund the ticket price of a card payment unless the admin opted out
+  -- Delete registration and associated secrets (foreign key has on delete).
   if coalesce(refund, true) then
-    perform app_private.queue_registration_refund(admin_delete_registration.id);
+    -- The _200_queue_payment_refund trigger refunds the ticket price of a card payment
+    delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
+  else
+    v_registration_id := app_private.delete_registration_without_refund(admin_delete_registration.id);
   end if;
-
-  -- Delete registration and associated secrets (foreign key has on delete)
-  delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
 
   if v_registration_id is null then
     raise exception 'Registration was not found.' using errcode = 'NTFND';
@@ -610,6 +667,10 @@ $$ language plpgsql volatile security definer set search_path to pg_catalog, pub
 comment on function app_public.admin_delete_registration(id uuid, refund boolean) is
   E'Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed. If the registration was paid by card and refund is true (the default), the ticket price is refunded; the service fee is not.';
 
+/*
+ * The lines up to the signup check keep their original line numbers, which
+ * show up in the error snapshots of the server tests.
+ */
 create or replace function app_public.delete_registration("updateToken" text)
 returns boolean as $$
 declare
@@ -624,19 +685,22 @@ begin
   if v_registration_id is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
-
-  select * into v_registration from app_public.registrations where id = v_registration_id;
+  -- Lock the registration: a concurrent call with the same token waits here and then finds it gone
+  select * into v_registration from app_public.registrations where id = v_registration_id for update;
   select * into v_event from app_public.events where id = v_registration.event_id;
-
+  if v_registration.id is null then raise exception 'Registration matching token was not found.' using errcode = 'NTFND'; end if;
   if (v_event is null) or not (select app_public.events_signup_open(v_event)) then
     raise exception 'Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
-  -- A cancelled card payment is always refunded (ticket price only)
-  perform app_private.queue_registration_refund(v_registration_id);
-
-  -- Delete registration and associated secrets (foreign key has on delete)
+  -- Delete registration and associated secrets (foreign key has on delete).
+  -- A card payment is always refunded (ticket price only), by the
+  -- _200_queue_payment_refund trigger.
   delete from app_public.registrations where id = v_registration_id;
+
+  if not found then
+    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
 
   return true;
 end;
@@ -706,7 +770,8 @@ returns app_public.event_payment_summary as $$
         (select coalesce(sum(
           case
             when method = 'MANUAL' or ticket_amount_cents = 0 then ticket_amount_cents
-            else floor((1000 * ticket_amount_cents - 15 * (ticket_amount_cents + 25))::numeric / 1000 + 0.5)
+            -- In numeric, so large amounts can't overflow integer maths
+            else floor((1000 * ticket_amount_cents::numeric - 15 * (ticket_amount_cents::numeric + 25)) / 1000 + 0.5)
           end
         ), 0) from paid)::integer
       )::app_public.event_payment_summary

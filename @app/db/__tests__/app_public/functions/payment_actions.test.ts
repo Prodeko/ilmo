@@ -5,6 +5,8 @@ import {
   becomeUser,
   createUsers,
   getJobs,
+  poolFromUrl,
+  TEST_DATABASE_URL,
   withAdminUserDb,
   withRootDb,
 } from "../../helpers"
@@ -428,6 +430,206 @@ describe("refunds when deleting a registration", () => {
 
       await client.query("select app_public.delete_registration($1)", [
         updateToken,
+      ])
+      expect(await refundJobs(client, [payment.id])).toEqual([])
+    }))
+
+  it("delete_registration refunds only once when called twice", () =>
+    withRootDb(async (client) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration, updateToken } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      const payment = await insertPayment(client, registration)
+      await becomeUser(client, null)
+
+      await client.query("select app_public.delete_registration($1)", [
+        updateToken,
+      ])
+      await client.query("savepoint second_delete")
+      await expect(
+        client.query("select app_public.delete_registration($1)", [updateToken])
+      ).rejects.toThrow("Registration matching token was not found.")
+      await client.query("rollback to savepoint second_delete")
+      expect(await refundJobs(client, [payment.id])).toHaveLength(1)
+    }))
+
+  it("delete_registration serializes concurrent calls with the same token", async () => {
+    // Needs committed data, so this test cleans up after itself
+    const pool = poolFromUrl(TEST_DATABASE_URL)
+    const setup = await pool.connect()
+    const first = await pool.connect()
+    const second = await pool.connect()
+    let data:
+      | { eventId: string; organizationId: string; paymentId: string }
+      | undefined
+    try {
+      await setup.query("begin")
+      const { event, quota, organization } = await createPaidEventData(setup)
+      const { registration, updateToken } = await register(
+        setup,
+        event.id,
+        quota.id
+      )
+      const payment = await insertPayment(setup, registration)
+      await setup.query("commit")
+      data = {
+        eventId: event.id,
+        organizationId: organization.id,
+        paymentId: payment.id,
+      }
+
+      await first.query("begin")
+      await second.query("begin")
+      await first.query("select app_public.delete_registration($1)", [
+        updateToken,
+      ])
+      // Blocks on the registration row lock until the first call commits
+      const secondCall = second
+        .query("select app_public.delete_registration($1)", [updateToken])
+        .then(
+          () => null,
+          (e: Error) => e
+        )
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      await first.query("commit")
+      const error = await secondCall
+      await second.query("rollback")
+
+      expect(error?.message).toBe("Registration matching token was not found.")
+      const { rows } = await setup.query(
+        `select count(*)::int as count from graphile_worker._private_jobs
+          where payload->>'paymentId' = $1`,
+        [payment.id]
+      )
+      expect(rows).toEqual([{ count: 1 }])
+    } finally {
+      await first.query("rollback").catch(() => {})
+      await second.query("rollback").catch(() => {})
+      if (data) {
+        await setup.query(
+          "delete from graphile_worker._private_jobs where payload->>'paymentId' = $1",
+          [data.paymentId]
+        )
+        await setup.query("delete from app_public.payments where id = $1", [
+          data.paymentId,
+        ])
+        await setup.query("delete from app_public.events where id = $1", [
+          data.eventId,
+        ])
+        await setup.query(
+          "delete from app_public.event_categories where owner_organization_id = $1",
+          [data.organizationId]
+        )
+        await setup.query(
+          "delete from app_public.organizations where id = $1",
+          [data.organizationId]
+        )
+      }
+      setup.release()
+      first.release()
+      second.release()
+    }
+  })
+
+  it("admin_delete_registration's refund = false covers only that delete", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration: kept } = await register(client, event.id, quota.id)
+      const { registration: refunded } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      const keptPayment = await insertPayment(client, kept)
+      const refundedPayment = await insertPayment(client, refunded)
+      await becomeUser(client, admin.id)
+
+      await client.query(
+        "select app_public.admin_delete_registration($1, false)",
+        [kept.id]
+      )
+      await client.query("select app_public.admin_delete_registration($1)", [
+        refunded.id,
+      ])
+
+      expect(
+        await refundJobs(client, [keptPayment.id, refundedPayment.id])
+      ).toEqual([{ paymentId: refundedPayment.id }])
+      const {
+        rows: [{ setting }],
+      } = await client.query(
+        "select current_setting('ilmo.refund_deleted_registrations', true) as setting"
+      )
+      expect(setting).toBe("")
+    }))
+
+  it("deleting an event refunds its card payments", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration: card } = await register(client, event.id, quota.id)
+      const { registration: manual } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      const { registration: pending } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      const cardPayment = await insertPayment(client, card)
+      const manualPayment = await insertPayment(client, manual, {
+        method: "MANUAL",
+      })
+      const pendingPayment = await insertPayment(client, pending, {
+        status: "PENDING",
+      })
+      await becomeUser(client, admin.id)
+
+      // As the deleteEvent CRUD mutation does; registrations cascade
+      const { rowCount } = await client.query(
+        "delete from app_public.events where id = $1",
+        [event.id]
+      )
+      expect(rowCount).toBe(1)
+
+      expect(
+        await refundJobs(client, [
+          cardPayment.id,
+          manualPayment.id,
+          pendingPayment.id,
+        ])
+      ).toEqual([{ paymentId: cardPayment.id }])
+
+      // Every payment row survives for bookkeeping
+      const rows = await asRoot(client, async () => {
+        const { rows } = await client.query(
+          `select id, registration_id, event_id, status from app_public.payments
+            where id = any($1)`,
+          [[cardPayment.id, manualPayment.id, pendingPayment.id]]
+        )
+        return rows
+      })
+      expect(rows).toHaveLength(3)
+      for (const row of rows) {
+        expect(row).toMatchObject({ registration_id: null, event_id: null })
+      }
+    }))
+
+  it("skips refunds while ilmo.refund_deleted_registrations is off", () =>
+    withRootDb(async (client) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration } = await register(client, event.id, quota.id)
+      const payment = await insertPayment(client, registration)
+
+      await client.query(
+        "select set_config('ilmo.refund_deleted_registrations', 'off', true)"
+      )
+      await client.query("delete from app_public.events where id = $1", [
+        event.id,
       ])
       expect(await refundJobs(client, [payment.id])).toEqual([])
     }))

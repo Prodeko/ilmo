@@ -5,6 +5,7 @@ import {
   becomeUser,
   clearJobs,
   createUsers,
+  getJobs,
   runJobs,
   withAdminUserDb,
   withRootDb,
@@ -201,6 +202,9 @@ describe("app_public.payments", () => {
       )
       await runJobs(client)
 
+      // Retention is not a cancellation: nothing is refunded
+      expect(await getJobs(client, "payment__refund")).toEqual([])
+
       const { rows: registrations } = await client.query(
         "select id from app_public.registrations where id = $1",
         [registration.id]
@@ -224,27 +228,33 @@ describe("app_public.payments", () => {
 })
 
 describe("payment check constraints", () => {
-  it.each([1, 24, -25])("rejects a quota price of %i cents", (price) =>
-    withRootDb(async (client) => {
-      const { quota } = await createPaidEventData(client)
-      await expect(
-        client.query(
-          "update app_public.quotas set price_cents = $2 where id = $1",
-          [quota.id, price]
+  it.each([1, 24, -25, 1000001, 2147483647])(
+    "rejects a quota price of %i cents",
+    (price) =>
+      withRootDb(async (client) => {
+        const { quota } = await createPaidEventData(client)
+        await expect(
+          client.query(
+            "update app_public.quotas set price_cents = $2 where id = $1",
+            [quota.id, price]
+          )
+        ).rejects.toThrow(
+          'violates check constraint "quotas_price_cents_check"'
         )
-      ).rejects.toThrow('violates check constraint "quotas_price_cents_check"')
-    })
+      })
   )
 
-  it.each([0, 25, 1800])("accepts a quota price of %i cents", (price) =>
-    withRootDb(async (client) => {
-      const { quota } = await createPaidEventData(client)
-      const { rows } = await client.query(
-        "update app_public.quotas set price_cents = $2 where id = $1 returning price_cents",
-        [quota.id, price]
-      )
-      expect(rows[0].price_cents).toBe(price)
-    })
+  it.each([0, 25, 1800, 1000000])(
+    "accepts a quota price of %i cents",
+    (price) =>
+      withRootDb(async (client) => {
+        const { quota } = await createPaidEventData(client)
+        const { rows } = await client.query(
+          "update app_public.quotas set price_cents = $2 where id = $1 returning price_cents",
+          [quota.id, price]
+        )
+        expect(rows[0].price_cents).toBe(price)
+      })
   )
 
   it("defaults existing and new quotas to free", () =>

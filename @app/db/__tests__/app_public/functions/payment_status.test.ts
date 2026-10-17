@@ -205,6 +205,25 @@ describe("events_payment_summary", () => {
       expect(summary.tickets_paid_cents).toBe(1800)
     }))
 
+  it("does not overflow on large ticket amounts", () =>
+    withRootDb(async (client) => {
+      const { event, quota } = await createPaidEventData(client, {
+        priceCents: 1000000,
+      })
+      const { registration } = await register(client, event.id, quota.id)
+      // Payment rows have no upper bound of their own; 1000 × 3 000 000
+      // would overflow integer maths
+      await insertPayment(client, registration, {
+        ticketAmountCents: 3000000,
+      })
+      const [admin] = await createUsers(client, 1, true, true)
+      await becomeUser(client, admin.id)
+      const summary = await paymentSummary(client, event.id)
+      // 3 000 000 - 0,015 × 3 000 025 = 2 954 999,625 → 2 955 000
+      expect(summary.guild_receives_cents).toBe(2955000)
+      expect(summary.tickets_paid_cents).toBe(3000000)
+    }))
+
   it("is all zeros for an event without registrations", () =>
     withRootDb(async (client) => {
       const { event } = await createPaidEventData(client)
