@@ -76,7 +76,7 @@ describe("downloadRegistrations", () => {
       includePayments: true,
       paymentStatusLabel: (status) => `label:${status}`,
     })([registration()])
-    expect(row.paymentStatus).toEqual("label:PAID")
+    expect(row).toMatchObject({ paymentStatus: "label:PAID" })
   })
 
   test("keeps a question labelled like a payment column", () => {
