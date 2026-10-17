@@ -10,6 +10,7 @@ fragment SharedLayout_Query on Query {
     }
     __typename
   }
+  paymentsEnabled
   ssoLoginEnabled
   supportedLanguages
   __typename

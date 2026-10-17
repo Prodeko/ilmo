@@ -1,26 +1,10 @@
-fragment HomePage_Query on Query {
+fragment UpdateEventPage_Query on Query {
   ...SharedLayout_Query
-  signupOpenEvents: events(
-    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}, name: {containsKey: $language}}
-    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
+  event(id: $id) {
+    ...UpdateEventPage_Event
     __typename
   }
-  signupUpcomingEvents: events(
-    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}, name: {containsKey: $language}}
-    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
-  ) {
-    nodes {
-      ...HomePage_Event
-      __typename
-    }
-    __typename
-  }
-  eventCategories {
+  eventCategories(orderBy: NAME_ASC) {
     nodes {
       ...EventPage_EventCategory
       __typename
@@ -41,6 +25,7 @@ fragment SharedLayout_Query on Query {
     }
     __typename
   }
+  paymentsEnabled
   ssoLoginEnabled
   supportedLanguages
   __typename
@@ -91,14 +76,14 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment HomePage_Event on Event {
+fragment UpdateEventPage_Event on Event {
   ...EventFields
-  ownerOrganization {
-    ...EventPage_Organization
-    __typename
-  }
   category {
     ...EventPage_EventCategory
+    __typename
+  }
+  ownerOrganization {
+    ...EventPage_Organization
     __typename
   }
   quotas(orderBy: POSITION_ASC) {
@@ -112,8 +97,11 @@ fragment HomePage_Event on Event {
     }
     __typename
   }
-  registrations {
-    totalCount
+  eventQuestions(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Question
+      __typename
+    }
     __typename
   }
   __typename
@@ -141,13 +129,6 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
-fragment EventPage_Organization on Organization {
-  id
-  name
-  slug
-  color
-  __typename
-}
 fragment EventPage_EventCategory on EventCategory {
   id
   description
@@ -160,6 +141,13 @@ fragment EventPage_EventCategory on EventCategory {
   updatedAt
   __typename
 }
+fragment EventPage_Organization on Organization {
+  id
+  name
+  slug
+  color
+  __typename
+}
 fragment EventPage_Quota on Quota {
   id
   position
@@ -167,6 +155,15 @@ fragment EventPage_Quota on Quota {
   size
   __typename
 }
-query HomePage($language: String!) {
-  ...HomePage_Query
+fragment EventPage_Question on EventQuestion {
+  id
+  position
+  type
+  label
+  isRequired
+  data
+  __typename
+}
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
 }
