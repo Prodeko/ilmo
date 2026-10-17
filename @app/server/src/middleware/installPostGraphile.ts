@@ -3,7 +3,6 @@ import { IncomingMessage } from "http"
 import { FastifyRedis } from "@fastify/redis"
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
-import PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
 import { parse } from "cookie"
 import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
@@ -127,8 +126,8 @@ export function getPostGraphileOptions({
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
     pluginHook,
 
-    // This is so that PostGraphile installs the watch fixtures, it's also needed to enable live queries
-    ownerConnectionString: process.env.DATABASE_URL,
+    // This is so that PostGraphile installs the watch fixtures in watch mode
+    ownerConnectionString: isDev ? process.env.DATABASE_URL : undefined,
 
     // On production we still want to start even if the database isn't available.
     // On development, we want to deal nicely with issues in the database.
@@ -140,7 +139,9 @@ export function getPostGraphileOptions({
     websockets: ["v1"],
     websocketMiddlewares,
 
-    // Support for Postgraphile live queries @graphile/subscriptions-lds
+    // Exposes the Query fields on the Subscription type, which the event page
+    // subscribes to. No live source plugin is installed, so such a
+    // subscription delivers its result once.
     live: !isJestTest,
 
     // We don't enable query batching since urql doesn't support it, and we don't really need it
@@ -285,11 +286,6 @@ export function getPostGraphileOptions({
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
-
-      // Support for live queries https://www.graphile.org/postgraphile/live-queries/
-      // PgSubscriptionsLds pjolls for changes every 500ms, so in order for jest tests
-      // to cleanly exit we have to exclude this plugin when running tests.
-      !isJestTest ? PgSubscriptionsLds : null,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,

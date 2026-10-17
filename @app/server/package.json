@@ -27,7 +27,6 @@
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
     "@graphile/persisted-operations": "^0.1.1",
     "@graphile/pg-pubsub": "^4.12.3",
-    "@graphile/subscriptions-lds": "^4.12.3",
     "@types/graphql-upload": "^8.0.11",
     "@zxcvbn-ts/core": "^2.0.4",
     "@zxcvbn-ts/language-common": "^2.0.1",
