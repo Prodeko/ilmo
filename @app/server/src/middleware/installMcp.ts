@@ -148,8 +148,21 @@ const InstallMcp: FastifyPluginAsync = async (app) => {
   }
 
   app.post("/mcp", handler)
-  app.get("/mcp", handler)
-  app.delete("/mcp", handler)
+
+  // The server is stateless: there is no standalone SSE stream to open and no
+  // session to delete. Handing GET to the transport left the request hanging
+  // without a status line, which clients such as claude.ai report as an error.
+  const methodNotAllowed = async (_: FastifyRequest, reply: FastifyReply) =>
+    reply
+      .code(405)
+      .header("Allow", "POST")
+      .send({
+        jsonrpc: "2.0",
+        error: { code: -32000, message: "Method not allowed." },
+        id: null,
+      })
+  app.get("/mcp", methodNotAllowed)
+  app.delete("/mcp", methodNotAllowed)
 }
 
 export default fp(InstallMcp)
