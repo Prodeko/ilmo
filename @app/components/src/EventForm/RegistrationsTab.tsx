@@ -57,6 +57,20 @@ const PAYMENT_FILTER_VARIABLES: Record<PaymentFilter, Record<string, any>> = {
   },
 }
 
+// Sort order of the Payment column: unpaid first, as organizers act on them
+const PAYMENT_SORT_ORDER: Record<RegistrationPaymentStatus, number> = {
+  [RegistrationPaymentStatus.Unpaid]: 0,
+  [RegistrationPaymentStatus.Paid]: 1,
+  [RegistrationPaymentStatus.PaidManually]: 2,
+  [RegistrationPaymentStatus.Refunded]: 3,
+  [RegistrationPaymentStatus.NotRequired]: 4,
+}
+
+// The table's sorters get the column values (see ServerPaginatedTable)
+const paymentSorter = (a: string | null, b: string | null) =>
+  (PAYMENT_SORT_ORDER[a as RegistrationPaymentStatus] ?? 5) -
+  (PAYMENT_SORT_ORDER[b as RegistrationPaymentStatus] ?? 5)
+
 export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
   ({ eventId, eventSlug, questions, paymentsEnabled = false }) => {
     const router = useRouter()
@@ -104,6 +118,9 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
       dataIndex: ["paymentStatus"],
       key: "paymentStatus",
       width: 130,
+      sorter: {
+        compare: paymentSorter as (a: string, b: string) => number,
+      },
       render: (value: RegistrationPaymentStatus | null, row: Registration) => (
         <PaymentStatusTag
           paymentStatus={value}
@@ -237,6 +254,8 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
           downloadFilename={`${eventSlug}-registrations.csv`}
           downloadFunction={downloadRegistrations(questions, {
             includePayments: showPayments,
+            paymentStatusLabel: (status) =>
+              t(`admin:payments.status.${status}`),
           })}
           queryDocument={ListEventRegistrationsDocument}
           size="small"

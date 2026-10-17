@@ -34,6 +34,7 @@ exports[`createCheckoutSession creates a card-only Checkout Session with two lin
   "metadata": {
     "event_id": "[eventId]",
     "event_slug": "[eventSlug]",
+    "ilmo_url": "[rootUrl]",
     "payment_id": "[paymentId]",
     "quota_id": "[quotaId]",
     "registration_id": "[registrationId]",
@@ -43,6 +44,7 @@ exports[`createCheckoutSession creates a card-only Checkout Session with two lin
     "metadata": {
       "event_id": "[eventId]",
       "event_slug": "[eventSlug]",
+      "ilmo_url": "[rootUrl]",
       "payment_id": "[paymentId]",
       "quota_id": "[quotaId]",
       "registration_id": "[registrationId]",

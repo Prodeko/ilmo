@@ -1,3 +1,8 @@
+// scripts/test.mjs sets IN_TESTS for `pnpm test`; set it here too so that
+// running jest directly (one package, one file) behaves the same. Jest's
+// workers inherit the environment of the process that loads this config.
+process.env.IN_TESTS = process.env.IN_TESTS || "1"
+
 module.exports = (dir) => {
   const pkg = require(`${dir}/package.json`)
 

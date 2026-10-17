@@ -1781,7 +1781,7 @@ type Mutation {
   ): AdminMarkRegistrationPaidPayload
 
   """
-  Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued.
+  Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued. Refused for 10 minutes after the last reminders were sent.
   """
   adminSendPaymentReminders(
     """
