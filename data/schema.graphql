@@ -318,6 +318,11 @@ type ConfirmAccountDeletionPayload {
 """A field which must not contain spaces"""
 scalar ConstrainedName
 
+type CreateCheckoutSessionPayload {
+  """The Stripe Checkout page to redirect to."""
+  url: String!
+}
+
 """All input for the create `EventCategory` mutation."""
 input CreateEventCategoryInput {
   """
@@ -1801,6 +1806,15 @@ type Mutation {
   ): ConfirmAccountDeletionPayload
 
   """
+  Starts Stripe Checkout for the registration with this update token and
+  returns the Checkout URL. Expires the registration's other open
+  Checkout Sessions. Fails with a PaymentErrorCode as the error code when
+  the registration can't be paid now. language (fi, en or se, default
+  fi) sets the Checkout language and the /pay page Stripe returns to.
+  """
+  createCheckoutSession(language: String, updateToken: String!): CreateCheckoutSessionPayload
+
+  """
   Create an event as well as any related quotas and questions with one mutation.
   """
   createEvent(
@@ -2496,6 +2510,35 @@ input PaymentCondition {
 }
 
 """
+Why a registration can't be paid right now. The error code of
+createCheckoutSession, and blockedReason of paymentByUpdateToken.
+"""
+enum PaymentErrorCode {
+  """The registration has been paid (by card or marked paid by hand)."""
+  ALREADY_PAID
+
+  """The registration is in the queue; it is paid once it gets a spot."""
+  IN_QUEUE
+
+  """Stripe payments are not configured on this server."""
+  PAYMENTS_DISABLED
+
+  """
+  The event collects payment after registration closes, which it has not yet.
+  """
+  PAYMENT_NOT_OPEN
+
+  """The quota is free, or the event has no payments."""
+  PAYMENT_NOT_REQUIRED
+
+  """The registration's payment has been refunded."""
+  PAYMENT_REFUNDED
+
+  """No finished registration has this update token."""
+  REGISTRATION_NOT_FOUND
+}
+
+"""
 A filter to be used against `Payment` object types. All fields are combined with a logical ‘and.’
 """
 input PaymentFilter {
@@ -2790,6 +2833,12 @@ type Query {
   payment(id: UUID!): Payment
   paymentByStripeCheckoutSessionId(stripeCheckoutSessionId: String!): Payment
 
+  """
+  The payment state of the registration with this update token, for the
+  /pay page. Null when payments are disabled or the token is unknown.
+  """
+  paymentByUpdateToken(updateToken: String!): RegistrationPayment
+
   """Reads and enables pagination through a set of `Payment`."""
   payments(
     """Read all values in the set after (below) this cursor."""
@@ -2977,7 +3026,7 @@ type Quota {
   position: Int!
 
   """
-  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum.
+  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum, and at most 1 000 000 cents (10 000 €).
   """
   priceCents: Int!
 
@@ -3284,6 +3333,43 @@ input RegistrationFilter {
 
   """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
+}
+
+"""What the /pay page shows for a registration. Amounts are in cents."""
+type RegistrationPayment {
+  """Why Pay is not available right now; null when it is."""
+  blockedReason: PaymentErrorCode
+  eventEndTime: Datetime!
+  eventId: UUID!
+  eventName: JSON!
+  eventSlug: String!
+  eventStartTime: Datetime!
+  firstName: String
+  lastName: String
+  paidAt: Datetime
+
+  """True when the paid payment was recorded by an organizer by hand."""
+  paidManually: Boolean!
+
+  """What was paid, fee included (paid or refunded payments only)."""
+  paidTotalCents: Int
+  paymentMode: PaymentMode!
+
+  """The ticket price the registration was made at. 0 when free."""
+  priceCents: Int!
+  queuePosition: Int
+
+  """Queue status; null while the registration is not yet placed."""
+  queueStatus: RegistrationStatus
+  quotaTitle: JSON!
+  refundedAmountCents: Int
+  refundedAt: Datetime
+  registrationEndTime: Datetime!
+
+  """The service fee charged on top of a paid ticket. 0 when free."""
+  serviceFeeCents: Int!
+  status: RegistrationPaymentStatus!
+  totalCents: Int!
 }
 
 """Payment state of a registration as shown to organizers."""
@@ -3936,6 +4022,12 @@ type Subscription {
 
   """ (live)"""
   paymentByStripeCheckoutSessionId(stripeCheckoutSessionId: String!): Payment
+
+  """
+  The payment state of the registration with this update token, for the
+  /pay page. Null when payments are disabled or the token is unknown. (live)
+  """
+  paymentByUpdateToken(updateToken: String!): RegistrationPayment
 
   """Reads and enables pagination through a set of `Payment`. (live)"""
   payments(

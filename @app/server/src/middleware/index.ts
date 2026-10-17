@@ -12,6 +12,7 @@ import installSameOrigin from "./installSameOrigin"
 import installSession from "./installSession"
 import installSSR from "./installSSR"
 import installStaticUploads from "./installStaticUploads"
+import installStripeWebhook from "./installStripeWebhook"
 import installWorkerUtils from "./installWorkerUtils"
 
 export {
@@ -29,5 +30,6 @@ export {
   installSession,
   installSSR,
   installStaticUploads,
+  installStripeWebhook,
   installWorkerUtils,
 }

@@ -21,6 +21,7 @@ drop function if exists app_public.admin_unmark_registration_paid(uuid);
 drop function if exists app_public.admin_mark_registration_paid(uuid);
 drop function if exists app_public.events_payment_summary(app_public.events);
 drop function if exists app_public.registrations_payment_status(app_public.registrations);
+drop function if exists app_private.registration_payment_status(app_public.registrations);
 drop function if exists app_hidden.backfill_registration_prices(uuid);
 drop function if exists app_private.current_user_can_manage_event_payments(uuid);
 drop function if exists app_private.queue_registration_refund(uuid);
@@ -709,12 +710,15 @@ $$ language plpgsql volatile security definer set search_path to pg_catalog, pub
 /******************************************************************************/
 -- Computed columns for organizers
 
-create function app_public.registrations_payment_status(registration app_public.registrations)
+/*
+ * The payment state of a registration, without any permission check. Used by
+ * the guarded computed column below and by the server (the /pay page and
+ * Checkout), which looks registrations up by their update token.
+ */
+create function app_private.registration_payment_status(registration app_public.registrations)
 returns app_public.registration_payment_status as $$
   select
     case
-      when not app_private.current_user_can_manage_event_payments(registration.event_id)
-        then null
       when exists(
         select 1 from app_public.payments as p
         where p.registration_id = registration.id and p.status = 'PAID' and p.method = 'MANUAL'
@@ -734,6 +738,18 @@ returns app_public.registration_payment_status as $$
         or (select e.payment_mode from app_public.events as e where e.id = registration.event_id) = 'NONE'
         then 'NOT_REQUIRED'::app_public.registration_payment_status
       else 'UNPAID'::app_public.registration_payment_status
+    end;
+$$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
+comment on function app_private.registration_payment_status(registration app_public.registrations) is
+  E'Payment status of the registration, without a permission check.';
+
+create function app_public.registrations_payment_status(registration app_public.registrations)
+returns app_public.registration_payment_status as $$
+  select
+    case
+      when not app_private.current_user_can_manage_event_payments(registration.event_id)
+        then null
+      else app_private.registration_payment_status(registration)
     end;
 $$ language sql stable security definer set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.registrations_payment_status(registration app_public.registrations) is

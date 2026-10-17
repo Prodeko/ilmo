@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createCheckoutSession creates a card-only Checkout Session with two line items and metadata 1`] = `
+{
+  "allowed_payment_method_types": [
+    "card",
+  ],
+  "cancel_url": "[rootUrl]/fi/pay/[updateToken]?status=cancelled",
+  "client_reference_id": "[registrationId]",
+  "customer_email": "[email]",
+  "line_items": [
+    {
+      "price_data": {
+        "currency": "eur",
+        "product_data": {
+          "name": "[eventName] – Kiintiö 0",
+        },
+        "unit_amount": 1800,
+      },
+      "quantity": 1,
+    },
+    {
+      "price_data": {
+        "currency": "eur",
+        "product_data": {
+          "name": "Service fee / Palvelumaksu",
+        },
+        "unit_amount": 25,
+      },
+      "quantity": 1,
+    },
+  ],
+  "locale": "fi",
+  "metadata": {
+    "event_id": "[eventId]",
+    "event_slug": "[eventSlug]",
+    "payment_id": "[paymentId]",
+    "quota_id": "[quotaId]",
+    "registration_id": "[registrationId]",
+  },
+  "mode": "payment",
+  "payment_intent_data": {
+    "metadata": {
+      "event_id": "[eventId]",
+      "event_slug": "[eventSlug]",
+      "payment_id": "[paymentId]",
+      "quota_id": "[quotaId]",
+      "registration_id": "[registrationId]",
+    },
+  },
+  "success_url": "[rootUrl]/fi/pay/[updateToken]?status=success",
+}
+`;
