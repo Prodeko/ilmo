@@ -154,7 +154,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           headerImageFile: headerFile,
         } = values
 
-        if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
+        // The database requires at least one regular quota; an open quota
+        // alone is not enough
+        if (!formQuotas?.length) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 

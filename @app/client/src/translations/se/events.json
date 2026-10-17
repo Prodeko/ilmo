@@ -12,7 +12,7 @@
     "eventCreateFailed": "Det gick inte att skapa händelse",
     "eventUpdateFailed": "Uppdateringen misslyckades",
     "formTabErrors": "Andra fel",
-    "mustProvideEventQuota": "Måste tillhandahålla minst en kvot för evenemanget"
+    "mustProvideEventQuota": "Evenemanget måste ha minst en kvot. Enbart en öppen kvot räcker inte."
   },
   "eventName": "Händelse",
   "eventNotFound": "Händelse hittades inte",

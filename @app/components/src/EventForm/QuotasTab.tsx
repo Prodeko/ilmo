@@ -113,7 +113,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
           rules={[
             {
               validator: async (_, quotas) => {
-                if ((!quotas || quotas?.length < 1) && !hasOpenQuota) {
+                // An open quota alone is not enough, the database requires
+                // at least one regular quota
+                if (!quotas || quotas.length < 1) {
                   return Promise.reject(
                     new Error(t("errors.mustProvideEventQuota"))
                   )

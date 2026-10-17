@@ -12,7 +12,7 @@
     "eventCreateFailed": "Tapahtuman luonti epäonnistui",
     "eventUpdateFailed": "Tapahtuman päivittäminen epäonnistui",
     "formTabErrors": "Muut virheet",
-    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö"
+    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö. Avoin kiintiö ei yksin riitä."
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
