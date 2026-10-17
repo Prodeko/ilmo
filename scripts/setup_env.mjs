@@ -16,6 +16,7 @@ runMain(async () => {
   await checkGit()
   const config = (await readDotenv()) || {}
   const mergeAnswers = (cb) => (answers) => cb({ ...config, ...answers })
+  const askStripe = !("PAYMENTS_ENABLED" in config) && !!process.stdin.isTTY
   const questions = [
     {
       type: "input",
@@ -59,8 +60,52 @@ runMain(async () => {
       default: "redis://127.0.0.1:6379",
       when: !("REDIS_URL" in config),
     },
+    // Stripe payments are optional. Asked only once (when .env has no
+    // PAYMENTS_ENABLED line yet) and only in an interactive terminal, so CI
+    // and re-runs never stop here. See docs/payments.md.
+    {
+      type: "confirm",
+      name: "SETUP_STRIPE_PAYMENTS",
+      message:
+        "Enable Stripe payments with your own Stripe test-mode keys? (optional, see docs/payments.md; you can add them to .env later)",
+      default: false,
+      when: askStripe,
+    },
+    {
+      type: "password",
+      mask: "*",
+      name: "STRIPE_SECRET_KEY",
+      message:
+        "Stripe secret key (sk_test_..., from https://dashboard.stripe.com/test/apikeys; leave empty to skip):",
+      validate: (key) =>
+        !key || /^(sk|rk)_test_\S+$/.test(key)
+          ? true
+          : "Use a test-mode key starting with sk_test_ (or rk_test_)",
+      when: (answers) => askStripe && answers.SETUP_STRIPE_PAYMENTS,
+    },
+    {
+      type: "password",
+      mask: "*",
+      name: "STRIPE_WEBHOOK_SECRET",
+      message:
+        "Stripe webhook signing secret (whsec_..., printed by `stripe listen`; leave empty to skip):",
+      validate: (secret) =>
+        !secret || /^whsec_\S+$/.test(secret)
+          ? true
+          : "The signing secret starts with whsec_",
+      when: (answers) => askStripe && answers.SETUP_STRIPE_PAYMENTS,
+    },
   ]
-  const answers = await inquirer.prompt(questions)
+  const { SETUP_STRIPE_PAYMENTS, ...answers } = await inquirer.prompt(questions)
+  if (askStripe) {
+    // Payments are on only when the flag and both secrets are set
+    answers.PAYMENTS_ENABLED =
+      SETUP_STRIPE_PAYMENTS &&
+      answers.STRIPE_SECRET_KEY &&
+      answers.STRIPE_WEBHOOK_SECRET
+        ? "1"
+        : ""
+  }
 
   await withDotenvUpdater(answers, (add) =>
     updateDotenv(add, {

@@ -44,8 +44,18 @@ jobs:
         uses: ./.github/actions/install-pg-dump
 
       - name: Setup environment and database
+        # Stripe payments are on here so that the payments_* specs run; the
+        # keys are dummies because the specs never reach Stripe (Checkout is
+        # stubbed and the webhook gets signed fake events from the
+        # completeStripeCheckout server command). Every other spec must pass
+        # with payments on as well as off.
         run: |
           cp .env.ci .env
+          {
+            echo "PAYMENTS_ENABLED=1"
+            echo "STRIPE_SECRET_KEY=sk_test_dummy"
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy"
+          } >> .env
           CONFIRM_DROP=1 pnpm run setup
 
       - name: Build server-side TypeScript
