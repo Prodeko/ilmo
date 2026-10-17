@@ -303,7 +303,11 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                       key={key}
                       id={key}
                       index={index}
-                      move={move}
+                      move={(from, to) => {
+                        move(from, to)
+                        // Re-read questions so type and options follow the moved row
+                        forceUpdate()
+                      }}
                     >
                       <Row gutter={[8, 8]} style={{ marginBottom: "12px" }}>
                         <Form.Item name={[name, "id"]} required={false} noStyle>
@@ -370,7 +374,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                             <MinusCircleTwoTone
                               data-cy="eventform-questions-remove-question"
                               twoToneColor="red"
-                              onClick={() => remove(name)}
+                              onClick={() => {
+                                remove(name)
+                                forceUpdate()
+                              }}
                             />
                           </Tooltip>
                         </Col>
