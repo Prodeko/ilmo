@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import {
   AdminLayout,
   EventForm,
@@ -108,6 +109,9 @@ const Admin_UpdateEvent: NextPage = () => {
   })
   const { data, fetching, error, stale } = query
   const event = data?.event
+  // EventForm resets its fields whenever initialValues changes, so a new
+  // object on every render (e.g. on a locale switch) would discard edits
+  const initialValues = useMemo(() => constructInitialValues(event), [event])
 
   // If event is not found redirect to index
   if (!fetching && !error && !stale && !event) {
@@ -126,7 +130,7 @@ const Admin_UpdateEvent: NextPage = () => {
             data={data}
             eventId={eventId}
             formRedirect="/admin/event/list"
-            initialValues={constructInitialValues(event)}
+            initialValues={initialValues}
             type="update"
           />
         </Col>

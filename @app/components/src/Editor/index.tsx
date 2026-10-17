@@ -80,25 +80,22 @@ export const Editor: React.FC<EditorProps> = ({
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
 
-  const changeEditorLanguage = useCallback(
-    (language: string) => {
-      // Each language is its own document; drop the cursor, pending marks
-      // and undo history that point into the previous one
-      editor.selection = null
-      editor.marks = null
-      editor.history = { undos: [], redos: [] }
-      setEditorLanguage(language)
-    },
-    [editor]
-  )
-
   const isReadOnly = selectedLanguages?.length === 0
   const includedLocales = [
     ...selectedLanguages.filter((lang) => lang !== editorLanguage),
   ]
 
   // See https://github.com/ianstormtaylor/slate/pull/4540#issuecomment-951380551
-  editor.children = newValue
+  if (editor.children !== newValue) {
+    editor.children = newValue
+    // The document was replaced from outside the editor (language switch or
+    // form reset); drop the cursor, pending marks and undo history that
+    // point into the previous one. Edits made in the editor come back as the
+    // same array, so typing doesn't reset anything.
+    editor.selection = null
+    editor.marks = null
+    editor.history = { undos: [], redos: [] }
+  }
 
   useEffect(() => {
     const textValue = newValue.map((val) => serialize(val)).join("")
@@ -232,7 +229,7 @@ export const Editor: React.FC<EditorProps> = ({
               <EditorLanguage editorLanguage={editorLanguage} />
               <LanguageMenu
                 includedLocales={includedLocales}
-                setEditorLanguage={changeEditorLanguage}
+                setEditorLanguage={setEditorLanguage}
               />
               <TranslateMenu
                 formOnChange={onChange}
