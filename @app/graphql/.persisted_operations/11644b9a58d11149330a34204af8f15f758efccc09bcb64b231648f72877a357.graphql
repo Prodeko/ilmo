@@ -15,16 +15,17 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
   __typename
 }
-subscription EventRegistrations($eventId: UUID!, $after: Datetime!) {
-  eventRegistrations(eventId: $eventId) {
-    registrations(after: $after) {
+mutation UpdateEventRegistration($input: UpdateRegistrationInput!) {
+  updateRegistration(input: $input) {
+    registration {
       ...EventPage_Registration
-      quota {
-        ...EventPage_Quota
-        __typename
-      }
+      firstName
+      lastName
+      answers
+      updatedAt
       __typename
     }
     __typename
