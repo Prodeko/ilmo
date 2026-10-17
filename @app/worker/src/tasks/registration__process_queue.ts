@@ -1,3 +1,10 @@
+import {
+  loadRegistrationPaymentState,
+  payLink,
+  paymentApplies,
+  ticketAmounts,
+} from "../payments"
+
 import { getFormattedEventTime } from "./registration__send_confirmation_email"
 
 import type { SendEmailPayload } from "./send_email"
@@ -60,6 +67,23 @@ const task: Task = async (inPayload, { addJob, query }) => {
     return
   }
 
+  // The payment link comes with the spot when the registration can be paid
+  // now: in DURING_REGISTRATION mode, or once signup has closed. Before the
+  // close in AFTER_REGISTRATION mode it comes with the close email instead.
+  let paymentVariables = {}
+  if (paymentApplies(event, registration)) {
+    const state = await loadRegistrationPaymentState(query, registration.id)
+    const paymentOpen =
+      event.payment_mode === "DURING_REGISTRATION" || !!state?.signup_closed
+    if (paymentOpen && state?.payment_status === "UNPAID") {
+      paymentVariables = {
+        ...ticketAmounts(registration.price_cents),
+        paymentMode: event.payment_mode,
+        payLink: payLink(registrationSecret.update_token),
+      }
+    }
+  }
+
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -77,6 +101,7 @@ const task: Task = async (inPayload, { addJob, query }) => {
       eventSlug: event.slug,
       eventLocation: event.location,
       eventRegistrationUpdateLink: `update-registration/${registrationSecret.update_token}`,
+      ...paymentVariables,
     },
   }
 

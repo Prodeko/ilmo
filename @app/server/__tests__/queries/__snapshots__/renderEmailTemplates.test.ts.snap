@@ -2995,3 +2995,93 @@ Verify Email
   },
 }
 `;
+
+exports[`with payments enabled lists the payment emails, rendered with example payments: payment received 1`] = `
+"Testitapahtuma
+
+Maksusi on vastaanotettu. Nähdään tapahtumassa!
+
+- Nimi: Teppo Testinen
+- Kiintiö: N
+- Ajankohta: 2021-01-01 12:00 - 2021-01-01 15:00
+- Paikka: Testilokaatio
+
+Lippu          18,00 €
+Palvelumaksu   0,25 €
+Yhteensä       18,25 €
+Maksettu       1.1.2021 12:00
+
+Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa: http://localhost:5678/fi/
+[http://localhost:5678/fi/]
+
+Your payment has been received. See you at the event!
+
+- Name: Teppo Testinen
+- Quota: N
+- Event time: 2021-01-01 12:00 - 2021-01-01 15:00
+- Event location: Testilokaatio
+
+Ticket        18,00 €
+Service fee   0,25 €
+Total         18,25 €
+Paid          1.1.2021 12:00
+
+You can update or delete your registration via this link: http://localhost:5678/en/ [http://localhost:5678/en/]
+
+© Tuotantotalouden Kilta Prodeko ry.
+
+"
+`;
+
+exports[`with payments enabled lists the payment emails, rendered with example payments: payment refund 1`] = `
+"Testitapahtuma
+
+Ilmoittautumisesi tapahtumaan Testitapahtuma on poistettu, ja maksusi on hyvitetty.
+
+Maksettu                     18,25 €
+Palvelumaksu (ei hyvitetä)   −0,25 €
+Hyvitys                      18,00 €
+
+Hyvitys näkyy kortillasi yleensä 5–10 arkipäivän kuluessa.
+
+Your registration to Test event has been deleted and your payment refunded.
+
+Paid                         18,25 €
+Service fee (not refunded)   −0,25 €
+Refund                       18,00 €
+
+Refunds usually show up on your card within 5–10 business days.
+
+© Tuotantotalouden Kilta Prodeko ry.
+
+"
+`;
+
+exports[`with payments enabled lists the payment emails, rendered with example payments: payment reminder 1`] = `
+"Testitapahtuma
+
+Hei Teppo,
+
+ilmoittautumisesi tapahtumaan Testitapahtuma (kiintiö: N) on vielä maksamatta. Voit maksaa osallistumisen alla olevasta
+linkistä:
+
+Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €
+
+Maksa 18,25 € [http://localhost:5678/fi/pay/12345]
+
+Jos et pääse tapahtumaan, ota yhteyttä järjestäjiin.
+
+Hi Teppo,
+
+your registration to Test event (quota: N) hasn't been paid yet. Please pay using the link below:
+
+Ticket 18,00 € + service fee 0,25 € = 18,25 €
+
+Pay 18,25 € [http://localhost:5678/en/pay/12345]
+
+If you can't attend, please contact the organizers.
+
+© Tuotantotalouden Kilta Prodeko ry.
+
+"
+`;
