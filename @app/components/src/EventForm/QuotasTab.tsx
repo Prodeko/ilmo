@@ -16,6 +16,7 @@ import {
   Space,
   Switch,
   Tooltip,
+  Typography,
 } from "antd"
 
 import { useTranslation } from "../."
@@ -243,6 +244,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
             />
           </Form.Item>
         </Space>
+        <Typography.Paragraph style={{ marginTop: 8 }} type="secondary">
+          {t("overflowQuotaInfo")}
+        </Typography.Paragraph>
       </DndProvider>
     )
   },

@@ -1,5 +1,5 @@
 {
-  "addOpenQuota": "Lisää avoin kiintiö",
+  "addOpenQuota": "Lisää ylivuotokiintiö",
   "addOption": "Lisää vaihtoehto",
   "addQuestion": "Lisää kysymys",
   "addQuota": "Lisää kiintiö",
@@ -12,7 +12,7 @@
     "eventCreateFailed": "Tapahtuman luonti epäonnistui",
     "eventUpdateFailed": "Tapahtuman päivittäminen epäonnistui",
     "formTabErrors": "Muut virheet",
-    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö. Avoin kiintiö ei yksin riitä."
+    "mustProvideEventQuota": "Tapahtumalle on määritettävä vähintään yksi kiintiö. Ylivuotokiintiö ei yksin riitä."
   },
   "eventName": "Tapahtuma",
   "eventNotFound": "Tapahtumaa ei löytynyt",
@@ -77,8 +77,9 @@
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "numRegistrations": "Ilmoittautuneita",
-  "openQuota": "Avoin kiintiö",
+  "openQuota": "Ylivuotokiintiö",
   "organizer": "Järjestäjä",
+  "overflowQuotaInfo": "Ylivuotokiintiö on yhteinen kaikille kiintiöille: kun ilmoittautujan oma kiintiö on täynnä, hän saa paikan ylivuotokiintiöstä, jos siinä on tilaa. Sen jälkeen ilmoittautujat menevät jonoon. Jos haluat kiintiön, johon kuka tahansa voi ilmoittautua, lisää kiintiö “Avoin kiintiö”.",
   "previewInfo": "Näin ilmoittautumislomake näkyy ilmoittautujille. Voit kokeilla lomaketta, mutta esikatselusta ei lähetetä ilmoittautumista.",
   "questionsAutomaticallyCollected": "<b>Etunimi</b>, <b>sukunimi</b> ja <b>sähköposti</b> kysytään ilmoittautujilta automaattisesti, joten niitä ei tarvitse lisätä kysymyksiksi.",
   "queued": "Jonossa",
@@ -99,7 +100,6 @@
       "confirmRemove": "Kiintiöpohjan luomat kiintiöt poistetaan, myös jos olet muokannut niitä. Jatketaanko?",
       "label": "Kiintiöpohja",
       "none": "Ei kiintiöpohjaa",
-      "openQuota": "Avoin kiintiö",
       "presets": "Lisää yksittäiset kiintiöt",
       "yearGroups": "Kiintiöt kaikille vuosikursseille",
       "yearGroupsNote": "Muista lisätä kiintiöille koot."

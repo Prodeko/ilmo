@@ -1,5 +1,5 @@
 {
-  "addOpenQuota": "Lägg till öppen kvot",
+  "addOpenQuota": "Lägg till överflödskvot",
   "addOption": "Lägg till alternativ",
   "addQuestion": "Lägg till fråga",
   "addQuota": "Lägg till kvot",
@@ -12,7 +12,7 @@
     "eventCreateFailed": "Det gick inte att skapa händelse",
     "eventUpdateFailed": "Uppdateringen misslyckades",
     "formTabErrors": "Andra fel",
-    "mustProvideEventQuota": "Evenemanget måste ha minst en kvot. Enbart en öppen kvot räcker inte."
+    "mustProvideEventQuota": "Evenemanget måste ha minst en kvot. Enbart en överflödskvot räcker inte."
   },
   "eventName": "Händelse",
   "eventNotFound": "Händelse hittades inte",
@@ -77,8 +77,9 @@
   "headerImage": "Händelsehuvudbild",
   "languages": "Språk",
   "numRegistrations": "Registrerade personer",
-  "openQuota": "Öppen kvot",
+  "openQuota": "Överflödskvot",
   "organizer": "Arrangör",
+  "overflowQuotaInfo": "Överflödskvoten delas av alla kvoter: när en deltagares egen kvot är full får hen en plats i överflödskvoten om det finns plats. Därefter hamnar deltagarna i kön. För en kvot som vem som helst kan anmäla sig till, lägg till kvoten ”Öppen kvot”.",
   "previewInfo": "Så här ser anmälningsformuläret ut för deltagarna. Du kan prova formuläret, men inget skickas från förhandsvisningen.",
   "questionsAutomaticallyCollected": "<b>Förnamn</b>, <b>efternamn</b> och <b>e-post</b> samlas in automatiskt av alla som anmäler sig, så du behöver inte lägga till dem som frågor.",
   "queued": "Kö",
@@ -99,7 +100,6 @@
       "confirmRemove": "Kvoter som skapats av kvotmallen tas bort, även om du har redigerat dem. Fortsätta?",
       "label": "Kvotmall",
       "none": "Ingen kvotmall",
-      "openQuota": "Öppen kvot",
       "presets": "Lägg till enskilda kvoter",
       "yearGroups": "Kvoter för alla årskurser",
       "yearGroupsNote": "Kom ihåg att ange en storlek för varje kvot."

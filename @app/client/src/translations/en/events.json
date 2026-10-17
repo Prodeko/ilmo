@@ -1,5 +1,5 @@
 {
-  "addOpenQuota": "Add open quota",
+  "addOpenQuota": "Add overflow quota",
   "addOption": "Add option",
   "addQuestion": "Add question",
   "addQuota": "Add quota",
@@ -12,7 +12,7 @@
     "eventCreateFailed": "Creating event failed",
     "eventUpdateFailed": "Updating event failed",
     "formTabErrors": "Other errors",
-    "mustProvideEventQuota": "The event must have at least one quota. An open quota alone is not enough."
+    "mustProvideEventQuota": "The event must have at least one quota. An overflow quota alone is not enough."
   },
   "eventName": "Event",
   "eventNotFound": "Event not found",
@@ -77,8 +77,9 @@
   "headerImage": "Event header image",
   "languages": "Languages",
   "numRegistrations": "Registered people",
-  "openQuota": "Open quota",
+  "openQuota": "Overflow quota",
   "organizer": "Organizer",
+  "overflowQuotaInfo": "The overflow quota is shared by all quotas: when a registrant’s own quota is full, they get a spot in the overflow quota if there is room. After that, registrants go to the queue. For a quota anyone can register to, add the “Open quota” quota.",
   "previewInfo": "This is how the registration form looks to registrants. You can try the form, but nothing is submitted from the preview.",
   "questionsAutomaticallyCollected": "<b>First name</b>, <b>last name</b> and <b>email</b> are collected from registrants automatically, so you do not need to add them as questions.",
   "queued": "Queue",
@@ -99,7 +100,6 @@
       "confirmRemove": "Quotas created by the quota template will be removed, even if you have edited them. Continue?",
       "label": "Quota template",
       "none": "No quota template",
-      "openQuota": "Open quota",
       "presets": "Add individual quotas",
       "yearGroups": "Quotas for all year groups",
       "yearGroupsNote": "Remember to set a size for each quota."
