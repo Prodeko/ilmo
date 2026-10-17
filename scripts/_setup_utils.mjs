@@ -159,7 +159,14 @@ export function updateDotenv(add, answers) {
 
   add("DATABASE_POOL_ACQUIRE_TIMEOUT_MS", "5000")
 
-  add("WORKER_POOL_MAX", "2")
+  add(
+    "WORKER_POOL_MAX",
+    "2",
+    `\
+# The worker's start scripts expand WORKER_POOL_MAX in the shell before this
+# file is loaded, so it takes effect only when set in the process environment
+# (for example through the env_file of the worker's docker compose service).`
+  )
 
   add(
     "NEXT_TRANSLATE_PATH",
