@@ -33,7 +33,6 @@ import {
   Redirect,
   StandardWidth,
   useIlmoContext,
-  useIsMobile,
   useTranslation,
   Warn,
 } from "."
@@ -110,7 +109,6 @@ export function SharedLayout({
   const currentUrl = router?.asPath
   const [, logout] = useLogoutMutation()
   const { t } = useTranslation("common")
-  const isMobile = useIsMobile()
   const context = useIlmoContext()
 
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
@@ -227,31 +225,32 @@ export function SharedLayout({
               />
             </Link>
           </Col>
-          {!isMobile ? (
-            <Col span={8}>
-              <H3
-                data-cy="layout-header-title"
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  textAlign: "center",
-                  lineHeight: "64px",
-                }}
-              >
-                {titleHref ? (
-                  <Link
-                    as={titleHrefAs}
-                    data-cy="layout-header-titlelink"
-                    href={titleHref}
-                  >
-                    {title}
-                  </Link>
-                ) : (
-                  title
-                )}
-              </H3>
-            </Col>
-          ) : null}
+          {/* Hidden on phones with CSS rather than useIsMobile, which the server
+              can't know: rendering different HTML on the server and in the
+              browser breaks hydration */}
+          <Col sm={8} xs={0}>
+            <H3
+              data-cy="layout-header-title"
+              style={{
+                margin: 0,
+                padding: 0,
+                textAlign: "center",
+                lineHeight: "64px",
+              }}
+            >
+              {titleHref ? (
+                <Link
+                  as={titleHrefAs}
+                  data-cy="layout-header-titlelink"
+                  href={titleHref}
+                >
+                  {title}
+                </Link>
+              ) : (
+                title
+              )}
+            </H3>
+          </Col>
           <Col sm={8} style={{ textAlign: "right" }} xs={12}>
             <Space size="large">
               <LocaleSelect />
