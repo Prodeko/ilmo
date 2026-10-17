@@ -86,6 +86,17 @@ async function findSessionPayment(
 }
 
 /**
+ * Serializes checkout.session.completed and charge.refunded for one payment
+ * intent, so an early refund can't be stored just after the completed
+ * handler looked for it.
+ */
+async function lockPaymentIntent(client: PoolClient, paymentIntentId: string) {
+  await client.query("select pg_advisory_xact_lock(hashtext($1))", [
+    paymentIntentId,
+  ])
+}
+
+/**
  * Records Stripe's cumulative refunded amount of a payment intent. The
  * payment counts as REFUNDED once at least the ticket price is back with the
  * customer (Ilmo's refunds keep the service fee); a smaller, partial
@@ -199,13 +210,18 @@ async function handleSessionCompleted(
   }
 
   const paymentIntentId = idOf(session.payment_intent)
+  if (paymentIntentId) {
+    await lockPaymentIntent(client, paymentIntentId)
+  }
 
   // Ilmo created the session from this row, so anything else means the
   // session is not what it should be: keep no such payment.
   const expectedCents = payment.ticket_amount_cents + payment.service_fee_cents
+  const chargedCents = session.amount_total
+  const chargedCurrency = session.currency
   const amountMismatch =
-    session.amount_total !== expectedCents ||
-    session.currency?.toLowerCase() !== payment.currency.toLowerCase()
+    chargedCents !== expectedCents ||
+    chargedCurrency?.toLowerCase() !== payment.currency.toLowerCase()
 
   let duplicate = false
   if (payment.registration_id && !amountMismatch) {
@@ -230,6 +246,7 @@ async function handleSessionCompleted(
   )
 
   // charge.refunded may have arrived before this event
+  let refundedCents = 0
   if (paymentIntentId) {
     const {
       rows: [early],
@@ -249,40 +266,42 @@ async function handleSessionCompleted(
         early.amount_refunded_cents,
         early.stripe_refund_id
       )
-      const {
-        rows: [{ status }],
-      } = await client.query<{ status: PaymentRow["status"] }>(
-        "select status from app_public.payments where id = $1",
-        [payment.id]
-      )
-      if (status === "REFUNDED") {
-        logger.info(
-          `Payment ${payment.id} was refunded before its payment was recorded`
-        )
-        return "processed"
-      }
+      refundedCents = early.amount_refunded_cents
     }
   }
+  // At least the ticket price is back with the customer already
+  const refunded = refundedCents >= payment.ticket_amount_cents
 
-  if (amountMismatch) {
-    logger.error(
-      `Checkout Session ${session.id} charged ${session.amount_total} ${session.currency}, but payment ${payment.id} expects ${expectedCents} ${payment.currency}; refunding it in full`
+  if (amountMismatch || duplicate) {
+    if (amountMismatch) {
+      logger.error(
+        `Checkout Session ${session.id} charged ${chargedCents} ${chargedCurrency}, but payment ${payment.id} expects ${expectedCents} ${payment.currency}; refunding it in full`
+      )
+    } else {
+      logger.info(
+        `Payment ${payment.id} is a second payment for registration ${payment.registration_id}; refunding it in full`
+      )
+    }
+    if (amountMismatch || refunded) {
+      // By payment intent: refunds whatever of the charge is left
+      if (refundedCents < (chargedCents ?? expectedCents)) {
+        await addJob(client, "payment__refund", { paymentIntentId })
+      }
+    } else {
+      await addJob(client, "payment__refund", {
+        paymentId: payment.id,
+        full: true,
+      })
+    }
+  } else if (refunded) {
+    logger.info(
+      `Payment ${payment.id} was refunded before its payment was recorded`
     )
-    // By payment intent: refunds whatever was actually charged
-    await addJob(client, "payment__refund", { paymentIntentId })
   } else if (!payment.registration_id) {
     logger.info(
       `Payment ${payment.id} completed for a deleted registration; refunding the ticket price`
     )
     await addJob(client, "payment__refund", { paymentId: payment.id })
-  } else if (duplicate) {
-    logger.info(
-      `Payment ${payment.id} is a second payment for registration ${payment.registration_id}; refunding it in full`
-    )
-    await addJob(client, "payment__refund", {
-      paymentId: payment.id,
-      full: true,
-    })
   } else {
     await addJob(client, "payment__send_received_email", {
       paymentId: payment.id,
@@ -321,6 +340,7 @@ async function handleChargeRefunded(
     )
     return "ignored"
   }
+  await lockPaymentIntent(client, paymentIntentId)
   // Present only when the event includes the refunds list (older API
   // versions); the refund job stores the id of its own refunds anyway
   const refundId = charge.refunds?.data?.[0]?.id ?? null
@@ -335,6 +355,12 @@ async function handleChargeRefunded(
   }
   logger.warn(
     `charge.refunded for charge ${charge.id}: no payment with payment intent ${paymentIntentId} yet; keeping it until its checkout.session.completed arrives`
+  )
+  // Refunds of payments that never show up here (another Ilmo on the same
+  // Stripe account, dashboard charges) would pile up: keep them 30 days
+  await client.query(
+    `delete from app_private.stripe_early_refunds
+      where received_at < now() - interval '30 days'`
   )
   await client.query(
     `insert into app_private.stripe_early_refunds as e

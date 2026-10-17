@@ -567,6 +567,28 @@ describe("charge.refunded", () => {
       expect(await earlyRefunds()).toEqual([])
     })
 
+    it("still refunds the rest of a duplicate payment refunded early", async () => {
+      const { registrations } = await createPaidEvent()
+      await insertPayment(pool, registrations[0], { method: "MANUAL" })
+      const second = await insertPayment(pool, registrations[0], {
+        status: "PENDING",
+        sessionId: "cs_test_early_dup",
+      })
+
+      await post(chargeRefunded("pi_for_cs_test_early_dup", 1800))
+      await post(completedSession("cs_test_early_dup"))
+
+      expect(await paymentById(second.id)).toMatchObject({
+        status: "REFUNDED",
+        refunded_amount_cents: 1800,
+        registration_id: null,
+      })
+      // The 25 cent fee is left: refunded by payment intent
+      expect(await jobsOf(pool, "payment__refund")).toEqual([
+        { paymentIntentId: "pi_for_cs_test_early_dup" },
+      ])
+    })
+
     it("applies a partial refund and keeps the registration paid", async () => {
       const { registrations } = await createPaidEvent()
       const payment = await insertPayment(pool, registrations[0], {

@@ -167,19 +167,19 @@ describe("payment__refund", () => {
 
     await runTask(refund, { paymentId: payment.id })
 
-    // 1825 paid, 500 already back: 1325 left, below the 1800 ticket price
-    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1325)
+    // 500 of the 1800 ticket price is back already; the fee is still kept
+    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1300)
     expect(await paymentById(payment.id)).toMatchObject({
       status: "REFUNDED",
-      refunded_amount_cents: 1825,
+      refunded_amount_cents: 1800,
       stripe_refund_id: "re_test_1",
     })
     expect(await jobsOf("payment__send_refund_email")).toEqual([
-      { paymentId: payment.id, amountCents: 1325, full: false },
+      { paymentId: payment.id, amountCents: 1300, full: false },
     ])
   })
 
-  it("adds the refund to an earlier partial one", async () => {
+  it("counts an earlier partial refund towards the ticket price", async () => {
     const payment = await paidPayment()
     await testPool().query(
       "update app_public.payments set refunded_amount_cents = 10 where id = $1",
@@ -188,8 +188,26 @@ describe("payment__refund", () => {
 
     await runTask(refund, { paymentId: payment.id })
 
-    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1800)
-    expect((await paymentById(payment.id)).refunded_amount_cents).toEqual(1810)
+    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1790)
+    expect((await paymentById(payment.id)).refunded_amount_cents).toEqual(1800)
+  })
+
+  it("treats charge_already_refunded as done", async () => {
+    const payment = await paidPayment()
+    const error = Object.assign(
+      new Error("Charge has already been refunded."),
+      { code: "charge_already_refunded" }
+    )
+    stripeMock()
+      .refunds.create.mockRejectedValueOnce(error)
+      .mockRejectedValueOnce(error)
+
+    await runTask(refund, { paymentId: payment.id })
+    await runTask(refund, { paymentIntentId: "pi_done" })
+    expect(stripeMock().refunds.create).toHaveBeenCalledTimes(2)
+
+    expect((await paymentById(payment.id)).status).toEqual("PAID")
+    expect(await jobsOf("payment__send_refund_email")).toEqual([])
   })
 
   it("calls nothing when the whole charge is already refunded", async () => {

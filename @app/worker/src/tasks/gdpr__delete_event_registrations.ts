@@ -27,7 +27,8 @@ const task: Task = async (_payload, { withPgClient }) => {
       )
       await client.query("commit")
     } catch (e) {
-      await client.query("rollback")
+      // Don't let a failing rollback hide the original error
+      await client.query("rollback").catch(() => {})
       throw e
     }
   })
