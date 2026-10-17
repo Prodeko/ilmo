@@ -37,11 +37,11 @@ const EventRegistrationPage: NextPage = () => {
 
   const { name, primaryEmail } = currentUser || {}
   // TODO: The users table schema could be changed to include first
-  // and last names. For now infer them like this: the last word is the last
-  // name and everything before it is the first name (e.g. "Anna Maria").
+  // and last names. Until then only prefill them when the split is
+  // unambiguous: with three or more words (e.g. "Anna Maria von Wright")
+  // there's no telling where the first name ends, so let the user fill them.
   const nameParts = name ? name.trim().split(/\s+/) : []
-  const lastName = nameParts.length > 1 ? nameParts.pop() : undefined
-  const firstName = nameParts.length ? nameParts.join(" ") : undefined
+  const [firstName, lastName] = nameParts.length <= 2 ? nameParts : []
 
   const formInitialValues = {
     firstName,
