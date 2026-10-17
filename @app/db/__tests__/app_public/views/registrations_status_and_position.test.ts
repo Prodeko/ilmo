@@ -16,6 +16,60 @@ import {
   withUserDb,
 } from "../../helpers"
 
+/*
+ * The statuses and positions of every registration, as defined by the
+ * materialized view of migration 000002. The maintained table must always
+ * hold exactly these rows.
+ */
+const REFERENCE_POSITIONS_QUERY = `
+  with cte1 as (
+    select
+      r.id,
+      size,
+      e.id as event_id,
+      q.id as quota_id,
+      e.open_quota_size,
+      r.created_at,
+      row_number() over (partition by r.quota_id order by r.created_at asc) as tmp_pos_quota
+    from app_public.registrations r
+    left join app_public.quotas q
+      on r.quota_id = q.id
+    left join app_public.events e
+      on r.event_id = e.id
+  ), cte2 as (
+    select
+      tmp.*,
+      row_number() over (partition by event_id, tmp_status order by created_at asc) as tmp_pos_status
+    from (
+      select
+        *,
+        case
+          when tmp_pos_quota <= size then 'IN_QUOTA'::text
+          else 'OPEN_OR_QUEUE'::text
+        end as tmp_status
+      from cte1
+    ) as tmp
+  ), cte3 as (
+    select
+      *,
+      case
+        when tmp_status = 'OPEN_OR_QUEUE'::text and tmp_pos_status <= open_quota_size then 'IN_OPEN_QUOTA'::app_public.registration_status
+        when tmp_status = 'OPEN_OR_QUEUE'::text then 'IN_QUEUE'::app_public.registration_status
+        else 'IN_QUOTA'::app_public.registration_status
+      end as status
+    from cte2
+  ) select
+      id,
+      event_id,
+      quota_id,
+      status,
+      case
+        when status = 'IN_QUOTA'::app_public.registration_status then cast(row_number() over (partition by quota_id, status order by created_at asc) as integer)
+        else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
+      end as position
+    from cte3
+`
+
 async function setupData(client: PoolClient, opts) {
   const { openQuotaSize, numQuotas, quotaSize } = opts
   const [organization] = await createOrganizations(client, 1)
@@ -450,5 +504,245 @@ describe("registrations_status_and_position", () => {
         { status: "IN_QUOTA", position: 2 },
       ])
     })
+
+    it("promotes a registration claimed concurrently with the deletion of a quota spot", async () => {
+      const pool = poolFromUrl(TEST_DATABASE_URL)
+      const setupClient = await pool.connect()
+      let event, quota, firstRegistration
+      try {
+        await setupClient.query("begin")
+        const [user] = await createUsers(setupClient, 1)
+        await becomeUser(setupClient, user.id)
+        ;({
+          event,
+          quotas: [quota],
+        } = await setupData(setupClient, {
+          openQuotaSize: 0,
+          numQuotas: 1,
+          quotaSize: 1,
+        }))
+        ;[firstRegistration] = await createRegistrations(
+          setupClient,
+          1,
+          event.id,
+          quota.id,
+          []
+        )
+        await setupClient.query("commit")
+      } finally {
+        await setupClient.query("rollback")
+        setupClient.release()
+      }
+
+      const client1 = await pool.connect()
+      const client2 = await pool.connect()
+      let claimedId: string
+      try {
+        await client1.query("begin")
+        await client1.query(
+          "select * from app_public.claim_registration_token($1, $2)",
+          [event.id, quota.id]
+        )
+        ;({
+          rows: [{ id: claimedId }],
+        } = await client1.query(
+          "select id from app_public.registrations where event_id = $1 and id <> $2",
+          [event.id, firstRegistration.id]
+        ))
+
+        await client2.query("begin")
+        let deleteDone = false
+        const deletion = client2
+          .query("delete from app_public.registrations where id = $1", [
+            firstRegistration.id,
+          ])
+          .then((result) => {
+            deleteDone = true
+            return result
+          })
+
+        // Give the deletion time to reach the per-event lock.
+        await new Promise((resolve) => setTimeout(resolve, 300))
+        expect(deleteDone).toBe(false)
+
+        await client1.query("commit")
+        await deletion
+        await client2.query("commit")
+      } finally {
+        await client1.query("rollback").catch(() => {})
+        await client2.query("rollback").catch(() => {})
+        client1.release()
+        client2.release()
+      }
+
+      const jobsClient = await pool.connect()
+      try {
+        const jobs = await getJobs(jobsClient, "registration__process_queue")
+        expect(jobs).toHaveLength(1)
+        expect(jobs[0].payload).toMatchObject({
+          receivedSpot: {
+            id: claimedId,
+            event_id: event.id,
+            quota_id: quota.id,
+            status: "IN_QUEUE",
+            position: 1,
+          },
+        })
+      } finally {
+        jobsClient.release()
+      }
+    })
+  })
+
+  describe("matches the reference definition", () => {
+    afterAll(deleteTestData)
+
+    // Rows of the given events that are in the maintained table but not in
+    // the reference, and the other way round.
+    async function differences(client: PoolClient, eventIds: string[]) {
+      const query = (left: string, right: string) =>
+        client.query(
+          `with reference as (${REFERENCE_POSITIONS_QUERY}),
+            maintained as (
+              select id, event_id, quota_id, status, position
+                from app_hidden.registrations_status_and_position
+            )
+            select * from ${left} where event_id = any($1::uuid[])
+            except
+            select * from ${right} where event_id = any($1::uuid[])`,
+          [eventIds]
+        )
+      const [{ rows: onlyMaintained }, { rows: onlyReference }] =
+        await Promise.all([
+          query("maintained", "reference"),
+          query("reference", "maintained"),
+        ])
+      return { onlyMaintained, onlyReference }
+    }
+
+    it("after inserts, deletes and quota and event changes", () =>
+      withUserDb(async (client) => {
+        const [organization] = await createOrganizations(client, 1)
+        const [eventCategory] = await createEventCategories(
+          client,
+          1,
+          organization.id
+        )
+        const createEvent = async (openQuotaSize: number, sizes: number[]) => {
+          const [event] = await createEvents(
+            client,
+            1,
+            organization.id,
+            eventCategory.id,
+            true,
+            false,
+            openQuotaSize
+          )
+          const quotas = []
+          for (const [position, size] of sizes.entries()) {
+            const {
+              rows: [quota],
+            } = await client.query(
+              `insert into app_public.quotas(event_id, position, title, size)
+                values ($1, $2, $3, $4)
+                returning *`,
+              [event.id, position, { fi: "Kiintiö", en: "Quota" }, size]
+            )
+            quotas.push(quota)
+          }
+          return { event, quotas }
+        }
+        const first = await createEvent(2, [1, 3, 2])
+        const second = await createEvent(1, [2, 1])
+        await becomeRoot(client)
+        const eventIds = [first.event.id, second.event.id]
+
+        const expectMatch = async () =>
+          expect(await differences(client, eventIds)).toEqual({
+            onlyMaintained: [],
+            onlyReference: [],
+          })
+
+        // Interleave registrations across events and quotas, one transaction
+        // each so that every registration gets a distinct created_at.
+        const order = [
+          first.quotas[0],
+          second.quotas[0],
+          first.quotas[1],
+          first.quotas[0],
+          second.quotas[1],
+          first.quotas[2],
+          second.quotas[1],
+          first.quotas[0],
+          second.quotas[0],
+          first.quotas[1],
+          second.quotas[1],
+          first.quotas[0],
+          second.quotas[0],
+          first.quotas[2],
+          first.quotas[2],
+          second.quotas[1],
+        ]
+        const registrations = []
+        for (const quota of order) {
+          const [registration] = await createRegistrations(
+            client,
+            1,
+            quota.event_id,
+            quota.id,
+            []
+          )
+          await client.query("commit")
+          registrations.push(registration)
+          await expectMatch()
+        }
+
+        const deleteRegistration = async (index: number) => {
+          await client.query(
+            "delete from app_public.registrations where id = $1",
+            [registrations[index].id]
+          )
+          await expectMatch()
+        }
+        await deleteRegistration(0)
+        await deleteRegistration(3)
+        await deleteRegistration(11)
+        await deleteRegistration(6)
+
+        const setQuotaSize = async (quotaId: string, size: number) => {
+          await client.query(
+            "update app_public.quotas set size = $2 where id = $1",
+            [quotaId, size]
+          )
+          await expectMatch()
+        }
+        await setQuotaSize(first.quotas[1].id, 1)
+        await setQuotaSize(second.quotas[1].id, 4)
+        await setQuotaSize(first.quotas[0].id, 5)
+
+        const setOpenQuotaSize = async (eventId: string, size: number) => {
+          await client.query(
+            "update app_public.events set open_quota_size = $2 where id = $1",
+            [eventId, size]
+          )
+          await expectMatch()
+        }
+        await setOpenQuotaSize(first.event.id, 0)
+        await setOpenQuotaSize(second.event.id, 3)
+
+        await client.query("delete from app_public.events where id = $1", [
+          second.event.id,
+        ])
+        await expectMatch()
+        const {
+          rows: [{ count }],
+        } = await client.query(
+          `select count(*)::int as count
+            from app_hidden.registrations_status_and_position
+            where event_id = $1`,
+          [second.event.id]
+        )
+        expect(count).toEqual(0)
+      }))
   })
 })
