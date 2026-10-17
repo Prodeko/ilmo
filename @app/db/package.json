@@ -13,6 +13,7 @@
     "dump": "pnpm gm migrate && pnpm gm reset --shadow --erase && pnpm gm migrate --shadow --forceActions",
     "test": "NODE_ENV=test NODE_OPTIONS=\"-r @app/config/env.js\" pnpm exec jest",
     "create-fake-data": "ts-node -r @app/config/env.js scripts/create-fake-data.ts",
+    "create-demo-data": "ts-node -r @app/config/env.js scripts/create-demo-data.ts",
     "clean-fake-data": "ts-node -r @app/config/env.js scripts/clean-fake-data.ts",
     "depcheck": "depcheck --ignores=\"dayjs,@app/config\""
   },
