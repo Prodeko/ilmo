@@ -114,8 +114,7 @@ for (const quotaId of seed.quotaIds) {
   const allClickers = results
     .filter(
       (r) =>
-        r.clickedAtMs &&
-        seed.quotaIds[r.vu % seed.quotaIds.length] === quotaId
+        r.clickedAtMs && seed.quotaIds[r.vu % seed.quotaIds.length] === quotaId
     )
     .sort((a, b) => a.clickedAtMs - b.clickedAtMs)
   for (const r of allClickers.slice(0, quotaSize[quotaId])) {
@@ -138,8 +137,7 @@ for (const line of readFileSync(join(dir, "connections.csv"), "utf8")
 const peak = (o) => Math.max(0, ...Object.values(o))
 
 const serverLog = readFileSync(join(dir, "server.log"), "utf8")
-const slotErrors = (serverLog.match(/remaining connection slots/g) || [])
-  .length
+const slotErrors = (serverLog.match(/remaining connection slots/g) || []).length
 const poolTimeouts = (
   serverLog.match(/timeout exceeded when trying to connect/gi) || []
 ).length

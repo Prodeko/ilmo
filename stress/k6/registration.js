@@ -1,3 +1,4 @@
+/* global __ENV */
 // One VU = one person trying to get into a contested event.
 //
 // Flow: load the event page some time before opening and hold its websocket
@@ -9,10 +10,10 @@
 // Env: BASE_URL, SEED (JSON from seed.sh), REPO (repo root inside the
 // container), VUS.
 import { sleep } from "k6"
-import http from "k6/http"
-import ws from "k6/ws"
 import exec from "k6/execution"
+import http from "k6/http"
 import { Counter, Trend } from "k6/metrics"
+import ws from "k6/ws"
 
 const BASE_URL = __ENV.BASE_URL || "http://localhost:5678"
 const WS_URL = BASE_URL.replace(/^http/, "ws") + "/graphql"
@@ -33,7 +34,9 @@ const documentOf = (name) => {
   const rest = doc.slice(start)
   const end = rest.search(/^fragment\b/m)
   const operation = end === -1 ? rest : rest.slice(0, end)
-  return operation + "\n" + doc.slice(0, start) + (end === -1 ? "" : rest.slice(end))
+  return (
+    operation + "\n" + doc.slice(0, start) + (end === -1 ? "" : rest.slice(end))
+  )
 }
 const EVENT_PAGE_DOC = documentOf("EventPage")
 const CURRENT_TIME_DOC = documentOf("CurrentTime")
@@ -233,33 +236,36 @@ export default function () {
         .registrationToken
     result.claimOk = true
 
-    socket.setTimeout(() => {
-      const submit = post(
-        "CreateEventRegistration",
-        {
-          operationName: "CreateEventRegistration",
-          query: CREATE_DOC,
-          variables: {
-            input: {
-              eventId: SEED.eventId,
-              quotaId,
-              registrationToken: token,
-              firstName: "Bot",
-              lastName: `Number${vu}`,
-              email: result.email,
-              answers: null,
+    socket.setTimeout(
+      () => {
+        const submit = post(
+          "CreateEventRegistration",
+          {
+            operationName: "CreateEventRegistration",
+            query: CREATE_DOC,
+            variables: {
+              input: {
+                eventId: SEED.eventId,
+                quotaId,
+                registrationToken: token,
+                firstName: "Bot",
+                lastName: `Number${vu}`,
+                email: result.email,
+                answers: null,
+              },
             },
           },
-        },
-        "submit"
-      )
-      submitDuration.add(submit.timings.duration)
-      const submitErrors = graphqlErrors(submit)
-      for (const e of submitErrors) fail("submit", e)
-      result.submitOk = submitErrors.length === 0
-      // Linger briefly like a person reading the confirmation.
-      socket.setTimeout(() => socket.close(), 3000)
-    }, randomBetween(5000, 20000))
+          "submit"
+        )
+        submitDuration.add(submit.timings.duration)
+        const submitErrors = graphqlErrors(submit)
+        for (const e of submitErrors) fail("submit", e)
+        result.submitOk = submitErrors.length === 0
+        // Linger briefly like a person reading the confirmation.
+        socket.setTimeout(() => socket.close(), 3000)
+      },
+      randomBetween(5000, 20000)
+    )
   }
 
   console.log(`RESULT ${JSON.stringify(result)}`)
