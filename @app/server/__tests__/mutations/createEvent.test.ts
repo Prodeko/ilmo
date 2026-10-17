@@ -114,6 +114,7 @@ describe("CreateEvent", () => {
             ownerOrganizationId: organization.id,
             categoryId: eventCategory.id,
             isHighlighted: true,
+            highlightText: { fi: "Kova meno", en: "Big party" },
             isDraft: false,
             eventStartTime: day.add(1, "days").toISOString(),
             eventEndTime: day.add(2, "days").toISOString(),
@@ -165,6 +166,11 @@ describe("CreateEvent", () => {
         if (questionRows.length !== 3) {
           throw new Error("Wrong amount of questions after mutation!")
         }
+
+        expect(eventRows[0].highlight_text).toEqual({
+          fi: "Kova meno",
+          en: "Big party",
+        })
       }
     )
   })

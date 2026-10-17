@@ -11,6 +11,7 @@ exports[`UpdateEvent can update an existing event 1`] = `
         "eventEndTime": "[timestamp-2]",
         "eventStartTime": "[timestamp-1]",
         "headerImageFile": "[random-5]",
+        "highlightText": null,
         "id": "[id-1]",
         "isDraft": false,
         "isHighlighted": false,
@@ -75,7 +76,7 @@ exports[`UpdateEvent must specify at least one event quota 1`] = `
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.update_event_quotas(uuid,app_public.update_event_quotas[]) line 14 at RAISE
 SQL statement "SELECT * from app_public.update_event_quotas(id, quotas)"
-PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 30 at PERFORM",
+PL/pgSQL function app_public.update_event(uuid,app_public.event_input,app_public.update_event_quotas[],app_public.update_event_questions[]) line 34 at PERFORM",
         },
       },
       "locations": [

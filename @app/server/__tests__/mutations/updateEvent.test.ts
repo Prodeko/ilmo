@@ -191,6 +191,76 @@ describe("UpdateEvent", () => {
     )
   })
 
+  it("updates highlight text together with isHighlighted", async () => {
+    const { events, quotas, questions, session } =
+      await createEventDataAndLogin({
+        userOptions: { create: true, isAdmin: true },
+      })
+    const event = events[0]
+    const quotaInput = quotas.map((q) =>
+      pick(camelizeKeys(q), ["id", "position", "size", "title"])
+    )
+    const questionInput = questions.map((q) =>
+      pick(camelizeKeys(q), [
+        "id",
+        "position",
+        "type",
+        "label",
+        "isRequired",
+        "data",
+      ])
+    )
+
+    // Runs the update without rolling back, so each step builds on the last
+    const updateAndExpectHighlightText = (
+      eventInput: object,
+      expected: object | null
+    ) =>
+      runGraphQLQuery(
+        UpdateEventDocument,
+        {
+          input: {
+            id: event.id,
+            // The rich text validator requires a description on every update
+            event: { description: event.description, ...eventInput },
+            quotas: quotaInput,
+            questions: questionInput,
+          },
+        },
+        { user: { sessionId: session.uuid } },
+        async (json, { pgClient }) => {
+          expect(json.errors).toBeFalsy()
+          const { rows } = await asRoot(pgClient, () =>
+            pgClient.query(
+              `SELECT highlight_text FROM app_public.events WHERE id = $1`,
+              [event.id]
+            )
+          )
+          expect(rows[0].highlight_text).toEqual(expected)
+        },
+        false,
+        false
+      )
+
+    // Set
+    await updateAndExpectHighlightText(
+      { isHighlighted: true, highlightText: { fi: "Kova meno" } },
+      { fi: "Kova meno" }
+    )
+
+    // Kept when isHighlighted is not part of the update
+    await updateAndExpectHighlightText(
+      { location: "Uusi paikka" },
+      { fi: "Kova meno" }
+    )
+
+    // Cleared with null
+    await updateAndExpectHighlightText(
+      { isHighlighted: true, highlightText: null },
+      null
+    )
+  })
+
   it("can't update an event if not logged in as admin", async () => {
     const { events, quotas, questions, session } =
       await createEventDataAndLogin({

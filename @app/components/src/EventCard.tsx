@@ -39,6 +39,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     headerImageFile,
     signupOpen,
     isHighlighted,
+    highlightText,
   } = event
   const { t, lang } = useTranslation("home")
 
@@ -108,7 +109,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     <Ribbon
       color={randomElementFromArray(rainbowColors)}
       data-cy="eventcard-is-highlighted"
-      text={t("highlightText")}
+      text={highlightText?.[lang] || t("highlightText")}
     >
       {card}
     </Ribbon>

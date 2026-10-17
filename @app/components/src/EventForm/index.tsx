@@ -37,6 +37,7 @@ export type FormValues = {
   eventTime?: dayjs.Dayjs[]
   registrationTime?: dayjs.Dayjs[]
   isHighlighted?: boolean
+  highlightText?: Scalars["TranslatedField"]["input"]
   headerImageFile?: string
   isDraft?: boolean
   quotas?: Quota[]
@@ -140,6 +141,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           quotas: formQuotas,
           questions: formQuestions,
           headerImageFile: headerFile,
+          isHighlighted,
+          highlightText: formHighlightText,
         } = values
 
         if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
@@ -155,6 +158,20 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const slug = getEventSlug(name, eventTime)
         const headerImageFile = headerFile?.originFileObj
 
+        // Keep only non-empty texts in the selected languages. An empty
+        // result is sent as null so the default ribbon text is shown.
+        const highlightTextEntries = Object.entries(
+          (isHighlighted && formHighlightText) || {}
+        )
+          .map(([l, text]) => [l, (text as string | undefined)?.trim()])
+          .filter(
+            ([l, text]) => text && selectedLanguages.includes(l as string)
+          )
+        const highlightText =
+          highlightTextEntries.length > 0
+            ? Object.fromEntries(highlightTextEntries)
+            : null
+
         const event = {
           ...filterObjectByKeys(values, [
             "ownerOrganizationId",
@@ -166,6 +183,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             "isDraft",
           ]),
           slug,
+          highlightText,
           eventStartTime,
           eventEndTime,
           registrationStartTime,
@@ -219,7 +237,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       }
       setFormSubmitting(false)
     },
-    [mutation, formRedirect, router, t, type, eventId]
+    [mutation, formRedirect, router, t, type, eventId, selectedLanguages]
   )
 
   const debounceTabErrors = useMemo(

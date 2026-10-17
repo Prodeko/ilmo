@@ -11,6 +11,10 @@ exports[`CreateEvent can create event while logged in 1`] = `
         "eventEndTime": "[timestamp-2]",
         "eventStartTime": "[timestamp-1]",
         "headerImageFile": "[random-5]",
+        "highlightText": {
+          "en": "Big party",
+          "fi": "Kova meno",
+        },
         "id": "[id-1]",
         "isDraft": false,
         "isHighlighted": true,
@@ -75,7 +79,7 @@ exports[`CreateEvent must specify at least one event quota 1`] = `
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.create_event_quotas(uuid,app_public.create_event_quotas[]) line 12 at RAISE
 SQL statement "SELECT * from app_public.create_event_quotas(v_event.id, quotas)"
-PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 45 at PERFORM",
+PL/pgSQL function app_public.create_event(app_public.event_input,app_public.create_event_quotas[],app_public.create_event_questions[]) line 47 at PERFORM",
         },
       },
       "locations": [

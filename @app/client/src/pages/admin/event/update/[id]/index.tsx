@@ -26,6 +26,7 @@ type UpdateFormInitialValues = {
   registrationStartTime: string
   registrationEndTime: string
   isHighlighted: boolean
+  highlightText: Record<string, string> | null
   isDraft: boolean
   headerImageFile: string
   quotas: QuotasConnection
@@ -44,6 +45,7 @@ function constructInitialValues(values: any) {
     "registrationStartTime",
     "registrationEndTime",
     "isHighlighted",
+    "highlightText",
     "isDraft",
     "headerImageFile",
     "quotas",

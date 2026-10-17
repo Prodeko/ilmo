@@ -20,6 +20,8 @@
   "forms": {
     "eventTime": "Event time",
     "highlightEvent": "Highlighted event",
+    "highlightText": "Highlight text",
+    "highlightTextHelp": "Leave empty to show the default text \"Check this out!\".",
     "isDraft": "Draft",
     "isHighlighted": "Highlighted",
     "isNotDraft": "Published",
