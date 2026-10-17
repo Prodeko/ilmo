@@ -79,12 +79,31 @@
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Avoin kiintiö",
   "organizer": "Järjestäjä",
+  "questionsAutomaticallyCollected": "<b>Etunimi</b>, <b>sukunimi</b> ja <b>sähköposti</b> kysytään ilmoittautujilta automaattisesti, joten niitä ei tarvitse lisätä kysymyksiksi.",
   "queued": "Jonossa",
   "quota": "Kiintiö",
   "removeOption": "Poista vaihtoehto",
   "removeQuestion": "Poista kysymys",
   "removeQuota": "Poista kiintiö",
   "spots": "paikkaa",
+  "templates": {
+    "questions": {
+      "confirmRemove": "Tapahtumapohjan luomat kysymykset poistetaan, myös jos olet muokannut niitä. Jatketaanko?",
+      "label": "Tapahtumapohja",
+      "none": "Ei tapahtumapohjaa",
+      "presets": "Valmiit kysymykset",
+      "sitsit": "Sitsit"
+    },
+    "quotas": {
+      "confirmRemove": "Kiintiöpohjan luomat kiintiöt poistetaan, myös jos olet muokannut niitä. Jatketaanko?",
+      "label": "Kiintiöpohja",
+      "none": "Ei kiintiöpohjaa",
+      "openQuota": "Avoin kiintiö",
+      "presets": "Lisää yksittäiset kiintiöt",
+      "yearGroups": "Kiintiöt kaikille vuosikursseille",
+      "yearGroupsNote": "Muista lisätä kiintiöille koot."
+    }
+  },
   "timer": {
     "instructions": "Sivu päivittyy automaattisesti kun ilmo aukeaa. Älä päivitä sivua omatoimisesti.",
     "registrationStarts": "Ilmo aukeaa",

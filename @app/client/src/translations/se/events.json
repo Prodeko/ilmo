@@ -79,12 +79,31 @@
   "numRegistrations": "Registrerade personer",
   "openQuota": "Öppen kvot",
   "organizer": "Arrangör",
+  "questionsAutomaticallyCollected": "<b>Förnamn</b>, <b>efternamn</b> och <b>e-post</b> samlas in automatiskt av alla som anmäler sig, så du behöver inte lägga till dem som frågor.",
   "queued": "Kö",
   "quota": "Kvota",
   "removeOption": "Ta bort alternativ",
   "removeQuestion": "Ta bort fråga",
   "removeQuota": "Ta bort kvot",
   "spots": "spots",
+  "templates": {
+    "questions": {
+      "confirmRemove": "Frågor som skapats av evenemangsmallen tas bort, även om du har redigerat dem. Fortsätta?",
+      "label": "Evenemangsmall",
+      "none": "Ingen evenemangsmall",
+      "presets": "Färdiga frågor",
+      "sitsit": "Sittning"
+    },
+    "quotas": {
+      "confirmRemove": "Kvoter som skapats av kvotmallen tas bort, även om du har redigerat dem. Fortsätta?",
+      "label": "Kvotmall",
+      "none": "Ingen kvotmall",
+      "openQuota": "Öppen kvot",
+      "presets": "Lägg till enskilda kvoter",
+      "yearGroups": "Kvoter för alla årskurser",
+      "yearGroupsNote": "Kom ihåg att ange en storlek för varje kvot."
+    }
+  },
   "timer": {
     "instructions": "Sidan uppdateras automatiskt när registreringen öppnas. Uppdatera inte sidan.",
     "registrationStarts": "Öppnar",

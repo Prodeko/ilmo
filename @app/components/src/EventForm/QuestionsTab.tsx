@@ -22,12 +22,22 @@ import {
   Select,
   Space,
   Tooltip,
+  Typography,
 } from "antd"
+import Trans from "next-translate/Trans"
 
 import { useTranslation } from "../."
 import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
+
+import {
+  buildPresetQuestions,
+  buildTemplateQuestions,
+  questionPresets,
+  questionTemplates,
+} from "./eventTemplates"
+import { TemplateSelector } from "./TemplateSelector"
 
 import type { SelectValue } from "antd/lib/select"
 
@@ -40,6 +50,9 @@ type QuestionData = {
   label: string
   isRequired: boolean
   data: string[]
+  // Set on questions created from a preset checkbox or an event template
+  presetKey?: string
+  templateKey?: string
 }
 
 interface QuestionsTabProps {
@@ -56,11 +69,39 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
      * particularly well with antd's form model.
      */
 
-    const { t } = useTranslation("events")
+    const { t, lang } = useTranslation("events")
     const isMobile = useIsMobile()
     const [, forceUpdate] = useReducer((x) => x + 1, 0)
     const { getFieldValue, setFieldsValue } = form
     const questions = getFieldValue("questions") as QuestionData[]
+
+    function presetKeysOf(questions: QuestionData[] = []) {
+      // A preset can add several questions, so dedupe the keys
+      const keys = questions.map((q) => q?.presetKey).filter(Boolean)
+      return [...new Set(keys)] as string[]
+    }
+
+    // Presets that were ticked by hand, so a template doesn't add them twice
+    function buildTemplateWithoutTickedPresets(templateKey: string) {
+      const current = (getFieldValue("questions") as QuestionData[]) ?? []
+      const ticked = presetKeysOf(current.filter((q) => !q?.templateKey))
+      return buildTemplateQuestions(templateKey, selectedLanguages).filter(
+        (q) => !ticked.includes(q.presetKey)
+      )
+    }
+
+    function handlePresetsChange(checked: string[]) {
+      const current = (getFieldValue("questions") as QuestionData[]) ?? []
+      const present = presetKeysOf(current)
+      const kept = current.filter(
+        (q) => !q?.presetKey || checked.includes(q.presetKey)
+      )
+      const added = checked
+        .filter((key) => !present.includes(key))
+        .flatMap((key) => buildPresetQuestions(key, selectedLanguages))
+      form.setFieldValue("questions", [...kept, ...added])
+      forceUpdate()
+    }
 
     function handleTypeChange(val: SelectValue, index: number) {
       if (val === "TEXT") {
@@ -279,6 +320,33 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
     return (
       <>
+        <TemplateSelector
+          build={buildTemplateWithoutTickedPresets}
+          listName="questions"
+          templateKeys={questionTemplates.map((template) => template.key)}
+          onApplied={forceUpdate}
+        />
+        <Form.Item
+          label={t("templates.questions.presets")}
+          labelCol={{ flex: "none" }}
+          wrapperCol={{ flex: "auto" }}
+        >
+          <Checkbox.Group
+            data-cy="eventform-questions-presets"
+            options={Object.entries(questionPresets).map(([key, preset]) => ({
+              value: key,
+              label: preset[0].label[lang as "fi" | "en"] ?? preset[0].label.en,
+            }))}
+            value={presetKeysOf(questions)}
+            onChange={(checked) => handlePresetsChange(checked as string[])}
+          />
+        </Form.Item>
+        <Typography.Paragraph>
+          <Trans
+            components={{ b: <strong /> }}
+            i18nKey="events:questionsAutomaticallyCollected"
+          />
+        </Typography.Paragraph>
         <DndProvider backend={HTML5Backend}>
           <Form.List name="questions">
             {(fields, { add, remove, move }) => (
