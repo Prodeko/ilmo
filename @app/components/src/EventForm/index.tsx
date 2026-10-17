@@ -325,16 +325,21 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                 },
               ]
             : []),
-          {
-            key: TAB.Email,
-            label: t("admin:events.tabs.email"),
-            // Only render the email tab body when it is the active tab to
-            // avoid spamming renderEmailTemplate queries on every form change.
-            children:
-              activeTab === TAB.Email ? (
-                <EmailTab formValues={formValues} />
-              ) : null,
-          },
+          // The email preview tab is only available in development
+          ...(process.env.NODE_ENV !== "production"
+            ? [
+                {
+                  key: TAB.Email,
+                  label: t("admin:events.tabs.email"),
+                  // Only render the email tab body when it is the active tab to
+                  // avoid spamming renderEmailTemplate queries on every form change.
+                  children:
+                    activeTab === TAB.Email ? (
+                      <EmailTab formValues={formValues} />
+                    ) : null,
+                },
+              ]
+            : []),
         ]}
         tabBarExtraContent={{
           right: (
