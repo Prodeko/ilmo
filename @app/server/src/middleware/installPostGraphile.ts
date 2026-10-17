@@ -29,6 +29,7 @@ import {
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
+  PaymentsPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
   RemoveOwnershipInfoForeignKeyConnections,
@@ -275,6 +276,9 @@ export function getPostGraphileOptions({
 
       // Calculate password strength with zxcvbn-ts on the server side
       PasswordStrengthPlugin,
+
+      // Stripe payments; for now only the paymentsEnabled flag
+      PaymentsPlugin,
 
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.

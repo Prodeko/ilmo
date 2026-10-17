@@ -1,10 +1,8 @@
-fragment ListEventsPage_Query on Query {
+fragment UpdateEventCategoryPage_Query on Query {
   ...SharedLayout_Query
-  eventCategories {
-    nodes {
-      ...EventPage_EventCategory
-      __typename
-    }
+  eventCategory(id: $id) {
+    id
+    ...EventPage_EventCategory
     __typename
   }
   __typename
@@ -21,6 +19,7 @@ fragment SharedLayout_Query on Query {
     }
     __typename
   }
+  paymentsEnabled
   ssoLoginEnabled
   supportedLanguages
   __typename
@@ -90,6 +89,6 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-query ListEventsPage {
-  ...ListEventsPage_Query
+query UpdateEventCategoryPage($id: UUID!) {
+  ...UpdateEventCategoryPage_Query
 }

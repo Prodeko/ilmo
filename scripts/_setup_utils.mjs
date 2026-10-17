@@ -138,6 +138,37 @@ export function updateDotenv(add, answers) {
   )
 
   add(
+    "PAYMENTS_ENABLED",
+    null,
+    `\
+# Stripe payments. Leave these blank to keep payments disabled; no event
+# then takes payments. Payments are on only when PAYMENTS_ENABLED=1
+# and both Stripe secrets below are set.
+#
+#   Webhook endpoint:           ${rootUrl}/api/stripe/webhook
+#   Events to send:             checkout.session.completed,
+#                               checkout.session.expired, charge.refunded
+#
+# Use test-mode keys (sk_test_...) outside production. Locally, run
+# \`stripe listen --forward-to ${rootUrl}/api/stripe/webhook\` and use the
+# whsec_... secret it prints.`
+  )
+
+  add(
+    "STRIPE_SECRET_KEY",
+    null,
+    `\
+# Stripe secret API key (sk_test_... or sk_live_...):`
+  )
+
+  add(
+    "STRIPE_WEBHOOK_SECRET",
+    null,
+    `\
+# Signing secret of the webhook endpoint above (whsec_...):`
+  )
+
+  add(
     "GRAPHILE_TURBO",
     "1",
     `\

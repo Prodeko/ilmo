@@ -2404,6 +2404,12 @@ type Query {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
+
+  """
+  True when Stripe payments are configured on this server. While false,
+  every event behaves as if its payment mode were NONE.
+  """
+  paymentsEnabled: Boolean!
   quota(id: UUID!): Quota
 
   """Reads and enables pagination through a set of `Quota`."""
@@ -3363,6 +3369,12 @@ type Subscription {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
+
+  """
+  True when Stripe payments are configured on this server. While false,
+  every event behaves as if its payment mode were NONE. (live)
+  """
+  paymentsEnabled: Boolean!
 
   """ (live)"""
   quota(id: UUID!): Quota

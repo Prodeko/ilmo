@@ -3,6 +3,7 @@ import EventRegistrationPlugin from "./EventRegistrationPlugin"
 import OrdersPlugin from "./OrdersPlugin"
 import PassportLoginPlugin from "./PassportLoginPlugin"
 import PasswordStrengthPlugin from "./PasswordStrengthPlugin"
+import PaymentsPlugin from "./PaymentsPlugin"
 import PrimaryKeyMutationsOnlyPlugin from "./PrimaryKeyMutationsOnlyPlugin"
 import RateLimitPlugin from "./RateLimitPlugin"
 import RemoveOwnershipInfoForeignKeyConnections from "./RemoveOwnershipInfoForeignKeyConnections"
@@ -18,6 +19,7 @@ export {
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
+  PaymentsPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
   RemoveOwnershipInfoForeignKeyConnections,

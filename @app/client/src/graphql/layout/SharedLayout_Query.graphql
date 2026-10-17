@@ -13,6 +13,7 @@ fragment SharedLayout_Query on Query {
       ...SharedLayout_Organization
     }
   }
+  paymentsEnabled
   ssoLoginEnabled
   supportedLanguages
 }

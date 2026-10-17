@@ -1,12 +1,3 @@
-fragment UpdateEventCategoryPage_Query on Query {
-  ...SharedLayout_Query
-  eventCategory(id: $id) {
-    id
-    ...EventPage_EventCategory
-    __typename
-  }
-  __typename
-}
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
@@ -19,6 +10,7 @@ fragment SharedLayout_Query on Query {
     }
     __typename
   }
+  paymentsEnabled
   ssoLoginEnabled
   supportedLanguages
   __typename
@@ -69,25 +61,12 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment EventPage_EventCategory on EventCategory {
-  id
-  description
-  name
-  color
-  ownerOrganization {
-    ...EventPage_Organization
+query InvitationDetail($id: UUID!, $code: String) {
+  ...SharedLayout_Query
+  organizationForInvitation(invitationId: $id, code: $code) {
+    id
+    name
+    slug
     __typename
   }
-  updatedAt
-  __typename
-}
-fragment EventPage_Organization on Organization {
-  id
-  name
-  slug
-  color
-  __typename
-}
-query UpdateEventCategoryPage($id: UUID!) {
-  ...UpdateEventCategoryPage_Query
 }

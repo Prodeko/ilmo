@@ -11,6 +11,7 @@ import {
   PostGraphileResponseFastify3,
 } from "postgraphile"
 
+import { paymentsEnabled } from "./utils/stripe"
 import * as middleware from "./middleware"
 import { makeShutdownActions, ShutdownAction } from "./shutdownActions"
 import { sanitizeEnv } from "./utils"
@@ -103,6 +104,13 @@ export async function makeApp({
   await app.register(middleware.installCSRFProtection)
   await app.register(middleware.installPassport)
   await app.register(middleware.installKeycloak)
+  if (!paymentsEnabled()) {
+    // The ordinary state until Stripe is configured; every payments code path
+    // is skipped and events behave exactly as they did before payments.
+    app.log.info(
+      "PAYMENTS_ENABLED / STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET not all set; payments disabled"
+    )
+  }
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
     // Loaded dynamically so the production bundle never imports
