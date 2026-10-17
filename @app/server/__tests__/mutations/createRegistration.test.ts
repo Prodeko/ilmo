@@ -112,9 +112,8 @@ describe("CreateRegistration", () => {
 
         expect(rateLimitjobs).toHaveLength(1)
         const [rateLimitJob] = rateLimitjobs
-        expect(rateLimitJob.payload).toMatchObject({
-          eventId: eventId,
-          ipAddress: req.ip,
+        expect(rateLimitJob.payload).toEqual({
+          key: `rate-limit:claimRegistrationToken:${eventId}:${quotaId}:ip:${req.ip}`,
         })
 
         const confirmationEmailJobs = await getJobs(
@@ -153,7 +152,7 @@ describe("CreateRegistration", () => {
         // Redis should not contain a rate limiting key after
         // successful registration
         const rateLimitId = `${eventId}:${quotaId}`
-        const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
+        const key = `rate-limit:claimRegistrationToken:${rateLimitId}:ip:127.1.1.1`
         const value = await redisClient.get(key)
         expect(value).toEqual(null)
         // TODO: Figure out a way to test gdpr__delete_event_registrations
