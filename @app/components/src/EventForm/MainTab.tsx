@@ -83,11 +83,23 @@ const PaymentSettings: React.FC<PaymentSettingsProps> = ({
             }
           }}
         >
-          <Space direction="vertical">
+          <Space direction="vertical" style={{ width: "100%" }}>
             {PAYMENT_MODES.map(({ value, label, help }) => (
               <Radio
                 key={value}
                 data-cy={`eventform-radio-payment-mode-${value}`}
+                // Bordered option cards (board 7)
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 6,
+                  border: `1px solid ${
+                    paymentMode === value ? "#002e7d" : "#e8edf3"
+                  }`,
+                  background: paymentMode === value ? "#e8f0fc" : "#ffffff",
+                }}
                 value={value}
               >
                 <Text strong>{t(`payments.settings.${label}`)}</Text>

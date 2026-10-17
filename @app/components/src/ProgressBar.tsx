@@ -4,9 +4,16 @@ interface Props {
   percentageFilled: number
   filled: number
   size: number
+  /** Appended to the "filled / size" label, e.g. " · 3 in queue". */
+  labelSuffix?: string
 }
 
-export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
+export const ProgressBar = ({
+  percentageFilled,
+  size,
+  filled,
+  labelSuffix = "",
+}: Props) => {
   const [color, setColor] = useState("#5eb95e")
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export const ProgressBar = ({ percentageFilled, size, filled }: Props) => {
       </div>
       <span style={labelStyles}>{`${
         filled <= size ? filled.toString() : size
-      } / ${size}`}</span>
+      } / ${size}${labelSuffix}`}</span>
     </div>
   )
 }
