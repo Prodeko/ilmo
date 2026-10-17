@@ -37,7 +37,9 @@ it("can login with username+password", () =>
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
       {
         "created_at": "[DATE]",
+        "kind": "web",
         "last_active": "[DATE]",
+        "oauth_sid": null,
         "user_id": "[ID]",
         "uuid": "[UUID]",
       }
@@ -53,7 +55,9 @@ it("can login with uSeRnAmE+password", () =>
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
       {
         "created_at": "[DATE]",
+        "kind": "web",
         "last_active": "[DATE]",
+        "oauth_sid": null,
         "user_id": "[ID]",
         "uuid": "[UUID]",
       }
@@ -69,7 +73,9 @@ it("can login with email+password", () =>
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
       {
         "created_at": "[DATE]",
+        "kind": "web",
         "last_active": "[DATE]",
+        "oauth_sid": null,
         "user_id": "[ID]",
         "uuid": "[UUID]",
       }
@@ -85,7 +91,9 @@ it("can login with EmAiL+password", () =>
     expect(snapshotSafe(session)).toMatchInlineSnapshot(`
       {
         "created_at": "[DATE]",
+        "kind": "web",
         "last_active": "[DATE]",
+        "oauth_sid": null,
         "user_id": "[ID]",
         "uuid": "[UUID]",
       }
