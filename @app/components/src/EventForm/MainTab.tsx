@@ -1,21 +1,11 @@
 import { Dispatch, SetStateAction, useRef, useState } from "react"
 import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
-import { range, tailFormItemLayout } from "@app/lib"
+import { range } from "@app/lib"
 import { css } from "@emotion/css"
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputRef,
-  Row,
-  Select,
-  Space,
-  Switch,
-} from "antd"
+import { DatePicker, Form, Input, InputRef, Select, Space, Switch } from "antd"
 import dayjs, { Dayjs } from "dayjs"
 
-import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
+import { Editor, FileUpload, useTranslation } from "../."
 
 import { FormValues } from "."
 
@@ -154,13 +144,8 @@ interface MainTabProps {
   type: "update" | "create"
   formValues: FormValues
   data: CreateEventPageQuery | UpdateEventPageQuery
-  formSubmitting: boolean
   selectedLanguages: string[]
   setSelectedLanguages: Dispatch<SetStateAction<string[]>>
-  isDraft: boolean
-  setIsDraft: Dispatch<SetStateAction<boolean>>
-  tabErrors: string[] | null
-  formError: any
   supportedLanguages: Array<string | null | undefined> | null | undefined
 }
 
@@ -171,11 +156,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     formValues,
     selectedLanguages,
     setSelectedLanguages,
-    isDraft,
-    setIsDraft,
-    formError,
-    tabErrors,
-    formSubmitting,
     supportedLanguages,
   } = props
   const { t, lang } = useTranslation("events")
@@ -418,48 +398,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           defaultFileList={getUploadDefaultFileList()}
           maxCount={1}
         />
-      </Form.Item>
-      <Form.Item
-        label={t("forms.saveAsDraft")}
-        name="isDraft"
-        valuePropName="checked"
-      >
-        <Switch
-          data-cy="eventform-switch-save-as-draft"
-          defaultChecked={isDraft}
-          onChange={(checked) => setIsDraft(checked)}
-        />
-      </Form.Item>
-      {formError && (
-        <Form.Item {...tailFormItemLayout}>
-          <ErrorAlert
-            error={formError}
-            message={
-              type === "create"
-                ? t("errors.eventCreateFailed")
-                : t("errors.eventUpdateFailed")
-            }
-          />
-        </Form.Item>
-      )}
-      {tabErrors ? (
-        <Form.Item label={t("errors.formTabErrors")}>
-          {tabErrors?.map((e, i) => (
-            <Row key={i}>
-              <span style={{ color: "red" }}>{e}</span>
-            </Row>
-          ))}
-        </Form.Item>
-      ) : null}
-      <Form.Item {...tailFormItemLayout}>
-        <Button
-          data-cy="eventform-button-submit"
-          disabled={selectedLanguages.length === 0 ? true : false}
-          htmlType="submit"
-          loading={formSubmitting}
-        >
-          {t(`common:${type}`)}
-        </Button>
       </Form.Item>
     </>
   )

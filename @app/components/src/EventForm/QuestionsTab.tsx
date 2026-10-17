@@ -45,6 +45,9 @@ type QuestionData = {
 interface QuestionsTabProps {
   form: FormInstance
   selectedLanguages: string[]
+  // Only compared by memo: without it a language switch doesn't re-render
+  // the tab, which leaves its texts and field messages in the old language
+  lang: string
 }
 
 const colSpan = { md: { span: 6 }, sm: { span: 12 }, xs: { span: 24 } }

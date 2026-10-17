@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CreateEventDocument,
   CreateEventPageQuery,
@@ -10,7 +10,6 @@ import {
 import { filterObjectByKeys, formItemLayout, lowercased } from "@app/lib"
 import { Badge, Col, Form, Row, Tabs } from "antd"
 import dayjs from "dayjs"
-import debounce from "lodash/debounce"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
 import slugify from "slugify"
@@ -19,6 +18,7 @@ import { CombinedError, useMutation } from "urql"
 import { ButtonLink, useTranslation } from "../."
 
 import { EmailTab } from "./EmailTab"
+import { EventFormFooter } from "./EventFormFooter"
 import { MainTab } from "./MainTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
@@ -80,6 +80,9 @@ enum TAB {
   Email = "email",
 }
 
+// Tabs holding the event's form fields, which the footer moves between
+const FORM_TABS = [TAB.General, TAB.Quotas, TAB.Questions]
+
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
@@ -94,7 +97,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   )
 
   // Translations, router, urql
-  const { t } = useTranslation("events")
+  const { t, lang } = useTranslation("events")
   const router = useRouter()
 
   // Handling form values, errors and submission
@@ -104,11 +107,61 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [activeTab, setActiveTab] = useState<TAB>(TAB.General)
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | CombinedError | null>(null)
-  const [tabErrors, setTabErrors] = useState<any[] | null>(null)
   const [isDraft, setIsDraft] = useState(type === "create" || initialIsDraft)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     initialSelectedLanguages || []
   )
+  // Errors that keep the form from being saved, null until first checked
+  const [missingFields, setMissingFields] = useState<string[] | null>(null)
+  // Field errors found when saving, shown in the footer since the fields
+  // they belong to can be on another tab
+  const [submitErrors, setSubmitErrors] = useState<string[] | null>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+
+  // Saving stays disabled until every field passes validation. useWatch also
+  // fires on setFieldsValue, which onValuesChange doesn't. The check also
+  // runs again on a language switch, which keeps the form's values, so the
+  // reasons are given in the new language
+  const watchedValues = Form.useWatch([], form)
+  const [recheck, setRecheck] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => !cancelled && setMissingFields([]))
+      .catch(({ errorFields, outOfDate }) => {
+        if (cancelled) return
+        // Another validation (e.g. a field validating itself on change)
+        // started after this one, which rejects this one without errors
+        // whatever the fields hold. Check again once it has started
+        if (outOfDate) {
+          setTimeout(() => !cancelled && setRecheck((n) => n + 1))
+          return
+        }
+        setMissingFields(
+          uniq(errorFields.flatMap(({ errors }) => errors as string[]))
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [form, watchedValues, recheck, lang])
+
+  // The save errors were given in the previous language
+  useEffect(() => {
+    setSubmitErrors(null)
+    setFormError(null)
+  }, [lang])
+
+  const changeTab = useCallback((tab: string) => {
+    setActiveTab(tab as TAB)
+    // Bring the top of the new tab into view when the footer was used
+    // further down the page
+    const top = tabsRef.current?.getBoundingClientRect().top
+    if (top !== undefined && top < 0) {
+      tabsRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [])
 
   // Mutations
   const eventMutation =
@@ -130,7 +183,6 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     async (values) => {
       setFormSubmitting(true)
       setFormError(null)
-      setTabErrors(null)
       try {
         const {
           name,
@@ -142,7 +194,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           headerImageFile: headerFile,
         } = values
 
-        if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
+        if (!formQuotas?.length) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
@@ -222,41 +274,16 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     [mutation, formRedirect, router, t, type, eventId]
   )
 
-  const debounceTabErrors = useMemo(
-    () =>
-      debounce(() => {
-        let tabErrors = form
-          .getFieldsError()
-          .filter(
-            ({ name, errors }) =>
-              ["quotas", "questions"].includes(name[0] as string) &&
-              errors.length > 0
-          )
-          .map(({ errors }) => errors[0])
-          .filter((e) => !!e)
-
-        if (tabErrors.length > 0) {
-          setTabErrors(uniq(tabErrors))
-        }
-      }, 500),
-    [form]
-  )
-
-  const handleFieldsChange = useCallback(async () => {
-    // Filters form errors that relate to quotas or questions
-    // in order to display them on the general tab
-    debounceTabErrors()
-  }, [debounceTabErrors])
+  const tabLabels: Record<string, string> = {
+    [TAB.General]: t("admin:events.tabs.generalInfo"),
+    [TAB.Quotas]: t("admin:events.tabs.quotas"),
+    [TAB.Questions]: t("admin:events.tabs.questions"),
+  }
 
   const mainTabProps = {
     type,
     data,
-    isDraft,
     formValues,
-    setIsDraft,
-    formError,
-    tabErrors,
-    formSubmitting,
     selectedLanguages,
     setSelectedLanguages,
     supportedLanguages: languagesLower,
@@ -273,36 +300,47 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         openQuotaSize: 0,
         ...initialValues,
       }}
-      onFieldsChange={handleFieldsChange}
       onFinish={handleSubmit}
-      onValuesChange={(_, values) => setFormValues(values)}
+      onFinishFailed={({ errorFields }) =>
+        setSubmitErrors(uniq(errorFields.flatMap(({ errors }) => errors)))
+      }
+      onValuesChange={(_, values) => {
+        setFormValues(values)
+        setSubmitErrors(null)
+      }}
     >
+      <div ref={tabsRef} />
       <Tabs
-        defaultActiveKey="general"
+        activeKey={activeTab}
         items={[
           {
             key: TAB.General,
-            label: t("admin:events.tabs.generalInfo"),
+            label: tabLabels[TAB.General],
             forceRender: true,
             children: <MainTab {...mainTabProps} />,
           },
           {
             key: TAB.Quotas,
-            label: t("admin:events.tabs.quotas"),
+            label: tabLabels[TAB.Quotas],
             forceRender: true,
             children: (
               <QuotasTab
                 initialValues={initialValues}
+                lang={lang}
                 selectedLanguages={selectedLanguages}
               />
             ),
           },
           {
             key: TAB.Questions,
-            label: t("admin:events.tabs.questions"),
+            label: tabLabels[TAB.Questions],
             forceRender: true,
             children: (
-              <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
+              <QuestionsTab
+                form={form}
+                lang={lang}
+                selectedLanguages={selectedLanguages}
+              />
             ),
           },
           ...(type === "update"
@@ -368,6 +406,20 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           ),
         }}
         onChange={(tab) => setActiveTab(tab as TAB)}
+      />
+      <EventFormFooter
+        activeTab={activeTab}
+        canSubmit={missingFields?.length === 0 && selectedLanguages.length > 0}
+        formError={formError}
+        formSubmitting={formSubmitting}
+        hidden={!FORM_TABS.includes(activeTab)}
+        isDraft={isDraft}
+        missingFields={missingFields}
+        setActiveTab={changeTab}
+        setIsDraft={setIsDraft}
+        submitErrors={submitErrors}
+        tabs={FORM_TABS.map((key) => ({ key, label: tabLabels[key] }))}
+        type={type}
       />
     </Form>
   )
