@@ -1,18 +1,18 @@
 import { Dispatch, SetStateAction } from "react"
 import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
 import { range, tailFormItemLayout } from "@app/lib"
-import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
+import { Button, Form, Input, Row, Select, Switch } from "antd"
 import dayjs from "dayjs"
 
 import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
 
+import { DayRangePicker } from "./DayRangePicker"
 import { FormValues } from "."
 
 import type { UploadFile } from "antd/lib/upload/interface"
 
 const { Option } = Select
 const { Group } = Input
-const { RangePicker } = DatePicker
 
 interface MainTabProps {
   type: "update" | "create"
@@ -233,11 +233,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           },
         ]}
       >
-        <RangePicker
-          data-cy="eventform-input-event-time"
-          format="YYYY-MM-DD HH:mm:ss"
-          showTime
-        />
+        <DayRangePicker data-cy="eventform-input-event-time" endAfterDays={0} />
       </Form.Item>
       <Form.Item
         label={t("forms.registrationTime")}
@@ -250,9 +246,9 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           },
         ]}
       >
-        <RangePicker
+        <DayRangePicker
           data-cy="eventform-input-registration-time"
-          format="YYYY-MM-DD HH:mm:ss"
+          endAfterDays={7}
           showTime={{
             hideDisabledOptions: true,
           }}
