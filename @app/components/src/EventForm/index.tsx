@@ -23,6 +23,7 @@ import { MainTab } from "./MainTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
+import { RequiredMark } from "./RequiredMark"
 
 import type { Scalars } from "@app/graphql"
 import type { JsonValue } from "type-fest"
@@ -71,6 +72,14 @@ export function getEventSlug(
 
   return slug
 }
+
+// Tab label with the same red asterisk antd shows next to required fields
+const RequiredTabLabel: React.FC<{ label: string }> = ({ label }) => (
+  <span>
+    <RequiredMark />
+    {label}
+  </span>
+)
 
 enum TAB {
   General = "general",
@@ -282,13 +291,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         items={[
           {
             key: TAB.General,
-            label: t("admin:events.tabs.generalInfo"),
+            label: (
+              <RequiredTabLabel label={t("admin:events.tabs.generalInfo")} />
+            ),
             forceRender: true,
             children: <MainTab {...mainTabProps} />,
           },
           {
             key: TAB.Quotas,
-            label: t("admin:events.tabs.quotas"),
+            label: <RequiredTabLabel label={t("admin:events.tabs.quotas")} />,
             forceRender: true,
             children: (
               <QuotasTab
