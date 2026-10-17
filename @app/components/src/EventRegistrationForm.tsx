@@ -26,6 +26,7 @@ import {
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
+import { celebrate } from "./celebrate"
 import { ErrorAlert, useTranslation } from "."
 
 import type { Rule } from "antd/lib/form"
@@ -175,6 +176,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
           const { error } = await formMutation({ input })
           if (error) throw error
 
+          if (type === "create") celebrate()
           if (submitAction) {
             submitAction()
           }
@@ -248,7 +250,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         initialValues={initialValues}
         labelWrap
         onFinish={
-          preview ? () => message.info(t("previewNotSubmitted")) : handleSubmit
+          preview
+            ? () => {
+                // Show the same celebration registrants will see
+                celebrate()
+                message.info(t("previewNotSubmitted"))
+              }
+            : handleSubmit
         }
         onKeyDown={
           preview

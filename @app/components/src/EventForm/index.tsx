@@ -17,6 +17,7 @@ import slugify from "slugify"
 import { CombinedError, useMutation } from "urql"
 
 import { ButtonLink, useTranslation } from "../."
+import { celebrate } from "../celebrate"
 
 import { EmailTab } from "./EmailTab"
 import { MainTab } from "./MainTab"
@@ -222,6 +223,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         // eventId is only used in update mutation
         const { error } = await mutation({ input })
         if (error) throw error
+
+        if (type === "create") celebrate()
 
         setFormError(null)
         router.push(formRedirect, formRedirect)

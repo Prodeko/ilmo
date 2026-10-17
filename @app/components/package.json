@@ -19,6 +19,7 @@
     "@hacknug/react-icons": "^4.2.1",
     "antd": "^5.22.5",
     "antd-img-crop": "^4.21.0",
+    "canvas-confetti": "^1.9.4",
     "dayjs": "^1.11.4",
     "escape-html": "^1.0.3",
     "is-hotkey": "^0.2.0",
@@ -44,6 +45,7 @@
     "urql": "^4.2.2"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/nprogress": "^0.2.0",
     "@types/react-dom": "^18.0.6",
     "type-fest": "^2.18.0"
