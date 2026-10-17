@@ -1,0 +1,16 @@
+fragment RegistrationProfile on RegistrationProfile {
+  userId
+  telegram
+  dietaryRestrictions
+  __typename
+}
+query RegistrationProfile {
+  currentUser {
+    id
+    registrationProfile {
+      ...RegistrationProfile
+      __typename
+    }
+    __typename
+  }
+}

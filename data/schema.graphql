@@ -309,6 +309,7 @@ input CreateEventQuestionInput {
   isRequired: Boolean
   label: TranslatedField
   position: Int
+  prefill: QuestionPrefill
   type: QuestionType
 }
 
@@ -1221,6 +1222,11 @@ type EventQuestion {
   """Question position. Used to order question."""
   position: Int!
 
+  """
+  Which registration profile field prefills the answer to this question, if any.
+  """
+  prefill: QuestionPrefill
+
   """Question type (e.g. radio button, text, checkbox)."""
   type: QuestionType!
   updatedAt: Datetime!
@@ -1795,6 +1801,14 @@ type Mutation {
     """
     input: SetAdminStatusInput!
   ): SetAdminStatusPayload
+
+  """Set the values used to prefill your event registrations."""
+  setRegistrationProfile(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetRegistrationProfileInput!
+  ): SetRegistrationProfilePayload
 
   """
   The owner of an `Organization` may use this mutation to transfer ownership to a different organization member. Take care, if you assign ownership to someone who cannot or will not access their account then you may need to contact support to have ownership reassigned.
@@ -2443,6 +2457,7 @@ type Query {
 
   """Get registration by update token."""
   registrationByUpdateToken(updateToken: String!): Registration
+  registrationProfile(userId: UUID!): RegistrationProfile
 
   """Reads and enables pagination through a set of `Registration`."""
   registrations(
@@ -2494,6 +2509,11 @@ type Query {
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userEmail(id: UUID!): UserEmail
+}
+
+enum QuestionPrefill {
+  DIETARY_RESTRICTIONS
+  TELEGRAM
 }
 
 enum QuestionType {
@@ -2772,6 +2792,44 @@ input RegistrationFilter {
   updatedBy: UUIDFilter
 }
 
+"""
+Values used to prefill event registration answers. Only visible to the user themselves.
+"""
+type RegistrationProfile {
+  createdAt: Datetime!
+
+  """Dietary restrictions and allergies."""
+  dietaryRestrictions: String
+
+  """Telegram handle."""
+  telegram: String
+  updatedAt: Datetime!
+
+  """Reads a single `User` that is related to this `RegistrationProfile`."""
+  user: User
+
+  """The user this registration profile belongs to."""
+  userId: UUID!
+}
+
+"""A `RegistrationProfile` edge in the connection."""
+type RegistrationProfilesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `RegistrationProfile` at the end of the edge."""
+  node: RegistrationProfile!
+}
+
+"""Methods to use when ordering `RegistrationProfile`."""
+enum RegistrationProfilesOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
+}
+
 enum RegistrationStatus {
   IN_OPEN_QUOTA
   IN_QUEUE
@@ -3000,6 +3058,41 @@ type SetAdminStatusPayload {
   """
   query: Query
   success: Boolean
+}
+
+"""All input for the `setRegistrationProfile` mutation."""
+input SetRegistrationProfileInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  dietaryRestrictions: String!
+  telegram: String!
+}
+
+"""The output of our `setRegistrationProfile` mutation."""
+type SetRegistrationProfilePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  registrationProfile: RegistrationProfile
+
+  """An edge for our `RegistrationProfile`. May be used by Relay 1."""
+  registrationProfileEdge(
+    """The method to use when ordering `RegistrationProfile`."""
+    orderBy: [RegistrationProfilesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationProfilesEdge
+
+  """Reads a single `User` that is related to this `RegistrationProfile`."""
+  user: User
 }
 
 """
@@ -3407,6 +3500,9 @@ type Subscription {
   """Get registration by update token. (live)"""
   registrationByUpdateToken(updateToken: String!): Registration
 
+  """ (live)"""
+  registrationProfile(userId: UUID!): RegistrationProfile
+
   """Reads and enables pagination through a set of `Registration`. (live)"""
   registrations(
     """Read all values in the set after (below) this cursor."""
@@ -3712,6 +3808,7 @@ input UpdateEventQuestionInput {
   isRequired: Boolean
   label: TranslatedField
   position: Int
+  prefill: QuestionPrefill
   type: QuestionType
 }
 
@@ -3902,6 +3999,9 @@ type User {
 
   """Users primary email."""
   primaryEmail: String
+
+  """Reads a single `RegistrationProfile` that is related to this `User`."""
+  registrationProfile: RegistrationProfile
   updatedAt: Datetime!
 
   """Reads and enables pagination through a set of `UserAuthentication`."""

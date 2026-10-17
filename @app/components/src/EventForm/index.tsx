@@ -195,6 +195,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               "label",
               "isRequired",
               "data",
+              "prefill",
             ])
           }
         )

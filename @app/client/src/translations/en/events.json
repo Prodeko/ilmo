@@ -79,6 +79,10 @@
   "numRegistrations": "Registered people",
   "openQuota": "Open quota",
   "organizer": "Organizer",
+  "prefill": {
+    "DIETARY_RESTRICTIONS": "Dietary restrictions",
+    "TELEGRAM": "Telegram"
+  },
   "queued": "Queue",
   "quota": "Quota",
   "removeOption": "Remove option",

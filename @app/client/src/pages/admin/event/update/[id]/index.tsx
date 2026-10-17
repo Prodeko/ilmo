@@ -83,6 +83,7 @@ function constructInitialValues(values: any) {
       "label",
       "isRequired",
       "data",
+      "prefill",
     ])
   )
   const languages = Object.keys(name || {})
