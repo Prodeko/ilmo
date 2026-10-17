@@ -689,6 +689,9 @@ importers:
       '@types/pg':
         specifier: ^8.11.10
         version: 8.20.0
+      graphql-subscriptions:
+        specifier: ^1.2.1
+        version: 1.2.1(graphql@15.10.2)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
