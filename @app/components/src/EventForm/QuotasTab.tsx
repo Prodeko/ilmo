@@ -3,7 +3,7 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   DragOutlined,
-  MinusCircleTwoTone,
+  MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
 import { arePropsEqual } from "@app/lib"
@@ -15,6 +15,7 @@ import {
   InputNumber,
   Space,
   Switch,
+  theme,
   Tooltip,
   Typography,
 } from "antd"
@@ -46,6 +47,7 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
   ({ initialValues, selectedLanguages }) => {
     const [hasOpenQuota, setHasOpenQuota] = useState(false)
     const { t, lang } = useTranslation("events")
+    const { token } = theme.useToken()
     const form = Form.useFormInstance()
     const quotas = (Form.useWatch("quotas", form) ?? []) as QuotaData[]
 
@@ -190,9 +192,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                       </Form.Item>
                       {numRegistrations === 0 ? (
                         <Tooltip title={t("removeQuota")}>
-                          <MinusCircleTwoTone
+                          <MinusCircleOutlined
                             data-cy="eventform-quotas-remove-quota"
-                            twoToneColor="red"
+                            style={{ color: token.colorError }}
                             onClick={() => remove(name)}
                           />
                         </Tooltip>

@@ -3,9 +3,9 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   DragOutlined,
-  MinusCircleTwoTone,
+  MinusCircleOutlined,
   MinusOutlined,
-  PlusCircleTwoTone,
+  PlusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
 import { QuestionType } from "@app/graphql"
@@ -21,6 +21,7 @@ import {
   Row,
   Select,
   Space,
+  theme,
   Tooltip,
   Typography,
 } from "antd"
@@ -70,6 +71,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
      */
 
     const { t, lang } = useTranslation("events")
+    const { token } = theme.useToken()
     const isMobile = useIsMobile()
     const [, forceUpdate] = useReducer((x) => x + 1, 0)
     const { getFieldValue, setFieldsValue } = form
@@ -180,9 +182,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
     function renderQuestionDataField(index: number, i: number) {
       const addDataOption = (
         <Tooltip title={t("addOption")}>
-          <PlusCircleTwoTone
+          <PlusCircleOutlined
             data-cy={`eventform-questions-${index}-add-option`}
-            twoToneColor="lightgreen"
+            style={{ color: token.colorSuccess }}
             onClick={() => handleAddOption(index)}
           />
         </Tooltip>
@@ -446,9 +448,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         </Col>
                         <Col span="1">
                           <Tooltip title={t("removeQuestion")}>
-                            <MinusCircleTwoTone
+                            <MinusCircleOutlined
                               data-cy="eventform-questions-remove-question"
-                              twoToneColor="red"
+                              style={{ color: token.colorError }}
                               onClick={() => remove(name)}
                             />
                           </Tooltip>
