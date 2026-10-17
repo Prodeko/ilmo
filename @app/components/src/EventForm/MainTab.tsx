@@ -1,7 +1,24 @@
 import { Dispatch, SetStateAction } from "react"
-import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
+import {
+  CreateEventPageQuery,
+  PaymentMode,
+  UpdateEventPageQuery,
+} from "@app/graphql"
 import { range, tailFormItemLayout } from "@app/lib"
-import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
+import {
+  Alert,
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  Radio,
+  Row,
+  Select,
+  Space,
+  Switch,
+  Typography,
+} from "antd"
 import dayjs from "dayjs"
 
 import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
@@ -13,6 +30,120 @@ import type { UploadFile } from "antd/lib/upload/interface"
 const { Option } = Select
 const { Group } = Input
 const { RangePicker } = DatePicker
+const { Text, Title } = Typography
+
+const PAYMENT_MODES = [
+  { value: PaymentMode.None, label: "modeNone", help: "modeNoneHelp" },
+  {
+    value: PaymentMode.DuringRegistration,
+    label: "modeDuring",
+    help: "modeDuringHelp",
+  },
+  {
+    value: PaymentMode.AfterRegistration,
+    label: "modeAfter",
+    help: "modeAfterHelp",
+  },
+]
+
+interface PaymentSettingsProps {
+  savedPaymentMode: PaymentMode | null | undefined
+  hasRegistrations: boolean
+}
+
+/**
+ * The Payments section of the General tab (board 7). Only rendered when
+ * payments are enabled for the site.
+ */
+const PaymentSettings: React.FC<PaymentSettingsProps> = ({
+  savedPaymentMode,
+  hasRegistrations,
+}) => {
+  const { t } = useTranslation("admin")
+  const form = Form.useFormInstance()
+  const paymentMode = Form.useWatch("paymentMode", form)
+  const isAfterMode = paymentMode === PaymentMode.AfterRegistration
+
+  return (
+    <>
+      <Form.Item {...tailFormItemLayout}>
+        <Title level={5} style={{ marginBottom: 0 }}>
+          {t("payments.settings.title")}
+        </Title>
+        <Text type="secondary">{t("payments.settings.subtitle")}</Text>
+      </Form.Item>
+      <Form.Item label={t("payments.settings.modeLabel")} name="paymentMode">
+        <Radio.Group
+          data-cy="eventform-radio-payment-mode"
+          onChange={(e) => {
+            // The close email is how participants get their payment link
+            // in after mode, so it is always on there.
+            if (e.target.value === PaymentMode.AfterRegistration) {
+              form.setFieldValue("sendUnpaidEmailOnClose", true)
+            }
+          }}
+        >
+          <Space direction="vertical">
+            {PAYMENT_MODES.map(({ value, label, help }) => (
+              <Radio
+                key={value}
+                data-cy={`eventform-radio-payment-mode-${value}`}
+                value={value}
+              >
+                <Text strong>{t(`payments.settings.${label}`)}</Text>
+                <br />
+                <Text type="secondary">{t(`payments.settings.${help}`)}</Text>
+              </Radio>
+            ))}
+          </Space>
+        </Radio.Group>
+      </Form.Item>
+      {savedPaymentMode &&
+        savedPaymentMode !== PaymentMode.None &&
+        paymentMode === PaymentMode.None && (
+          <Form.Item {...tailFormItemLayout}>
+            <Alert
+              message={t("payments.settings.switchToNoneWarning")}
+              type="warning"
+              showIcon
+            />
+          </Form.Item>
+        )}
+      {savedPaymentMode === PaymentMode.None &&
+        hasRegistrations &&
+        !!paymentMode &&
+        paymentMode !== PaymentMode.None && (
+          <Form.Item {...tailFormItemLayout}>
+            <Alert
+              data-cy="eventform-alert-switch-to-paid"
+              message={t("payments.settings.switchToPaidWarning")}
+              type="warning"
+              showIcon
+            />
+          </Form.Item>
+        )}
+      <Form.Item
+        {...tailFormItemLayout}
+        hidden={!paymentMode || paymentMode === PaymentMode.None}
+        name="sendUnpaidEmailOnClose"
+        valuePropName="checked"
+      >
+        <Checkbox
+          data-cy="eventform-checkbox-send-unpaid-email-on-close"
+          disabled={isAfterMode}
+        >
+          <Text strong>{t("payments.settings.emailOnClose")}</Text>
+          <br />
+          <Text type="secondary">
+            {isAfterMode
+              ? t("payments.settings.emailOnCloseLockedHelp")
+              : t("payments.settings.emailOnCloseHelp")}
+          </Text>
+        </Checkbox>
+      </Form.Item>
+    </>
+  )
+}
 
 interface MainTabProps {
   type: "update" | "create"
@@ -290,6 +421,21 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           onChange={(checked) => setIsDraft(checked)}
         />
       </Form.Item>
+      {data?.paymentsEnabled && (
+        <PaymentSettings
+          hasRegistrations={
+            type === "update" &&
+            !!(data as UpdateEventPageQuery)?.event?.quotas?.nodes?.some(
+              (q) => (q?.registrations?.totalCount ?? 0) > 0
+            )
+          }
+          savedPaymentMode={
+            type === "update"
+              ? (data as UpdateEventPageQuery)?.event?.paymentMode
+              : undefined
+          }
+        />
+      )}
       {formError && (
         <Form.Item {...tailFormItemLayout}>
           <ErrorAlert
