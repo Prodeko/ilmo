@@ -1,4 +1,5 @@
 import { UpdateEventRegistrationDocument } from "@app/graphql"
+import dayjs from "dayjs"
 
 import {
   asRoot,
@@ -7,8 +8,26 @@ import {
   removePropFromObject,
   runGraphQLQuery,
   setup,
+  sleep,
   teardown,
 } from "../helpers"
+
+// Event times where signup is open for one second from now. NOW() runs in the
+// database, so tests sleep past the window instead of faking timers.
+function shortSignupTimes() {
+  const registrationStartTime = dayjs().toDate()
+  const registrationEndTime = dayjs(registrationStartTime)
+    .add(1, "second")
+    .toDate()
+  const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate()
+  const eventEndTime = dayjs(eventStartTime).add(7, "day").toDate()
+  return [
+    registrationStartTime,
+    registrationEndTime,
+    eventStartTime,
+    eventEndTime,
+  ]
+}
 
 beforeEach(deleteTestData)
 beforeAll(setup)
@@ -130,6 +149,92 @@ describe("UpdateRegistration", () => {
         const code = json.errors![0].extensions.exception.code
         expect(message).toEqual("Required question not answered.")
         expect(code).toEqual("NVLID")
+      }
+    )
+  })
+
+  it("can't update registration once event signup has closed", async () => {
+    const { registrations, registrationSecrets } =
+      await createEventDataAndLogin({
+        eventOptions: { create: true, times: shortSignupTimes() },
+      })
+    const { update_token: updateToken } = registrationSecrets[0]
+    const answers = registrations[0].answers
+
+    await sleep(1000)
+
+    await runGraphQLQuery(
+      UpdateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          updateToken,
+          firstName: "Päivi",
+          lastName: "Tetty",
+          answers,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeTruthy()
+
+        const message = json.errors![0].message
+        const code = json.errors![0].extensions.exception.code
+        expect(message).toEqual(
+          "Updating a registration after event signup has closed is not allowed. Please contact the event organizers."
+        )
+        expect(code).toEqual("DNIED")
+      }
+    )
+  })
+
+  it("admin can update registration after event signup has closed", async () => {
+    const { registrations, registrationSecrets, session } =
+      await createEventDataAndLogin({
+        userOptions: {
+          create: true,
+          amount: 1,
+          isVerified: true,
+          isAdmin: true,
+        },
+        eventOptions: { create: true, times: shortSignupTimes() },
+      })
+    const { update_token: updateToken } = registrationSecrets[0]
+    const answers = registrations[0].answers
+
+    await sleep(1000)
+
+    await runGraphQLQuery(
+      UpdateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          updateToken,
+          firstName: "Päivi",
+          lastName: "Tetty",
+          answers,
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {
+        user: { sessionId: session.uuid },
+      },
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeFalsy()
+
+        const { firstName, lastName } =
+          json.data!.updateRegistration.registration
+        expect(firstName).toEqual("Päivi")
+        expect(lastName).toEqual("Tetty")
       }
     )
   })
