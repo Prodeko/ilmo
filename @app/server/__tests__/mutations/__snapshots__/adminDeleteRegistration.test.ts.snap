@@ -23,7 +23,7 @@ exports[`AdminDeleteRegistration can't delete registration if user is not an adm
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.check_is_admin() line 4 at RAISE
 SQL statement "call app_public.check_is_admin()"
-PL/pgSQL function app_public.admin_delete_registration(uuid) line 6 at CALL",
+PL/pgSQL function app_public.admin_delete_registration(uuid,boolean) line 6 at CALL",
         },
       },
       "locations": [
@@ -52,7 +52,7 @@ exports[`AdminDeleteRegistration returns an error if registration is not found 1
         "exception": {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid) line 12 at RAISE",
+          "where": "PL/pgSQL function app_public.admin_delete_registration(uuid,boolean) line 17 at RAISE",
         },
       },
       "locations": [
