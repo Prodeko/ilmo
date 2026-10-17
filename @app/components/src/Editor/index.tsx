@@ -80,6 +80,18 @@ export const Editor: React.FC<EditorProps> = ({
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
 
+  const changeEditorLanguage = useCallback(
+    (language: string) => {
+      // Each language is its own document; drop the cursor, pending marks
+      // and undo history that point into the previous one
+      editor.selection = null
+      editor.marks = null
+      editor.history = { undos: [], redos: [] }
+      setEditorLanguage(language)
+    },
+    [editor]
+  )
+
   const isReadOnly = selectedLanguages?.length === 0
   const includedLocales = [
     ...selectedLanguages.filter((lang) => lang !== editorLanguage),
@@ -220,7 +232,7 @@ export const Editor: React.FC<EditorProps> = ({
               <EditorLanguage editorLanguage={editorLanguage} />
               <LanguageMenu
                 includedLocales={includedLocales}
-                setEditorLanguage={setEditorLanguage}
+                setEditorLanguage={changeEditorLanguage}
               />
               <TranslateMenu
                 formOnChange={onChange}
