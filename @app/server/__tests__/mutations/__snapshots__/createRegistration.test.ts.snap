@@ -1,5 +1,31 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`CreateRegistration can create a registration with spaces in first and last name 1`] = `
+{
+  "data": {
+    "createRegistration": {
+      "registration": {
+        "createdAt": "[timestamp-1]",
+        "event": {
+          "id": "[id-3]",
+          "slug": "[random-3]",
+        },
+        "fullName": "Anna Maria von Wright",
+        "id": "[id-1]",
+        "position": 1,
+        "quota": {
+          "id": "[id-2]",
+          "position": 0,
+          "size": "[random-2]",
+          "title": "[random-1]",
+        },
+        "status": "IN_QUOTA",
+      },
+    },
+  },
+}
+`;
+
 exports[`CreateRegistration can create registration 1`] = `
 {
   "data": {
@@ -26,7 +52,7 @@ exports[`CreateRegistration can create registration 1`] = `
 }
 `;
 
-exports[`CreateRegistration can't create a registration if first or last name contains spaces 1`] = `
+exports[`CreateRegistration can't create a registration if first or last name is blank 1`] = `
 {
   "data": {
     "createRegistration": null,
@@ -69,7 +95,7 @@ PL/pgSQL function app_public.create_registration(text,uuid,uuid,text,text,citext
 }
 `;
 
-exports[`CreateRegistration can't create a registration if first or last name contains spaces 2`] = `
+exports[`CreateRegistration can't create a registration if first or last name is blank 2`] = `
 {
   "data": {
     "createRegistration": null,
