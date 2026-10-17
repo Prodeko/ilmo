@@ -79,6 +79,7 @@
   "numRegistrations": "Registrerade personer",
   "openQuota": "Öppen kvot",
   "organizer": "Arrangör",
+  "previewInfo": "Så här ser anmälningsformuläret ut för deltagarna. Du kan prova formuläret, men inget skickas från förhandsvisningen.",
   "questionsAutomaticallyCollected": "<b>Förnamn</b>, <b>efternamn</b> och <b>e-post</b> samlas in automatiskt av alla som anmäler sig, så du behöver inte lägga till dem som frågor.",
   "queued": "Kö",
   "quota": "Kvota",

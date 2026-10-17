@@ -27,6 +27,7 @@
     "tabs": {
       "email": "Sähköposti",
       "generalInfo": "Yleistä",
+      "preview": "Esikatselu",
       "questions": "Kysymykset",
       "quotas": "Kiintiöt"
     },

@@ -79,6 +79,7 @@
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Avoin kiintiö",
   "organizer": "Järjestäjä",
+  "previewInfo": "Näin ilmoittautumislomake näkyy ilmoittautujille. Voit kokeilla lomaketta, mutta esikatselusta ei lähetetä ilmoittautumista.",
   "questionsAutomaticallyCollected": "<b>Etunimi</b>, <b>sukunimi</b> ja <b>sähköposti</b> kysytään ilmoittautujilta automaattisesti, joten niitä ei tarvitse lisätä kysymyksiksi.",
   "queued": "Jonossa",
   "quota": "Kiintiö",

@@ -27,6 +27,7 @@
     "tabs": {
       "email": "Email",
       "generalInfo": "General",
+      "preview": "Preview",
       "questions": "Questions",
       "quotas": "Quotas"
     },

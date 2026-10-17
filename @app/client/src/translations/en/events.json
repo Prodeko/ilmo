@@ -79,6 +79,7 @@
   "numRegistrations": "Registered people",
   "openQuota": "Open quota",
   "organizer": "Organizer",
+  "previewInfo": "This is how the registration form looks to registrants. You can try the form, but nothing is submitted from the preview.",
   "questionsAutomaticallyCollected": "<b>First name</b>, <b>last name</b> and <b>email</b> are collected from registrants automatically, so you do not need to add them as questions.",
   "queued": "Queue",
   "quota": "Quota",

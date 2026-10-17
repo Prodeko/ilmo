@@ -20,6 +20,7 @@ import { ButtonLink, useTranslation } from "../."
 
 import { EmailTab } from "./EmailTab"
 import { MainTab } from "./MainTab"
+import { PreviewTab } from "./PreviewTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
@@ -85,6 +86,7 @@ enum TAB {
   General = "general",
   Quotas = "quotas",
   Questions = "questions",
+  Preview = "preview",
   Registrations = "registrations",
   Email = "email",
 }
@@ -315,6 +317,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             children: (
               <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
             ),
+          },
+          {
+            key: TAB.Preview,
+            label: t("admin:events.tabs.preview"),
+            // Only render when active so the preview uses the current questions
+            children:
+              activeTab === TAB.Preview ? (
+                <PreviewTab form={form} selectedLanguages={selectedLanguages} />
+              ) : null,
           },
           ...(type === "update"
             ? [
