@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 
 scenario=${1:?usage: run.sh <worst|common> [--image <tag>] [--vus <n>]}
 shift
-export IMAGE=ilmo-stress:after
+export IMAGE=ilmo-stress:latest
 case $scenario in
   worst) vus=400 ;;
   common) vus=200 ;;
@@ -45,7 +45,7 @@ echo "==> seeding $scenario (opens in ${opens_in}s)"
 ./seed.sh "$scenario" "$opens_in" > "$out/seed.json"
 cat "$out/seed.json"
 
-./sample-connections.sh "$out/connections.csv" &
+./sample-connections.sh "$out/connections.csv" 2> "$out/sampler.err" &
 sampler=$!
 trap 'kill $sampler 2>/dev/null || true' EXIT
 
@@ -56,7 +56,9 @@ docker run --rm --network host \
   -e SEED="$(cat "$out/seed.json")" -e VUS="$vus" -e REPO=/repo \
   grafana/k6:0.54.0 run --quiet --log-format json \
   --summary-export /out/k6-summary.json \
-  /repo/stress/k6/registration.js 2> "$out/k6.log" > "$out/k6-stdout.txt" || true
+  /repo/stress/k6/registration.js 2> "$out/k6.log" > "$out/k6-stdout.txt" ||
+  k6_exit=$?
+echo "${k6_exit:-0}" > "$out/k6-exit-code"
 
 # Let the worker drain and the last unfinished-registration state settle.
 sleep 3
@@ -64,4 +66,4 @@ kill $sampler 2>/dev/null || true
 docker compose logs server > "$out/server.log" 2>&1
 docker compose logs worker > "$out/worker.log" 2>&1
 
-node check-results.mjs "$out"
+node check-results.mjs "$out" "$vus"

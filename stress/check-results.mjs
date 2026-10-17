@@ -4,29 +4,42 @@
 //
 // Usage: node stress/check-results.mjs <results-dir>
 import { execFileSync } from "node:child_process"
-import { readFileSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-// Registrations further than this from their click-order rank count as
-// displaced. Smaller inversions are network jitter.
+// Registrations further than this from their claim-order rank count as
+// displaced. Smaller inversions are treated as network jitter.
 const DISPLACEMENT_TOLERANCE = 5
 
 const dir = process.argv[2]
+const expectedBots = Number(process.argv[3])
 const stressDir = dirname(fileURLToPath(import.meta.url))
 const seed = JSON.parse(readFileSync(join(dir, "seed.json"), "utf8"))
 
-const results = readFileSync(join(dir, "k6.log"), "utf8")
+// k6 log lines are JSON. Bot results are info lines starting with RESULT;
+// error lines are k6's own (script exceptions, crashes) and are reported.
+const results = []
+const k6Errors = []
+for (const line of readFileSync(join(dir, "k6.log"), "utf8")
   .split("\n")
-  .filter(Boolean)
-  .flatMap((line) => {
-    try {
-      const { msg } = JSON.parse(line)
-      return msg?.startsWith("RESULT ") ? [JSON.parse(msg.slice(7))] : []
-    } catch {
-      return []
-    }
-  })
+  .filter(Boolean)) {
+  let entry
+  try {
+    entry = JSON.parse(line)
+  } catch {
+    k6Errors.push(line)
+    continue
+  }
+  if (entry.msg?.startsWith("RESULT ")) {
+    results.push(JSON.parse(entry.msg.slice(7)))
+  } else if (entry.level === "error") {
+    k6Errors.push(entry.msg)
+  }
+}
+const k6ExitCode = existsSync(join(dir, "k6-exit-code"))
+  ? readFileSync(join(dir, "k6-exit-code"), "utf8").trim()
+  : "unknown"
 
 const rows = JSON.parse(
   execFileSync(
@@ -135,14 +148,19 @@ for (const line of readFileSync(join(dir, "connections.csv"), "utf8")
   }
 }
 const peak = (o) => Math.max(0, ...Object.values(o))
+const sampleCount = Object.keys(perSample).length
 
 const serverLog = readFileSync(join(dir, "server.log"), "utf8")
 const slotErrors = (serverLog.match(/remaining connection slots/g) || []).length
 const poolTimeouts = (
-  serverLog.match(/timeout exceeded when trying to connect/gi) || []
+  serverLog.match(
+    /timeout exceeded when trying to connect|connection terminated due to connection timeout/gi
+  ) || []
 ).length
 
-const k6 = JSON.parse(readFileSync(join(dir, "k6-summary.json"), "utf8"))
+const k6 = existsSync(join(dir, "k6-summary.json"))
+  ? JSON.parse(readFileSync(join(dir, "k6-summary.json"), "utf8"))
+  : { metrics: {} }
 const trend = (name) => {
   const m = k6.metrics[name]
   if (!m) return "n/a"
@@ -153,7 +171,9 @@ const trend = (name) => {
 const count = (pred) => results.filter(pred).length
 const lines = [
   `run: ${dir}`,
-  `bots reporting: ${results.length}`,
+  `k6 exit code: ${k6ExitCode}`,
+  `bots reporting: ${results.length} / ${expectedBots} (missing ${expectedBots - results.length})`,
+  `k6 errors: ${k6Errors.length}`,
   `claims ok: ${count((r) => r.claimOk)} / ${count((r) => r.clickedAtMs)}`,
   `submits ok: ${count((r) => r.submitOk)} / ${count((r) => r.claimOk)}`,
   `finished registrations in DB: ${rows.length}`,
@@ -162,11 +182,11 @@ const lines = [
   `claim:               ${trend("claim_duration")}`,
   `submit:              ${trend("submit_duration")}`,
   ``,
-  `peak ilmo connections: ${peak(perSample)} (non-idle ${peak(perSampleActive)})`,
+  `peak ilmo connections: ${peak(perSample)} (non-idle ${peak(perSampleActive)}, ${sampleCount} samples)`,
   `"remaining connection slots" in server log: ${slotErrors}`,
   `pool acquire timeouts in server log: ${poolTimeouts}`,
   ``,
-  `max displacement (click rank vs created_at rank): ${maxDisplacement}`,
+  `max displacement (claim-order rank vs created_at rank): ${maxDisplacement}`,
   `displaced by > ${DISPLACEMENT_TOLERANCE}: ${displaced}`,
   `earliest clickers per quota who did not end up IN_QUOTA: ${deservedButMissed}`,
   ``,
@@ -175,6 +195,23 @@ const lines = [
     .sort((a, b) => b[1] - a[1])
     .map(([m, n]) => `  ${String(n).padStart(4)}  ${m}`),
 ]
+if (k6Errors.length) {
+  lines.push(
+    ``,
+    `k6 errors (first 10):`,
+    ...k6Errors.slice(0, 10).map((e) => `  ${e}`)
+  )
+}
 const summary = lines.join("\n") + "\n"
 writeFileSync(join(dir, "summary.txt"), summary)
 process.stdout.write(summary)
+
+const problems = []
+if (k6ExitCode !== "0") problems.push(`k6 exited with ${k6ExitCode}`)
+if (results.length !== expectedBots)
+  problems.push(`${expectedBots - results.length} bots did not report`)
+if (sampleCount === 0) problems.push("no connection samples (see sampler.err)")
+if (problems.length) {
+  process.stderr.write(`\nRUN IS NOT TRUSTWORTHY: ${problems.join("; ")}\n`)
+  process.exitCode = 1
+}

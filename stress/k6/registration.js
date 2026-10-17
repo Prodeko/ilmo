@@ -142,6 +142,22 @@ export default function () {
 
   const quotaId = SEED.quotaIds[vu % SEED.quotaIds.length]
   let nextId = 1
+  // Closes the bot makes itself; any other close is a failure.
+  let closingOnPurpose = false
+  const close = (socket) => {
+    closingOnPurpose = true
+    socket.close()
+  }
+  // An exception inside a socket handler would otherwise abort the VU before
+  // it reports its result.
+  const guarded = (step, socket, fn) => () => {
+    try {
+      fn()
+    } catch (e) {
+      fail(step, `exception: ${e}`)
+      close(socket)
+    }
+  }
   const subscribe = (socket, query, variables) => {
     socket.send(
       JSON.stringify({
@@ -167,24 +183,42 @@ export default function () {
         socket.send(JSON.stringify({ type: "connection_init", payload: {} }))
       })
 
-      socket.on("message", (raw) => {
-        const msg = JSON.parse(raw)
-        if (msg.type === "connection_ack") {
-          subscribe(socket, EVENT_PAGE_DOC, { slug: SEED.slug })
-          subscribe(socket, CURRENT_TIME_DOC, {})
-          const untilOpen = OPENS_AT_MS - Date.now() + randomBetween(0, 1000)
-          socket.setTimeout(() => register(socket), Math.max(0, untilOpen))
-        } else if (msg.type === "error") {
-          fail("subscription", JSON.stringify(msg.payload))
-        } else if (msg.type === "next" && msg.payload && msg.payload.errors) {
-          for (const e of msg.payload.errors) fail("subscription", e.message)
-        }
-      })
+      socket.on("message", (raw) =>
+        guarded("websocket", socket, () => {
+          const msg = JSON.parse(raw)
+          if (msg.type === "connection_ack") {
+            subscribe(socket, EVENT_PAGE_DOC, { slug: SEED.slug })
+            subscribe(socket, CURRENT_TIME_DOC, {})
+            const untilOpen = OPENS_AT_MS - Date.now() + randomBetween(0, 1000)
+            socket.setTimeout(
+              guarded("claim", socket, () => register(socket)),
+              Math.max(0, untilOpen)
+            )
+          } else if (msg.type === "error") {
+            fail("subscription", JSON.stringify(msg.payload))
+          } else if (msg.type === "next" && msg.payload && msg.payload.errors) {
+            for (const e of msg.payload.errors) fail("subscription", e.message)
+          }
+        })()
+      )
 
       socket.on("error", (e) => fail("websocket", String(e.error())))
 
+      socket.on("close", (code) => {
+        if (!closingOnPurpose) {
+          const stage = result.claimOk ? "submit" : "claim"
+          fail("websocket", `closed by server (${code}) before ${stage}`)
+        }
+      })
+
       // Safety net: never hold a VU beyond the scenario.
-      socket.setTimeout(() => socket.close(), 4 * 60 * 1000)
+      socket.setTimeout(
+        () => {
+          fail("websocket", "scenario timed out")
+          close(socket)
+        },
+        4 * 60 * 1000
+      )
     }
   )
   if (!wsRes || wsRes.status !== 101) {
@@ -228,7 +262,7 @@ export default function () {
     const claimErrors = graphqlErrors(claim)
     for (const e of claimErrors) fail("claim", e)
     if (claimErrors.length) {
-      socket.close()
+      close(socket)
       return
     }
     const token =
@@ -237,7 +271,7 @@ export default function () {
     result.claimOk = true
 
     socket.setTimeout(
-      () => {
+      guarded("submit", socket, () => {
         const submit = post(
           "CreateEventRegistration",
           {
@@ -262,8 +296,8 @@ export default function () {
         for (const e of submitErrors) fail("submit", e)
         result.submitOk = submitErrors.length === 0
         // Linger briefly like a person reading the confirmation.
-        socket.setTimeout(() => socket.close(), 3000)
-      },
+        socket.setTimeout(() => close(socket), 3000)
+      }),
       randomBetween(5000, 20000)
     )
   }

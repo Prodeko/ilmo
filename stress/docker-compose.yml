@@ -1,10 +1,9 @@
 # Production-like stack for the registration stress test.
 #
-# Postgres runs with wal_level=replica (as on Azure, so live queries are
-# unavailable) and 10 connection slots for the ilmo roles:
-# max_connections=13 minus superuser_reserved_connections=3.
+# Postgres runs with wal_level=replica, as on Azure, and 10 connection slots
+# for the ilmo roles: max_connections=13 minus superuser_reserved_connections=3.
 #
-# IMAGE selects the ilmo build under test, e.g. IMAGE=ilmo-stress:before.
+# IMAGE selects the ilmo build under test, e.g. IMAGE=ilmo-stress:<sha>.
 name: ilmo-stress
 
 services:
@@ -28,7 +27,7 @@ services:
     image: redis:6-alpine
 
   migrate:
-    image: ${IMAGE:-ilmo-stress:after}
+    image: ${IMAGE:-ilmo-stress:latest}
     env_file: .env.stress
     command: >
       bash -c "cd /app/@app/worker && mkdir -p dist && cd dist
@@ -49,7 +48,7 @@ services:
         condition: service_completed_successfully
 
   server:
-    image: ${IMAGE:-ilmo-stress:after}
+    image: ${IMAGE:-ilmo-stress:latest}
     env_file: .env.stress
     # Two cores, like the production B2ls_v2. Pinned with taskset because
     # cgroup CPU limits are unavailable in nested VMs.
@@ -63,7 +62,7 @@ services:
         condition: service_started
 
   worker:
-    image: ${IMAGE:-ilmo-stress:after}
+    image: ${IMAGE:-ilmo-stress:latest}
     env_file: .env.stress
     command: ["pnpm", "--filter", "@app/worker", "run", "start"]
     depends_on:
