@@ -51,13 +51,30 @@ export function throttledTopic(
   let hasPending = false
   let pending: unknown
 
+  const logFailure = (error: unknown) => {
+    console.error(`Failed to relay ${sourceTopic} to ${topic}:`, error)
+  }
+
+  // The window's timer is scheduled before publishing, so a failing publish
+  // cannot leave the window open for good.
+  const publish = (payload: unknown) => {
+    try {
+      const result = pubsub.publish(topic, payload)
+      if (typeof (result as PromiseLike<unknown>)?.then === "function") {
+        Promise.resolve(result).catch(logFailure)
+      }
+    } catch (error) {
+      logFailure(error)
+    }
+  }
+
   const closeWindow = () => {
     if (hasPending) {
       const payload = pending
       hasPending = false
       pending = undefined
-      pubsub.publish(topic, payload)
       setTimeout(closeWindow, intervalMs)
+      publish(payload)
     } else {
       windowOpen = false
     }
@@ -70,8 +87,8 @@ export function throttledTopic(
       return
     }
     windowOpen = true
-    pubsub.publish(topic, payload)
     setTimeout(closeWindow, intervalMs)
+    publish(payload)
   })
 
   return topic
