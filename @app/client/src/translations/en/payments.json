@@ -1,0 +1,78 @@
+{
+  "cancel": {
+    "body": "Your spot goes to the next person in the queue. This can't be undone.",
+    "deleteAndRefund": "Delete and refund {{amount}}",
+    "feeNotRefunded": "Service fee (not refunded)",
+    "keep": "Keep registration",
+    "manualNote": "Your payment was recorded by the organizers, so it is not refunded automatically. Contact the organizers about a refund.",
+    "refundTiming": "Refunds usually show up within 5–10 business days.",
+    "refundToCard": "Refund to your card",
+    "title": "Delete your registration?",
+    "youPaid": "You paid"
+  },
+  "cancelledNotice": "Payment wasn't completed. Your spot is still reserved, and you can try again below or later from your confirmation email.",
+  "confirmTimeoutNotice": "We haven't received confirmation of your payment yet. If you paid, you'll get a confirmation email shortly. You can also reload this page later.",
+  "confirmingNotice": "Confirming your payment with Stripe. This page updates on its own in a few seconds.",
+  "disabled": {
+    "body": "Online payments are not available right now. Contact the organizers if you have questions about paying.",
+    "title": "Payments are not available"
+  },
+  "editRegistration": "Edit or cancel your registration",
+  "errors": {
+    "checkoutFailed": "Could not open the payment page"
+  },
+  "event": "Event",
+  "name": "Name",
+  "notFound": {
+    "body": "Check the payment link in your email.",
+    "title": "Registration not found"
+  },
+  "paidBanner": "Paid {{amount}} on {{date}}",
+  "pay": "Pay {{total}}",
+  "payNow": "Pay now",
+  "quota": "Quota",
+  "serviceFee": "Service fee",
+  "states": {
+    "free": {
+      "body": "Your quota is free. You are all set.",
+      "title": "No payment needed"
+    },
+    "opensLater": {
+      "body": "Payment for this event opens when registration closes on {{date}} at {{time}}. The payment link will be emailed to you.",
+      "title": "Payment opens later"
+    },
+    "paid": {
+      "body": "You paid {{amount}} on {{date}} at {{time}}. A confirmation has been sent to your email.",
+      "detail": "Stripe also emails you its own receipt.",
+      "title": "Payment received"
+    },
+    "paidManually": {
+      "body": "The organizers have marked your registration as paid.",
+      "title": "Payment received"
+    },
+    "queued": {
+      "body": "You are number {{position}} in the queue. You only pay if you get a spot, and we will email you a payment link if you do.",
+      "title": "You are in the queue"
+    },
+    "refunded": {
+      "body": "{{amount}} was refunded to your card on {{date}}.",
+      "detail": "Card refunds usually show up within 5–10 business days.",
+      "feeNote": "The {{fee}} service fee is not refunded.",
+      "title": "Payment refunded"
+    }
+  },
+  "tags": {
+    "free": "Free",
+    "inQueue": "In queue",
+    "notOpen": "Not yet open",
+    "paid": "Paid",
+    "processing": "Processing",
+    "refunded": "Refunded",
+    "unpaid": "Unpaid"
+  },
+  "ticket": "Ticket",
+  "time": "Time",
+  "title": "Payment",
+  "total": "Total",
+  "unpaidBanner": "Your registration has not been paid yet."
+}

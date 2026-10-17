@@ -227,6 +227,21 @@ describe("createCheckoutSession", () => {
     expect(await paymentsOfEvent(pool(), event.id)).toEqual([])
   })
 
+  it("hides Stripe's error text behind CHECKOUT_FAILED", async () => {
+    const { tokens } = await createPaidEvent()
+    stripeMock().checkout.sessions.create.mockRejectedValueOnce(
+      new Error("Invalid API Key provided: sk_live_****1234")
+    )
+
+    const result = await createCheckoutSession(tokens[0])
+    expect(result.errors).toHaveLength(1)
+    const [error] = result.errors!
+    expect(error.extensions!.exception).toMatchObject({
+      code: "CHECKOUT_FAILED",
+    })
+    expect(JSON.stringify(error)).not.toMatch(/sk_live|Invalid API Key/)
+  })
+
   it("expires the new session again if saving it fails", async () => {
     const { event, registrations, tokens } = await createPaidEvent()
     // Another payment already holds the session id Stripe will return

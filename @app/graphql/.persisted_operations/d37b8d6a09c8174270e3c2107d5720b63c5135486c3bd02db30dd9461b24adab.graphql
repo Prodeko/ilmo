@@ -1,12 +1,30 @@
-fragment EventPage_Subscription on Subscription {
-  currentUser {
-    ...SharedLayout_User
-    __typename
-  }
+fragment CreateEventRegistrationPage_Query on Query {
+  ...SharedLayout_Query
   eventBySlug(slug: $slug) {
     ...EventPage_Event
     __typename
   }
+  quota(id: $quotaId) {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment SharedLayout_Query on Query {
+  currentUser {
+    ...SharedLayout_User
+    __typename
+  }
+  organizations(orderBy: SLUG_ASC) {
+    nodes {
+      ...SharedLayout_Organization
+      __typename
+    }
+    __typename
+  }
+  paymentsEnabled
+  ssoLoginEnabled
+  supportedLanguages
   __typename
 }
 fragment SharedLayout_User on User {
@@ -47,6 +65,12 @@ fragment SharedLayout_UserEmail on UserEmail {
   isVerified
   isPrimary
   createdAt
+  __typename
+}
+fragment SharedLayout_Organization on Organization {
+  id
+  name
+  slug
   __typename
 }
 fragment EventPage_Event on Event {
@@ -96,6 +120,7 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
+  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -129,6 +154,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
   __typename
 }
 fragment EventPage_Registration on Registration {
@@ -152,6 +178,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-subscription EventPage($slug: String!) {
-  ...EventPage_Subscription
+query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
 }

@@ -21,6 +21,19 @@
       "provideLastName": "Ange ditt efternamn"
     }
   },
+  "payment": {
+    "afterInfo": "Biljett {{price}} + {{fee}} serviceavgift. Du betalar inte nu. Vi mejlar dig en betalningslänk när anmälan stänger {{date}} kl. {{time}}.",
+    "duringInfo": "Din plats bekräftas så fort du skickar anmälan. Sedan kommer du till en säker betalningssida (kort, Apple Pay eller Google Pay). Om du inte betalar nu kan du betala senare via länken i ditt bekräftelsemejl.",
+    "joinQueue": "Ställ dig i kön",
+    "queueNotice": "Kvoten är full, så du placeras i kön. Du betalar bara om du får en plats.",
+    "redirecting": "Du skickas till betalningssidan...",
+    "register": "Anmäl dig",
+    "registerAndPay": "Anmäl dig och betala {{total}}",
+    "serviceFee": "Serviceavgift",
+    "ticket": "Biljett ({{quota}})",
+    "title": "Betalning",
+    "total": "Totalt"
+  },
   "recentlyRegisteredHeader": "Nyligen registrerad:",
   "recentlyRegisteredListItem": "nyligen registrerad till kvoten",
   "registrationDeleteComplete": "Raderad registrering",

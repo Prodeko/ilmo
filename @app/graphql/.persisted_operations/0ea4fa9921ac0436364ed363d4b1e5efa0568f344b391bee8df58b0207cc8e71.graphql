@@ -1,14 +1,19 @@
-fragment UpdateEventPage_Query on Query {
+fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  event(id: $id) {
-    ...UpdateEventPage_Event
-    __typename
-  }
-  eventCategories(orderBy: NAME_ASC) {
-    nodes {
-      ...EventPage_EventCategory
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Registration
+    quota {
+      ...EventPage_Quota
       __typename
     }
+    event {
+      ...EventPage_Event
+      __typename
+    }
+    __typename
+  }
+  paymentByUpdateToken(updateToken: $updateToken) {
+    ...PayPage_RegistrationPayment
     __typename
   }
   __typename
@@ -76,10 +81,23 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment UpdateEventPage_Event on Event {
+fragment UpdateEventRegistrationPage_Registration on Registration {
+  id
+  firstName
+  lastName
+  answers
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  priceCents
+  __typename
+}
+fragment EventPage_Event on Event {
   ...EventFields
-  paymentMode
-  sendUnpaidEmailOnClose
   category {
     ...EventPage_EventCategory
     __typename
@@ -91,11 +109,13 @@ fragment UpdateEventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      priceCents
-      registrations {
-        totalCount
-        __typename
-      }
+      __typename
+    }
+    __typename
+  }
+  registrations(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Registration
       __typename
     }
     __typename
@@ -123,6 +143,7 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
+  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -151,11 +172,16 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-fragment EventPage_Quota on Quota {
+fragment EventPage_Registration on Registration {
   id
+  fullName
+  status
   position
-  title
-  size
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
   __typename
 }
 fragment EventPage_Question on EventQuestion {
@@ -167,6 +193,32 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-query UpdateEventPage($id: UUID!) {
-  ...UpdateEventPage_Query
+fragment PayPage_RegistrationPayment on RegistrationPayment {
+  eventId
+  eventSlug
+  eventName
+  eventStartTime
+  eventEndTime
+  registrationEndTime
+  paymentMode
+  quotaTitle
+  firstName
+  lastName
+  queueStatus
+  queuePosition
+  status
+  priceCents
+  serviceFeeCents
+  totalCents
+  paidManually
+  paidTotalCents
+  paidTicketCents
+  paidAt
+  refundedAmountCents
+  refundedAt
+  blockedReason
+  __typename
+}
+query UpdateEventRegistrationPage($updateToken: String!) {
+  ...UpdateEventRegistrationPage_Query
 }

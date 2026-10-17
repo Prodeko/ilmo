@@ -1,0 +1,5 @@
+mutation CreateCheckoutSession($updateToken: String!, $language: String) {
+  createCheckoutSession(updateToken: $updateToken, language: $language) {
+    url
+  }
+}
