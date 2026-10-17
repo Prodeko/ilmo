@@ -93,6 +93,87 @@
     "updateEvent": "Update event",
     "updateEventCategory": "Update event category"
   },
+  "payments": {
+    "actions": {
+      "failed": "Updating the payment failed",
+      "markPaid": "Mark as paid",
+      "markPaidHelp": "For cash or bank transfer. Sends the payment received email.",
+      "markPaidSuccess": "Marked as paid",
+      "more": "More actions",
+      "undoManual": "Undo manual payment",
+      "undoManualConfirm": "Remove the manual payment? The registration becomes unpaid.",
+      "undoManualSuccess": "Manual payment removed"
+    },
+    "cancel": "Cancel",
+    "delete": {
+      "body": "The spot goes to the next person in the queue. This can't be undone.",
+      "confirm": "Delete",
+      "confirmRefund": "Delete and refund",
+      "manualWarning": "This registration was marked as paid by hand ({{price}}). Ilmo can't refund it, so settle any refund yourself.",
+      "refund": "Refund the ticket price, {{price}}, to their card",
+      "title": "Delete registration of {{name}}?"
+    },
+    "filter": {
+      "all": "All ({{count}})",
+      "paid": "Paid ({{count}})",
+      "unpaid": "Unpaid ({{count}})"
+    },
+    "lastReminderSent": "Last reminder sent {{date}} at {{time}}",
+    "paymentColumn": "Payment",
+    "quotas": {
+      "free": "Free",
+      "guildReceives": "Guild receives",
+      "invalidPrice": "Price must be 0 € or between 0,25 € and 10 000 €",
+      "noteFees": "Guild receives = price − 1,5 % × (price + 0,25 €). The customer pays the price plus a 0,25 € service fee, and Stripe takes 0,25 € + 1,5 %. This is an estimate for European cards; cards from outside the EEA cost a little more.",
+      "noteFree": "0 € makes the quota free. Otherwise the minimum price is 0,25 €.",
+      "noteOpenQuota": "Open quota spots pay the price of the quota the person registered through.",
+      "priceChangedWarning": "This quota has {{count}} registrations. They keep the price of {{price}}. The new price applies to new registrations only.",
+      "priceChangedWarning_one": "This quota has {{count}} registration. It keeps the price of {{price}}. The new price applies to new registrations only.",
+      "ticketPrice": "Ticket price"
+    },
+    "reminder": {
+      "body": "Everyone with a spot who hasn't paid gets an email with their own payment link. People in the queue and people in free quotas aren't emailed.",
+      "confirm_one": "Send {{count}} reminder",
+      "confirm_other": "Send {{count}} reminders",
+      "failed": "Sending reminders failed",
+      "lastSent": "Last reminder sent {{date}} at {{time}}.",
+      "sent_one": "{{count}} reminder sent",
+      "sent_other": "{{count}} reminders sent",
+      "title_one": "Send a payment reminder to {{count}} person?",
+      "title_other": "Send a payment reminder to {{count}} people?"
+    },
+    "sendReminder": "Send reminder to {{count}} unpaid",
+    "settings": {
+      "emailOnClose": "Email unpaid participants when registration closes",
+      "emailOnCloseHelp": "Sends the payment reminder to everyone with a spot who has not paid yet, once, at the closing time.",
+      "emailOnCloseLockedHelp": "Always on for this mode: this email is how people get their payment link.",
+      "modeAfter": "Pay after registration closes",
+      "modeAfterHelp": "Nobody pays while registration is open. Everyone with a spot gets a payment link by email when it closes.",
+      "modeDuring": "Pay during registration",
+      "modeDuringHelp": "People go to the payment page right after registering. Unpaid registrations still keep their spot.",
+      "modeLabel": "When is payment collected?",
+      "modeNone": "No payments",
+      "modeNoneHelp": "All quotas are free or payments are collected manually.",
+      "subtitle": "Prices are set per quota in the Quotas tab.",
+      "switchToNoneWarning": "Payments already made are kept and still shown. Nobody is refunded automatically.",
+      "switchToPaidWarning": "This event already has registrations. Those in paid quotas become unpaid at the quota's current price and must pay.",
+      "title": "Payments"
+    },
+    "status": {
+      "NOT_REQUIRED": "Free",
+      "PAID": "Paid",
+      "PAID_MANUALLY": "Paid manually",
+      "REFUNDED": "Refunded",
+      "UNPAID": "Unpaid"
+    },
+    "summary": {
+      "guildReceives": "Guild receives",
+      "paid": "Paid",
+      "paidOf": "of {{count}}",
+      "ticketsPaid": "Tickets paid",
+      "unpaid": "Unpaid"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Are you sure you want to delete this registration?",

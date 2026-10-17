@@ -11,7 +11,7 @@ import {
   QuotasConnection,
   useUpdateEventPageQuery,
 } from "@app/graphql"
-import { filterObjectByKeys } from "@app/lib"
+import { filterObjectByKeys, ticketPriceCentsToEuros } from "@app/lib"
 import { Col, Row } from "antd"
 import dayjs from "dayjs"
 import { useRouter } from "next/router"
@@ -31,6 +31,8 @@ type UpdateFormInitialValues = {
   quotas: QuotasConnection
   eventQuestions: EventQuestionsConnection
   openQuotaSize: number
+  paymentMode: string
+  sendUnpaidEmailOnClose: boolean
 }
 
 function constructInitialValues(values: any) {
@@ -49,6 +51,8 @@ function constructInitialValues(values: any) {
     "quotas",
     "eventQuestions",
     "openQuotaSize",
+    "paymentMode",
+    "sendUnpaidEmailOnClose",
   ]) as UpdateFormInitialValues
 
   const {
@@ -66,15 +70,18 @@ function constructInitialValues(values: any) {
     dayjs(registrationStartTime),
     dayjs(registrationEndTime),
   ]
-  const quotas = quotasConnection?.nodes.map((quota) =>
-    filterObjectByKeys(quota, [
+  const quotas = quotasConnection?.nodes.map((quota) => ({
+    ...filterObjectByKeys(quota, [
       "id",
       "position",
       "title",
       "size",
       "registrations",
-    ])
-  )
+      "priceCents",
+    ]),
+    // The quota form edits the ticket price in euros
+    price: ticketPriceCentsToEuros(quota.priceCents),
+  }))
   const questions = questionsConnection?.nodes.map((questions) =>
     filterObjectByKeys(questions, [
       "id",
