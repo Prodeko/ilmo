@@ -63,6 +63,8 @@ export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
     `BEGIN;
+      delete from app_public.payments;
+      delete from app_private.stripe_events;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
