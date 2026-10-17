@@ -120,7 +120,9 @@
       "email": "dev-member@example.com",
       "firstName": "Dev",
       "lastName": "Member",
-      "attributes": { "locale": ["fi"] },
+      "attributes": {
+        "locale": ["fi"]
+      },
       "requiredActions": [],
       "credentials": [
         {
@@ -128,7 +130,8 @@
           "value": "dev-member-password",
           "temporary": false
         }
-      ]
+      ],
+      "realmRoles": ["default-roles-ilmo-dev"]
     },
     {
       "username": "dev-admin",
@@ -137,9 +140,11 @@
       "email": "dev-admin@example.com",
       "firstName": "Dev",
       "lastName": "Admin",
-      "attributes": { "locale": ["en"] },
+      "attributes": {
+        "locale": ["en"]
+      },
       "requiredActions": [],
-      "realmRoles": ["ilmo-admin"],
+      "realmRoles": ["default-roles-ilmo-dev", "ilmo-admin"],
       "credentials": [
         {
           "type": "password",
