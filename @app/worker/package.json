@@ -9,7 +9,7 @@
     "dev": "cd dist && nodemon --signal SIGINT --watch '**/*.js' -x \"node --inspect -r @app/config/env.js -r source-map-support/register ../../../node_modules/graphile-worker/dist/cli.js --crontab ../crontab\"",
     "watch": "exit 0",
     "install-db-schema": "mkdirp dist && pnpm gw --schema-only",
-    "depcheck": "depcheck --ignores=\"tslib\""
+    "depcheck": "depcheck --ignores=\"tslib,stripe\""
   },
   "dependencies": {
     "@app/config": "workspace:*",
@@ -22,6 +22,7 @@
     "mjml": "^4.13.0",
     "nodemailer": "^6.7.7",
     "nunjucks": "^3.2.3",
+    "stripe": "^23.0.0",
     "tslib": "^2.6.0"
   },
   "devDependencies": {
