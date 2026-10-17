@@ -117,14 +117,14 @@ CREATE TYPE app_public.claim_registration_token_output AS (
 --
 
 CREATE DOMAIN app_public.constrained_name AS text
-	CONSTRAINT constrained_name_check CHECK ((VALUE ~ '\S'::text));
+	CONSTRAINT constrained_name_check CHECK ((VALUE !~ '\s'::text));
 
 
 --
 -- Name: DOMAIN constrained_name; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON DOMAIN app_public.constrained_name IS 'A name field which must not be empty or contain only whitespace';
+COMMENT ON DOMAIN app_public.constrained_name IS 'A field which must not contain spaces';
 
 
 --
