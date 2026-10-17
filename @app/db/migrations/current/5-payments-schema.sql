@@ -32,6 +32,7 @@ drop function if exists app_private.tg_registrations__snapshot_price();
 drop function if exists app_public.admin_delete_registration(uuid, boolean);
 drop function if exists app_private.delete_registration_without_refund(uuid);
 
+drop table if exists app_private.stripe_early_refunds;
 drop table if exists app_private.stripe_events;
 drop table if exists app_public.payments;
 
@@ -252,6 +253,21 @@ create table app_private.stripe_events (
 alter table app_private.stripe_events enable row level security;
 comment on table app_private.stripe_events is
   E'Ids of Stripe webhook events already handled, so that redelivered events are ignored.';
+
+/*
+ * Refunds reported by charge.refunded before checkout.session.completed has
+ * recorded the payment intent (Stripe does not guarantee event order). The
+ * webhook applies and deletes the row once the payment is recorded.
+ */
+create table app_private.stripe_early_refunds (
+  stripe_payment_intent_id text primary key,
+  amount_refunded_cents integer not null check (amount_refunded_cents >= 0),
+  stripe_refund_id text,
+  received_at timestamptz not null default now()
+);
+alter table app_private.stripe_early_refunds enable row level security;
+comment on table app_private.stripe_early_refunds is
+  E'Stripe refunds that arrived before their payment was recorded; applied when checkout.session.completed arrives.';
 
 /******************************************************************************/
 -- Event and quota functions
@@ -819,7 +835,12 @@ begin
     raise exception 'Access denied.' using errcode = 'DNIED';
   end if;
 
-  if v_registration.is_finished is not true or coalesce(v_registration.price_cents, 0) = 0 then
+  select * into v_event from app_public.events where id = v_registration.event_id;
+
+  if v_registration.is_finished is not true
+    or coalesce(v_registration.price_cents, 0) = 0
+    or v_event.payment_mode = 'NONE'
+  then
     raise exception 'This registration does not require payment.' using errcode = 'DNIED';
   end if;
 
@@ -830,7 +851,14 @@ begin
     raise exception 'This registration has already been paid.' using errcode = 'DNIED';
   end if;
 
-  select * into v_event from app_public.events where id = v_registration.event_id;
+  -- Queued registrations pay once they get a spot, like on the /pay page
+  if exists(
+    select 1 from app_hidden.registrations_status_and_position as s
+    where s.id = v_registration.id and s.status = 'IN_QUEUE'
+  ) then
+    raise exception 'This registration is in the queue.' using errcode = 'DNIED';
+  end if;
+
   select * into v_quota from app_public.quotas where id = v_registration.quota_id;
 
   insert into app_public.payments (
@@ -912,6 +940,7 @@ returns integer as $$
 declare
   v_registration_id uuid;
   v_count integer := 0;
+  v_last_sent_at timestamptz;
 begin
   if not exists(select 1 from app_public.events as e where e.id = admin_send_payment_reminders.event_id) then
     raise exception 'Event was not found.' using errcode = 'NTFND';
@@ -919,6 +948,17 @@ begin
 
   if not app_private.current_user_can_manage_event_payments(admin_send_payment_reminders.event_id) then
     raise exception 'Access denied.' using errcode = 'DNIED';
+  end if;
+
+  -- A short cooldown, so a double click or a script can't email everyone
+  -- many times over. The event row lock makes concurrent calls wait here
+  -- and then see the first call's timestamp.
+  select e.last_payment_reminder_sent_at into v_last_sent_at
+    from app_public.events as e
+    where e.id = admin_send_payment_reminders.event_id
+    for update;
+  if v_last_sent_at > now() - interval '10 minutes' then
+    raise exception 'Payment reminders were sent less than 10 minutes ago. Try again later.' using errcode = 'DNIED';
   end if;
 
   for v_registration_id in
@@ -930,7 +970,7 @@ begin
       and r.is_finished is true
       and s.status in ('IN_QUOTA', 'IN_OPEN_QUOTA')
       and app_public.registrations_payment_status(r) = 'UNPAID'
-    order by r.created_at
+    order by r.created_at, r.id
   loop
     perform graphile_worker.add_job(
       'payment__send_reminder',
@@ -949,4 +989,4 @@ begin
 end;
 $$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
 comment on function app_public.admin_send_payment_reminders(event_id uuid) is
-  E'Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued.';
+  E'Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued. Refused for 10 minutes after the last reminders were sent.';
