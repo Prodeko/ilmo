@@ -16,4 +16,5 @@ cache
 .agignore
 *.tsbuildinfo
 .ethereal
+/@app/worker/email.local.json
 .DS_Store

@@ -25,6 +25,8 @@ import dayjs from "dayjs"
 import * as NextImage from "next/image"
 import { useRouter } from "next/router"
 
+import { RegistrationCalendar } from "../../../components/RegistrationCalendar"
+
 import type { NextPage } from "next"
 
 // See SharedLayout.tsx — namespace-then-default access works around a
@@ -216,6 +218,9 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         onBack={() => router.push("/")}
       />
       <Row>
+        <Col span={24}>
+          <RegistrationCalendar event={event} />
+        </Col>
         <Col
           sm={{ span: 16 }}
           style={{ display: "inline-block" }}

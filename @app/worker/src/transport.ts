@@ -2,6 +2,8 @@ import chalk from "chalk"
 import { promises as fsp } from "node:fs"
 import nodemailer from "nodemailer"
 
+import { getLocalEmailSettings } from "./localEmail"
+
 const { readFile, writeFile } = fsp
 
 const isTest = process.env.NODE_ENV === "test"
@@ -15,6 +17,27 @@ let logged = false
 export default function getTransport(): Promise<nodemailer.Transporter> {
   if (!transporterPromise) {
     transporterPromise = (async () => {
+      const localSettings = await getLocalEmailSettings()
+      if (!isDev || localSettings?.transport === "sendgrid") {
+        const { SENDGRID_API_KEY, SENDGRID_USERNAME } = process.env
+        if (!SENDGRID_USERNAME || !SENDGRID_API_KEY) {
+          throw new Error("SendGrid credentials are not configured")
+        }
+        if (localSettings) {
+          console.log(
+            "Local SendGrid delivery enabled for allowed recipients only."
+          )
+        }
+        return nodemailer.createTransport({
+          host: "smtp.sendgrid.net",
+          port: 465,
+          secure: true,
+          connectionTimeout: 15000,
+          greetingTimeout: 15000,
+          socketTimeout: 30000,
+          auth: { user: SENDGRID_USERNAME, pass: SENDGRID_API_KEY },
+        })
+      }
       if (isTest) {
         return nodemailer.createTransport({
           jsonTransport: true,
@@ -52,24 +75,8 @@ export default function getTransport(): Promise<nodemailer.Transporter> {
             pass: account.pass,
           },
         })
-      } else {
-        const { SENDGRID_API_KEY, SENDGRID_USERNAME } = process.env
-        if (!SENDGRID_USERNAME) {
-          throw new Error("Misconfiguration: no SENDGRID_USERNAME")
-        }
-        if (!SENDGRID_API_KEY) {
-          throw new Error("Misconfiguration: no SENDGRID_API_KEY")
-        }
-        return nodemailer.createTransport({
-          host: "smtp.sendgrid.net",
-          port: 465,
-          secure: true,
-          auth: {
-            user: SENDGRID_USERNAME,
-            pass: SENDGRID_API_KEY,
-          },
-        })
       }
+      throw new Error("Email transport is not configured")
     })()
   }
   return transporterPromise!

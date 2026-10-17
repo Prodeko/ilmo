@@ -1,4 +1,12 @@
 {
+  "calendar": {
+    "addAnother": "Lisää kalenteriin",
+    "apple": "Apple Kalenteri / lataa .ics",
+    "emailConfirmation": "Tarkista ilmoittautumisvahvistus sähköpostistasi.",
+    "emailSent": "Lähetimme vahvistuksen ja kalenterikutsun sähköpostiisi. Viestin saapumisessa voi kestää hetki.",
+    "google": "Google Kalenteri",
+    "waitlistEmailSent": "Olet tällä hetkellä jonossa. Lähetämme sinulle vahvistusviestin, kun saat paikan tapahtumaan."
+  },
   "confirmGoBack": "Haluatko varmasti mennä takaisin? Menetät paikkasi jonossa.",
   "deleteRegistration": "Poista ilmoittautuminen",
   "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautumisesi?",

@@ -112,6 +112,16 @@ const EventRegistrationPage: NextPage = () => {
             quotaId={quota?.id}
             // Used to delete an unfinished registration
             setUpdateToken={setUpdateToken}
+            submitAction={(registrationId) => {
+              try {
+                sessionStorage.setItem(
+                  `registered-event:${event.id}`,
+                  registrationId || "1"
+                )
+              } catch {
+                // Storage is optional; do not interrupt a successful signup.
+              }
+            }}
             type="create"
           />
           <RecentRegistrationsList eventId={event.id} />

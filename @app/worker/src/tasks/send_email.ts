@@ -9,6 +9,7 @@ import mjml2html from "mjml"
 import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
 
+import { getLocalEmailSettings, localRecipientAllowed } from "../localEmail"
 import getTransport from "../transport"
 
 import type { Task } from "graphile-worker"
@@ -31,6 +32,11 @@ export interface SendEmailPayload {
     from?: string
     to: string | string[]
     subject: string
+    icalEvent?: {
+      method: "REQUEST"
+      filename: string
+      content: string
+    }
   }
   template: string
   variables: {
@@ -40,8 +46,15 @@ export interface SendEmailPayload {
 
 const task: Task = async (inPayload) => {
   const payload: SendEmailPayload = inPayload as any
-  const transport = await getTransport()
   const { options: inOptions, template, variables } = payload
+  const localSettings = await getLocalEmailSettings()
+  if (localSettings && !localRecipientAllowed(inOptions.to, localSettings)) {
+    console.log(
+      "Skipped local email: recipient is outside the delivery allowlist."
+    )
+    return
+  }
+  const transport = await getTransport()
   const options = {
     from: fromEmail,
     ...inOptions,
@@ -59,6 +72,9 @@ const task: Task = async (inPayload) => {
     Object.assign(options, { html, text })
   }
   const info = await transport.sendMail(options)
+  if (localSettings) {
+    console.log(`Local email accepted by SendGrid: ${info.messageId}`)
+  }
   if (isTest) {
     global.TEST_EMAILS.push(info)
   } else if (isDev) {
