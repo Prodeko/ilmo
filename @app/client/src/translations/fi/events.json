@@ -20,6 +20,8 @@
   "forms": {
     "eventTime": "Tapahtuman ajankohta",
     "highlightEvent": "Korostettu tapahtuma",
+    "highlightText": "Korostuksen teksti",
+    "highlightTextHelp": "Jätä tyhjäksi, niin näytetään oletusteksti \"Nätti tapahtuma!\".",
     "isDraft": "Luonnos",
     "isHighlighted": "Korostettu",
     "isNotDraft": "Julkaistu",

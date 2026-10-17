@@ -43,6 +43,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     supportedLanguages,
   } = props
   const { t, lang } = useTranslation("events")
+  const isHighlighted = Form.useWatch("isHighlighted")
 
   function getUploadDefaultFileList(): Array<UploadFile> | undefined {
     if (type === "update") {
@@ -265,6 +266,29 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <Switch data-cy="eventform-switch-highlight" />
       </Form.Item>
+      {isHighlighted && (
+        <Form.Item
+          extra={t("forms.highlightTextHelp")}
+          label={t("forms.highlightText")}
+        >
+          <Group compact>
+            {selectedLanguages.map((l, i) => (
+              <Form.Item
+                key={l}
+                name={["highlightText", l.toLowerCase()]}
+                noStyle
+              >
+                <Input
+                  data-cy={`eventform-input-highlight-text-${l}`}
+                  maxLength={40}
+                  placeholder={t(`common:lang.in.${l}`)}
+                  style={i > 0 ? { marginTop: 5 } : undefined}
+                />
+              </Form.Item>
+            ))}
+          </Group>
+        </Form.Item>
+      )}
       <Form.Item
         getValueFromEvent={(e) => e[0]}
         label={t("headerImage")}

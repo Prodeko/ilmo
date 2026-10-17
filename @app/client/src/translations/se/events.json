@@ -20,6 +20,8 @@
   "forms": {
     "eventTime": "Händelsetid",
     "highlightEvent": "Markerad händelse",
+    "highlightText": "Markeringstext",
+    "highlightTextHelp": "Lämna tomt för att visa standardtexten \"Kolla in det här!\".",
     "isDraft": "Utkast",
     "isHighlighted": "Markerad",
     "isNotDraft": "Publicerad",
