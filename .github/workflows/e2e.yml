@@ -47,6 +47,9 @@ jobs:
         run: |
           cp .env.ci .env
           CONFIRM_DROP=1 pnpm run setup
+          # setup only runs committed migrations; the app under test also
+          # depends on the uncommitted ones in migrations/current
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         # Mirror `pnpm dev`'s preamble: build @app/graphql (codegen + tsc) and
@@ -184,6 +187,9 @@ jobs:
             echo "KEYCLOAK_CLIENT_SECRET=ci"
           } >> .env
           CONFIRM_DROP=1 pnpm run setup
+          # setup only runs committed migrations; the app under test also
+          # depends on the uncommitted ones in migrations/current
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         run: |
@@ -298,6 +304,9 @@ jobs:
             echo "KEYCLOAK_CLIENT_SECRET=ilmo-ci-secret"
           } >> .env
           CONFIRM_DROP=1 pnpm run setup
+          # setup only runs committed migrations; the app under test also
+          # depends on the uncommitted ones in migrations/current
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         run: |
