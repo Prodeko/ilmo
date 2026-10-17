@@ -22,7 +22,7 @@ import {
 import { Button } from "antd"
 import isHotkey from "is-hotkey"
 import { useRouter } from "next/router"
-import { BaseEditor, createEditor } from "slate"
+import { BaseEditor, createEditor, Transforms } from "slate"
 import { HistoryEditor, withHistory } from "slate-history"
 import { Editable, ReactEditor, Slate, withReact } from "slate-react"
 
@@ -72,6 +72,15 @@ export const Editor: React.FC<EditorProps> = ({
   const [editorLanguage, setEditorLanguage] = useState(
     router.locale || router.defaultLocale!
   )
+  const changeEditorLanguage = useCallback(
+    (language: string) => {
+      // The cursor position points into the current language's text and may
+      // not exist in the other language's text, which crashes Slate
+      Transforms.deselect(editor)
+      setEditorLanguage(language)
+    },
+    [editor]
+  )
   const newValue = useMemo(
     () => formValue?.[editorLanguage] || emptyNode,
     [formValue, editorLanguage]
@@ -101,6 +110,8 @@ export const Editor: React.FC<EditorProps> = ({
           <Button
             onClick={() => {
               editor.children = emptyNode
+              // A cursor left pointing at missing text would crash again
+              Transforms.deselect(editor)
               resetErrorBoundary()
             }}
           >
@@ -220,7 +231,7 @@ export const Editor: React.FC<EditorProps> = ({
               <EditorLanguage editorLanguage={editorLanguage} />
               <LanguageMenu
                 includedLocales={includedLocales}
-                setEditorLanguage={setEditorLanguage}
+                setEditorLanguage={changeEditorLanguage}
               />
               <TranslateMenu
                 formOnChange={onChange}
