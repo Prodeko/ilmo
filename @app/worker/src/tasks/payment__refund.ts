@@ -33,6 +33,14 @@ export interface PaymentRefundPayload {
  * email queued in one transaction, so a retry after a failure there makes the
  * same (idempotent) Stripe call and then both.
  */
+/** Stripe's answer when nothing is left to refund: treated as done. */
+function alreadyRefunded(e: unknown): null {
+  if ((e as { code?: string })?.code === "charge_already_refunded") {
+    return null
+  }
+  throw e
+}
+
 const task: Task = async (inPayload, { withPgClient, logger }) => {
   const {
     paymentId,
@@ -54,10 +62,16 @@ const task: Task = async (inPayload, { withPgClient, logger }) => {
     }
     // No row to lock or update: the idempotency key alone prevents a second
     // refund, and Stripe refuses refunding an already refunded charge.
-    const refund = await getStripe().refunds.create(
-      { payment_intent: paymentIntentId },
-      { idempotencyKey: `refund-pi-${paymentIntentId}` }
-    )
+    const refund = await getStripe()
+      .refunds.create(
+        { payment_intent: paymentIntentId },
+        { idempotencyKey: `refund-pi-${paymentIntentId}` }
+      )
+      .catch(alreadyRefunded)
+    if (!refund) {
+      logger.info(`Payment intent ${paymentIntentId} is already refunded`)
+      return
+    }
     if (refund.status === "failed" || refund.status === "canceled") {
       throw new Error(
         `Stripe refund ${refund.id} of payment intent ${paymentIntentId} is ${refund.status}`
@@ -111,17 +125,16 @@ const task: Task = async (inPayload, { withPgClient, logger }) => {
       }
 
       // A partial refund made in the Stripe dashboard leaves the payment
-      // PAID; refund at most what is left, or Stripe would refuse the call
-      // on every retry.
+      // PAID; it counts towards what is refunded now (the ticket price, or
+      // everything with full), so the service fee is still kept and Stripe
+      // isn't asked for more than is left.
       const paidCents = payment.ticket_amount_cents + payment.service_fee_cents
-      const refundableCents = paidCents - payment.refunded_amount_cents
-      const amount = Math.min(
-        full ? paidCents : payment.ticket_amount_cents,
-        refundableCents
-      )
+      const amount =
+        (full ? paidCents : payment.ticket_amount_cents) -
+        payment.refunded_amount_cents
       if (amount <= 0) {
         logger.info(
-          `Payment ${paymentId} has already been refunded in full in Stripe; nothing to refund`
+          `Payment ${paymentId} has already been refunded in Stripe; nothing to refund`
         )
         await client.query("rollback")
         return
@@ -137,19 +150,28 @@ const task: Task = async (inPayload, { withPgClient, logger }) => {
       // commit below, and the webhook marks the row REFUNDED first, the
       // retry returns early and the refund email is never sent (the money is
       // still returned).
-      const refund = await getStripe().refunds.create(
-        {
-          payment_intent: payment.stripe_payment_intent_id,
-          amount,
-          metadata: {
-            payment_id: payment.id,
-            event_id: payment.event_id ?? "",
-            quota_id: payment.quota_id ?? "",
-            registration_id: payment.registration_id ?? "",
+      const refund = await getStripe()
+        .refunds.create(
+          {
+            payment_intent: payment.stripe_payment_intent_id,
+            amount,
+            metadata: {
+              payment_id: payment.id,
+              event_id: payment.event_id ?? "",
+              quota_id: payment.quota_id ?? "",
+              registration_id: payment.registration_id ?? "",
+            },
           },
-        },
-        { idempotencyKey: `refund-${payment.id}` }
-      )
+          { idempotencyKey: `refund-${payment.id}` }
+        )
+        .catch(alreadyRefunded)
+      if (!refund) {
+        // Refunded in Stripe already (the dashboard, or a run whose commit
+        // failed); the charge.refunded webhook records it
+        logger.info(`Payment ${paymentId} is already refunded in Stripe`)
+        await client.query("rollback")
+        return
+      }
       if (refund.status === "failed" || refund.status === "canceled") {
         throw new Error(
           `Stripe refund ${refund.id} of payment ${paymentId} is ${refund.status}`

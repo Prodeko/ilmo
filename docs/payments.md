@@ -182,6 +182,11 @@ Do this once per Stripe account (use test mode for staging):
    descriptor participants will recognise (e.g. `PRODEKO`).
 6. Set the three variables for both the server and the worker and restart them.
 
+A paid Checkout Session with no payment row is refunded only when its `ilmo_url`
+metadata equals this instance's `ROOT_URL`, so instances that share a test
+account _and_ a `ROOT_URL` (e.g. two developers on `http://localhost:5678`) may
+refund each other's orphan sessions.
+
 Rollout: merge with the flag unset in production, test the whole flow on staging
 with test-mode keys, then enable in production for one real event and reconcile
 the Stripe payout against the event's payment summary before using it generally.
