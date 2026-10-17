@@ -78,6 +78,8 @@ fragment SharedLayout_Organization on Organization {
 }
 fragment UpdateEventPage_Event on Event {
   ...EventFields
+  paymentMode
+  sendUnpaidEmailOnClose
   category {
     ...EventPage_EventCategory
     __typename
@@ -89,6 +91,7 @@ fragment UpdateEventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
+      priceCents
       registrations {
         totalCount
         __typename

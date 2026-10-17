@@ -93,6 +93,84 @@
     "updateEvent": "Päivitä tapahtuma",
     "updateEventCategory": "Päivitä tapahtumakategoria"
   },
+  "payments": {
+    "actions": {
+      "failed": "Maksun päivittäminen epäonnistui",
+      "markPaid": "Merkitse maksetuksi",
+      "markPaidHelp": "Käteis- tai tilisiirtomaksuille. Lähettää maksuvahvistuksen sähköpostilla.",
+      "markPaidSuccess": "Merkitty maksetuksi",
+      "more": "Lisää toimintoja",
+      "undoManual": "Peru käsin merkitty maksu",
+      "undoManualSuccess": "Käsin merkitty maksu poistettu"
+    },
+    "cancel": "Peruuta",
+    "delete": {
+      "body": "Paikka siirtyy jonossa seuraavalle. Poistoa ei voi perua.",
+      "confirm": "Poista",
+      "confirmRefund": "Poista ja palauta",
+      "manualWarning": "Tämä ilmoittautuminen on merkitty maksetuksi käsin ({{price}}). Ilmo ei voi palauttaa maksua, joten hoida mahdollinen palautus itse.",
+      "refund": "Palauta lipun hinta, {{price}}, kortille",
+      "title": "Poistetaanko käyttäjän {{name}} ilmoittautuminen?"
+    },
+    "filter": {
+      "all": "Kaikki ({{count}})",
+      "paid": "Maksettu ({{count}})",
+      "unpaid": "Maksamatta ({{count}})"
+    },
+    "lastReminderSent": "Viimeisin muistutus lähetetty {{date}} klo {{time}}",
+    "paymentColumn": "Maksu",
+    "quotas": {
+      "free": "Ilmainen",
+      "guildReceives": "Kilta saa",
+      "invalidPrice": "Hinnan on oltava 0 € tai 0,25 € – 10 000 €",
+      "noteFees": "Kilta saa = hinta − 1,5 % × (hinta + 0,25 €). Asiakas maksaa hinnan sekä 0,25 €:n palvelumaksun, ja Stripe perii 0,25 € + 1,5 %. Arvio koskee eurooppalaisia kortteja; ETA-alueen ulkopuoliset kortit maksavat hieman enemmän.",
+      "noteFree": "0 € tekee kiintiöstä ilmaisen. Muuten vähimmäishinta on 0,25 €.",
+      "noteOpenQuota": "Avoimen kiintiön paikoista maksetaan sen kiintiön hinta, jonka kautta henkilö ilmoittautui.",
+      "priceChangedWarning": "Tässä kiintiössä on {{count}} ilmoittautumista. Ne säilyttävät hinnan {{price}}. Uusi hinta koskee vain uusia ilmoittautumisia.",
+      "ticketPrice": "Lipun hinta"
+    },
+    "reminder": {
+      "body": "Jokainen paikan saanut, joka ei ole maksanut, saa sähköpostin omalla maksulinkillään. Jonossa oleville ja ilmaisten kiintiöiden ilmoittautujille ei lähetetä viestiä.",
+      "confirm_one": "Lähetä {{count}} muistutus",
+      "confirm_other": "Lähetä {{count}} muistutusta",
+      "failed": "Muistutusten lähettäminen epäonnistui",
+      "lastSent": "Viimeisin muistutus lähetetty {{date}} klo {{time}}.",
+      "sent_one": "{{count}} muistutus lähetetty",
+      "sent_other": "{{count}} muistutusta lähetetty",
+      "title_one": "Lähetetäänkö maksumuistutus {{count}} henkilölle?",
+      "title_other": "Lähetetäänkö maksumuistutus {{count}} henkilölle?"
+    },
+    "sendReminder": "Lähetä muistutus {{count}} maksamattomalle",
+    "settings": {
+      "emailOnClose": "Lähetä maksamattomille sähköposti, kun ilmoittautuminen sulkeutuu",
+      "emailOnCloseHelp": "Lähettää maksumuistutuksen kerran sulkeutumishetkellä kaikille paikan saaneille, jotka eivät ole vielä maksaneet.",
+      "emailOnCloseLockedHelp": "Aina päällä tässä tilassa: ilmoittautujat saavat maksulinkkinsä tällä sähköpostilla.",
+      "modeAfter": "Maksu ilmoittautumisen sulkeuduttua",
+      "modeAfterHelp": "Kukaan ei maksa ilmoittautumisen ollessa auki. Kaikki paikan saaneet saavat maksulinkin sähköpostiin, kun ilmoittautuminen sulkeutuu.",
+      "modeDuring": "Maksu ilmoittautumisen yhteydessä",
+      "modeDuringHelp": "Ilmoittautuja ohjataan maksusivulle heti ilmoittautumisen jälkeen. Maksamaton ilmoittautuminen säilyttää silti paikkansa.",
+      "modeLabel": "Milloin maksu kerätään?",
+      "modeNone": "Ei maksuja",
+      "modeNoneHelp": "Kaikki kiintiöt ovat ilmaisia tai maksut kerätään muuten.",
+      "subtitle": "Hinnat asetetaan kiintiökohtaisesti Kiintiöt-välilehdellä.",
+      "switchToNoneWarning": "Jo tehdyt maksut säilyvät ja näkyvät edelleen. Mitään ei palauteta automaattisesti.",
+      "title": "Maksut"
+    },
+    "status": {
+      "NOT_REQUIRED": "Ilmainen",
+      "PAID": "Maksettu",
+      "PAID_MANUALLY": "Maksettu käsin",
+      "REFUNDED": "Palautettu",
+      "UNPAID": "Maksamatta"
+    },
+    "summary": {
+      "guildReceives": "Kilta saa",
+      "paid": "Maksettu",
+      "paidOf": "/ {{count}}",
+      "ticketsPaid": "Lippuja maksettu",
+      "unpaid": "Maksamatta"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Haluatko varmasti poistaa tämän ilmoittautumisen?",

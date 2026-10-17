@@ -76,6 +76,10 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
+          keys: {
+            // A computed composite with no id; embed it in its event
+            EventPaymentSummary: () => null,
+          },
           updates: {
             Mutation: {
               logout(result, _args, cache, _info) {
@@ -168,6 +172,26 @@ export const withUrql = withUrqlClient(
                   __typename: "Registration",
                   id: args.input.id,
                 })
+              },
+              // Marking a registration paid or unpaid moves it between the
+              // registrations tab's All / Unpaid / Paid lists, so refetch them.
+              adminMarkRegistrationPaid(_result, _args, cache, _info) {
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "registrations")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              adminUnmarkRegistrationPaid(_result, args, cache, _info) {
+                cache.invalidate({
+                  __typename: "Registration",
+                  id: args.input.registrationId,
+                })
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "registrations")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
               },
             },
           },
