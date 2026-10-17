@@ -1,5 +1,5 @@
 --! Previous: sha1:eafce160dd3a8ec859a47bc11b5c9117cc07fd8e
---! Hash: sha1:4a7ac05c29125846186aa2020a22e1ca9db39164
+--! Hash: sha1:f1af4fbb1a8ec4d12e7c01e291cdc4491f2e00b4
 
 --! split: 1-current.sql
 /*
@@ -342,20 +342,24 @@ begin
       where
         event_id = v_old_registration_status.event_id and
         quota_id = v_old_registration_status.quota_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position desc;
+        status = 'IN_QUEUE'::app_public.registration_status
+      -- Queue positions are numbered per event, so the earliest queued
+      -- registration of this quota can be behind registrations of other
+      -- quotas.
+      order by position asc
+      limit 1;
   elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
     select *
       into v_received_spot
       from app_hidden.registrations_status_and_position
       where
-        -- Almost the same where condition as above, only quota_id is
-        -- missing since open quota spots can be populated by any quota
+        -- Open quota spots can be populated by any quota, so the spot goes
+        -- to the first in the event's queue.
         event_id = v_old_registration_status.event_id and
         status = 'IN_QUEUE'::app_public.registration_status and
         position = 1
-      order by position desc;
+      order by position asc
+      limit 1;
   else
     -- The deleted registration was in queue, nobody will get a spot so return.
     return OLD;

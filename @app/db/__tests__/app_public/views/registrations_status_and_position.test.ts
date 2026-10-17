@@ -349,6 +349,38 @@ describe("registrations_status_and_position", () => {
         ])
       }))
 
+    it("enqueues the earliest queued person of the quota when the queue head belongs to another quota", () =>
+      withUserDb(async (client) => {
+        const {
+          event,
+          quotas: [quotaA, quotaB],
+        } = await setupData(client, {
+          openQuotaSize: 0,
+          numQuotas: 2,
+          quotaSize: 1,
+        })
+        const [inQuotaA] = await registerInOrder(client, 1, event.id, quotaA.id)
+        await registerInOrder(client, 2, event.id, quotaB.id)
+        const [queuedA] = await registerInOrder(client, 1, event.id, quotaA.id)
+
+        await client.query(
+          "delete from app_public.registrations where id = $1",
+          [inQuotaA.id]
+        )
+
+        const jobs = await getJobs(client, "registration__process_queue")
+        expect(jobs).toHaveLength(1)
+        expect(jobs[0].payload).toMatchObject({
+          receivedSpot: {
+            id: queuedA.id,
+            event_id: event.id,
+            quota_id: quotaA.id,
+            status: "IN_QUEUE",
+            position: 2,
+          },
+        })
+      }))
+
     it("keeps both of two concurrent claims with correct positions", async () => {
       const pool = poolFromUrl(TEST_DATABASE_URL)
       const setupClient = await pool.connect()
