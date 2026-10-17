@@ -33,6 +33,12 @@ export const STRIPE_PERCENT_FEE = 0.015
  */
 export const MIN_PAID_PRICE_CENTS = 25
 
+/**
+ * The largest ticket price, 10 000 €. The database enforces the same bound
+ * on quotas.price_cents.
+ */
+export const MAX_TICKET_PRICE_CENTS = 1_000_000
+
 // The percentage fee in per-mille, so the maths below stays in integers.
 const STRIPE_PERCENT_FEE_PER_MILLE = Math.round(STRIPE_PERCENT_FEE * 1000)
 
@@ -45,13 +51,15 @@ function assertCents(cents: number, name: string): void {
 }
 
 /**
- * A ticket price is valid when it is free (0) or at least
- * `MIN_PAID_PRICE_CENTS`.
+ * A ticket price is valid when it is free (0) or between
+ * `MIN_PAID_PRICE_CENTS` and `MAX_TICKET_PRICE_CENTS`.
  */
 export function isValidTicketPriceCents(priceCents: number): boolean {
   return (
     Number.isSafeInteger(priceCents) &&
-    (priceCents === 0 || priceCents >= MIN_PAID_PRICE_CENTS)
+    (priceCents === 0 ||
+      (priceCents >= MIN_PAID_PRICE_CENTS &&
+        priceCents <= MAX_TICKET_PRICE_CENTS))
   )
 }
 

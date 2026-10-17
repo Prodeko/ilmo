@@ -2,6 +2,7 @@ import {
   formatEuro,
   guildReceivesCents,
   isValidTicketPriceCents,
+  MAX_TICKET_PRICE_CENTS,
   MIN_PAID_PRICE_CENTS,
   paymentsEnabled,
   SERVICE_FEE_CENTS,
@@ -14,6 +15,7 @@ describe("fee constants", () => {
     expect(SERVICE_FEE_CENTS).toBe(25)
     expect(STRIPE_PERCENT_FEE).toBe(0.015)
     expect(MIN_PAID_PRICE_CENTS).toBe(25)
+    expect(MAX_TICKET_PRICE_CENTS).toBe(1000000)
   })
 
   test("the minimum paid price meets Stripe's 0,50 € minimum charge", () => {
@@ -78,6 +80,8 @@ describe("isValidTicketPriceCents", () => {
     [24, false],
     [25, true],
     [1800, true],
+    [1000000, true],
+    [1000001, false],
     [-25, false],
     [25.5, false],
   ])("%p → %p", (price, valid) => {
