@@ -15,12 +15,16 @@ import { Draggable } from "../Draggable"
 interface QuotasTabProps {
   initialValues?: any
   selectedLanguages: string[]
+  // Only compared by memo: without it a language switch doesn't re-render
+  // the tab, which leaves its texts and field messages in the old language
+  lang: string
 }
 
 export const QuotasTab: React.FC<QuotasTabProps> = memo(
   ({ initialValues, selectedLanguages }) => {
     const [hasOpenQuota, setHasOpenQuota] = useState(false)
     const { t } = useTranslation("events")
+    const form = Form.useFormInstance()
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
@@ -32,11 +36,13 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
           name="quotas"
           rules={[
             {
+              // An event always needs a quota; an open quota alone isn't enough.
+              // The message is set on the rule, not in the rejection, so it's
+              // in the current language like the other fields' messages
+              message: t("errors.mustProvideEventQuota"),
               validator: async (_, quotas) => {
-                if ((!quotas || quotas?.length < 1) && !hasOpenQuota) {
-                  return Promise.reject(
-                    new Error(t("errors.mustProvideEventQuota"))
-                  )
+                if (!quotas || quotas?.length < 1) {
+                  return Promise.reject()
                 }
               },
             },
@@ -141,13 +147,24 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
           <Switch
             checked={hasOpenQuota}
             data-cy="eventform-quotas-switch-is-open-quota"
-            onChange={(val) => setHasOpenQuota(val)}
+            onChange={(val) => {
+              setHasOpenQuota(val)
+              // A switched off open quota shouldn't keep its size, or the
+              // event would still get one when saved. A switched on one
+              // starts empty, so it has to be given a size before saving
+              if (!val) form.setFieldValue("openQuotaSize", 0)
+              else if (!form.getFieldValue("openQuotaSize")) {
+                form.setFieldValue("openQuotaSize", null)
+              }
+            }}
           />
           <Form.Item
             name="openQuotaSize"
             rules={[
               {
                 required: hasOpenQuota,
+                type: "number",
+                min: hasOpenQuota ? 1 : 0,
                 message: t("forms.rules.quota.provideQuotaSize"),
               },
             ]}

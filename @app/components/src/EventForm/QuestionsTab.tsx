@@ -45,6 +45,9 @@ type QuestionData = {
 interface QuestionsTabProps {
   form: FormInstance
   selectedLanguages: string[]
+  // Only compared by memo: without it a language switch doesn't re-render
+  // the tab, which leaves its texts and field messages in the old language
+  lang: string
 }
 
 const colSpan = { md: { span: 6 }, sm: { span: 12 }, xs: { span: 24 } }
@@ -303,7 +306,11 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                       key={key}
                       id={key}
                       index={index}
-                      move={move}
+                      move={(from, to) => {
+                        move(from, to)
+                        // Re-read questions so type and options follow the moved row
+                        forceUpdate()
+                      }}
                     >
                       <Row gutter={[8, 8]} style={{ marginBottom: "12px" }}>
                         <Form.Item name={[name, "id"]} required={false} noStyle>
@@ -370,7 +377,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                             <MinusCircleTwoTone
                               data-cy="eventform-questions-remove-question"
                               twoToneColor="red"
-                              onClick={() => remove(name)}
+                              onClick={() => {
+                                remove(name)
+                                forceUpdate()
+                              }}
                             />
                           </Tooltip>
                         </Col>
