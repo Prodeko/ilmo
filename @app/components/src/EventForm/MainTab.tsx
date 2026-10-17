@@ -48,6 +48,7 @@ const PAYMENT_MODES = [
 
 interface PaymentSettingsProps {
   savedPaymentMode: PaymentMode | null | undefined
+  hasRegistrations: boolean
 }
 
 /**
@@ -56,6 +57,7 @@ interface PaymentSettingsProps {
  */
 const PaymentSettings: React.FC<PaymentSettingsProps> = ({
   savedPaymentMode,
+  hasRegistrations,
 }) => {
   const { t } = useTranslation("admin")
   const form = Form.useFormInstance()
@@ -102,6 +104,19 @@ const PaymentSettings: React.FC<PaymentSettingsProps> = ({
           <Form.Item {...tailFormItemLayout}>
             <Alert
               message={t("payments.settings.switchToNoneWarning")}
+              type="warning"
+              showIcon
+            />
+          </Form.Item>
+        )}
+      {savedPaymentMode === PaymentMode.None &&
+        hasRegistrations &&
+        !!paymentMode &&
+        paymentMode !== PaymentMode.None && (
+          <Form.Item {...tailFormItemLayout}>
+            <Alert
+              data-cy="eventform-alert-switch-to-paid"
+              message={t("payments.settings.switchToPaidWarning")}
               type="warning"
               showIcon
             />
@@ -408,6 +423,12 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       </Form.Item>
       {data?.paymentsEnabled && (
         <PaymentSettings
+          hasRegistrations={
+            type === "update" &&
+            !!(data as UpdateEventPageQuery)?.event?.quotas?.nodes?.some(
+              (q) => (q?.registrations?.totalCount ?? 0) > 0
+            )
+          }
           savedPaymentMode={
             type === "update"
               ? (data as UpdateEventPageQuery)?.event?.paymentMode

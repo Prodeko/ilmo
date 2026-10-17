@@ -203,8 +203,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               "title",
               "size",
             ])
-            // The price is edited in euros. A quota whose price input was
-            // never shown keeps its current price (null = unchanged).
+            // The price is edited in euros; a cleared input is sent as 0
+            // (free). Quotas without a price value in the form (payments
+            // off, or a new quota added while prices were hidden) omit
+            // priceCents, so the database keeps the current price or makes
+            // a new quota free.
             const { price } = q as Quota & { price?: number | null }
             return paymentsEnabled && price !== undefined
               ? { ...quota, priceCents: ticketPriceEurosToCents(price) }
