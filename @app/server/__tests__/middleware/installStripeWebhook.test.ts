@@ -103,6 +103,9 @@ function completedSession(
     payment_status: "paid",
     status: "complete",
     payment_intent: `pi_for_${sessionId}`,
+    // What insertPayment's defaults charge: 1800 ticket + 25 service fee
+    amount_total: 1825,
+    currency: "eur",
     metadata: {},
     ...extra,
   })
@@ -281,6 +284,74 @@ describe("checkout.session.completed", () => {
     })
   })
 
+  it.each([
+    ["amount", { amount_total: 1700 }],
+    ["currency", { currency: "usd" }],
+  ])(
+    "refunds a session whose %s differs from the payment row",
+    async (_name, extra) => {
+      const { registrations } = await createPaidEvent()
+      const payment = await insertPayment(pool, registrations[0], {
+        status: "PENDING",
+        sessionId: "cs_test_mismatch",
+      })
+
+      expect(
+        (await post(completedSession("cs_test_mismatch", extra))).statusCode
+      ).toBe(200)
+      expect(await paymentById(payment.id)).toMatchObject({
+        status: "PAID",
+        registration_id: null,
+        stripe_payment_intent_id: "pi_for_cs_test_mismatch",
+      })
+      expect(await jobsOf(pool, "payment__refund")).toEqual([
+        { paymentIntentId: "pi_for_cs_test_mismatch" },
+      ])
+      expect(await jobsOf(pool, "payment__send_received_email")).toEqual([])
+    }
+  )
+
+  describe("a paid session without a payment row", () => {
+    const rootUrl = process.env.ROOT_URL
+    beforeEach(() => {
+      process.env.ROOT_URL = "https://ilmo.example.com"
+    })
+    afterEach(() => {
+      process.env.ROOT_URL = rootUrl
+    })
+
+    it("is refunded by payment intent when this Ilmo created it", async () => {
+      const res = await post(
+        completedSession("cs_test_orphan", {
+          metadata: {
+            payment_id: "00000000-0000-4000-8000-000000000000",
+            ilmo_url: "https://ilmo.example.com",
+          },
+        })
+      )
+      expect(res.statusCode).toBe(200)
+      expect(await jobsOf(pool, "payment__refund")).toEqual([
+        { paymentIntentId: "pi_for_cs_test_orphan" },
+      ])
+    })
+
+    it.each([
+      ["another Ilmo", { ilmo_url: "https://staging.example.com" }],
+      ["an unmarked session", {}],
+    ])("is left alone when it comes from %s", async (_name, metadata) => {
+      const res = await post(
+        completedSession("cs_test_foreign", {
+          metadata: {
+            payment_id: "00000000-0000-4000-8000-000000000000",
+            ...metadata,
+          },
+        })
+      )
+      expect(res.statusCode).toBe(200)
+      expect(await jobsOf(pool, "payment__refund")).toEqual([])
+    })
+  })
+
   it("does nothing for an unknown session or an unpaid one", async () => {
     const { registrations } = await createPaidEvent()
     const payment = await insertPayment(pool, registrations[0], {
@@ -435,10 +506,108 @@ describe("charge.refunded", () => {
     })
   })
 
-  it("ignores a refund of an unknown payment", async () => {
-    const res = await post(chargeRefunded("pi_unknown", 1800))
-    expect(res.statusCode).toBe(200)
-    expect(await processedEvents()).toHaveLength(1)
+  it("never lowers the refunded amount when events arrive out of order", async () => {
+    const { registrations } = await createPaidEvent()
+    const payment = await insertPayment(pool, registrations[0], {
+      paymentIntentId: "pi_out_of_order",
+    })
+
+    await post(chargeRefunded("pi_out_of_order", 1800))
+    await post(chargeRefunded("pi_out_of_order", 500))
+    expect(await paymentById(payment.id)).toMatchObject({
+      status: "REFUNDED",
+      refunded_amount_cents: 1800,
+    })
+  })
+
+  async function earlyRefunds() {
+    const { rows } = await pool.query(
+      "select stripe_payment_intent_id, amount_refunded_cents, stripe_refund_id from app_private.stripe_early_refunds order by 1"
+    )
+    return rows
+  }
+
+  describe("before checkout.session.completed", () => {
+    it("keeps a refund of an unknown payment intent for later", async () => {
+      const res = await post(chargeRefunded("pi_unknown", 1800))
+      expect(res.statusCode).toBe(200)
+      expect(await processedEvents()).toHaveLength(1)
+      expect(await earlyRefunds()).toEqual([
+        {
+          stripe_payment_intent_id: "pi_unknown",
+          amount_refunded_cents: 1800,
+          stripe_refund_id: "re_for_pi_unknown",
+        },
+      ])
+    })
+
+    it("applies a full refund when the payment is recorded, queuing nothing", async () => {
+      const { registrations } = await createPaidEvent()
+      const payment = await insertPayment(pool, registrations[0], {
+        status: "PENDING",
+        sessionId: "cs_test_early",
+      })
+
+      await post(chargeRefunded("pi_for_cs_test_early", 500))
+      await post(chargeRefunded("pi_for_cs_test_early", 1825))
+      // An older event arriving last doesn't lower it
+      await post(chargeRefunded("pi_for_cs_test_early", 500))
+      await post(completedSession("cs_test_early"))
+
+      expect(await paymentById(payment.id)).toMatchObject({
+        status: "REFUNDED",
+        refunded_amount_cents: 1825,
+        refunded_at: expect.any(Date),
+        stripe_refund_id: "re_for_pi_for_cs_test_early",
+        stripe_payment_intent_id: "pi_for_cs_test_early",
+        registration_id: registrations[0].id,
+      })
+      expect(await jobsOf(pool, "payment__send_received_email")).toEqual([])
+      expect(await jobsOf(pool, "payment__refund")).toEqual([])
+      expect(await earlyRefunds()).toEqual([])
+    })
+
+    it("still refunds the rest of a duplicate payment refunded early", async () => {
+      const { registrations } = await createPaidEvent()
+      await insertPayment(pool, registrations[0], { method: "MANUAL" })
+      const second = await insertPayment(pool, registrations[0], {
+        status: "PENDING",
+        sessionId: "cs_test_early_dup",
+      })
+
+      await post(chargeRefunded("pi_for_cs_test_early_dup", 1800))
+      await post(completedSession("cs_test_early_dup"))
+
+      expect(await paymentById(second.id)).toMatchObject({
+        status: "REFUNDED",
+        refunded_amount_cents: 1800,
+        registration_id: null,
+      })
+      // The 25 cent fee is left: refunded by payment intent
+      expect(await jobsOf(pool, "payment__refund")).toEqual([
+        { paymentIntentId: "pi_for_cs_test_early_dup" },
+      ])
+    })
+
+    it("applies a partial refund and keeps the registration paid", async () => {
+      const { registrations } = await createPaidEvent()
+      const payment = await insertPayment(pool, registrations[0], {
+        status: "PENDING",
+        sessionId: "cs_test_early_partial",
+      })
+
+      await post(chargeRefunded("pi_for_cs_test_early_partial", 500))
+      await post(completedSession("cs_test_early_partial"))
+
+      expect(await paymentById(payment.id)).toMatchObject({
+        status: "PAID",
+        refunded_amount_cents: 500,
+      })
+      expect(await jobsOf(pool, "payment__send_received_email")).toEqual([
+        { paymentId: payment.id },
+      ])
+      expect(await earlyRefunds()).toEqual([])
+    })
   })
 })
 

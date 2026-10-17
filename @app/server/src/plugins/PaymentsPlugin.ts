@@ -1,5 +1,6 @@
 import { SERVICE_FEE_CENTS, totalChargeCents } from "@app/lib"
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
+import { Pool } from "pg"
 
 import { createCheckoutSession } from "../payments/checkout"
 import {
@@ -9,10 +10,49 @@ import {
   loadSettledPayment,
   normalizeLanguage,
   PaymentError,
+  PaymentLookupFailedError,
 } from "../payments/registrationPayment"
 import { paymentsEnabled } from "../utils/stripe"
 
 import type { OurGraphQLContext } from "../middleware/installPostGraphile"
+
+/** The RegistrationPayment of paymentByUpdateToken, or null. */
+async function loadPaymentByUpdateToken(rootPgPool: Pool, updateToken: string) {
+  const registration = await loadRegistrationForPayment(rootPgPool, updateToken)
+  if (!registration || !registration.is_finished) {
+    return null
+  }
+  const settled = await loadSettledPayment(rootPgPool, registration.id)
+  const priceCents = registration.price_cents ?? 0
+  const required = registration.payment_status !== "NOT_REQUIRED"
+  return {
+    eventId: registration.event_id,
+    eventSlug: registration.event_slug,
+    eventName: registration.event_name,
+    eventStartTime: registration.event_start_time.toISOString(),
+    eventEndTime: registration.event_end_time.toISOString(),
+    registrationEndTime: registration.registration_end_time.toISOString(),
+    paymentMode: registration.payment_mode,
+    quotaTitle: registration.quota_title,
+    firstName: registration.first_name,
+    lastName: registration.last_name,
+    queueStatus: registration.queue_status,
+    queuePosition: registration.queue_position,
+    status: registration.payment_status,
+    priceCents: required ? priceCents : 0,
+    serviceFeeCents: required ? SERVICE_FEE_CENTS : 0,
+    totalCents: required ? totalChargeCents(priceCents) : 0,
+    paidManually: settled?.method === "MANUAL",
+    paidTotalCents: settled
+      ? settled.ticket_amount_cents + settled.service_fee_cents
+      : null,
+    paidTicketCents: settled ? settled.ticket_amount_cents : null,
+    paidAt: settled?.paid_at?.toISOString() ?? null,
+    refundedAmountCents: settled ? settled.refunded_amount_cents : null,
+    refundedAt: settled?.refunded_at?.toISOString() ?? null,
+    blockedReason: checkoutBlockedReason(registration),
+  }
+}
 
 const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
@@ -123,42 +163,14 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
           return null
         }
         const { rootPgPool } = context
-        const registration = await loadRegistrationForPayment(
-          rootPgPool,
-          args.updateToken
-        )
-        if (!registration || !registration.is_finished) {
-          return null
-        }
-        const settled = await loadSettledPayment(rootPgPool, registration.id)
-        const priceCents = registration.price_cents ?? 0
-        const required = registration.payment_status !== "NOT_REQUIRED"
-        return {
-          eventId: registration.event_id,
-          eventSlug: registration.event_slug,
-          eventName: registration.event_name,
-          eventStartTime: registration.event_start_time.toISOString(),
-          eventEndTime: registration.event_end_time.toISOString(),
-          registrationEndTime: registration.registration_end_time.toISOString(),
-          paymentMode: registration.payment_mode,
-          quotaTitle: registration.quota_title,
-          firstName: registration.first_name,
-          lastName: registration.last_name,
-          queueStatus: registration.queue_status,
-          queuePosition: registration.queue_position,
-          status: registration.payment_status,
-          priceCents: required ? priceCents : 0,
-          serviceFeeCents: required ? SERVICE_FEE_CENTS : 0,
-          totalCents: required ? totalChargeCents(priceCents) : 0,
-          paidManually: settled?.method === "MANUAL",
-          paidTotalCents: settled
-            ? settled.ticket_amount_cents + settled.service_fee_cents
-            : null,
-          paidTicketCents: settled ? settled.ticket_amount_cents : null,
-          paidAt: settled?.paid_at?.toISOString() ?? null,
-          refundedAmountCents: settled ? settled.refunded_amount_cents : null,
-          refundedAt: settled?.refunded_at?.toISOString() ?? null,
-          blockedReason: checkoutBlockedReason(registration),
+        try {
+          return await loadPaymentByUpdateToken(rootPgPool, args.updateToken)
+        } catch (e) {
+          // Database errors can carry SQL details: log them, return a code
+          context.logger.error(
+            `paymentByUpdateToken failed: ${e instanceof Error ? (e.stack ?? e.message) : String(e)}`
+          )
+          throw new PaymentLookupFailedError()
         }
       },
     },

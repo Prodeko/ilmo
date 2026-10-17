@@ -264,6 +264,60 @@ describe("createCheckoutSession", () => {
     ).toEqual(["EXPIRED"])
   })
 
+  it("holds no lock on the registration while Stripe is called", async () => {
+    const { registrations, tokens } = await createPaidEvent()
+    const { create } = stripeMock().checkout.sessions
+    let lockedDuringCall: boolean | null = null
+    create.mockImplementationOnce(async () => {
+      const client = await pool().connect()
+      try {
+        await client.query("begin")
+        await client.query(
+          "select 1 from app_public.registrations where id = $1 for update nowait",
+          [registrations[0].id]
+        )
+        lockedDuringCall = false
+      } catch {
+        lockedDuringCall = true
+      } finally {
+        await client.query("rollback")
+        client.release()
+      }
+      return {
+        id: "cs_test_unlocked",
+        url: "https://checkout.stripe.com/c/pay/cs_test_unlocked",
+      }
+    })
+
+    const result = await createCheckoutSession(tokens[0])
+    expect(result.errors).toBeFalsy()
+    expect(lockedDuringCall).toBe(false)
+  })
+
+  it("gives up its session when a newer click expired its payment meanwhile", async () => {
+    const { event, registrations, tokens } = await createPaidEvent()
+    const { create, expire } = stripeMock().checkout.sessions
+    create.mockImplementationOnce(async () => {
+      // A second click's first step expires this call's pending row
+      await pool().query(
+        `update app_public.payments set status = 'EXPIRED'
+          where registration_id = $1 and status = 'PENDING'`,
+        [registrations[0].id]
+      )
+      return {
+        id: "cs_test_superseded",
+        url: "https://checkout.stripe.com/c/pay/cs_test_superseded",
+      }
+    })
+
+    const result = await createCheckoutSession(tokens[0])
+    expect(result.errors![0].extensions!.exception).toMatchObject({
+      code: "CHECKOUT_FAILED",
+    })
+    expect(expire).toHaveBeenCalledWith("cs_test_superseded")
+    expect(await paymentsOfEvent(pool(), event.id)).toEqual([])
+  })
+
   describe("refusals", () => {
     it("PAYMENTS_DISABLED while payments are off", async () => {
       const { tokens } = await createPaidEvent()

@@ -92,5 +92,6 @@
     "registrationStarts": "Ilmo aukeaa",
     "time": "Aika",
     "title": "Ilmoittautuminen aukeaa pian"
-  }
+  },
+  "inQueueCount": "{{count}} jonossa"
 }

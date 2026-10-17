@@ -1,3 +1,4 @@
+import * as registrationPayment from "../../src/payments/registrationPayment"
 import {
   deleteTestData,
   poolFromUrl,
@@ -189,6 +190,33 @@ describe("paymentByUpdateToken", () => {
   it("is null for an unknown token", async () => {
     await createPaidEvent()
     expect(await paymentByUpdateToken("not-a-token")).toBeNull()
+  })
+
+  it("hides database error text behind PAYMENT_LOOKUP_FAILED", async () => {
+    const { tokens } = await createPaidEvent()
+    const spy = jest
+      .spyOn(registrationPayment, "loadSettledPayment")
+      .mockRejectedValueOnce(
+        new Error('relation "app_private.secret_table" does not exist')
+      )
+    try {
+      const result = await runGraphQLQuery(
+        PaymentByUpdateTokenQuery,
+        { updateToken: tokens[0] },
+        {},
+        () => {},
+        true,
+        false
+      )
+      expect(result.errors).toHaveLength(1)
+      const [error] = result.errors!
+      expect(error.extensions!.exception).toMatchObject({
+        code: "PAYMENT_LOOKUP_FAILED",
+      })
+      expect(JSON.stringify(error)).not.toMatch(/secret_table/)
+    } finally {
+      spy.mockRestore()
+    }
   })
 
   it("is null while payments are disabled", async () => {

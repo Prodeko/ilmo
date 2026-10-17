@@ -4,7 +4,14 @@ import type { PaymentRefundEmailPayload } from "./payment__send_refund_email"
 import type { Task } from "graphile-worker"
 
 export interface PaymentRefundPayload {
-  paymentId: string
+  paymentId?: string
+  /**
+   * Refund a Stripe payment intent that has no payment row at all, in full
+   * (a Checkout Session of this Ilmo that was paid after its payment row was
+   * lost). Used only without paymentId; no email is sent, as there is no
+   * registration to address it to.
+   */
+  paymentIntentId?: string
   /**
    * Refund the whole charge, service fee included. Used for a duplicate
    * payment of an already paid registration; otherwise only the ticket price
@@ -26,14 +33,54 @@ export interface PaymentRefundPayload {
  * email queued in one transaction, so a retry after a failure there makes the
  * same (idempotent) Stripe call and then both.
  */
+/** Stripe's answer when nothing is left to refund: treated as done. */
+function alreadyRefunded(e: unknown): null {
+  if ((e as { code?: string })?.code === "charge_already_refunded") {
+    return null
+  }
+  throw e
+}
+
 const task: Task = async (inPayload, { withPgClient, logger }) => {
-  const { paymentId, full = false } = inPayload as PaymentRefundPayload
+  const {
+    paymentId,
+    paymentIntentId,
+    full = false,
+  } = inPayload as PaymentRefundPayload
 
   if (!paymentsEnabled()) {
     // Don't lose the refund: fail, so it is retried once payments are back on
     throw new Error(
-      `Payments are disabled; the refund of payment ${paymentId} will be retried`
+      `Payments are disabled; the refund of payment ${paymentId ?? paymentIntentId} will be retried`
     )
+  }
+
+  if (!paymentId) {
+    if (!paymentIntentId) {
+      logger.error("payment__refund needs a paymentId or a paymentIntentId")
+      return
+    }
+    // No row to lock or update: the idempotency key alone prevents a second
+    // refund, and Stripe refuses refunding an already refunded charge.
+    const refund = await getStripe()
+      .refunds.create(
+        { payment_intent: paymentIntentId },
+        { idempotencyKey: `refund-pi-${paymentIntentId}` }
+      )
+      .catch(alreadyRefunded)
+    if (!refund) {
+      logger.info(`Payment intent ${paymentIntentId} is already refunded`)
+      return
+    }
+    if (refund.status === "failed" || refund.status === "canceled") {
+      throw new Error(
+        `Stripe refund ${refund.id} of payment intent ${paymentIntentId} is ${refund.status}`
+      )
+    }
+    logger.info(
+      `Refunded payment intent ${paymentIntentId}, which had no payment row (Stripe refund ${refund.id})`
+    )
+    return
   }
 
   await withPgClient(async (client) => {
@@ -70,43 +117,75 @@ const task: Task = async (inPayload, { withPgClient, logger }) => {
         return
       }
       if (!payment.stripe_payment_intent_id) {
-        logger.error(
+        // Unreachable in practice (the webhook always stores it); fail so the
+        // job stays visible in graphile_worker.jobs instead of vanishing
+        throw new Error(
           `Payment ${paymentId} has no Stripe payment intent; refund it in the Stripe dashboard`
+        )
+      }
+
+      // A partial refund made in the Stripe dashboard leaves the payment
+      // PAID; it counts towards what is refunded now (the ticket price, or
+      // everything with full), so the service fee is still kept and Stripe
+      // isn't asked for more than is left.
+      const paidCents = payment.ticket_amount_cents + payment.service_fee_cents
+      const amount =
+        (full ? paidCents : payment.ticket_amount_cents) -
+        payment.refunded_amount_cents
+      if (amount <= 0) {
+        logger.info(
+          `Payment ${paymentId} has already been refunded in Stripe; nothing to refund`
         )
         await client.query("rollback")
         return
       }
 
-      const paidCents = payment.ticket_amount_cents + payment.service_fee_cents
-      const amount = full ? paidCents : payment.ticket_amount_cents
-
-      const refund = await getStripe().refunds.create(
-        {
-          payment_intent: payment.stripe_payment_intent_id,
-          amount,
-          metadata: {
-            payment_id: payment.id,
-            event_id: payment.event_id ?? "",
-            quota_id: payment.quota_id ?? "",
-            registration_id: payment.registration_id ?? "",
+      // Stripe keeps idempotency keys for about 24 hours, while
+      // graphile-worker retries for about 3 days. A late retry is still safe:
+      // the charge.refunded webhook marks the row REFUNDED and this job
+      // returns early on REFUNDED (the row lock above serializes the two).
+      // That protection needs the webhook to receive charge.refunded.
+      //
+      // Known gap: if the worker dies after Stripe refunded but before the
+      // commit below, and the webhook marks the row REFUNDED first, the
+      // retry returns early and the refund email is never sent (the money is
+      // still returned).
+      const refund = await getStripe()
+        .refunds.create(
+          {
+            payment_intent: payment.stripe_payment_intent_id,
+            amount,
+            metadata: {
+              payment_id: payment.id,
+              event_id: payment.event_id ?? "",
+              quota_id: payment.quota_id ?? "",
+              registration_id: payment.registration_id ?? "",
+            },
           },
-        },
-        { idempotencyKey: `refund-${payment.id}` }
-      )
+          { idempotencyKey: `refund-${payment.id}` }
+        )
+        .catch(alreadyRefunded)
+      if (!refund) {
+        // Refunded in Stripe already (the dashboard, or a run whose commit
+        // failed); the charge.refunded webhook records it
+        logger.info(`Payment ${paymentId} is already refunded in Stripe`)
+        await client.query("rollback")
+        return
+      }
       if (refund.status === "failed" || refund.status === "canceled") {
         throw new Error(
           `Stripe refund ${refund.id} of payment ${paymentId} is ${refund.status}`
         )
       }
 
-      // The charge.refunded webhook records the same; doing it here too
-      // shows the refund right away. A full or ticket price refund makes the
-      // payment REFUNDED.
+      // The charge.refunded webhook records the same (and corrects the total
+      // from Stripe's amount_refunded); doing it here too shows the refund
+      // right away. A full or ticket price refund makes the payment REFUNDED.
       await client.query(
         `update app_public.payments
           set
             status = 'REFUNDED',
-            refunded_amount_cents = greatest(refunded_amount_cents, $2),
+            refunded_amount_cents = least(refunded_amount_cents + $2, ticket_amount_cents + service_fee_cents),
             refunded_at = coalesce(refunded_at, now()),
             stripe_refund_id = $3
           where id = $1`,
