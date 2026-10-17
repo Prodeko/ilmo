@@ -71,6 +71,12 @@ const EventRegistrationPage: NextPage = () => {
     pause: !updateToken || !requiresPayment,
     requestPolicy: "network-only",
   })
+  // Until the claimed spot's status is known, the submit button waits
+  const paymentLoading =
+    requiresPayment &&
+    !!updateToken &&
+    !claimedStatusQuery.data?.registrationByUpdateToken &&
+    !claimedStatusQuery.error
   const isQueued =
     claimedStatusQuery.data?.registrationByUpdateToken?.status ===
     RegistrationStatus.InQueue
@@ -150,6 +156,7 @@ const EventRegistrationPage: NextPage = () => {
             }}
             initialValues={formInitialValues}
             payment={payment}
+            paymentLoading={paymentLoading}
             questions={event?.eventQuestions?.nodes}
             quotaId={quota?.id}
             // Used to delete an unfinished registration

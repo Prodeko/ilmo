@@ -4,6 +4,7 @@ import { gql, makeExtendSchemaPlugin } from "graphile-utils"
 import { createCheckoutSession } from "../payments/checkout"
 import {
   checkoutBlockedReason,
+  CheckoutFailedError,
   loadRegistrationForPayment,
   loadSettledPayment,
   normalizeLanguage,
@@ -68,6 +69,11 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
       paidManually: Boolean!
       "What was paid, fee included (paid or refunded payments only)."
       paidTotalCents: Int
+      """
+      The ticket part of the paid payment, without the service fee: what
+      cancelling refunds (paid or refunded payments only).
+      """
+      paidTicketCents: Int
       paidAt: Datetime
       refundedAmountCents: Int
       refundedAt: Datetime
@@ -148,6 +154,7 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
           paidTotalCents: settled
             ? settled.ticket_amount_cents + settled.service_fee_cents
             : null,
+          paidTicketCents: settled ? settled.ticket_amount_cents : null,
           paidAt: settled?.paid_at?.toISOString() ?? null,
           refundedAmountCents: settled ? settled.refunded_amount_cents : null,
           refundedAt: settled?.refunded_at?.toISOString() ?? null,
@@ -164,13 +171,25 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
         if (!paymentsEnabled()) {
           throw new PaymentError("PAYMENTS_DISABLED")
         }
-        const url = await createCheckoutSession({
-          rootPgPool: context.rootPgPool,
-          updateToken: args.updateToken,
-          language: normalizeLanguage(args.language),
-          logger: context.logger,
-        })
-        return { url }
+        try {
+          const url = await createCheckoutSession({
+            rootPgPool: context.rootPgPool,
+            updateToken: args.updateToken,
+            language: normalizeLanguage(args.language),
+            logger: context.logger,
+          })
+          return { url }
+        } catch (e) {
+          if (e instanceof PaymentError) {
+            throw e
+          }
+          // Stripe and database errors can carry details (key prefixes,
+          // SQL) that must not reach the caller: log them, return a code
+          context.logger.error(
+            `createCheckoutSession failed: ${e instanceof Error ? (e.stack ?? e.message) : String(e)}`
+          )
+          throw new CheckoutFailedError()
+        }
       },
     },
   },

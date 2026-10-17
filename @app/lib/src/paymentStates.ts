@@ -3,8 +3,6 @@
  * the /pay page and the cancel dialog to show. Pure functions so the UI
  * decisions are unit tested; amounts are integer cents.
  */
-import { SERVICE_FEE_CENTS } from "./payments"
-
 type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
 
 type PaymentStatus =
@@ -107,8 +105,9 @@ export interface CancelRefund {
 }
 
 /**
- * What a participant gets back when they cancel (board 6): the ticket price
- * of a card payment, without the service fee. Null when nothing is refunded
+ * What a participant gets back when they cancel (board 6): the stored ticket
+ * amount of a card payment, which is what the refund job refunds; the
+ * service fee is the rest of what was paid. Null when nothing is refunded
  * automatically (unpaid, free, refunded already, or paid by hand).
  */
 export function cancelRefund(
@@ -117,6 +116,7 @@ export function cancelRefund(
         status: PaymentStatus
         paidManually: boolean
         paidTotalCents?: number | null
+        paidTicketCents?: number | null
       }
     | null
     | undefined
@@ -125,15 +125,32 @@ export function cancelRefund(
     !payment ||
     payment.status !== "PAID" ||
     payment.paidManually ||
-    payment.paidTotalCents == null
+    payment.paidTotalCents == null ||
+    payment.paidTicketCents == null
   ) {
     return null
   }
   const paidCents = payment.paidTotalCents
-  const serviceFeeCents = Math.min(SERVICE_FEE_CENTS, paidCents)
+  const refundCents = Math.min(payment.paidTicketCents, paidCents)
   return {
     paidCents,
-    serviceFeeCents,
-    refundCents: paidCents - serviceFeeCents,
+    serviceFeeCents: paidCents - refundCents,
+    refundCents,
+  }
+}
+
+const STRIPE_CHECKOUT_ORIGIN = "https://checkout.stripe.com"
+
+/**
+ * True for a Stripe Checkout page URL. The client only redirects to URLs
+ * that pass this check, so a bad server response can't send people
+ * elsewhere.
+ */
+export function isStripeCheckoutUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  try {
+    return new URL(url).origin === STRIPE_CHECKOUT_ORIGIN
+  } catch {
+    return false
   }
 }

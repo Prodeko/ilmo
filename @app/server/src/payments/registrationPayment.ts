@@ -42,6 +42,20 @@ export class PaymentError extends Error {
   }
 }
 
+/**
+ * Any other failure while starting Checkout (Stripe, network, database).
+ * Its message is fixed so that no server or Stripe error text reaches the
+ * (usually anonymous) caller; the original is logged on the server.
+ */
+export class CheckoutFailedError extends Error {
+  code = "CHECKOUT_FAILED" as const
+
+  constructor() {
+    super("Could not start the payment. Please try again later.")
+    this.name = "CheckoutFailedError"
+  }
+}
+
 export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
 
 export type RegistrationPaymentStatus =

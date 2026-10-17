@@ -1,5 +1,6 @@
 import {
   cancelRefund,
+  isStripeCheckoutUrl,
   payPageState,
   quotaRequiresPayment,
   registrationFormPaymentVariant,
@@ -126,13 +127,30 @@ describe("cancelRefund", () => {
         status: "PAID",
         paidManually: false,
         paidTotalCents: 1825,
+        paidTicketCents: 1800,
       })
     ).toEqual({ paidCents: 1825, serviceFeeCents: 25, refundCents: 1800 })
   })
 
+  test("uses the stored ticket amount, not the current fee", () => {
+    expect(
+      cancelRefund({
+        status: "PAID",
+        paidManually: false,
+        paidTotalCents: 1830,
+        paidTicketCents: 1800,
+      })
+    ).toEqual({ paidCents: 1830, serviceFeeCents: 30, refundCents: 1800 })
+  })
+
   test("nothing for manual, unpaid, refunded or unknown payments", () => {
     expect(
-      cancelRefund({ status: "PAID", paidManually: true, paidTotalCents: 1825 })
+      cancelRefund({
+        status: "PAID",
+        paidManually: true,
+        paidTotalCents: 1825,
+        paidTicketCents: 1800,
+      })
     ).toBeNull()
     expect(
       cancelRefund({ status: "PAID_MANUALLY", paidManually: true })
@@ -143,6 +161,7 @@ describe("cancelRefund", () => {
         status: "REFUNDED",
         paidManually: false,
         paidTotalCents: 1825,
+        paidTicketCents: 1800,
       })
     ).toBeNull()
     expect(
@@ -153,5 +172,21 @@ describe("cancelRefund", () => {
       })
     ).toBeNull()
     expect(cancelRefund(null)).toBeNull()
+  })
+})
+
+describe("isStripeCheckoutUrl", () => {
+  test.each([
+    ["https://checkout.stripe.com/c/pay/cs_test_123", true],
+    ["https://checkout.stripe.com", true],
+    ["http://checkout.stripe.com/c/pay/cs_test_123", false],
+    ["https://checkout.stripe.com.evil.example/c/pay", false],
+    ["https://evil.example/?https://checkout.stripe.com", false],
+    ["javascript:alert(1)", false],
+    ["not a url", false],
+    ["", false],
+    [null, false],
+  ])("%p → %p", (url, expected) => {
+    expect(isStripeCheckoutUrl(url)).toBe(expected)
   })
 })

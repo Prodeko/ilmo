@@ -12,6 +12,7 @@ import {
   arePropsEqual,
   CancelRefund,
   formatEuro,
+  isStripeCheckoutUrl,
   registrationFormItemLayout,
   RegistrationFormPaymentVariant,
   SERVICE_FEE_CENTS,
@@ -62,10 +63,13 @@ interface EventRegistrationFormProps {
   updateToken?: string
   initialValues?: any
   // Used to delete an unfinished registration
-  setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
+  setUpdateToken?: React.Dispatch<React.SetStateAction<string | undefined>>
   // Payment block of the create form (board 2). Null or missing when the
   // quota is free, the event has no payments or payments are disabled.
   payment?: RegistrationFormPayment | null
+  // True while it is not yet known whether the payment block applies (the
+  // claimed spot's queue status is loading); submitting waits for it
+  paymentLoading?: boolean
   // Payment of the registration being updated, for the delete confirmation
   // (board 6). Null or missing when there is nothing paid.
   paymentOnDelete?: { refund: CancelRefund | null; paidManually: boolean }
@@ -102,6 +106,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       initialValues,
       setUpdateToken,
       payment,
+      paymentLoading,
       paymentOnDelete,
     } = props
 
@@ -167,9 +172,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       })()
     }, [claimRegistrationToken, setUpdateToken, eventId, quotaId, type])
 
-    const doDelete = useCallback(async () => {
+    const doDelete = useCallback(async (): Promise<boolean> => {
       setFormError(null)
       setDeleting(true)
+      let deleted = false
       try {
         if (updateToken) {
           const { data, error } = await deleteRegistration({
@@ -191,11 +197,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             key: "registration-delete-complete",
             content: `${t("registrationDeleteComplete")}`,
           })
+          deleted = true
         }
       } catch (e) {
         setFormError(e)
       }
       setDeleting(false)
+      return deleted
     }, [deleteRegistration, updateToken, submitAction, formRedirect, router, t])
 
     const handleSubmit = useCallback(
@@ -217,6 +225,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
           const { error } = await formMutation({ input })
           if (error) throw error
 
+          if (type === "create") {
+            // The registration is finished: forget the claimed token so
+            // that going back to this page (e.g. from Stripe, restored from
+            // the back/forward cache) can't delete the registration
+            setUpdateToken?.(undefined)
+          }
+
           // Pay during registration: go straight to Stripe Checkout. The
           // registration is already saved, so if this fails we fall back to
           // the normal success flow; the confirmation email has the link.
@@ -231,12 +246,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
               language: lang,
             })
             const url = checkout?.createCheckoutSession?.url
-            if (url) {
+            if (isStripeCheckoutUrl(url)) {
               message.success({
                 key: "registration-signup-complete",
                 content: `${t("eventSignupComplete")}`,
               })
-              window.location.assign(url)
+              window.location.assign(url!)
               return
             }
             setRedirectingToCheckout(false)
@@ -266,6 +281,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         registrationToken,
         updateToken,
         claimedUpdateToken,
+        setUpdateToken,
         payment,
         createCheckoutSession,
         lang,
@@ -310,15 +326,17 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const priceCents = payment?.priceCents ?? 0
     const totalCents = priceCents > 0 ? totalChargeCents(priceCents) : 0
     const submitLabel =
-      paymentVariant === "during"
-        ? t("payment.registerAndPay", {
-            total: formatEuro(totalCents, lang),
-          })
-        : paymentVariant === "after"
-          ? t("payment.register")
-          : paymentVariant === "queued"
-            ? t("payment.joinQueue")
-            : t(`common:${type}`)
+      type === "create" && paymentLoading
+        ? t("payment.register")
+        : paymentVariant === "during"
+          ? t("payment.registerAndPay", {
+              total: formatEuro(totalCents, lang),
+            })
+          : paymentVariant === "after"
+            ? t("payment.register")
+            : paymentVariant === "queued"
+              ? t("payment.joinQueue")
+              : t(`common:${type}`)
     const refundOnDelete = paymentOnDelete?.refund
 
     return (
@@ -505,7 +523,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             data-cy="eventregistrationform-button-submit"
             htmlType="submit"
             loading={
-              redirectingToCheckout
+              redirectingToCheckout || (type === "create" && paymentLoading)
                 ? true
                 : formError
                   ? false
@@ -545,8 +563,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                 title={t("payments:cancel.title")}
                 onCancel={() => setDeleteModalOpen(false)}
                 onOk={async () => {
-                  await doDelete()
-                  setDeleteModalOpen(false)
+                  // Stays open, showing the error, if deleting fails
+                  if (await doDelete()) {
+                    setDeleteModalOpen(false)
+                  }
                 }}
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
@@ -559,6 +579,12 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                     refundLabel={t("payments:cancel.refundToCard")}
                   />
                   <PaymentNote>{t("payments:cancel.refundTiming")}</PaymentNote>
+                  {formError && (
+                    <ErrorAlert
+                      error={formError}
+                      message={t("deleteRegistrationFailed")}
+                    />
+                  )}
                 </Space>
               </Modal>
             </>

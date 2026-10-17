@@ -43,6 +43,7 @@ const PaymentByUpdateTokenQuery = `
       totalCents
       paidManually
       paidTotalCents
+      paidTicketCents
       paidAt
       refundedAmountCents
       refundedAt
@@ -88,6 +89,7 @@ describe("paymentByUpdateToken", () => {
       totalCents: 1825,
       paidManually: false,
       paidTotalCents: null,
+      paidTicketCents: null,
       paidAt: null,
       refundedAmountCents: null,
       refundedAt: null,
@@ -103,6 +105,7 @@ describe("paymentByUpdateToken", () => {
       status: "PAID",
       paidManually: false,
       paidTotalCents: 1825,
+      paidTicketCents: 1800,
       paidAt: payment.paid_at.toISOString(),
       blockedReason: "ALREADY_PAID",
     })
