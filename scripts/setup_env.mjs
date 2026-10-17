@@ -72,7 +72,8 @@ runMain(async () => {
       when: askStripe,
     },
     {
-      type: "input",
+      type: "password",
+      mask: "*",
       name: "STRIPE_SECRET_KEY",
       message:
         "Stripe secret key (sk_test_..., from https://dashboard.stripe.com/test/apikeys; leave empty to skip):",
@@ -83,7 +84,8 @@ runMain(async () => {
       when: (answers) => askStripe && answers.SETUP_STRIPE_PAYMENTS,
     },
     {
-      type: "input",
+      type: "password",
+      mask: "*",
       name: "STRIPE_WEBHOOK_SECRET",
       message:
         "Stripe webhook signing secret (whsec_..., printed by `stripe listen`; leave empty to skip):",

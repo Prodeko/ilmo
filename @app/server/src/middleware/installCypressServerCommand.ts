@@ -852,6 +852,9 @@ async function completeStripeCheckout(
   if (!paymentsEnabled()) {
     throw new Error("completeStripeCheckout requires payments to be enabled")
   }
+  if (!/^(sk|rk)_test_/.test(process.env.STRIPE_SECRET_KEY || "")) {
+    throw new Error("completeStripeCheckout requires a Stripe test-mode key")
+  }
   const { updateToken } = payload
   if (!updateToken) {
     throw new Error("updateToken required")

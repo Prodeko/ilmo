@@ -45,8 +45,9 @@ and the [Stripe CLI](https://docs.stripe.com/stripe-cli).
    you test; the secret stays the same between runs of `stripe listen` for the
    same account. If your `PORT` is not 5678, change the URL to match.
 
-3. **Set the variables in `.env`.** `pnpm setup` asks for the keys the first
-   time it creates `.env` (the question is optional). Otherwise edit `.env`:
+3. **Set the variables in `.env`.** `pnpm setup` asks for the keys (optional)
+   whenever `.env` has no `PAYMENTS_ENABLED` line yet, for example the first
+   time it creates `.env`. Otherwise edit `.env`:
 
    ```sh
    PAYMENTS_ENABLED=1
@@ -125,7 +126,9 @@ CSV download includes the payment status and price.
 
 ## Automated tests
 
-The test suites never contact Stripe.
+The test suites never charge or refund anything. The only call that reaches
+Stripe is the e2e refund job described below, which uses the dummy key and fails
+with a harmless 401.
 
 - Jest: `pnpm test`. The server and worker tests mock the Stripe client and set
   the environment variables themselves.
@@ -156,8 +159,11 @@ The test suites never contact Stripe.
 
 Do this once per Stripe account (use test mode for staging):
 
-1. **API key:** _Developers → API keys_. Use the secret key (or a restricted key
-   with write access to Checkout Sessions and Refunds) as `STRIPE_SECRET_KEY`.
+1. **API key:** _Developers → API keys_. Use the secret key, or a restricted key
+   with write access to Checkout Sessions and Refunds (Ilmo creates, retrieves
+   and expires Checkout Sessions and creates Refunds; it reads nothing else), as
+   `STRIPE_SECRET_KEY`. Live keys (`sk_live_...`, `rk_live_...`) belong in the
+   production environment only; staging and development use test-mode keys.
 2. **Webhook endpoint:** _Developers → Webhooks → Add endpoint_:
    - Endpoint URL: `<ROOT_URL>/api/stripe/webhook`, e.g.
      `https://ilmo.prodeko.org/api/stripe/webhook`.
@@ -170,8 +176,8 @@ Do this once per Stripe account (use test mode for staging):
    receipt in addition to its own payment received email.
 4. **MobilePay off:** _Settings → Payment methods_, turn MobilePay (and any
    other non-card method) off. Checkout already asks only for cards
-   (`payment_method_types: ["card"]`), so this keeps the dashboard consistent
-   with what Ilmo offers. Apple Pay and Google Pay come with cards.
+   (`allowed_payment_method_types: ["card"]`), so this keeps the dashboard
+   consistent with what Ilmo offers. Apple Pay and Google Pay come with cards.
 5. **Statement descriptor:** _Settings → Business → Public details_, set a
    descriptor participants will recognise (e.g. `PRODEKO`).
 6. Set the three variables for both the server and the worker and restart them.
@@ -185,8 +191,33 @@ the Stripe payout against the event's payment summary before using it generally.
 Remove `PAYMENTS_ENABLED` (or set it to anything other than `1`) for the server
 and the worker, and restart both. Nothing is deleted: events keep their payment
 mode and prices, and payments stay in the database. While the flag is off no
-payment UI is shown, nothing is charged or refunded, no reminders are sent and
-the webhook route `/api/stripe/webhook` is not registered (Stripe retries
-undelivered events for a few days). Turning the flag back on resumes where
-things were left. To stop taking payments for a single event instead, set its
-payment mode to _No payments_.
+payment UI is shown, nothing is charged, no reminders are sent and the webhook
+route `/api/stripe/webhook` is not registered (Stripe retries undelivered events
+for a few days). Turning the flag back on resumes where things were left. To
+stop taking payments for a single event instead, set its payment mode to _No
+payments_.
+
+**Refunds while the flag is off.** Deleting a registration paid by card still
+queues a `payment__refund` job, but the job fails while payments are off.
+graphile-worker retries it (25 attempts with exponential backoff, roughly three
+days) and then gives up for good; a refund that has given up must be made by
+hand in the Stripe dashboard. So keep any flag-off period short, and afterwards
+look for failed refund jobs, for example:
+
+```sql
+select j.id, j.payload, j.attempts, j.max_attempts, j.last_error
+  from graphile_worker._private_jobs as j
+  join graphile_worker._private_tasks as t on t.id = j.task_id
+  where t.identifier = 'payment__refund' and j.last_error is not null;
+```
+
+Jobs with `attempts = max_attempts` have given up: refund those payments in the
+Stripe dashboard (the payment's metadata has its `payment_id` and
+`registration_id`).
+
+## Keeping keys secret
+
+Never commit `.env`. Real Stripe keys never go in `.env.ci`, the GitHub
+workflows or any other file in the repository; CI uses only the dummy values
+`sk_test_dummy` / `whsec_dummy`. Set production keys in the production
+environment only.
