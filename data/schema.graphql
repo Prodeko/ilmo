@@ -3385,6 +3385,12 @@ type RegistrationPayment {
   """True when the paid payment was recorded by an organizer by hand."""
   paidManually: Boolean!
 
+  """
+  The ticket part of the paid payment, without the service fee: what
+  cancelling refunds (paid or refunded payments only).
+  """
+  paidTicketCents: Int
+
   """What was paid, fee included (paid or refunded payments only)."""
   paidTotalCents: Int
   paymentMode: PaymentMode!

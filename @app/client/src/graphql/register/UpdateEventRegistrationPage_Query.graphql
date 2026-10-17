@@ -16,6 +16,10 @@ fragment UpdateEventRegistrationPage_Query on Query {
       ...EventPage_Event
     }
   }
+  # Null unless payments are enabled
+  paymentByUpdateToken(updateToken: $updateToken) {
+    ...PayPage_RegistrationPayment
+  }
 }
 
 query UpdateEventRegistrationPage($updateToken: String!) {

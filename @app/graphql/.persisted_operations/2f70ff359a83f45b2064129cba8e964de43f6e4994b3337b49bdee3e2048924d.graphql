@@ -37,6 +37,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
   __typename
 }
 query ListEventRegistrations($eventId: UUID!, $offset: Int!, $first: Int!, $paymentStatus: RegistrationPaymentStatusFilter, $status: RegistrationStatusFilter) {

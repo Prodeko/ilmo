@@ -17,6 +17,7 @@ exports[`UpdateEvent can update an existing event 1`] = `
         "location": "[random-4]",
         "name": "[random-1]",
         "openQuotaSize": 0,
+        "paymentMode": "NONE",
         "registrationEndTime": "[timestamp-4]",
         "registrationStartTime": "[timestamp-3]",
         "signupClosed": false,

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   EventRegistrationForm,
   PageHeader,
@@ -9,9 +9,12 @@ import {
   useTranslation,
 } from "@app/components"
 import {
+  RegistrationStatus,
+  useClaimedRegistrationStatusQuery,
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
+import { quotaRequiresPayment, registrationFormPaymentVariant } from "@app/lib"
 import { Col, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
@@ -40,15 +43,59 @@ const EventRegistrationPage: NextPage = () => {
   // and last names. For now infer first and last name like this...
   const [firstName, lastName] = name ? name.split(" ") : []
 
-  const formInitialValues = {
-    firstName,
-    lastName,
-    email: primaryEmail,
-  }
+  // Memoized so that a re-render (e.g. when the payment block appears) does
+  // not reset what the user has already typed
+  const formInitialValues = useMemo(
+    () => ({
+      firstName,
+      lastName,
+      email: primaryEmail,
+    }),
+    [firstName, lastName, primaryEmail]
+  )
 
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
   const loadingElement = useLoading(query, "eventBySlug")
+
+  // Payments: the form shows a payment block for paid quotas, and a queue
+  // notice instead when the spot claimed on opening the form is in the queue
+  const paymentsEnabled = !!data?.paymentsEnabled
+  const requiresPayment = quotaRequiresPayment(
+    paymentsEnabled,
+    event?.paymentMode,
+    quota?.priceCents
+  )
+  const [claimedStatusQuery] = useClaimedRegistrationStatusQuery({
+    variables: { updateToken: updateToken as string },
+    pause: !updateToken || !requiresPayment,
+    requestPolicy: "network-only",
+  })
+  // Until the claimed spot's status is known, the submit button waits
+  const paymentLoading =
+    requiresPayment &&
+    !!updateToken &&
+    !claimedStatusQuery.data?.registrationByUpdateToken &&
+    !claimedStatusQuery.error
+  const isQueued =
+    claimedStatusQuery.data?.registrationByUpdateToken?.status ===
+    RegistrationStatus.InQueue
+  const payment = useMemo(() => {
+    const variant = registrationFormPaymentVariant(
+      paymentsEnabled,
+      event?.paymentMode,
+      quota?.priceCents,
+      isQueued
+    )
+    return variant
+      ? {
+          variant,
+          quotaTitle: quota?.title?.[lang] ?? "",
+          priceCents: quota?.priceCents ?? 0,
+          registrationEndTime: event?.registrationEndTime,
+        }
+      : null
+  }, [paymentsEnabled, event, quota, isQueued, lang])
 
   const handleGoBack = useCallback(async () => {
     // Delete the pending registration if the user goes back to event page
@@ -108,6 +155,8 @@ const EventRegistrationPage: NextPage = () => {
               query: { slug: event?.slug },
             }}
             initialValues={formInitialValues}
+            payment={payment}
+            paymentLoading={paymentLoading}
             questions={event?.eventQuestions?.nodes}
             quotaId={quota?.id}
             // Used to delete an unfinished registration

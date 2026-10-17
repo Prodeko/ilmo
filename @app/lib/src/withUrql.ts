@@ -79,6 +79,10 @@ export const withUrql = withUrqlClient(
           keys: {
             // A computed composite with no id; embed it in its event
             EventPaymentSummary: () => null,
+            // Payment state of a registration, read by update token. It has
+            // no id of its own, so it is embedded in its parent query.
+            RegistrationPayment: () => null,
+            CreateCheckoutSessionPayload: () => null,
           },
           updates: {
             Mutation: {
