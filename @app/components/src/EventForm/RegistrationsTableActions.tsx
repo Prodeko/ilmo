@@ -54,14 +54,20 @@ export const RegistrationsTableActions: React.FC<
   const [, updateRegistration] = useAdminUpdateRegistrationMutation()
   const [{ fetching: deleting }, deleteRegistration] =
     useAdminDeleteRegistrationMutation()
-  const [, markPaid] = useAdminMarkRegistrationPaidMutation()
-  const [, unmarkPaid] = useAdminUnmarkRegistrationPaidMutation()
+  const [{ fetching: markingPaid }, markPaid] =
+    useAdminMarkRegistrationPaidMutation()
+  const [{ fetching: unmarkingPaid }, unmarkPaid] =
+    useAdminUnmarkRegistrationPaidMutation()
+  const [confirmUndo, setConfirmUndo] = useState(false)
+  const paymentRequestRunning = markingPaid || unmarkingPaid
 
   const { paymentStatus, priceCents } = registration
-  const isPaidByCard =
-    showPayments && paymentStatus === RegistrationPaymentStatus.Paid
+  // Paid rows always get the delete dialog, even before the payment summary
+  // has loaded, so a card refund is never queued without the organizer
+  // seeing the refund choice.
+  const isPaidByCard = paymentStatus === RegistrationPaymentStatus.Paid
   const isPaidManually =
-    showPayments && paymentStatus === RegistrationPaymentStatus.PaidManually
+    paymentStatus === RegistrationPaymentStatus.PaidManually
   const price = formatEuro(priceCents ?? 0)
 
   const doDelete = useCallback(
@@ -145,6 +151,7 @@ export const RegistrationsTableActions: React.FC<
                 </Text>
               </span>
             ),
+            disabled: paymentRequestRunning,
             onClick: doMarkPaid,
           },
         ]
@@ -158,7 +165,7 @@ export const RegistrationsTableActions: React.FC<
                 {t("payments.actions.undoManual")}
               </span>
             ),
-            onClick: doUnmarkPaid,
+            onClick: () => setConfirmUndo(true),
           },
         ]
       : []),
@@ -214,20 +221,34 @@ export const RegistrationsTableActions: React.FC<
         </Col>
         {showPayments && (
           <Col flex="none">
-            <Dropdown
-              disabled={menuItems.length === 0}
-              menu={{ items: menuItems }}
-              placement="bottomRight"
-              trigger={["click"]}
+            <Popconfirm
+              cancelText={t("common:no")}
+              okText={t("common:yes")}
+              open={confirmUndo}
+              placement="topRight"
+              title={t("payments.actions.undoManualConfirm")}
+              onCancel={() => setConfirmUndo(false)}
+              onConfirm={async () => {
+                setConfirmUndo(false)
+                await doUnmarkPaid()
+              }}
             >
-              <Button
-                aria-label={t("payments.actions.more")}
-                data-cy="admin-table-more-button"
-                size="small"
+              <Dropdown
+                disabled={menuItems.length === 0 || paymentRequestRunning}
+                menu={{ items: menuItems }}
+                placement="bottomRight"
+                trigger={["click"]}
               >
-                ⋯
-              </Button>
-            </Dropdown>
+                <Button
+                  aria-label={t("payments.actions.more")}
+                  data-cy="admin-table-more-button"
+                  loading={paymentRequestRunning}
+                  size="small"
+                >
+                  ⋯
+                </Button>
+              </Dropdown>
+            </Popconfirm>
           </Col>
         )}
       </Row>

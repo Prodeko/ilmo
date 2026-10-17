@@ -101,6 +101,7 @@
       "markPaidSuccess": "Marked as paid",
       "more": "More actions",
       "undoManual": "Undo manual payment",
+      "undoManualConfirm": "Remove the manual payment? The registration becomes unpaid.",
       "undoManualSuccess": "Manual payment removed"
     },
     "cancel": "Cancel",
@@ -127,6 +128,7 @@
       "noteFree": "0 € makes the quota free. Otherwise the minimum price is 0,25 €.",
       "noteOpenQuota": "Open quota spots pay the price of the quota the person registered through.",
       "priceChangedWarning": "This quota has {{count}} registrations. They keep the price of {{price}}. The new price applies to new registrations only.",
+      "priceChangedWarning_one": "This quota has {{count}} registration. It keeps the price of {{price}}. The new price applies to new registrations only.",
       "ticketPrice": "Ticket price"
     },
     "reminder": {
@@ -154,6 +156,7 @@
       "modeNoneHelp": "All quotas are free or payments are collected manually.",
       "subtitle": "Prices are set per quota in the Quotas tab.",
       "switchToNoneWarning": "Payments already made are kept and still shown. Nobody is refunded automatically.",
+      "switchToPaidWarning": "This event already has registrations. Those in paid quotas become unpaid at the quota's current price and must pay.",
       "title": "Payments"
     },
     "status": {

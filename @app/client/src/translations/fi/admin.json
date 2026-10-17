@@ -101,6 +101,7 @@
       "markPaidSuccess": "Merkitty maksetuksi",
       "more": "Lisää toimintoja",
       "undoManual": "Peru käsin merkitty maksu",
+      "undoManualConfirm": "Poistetaanko käsin merkitty maksu? Ilmoittautuminen muuttuu maksamattomaksi.",
       "undoManualSuccess": "Käsin merkitty maksu poistettu"
     },
     "cancel": "Peruuta",
@@ -127,6 +128,7 @@
       "noteFree": "0 € tekee kiintiöstä ilmaisen. Muuten vähimmäishinta on 0,25 €.",
       "noteOpenQuota": "Avoimen kiintiön paikoista maksetaan sen kiintiön hinta, jonka kautta henkilö ilmoittautui.",
       "priceChangedWarning": "Tässä kiintiössä on {{count}} ilmoittautumista. Ne säilyttävät hinnan {{price}}. Uusi hinta koskee vain uusia ilmoittautumisia.",
+      "priceChangedWarning_one": "Tässä kiintiössä on {{count}} ilmoittautuminen. Se säilyttää hinnan {{price}}. Uusi hinta koskee vain uusia ilmoittautumisia.",
       "ticketPrice": "Lipun hinta"
     },
     "reminder": {
@@ -154,6 +156,7 @@
       "modeNoneHelp": "Kaikki kiintiöt ovat ilmaisia tai maksut kerätään muuten.",
       "subtitle": "Hinnat asetetaan kiintiökohtaisesti Kiintiöt-välilehdellä.",
       "switchToNoneWarning": "Jo tehdyt maksut säilyvät ja näkyvät edelleen. Mitään ei palauteta automaattisesti.",
+      "switchToPaidWarning": "Tapahtumassa on jo ilmoittautumisia. Maksullisten kiintiöiden ilmoittautumiset muuttuvat maksamattomiksi kiintiön nykyisellä hinnalla, ja ne on maksettava.",
       "title": "Maksut"
     },
     "status": {
