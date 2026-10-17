@@ -9,6 +9,7 @@ import {
   useTranslation,
 } from "@app/components"
 import {
+  QuestionPrefill,
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
@@ -35,15 +36,28 @@ const EventRegistrationPage: NextPage = () => {
   const quota = data?.quota
   const { signupClosed, signupUpcoming } = event || {}
 
-  const { name, primaryEmail } = currentUser || {}
+  const { name, primaryEmail, registrationProfile } = currentUser || {}
   // TODO: The users table schema could be changed to include first
   // and last names. For now infer first and last name like this...
   const [firstName, lastName] = name ? name.split(" ") : []
+
+  // Answers to questions marked for prefill come from the registration profile
+  const prefillValues = {
+    [QuestionPrefill.Telegram]: registrationProfile?.telegram,
+    [QuestionPrefill.DietaryRestrictions]:
+      registrationProfile?.dietaryRestrictions,
+  }
+  const answers = Object.fromEntries(
+    (event?.eventQuestions?.nodes || [])
+      .filter((q) => q.prefill && prefillValues[q.prefill])
+      .map((q) => [q.id, prefillValues[q.prefill]])
+  )
 
   const formInitialValues = {
     firstName,
     lastName,
     email: primaryEmail,
+    answers,
   }
 
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()

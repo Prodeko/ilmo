@@ -36,6 +36,7 @@
       "questions": {
         "data": "Kysymys",
         "label": "Otsikko",
+        "prefill": "Esitäyttö",
         "type": "Tyyppi"
       },
       "quota": {
@@ -79,6 +80,10 @@
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Avoin kiintiö",
   "organizer": "Järjestäjä",
+  "prefill": {
+    "DIETARY_RESTRICTIONS": "Erityisruokavaliot",
+    "TELEGRAM": "Telegram"
+  },
   "queued": "Jonossa",
   "quota": "Kiintiö",
   "removeOption": "Poista vaihtoehto",

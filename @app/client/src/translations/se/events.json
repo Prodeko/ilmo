@@ -36,6 +36,7 @@
       "questions": {
         "data": "Fråga",
         "label": "Etikett",
+        "prefill": "Förifyllning",
         "type": "Typ"
       },
       "quota": {
@@ -79,6 +80,10 @@
   "numRegistrations": "Registrerade personer",
   "openQuota": "Öppen kvot",
   "organizer": "Arrangör",
+  "prefill": {
+    "DIETARY_RESTRICTIONS": "Specialdieter",
+    "TELEGRAM": "Telegram"
+  },
   "queued": "Kö",
   "quota": "Kvota",
   "removeOption": "Ta bort alternativ",

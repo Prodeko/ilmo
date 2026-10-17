@@ -8,7 +8,7 @@ import {
   PlusCircleTwoTone,
   PlusOutlined,
 } from "@ant-design/icons"
-import { QuestionType } from "@app/graphql"
+import { QuestionPrefill, QuestionType } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
@@ -40,6 +40,7 @@ type QuestionData = {
   label: string
   isRequired: boolean
   data: string[]
+  prefill?: QuestionPrefill | null
 }
 
 interface QuestionsTabProps {
@@ -71,16 +72,18 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
           questions,
         })
       } else if (val === "RADIO" || val === "CHECKBOX") {
-        // If the type was changed to RADIO or CHECKBOX, set initial data
+        // If the type was changed to RADIO or CHECKBOX, set initial data.
+        // Only TEXT answers can be prefilled.
         let questions = getFieldValue("questions")
         const hasData = !!questions[index].data
 
         if (!hasData) {
           questions[index].data = [""]
-          setFieldsValue({
-            questions,
-          })
         }
+        questions[index].prefill = null
+        setFieldsValue({
+          questions,
+        })
       }
       forceUpdate()
     }
@@ -195,8 +198,22 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         <>
           <Col {...colSpan}>{questionLabel}</Col>
           <Col {...colSpan}>
-            {/* TEXT questions don't have any data associated with them.
-              This Col is included for layout. */}
+            {/* TEXT questions don't have any data associated with them,
+              but their answer can be prefilled from the registration profile */}
+            <Form.Item name={[index, "prefill"]} noStyle>
+              <Select
+                data-cy={`eventform-select-questions-prefill-${index}`}
+                placeholder={t("forms.placeholders.questions.prefill")}
+                style={{ width: "100%" }}
+                allowClear
+              >
+                {Object.values(QuestionPrefill).map((prefill) => (
+                  <Option key={prefill} value={prefill}>
+                    {t(`prefill.${prefill}`)}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
           </Col>
         </>
       )
