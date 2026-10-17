@@ -11,5 +11,5 @@
     "module": "commonjs"
   },
   "include": ["src"],
-  "references": [{ "path": "../config" }]
+  "references": [{ "path": "../config" }, { "path": "../lib" }]
 }

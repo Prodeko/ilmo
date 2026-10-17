@@ -1,5 +1,8 @@
+import { registrationCalendarInvitation } from "../calendarInvitation"
+
 import { getFormattedEventTime } from "./registration__send_confirmation_email"
 
+import type { InvitationEvent } from "../calendarInvitation"
 import type { SendEmailPayload } from "./send_email"
 import type { RegistrationStatusAndPosition } from "@app/lib"
 import type { Task } from "graphile-worker"
@@ -11,9 +14,8 @@ interface RegistrationProcessQueue {
   receivedSpot: RegistrationStatusAndPosition
 }
 
-const { ROOT_URL } = process.env
-
 const task: Task = async (inPayload, { addJob, query }) => {
+  const { ROOT_URL } = process.env
   const payload: RegistrationProcessQueue = inPayload as any
   const { receivedSpot } = payload
 
@@ -39,11 +41,13 @@ const task: Task = async (inPayload, { addJob, query }) => {
   } = await query("select * from app_public.registrations where id = $1", [
     receivedSpot.id,
   ])
+  if (!registration || !registration.is_finished) return
   const {
     rows: [event],
-  } = await query("select * from app_public.events where id = $1", [
-    receivedSpot.event_id,
-  ])
+  } = await query<InvitationEvent>(
+    "select * from app_public.events where id = $1",
+    [receivedSpot.event_id]
+  )
   const {
     rows: [quota],
   } = await query("select * from app_public.quotas where id = $1", [
@@ -66,6 +70,7 @@ const task: Task = async (inPayload, { addJob, query }) => {
       subject: event.name.fi
         ? `${event.name.fi} - Olet saanut paikan jonosta`
         : `${event.name.en} - You have received a spot from the queue`,
+      icalEvent: registrationCalendarInvitation(event, email, ROOT_URL!),
     },
     template: "spot_from_queue.mjml.njk",
     variables: {
