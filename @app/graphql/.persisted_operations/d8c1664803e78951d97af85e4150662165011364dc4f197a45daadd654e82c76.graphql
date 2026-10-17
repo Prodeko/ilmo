@@ -55,6 +55,7 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
+  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -88,6 +89,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
   __typename
 }
 query HomePageEvents($offset: Int, $first: Int, $language: String) {

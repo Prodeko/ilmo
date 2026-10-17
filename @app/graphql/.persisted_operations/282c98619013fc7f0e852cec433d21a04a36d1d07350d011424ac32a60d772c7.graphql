@@ -15,6 +15,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
   __typename
 }
 mutation CreateEventRegistration($input: CreateRegistrationInput!) {

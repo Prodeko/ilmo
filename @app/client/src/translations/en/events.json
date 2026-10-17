@@ -74,11 +74,13 @@
     "saveAsDraft": "Save as draft",
     "signupEmail": "Event signup email"
   },
+  "free": "Free",
   "headerImage": "Event header image",
   "languages": "Languages",
   "numRegistrations": "Registered people",
   "openQuota": "Open quota",
   "organizer": "Organizer",
+  "paymentMethods": "Paid by card, Apple Pay or Google Pay.",
   "queued": "Queue",
   "quota": "Quota",
   "removeOption": "Remove option",

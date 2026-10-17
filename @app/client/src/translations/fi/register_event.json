@@ -21,6 +21,19 @@
       "provideLastName": "Anna sukunimi"
     }
   },
+  "payment": {
+    "afterInfo": "Lippu {{price}} + {{fee}} palvelumaksu. Et maksa nyt. Lähetämme sinulle maksulinkin sähköpostitse, kun ilmoittautuminen sulkeutuu {{date}} klo {{time}}.",
+    "duringInfo": "Paikkasi vahvistuu heti, kun lähetät ilmoittautumisen. Sen jälkeen siirryt turvalliselle maksusivulle (kortti, Apple Pay tai Google Pay). Jos et maksa nyt, voit maksaa myöhemmin vahvistussähköpostin linkistä.",
+    "joinQueue": "Liity jonoon",
+    "queueNotice": "Kiintiö on täynnä, joten sinut lisätään jonoon. Maksat vain, jos saat paikan.",
+    "redirecting": "Siirrytään maksusivulle...",
+    "register": "Ilmoittaudu",
+    "registerAndPay": "Ilmoittaudu ja maksa {{total}}",
+    "serviceFee": "Palvelumaksu",
+    "ticket": "Lippu ({{quota}})",
+    "title": "Maksu",
+    "total": "Yhteensä"
+  },
   "recentlyRegisteredHeader": "Äskettäin ilmoittautuneet:",
   "recentlyRegisteredListItem": "ilmoittautui juuri kiintiöön",
   "registrationDeleteComplete": "Ilmoittautuminen poistettu onnistuneesti",

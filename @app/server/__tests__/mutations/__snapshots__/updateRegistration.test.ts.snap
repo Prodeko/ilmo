@@ -15,6 +15,7 @@ exports[`UpdateRegistration can update a registration with a valid updateToken 1
         "quota": {
           "id": "[id-2]",
           "position": 0,
+          "priceCents": 0,
           "size": "[random-2]",
           "title": "[random-1]",
         },

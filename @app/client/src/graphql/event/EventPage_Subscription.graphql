@@ -12,6 +12,7 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
+  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -44,6 +45,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
 }
 
 fragment EventPage_Registration on Registration {

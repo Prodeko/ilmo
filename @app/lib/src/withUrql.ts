@@ -76,6 +76,12 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
+          keys: {
+            // Payment state of a registration, read by update token. It has
+            // no id of its own, so it is embedded in its parent query.
+            RegistrationPayment: () => null,
+            CreateCheckoutSessionPayload: () => null,
+          },
           updates: {
             Mutation: {
               logout(result, _args, cache, _info) {
