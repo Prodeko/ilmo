@@ -30,7 +30,6 @@ import {
   createSession,
   createUsers,
   poolFromUrl,
-  refreshMaterializedView,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
@@ -226,8 +225,6 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         quotas[0].id
       )
     }
-
-    await refreshMaterializedView(client)
 
     await client.query("commit")
     return {

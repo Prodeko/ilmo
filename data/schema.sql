@@ -608,6 +608,101 @@ COMMENT ON FUNCTION app_private.really_create_user(username public.citext, email
 
 
 --
+-- Name: refresh_registration_positions(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.refresh_registration_positions(p_event_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_queued uuid[];
+begin
+  perform pg_advisory_xact_lock(hashtext('registration_positions:' || p_event_id::text));
+
+  select coalesce(array_agg(id), '{}')
+    into v_queued
+    from app_hidden.registrations_status_and_position
+    where event_id = p_event_id and status = 'IN_QUEUE'::app_public.registration_status;
+
+  delete from app_hidden.registrations_status_and_position
+    where event_id = p_event_id;
+
+  insert into app_hidden.registrations_status_and_position(id, event_id, quota_id, status, position)
+    with cte1 as (
+      select
+        r.id,
+        size,
+        r.event_id,
+        r.quota_id,
+        e.open_quota_size,
+        r.created_at,
+        row_number() over (partition by r.quota_id order by r.created_at asc) as tmp_pos_quota
+      from app_public.registrations r
+      left join app_public.quotas q
+        on r.quota_id = q.id
+      left join app_public.events e
+        on r.event_id = e.id
+      where r.event_id = p_event_id
+    ), cte2 as (
+      select
+        tmp.*,
+        row_number() over (partition by event_id, tmp_status order by created_at asc) as tmp_pos_status
+      from (
+        select
+          *,
+          case
+            when tmp_pos_quota <= size then 'IN_QUOTA'::text
+            else 'OPEN_OR_QUEUE'::text
+          end as tmp_status
+        from cte1
+      ) as tmp
+    ), cte3 as (
+      select
+        *,
+        case
+          when tmp_status = 'OPEN_OR_QUEUE'::text and tmp_pos_status <= open_quota_size then 'IN_OPEN_QUOTA'::app_public.registration_status
+          when tmp_status = 'OPEN_OR_QUEUE'::text then 'IN_QUEUE'::app_public.registration_status
+          else 'IN_QUOTA'::app_public.registration_status
+        end as status
+      from cte2
+    ) select
+        id,
+        event_id,
+        quota_id,
+        status,
+        case
+          -- row_number() returns bigint but we cast it to integer to avoid
+          -- introducing another type to our GraphQL API. Besides, we are not
+          -- expecting to have that many registrations in the system.
+          when status = 'IN_QUOTA'::app_public.registration_status then cast(row_number() over (partition by quota_id, status order by created_at asc) as integer)
+          else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
+        end as position
+      from cte3;
+
+  perform graphile_worker.add_job(
+    'registration__process_queue',
+    json_build_object('receivedSpot', received_spot)
+  )
+  from app_hidden.registrations_status_and_position received_spot
+  join app_public.registrations r on r.id = received_spot.id
+  where
+    received_spot.event_id = p_event_id and
+    received_spot.id = any(v_queued) and
+    received_spot.status <> 'IN_QUEUE'::app_public.registration_status and
+    r.is_finished;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION refresh_registration_positions(p_event_id uuid); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.refresh_registration_positions(p_event_id uuid) IS 'Recomputes app_hidden.registrations_status_and_position for the registrations of one event.';
+
+
+--
 -- Name: register_user(character varying, character varying, json, json, boolean); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -871,71 +966,25 @@ COMMENT ON FUNCTION app_private.tg__ownership_info() IS 'This trigger should be 
 
 
 --
--- Name: tg__process_queue(); Type: FUNCTION; Schema: app_private; Owner: -
+-- Name: tg__refresh_registration_positions(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
-CREATE FUNCTION app_private.tg__process_queue() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-declare
-  v_old_registration_status app_hidden.registrations_status_and_position;
-  v_received_spot app_hidden.registrations_status_and_position;
-begin
-  select *
-    into v_old_registration_status
-    from app_hidden.registrations_status_and_position
-    where
-      id = OLD.id;
-
-  if v_old_registration_status.status = 'IN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        event_id = v_old_registration_status.event_id and
-        quota_id = v_old_registration_status.quota_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position desc;
-  elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        -- Almost the same where condition as above, only quota_id is
-        -- missing since open quota spots can be populated by any quota
-        event_id = v_old_registration_status.event_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position desc;
-  else
-    -- The deleted registration was in queue, nobody will get a spot so return.
-    return OLD;
-  end if;
-
-  if v_received_spot is not null then
-    perform graphile_worker.add_job(
-      'registration__process_queue',
-      json_build_object('receivedSpot', v_received_spot)
-    );
-  end if;
-
-  return OLD;
-end;
-$$;
-
-
---
--- Name: tg__refresh_materialized_view(); Type: FUNCTION; Schema: app_private; Owner: -
---
-
-CREATE FUNCTION app_private.tg__refresh_materialized_view() RETURNS trigger
+CREATE FUNCTION app_private.tg__refresh_registration_positions() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 begin
-  -- Docs on CONCURRENTLY option: https://www.postgresql.org/docs/12/sql-refreshmaterializedview.html
-  refresh materialized view concurrently app_hidden.registrations_status_and_position;
+  if TG_TABLE_NAME = 'events' then
+    perform app_private.refresh_registration_positions(coalesce(NEW.id, OLD.id));
+    return null;
+  end if;
+
+  if TG_OP in ('UPDATE', 'DELETE') then
+    perform app_private.refresh_registration_positions(OLD.event_id);
+  end if;
+  if TG_OP = 'INSERT' or (TG_OP = 'UPDATE' and NEW.event_id is distinct from OLD.event_id) then
+    perform app_private.refresh_registration_positions(NEW.event_id);
+  end if;
   return null;
 end;
 $$;
@@ -3277,7 +3326,7 @@ begin
   select array(
     select id from app_public.event_questions as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(questions))
+    and q.id not in (select id from unnest(questions) where id is not null)
   )
   into v_question_ids_to_delete;
 
@@ -3342,7 +3391,7 @@ begin
   select array(
     select id from app_public.quotas as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(quotas))
+    and q.id not in (select id from unnest(quotas) where id is not null)
   )
   into v_quota_ids_to_delete;
 
@@ -3613,77 +3662,23 @@ COMMENT ON FUNCTION app_public.verify_email(user_email_id uuid, token text) IS '
 
 
 --
--- Name: registrations_status_and_position; Type: MATERIALIZED VIEW; Schema: app_hidden; Owner: -
+-- Name: registrations_status_and_position; Type: TABLE; Schema: app_hidden; Owner: -
 --
 
-CREATE MATERIALIZED VIEW app_hidden.registrations_status_and_position AS
- WITH cte1 AS (
-         SELECT r.id,
-            q.size,
-            e.id AS event_id,
-            q.id AS quota_id,
-            e.open_quota_size,
-            r.created_at,
-            row_number() OVER (PARTITION BY r.quota_id ORDER BY r.created_at) AS tmp_pos_quota
-           FROM ((app_public.registrations r
-             LEFT JOIN app_public.quotas q ON ((r.quota_id = q.id)))
-             LEFT JOIN app_public.events e ON ((r.event_id = e.id)))
-        ), cte2 AS (
-         SELECT tmp.id,
-            tmp.size,
-            tmp.event_id,
-            tmp.quota_id,
-            tmp.open_quota_size,
-            tmp.created_at,
-            tmp.tmp_pos_quota,
-            tmp.tmp_status,
-            row_number() OVER (PARTITION BY tmp.event_id, tmp.tmp_status ORDER BY tmp.created_at) AS tmp_pos_status
-           FROM ( SELECT cte1.id,
-                    cte1.size,
-                    cte1.event_id,
-                    cte1.quota_id,
-                    cte1.open_quota_size,
-                    cte1.created_at,
-                    cte1.tmp_pos_quota,
-                        CASE
-                            WHEN (cte1.tmp_pos_quota <= cte1.size) THEN 'IN_QUOTA'::text
-                            ELSE 'OPEN_OR_QUEUE'::text
-                        END AS tmp_status
-                   FROM cte1) tmp
-        ), cte3 AS (
-         SELECT cte2.id,
-            cte2.size,
-            cte2.event_id,
-            cte2.quota_id,
-            cte2.open_quota_size,
-            cte2.created_at,
-            cte2.tmp_pos_quota,
-            cte2.tmp_status,
-            cte2.tmp_pos_status,
-                CASE
-                    WHEN ((cte2.tmp_status = 'OPEN_OR_QUEUE'::text) AND (cte2.tmp_pos_status <= cte2.open_quota_size)) THEN 'IN_OPEN_QUOTA'::app_public.registration_status
-                    WHEN (cte2.tmp_status = 'OPEN_OR_QUEUE'::text) THEN 'IN_QUEUE'::app_public.registration_status
-                    ELSE 'IN_QUOTA'::app_public.registration_status
-                END AS status
-           FROM cte2
-        )
- SELECT cte3.id,
-    cte3.event_id,
-    cte3.quota_id,
-    cte3.status,
-        CASE
-            WHEN (cte3.status = 'IN_QUOTA'::app_public.registration_status) THEN (row_number() OVER (PARTITION BY cte3.quota_id, cte3.status ORDER BY cte3.created_at))::integer
-            ELSE (row_number() OVER (PARTITION BY cte3.event_id, cte3.status ORDER BY cte3.created_at))::integer
-        END AS "position"
-   FROM cte3
-  WITH NO DATA;
+CREATE TABLE app_hidden.registrations_status_and_position (
+    id uuid NOT NULL,
+    event_id uuid,
+    quota_id uuid,
+    status app_public.registration_status,
+    "position" integer
+);
 
 
 --
--- Name: MATERIALIZED VIEW registrations_status_and_position; Type: COMMENT; Schema: app_hidden; Owner: -
+-- Name: TABLE registrations_status_and_position; Type: COMMENT; Schema: app_hidden; Owner: -
 --
 
-COMMENT ON MATERIALIZED VIEW app_hidden.registrations_status_and_position IS 'Rank and position of registrations.';
+COMMENT ON TABLE app_hidden.registrations_status_and_position IS 'Rank and position of registrations, maintained per event by app_private.refresh_registration_positions.';
 
 
 --
@@ -3936,6 +3931,14 @@ COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile
 
 
 --
+-- Name: registrations_status_and_position registrations_status_and_position_pkey; Type: CONSTRAINT; Schema: app_hidden; Owner: -
+--
+
+ALTER TABLE ONLY app_hidden.registrations_status_and_position
+    ADD CONSTRAINT registrations_status_and_position_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: registration_secrets registration_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4164,13 +4167,6 @@ ALTER TABLE ONLY app_public.users
 --
 
 CREATE INDEX registrations_status_and_position_event_id_idx ON app_hidden.registrations_status_and_position USING btree (event_id);
-
-
---
--- Name: registrations_status_and_position_id_idx; Type: INDEX; Schema: app_hidden; Owner: -
---
-
-CREATE UNIQUE INDEX registrations_status_and_position_id_idx ON app_hidden.registrations_status_and_position USING btree (id);
 
 
 --
@@ -4594,17 +4590,17 @@ CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registr
 
 
 --
--- Name: events _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: events _300_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _300_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
--- Name: quotas _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: quotas _300_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _300_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4612,6 +4608,20 @@ CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_pub
 --
 
 CREATE TRIGGER _300_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__registration_is_valid();
+
+
+--
+-- Name: events _301_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _301_refresh_registration_positions AFTER UPDATE ON app_public.events FOR EACH ROW WHEN ((old.open_quota_size IS DISTINCT FROM new.open_quota_size)) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
+
+
+--
+-- Name: quotas _301_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _301_refresh_registration_positions AFTER UPDATE ON app_public.quotas FOR EACH ROW WHEN (((old.size IS DISTINCT FROM new.size) OR (old.event_id IS DISTINCT FROM new.event_id))) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4699,17 +4709,17 @@ CREATE TRIGGER _500_verify_account_on_verified AFTER INSERT OR UPDATE OF is_veri
 
 
 --
--- Name: registrations _700_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _700_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _700_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _700_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
--- Name: registrations _800_process_registration_queue; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _701_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__process_queue();
+CREATE TRIGGER _701_refresh_registration_positions AFTER UPDATE ON app_public.registrations FOR EACH ROW WHEN (((old.created_at IS DISTINCT FROM new.created_at) OR (old.quota_id IS DISTINCT FROM new.quota_id) OR (old.event_id IS DISTINCT FROM new.event_id))) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4976,6 +4986,19 @@ ALTER TABLE ONLY app_public.user_emails
 
 
 --
+-- Name: registrations_status_and_position; Type: ROW SECURITY; Schema: app_hidden; Owner: -
+--
+
+ALTER TABLE app_hidden.registrations_status_and_position ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registrations_status_and_position select_all; Type: POLICY; Schema: app_hidden; Owner: -
+--
+
+CREATE POLICY select_all ON app_hidden.registrations_status_and_position FOR SELECT USING (true);
+
+
+--
 -- Name: registration_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
 --
 
@@ -5063,6 +5086,13 @@ CREATE POLICY manage_admin ON app_public.event_questions USING (app_public.curre
 --
 
 CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin());
+
+
+--
+-- Name: organizations manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.organizations USING (app_public.current_user_is_admin());
 
 
 --
@@ -5342,6 +5372,13 @@ REVOKE ALL ON FUNCTION app_private.really_create_user(username public.citext, em
 
 
 --
+-- Name: FUNCTION refresh_registration_positions(p_event_id uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.refresh_registration_positions(p_event_id uuid) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -5377,17 +5414,10 @@ REVOKE ALL ON FUNCTION app_private.tg__ownership_info() FROM PUBLIC;
 
 
 --
--- Name: FUNCTION tg__process_queue(); Type: ACL; Schema: app_private; Owner: -
+-- Name: FUNCTION tg__refresh_registration_positions(); Type: ACL; Schema: app_private; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_private.tg__process_queue() FROM PUBLIC;
-
-
---
--- Name: FUNCTION tg__refresh_materialized_view(); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.tg__refresh_materialized_view() FROM PUBLIC;
+REVOKE ALL ON FUNCTION app_private.tg__refresh_registration_positions() FROM PUBLIC;
 
 
 --

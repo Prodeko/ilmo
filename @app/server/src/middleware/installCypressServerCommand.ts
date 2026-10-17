@@ -203,15 +203,13 @@ async function runCommand(
       isAdmin = false,
       existingUser = false,
     } = payload
-    const client = await rootPgPool.connect()
-
     let user: SnakeCasedProperties<User>,
       otherUser: SnakeCasedProperties<User>,
       session: any,
       otherSession: any
 
     if (existingUser) {
-      const { rows } = await client.query(
+      const { rows } = await rootPgPool.query(
         "select * from app_private.login($1, $2)",
         [username, password]
       )
@@ -238,6 +236,7 @@ async function runCommand(
       otherSession = await createSession(rootPgPool, otherUser.id)
     }
 
+    const client = await rootPgPool.connect()
     try {
       await client.query("begin")
       try {
@@ -289,14 +288,11 @@ async function runCommand(
   } else if (command === "createRegistrations") {
     const { eventId, quotaId, count = 1 } = payload
     const client = await rootPgPool.connect()
-    const registrations = await createRegistrations(
-      client,
-      count,
-      eventId,
-      quotaId,
-      []
-    )
-    return registrations
+    try {
+      return await createRegistrations(client, count, eventId, quotaId, [])
+    } finally {
+      client.release()
+    }
   } else {
     throw new Error(`Command '${command}' not understood.`)
   }

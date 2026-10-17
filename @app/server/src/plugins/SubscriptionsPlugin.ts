@@ -8,6 +8,7 @@ import {
 } from "graphile-utils"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
+import { RelayPubSub, throttledTopic } from "../utils/throttleTopic"
 
 // graphile-utils doesn't export this yet
 import type { GraphQLResolveInfo } from "graphql"
@@ -46,22 +47,33 @@ const currentUserTopicFromContext = async (
   throw new Error("You're not logged in")
 }
 
-const eventRegistrationsTopicFromContext = async (
-  args: { eventId: string },
-  context: { [key: string]: any },
-  _resolveInfo: GraphQLResolveInfo
-) => {
-  const {
-    rows: [event],
-  } = await context.pgClient.query(
-    "select id from app_public.events where id = $1",
-    [args.eventId]
-  )
-  if (event) {
-    return `graphql:eventRegistrations:${event.id}`
+// How often a single event's eventRegistrations subscribers are notified at
+// most. Each notification makes every subscriber query the database, so a
+// burst of registrations is coalesced into one notification per interval.
+const EVENT_REGISTRATIONS_THROTTLE_INTERVAL = 1000
+
+const makeEventRegistrationsTopicFromContext =
+  (pubsub: RelayPubSub | undefined) =>
+  async (
+    args: { eventId: string },
+    context: { [key: string]: any },
+    _resolveInfo: GraphQLResolveInfo
+  ) => {
+    const {
+      rows: [event],
+    } = await context.pgClient.query(
+      "select id from app_public.events where id = $1",
+      [args.eventId]
+    )
+    if (event) {
+      const topic = `graphql:eventRegistrations:${event.id}`
+      // pubsub is not available in tests and one off scripts
+      return pubsub
+        ? throttledTopic(pubsub, topic, EVENT_REGISTRATIONS_THROTTLE_INTERVAL)
+        : topic
+    }
+    throw new Error("Invalid event ID.")
   }
-  throw new Error("Invalid event ID.")
-}
 
 /*
  * This plugin adds a number of custom subscriptions to our schema. By making
@@ -116,7 +128,7 @@ const SubscriptionsPlugin = makeExtendSchemaPlugin((build, { pubsub }) => {
 
         """Triggered when new event registrations are created or updated. Each event has its own subscription topic."""
         eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload! @pgSubscription(topic: ${embed(
-          eventRegistrationsTopicFromContext
+          makeEventRegistrationsTopicFromContext(pubsub)
         )})
 
         """Returns the server time every second."""
