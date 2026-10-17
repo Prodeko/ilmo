@@ -13,6 +13,13 @@
   --layout-footer-background: #f5faff;
 }
 
+html {
+  /* Always reserve space for the vertical scrollbar. Otherwise the page
+     gets narrower whenever content grows past the window height (e.g. when
+     adding questions in the event form), and wrapping rows jump around. */
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--layout-footer-background);
 }
