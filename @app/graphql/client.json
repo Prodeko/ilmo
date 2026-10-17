@@ -37,7 +37,7 @@
    "DeleteOrganization": "39f623b7dd9b3111922c0937f5985ef32d8de76b88898b043daaf53dc20877b2",
    "InvitationDetail": "3d3ae0471e11f29477713606f9d884cb6d2a031b1a8bed9e220bec4c5e54337f",
    "ClaimRegistrationToken": "c3c63bf12e25e4025a986f94781d706f7adb2261e91689d356069378faec2c4a",
-   "CreateEventRegistrationPage": "c80a1b7e4a79510cd8e544910e72dec734223574011e0a40bb00c78de8de310c",
+   "CreateEventRegistrationPage": "cf379a5019fc535c126b68a4cc205cf7be7e3469d5907beb737d136cd7a97f18",
    "CreateEventRegistration": "e97c6726ce1d78c512935a15f46e8315e8ab2e50b2776d4fa1c92a5e8a54c566",
    "DeleteEventRegistration": "be0f72e306dcf5e22dbaa962b5228422a5a0bd12dc68d688ee8b9a28b479318b",
    "UpdateEventRegistrationPage": "2e4a7c74a71603bcec3debb7b11c003a481d28d6b25b130694e38f2760fcf7e9",

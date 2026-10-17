@@ -36,12 +36,17 @@ const EventRegistrationPage: NextPage = () => {
   const { signupClosed, signupUpcoming } = event || {}
 
   const { name, primaryEmail } = currentUser || {}
-  // TODO: The users table schema could be changed to include first
-  // and last names. Until then only prefill them when the split is
-  // unambiguous: with three or more words (e.g. "Anna Maria von Wright")
+  // Keycloak users have their first and last names stored separately. For
+  // other accounts only the full name is known, so only prefill it when the
+  // split is unambiguous: with three or more words ("Anna Maria von Wright")
   // there's no telling where the first name ends, so let the user fill them.
   const nameParts = name ? name.trim().split(/\s+/) : []
-  const [firstName, lastName] = nameParts.length <= 2 ? nameParts : []
+  const [firstName, lastName] =
+    currentUser?.firstName && currentUser?.lastName
+      ? [currentUser.firstName, currentUser.lastName]
+      : nameParts.length <= 2
+        ? nameParts
+        : []
 
   const formInitialValues = {
     firstName,
