@@ -36,7 +36,6 @@
       "questions": {
         "data": "Fråga",
         "label": "Etikett",
-        "prefill": "Förifyllning",
         "type": "Typ"
       },
       "quota": {

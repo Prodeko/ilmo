@@ -50,6 +50,22 @@ interface QuestionsTabProps {
 
 const colSpan = { md: { span: 6 }, sm: { span: 12 }, xs: { span: 24 } }
 
+// Prefill questions are TEXT questions with a fixed label. The admin picks
+// them from the type select, and the label is filled in for every language.
+const PREFILL_LABELS: Record<QuestionPrefill, Record<string, string>> = {
+  [QuestionPrefill.Telegram]: {
+    fi: "Telegram-käyttäjänimi",
+    en: "Telegram username",
+  },
+  [QuestionPrefill.DietaryRestrictions]: {
+    fi: "Erityisruokavaliot ja allergiat",
+    en: "Dietary restrictions and allergies",
+  },
+}
+
+const isPrefill = (val: unknown): val is QuestionPrefill =>
+  Object.values(QuestionPrefill).includes(val as QuestionPrefill)
+
 export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
   ({ form, selectedLanguages }) => {
     /**
@@ -64,10 +80,30 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
     const questions = getFieldValue("questions") as QuestionData[]
 
     function handleTypeChange(val: SelectValue, index: number) {
-      if (val === "TEXT") {
-        // If the type was changed to TEXT, reset question data
+      if (val === "TEXT" || isPrefill(val)) {
+        // If the type was changed to TEXT, reset question data. The type
+        // field itself is normalized to TEXT for prefill questions.
         let questions = getFieldValue("questions")
-        questions[index].data = null
+        const question = questions[index]
+        question.data = null
+        question.prefill = isPrefill(val) ? val : null
+
+        // Fill in the label of a prefill question, keeping labels the admin
+        // has written themselves
+        if (isPrefill(val)) {
+          const autoLabels = Object.values(PREFILL_LABELS)
+          question.label = Object.fromEntries(
+            selectedLanguages.map((l) => {
+              const lang = l.toLowerCase()
+              const current = question.label?.[lang]
+              const isAuto =
+                !current ||
+                autoLabels.some((labels) => labels[lang] === current)
+              const label = PREFILL_LABELS[val][lang] ?? PREFILL_LABELS[val].en
+              return [lang, isAuto ? label : current]
+            })
+          )
+        }
         setFieldsValue({
           questions,
         })
@@ -198,22 +234,8 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         <>
           <Col {...colSpan}>{questionLabel}</Col>
           <Col {...colSpan}>
-            {/* TEXT questions don't have any data associated with them,
-              but their answer can be prefilled from the registration profile */}
-            <Form.Item name={[index, "prefill"]} noStyle>
-              <Select
-                data-cy={`eventform-select-questions-prefill-${index}`}
-                placeholder={t("forms.placeholders.questions.prefill")}
-                style={{ width: "100%" }}
-                allowClear
-              >
-                {Object.values(QuestionPrefill).map((prefill) => (
-                  <Option key={prefill} value={prefill}>
-                    {t(`prefill.${prefill}`)}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+            {/* TEXT questions don't have any data associated with them.
+              This Col is included for layout. */}
           </Col>
         </>
       )
@@ -329,14 +351,27 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         <Form.Item name={[name, "position"]} noStyle required>
                           <Input type="hidden" />
                         </Form.Item>
+                        <Form.Item name={[name, "prefill"]} noStyle>
+                          <Input type="hidden" />
+                        </Form.Item>
                         <Col
                           md={{ span: 4 }}
                           sm={{ span: 12 }}
                           xs={{ span: 24 }}
                         >
                           <DragOutlined style={{ marginRight: "8px" }} />
+                          {/* A prefill question shows as its own type, but
+                            is stored as a TEXT question with `prefill` set */}
                           <Form.Item
+                            getValueProps={(type) => ({
+                              value:
+                                getFieldValue(["questions", name, "prefill"]) ??
+                                type,
+                            })}
                             name={[name, "type"]}
+                            normalize={(val) =>
+                              isPrefill(val) ? QuestionType.Text : val
+                            }
                             rules={[
                               {
                                 required: true,
@@ -349,7 +384,8 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                           >
                             <Select
                               data-cy={`eventform-select-questions-type-${index}`}
-                              style={{ width: 120 }}
+                              popupMatchSelectWidth={false}
+                              style={{ width: 170 }}
                               onChange={(val) => handleTypeChange(val, index)}
                             >
                               {Object.keys(QuestionType).map((type, i) => (
@@ -359,6 +395,15 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                                   value={type.toUpperCase()}
                                 >
                                   {type}
+                                </Option>
+                              ))}
+                              {Object.values(QuestionPrefill).map((prefill) => (
+                                <Option
+                                  key={prefill}
+                                  data-cy={`eventform-select-questions-type-${index}-option-${prefill}`}
+                                  value={prefill}
+                                >
+                                  {t(`prefill.${prefill}`)}
                                 </Option>
                               ))}
                             </Select>

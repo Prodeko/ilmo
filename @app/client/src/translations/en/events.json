@@ -36,7 +36,6 @@
       "questions": {
         "data": "Question",
         "label": "Label",
-        "prefill": "Prefill",
         "type": "Type"
       },
       "quota": {

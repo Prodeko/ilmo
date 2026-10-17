@@ -36,7 +36,6 @@
       "questions": {
         "data": "Kysymys",
         "label": "Otsikko",
-        "prefill": "Esitäyttö",
         "type": "Tyyppi"
       },
       "quota": {
