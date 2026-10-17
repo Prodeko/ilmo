@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
 import {
-  ErrorAlert,
   Link,
   LoadingPadded,
   PaymentCard,
@@ -12,8 +11,8 @@ import {
   useCreateCheckoutSessionMutation,
   usePayPageQuery,
 } from "@app/graphql"
-import { getCodeFromError, payPageState } from "@app/lib"
-import { Col, Result, Row } from "antd"
+import { getCodeFromError, isStripeCheckoutUrl, payPageState } from "@app/lib"
+import { Alert, Col, Result, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
@@ -63,19 +62,19 @@ const PayPage: NextPage = () => {
 
   const [, createCheckoutSession] = useCreateCheckoutSessionMutation()
   const [paying, setPaying] = useState(false)
-  const [payError, setPayError] = useState<Error | null>(null)
+  const [payFailed, setPayFailed] = useState(false)
 
   const handlePay = useCallback(async () => {
-    setPayError(null)
+    setPayFailed(false)
     setPaying(true)
     const { data: checkout, error } = await createCheckoutSession({
       updateToken,
       language: lang,
     })
     const url = checkout?.createCheckoutSession?.url
-    if (url) {
+    if (isStripeCheckoutUrl(url)) {
       // Keep the button loading while the browser navigates to Stripe
-      window.location.assign(url)
+      window.location.assign(url!)
       return
     }
     setPaying(false)
@@ -84,9 +83,10 @@ const PayPage: NextPage = () => {
       // The registration changed state (e.g. paid in another tab): show it
       refetch({ requestPolicy: "network-only" })
     } else {
-      setPayError(error ?? new Error(t("errors.checkoutFailed")))
+      // Show only a generic message: error details are not for visitors
+      setPayFailed(true)
     }
-  }, [createCheckoutSession, updateToken, lang, refetch, t])
+  }, [createCheckoutSession, updateToken, lang, refetch])
 
   let content: React.ReactNode
   if (!data && (fetching || stale || !updateToken)) {
@@ -114,10 +114,12 @@ const PayPage: NextPage = () => {
       <>
         <PaymentCard
           error={
-            payError ? (
-              <ErrorAlert
-                error={payError}
+            payFailed ? (
+              <Alert
+                data-cy="paypage-checkout-failed"
                 message={t("errors.checkoutFailed")}
+                type="error"
+                showIcon
               />
             ) : null
           }

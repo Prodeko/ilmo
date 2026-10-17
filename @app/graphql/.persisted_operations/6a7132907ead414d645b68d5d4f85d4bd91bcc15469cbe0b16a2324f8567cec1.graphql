@@ -80,6 +80,7 @@ fragment PayPage_RegistrationPayment on RegistrationPayment {
   totalCents
   paidManually
   paidTotalCents
+  paidTicketCents
   paidAt
   refundedAmountCents
   refundedAt
