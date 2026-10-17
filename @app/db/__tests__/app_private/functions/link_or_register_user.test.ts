@@ -51,9 +51,11 @@ describe("when account doesn't already exist", () => {
         {
           "avatar_url": "http://example.com/avatar.jpg",
           "created_at": "[DATE]",
+          "first_name": null,
           "id": "[ID]",
           "is_admin": false,
           "is_verified": true,
+          "last_name": null,
           "name": "Webbitiimi",
           "updated_at": "[DATE]",
           "username": "webbitiimi",

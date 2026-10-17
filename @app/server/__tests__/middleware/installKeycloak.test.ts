@@ -586,6 +586,40 @@ describe("GET /auth/keycloak/callback", () => {
     expect(user.is_admin).toBe(false)
   })
 
+  it("stores given and family names on the user and refreshes them on every login", async () => {
+    const selectNames = () =>
+      pool.query(
+        `select u.first_name, u.last_name from app_public.users u
+           join app_public.user_authentications ua on ua.user_id = u.id
+          where ua.identifier = 'kc-sub-1'`
+      )
+    let res = await doCallback({
+      name: "Anna Maria von Wright",
+      given_name: "Anna Maria",
+      family_name: "von Wright",
+    })
+    expect(res.statusCode).toBe(302)
+    let {
+      rows: [user],
+    } = await selectNames()
+    expect(user).toEqual({ first_name: "Anna Maria", last_name: "von Wright" })
+
+    res = await doCallback({ given_name: "Anna", family_name: "Wright" })
+    expect(res.statusCode).toBe(302)
+    ;({
+      rows: [user],
+    } = await selectNames())
+    expect(user).toEqual({ first_name: "Anna", last_name: "Wright" })
+
+    // A token without both claims leaves the stored names alone
+    res = await doCallback({ given_name: "Anna" })
+    expect(res.statusCode).toBe(302)
+    ;({
+      rows: [user],
+    } = await selectNames())
+    expect(user).toEqual({ first_name: "Anna", last_name: "Wright" })
+  })
+
   it("leaves is_admin untouched when the id token has no realm_access claim", async () => {
     // A dropped realm-roles mapper makes the roles unknown, which must not
     // read as "not an admin": stamping false here would demote every admin

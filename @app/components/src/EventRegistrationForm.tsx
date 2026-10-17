@@ -28,8 +28,6 @@ import { CombinedError, useMutation } from "urql"
 
 import { ErrorAlert, useTranslation } from "."
 
-import type { Rule } from "antd/lib/form"
-
 const { Text } = Typography
 
 interface EventRegistrationFormProps {
@@ -156,16 +154,23 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       async (values) => {
         setFormError(null)
         try {
+          // Names may contain spaces (e.g. "Anna Maria"), but strip the ones
+          // around them
+          const trimmedValues = {
+            ...values,
+            firstName: values.firstName?.trim(),
+            lastName: values.lastName?.trim(),
+          }
           const input =
             type === "create"
               ? {
-                  ...values,
+                  ...trimmedValues,
                   eventId,
                   quotaId,
                   registrationToken,
                 }
               : {
-                  ...values,
+                  ...trimmedValues,
                   updateToken,
                 }
           const { error } = await formMutation({ input })
@@ -205,16 +210,6 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       ]
     )
 
-    const validateName: Rule = () => ({
-      validator(_, value) {
-        // firstName and lastName are not allowed to contain spaces
-        if (/\s/.test(value)) {
-          return Promise.reject(new Error(t("forms.rules.nameContainsSpace")))
-        }
-        return Promise.resolve()
-      },
-    })
-
     const showAdminEmptyAnswersNote = useMemo(() => {
       if (!isAdmin) return false
 
@@ -246,9 +241,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
           rules={[
             {
               required: true,
+              whitespace: true,
               message: t("forms.rules.provideFirstName"),
             },
-            validateName,
           ]}
           hasFeedback
         >
@@ -260,9 +255,9 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
           rules={[
             {
               required: true,
+              whitespace: true,
               message: t("forms.rules.provideLastName"),
             },
-            validateName,
           ]}
           hasFeedback
         >
