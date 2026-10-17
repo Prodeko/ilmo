@@ -13,8 +13,22 @@ Tools:
 - `register_to_event` — registers to a quota. Answers are validated before a
   spot is claimed, and a failed registration releases the spot it claimed.
 
-Editing or cancelling a registration is not available over MCP; the confirmation
-email's link does that, as on the web.
+Admins also get:
+
+- `list_event_options` — organizations and their event categories, with the ids
+  `create_event` needs.
+- `create_event` — creates an event with its quotas and questions. The event is
+  always an unpublished draft; an admin reviews and publishes it in the admin
+  UI, which the result links to.
+
+Admin tools are listed and run only when the access token carries the
+`ilmo-admin` realm role, so revoking the role in membership-registry takes
+effect on the next request. The database's own `users.is_admin` check applies on
+top, and MCP never writes that flag: an admin must have signed in to the web app
+since getting the role.
+
+Editing or cancelling a registration, and editing or publishing an event, are
+not available over MCP.
 
 ## Using it
 
@@ -83,12 +97,17 @@ The labels below are those of the Keycloak 26 admin console.
    on, Add to ID token off. A hardcoded audience is used instead of Audience
    Resolve because the latter adds client IDs only, from client roles, and with
    Full scope allowed would put ilmo's audience into other clients' tokens too.
-7. **Client scopes**: `basic`, `email`, `profile` as Default and
+7. **Client scopes**: `basic`, `email`, `profile`, `roles` as Default and
    `offline_access` as Optional.
-8. **Client scopes → Evaluate**: pick a member, add `offline_access` to the
+8. **Client scopes → `ilmo-mcp-dedicated` → Scope**: if Full scope allowed is
+   off, **Assign role** → realm role `ilmo-admin`. Without it admins' tokens
+   omit the role and the admin tools stay hidden. Do not turn Full scope allowed
+   on instead; it would put every realm role into these tokens.
+9. **Client scopes → Evaluate**: pick a member, add `offline_access` to the
    scope parameter and open Generated access token. It must contain
    `"aud": "https://ilmo.prodeko.org/mcp"`, `"typ": "Bearer"`, `sid`, `email`
-   and `"email_verified": true`; ilmo refuses tokens without them.
+   and `"email_verified": true`; ilmo refuses tokens without them. For an admin,
+   `realm_access.roles` must also contain `ilmo-admin`.
 
 If a WAF or IP filter sits in front of `id.prodeko.org` or `ilmo.prodeko.org`,
 allow Anthropic's egress range `160.79.104.0/21`: claude.ai fetches Keycloak's

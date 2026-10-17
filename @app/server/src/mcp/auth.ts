@@ -3,6 +3,7 @@ import { Pool, PoolClient } from "pg"
 
 import {
   BREAK_GLASS_USERNAMES,
+  ILMO_ADMIN_ROLE,
   mapKeycloakClaims,
   RequestLogger,
 } from "../utils/keycloak"
@@ -24,6 +25,18 @@ export function mcpResourceUrl() {
 
 export function mcpEnabled() {
   return !!process.env.KEYCLOAK_ISSUER
+}
+
+/**
+ * Admin tools require the realm role in the token itself, so revoking it in
+ * Keycloak takes effect on the next request. The database's own is_admin
+ * check still applies on top. MCP never writes is_admin: ilmo-mcp does not
+ * have full scope, so a missing role scope mapping would otherwise demote
+ * every admin.
+ */
+export function tokenGrantsAdmin(claims: JWTPayload) {
+  const roles = (claims.realm_access as { roles?: unknown } | undefined)?.roles
+  return Array.isArray(roles) && roles.includes(ILMO_ADMIN_ROLE)
 }
 
 type Jwks = ReturnType<typeof createRemoteJWKSet>

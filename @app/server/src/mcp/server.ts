@@ -1,19 +1,25 @@
 import {
   ClaimRegistrationTokenDocument,
   ClaimRegistrationTokenMutation,
+  CreateEventDocument,
+  CreateEventMutation,
   CreateEventRegistrationDocument,
   CreateEventRegistrationMutation,
   McpEventDocument,
+  McpEventOptionsDocument,
+  McpEventOptionsQuery,
   McpEventQuery,
   McpEventsDocument,
   McpEventsQuery,
   McpEventSummaryFragment,
+  QuestionType,
 } from "@app/graphql"
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js"
 import { DocumentNode } from "graphql"
 import { z } from "zod"
 
+import { createEventInput, validateNewEvent } from "./events"
 import { richTextToPlain, validateRegistration } from "./registration"
 
 /**
@@ -76,7 +82,10 @@ async function fetchEvent(runner: GraphQLRunner, slug: string) {
   return { event: data.eventBySlug, currentUser: data.currentUser }
 }
 
-export function createMcpServer(runner: GraphQLRunner) {
+export function createMcpServer(
+  runner: GraphQLRunner,
+  { isAdmin }: { isAdmin: boolean }
+) {
   const server = new McpServer({ name: "ilmo", version: "1.0.0" })
 
   server.registerTool(
@@ -227,5 +236,129 @@ export function createMcpServer(runner: GraphQLRunner) {
       })
   )
 
+  if (isAdmin) registerAdminTools(server, runner)
+
   return server
+}
+
+const translatedSchema = z.object({
+  fi: z.string().min(1),
+  en: z.string().min(1).optional(),
+})
+
+const datetimeSchema = z.iso
+  .datetime({ offset: true })
+  .describe("ISO 8601 with a UTC offset, e.g. 2026-11-07T10:00:00+02:00")
+
+function registerAdminTools(server: McpServer, runner: GraphQLRunner) {
+  server.registerTool(
+    "list_event_options",
+    {
+      title: "List organizers and categories",
+      description:
+        "Admin only. Lists the organizations that can organize events and the event categories of each, with the ids create_event needs.",
+      annotations: { readOnlyHint: true },
+    },
+    () =>
+      withToolErrors(async () => {
+        const data = await runner.transaction((run) =>
+          run<McpEventOptionsQuery>(McpEventOptionsDocument)
+        )
+        const categories = data.eventCategories?.nodes ?? []
+        const organizations = [...(data.organizations?.nodes ?? [])].sort(
+          (a, b) => a.name.localeCompare(b.name, "fi")
+        )
+        return json(
+          organizations.map((o) => ({
+            id: o.id,
+            name: o.name,
+            categories: categories
+              .filter((c) => c.ownerOrganization?.id === o.id)
+              .map((c) => ({ id: c.id, name: c.name })),
+          }))
+        )
+      })
+  )
+
+  server.registerTool(
+    "create_event",
+    {
+      title: "Create event (draft)",
+      description:
+        "Admin only. Creates an event as an unpublished draft with its quotas and registration questions. An admin reviews and publishes it in the ilmo admin UI; the result links there. Confirm the details with the user before calling this. Finnish texts are required, English ones optional.",
+      inputSchema: {
+        organizationId: z.string().describe("From list_event_options"),
+        categoryId: z
+          .string()
+          .describe("A category of that organization, from list_event_options"),
+        name: translatedSchema,
+        description: z
+          .object({ fi: z.string().optional(), en: z.string().optional() })
+          .describe("Plain text; separate paragraphs with a blank line"),
+        location: z.string().min(1),
+        eventStartTime: datetimeSchema,
+        eventEndTime: datetimeSchema,
+        registrationStartTime: datetimeSchema,
+        registrationEndTime: datetimeSchema.describe(
+          "Must be before eventStartTime"
+        ),
+        openQuotaSize: z
+          .number()
+          .int()
+          .min(0)
+          .default(0)
+          .describe(
+            "Extra spots shared by all quotas once a quota is full; 0 for none"
+          ),
+        isHighlighted: z.boolean().default(false),
+        quotas: z
+          .array(
+            z.object({ title: translatedSchema, size: z.number().int().min(1) })
+          )
+          .default([]),
+        questions: z
+          .array(
+            z.object({
+              type: z.enum(QuestionType),
+              label: translatedSchema,
+              required: z.boolean().default(false),
+              options: z
+                .array(translatedSchema)
+                .optional()
+                .describe("Answer options for RADIO and CHECKBOX questions"),
+            })
+          )
+          .default([]),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false },
+    },
+    (args) =>
+      withToolErrors(async () => {
+        const options = await runner.transaction((run) =>
+          run<McpEventOptionsQuery>(McpEventOptionsDocument)
+        )
+        const errors = validateNewEvent(args, options)
+        if (errors.length > 0) {
+          throw new ToolError(`Event not created:\n- ${errors.join("\n- ")}`)
+        }
+
+        const data = await runner.transaction((run) =>
+          run<CreateEventMutation>(CreateEventDocument, {
+            input: createEventInput(args),
+          })
+        )
+        const event = data.createEvent?.event
+        if (!event) throw new ToolError("Creating the event failed.")
+
+        return json({
+          created: true,
+          isDraft: true,
+          id: event.id,
+          slug: event.slug,
+          name: event.name,
+          editUrl: `${process.env.ROOT_URL}/admin/event/update/${event.id}`,
+          note: "The event is a draft and not visible to members. Review it at editUrl and publish it there.",
+        })
+      })
+  )
 }

@@ -10,6 +10,7 @@ import {
   mcpEnabled,
   mcpResourceUrl,
   resolveMcpSession,
+  tokenGrantsAdmin,
   verifyAccessToken,
 } from "../mcp/auth"
 import {
@@ -64,9 +65,11 @@ const InstallMcp: FastifyPluginAsync = async (app) => {
     if (!token) return unauthorized(reply)
 
     let sessionId: string
+    let isAdmin: boolean
     try {
       const claims = await verifyAccessToken(token)
       sessionId = await resolveMcpSession(app.rootPgPool, claims, request.log)
+      isAdmin = tokenGrantsAdmin(claims)
     } catch (e) {
       if (e instanceof McpAuthError) return unauthorized(reply, e)
       request.log.error({ err: e }, "mcp: authentication failed")
@@ -133,7 +136,7 @@ const InstallMcp: FastifyPluginAsync = async (app) => {
         ) as Promise<T>,
     }
 
-    const server = createMcpServer(runner)
+    const server = createMcpServer(runner, { isAdmin })
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
