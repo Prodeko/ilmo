@@ -3,11 +3,17 @@ import {
   CreateEventDocument,
   CreateEventPageQuery,
   EventQuestion,
+  PaymentMode,
   Quota,
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
-import { filterObjectByKeys, formItemLayout, lowercased } from "@app/lib"
+import {
+  filterObjectByKeys,
+  formItemLayout,
+  lowercased,
+  ticketPriceEurosToCents,
+} from "@app/lib"
 import { Badge, Col, Form, Row, Tabs } from "antd"
 import dayjs from "dayjs"
 import debounce from "lodash/debounce"
@@ -41,6 +47,8 @@ export type FormValues = {
   isDraft?: boolean
   quotas?: Quota[]
   Questions?: EventQuestion[]
+  paymentMode?: PaymentMode
+  sendUnpaidEmailOnClose?: boolean
 }
 
 interface EventFormProps {
@@ -83,7 +91,7 @@ enum TAB {
 export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
-  const { supportedLanguages } = data || {}
+  const { supportedLanguages, paymentsEnabled } = data || {}
   const languagesLower = useMemo(
     () => lowercased(supportedLanguages),
     [supportedLanguages]
@@ -172,6 +180,16 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           registrationEndTime,
           headerImageFile,
           openQuotaSize,
+          // Payment settings are only sent when payments are on, so events
+          // are saved exactly as before otherwise
+          ...(paymentsEnabled
+            ? {
+                paymentMode: values.paymentMode ?? PaymentMode.None,
+                sendUnpaidEmailOnClose:
+                  values.paymentMode === PaymentMode.AfterRegistration ||
+                  !!values.sendUnpaidEmailOnClose,
+              }
+            : {}),
         }
 
         // FormQuotas can be empty if only the open quota is specified
@@ -179,7 +197,18 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           formQuotas?.map((q: Quota, index: number) => {
             // Set quota position
             q.position = index
-            return filterObjectByKeys(q, ["id", "position", "title", "size"])
+            const quota = filterObjectByKeys(q, [
+              "id",
+              "position",
+              "title",
+              "size",
+            ])
+            // The price is edited in euros. A quota whose price input was
+            // never shown keeps its current price (null = unchanged).
+            const { price } = q as Quota & { price?: number | null }
+            return paymentsEnabled && price !== undefined
+              ? { ...quota, priceCents: ticketPriceEurosToCents(price) }
+              : quota
           }) || []
 
         // Questions may be empty
@@ -219,7 +248,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       }
       setFormSubmitting(false)
     },
-    [mutation, formRedirect, router, t, type, eventId]
+    [mutation, formRedirect, router, t, type, eventId, paymentsEnabled]
   )
 
   const debounceTabErrors = useMemo(
@@ -271,6 +300,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         isDraft,
         isHighlighted: false,
         openQuotaSize: 0,
+        ...(paymentsEnabled
+          ? { paymentMode: PaymentMode.None, sendUnpaidEmailOnClose: false }
+          : {}),
         ...initialValues,
       }}
       onFieldsChange={handleFieldsChange}
@@ -293,6 +325,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
             children: (
               <QuotasTab
                 initialValues={initialValues}
+                paymentsEnabled={!!paymentsEnabled}
                 selectedLanguages={selectedLanguages}
               />
             ),
@@ -313,9 +346,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                   forceRender: true,
                   children: (
                     <RegistrationsTab
+                      eventId={eventId as string}
                       eventSlug={
                         (data as UpdateEventPageQuery)?.event?.slug as string
                       }
+                      paymentsEnabled={!!paymentsEnabled}
                       questions={
                         (data as UpdateEventPageQuery)?.event?.eventQuestions
                           ?.nodes

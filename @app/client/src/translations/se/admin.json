@@ -93,6 +93,84 @@
     "updateEvent": "Uppdatera händelse",
     "updateEventCategory": "Uppdatera händelsekategori"
   },
+  "payments": {
+    "actions": {
+      "failed": "Det gick inte att uppdatera betalningen",
+      "markPaid": "Markera som betald",
+      "markPaidHelp": "För kontant- eller banköverföring. Skickar e-postbekräftelsen om mottagen betalning.",
+      "markPaidSuccess": "Markerad som betald",
+      "more": "Fler åtgärder",
+      "undoManual": "Ångra manuell betalning",
+      "undoManualSuccess": "Manuell betalning borttagen"
+    },
+    "cancel": "Avbryt",
+    "delete": {
+      "body": "Platsen går till nästa person i kön. Detta kan inte ångras.",
+      "confirm": "Radera",
+      "confirmRefund": "Radera och återbetala",
+      "manualWarning": "Denna anmälan har markerats som betald manuellt ({{price}}). Ilmo kan inte återbetala den, så sköt en eventuell återbetalning själv.",
+      "refund": "Återbetala biljettpriset, {{price}}, till kortet",
+      "title": "Radera anmälan för {{name}}?"
+    },
+    "filter": {
+      "all": "Alla ({{count}})",
+      "paid": "Betalda ({{count}})",
+      "unpaid": "Obetalda ({{count}})"
+    },
+    "lastReminderSent": "Senaste påminnelse skickad {{date}} kl. {{time}}",
+    "paymentColumn": "Betalning",
+    "quotas": {
+      "free": "Gratis",
+      "guildReceives": "Gillet får",
+      "invalidPrice": "Priset måste vara 0 € eller mellan 0,25 € och 10 000 €",
+      "noteFees": "Gillet får = pris − 1,5 % × (pris + 0,25 €). Kunden betalar priset plus en serviceavgift på 0,25 €, och Stripe tar 0,25 € + 1,5 %. Detta är en uppskattning för europeiska kort; kort från länder utanför EES kostar lite mer.",
+      "noteFree": "0 € gör kvoten gratis. Annars är minimipriset 0,25 €.",
+      "noteOpenQuota": "Platser i den öppna kvoten betalar priset för den kvot personen anmälde sig via.",
+      "priceChangedWarning": "Denna kvot har {{count}} anmälningar. De behåller priset {{price}}. Det nya priset gäller endast nya anmälningar.",
+      "ticketPrice": "Biljettpris"
+    },
+    "reminder": {
+      "body": "Alla med en plats som inte har betalat får ett e-postmeddelande med sin egen betalningslänk. Personer i kön och i gratiskvoter får inget meddelande.",
+      "confirm_one": "Skicka {{count}} påminnelse",
+      "confirm_other": "Skicka {{count}} påminnelser",
+      "failed": "Det gick inte att skicka påminnelserna",
+      "lastSent": "Senaste påminnelse skickad {{date}} kl. {{time}}.",
+      "sent_one": "{{count}} påminnelse skickad",
+      "sent_other": "{{count}} påminnelser skickade",
+      "title_one": "Skicka en betalningspåminnelse till {{count}} person?",
+      "title_other": "Skicka en betalningspåminnelse till {{count}} personer?"
+    },
+    "sendReminder": "Skicka påminnelse till {{count}} obetalda",
+    "settings": {
+      "emailOnClose": "Skicka e-post till obetalda deltagare när anmälan stänger",
+      "emailOnCloseHelp": "Skickar betalningspåminnelsen en gång, när anmälan stänger, till alla med en plats som inte har betalat.",
+      "emailOnCloseLockedHelp": "Alltid på i detta läge: det är genom detta e-postmeddelande deltagarna får sin betalningslänk.",
+      "modeAfter": "Betalning efter att anmälan stängts",
+      "modeAfterHelp": "Ingen betalar medan anmälan är öppen. Alla med en plats får en betalningslänk per e-post när anmälan stänger.",
+      "modeDuring": "Betalning vid anmälan",
+      "modeDuringHelp": "Deltagarna går till betalningssidan direkt efter anmälan. Obetalda anmälningar behåller ändå sin plats.",
+      "modeLabel": "När tas betalningen ut?",
+      "modeNone": "Inga betalningar",
+      "modeNoneHelp": "Alla kvoter är gratis eller betalningarna samlas in manuellt.",
+      "subtitle": "Priserna ställs in per kvot under fliken Kvoter.",
+      "switchToNoneWarning": "Redan gjorda betalningar sparas och visas fortfarande. Ingen får automatiskt pengarna tillbaka.",
+      "title": "Betalningar"
+    },
+    "status": {
+      "NOT_REQUIRED": "Gratis",
+      "PAID": "Betald",
+      "PAID_MANUALLY": "Betald manuellt",
+      "REFUNDED": "Återbetald",
+      "UNPAID": "Obetald"
+    },
+    "summary": {
+      "guildReceives": "Gillet får",
+      "paid": "Betalda",
+      "paidOf": "av {{count}}",
+      "ticketsPaid": "Betalda biljetter",
+      "unpaid": "Obetalda"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Är du säker på att du vill ta bort denna registrering?",

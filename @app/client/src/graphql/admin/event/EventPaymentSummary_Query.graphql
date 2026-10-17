@@ -1,0 +1,21 @@
+fragment EventPaymentSummary_Event on Event {
+  id
+  paymentMode
+  lastPaymentReminderSentAt
+  registrations {
+    totalCount
+  }
+  paymentSummary {
+    paidCount
+    unpaidCount
+    dueCount
+    ticketsPaidCents
+    guildReceivesCents
+  }
+}
+
+query EventPaymentSummary($id: UUID!) {
+  event(id: $id) {
+    ...EventPaymentSummary_Event
+  }
+}
