@@ -1,0 +1,71 @@
+# Production-like stack for the registration stress test.
+#
+# Postgres runs with wal_level=replica (as on Azure, so live queries are
+# unavailable) and 10 connection slots for the ilmo roles:
+# max_connections=13 minus superuser_reserved_connections=3.
+#
+# IMAGE selects the ilmo build under test, e.g. IMAGE=ilmo-stress:before.
+name: ilmo-stress
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      postgres -c wal_level=replica -c max_connections=13
+      -c superuser_reserved_connections=3
+    ports:
+      - "6544:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      retries: 30
+
+  redis:
+    image: redis:6-alpine
+
+  migrate:
+    image: ${IMAGE:-ilmo-stress:after}
+    env_file: .env.stress
+    command: >
+      bash -c "cd /app/@app/worker && mkdir -p dist && cd dist
+      && NODE_OPTIONS='-r @app/config/env.js' /app/node_modules/.bin/graphile-worker --schema-only
+      && cd /app/@app/db && NODE_OPTIONS='-r @app/config/env' pnpm exec graphile-migrate migrate
+      && NODE_OPTIONS='-r @app/config/env' pnpm exec graphile-migrate watch --once"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  finalize:
+    image: postgres:14
+    environment:
+      PGPASSWORD: postgres
+    command: psql -h db -U postgres -c "alter role ilmo nosuperuser"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  server:
+    image: ${IMAGE:-ilmo-stress:after}
+    env_file: .env.stress
+    # Two cores, like the production B2ls_v2. Pinned with taskset because
+    # cgroup CPU limits are unavailable in nested VMs.
+    command: ["taskset", "-c", "0,1", "pnpm", "--filter", "@app/server", "run", "start"]
+    ports:
+      - "5678:5678"
+    depends_on:
+      finalize:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+
+  worker:
+    image: ${IMAGE:-ilmo-stress:after}
+    env_file: .env.stress
+    command: ["pnpm", "--filter", "@app/worker", "run", "start"]
+    depends_on:
+      finalize:
+        condition: service_completed_successfully
