@@ -9,12 +9,32 @@ import {
   deleteTestData,
   getEmails,
   getJobs,
+  poolFromUrl,
   runGraphQLQuery,
   runJobs,
   setup,
   sleep,
   teardown,
+  TEST_DATABASE_URL,
 } from "../helpers"
+
+// Registrations created in one transaction share created_at, so their order
+// is read from the positions table instead of assumed from creation order.
+async function registrationIdsByStatus(eventId: string) {
+  const { rows } = await poolFromUrl(TEST_DATABASE_URL!).query(
+    `select id, status
+      from app_hidden.registrations_status_and_position
+      where event_id = $1`,
+    [eventId]
+  )
+  const idsWith = (status: string) =>
+    rows.filter((row) => row.status === status).map((row) => row.id)
+  return {
+    inQuota: idsWith("IN_QUOTA"),
+    inOpenQuota: idsWith("IN_OPEN_QUOTA"),
+    inQueue: idsWith("IN_QUEUE"),
+  }
+}
 
 beforeEach(deleteTestData)
 beforeAll(setup)
@@ -160,8 +180,14 @@ describe("DeleteRegistration", () => {
         quotaOptions: { create: true, amount: 1, size: 2 },
       })
     const event = events[0]
-    const receivedSpot = registrations[2]
-    const updateToken = registrationSecrets[1].update_token
+    const {
+      inQuota: [leavingId],
+      inQueue: [queuedId],
+    } = await registrationIdsByStatus(event.id)
+    const receivedSpot = registrations.find((r) => r.id === queuedId)!
+    const updateToken = registrationSecrets.find(
+      (secret) => secret.registration_id === leavingId
+    )!.update_token
 
     await runGraphQLQuery(
       DeleteEventRegistrationDocument,
@@ -190,8 +216,7 @@ describe("DeleteRegistration", () => {
             id: receivedSpot.id,
             event_id: receivedSpot.event_id,
             quota_id: receivedSpot.quota_id,
-            status: "IN_QUEUE",
-            position: 1,
+            status: "IN_QUOTA",
           },
         })
 
@@ -220,8 +245,14 @@ describe("DeleteRegistration", () => {
         registrationOptions: { create: true, amount: 3 },
       })
     const event = events[0]
-    const receivedSpot = registrations[2]
-    const updateToken = registrationSecrets[1].update_token
+    const {
+      inOpenQuota: [leavingId],
+      inQueue: [queuedId],
+    } = await registrationIdsByStatus(event.id)
+    const receivedSpot = registrations.find((r) => r.id === queuedId)!
+    const updateToken = registrationSecrets.find(
+      (secret) => secret.registration_id === leavingId
+    )!.update_token
 
     await runGraphQLQuery(
       DeleteEventRegistrationDocument,
@@ -250,7 +281,7 @@ describe("DeleteRegistration", () => {
             id: receivedSpot.id,
             event_id: receivedSpot.event_id,
             quota_id: receivedSpot.quota_id,
-            status: "IN_QUEUE",
+            status: "IN_OPEN_QUOTA",
             position: 1,
           },
         })

@@ -615,8 +615,15 @@ CREATE FUNCTION app_private.refresh_registration_positions(p_event_id uuid) RETU
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
+declare
+  v_queued uuid[];
 begin
   perform pg_advisory_xact_lock(hashtext('registration_positions:' || p_event_id::text));
+
+  select coalesce(array_agg(id), '{}')
+    into v_queued
+    from app_hidden.registrations_status_and_position
+    where event_id = p_event_id and status = 'IN_QUEUE'::app_public.registration_status;
 
   delete from app_hidden.registrations_status_and_position
     where event_id = p_event_id;
@@ -672,6 +679,18 @@ begin
           else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
         end as position
       from cte3;
+
+  perform graphile_worker.add_job(
+    'registration__process_queue',
+    json_build_object('receivedSpot', received_spot)
+  )
+  from app_hidden.registrations_status_and_position received_spot
+  join app_public.registrations r on r.id = received_spot.id
+  where
+    received_spot.event_id = p_event_id and
+    received_spot.id = any(v_queued) and
+    received_spot.status <> 'IN_QUEUE'::app_public.registration_status and
+    r.is_finished;
 end;
 $$;
 
@@ -944,70 +963,6 @@ $$;
 --
 
 COMMENT ON FUNCTION app_private.tg__ownership_info() IS 'This trigger should be called on all tables with created_by, updated_by - it ensures that they cannot be manipulated.';
-
-
---
--- Name: tg__process_queue(); Type: FUNCTION; Schema: app_private; Owner: -
---
-
-CREATE FUNCTION app_private.tg__process_queue() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-declare
-  v_old_registration_status app_hidden.registrations_status_and_position;
-  v_received_spot app_hidden.registrations_status_and_position;
-begin
-  -- Wait for in-flight position recomputes of this event so that the lookup
-  -- below sees every committed registration, including one that would be
-  -- first in queue.
-  perform pg_advisory_xact_lock(hashtext('registration_positions:' || OLD.event_id::text));
-
-  select *
-    into v_old_registration_status
-    from app_hidden.registrations_status_and_position
-    where
-      id = OLD.id;
-
-  if v_old_registration_status.status = 'IN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        event_id = v_old_registration_status.event_id and
-        quota_id = v_old_registration_status.quota_id and
-        status = 'IN_QUEUE'::app_public.registration_status
-      -- Queue positions are numbered per event, so the earliest queued
-      -- registration of this quota can be behind registrations of other
-      -- quotas.
-      order by position asc
-      limit 1;
-  elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        -- Open quota spots can be populated by any quota, so the spot goes
-        -- to the first in the event's queue.
-        event_id = v_old_registration_status.event_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position asc
-      limit 1;
-  else
-    -- The deleted registration was in queue, nobody will get a spot so return.
-    return OLD;
-  end if;
-
-  if v_received_spot is not null then
-    perform graphile_worker.add_job(
-      'registration__process_queue',
-      json_build_object('receivedSpot', v_received_spot)
-    );
-  end if;
-
-  return OLD;
-end;
-$$;
 
 
 --
@@ -4768,13 +4723,6 @@ CREATE TRIGGER _701_refresh_registration_positions AFTER UPDATE ON app_public.re
 
 
 --
--- Name: registrations _800_process_registration_queue; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__process_queue();
-
-
---
 -- Name: user_emails _900_send_verification_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
@@ -5463,13 +5411,6 @@ REVOKE ALL ON FUNCTION app_private.tg__add_job() FROM PUBLIC;
 --
 
 REVOKE ALL ON FUNCTION app_private.tg__ownership_info() FROM PUBLIC;
-
-
---
--- Name: FUNCTION tg__process_queue(); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.tg__process_queue() FROM PUBLIC;
 
 
 --

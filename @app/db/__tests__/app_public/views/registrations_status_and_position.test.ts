@@ -391,8 +391,8 @@ describe("registrations_status_and_position", () => {
             id: registrations[2].id,
             event_id: event.id,
             quota_id: quotas[0].id,
-            status: "IN_QUEUE",
-            position: 1,
+            status: "IN_QUOTA",
+            position: 2,
           },
         })
         expect(
@@ -429,10 +429,132 @@ describe("registrations_status_and_position", () => {
             id: queuedA.id,
             event_id: event.id,
             quota_id: quotaA.id,
-            status: "IN_QUEUE",
-            position: 2,
+            status: "IN_QUOTA",
+            position: 1,
           },
         })
+      }))
+
+    async function queueJobIds(client: PoolClient) {
+      const jobs = await getJobs(client, "registration__process_queue")
+      return jobs.map((job) => job.payload.receivedSpot.id)
+    }
+
+    it("emails the event's queue head when a quota spot is refilled from the open quota", () =>
+      withUserDb(async (client) => {
+        const {
+          event,
+          quotas: [quotaX, quotaY],
+        } = await setupData(client, {
+          openQuotaSize: 1,
+          numQuotas: 2,
+          quotaSize: 1,
+        })
+        // X1 is in quota X, X2 overflows into the open quota, Y1 is in quota
+        // Y and Y2 heads the event's queue.
+        const [x1] = await registerInOrder(client, 1, event.id, quotaX.id)
+        await registerInOrder(client, 1, event.id, quotaX.id)
+        await registerInOrder(client, 1, event.id, quotaY.id)
+        const [y2] = await registerInOrder(client, 1, event.id, quotaY.id)
+
+        await client.query(
+          "delete from app_public.registrations where id = $1",
+          [x1.id]
+        )
+
+        expect(await queueJobIds(client)).toEqual([y2.id])
+        expect(await positionsOf(client, [y2.id])).toEqual([
+          { status: "IN_OPEN_QUOTA", position: 1 },
+        ])
+      }))
+
+    it("emails queued people who get a spot when a quota grows", () =>
+      withUserDb(async (client) => {
+        const { event, quotas } = await setupData(client, {
+          openQuotaSize: 0,
+          numQuotas: 1,
+          quotaSize: 1,
+        })
+        const registrations = await registerInOrder(
+          client,
+          3,
+          event.id,
+          quotas[0].id
+        )
+
+        await client.query(
+          "update app_public.quotas set size = 3 where id = $1",
+          [quotas[0].id]
+        )
+
+        expect((await queueJobIds(client)).sort()).toEqual(
+          [registrations[1].id, registrations[2].id].sort()
+        )
+      }))
+
+    it("emails queued people who get a spot when the open quota grows", () =>
+      withUserDb(async (client) => {
+        const { event, quotas } = await setupData(client, {
+          openQuotaSize: 0,
+          numQuotas: 1,
+          quotaSize: 1,
+        })
+        const registrations = await registerInOrder(
+          client,
+          2,
+          event.id,
+          quotas[0].id
+        )
+
+        await client.query(
+          "update app_public.events set open_quota_size = 1 where id = $1",
+          [event.id]
+        )
+
+        expect(await queueJobIds(client)).toEqual([registrations[1].id])
+      }))
+
+    it("does not email unfinished registrations that leave the queue", () =>
+      withUserDb(async (client) => {
+        const { event, quotas } = await setupData(client, {
+          openQuotaSize: 0,
+          numQuotas: 1,
+          quotaSize: 1,
+        })
+        const [first] = await registerInOrder(client, 1, event.id, quotas[0].id)
+        await client.query(
+          "select * from app_public.claim_registration_token($1, $2)",
+          [event.id, quotas[0].id]
+        )
+
+        await client.query(
+          "delete from app_public.registrations where id = $1",
+          [first.id]
+        )
+
+        expect(await queueJobIds(client)).toEqual([])
+      }))
+
+    it("emails nobody when a queued registration is deleted", () =>
+      withUserDb(async (client) => {
+        const { event, quotas } = await setupData(client, {
+          openQuotaSize: 0,
+          numQuotas: 1,
+          quotaSize: 1,
+        })
+        const registrations = await registerInOrder(
+          client,
+          3,
+          event.id,
+          quotas[0].id
+        )
+
+        await client.query(
+          "delete from app_public.registrations where id = $1",
+          [registrations[1].id]
+        )
+
+        expect(await queueJobIds(client)).toEqual([])
       }))
 
     it("keeps both of two concurrent claims with correct positions", async () => {
@@ -505,7 +627,7 @@ describe("registrations_status_and_position", () => {
       ])
     })
 
-    it("promotes a registration claimed concurrently with the deletion of a quota spot", async () => {
+    it("emails a registration made concurrently with the deletion of a quota spot", async () => {
       const pool = poolFromUrl(TEST_DATABASE_URL)
       const setupClient = await pool.connect()
       let event, quota, firstRegistration
@@ -539,16 +661,13 @@ describe("registrations_status_and_position", () => {
       let claimedId: string
       try {
         await client1.query("begin")
-        await client1.query(
-          "select * from app_public.claim_registration_token($1, $2)",
-          [event.id, quota.id]
+        ;[{ id: claimedId }] = await createRegistrations(
+          client1,
+          1,
+          event.id,
+          quota.id,
+          []
         )
-        ;({
-          rows: [{ id: claimedId }],
-        } = await client1.query(
-          "select id from app_public.registrations where event_id = $1 and id <> $2",
-          [event.id, firstRegistration.id]
-        ))
 
         await client2.query("begin")
         let deleteDone = false
@@ -584,7 +703,7 @@ describe("registrations_status_and_position", () => {
             id: claimedId,
             event_id: event.id,
             quota_id: quota.id,
-            status: "IN_QUEUE",
+            status: "IN_QUOTA",
             position: 1,
           },
         })

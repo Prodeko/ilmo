@@ -1,5 +1,5 @@
 --! Previous: sha1:eafce160dd3a8ec859a47bc11b5c9117cc07fd8e
---! Hash: sha1:f1af4fbb1a8ec4d12e7c01e291cdc4491f2e00b4
+--! Hash: sha1:56b227ed9a6bb6df9b3dd3c3a3d53203690cf24b
 
 --! split: 1-current.sql
 /*
@@ -145,6 +145,8 @@ drop trigger if exists _700_refresh_mat_view on app_public.registrations;
 drop trigger if exists _300_refresh_mat_view on app_public.events;
 drop trigger if exists _300_refresh_mat_view on app_public.quotas;
 drop function if exists app_private.tg__refresh_materialized_view();
+drop trigger if exists _800_process_registration_queue on app_public.registrations;
+drop function if exists app_private.tg__process_queue();
 
 drop trigger if exists _700_refresh_registration_positions on app_public.registrations;
 drop trigger if exists _701_refresh_registration_positions on app_public.registrations;
@@ -186,17 +188,26 @@ comment on table app_hidden.registrations_status_and_position is
   E'Rank and position of registrations, maintained per event by app_private.refresh_registration_positions.';
 
 /*
- * Recomputes the statuses and positions of one event's registrations.
+ * Recomputes the statuses and positions of one event's registrations and
+ * emails every finished registration that leaves the queue.
  *
  * The advisory lock serializes recomputes of the same event until the end of
  * the transaction. In READ COMMITTED each following statement takes a fresh
  * snapshot, so a recompute that waited for the lock sees every registration
- * committed by the transaction that held it.
+ * committed by the transaction that held it, and compares against the
+ * statuses that transaction left behind.
  */
 create function app_private.refresh_registration_positions(p_event_id uuid)
 returns void as $$
+declare
+  v_queued uuid[];
 begin
   perform pg_advisory_xact_lock(hashtext('registration_positions:' || p_event_id::text));
+
+  select coalesce(array_agg(id), '{}')
+    into v_queued
+    from app_hidden.registrations_status_and_position
+    where event_id = p_event_id and status = 'IN_QUEUE'::app_public.registration_status;
 
   delete from app_hidden.registrations_status_and_position
     where event_id = p_event_id;
@@ -252,6 +263,18 @@ begin
           else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
         end as position
       from cte3;
+
+  perform graphile_worker.add_job(
+    'registration__process_queue',
+    json_build_object('receivedSpot', received_spot)
+  )
+  from app_hidden.registrations_status_and_position received_spot
+  join app_public.registrations r on r.id = received_spot.id
+  where
+    received_spot.event_id = p_event_id and
+    received_spot.id = any(v_queued) and
+    received_spot.status <> 'IN_QUEUE'::app_public.registration_status and
+    r.is_finished;
 end;
 $$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
 revoke all on function app_private.refresh_registration_positions(uuid) from public;
@@ -314,64 +337,3 @@ create trigger _301_refresh_registration_positions
   execute procedure app_private.tg__refresh_registration_positions();
 
 select app_private.refresh_registration_positions(id) from app_public.events;
-
-/*
- * Queue promotion reads positions under the same per-event lock as the
- * recompute.
- */
-create or replace function app_private.tg__process_queue() returns trigger as $$
-declare
-  v_old_registration_status app_hidden.registrations_status_and_position;
-  v_received_spot app_hidden.registrations_status_and_position;
-begin
-  -- Wait for in-flight position recomputes of this event so that the lookup
-  -- below sees every committed registration, including one that would be
-  -- first in queue.
-  perform pg_advisory_xact_lock(hashtext('registration_positions:' || OLD.event_id::text));
-
-  select *
-    into v_old_registration_status
-    from app_hidden.registrations_status_and_position
-    where
-      id = OLD.id;
-
-  if v_old_registration_status.status = 'IN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        event_id = v_old_registration_status.event_id and
-        quota_id = v_old_registration_status.quota_id and
-        status = 'IN_QUEUE'::app_public.registration_status
-      -- Queue positions are numbered per event, so the earliest queued
-      -- registration of this quota can be behind registrations of other
-      -- quotas.
-      order by position asc
-      limit 1;
-  elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        -- Open quota spots can be populated by any quota, so the spot goes
-        -- to the first in the event's queue.
-        event_id = v_old_registration_status.event_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position asc
-      limit 1;
-  else
-    -- The deleted registration was in queue, nobody will get a spot so return.
-    return OLD;
-  end if;
-
-  if v_received_spot is not null then
-    perform graphile_worker.add_job(
-      'registration__process_queue',
-      json_build_object('receivedSpot', v_received_spot)
-    );
-  end if;
-
-  return OLD;
-end;
-$$ language plpgsql;
