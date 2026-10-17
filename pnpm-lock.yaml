@@ -565,9 +565,6 @@ importers:
       '@graphile/pg-pubsub':
         specifier: ^4.12.3
         version: 4.14.1(graphile-build@4.14.1(graphql@15.10.2))(graphql@15.10.2)(postgraphile@4.14.1(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      '@graphile/subscriptions-lds':
-        specifier: ^4.12.3
-        version: 4.14.1(bufferutil@4.1.0)(postgraphile-core@4.14.1(graphql@15.10.2)(pg@8.20.0))(utf-8-validate@5.0.10)
       '@types/graphql-upload':
         specifier: ^8.0.11
         version: 8.0.12
@@ -692,6 +689,9 @@ importers:
       '@types/pg':
         specifier: ^8.11.10
         version: 8.20.0
+      graphql-subscriptions:
+        specifier: ^1.2.1
+        version: 1.2.1(graphql@15.10.2)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
@@ -1694,10 +1694,6 @@ packages:
   '@graphile-contrib/pg-simplify-inflector@6.1.0':
     resolution: {integrity: sha512-3eI2FP4ulu/fxwkJBNXhR6XEzqVz4wJWFr4LfeyUNNArUtLFx0DpP6YdcARCYgwLExFcIQNE8fnul3JKiciYIw==}
 
-  '@graphile/lds@4.14.1':
-    resolution: {integrity: sha512-JDsQ8Z05kkO6GGPDZ3nCkNLLvd1BR83/ps9Ipu17+nMKJqQLXgmcLvl8J9Xc9EKvPBNS5zL+dG06pXc7TWau5w==}
-    hasBin: true
-
   '@graphile/logger@0.2.0':
     resolution: {integrity: sha512-jjcWBokl9eb1gVJ85QmoaQ73CQ52xAaOCF29ukRbYNl6lY+ts0ErTaDYOBlejcbUs2OpaiqYLO5uDhyLFzWw4w==}
 
@@ -1717,11 +1713,6 @@ packages:
       graphile-build: 4.x
       graphql: 15.x
       postgraphile: ^4.4.0-beta.10
-
-  '@graphile/subscriptions-lds@4.14.1':
-    resolution: {integrity: sha512-rl1gt3eALKdIA2xGm+h6tdTPFJoM9XL//LDcIrG13D4RAjlSsWDLAFrXpx73cYjWRIttsB0KbbuaeS/QPEka0A==}
-    peerDependencies:
-      postgraphile-core: '>4.3.1 <5'
 
   '@graphql-codegen/add@5.0.3':
     resolution: {integrity: sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA==}
@@ -3453,9 +3444,6 @@ packages:
 
   '@types/tedious@4.0.14':
     resolution: {integrity: sha512-KHPsfX/FoVbUGbyYvk1q9MMQHLPeRZhRJZdO45Q4YjvFkv4hMNghCWTvy7rdKessBsmtz4euWCWAB6/tVpI1Iw==}
-
-  '@types/ws@6.0.4':
-    resolution: {integrity: sha512-PpPrX7SZW9re6+Ha8ojZG4Se8AZXgf0GK6zmfqEuCsY49LFDNXO3SByp44X3dFEqtB73lkCDAdUazhAjVPiNwg==}
 
   '@types/ws@7.4.7':
     resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
@@ -10718,18 +10706,6 @@ snapshots:
 
   '@graphile-contrib/pg-simplify-inflector@6.1.0': {}
 
-  '@graphile/lds@4.14.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@types/pg': 8.20.0
-      '@types/ws': 6.0.4
-      pg: 8.20.0
-      tslib: 2.8.1
-      ws: 7.5.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - pg-native
-      - utf-8-validate
-
   '@graphile/logger@0.2.0': {}
 
   '@graphile/lru@4.11.0':
@@ -10752,18 +10728,6 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
-
-  '@graphile/subscriptions-lds@4.14.1(bufferutil@4.1.0)(postgraphile-core@4.14.1(graphql@15.10.2)(pg@8.20.0))(utf-8-validate@5.0.10)':
-    dependencies:
-      '@graphile/lds': 4.14.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@types/ws': 6.0.4
-      postgraphile-core: 4.14.1(graphql@15.10.2)(pg@8.20.0)
-      tslib: 2.8.1
-      ws: 7.5.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - bufferutil
-      - pg-native
-      - utf-8-validate
 
   '@graphql-codegen/add@5.0.3(graphql@15.10.2)':
     dependencies:
@@ -12971,10 +12935,6 @@ snapshots:
   '@types/stack-utils@2.0.3': {}
 
   '@types/tedious@4.0.14':
-    dependencies:
-      '@types/node': 18.19.130
-
-  '@types/ws@6.0.4':
     dependencies:
       '@types/node': 18.19.130
 

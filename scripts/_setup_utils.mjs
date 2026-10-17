@@ -145,11 +145,21 @@ export function updateDotenv(add, answers) {
   )
 
   add(
-    "LD_TABLE_PATTERN",
-    "app_public.*",
+    "DATABASE_POOL_MAX_ROOT",
+    "2",
     `\
-# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds`
+# Postgres connection budget. The server's owner pool (DATABASE_POOL_MAX_ROOT),
+# its PostGraphile pool (DATABASE_POOL_MAX_AUTH, one connection of which is held
+# for LISTEN) and the worker (WORKER_POOL_MAX) together must fit in the
+# connections the database server has free. A request that cannot get a
+# connection within DATABASE_POOL_ACQUIRE_TIMEOUT_MS fails.`
   )
+
+  add("DATABASE_POOL_MAX_AUTH", "5")
+
+  add("DATABASE_POOL_ACQUIRE_TIMEOUT_MS", "5000")
+
+  add("WORKER_POOL_MAX", "2")
 
   add(
     "NEXT_TRANSLATE_PATH",

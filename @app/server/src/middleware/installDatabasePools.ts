@@ -2,6 +2,8 @@ import { FastifyPluginAsync } from "fastify"
 import fp from "fastify-plugin"
 import { Pool } from "pg"
 
+import { poolConfig } from "../utils/poolConfig"
+
 declare module "fastify" {
   export interface FastifyInstance {
     authPgPool: Pool
@@ -24,13 +26,16 @@ function swallowPoolError(_error: Error) {
 const DatabasePools: FastifyPluginAsync = async (app) => {
   // This pool runs as the database owner, so it can do anything.
   const rootPgPool = new Pool({
+    ...poolConfig("root"),
     connectionString: process.env.DATABASE_URL,
   })
   rootPgPool.on("error", swallowPoolError)
   app.decorate("rootPgPool", rootPgPool)
 
   // This pool runs as the unprivileged user, it's what PostGraphile uses.
+  // @graphile/pg-pubsub holds one of its connections for LISTEN.
   const authPgPool = new Pool({
+    ...poolConfig("auth"),
     connectionString: process.env.AUTH_DATABASE_URL,
   })
   authPgPool.on("error", swallowPoolError)
