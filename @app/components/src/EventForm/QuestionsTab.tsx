@@ -201,31 +201,42 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
       const firstLanguage = selectedLanguages?.[0]
 
       return selectedLanguages.map((l) => {
+        const icon =
+          l !== firstLanguage
+            ? null
+            : i === 0
+              ? addDataOption
+              : removeDataOption(index, i)
         return (
-          <Form.Item
+          <div
             key={l}
-            name={[index, "data", i, l.toLowerCase()]}
-            rules={[
-              {
-                required: true,
-                message: t("forms.rules.questions.provideQuestionData"),
-              },
-            ]}
-            noStyle
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
           >
-            <Input
-              data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
-              placeholder={`${t("common:option")} ${i} ${t(
-                `common:lang.in.${l}`
-              )}`}
-              suffix={
-                <>
-                  {i === 0 && l === firstLanguage && addDataOption}
-                  {i > 0 && l === firstLanguage && removeDataOption(index, i)}
-                </>
-              }
-            />
-          </Form.Item>
+            <Form.Item
+              name={[index, "data", i, l.toLowerCase()]}
+              rules={[
+                {
+                  required: true,
+                  message: t("forms.rules.questions.provideQuestionData"),
+                },
+              ]}
+              noStyle
+            >
+              <Input.TextArea
+                data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
+                placeholder={`${t("common:option")} ${i} ${t(
+                  `common:lang.in.${l}`
+                )}`}
+                style={{ flex: 1 }}
+                // Grow taller instead of cutting off long option texts
+                autoSize
+                // An option is a single line of text, so Enter adds no newline
+                onPressEnter={(e) => e.preventDefault()}
+              />
+            </Form.Item>
+            {/* Reserve the icon's width on every row so the fields line up */}
+            <span style={{ flex: "none", width: 14 }}>{icon}</span>
+          </div>
         )
       })
     }
