@@ -179,3 +179,60 @@ create trigger _301_refresh_registration_positions
   execute procedure app_private.tg__refresh_registration_positions();
 
 select app_private.refresh_registration_positions(id) from app_public.events;
+
+/*
+ * Queue promotion reads positions under the same per-event lock as the
+ * recompute.
+ */
+create or replace function app_private.tg__process_queue() returns trigger as $$
+declare
+  v_old_registration_status app_hidden.registrations_status_and_position;
+  v_received_spot app_hidden.registrations_status_and_position;
+begin
+  -- Wait for in-flight position recomputes of this event so that the lookup
+  -- below sees every committed registration, including one that would be
+  -- first in queue.
+  perform pg_advisory_xact_lock(hashtext('registration_positions:' || OLD.event_id::text));
+
+  select *
+    into v_old_registration_status
+    from app_hidden.registrations_status_and_position
+    where
+      id = OLD.id;
+
+  if v_old_registration_status.status = 'IN_QUOTA' then
+    select *
+      into v_received_spot
+      from app_hidden.registrations_status_and_position
+      where
+        event_id = v_old_registration_status.event_id and
+        quota_id = v_old_registration_status.quota_id and
+        status = 'IN_QUEUE'::app_public.registration_status and
+        position = 1
+      order by position desc;
+  elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
+    select *
+      into v_received_spot
+      from app_hidden.registrations_status_and_position
+      where
+        -- Almost the same where condition as above, only quota_id is
+        -- missing since open quota spots can be populated by any quota
+        event_id = v_old_registration_status.event_id and
+        status = 'IN_QUEUE'::app_public.registration_status and
+        position = 1
+      order by position desc;
+  else
+    -- The deleted registration was in queue, nobody will get a spot so return.
+    return OLD;
+  end if;
+
+  if v_received_spot is not null then
+    perform graphile_worker.add_job(
+      'registration__process_queue',
+      json_build_object('receivedSpot', v_received_spot)
+    );
+  end if;
+
+  return OLD;
+end;
+$$ language plpgsql;
