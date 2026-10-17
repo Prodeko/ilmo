@@ -12,6 +12,20 @@
     - Linkki tapahtumaan: <a href="{{ url }}/fi/event/{{ eventSlug }}" target="_blank">{{ url }}/fi/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and not isQueued %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>{% if isPaid %}Maksu: maksettu{% elif payLink %}Maksu: odottaa maksua{% else %}Maksu: maksulinkki tulee myöhemmin{% endif %}</strong><br />
+    Lippu {{ price | euro }} + palvelumaksu {{ serviceFee | euro }} = {{ total | euro }}
+    {% if not isPaid %}
+      {% if payLink %}
+        {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
+      {% else %}
+        <br />Lähetämme maksulinkin sähköpostiisi, kun ilmoittautuminen sulkeutuu{% if registrationEndDate %} {{ registrationEndDate }} klo {{ registrationEndTime }}{% endif %}.
+      {% endif %}
+    {% endif %}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
     <a href="{{ url }}/fi/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/fi/{{ eventRegistrationUpdateLink }}</a>
@@ -28,6 +42,20 @@
     - Link to the event: <a href="{{ url }}/en/event/{{ eventSlug }}" target="_blank">{{ url }}/en/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and not isQueued %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>{% if isPaid %}Payment: paid{% elif payLink %}Payment: pending{% else %}Payment: link coming later{% endif %}</strong><br />
+    Ticket {{ price | euro }} + service fee {{ serviceFee | euro }} = {{ total | euro }}
+    {% if not isPaid %}
+      {% if payLink %}
+        {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
+      {% else %}
+        <br />We'll email you a payment link when registration closes{% if registrationEndDate %} on {{ registrationEndDate }} at {{ registrationEndTime }}{% endif %}.
+      {% endif %}
+    {% endif %}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     You can update or delete your registration via this link:
     <a href="{{ url }}/en/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/en/{{ eventRegistrationUpdateLink }}</a>
