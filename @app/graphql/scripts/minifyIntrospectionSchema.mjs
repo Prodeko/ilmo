@@ -1,8 +1,9 @@
 import { minifyIntrospectionQuery } from "@urql/introspection"
 import { promises as fsp } from "node:fs"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
-const __dirname = new URL(".", import.meta.url).pathname
+const __dirname = fileURLToPath(new URL(".", import.meta.url))
 const introspection = await fsp.readFile(
   path.join(__dirname, "..", "introspection.json"),
   "utf-8"

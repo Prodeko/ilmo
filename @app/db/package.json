@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "gm": "NODE_OPTIONS=\"-r @app/config/env\" pnpm exec graphile-migrate",
+    "gm": "cross-env NODE_OPTIONS=\"-r @app/config/env\" pnpm exec graphile-migrate",
     "migrate": "pnpm gm migrate",
     "watch": "pnpm gm watch",
     "dev": "exit 0",
@@ -17,6 +17,7 @@
     "depcheck": "depcheck --ignores=\"dayjs,@app/config\""
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
     "graphile-migrate": "^1.4.0"
   },
   "devDependencies": {
