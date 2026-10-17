@@ -15,7 +15,6 @@
     "rules": {
       "emailEmpty": "Ange din e-post",
       "emailValid": "Inmatningen är inte giltig e-post",
-      "nameContainsSpace": "Namnet kan inte innehålla mellanslag",
       "provideAnswer": "Snälla svara på frågan",
       "provideFirstName": "Ange ditt förnamn",
       "provideLastName": "Ange ditt efternamn"
