@@ -3,9 +3,7 @@ import Redis from "ioredis"
 import type { Task } from "graphile-worker"
 
 interface Payload {
-  eventId: string
-  quotaId: string
-  ipAddress: string
+  key: string
 }
 
 const isTest = process.env.NODE_ENV === "test"
@@ -15,10 +13,7 @@ const task: Task = async (inPayload, _helpers) => {
   const client = new Redis(url)
   try {
     const payload: Payload = inPayload as any
-    const { eventId, quotaId, ipAddress } = payload
-
-    const key = `rate-limit:claimRegistrationToken:${eventId}:${quotaId}:${ipAddress}`
-    client.del(key)
+    await client.del(payload.key)
   } finally {
     await client.quit()
   }

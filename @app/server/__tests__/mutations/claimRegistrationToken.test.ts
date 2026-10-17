@@ -1,12 +1,16 @@
 import { ClaimRegistrationTokenDocument } from "@app/graphql"
+import { ExecutionResult } from "graphql"
 
 import {
   asRoot,
   createEventDataAndLogin,
+  createSession,
   deleteTestData,
+  poolFromUrl,
   runGraphQLQuery,
   setup,
   teardown,
+  TEST_DATABASE_URL,
 } from "../helpers"
 
 beforeEach(deleteTestData)
@@ -75,13 +79,60 @@ describe("ClaimRegistrationToken", () => {
         expect(registrationRows[0].email).toBeNull()
 
         const rateLimitId = `${eventId}:${quotaId}`
-        const redisKey = `rate-limit:claimRegistrationToken:${rateLimitId}:${req.ip}`
+        const redisKey = `rate-limit:claimRegistrationToken:${rateLimitId}:ip:${req.ip}`
         const value = await redisClient.get(redisKey)
 
         // Redis should contain rate limit value after calling
         // claimRegistrationToken mutation
         expect(value).toEqual("1")
       }
+    )
+  })
+
+  it("rate limits a signed-in user per user, not per session", async () => {
+    const { events, quotas, users, session } = await createEventDataAndLogin()
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+    const userId = users[0].id
+
+    const pool = poolFromUrl(TEST_DATABASE_URL!)
+    const client = await pool.connect()
+    let otherSession: Awaited<ReturnType<typeof createSession>>
+    try {
+      otherSession = await createSession(client, userId)
+    } finally {
+      client.release()
+    }
+
+    const claim = (sessionId: string) =>
+      runGraphQLQuery(
+        ClaimRegistrationTokenDocument,
+        { input: { eventId, quotaId } },
+        { user: { sessionId } },
+        (json) => json,
+        true,
+        false
+      )
+
+    for (let i = 0; i < 3; i++) {
+      const json = (await claim(session.uuid)) as ExecutionResult
+      expect(json.errors).toBeFalsy()
+    }
+
+    // A fresh session for the same user must not reset the limit.
+    await runGraphQLQuery(
+      ClaimRegistrationTokenDocument,
+      { input: { eventId, quotaId } },
+      { user: { sessionId: otherSession.uuid } },
+      async (json, { redisClient }) => {
+        expect(json.errors).toBeTruthy()
+        expect(json.errors![0].extensions.exception.code).toEqual("RLIMIT")
+
+        const key = `rate-limit:claimRegistrationToken:${eventId}:${quotaId}:user:${userId}`
+        expect(await redisClient.get(key)).toEqual("3")
+      },
+      true,
+      false
     )
   })
 

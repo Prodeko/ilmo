@@ -123,6 +123,11 @@ Finally copy the client secret into the ilmo secret store as
 For local development, register a second client in membership-registry's dev
 Keycloak with redirect URI `http://localhost:5678/auth/keycloak/callback` and
 point `KEYCLOAK_ISSUER` at `http://localhost:8180/realms/membership-registry`.
+The repository also ships a self-contained dev realm, started with
+`docker compose --profile keycloak up -d`; see `docs/mcp.md`.
+
+The MCP server at `/mcp` uses a second, public client, `ilmo-mcp`. Its setup is
+in `docs/mcp.md`.
 
 ## Break-glass login
 

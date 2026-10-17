@@ -471,8 +471,26 @@ CREATE TABLE app_private.sessions (
     uuid uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_active timestamp with time zone DEFAULT now() NOT NULL
+    last_active timestamp with time zone DEFAULT now() NOT NULL,
+    kind text DEFAULT 'web'::text NOT NULL,
+    oauth_sid text,
+    CONSTRAINT sessions_kind_check CHECK ((kind = ANY (ARRAY['web'::text, 'mcp'::text]))),
+    CONSTRAINT sessions_oauth_sid_check CHECK (((kind = 'mcp'::text) = (oauth_sid IS NOT NULL)))
 );
+
+
+--
+-- Name: COLUMN sessions.kind; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.kind IS 'How the session was established: web (session cookie) or mcp (Keycloak access token on /mcp).';
+
+
+--
+-- Name: COLUMN sessions.oauth_sid; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.oauth_sid IS 'Keycloak session id (the access token sid claim) of an mcp session.';
 
 
 --
@@ -3277,7 +3295,7 @@ begin
   select array(
     select id from app_public.event_questions as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(questions))
+    and q.id not in (select id from unnest(questions) where id is not null)
   )
   into v_question_ids_to_delete;
 
@@ -3342,7 +3360,7 @@ begin
   select array(
     select id from app_public.quotas as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(quotas))
+    and q.id not in (select id from unnest(quotas) where id is not null)
   )
   into v_quota_ids_to_delete;
 
@@ -4199,6 +4217,13 @@ CREATE INDEX registration_secrets_quota_id_idx ON app_private.registration_secre
 --
 
 CREATE INDEX registration_secrets_registration_id_idx ON app_private.registration_secrets USING btree (registration_id);
+
+
+--
+-- Name: sessions_mcp_oauth_sid_key; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE UNIQUE INDEX sessions_mcp_oauth_sid_key ON app_private.sessions USING btree (oauth_sid) WHERE (kind = 'mcp'::text);
 
 
 --
@@ -5063,6 +5088,13 @@ CREATE POLICY manage_admin ON app_public.event_questions USING (app_public.curre
 --
 
 CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin());
+
+
+--
+-- Name: organizations manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.organizations USING (app_public.current_user_is_admin());
 
 
 --

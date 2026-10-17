@@ -65,6 +65,11 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
     ) {
       // Bypass CSRF for GraphiQL in dev
       done()
+    } else if (request.url === "/mcp" || request.url.startsWith("/mcp?")) {
+      // /mcp authenticates with a bearer token and never reads the session
+      // cookie, so there is no ambient credential for a cross-site request to
+      // ride on.
+      done()
     } else if (request.method === "POST") {
       // Add CSRF protection to POST requests
       app.csrfProtection(request, reply, done)

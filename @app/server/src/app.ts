@@ -115,6 +115,7 @@ export async function makeApp({
     await app.register(installCypressServerCommand)
   }
   await app.register(middleware.installPostGraphile)
+  await app.register(middleware.installMcp)
   await app.register(middleware.installFileUpload)
 
   // Needs to be last

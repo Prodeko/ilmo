@@ -1,0 +1,22 @@
+query McpEventOptions {
+  organizations {
+    nodes {
+      id
+      name
+      __typename
+    }
+    __typename
+  }
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      id
+      name
+      ownerOrganization {
+        id
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

@@ -25,6 +25,21 @@ services:
       log_directory=/var/lib/postgresql/data/logs -c log_rotation_age=60 -c
       log_truncate_on_rotation=on -c log_filename=server_log.hour.%H%M
 
+  # Optional local SSO + MCP auth: `docker compose --profile keycloak up -d`.
+  # The realm is imported from the fixture when the container is created;
+  # `docker compose --profile keycloak up -d --force-recreate keycloak` reloads it.
+  keycloak:
+    profiles: ["keycloak"]
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm --http-port=8190
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./docker/keycloak/realm-dev.json:/opt/keycloak/data/import/realm-dev.json:ro
+    ports:
+      - "8190:8190"
+
 volumes:
   db-volume:
   cache-volume:

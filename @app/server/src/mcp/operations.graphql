@@ -1,0 +1,87 @@
+fragment McpEventSummary on Event {
+  id
+  slug
+  name
+  location
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
+  signupOpen
+  signupUpcoming
+  ownerOrganization {
+    name
+  }
+  category {
+    name
+  }
+}
+
+query McpEvents {
+  signupOpenEvents: events(
+    filter: { signupOpen: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
+  ) {
+    nodes {
+      ...McpEventSummary
+    }
+  }
+  signupUpcomingEvents: events(
+    filter: { signupUpcoming: { equalTo: true }, isDraft: { equalTo: false } }
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_START_TIME_ASC]
+  ) {
+    nodes {
+      ...McpEventSummary
+    }
+  }
+}
+
+query McpEventOptions {
+  organizations {
+    nodes {
+      id
+      name
+    }
+  }
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      id
+      name
+      ownerOrganization {
+        id
+      }
+    }
+  }
+}
+
+query McpEvent($slug: String!) {
+  currentUser {
+    name
+    primaryEmail
+  }
+  eventBySlug(slug: $slug) {
+    ...McpEventSummary
+    description
+    isDraft
+    openQuotaSize
+    quotas(orderBy: POSITION_ASC) {
+      nodes {
+        id
+        title
+        size
+        registrations {
+          totalCount
+        }
+      }
+    }
+    eventQuestions(orderBy: POSITION_ASC) {
+      nodes {
+        id
+        type
+        label
+        isRequired
+        data
+      }
+    }
+  }
+}
