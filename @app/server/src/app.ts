@@ -104,7 +104,10 @@ export async function makeApp({
   await app.register(middleware.installCSRFProtection)
   await app.register(middleware.installPassport)
   await app.register(middleware.installKeycloak)
-  if (!paymentsEnabled()) {
+  if (paymentsEnabled()) {
+    // POST /api/stripe/webhook; before PostGraphile, outside its body parsing
+    await app.register(middleware.installStripeWebhook)
+  } else {
     // The ordinary state until Stripe is configured; every payments code path
     // is skipped and events behave exactly as they did before payments.
     app.log.info(
