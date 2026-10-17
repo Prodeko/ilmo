@@ -12,6 +12,14 @@
     - Linkki tapahtumaan: <a href="{{ url }}/fi/event/{{ eventSlug }}" target="_blank">{{ url }}/fi/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and payLink %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>Maksu: odottaa maksua</strong><br />
+    Lippu {{ price | euro }} + palvelumaksu {{ serviceFee | euro }} = {{ total | euro }}
+    {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
     <a href="{{ url }}/fi/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/fi/{{ eventRegistrationUpdateLink }}</a>
@@ -28,6 +36,14 @@
     - Link to the event: <a href="{{ url }}/en/event/{{ eventSlug }}" target="_blank">{{ url }}/en/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and payLink %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>Payment: pending</strong><br />
+    Ticket {{ price | euro }} + service fee {{ serviceFee | euro }} = {{ total | euro }}
+    {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     You can update or delete your registration via this link:
     <a href="{{ url }}/en/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/en/{{ eventRegistrationUpdateLink }}</a>

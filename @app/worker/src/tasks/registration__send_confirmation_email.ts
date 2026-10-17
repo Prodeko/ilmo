@@ -1,7 +1,14 @@
 import dayjs from "dayjs"
 
+import {
+  loadRegistrationPaymentState,
+  payLink,
+  paymentApplies,
+  ticketAmounts,
+} from "../payments"
+
 import type { SendEmailPayload } from "./send_email"
-import type { Task } from "graphile-worker"
+import type { JobHelpers, Task } from "graphile-worker"
 
 interface RegistrationSendConfirmationEmail {
   /**
@@ -18,6 +25,43 @@ export function getFormattedEventTime(event: any) {
   const startTime = dayjs(event_start_time).format(formatString)
   const endTime = dayjs(event_end_time).format(formatString)
   return `${startTime} - ${endTime}`
+}
+
+/**
+ * The payment section of the confirmation email (board 12). Empty when no
+ * payment applies, so emails of events without payments are unchanged.
+ * Amounts are cents. `payLink` is set only when the registration can be
+ * paid now: in DURING_REGISTRATION mode, or once signup has closed.
+ * Queued registrations get `isQueued` and no payment section.
+ */
+async function getPaymentVariables(
+  query: JobHelpers["query"],
+  event: any,
+  registration: any,
+  updateToken: string
+) {
+  if (!paymentApplies(event, registration)) {
+    return {}
+  }
+  const state = await loadRegistrationPaymentState(query, registration.id)
+  const isQueued = state?.queue_status === "IN_QUEUE"
+  const isPaid =
+    state?.payment_status === "PAID" ||
+    state?.payment_status === "PAID_MANUALLY"
+  const paymentOpen =
+    event.payment_mode === "DURING_REGISTRATION" || !!state?.signup_closed
+  const registrationEnd = dayjs(event.registration_end_time)
+  return {
+    ...ticketAmounts(registration.price_cents),
+    paymentMode: event.payment_mode,
+    isQueued,
+    isPaid,
+    ...(paymentOpen && !isQueued && state?.payment_status === "UNPAID"
+      ? { payLink: payLink(updateToken) }
+      : {}),
+    registrationEndDate: registrationEnd.format("D.M.YYYY"),
+    registrationEndTime: registrationEnd.format("HH:mm"),
+  }
 }
 
 const task: Task = async (inPayload, { addJob, query }) => {
@@ -79,6 +123,13 @@ const task: Task = async (inPayload, { addJob, query }) => {
     return
   }
 
+  const paymentVariables = await getPaymentVariables(
+    query,
+    event,
+    registration,
+    registrationSecret.update_token
+  )
+
   const sendEmailPayload: SendEmailPayload = {
     options: {
       to: email,
@@ -96,6 +147,7 @@ const task: Task = async (inPayload, { addJob, query }) => {
       eventSlug: event.slug,
       eventLocation: event.location,
       eventRegistrationUpdateLink: `update-registration/${registrationSecret.update_token}`,
+      ...paymentVariables,
     },
   }
 

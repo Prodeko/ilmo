@@ -3,6 +3,7 @@ import {
   fromEmail,
   projectName,
 } from "@app/config"
+import { formatEuro } from "@app/lib"
 import chalk from "chalk"
 import html2text from "html-to-text"
 import mjml2html from "mjml"
@@ -22,6 +23,8 @@ global.TEST_EMAILS = []
 const njk = new nunjucks.Environment(
   new nunjucks.FileSystemLoader(`${__dirname}/../../../worker/templates/`)
 )
+// Money is integer cents in template variables; `{{ total | euro }}` -> 18,25 €
+njk.addFilter("euro", (cents: number) => formatEuro(cents))
 
 const isTest = process.env.NODE_ENV === "test"
 const isDev = process.env.NODE_ENV !== "production"
@@ -54,6 +57,8 @@ const task: Task = async (inPayload) => {
       .fromString(html2textableHtml, {
         wordwrap: 120,
         tags: { img: { format: "skip" } },
+        // Amount tables of the payment emails (payment_macros.njk)
+        tables: [".amounts"],
       })
       .replace(/\n\s+\n/g, "\n\n")
     Object.assign(options, { html, text })

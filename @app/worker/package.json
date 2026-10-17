@@ -9,6 +9,7 @@
     "dev": "cd dist && nodemon --signal SIGINT --watch '**/*.js' -x \"node --inspect -r @app/config/env.js -r source-map-support/register ../../../node_modules/graphile-worker/dist/cli.js --crontab ../crontab\"",
     "watch": "exit 0",
     "install-db-schema": "mkdirp dist && pnpm gw --schema-only",
+    "test": "NODE_OPTIONS=\"-r @app/config/env.js\" NODE_ENV=test pnpm exec jest",
     "depcheck": "depcheck --ignores=\"tslib,stripe\""
   },
   "dependencies": {

@@ -796,17 +796,51 @@ type EmailTemplate {
 
 input EmailTemplateVariables {
   actionDescription: String
+
+  """The reminder is the email sent when registration closes."""
+  closed: Boolean
   deleteAccountLink: String
   eventLocation: String
   eventName: TranslatedInputField
   eventRegistrationUpdateLink: String
   eventSlug: String
   eventTime: String
+  firstName: String
+
+  """A duplicate payment was refunded in full (refund email)."""
+  full: Boolean
+  isPaid: Boolean
+  isQueued: Boolean
   link: String
   organizationName: String
+
+  """The amount paid (refund email), in cents."""
+  paid: Int
+  paidAt: String
+
+  """
+  The payment link relative to the language root, e.g. `pay/<update token>`.
+  """
+  payLink: String
+  paymentMethod: PaymentMethod
+  paymentMode: PaymentMode
+
+  """Ticket price in cents (payment emails)."""
+  price: Int
+
+  """The amount refunded (refund email), in cents."""
+  refund: Int
+  registrationEndDate: String
+  registrationEndTime: String
   registrationName: String
   registrationQuota: TranslatedInputField
+
+  """Service fee in cents (payment emails)."""
+  serviceFee: Int
   token: String
+
+  """Ticket price plus service fee, in cents (payment emails)."""
+  total: Int
   url: String
   verifyLink: String
 }
