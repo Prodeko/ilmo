@@ -497,6 +497,16 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           )
         }
 
+        // Like admin rights, the registry owns first and last names, so they
+        // are refreshed on every login. Only a complete pair is written: half
+        // a name would prefill registrations worse than none.
+        if (profile.givenName && profile.familyName) {
+          await client.query(
+            `update app_public.users set first_name = $1, last_name = $2 where id = $3`,
+            [profile.givenName, profile.familyName, user.id]
+          )
+        }
+
         const {
           rows: [session],
         } = await client.query(

@@ -28,6 +28,13 @@ export interface KeycloakProfile {
   readonly emailVerified: boolean
   readonly name: string
   /**
+   * The standard OIDC `given_name` / `family_name` claims, `null` when the
+   * token doesn't carry them. Unlike `name` they keep multi-word first and
+   * last names apart ("Anna Maria" / "von Wright").
+   */
+  readonly givenName: string | null
+  readonly familyName: string | null
+  /**
    * The raw email localpart. It is *not* a valid app username: register_user
    * strips and slugifies it and appends a counter to break ties, so only the
    * username the database hands back may be compared against
@@ -79,11 +86,15 @@ export function mapKeycloakClaims(
     )
   }
   const rawLocale = typeof claims.locale === "string" ? claims.locale : null
+  const nameClaim = (claim: unknown) =>
+    typeof claim === "string" && claim.trim() ? claim.trim() : null
   return {
     sub,
     email,
     emailVerified: claims.email_verified === true,
     name: typeof claims.name === "string" ? claims.name : localpart,
+    givenName: nameClaim(claims.given_name),
+    familyName: nameClaim(claims.family_name),
     usernameSuggestion: localpart,
     // The app ships fi/en/se; anything else has no translations to fall back
     // on, so the user keeps whatever locale the browser negotiated.

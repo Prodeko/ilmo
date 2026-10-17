@@ -47,9 +47,11 @@ test("can register user with a password", () =>
       {
         "avatar_url": "http://example.com",
         "created_at": "[DATE]",
+        "first_name": null,
         "id": "[ID]",
         "is_admin": false,
         "is_verified": false,
+        "last_name": null,
         "name": "Test One",
         "updated_at": "[DATE]",
         "username": "testuser",
@@ -89,9 +91,11 @@ test("can register user with just a username and email", () =>
       {
         "avatar_url": null,
         "created_at": "[DATE]",
+        "first_name": null,
         "id": "[ID]",
         "is_admin": false,
         "is_verified": false,
+        "last_name": null,
         "name": null,
         "updated_at": "[DATE]",
         "username": "testuser",

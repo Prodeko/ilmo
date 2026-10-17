@@ -223,7 +223,7 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
-"""A field which must not contain spaces"""
+"""A name field which must not be empty or contain only whitespace"""
 scalar ConstrainedName
 
 """All input for the create `EventCategory` mutation."""
@@ -3852,6 +3852,11 @@ type User {
   """Optional avatar URL."""
   avatarUrl: String
   createdAt: Datetime!
+
+  """
+  The user's first name(s), from the Keycloak `given_name` claim. Null for users that have not logged in with Keycloak.
+  """
+  firstName: String
   hasPassword: Boolean
 
   """Unique identifier for the user."""
@@ -3860,6 +3865,11 @@ type User {
   """If true, the user has elevated privileges."""
   isAdmin: Boolean!
   isVerified: Boolean!
+
+  """
+  The user's last name, from the Keycloak `family_name` claim. Null for users that have not logged in with Keycloak.
+  """
+  lastName: String
 
   """Public-facing name (or pseudonym) of the user."""
   name: String
