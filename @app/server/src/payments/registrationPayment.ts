@@ -56,6 +56,19 @@ export class CheckoutFailedError extends Error {
   }
 }
 
+/**
+ * What paymentByUpdateToken returns instead of an unexpected (database)
+ * error, whose text must not reach the caller.
+ */
+export class PaymentLookupFailedError extends Error {
+  code = "PAYMENT_LOOKUP_FAILED" as const
+
+  constructor() {
+    super("Could not load the payment. Please try again later.")
+    this.name = "PaymentLookupFailedError"
+  }
+}
+
 export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
 
 export type RegistrationPaymentStatus =

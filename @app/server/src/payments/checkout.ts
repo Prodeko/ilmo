@@ -1,5 +1,5 @@
 import { SERVICE_FEE_CENTS } from "@app/lib"
-import { Pool, PoolClient } from "pg"
+import { Pool } from "pg"
 
 import { getStripe, paymentsEnabled } from "../utils/stripe"
 
@@ -11,6 +11,7 @@ import {
   RegistrationForPayment,
   translate,
 } from "./registrationPayment"
+import { INSTANCE_METADATA_KEY } from "./webhook"
 
 import type Stripe from "stripe"
 
@@ -41,20 +42,18 @@ interface PendingPayment {
  * Expires the registration's other open Checkout Sessions so that only the
  * newest one can be paid (PRD §6.7). A session that was completed meanwhile
  * means the payment is being confirmed by the webhook: refuse instead of
- * opening a second one.
+ * opening a second one (its row stays PENDING for the webhook).
+ *
+ * Runs outside any transaction. Rows are marked EXPIRED only while still
+ * PENDING, so a webhook that marked one PAID meanwhile wins. A pending row
+ * without a session id belongs to a concurrent or crashed checkout; expiring
+ * it makes a concurrent one give up its session (see createCheckoutSession).
  */
 async function expirePendingSessions(
-  client: PoolClient,
+  rootPgPool: Pool,
   stripe: Stripe,
-  registrationId: string
+  pending: PendingPayment[]
 ) {
-  const { rows: pending } = await client.query<PendingPayment>(
-    `select id, stripe_checkout_session_id
-      from app_public.payments
-      where registration_id = $1 and method = 'STRIPE' and status = 'PENDING'
-      for update`,
-    [registrationId]
-  )
   for (const payment of pending) {
     const sessionId = payment.stripe_checkout_session_id
     if (sessionId) {
@@ -71,8 +70,9 @@ async function expirePendingSessions(
         }
       }
     }
-    await client.query(
-      `update app_public.payments set status = 'EXPIRED' where id = $1`,
+    await rootPgPool.query(
+      `update app_public.payments set status = 'EXPIRED'
+        where id = $1 and status = 'PENDING'`,
       [payment.id]
     )
   }
@@ -102,6 +102,7 @@ export function checkoutSessionParams({
     quota_id: registration.quota_id,
     payment_id: paymentId,
     event_slug: registration.event_slug,
+    [INSTANCE_METADATA_KEY]: ROOT_URL ?? "",
   }
   return {
     mode: "payment",
@@ -143,12 +144,18 @@ export function checkoutSessionParams({
  * Starts Stripe Checkout for the registration behind `updateToken` and
  * returns the URL to redirect to.
  *
- * Everything happens in one transaction holding the registration's row lock,
- * so two clicks on Pay can't open two sessions: older pending sessions are
- * expired, a PENDING payment row is inserted, the session is created (with
- * the payment id in its metadata) and its id stored on the row. If anything
- * fails after Stripe created the session, the session is expired again so
- * nobody can pay into a payment row that was rolled back.
+ * No transaction or row lock is held while Stripe is called, so slow Stripe
+ * calls can't tie up database connections:
+ * 1. In a short transaction holding the registration's row lock: check that
+ *    it can be paid, list its pending payments and insert a new PENDING
+ *    payment row (its id goes into the session metadata).
+ * 2. Expire the older pending sessions, then create the session.
+ * 3. Store the session id on the row, but only while it is still PENDING. A
+ *    second click meanwhile has expired it; then this session is expired
+ *    again and the call fails, and the newer click's session is the one to
+ *    pay.
+ * If anything fails, the new session is expired and the new row removed, so
+ * nobody can pay into a payment Ilmo doesn't know.
  */
 export async function createCheckoutSession({
   rootPgPool,
@@ -165,8 +172,77 @@ export async function createCheckoutSession({
     throw new PaymentError("PAYMENTS_DISABLED")
   }
   const stripe = getStripe()
-  const client = await rootPgPool.connect()
+
+  const { registration, paymentId, pending } = await reservePayment(
+    rootPgPool,
+    updateToken
+  )
+
   let session: Stripe.Checkout.Session | null = null
+  try {
+    await expirePendingSessions(rootPgPool, stripe, pending)
+
+    session = await stripe.checkout.sessions.create(
+      checkoutSessionParams({
+        registration,
+        paymentId,
+        updateToken,
+        language,
+      }),
+      { idempotencyKey: `checkout-session-${paymentId}` }
+    )
+    if (!session.url) {
+      throw new Error(`Checkout Session ${session.id} has no URL`)
+    }
+
+    const { rowCount } = await rootPgPool.query(
+      `update app_public.payments set stripe_checkout_session_id = $2
+        where id = $1 and status = 'PENDING'`,
+      [paymentId, session.id]
+    )
+    if (!rowCount) {
+      throw new Error(
+        `Payment ${paymentId} was superseded by a newer checkout before its session was stored`
+      )
+    }
+    return session.url
+  } catch (e) {
+    if (session) {
+      const sessionId = session.id
+      await stripe.checkout.sessions.expire(sessionId).catch((expireError) => {
+        logger.error(
+          `Could not expire Checkout Session ${sessionId} after a failed checkout: ${expireError}`
+        )
+      })
+    }
+    await rootPgPool
+      .query(
+        `delete from app_public.payments
+          where id = $1 and status in ('PENDING', 'EXPIRED')`,
+        [paymentId]
+      )
+      .catch((deleteError) => {
+        logger.error(
+          `Could not remove payment ${paymentId} after a failed checkout: ${deleteError}`
+        )
+      })
+    throw e
+  }
+}
+
+/**
+ * Step 1 of createCheckoutSession: one short transaction holding the
+ * registration's row lock (the same lock order as the webhook and deletion).
+ */
+async function reservePayment(
+  rootPgPool: Pool,
+  updateToken: string
+): Promise<{
+  registration: RegistrationForPayment
+  paymentId: string
+  pending: PendingPayment[]
+}> {
+  const client = await rootPgPool.connect()
   try {
     await client.query("begin")
 
@@ -178,7 +254,13 @@ export async function createCheckoutSession({
       throw new PaymentError(blockedReason)
     }
 
-    await expirePendingSessions(client, stripe, registration!.id)
+    const { rows: pending } = await client.query<PendingPayment>(
+      `select id, stripe_checkout_session_id
+        from app_public.payments
+        where registration_id = $1 and method = 'STRIPE' and status = 'PENDING'
+        order by created_at`,
+      [registration!.id]
+    )
 
     const {
       rows: [payment],
@@ -196,36 +278,10 @@ export async function createCheckoutSession({
         returning id`,
       [registration!.id, SERVICE_FEE_CENTS]
     )
-
-    session = await stripe.checkout.sessions.create(
-      checkoutSessionParams({
-        registration: registration!,
-        paymentId: payment.id,
-        updateToken,
-        language,
-      }),
-      { idempotencyKey: `checkout-session-${payment.id}` }
-    )
-    if (!session.url) {
-      throw new Error(`Checkout Session ${session.id} has no URL`)
-    }
-
-    await client.query(
-      `update app_public.payments set stripe_checkout_session_id = $2 where id = $1`,
-      [payment.id, session.id]
-    )
     await client.query("commit")
-    return session.url
+    return { registration: registration!, paymentId: payment.id, pending }
   } catch (e) {
     await client.query("rollback").catch(() => {})
-    if (session) {
-      const sessionId = session.id
-      await stripe.checkout.sessions.expire(sessionId).catch((expireError) => {
-        logger.error(
-          `Could not expire Checkout Session ${sessionId} after a failed checkout: ${expireError}`
-        )
-      })
-    }
     throw e
   } finally {
     client.release()

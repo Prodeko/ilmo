@@ -151,8 +151,21 @@ describe("events_payment_summary", () => {
         const { registration } = await register(client, event.id, quota.id)
         registrations.push(registration)
       }
-      const [stripe, manual, unpaid1, unpaid2, inOpenQuota, queued] =
-        registrations
+      // Registrations made in one transaction share created_at, so the
+      // database decides who gets which spot: assign the roles from that
+      const { rows: statuses } = await client.query(
+        `select id, status from app_hidden.registrations_status_and_position where event_id = $1`,
+        [event.id]
+      )
+      const withStatus = (status: string) =>
+        registrations.filter(
+          (r) => statuses.find((s) => s.id === r.id)?.status === status
+        )
+      const [stripe, manual, unpaid1, unpaid2] = withStatus("IN_QUOTA")
+      const [inOpenQuota] = withStatus("IN_OPEN_QUOTA")
+      const [queued] = withStatus("IN_QUEUE")
+      expect(unpaid1 && unpaid2 && inOpenQuota && queued).toBeTruthy()
+
       await insertPayment(client, stripe, { ticketAmountCents: 1000 })
       await insertPayment(client, manual, {
         method: "MANUAL",
@@ -164,17 +177,6 @@ describe("events_payment_summary", () => {
       })
       // A queued registration that paid anyway still counts towards the money
       await insertPayment(client, queued, { ticketAmountCents: 1000 })
-
-      const { rows: statuses } = await client.query(
-        `select id, status from app_hidden.registrations_status_and_position where event_id = $1`,
-        [event.id]
-      )
-      const statusById = Object.fromEntries(
-        statuses.map((s) => [s.id, s.status])
-      )
-      expect(statusById[inOpenQuota.id]).toBe("IN_OPEN_QUOTA")
-      expect(statusById[queued.id]).toBe("IN_QUEUE")
-      expect(unpaid1 && unpaid2).toBeTruthy()
 
       const member = await createOrganizationMember(client, organization.id)
       await becomeUser(client, member.id)

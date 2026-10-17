@@ -9,6 +9,7 @@ import {
   paymentById,
   runTask,
   stripeMock,
+  testPool,
 } from "../helpers"
 
 jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
@@ -137,7 +138,6 @@ describe("payment__refund", () => {
     ["a manual payment", { method: "MANUAL" }],
     ["a pending payment", { status: "PENDING" }],
     ["an expired payment", { status: "EXPIRED" }],
-    ["a payment without a payment intent", { paymentIntentId: null }],
   ])("doesn't refund %s", async (_name, options) => {
     const payment = await paidPayment(options)
 
@@ -146,6 +146,75 @@ describe("payment__refund", () => {
     expect(stripeMock().refunds.create).not.toHaveBeenCalled()
     expect(logger.error).toHaveBeenCalled()
     expect((await paymentById(payment.id)).status).toEqual(payment.status)
+  })
+
+  it("fails for a card payment without a payment intent, keeping the job visible", async () => {
+    const payment = await paidPayment({ paymentIntentId: null })
+
+    await expect(runTask(refund, { paymentId: payment.id })).rejects.toThrow(
+      /no Stripe payment intent/
+    )
+    expect(stripeMock().refunds.create).not.toHaveBeenCalled()
+    expect((await paymentById(payment.id)).status).toEqual("PAID")
+  })
+
+  it("refunds only what is left after a partial dashboard refund", async () => {
+    const payment = await paidPayment()
+    await testPool().query(
+      "update app_public.payments set refunded_amount_cents = 500 where id = $1",
+      [payment.id]
+    )
+
+    await runTask(refund, { paymentId: payment.id })
+
+    // 1825 paid, 500 already back: 1325 left, below the 1800 ticket price
+    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1325)
+    expect(await paymentById(payment.id)).toMatchObject({
+      status: "REFUNDED",
+      refunded_amount_cents: 1825,
+      stripe_refund_id: "re_test_1",
+    })
+    expect(await jobsOf("payment__send_refund_email")).toEqual([
+      { paymentId: payment.id, amountCents: 1325, full: false },
+    ])
+  })
+
+  it("adds the refund to an earlier partial one", async () => {
+    const payment = await paidPayment()
+    await testPool().query(
+      "update app_public.payments set refunded_amount_cents = 10 where id = $1",
+      [payment.id]
+    )
+
+    await runTask(refund, { paymentId: payment.id })
+
+    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1800)
+    expect((await paymentById(payment.id)).refunded_amount_cents).toEqual(1810)
+  })
+
+  it("calls nothing when the whole charge is already refunded", async () => {
+    const payment = await paidPayment()
+    await testPool().query(
+      "update app_public.payments set refunded_amount_cents = 1825 where id = $1",
+      [payment.id]
+    )
+
+    await runTask(refund, { paymentId: payment.id })
+
+    expect(stripeMock().refunds.create).not.toHaveBeenCalled()
+    expect(await jobsOf("payment__send_refund_email")).toEqual([])
+  })
+
+  it("refunds a payment intent that has no payment row in full", async () => {
+    await runTask(refund, { paymentIntentId: "pi_orphan" })
+
+    const { create } = stripeMock().refunds
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(create.mock.calls[0]).toEqual([
+      { payment_intent: "pi_orphan" },
+      { idempotencyKey: "refund-pi-pi_orphan" },
+    ])
+    expect(await jobsOf("payment__send_refund_email")).toEqual([])
   })
 
   it("doesn't fail for a payment that doesn't exist", async () => {

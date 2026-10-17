@@ -32,6 +32,33 @@ const jobPayloads = async (
   return jobs.map((job) => job.payload).filter((p) => ids.includes(p[key]))
 }
 
+const sortById = <T extends Record<string, string>>(rows: T[], key: string) =>
+  [...rows].sort((a, b) => a[key].localeCompare(b[key]))
+
+/**
+ * The registrations ordered as the database ranks them: those holding a
+ * spot first, the queued ones last (ties on created_at are broken by the
+ * database, not by creation order).
+ */
+const byQueueStatus = async <T extends { id: string }>(
+  client: PoolClient,
+  registrations: T[]
+) =>
+  asRoot(client, async () => {
+    const { rows } = await client.query<{ id: string; status: string }>(
+      `select id, status from app_hidden.registrations_status_and_position
+        where id = any($1::uuid[])`,
+      [registrations.map((r) => r.id)]
+    )
+    const queued = new Set(
+      rows.filter((r) => r.status === "IN_QUEUE").map((r) => r.id)
+    )
+    return [
+      ...registrations.filter((r) => !queued.has(r.id)),
+      ...registrations.filter((r) => queued.has(r.id)),
+    ]
+  })
+
 const paymentsOf = (client: PoolClient, eventId: string) =>
   asRoot(client, async () => {
     const { rows } = await client.query(
@@ -142,6 +169,52 @@ describe("admin_mark_registration_paid", () => {
         ])
       ).rejects.toThrow("does not require payment")
     }))
+
+  it("refuses a registration of an event switched to no payments", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration } = await register(client, event.id, quota.id)
+      await asRoot(client, () =>
+        client.query(
+          "update app_public.events set payment_mode = 'NONE' where id = $1",
+          [event.id]
+        )
+      )
+      await becomeUser(client, admin.id)
+
+      await expect(
+        client.query("select app_public.admin_mark_registration_paid($1)", [
+          registration.id,
+        ])
+      ).rejects.toThrow("does not require payment")
+    }))
+
+  it("refuses a queued registration", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client, {
+        quotaSize: 1,
+      })
+      const registrations = []
+      for (let i = 0; i < 2; i++) {
+        const { registration } = await register(client, event.id, quota.id)
+        registrations.push(registration)
+      }
+      const [inSpot, queued] = await byQueueStatus(client, registrations)
+      await becomeUser(client, admin.id)
+
+      await client.query("savepoint queued")
+      await expect(
+        client.query("select app_public.admin_mark_registration_paid($1)", [
+          queued.id,
+        ])
+      ).rejects.toThrow("in the queue")
+      await client.query("rollback to savepoint queued")
+      const { rows } = await client.query(
+        "select method from app_public.admin_mark_registration_paid($1)",
+        [inSpot.id]
+      )
+      expect(rows).toEqual([{ method: "MANUAL" }])
+    }))
 })
 
 describe("admin_unmark_registration_paid", () => {
@@ -210,7 +283,12 @@ describe("admin_send_payment_reminders", () => {
         const { registration } = await register(client, event.id, quota.id)
         registrations.push(registration)
       }
-      const [paid, unpaid1, unpaid2, queued] = registrations
+      // Registrations made in one transaction share created_at, so which
+      // one is queued is decided by the database: read it back
+      const [paid, unpaid1, unpaid2, queued] = await byQueueStatus(
+        client,
+        registrations
+      )
       await insertPayment(client, paid)
       await becomeUser(client, admin.id)
 
@@ -227,11 +305,13 @@ describe("admin_send_payment_reminders", () => {
         "registrationId",
         ids
       )
-      expect(payloads).toEqual([
-        { registrationId: unpaid1.id },
-        { registrationId: unpaid2.id },
-      ])
-      expect(ids).toContain(queued.id)
+      expect(sortById(payloads, "registrationId")).toEqual(
+        sortById(
+          [{ registrationId: unpaid1.id }, { registrationId: unpaid2.id }],
+          "registrationId"
+        )
+      )
+      expect(payloads).not.toContainEqual({ registrationId: queued.id })
 
       const {
         rows: [updated],
@@ -268,6 +348,47 @@ describe("admin_send_payment_reminders", () => {
         [event.id]
       )
       expect(updated.last_payment_reminder_sent_at).toBeNull()
+    }))
+
+  it("refuses to send again within 10 minutes", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client)
+      const { registration } = await register(client, event.id, quota.id)
+      await asRoot(client, () =>
+        client.query(
+          `update app_public.events
+            set last_payment_reminder_sent_at = now() - interval '9 minutes'
+            where id = $1`,
+          [event.id]
+        )
+      )
+      await becomeUser(client, admin.id)
+      await client.query("savepoint cooldown")
+      await expect(
+        client.query("select app_public.admin_send_payment_reminders($1)", [
+          event.id,
+        ])
+      ).rejects.toThrow("less than 10 minutes ago")
+      await client.query("rollback to savepoint cooldown")
+
+      await asRoot(client, () =>
+        client.query(
+          `update app_public.events
+            set last_payment_reminder_sent_at = now() - interval '11 minutes'
+            where id = $1`,
+          [event.id]
+        )
+      )
+      const { rows } = await client.query(
+        "select app_public.admin_send_payment_reminders($1) as count",
+        [event.id]
+      )
+      expect(rows).toEqual([{ count: 1 }])
+      expect(
+        await jobPayloads(client, "payment__send_reminder", "registrationId", [
+          registration.id,
+        ])
+      ).toEqual([{ registrationId: registration.id }])
     }))
 
   it("refuses users without event permissions", () =>
