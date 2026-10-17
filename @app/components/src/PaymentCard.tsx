@@ -1,12 +1,18 @@
 import { PayPage_RegistrationPaymentFragment } from "@app/graphql"
-import { formatEuro, getFormattedEventTime, PayPageState } from "@app/lib"
-import { Alert, Button, Card, Space, Tag, Typography } from "antd"
+import { formatEuro, PayPageState } from "@app/lib"
+import { Alert, Button, Card, Space, Tag, theme, Typography } from "antd"
 import dayjs from "dayjs"
 
 import { useTranslation } from "./hooks"
 import { Link, PaymentNote, PriceBreakdown } from "."
 
 import type { CSSProperties, ReactNode } from "react"
+
+/** Event time as on the pay page design: full year and an en dash. */
+function formatEventTime(start: string, end: string) {
+  const format = "D.M.YYYY HH:mm"
+  return `${dayjs(start).format(format)} – ${dayjs(end).format(format)}`
+}
 
 const { Text, Title } = Typography
 
@@ -58,6 +64,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
   error,
 }) => {
   const { t, lang } = useTranslation("payments")
+  const { token } = theme.useToken()
+  const divider = `1px solid ${token.colorSplit}`
   const {
     eventSlug,
     eventName,
@@ -186,7 +194,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
               </Link>
             </span>
             <Text type="secondary">{t("time")}</Text>
-            <span>{getFormattedEventTime(eventStartTime, eventEndTime)}</span>
+            <span>{formatEventTime(eventStartTime, eventEndTime)}</span>
             {(firstName || lastName) && (
               <>
                 <Text type="secondary">{t("name")}</Text>
@@ -200,7 +208,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
             <>
               <div
                 style={{
-                  borderTop: "1px solid #eef1f5",
+                  borderTop: divider,
                   paddingTop: 16,
                   display: "flex",
                   flexDirection: "column",
@@ -235,7 +243,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
             <Space direction="vertical" size={12} style={{ width: "100%" }}>
               <Text data-cy="paypage-state-body">{body}</Text>
               {detail && (
-                <div style={{ borderTop: "1px solid #eef1f5", paddingTop: 12 }}>
+                <div style={{ borderTop: divider, paddingTop: 12 }}>
                   <PaymentNote>{detail}</PaymentNote>
                 </div>
               )}

@@ -92,5 +92,6 @@
     "registrationStarts": "Opens",
     "time": "Current time",
     "title": "Registration opens soon"
-  }
+  },
+  "inQueueCount": "{{count}} in queue"
 }

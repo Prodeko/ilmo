@@ -71,6 +71,26 @@ describe("downloadRegistrations", () => {
     expect(row).toMatchObject({ paymentStatus: "", price: "" })
   })
 
+  test("writes the payment status through paymentStatusLabel", () => {
+    const [row] = downloadRegistrations(questions, {
+      includePayments: true,
+      paymentStatusLabel: (status) => `label:${status}`,
+    })([registration()])
+    expect(row.paymentStatus).toEqual("label:PAID")
+  })
+
+  test("keeps a question labelled like a payment column", () => {
+    const [row] = downloadRegistrations(
+      [{ ...questions[0], label: { fi: "price", en: "price" } }],
+      { includePayments: true }
+    )([registration()])
+    expect(row).toMatchObject({
+      price: "Vegan",
+      "price (Ilmo)": "18,00 €",
+      paymentStatus: "PAID",
+    })
+  })
+
   test("skips unfinished registrations", () => {
     const rows = downloadRegistrations(questions, { includePayments: true })([
       registration({ isFinished: false }),

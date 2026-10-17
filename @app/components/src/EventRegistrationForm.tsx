@@ -553,8 +553,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                 okButtonProps={{
                   danger: true,
                   loading: deleting,
-                  // @ts-ignore data-cy is passed through to the button
-                  "data-cy": "eventregistrationform-button-delete-and-refund",
+                  // data-* attributes are passed through to the button
+                  ...({
+                    "data-cy": "eventregistrationform-button-delete-and-refund",
+                  } as Record<string, string>),
                 }}
                 okText={t("payments:cancel.deleteAndRefund", {
                   amount: formatEuro(refundOnDelete.refundCents, lang),

@@ -51,19 +51,30 @@ interface DownloadRegistrationsOptions {
    * are on for the site and the event, so the CSV is unchanged otherwise.
    */
   includePayments?: boolean
+  /**
+   * The text written for a payment status (for example a translated label);
+   * the raw status (PAID, PAID_MANUALLY, ...) by default.
+   */
+  paymentStatusLabel?: (status: string) => string
 }
 
 /**
  * Returns a copy of a CSV row with the payment status and ticket price columns
- * inserted right after the quota column, before the answer columns.
+ * inserted right after the quota column, before the answer columns. A
+ * question whose label is already "paymentStatus" or "price" keeps its
+ * column; the payment column then gets a " (Ilmo)" suffix.
  */
 function withPaymentColumns(
   row: Record<string, any>,
-  registration: ListEventRegistrations_RegistrationFragment
+  registration: ListEventRegistrations_RegistrationFragment,
+  paymentStatusLabel: (status: string) => string
 ) {
+  const columnName = (name: string) => (name in row ? `${name} (Ilmo)` : name)
   const paymentColumns = {
-    paymentStatus: registration.paymentStatus ?? "",
-    price:
+    [columnName("paymentStatus")]: registration.paymentStatus
+      ? paymentStatusLabel(registration.paymentStatus)
+      : "",
+    [columnName("price")]:
       registration.priceCents != null
         ? formatEuro(registration.priceCents)
         : "",
@@ -81,7 +92,10 @@ export function downloadRegistrations(
   questions: EventPage_QuestionFragment[] | undefined,
   options: DownloadRegistrationsOptions = {}
 ) {
-  const { includePayments = false } = options
+  const {
+    includePayments = false,
+    paymentStatusLabel = (status: string) => status,
+  } = options
   return (data: ListEventRegistrations_RegistrationFragment[]) => {
     return data.reduce((acc, cur) => {
       if (cur.isFinished) {
@@ -109,7 +123,9 @@ export function downloadRegistrations(
         })
         delete newRow["answers"]
         acc.push(
-          (includePayments ? withPaymentColumns(newRow, cur) : newRow) as CsvRow
+          (includePayments
+            ? withPaymentColumns(newRow, cur, paymentStatusLabel)
+            : newRow) as CsvRow
         )
       }
       return acc

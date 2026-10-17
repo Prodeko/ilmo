@@ -2,6 +2,7 @@ import { memo } from "react"
 import {
   EventPage_EventFragment,
   EventPage_RegistrationFragment,
+  RegistrationStatus,
 } from "@app/graphql"
 import { arePropsEqual, formatEuro, quotaRequiresPayment } from "@app/lib"
 import { Button, Card, Popover, Typography } from "antd"
@@ -50,6 +51,15 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
             (r) => r?.quota?.id === quotaId
           ).length
           const percentageFilled = Math.round((totalCount / size) * 100)
+          // Shown on paid events (board 1), where the queue matters for who
+          // pays; other events keep the plain "filled / size" label
+          const queuedCount = showPrices
+            ? registrations.filter(
+                (r) =>
+                  r?.quota?.id === quotaId &&
+                  r?.status === RegistrationStatus.InQueue
+              ).length
+            : 0
           const signupNotOpen = upcoming || closed || !open
           const quotaButton = (
             <Button
@@ -107,6 +117,11 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
               )}
               <ProgressBar
                 filled={totalCount}
+                labelSuffix={
+                  queuedCount > 0
+                    ? ` · ${t("inQueueCount", { count: queuedCount })}`
+                    : ""
+                }
                 percentageFilled={percentageFilled}
                 size={size}
               />
