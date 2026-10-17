@@ -195,14 +195,6 @@ export async function claimRegistrationToken(eventId: string, quotaId: string) {
   }
 }
 
-export const refreshMaterializedView = async (client: PoolClient) => {
-  // Become root
-  await client.query("reset role")
-  client.query(
-    "refresh materialized view app_hidden.registrations_status_and_position"
-  )
-}
-
 export const getEmails = () => global["TEST_EMAILS"]
 
 export const clearEmails = () => {
