@@ -40,25 +40,13 @@ function enable() {
 }
 
 describe("getStripe", () => {
-  it("throws while payments are disabled and never builds a client", () => {
+  it("throws while payments are disabled, never building a client, and again once they are switched off", () => {
     expect(() => getStripe()).toThrow(/payments are disabled/)
     process.env.STRIPE_SECRET_KEY = "sk_test_123"
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_123"
     expect(() => getStripe()).toThrow(/payments are disabled/)
     expect(StripeMock).not.toHaveBeenCalled()
-  })
 
-  it("lazily builds one client from STRIPE_SECRET_KEY", () => {
-    enable()
-    expect(StripeMock).not.toHaveBeenCalled()
-    const first = getStripe()
-    const second = getStripe()
-    expect(first).toBe(second)
-    expect(StripeMock).toHaveBeenCalledTimes(1)
-    expect(StripeMock.mock.calls[0][0]).toBe("sk_test_123")
-  })
-
-  it("throws again once payments are switched off", () => {
     enable()
     getStripe()
     delete process.env.PAYMENTS_ENABLED

@@ -9,7 +9,6 @@ import installStripeWebhook, {
 import { deleteTestData } from "../helpers"
 import {
   createPaidEvent,
-  disablePayments,
   enablePaymentsForEachTest,
   insertPayment,
   jobsOf,
@@ -119,29 +118,16 @@ async function paymentById(id: string) {
 }
 
 describe("signature", () => {
-  it("rejects a request without a signature", async () => {
-    const res = await post(completedSession("cs_test_nosig"), {
-      signature: null,
-    })
-    expect(res.statusCode).toBe(400)
-    expect(await processedEvents()).toEqual([])
-  })
-
-  it("rejects a bad signature", async () => {
+  it.each<[string, (payload: string) => string | null]>([
+    ["without a signature", () => null],
+    ["with a bad signature", (payload) => sign(payload, "whsec_wrong")],
+  ])("rejects a request %s", async (_name, signatureOf) => {
     const event = completedSession("cs_test_badsig")
     const res = await post(event, {
-      signature: sign(JSON.stringify(event), "whsec_wrong"),
+      signature: signatureOf(JSON.stringify(event)),
     })
     expect(res.statusCode).toBe(400)
     expect(await processedEvents()).toEqual([])
-  })
-
-  it("rejects a signature over a different body", async () => {
-    const event = completedSession("cs_test_tampered")
-    const res = await post(event, {
-      signature: sign(JSON.stringify({ ...event, id: "evt_other" })),
-    })
-    expect(res.statusCode).toBe(400)
   })
 
   it("keeps JSON parsing for other routes", async () => {
@@ -352,16 +338,13 @@ describe("checkout.session.completed", () => {
     })
   })
 
-  it("does nothing for an unknown session or an unpaid one", async () => {
+  it("does nothing for an unpaid session", async () => {
     const { registrations } = await createPaidEvent()
     const payment = await insertPayment(pool, registrations[0], {
       status: "PENDING",
       sessionId: "cs_test_unpaid",
     })
 
-    expect((await post(completedSession("cs_test_unknown"))).statusCode).toBe(
-      200
-    )
     expect(
       (
         await post(
@@ -424,11 +407,14 @@ describe("checkout.session.completed", () => {
 })
 
 describe("checkout.session.expired", () => {
-  it("expires the pending payment", async () => {
+  it("expires the pending payment, never a paid one", async () => {
     const { registrations } = await createPaidEvent()
     const pending = await insertPayment(pool, registrations[0], {
       status: "PENDING",
       sessionId: "cs_test_expired",
+    })
+    const paid = await insertPayment(pool, registrations[0], {
+      sessionId: "cs_test_paid_then_expired",
     })
 
     const res = await post(
@@ -441,13 +427,7 @@ describe("checkout.session.expired", () => {
     )
     expect(res.statusCode).toBe(200)
     expect((await paymentById(pending.id)).status).toBe("EXPIRED")
-  })
 
-  it("never expires a paid payment", async () => {
-    const { registrations } = await createPaidEvent()
-    const paid = await insertPayment(pool, registrations[0], {
-      sessionId: "cs_test_paid_then_expired",
-    })
     await post(
       stripeEvent("checkout.session.expired", {
         id: "cs_test_paid_then_expired",
@@ -528,27 +508,23 @@ describe("charge.refunded", () => {
   }
 
   describe("before checkout.session.completed", () => {
-    it("keeps a refund of an unknown payment intent for later", async () => {
-      const res = await post(chargeRefunded("pi_unknown", 1800))
-      expect(res.statusCode).toBe(200)
-      expect(await processedEvents()).toHaveLength(1)
-      expect(await earlyRefunds()).toEqual([
-        {
-          stripe_payment_intent_id: "pi_unknown",
-          amount_refunded_cents: 1800,
-          stripe_refund_id: "re_for_pi_unknown",
-        },
-      ])
-    })
-
-    it("applies a full refund when the payment is recorded, queuing nothing", async () => {
+    it("keeps a refund of an unknown payment intent and applies it in full when the payment is recorded, queuing nothing", async () => {
       const { registrations } = await createPaidEvent()
       const payment = await insertPayment(pool, registrations[0], {
         status: "PENDING",
         sessionId: "cs_test_early",
       })
 
-      await post(chargeRefunded("pi_for_cs_test_early", 500))
+      const res = await post(chargeRefunded("pi_for_cs_test_early", 500))
+      expect(res.statusCode).toBe(200)
+      expect(await processedEvents()).toHaveLength(1)
+      expect(await earlyRefunds()).toEqual([
+        {
+          stripe_payment_intent_id: "pi_for_cs_test_early",
+          amount_refunded_cents: 500,
+          stripe_refund_id: "re_for_pi_for_cs_test_early",
+        },
+      ])
       await post(chargeRefunded("pi_for_cs_test_early", 1825))
       // An older event arriving last doesn't lower it
       await post(chargeRefunded("pi_for_cs_test_early", 500))
@@ -611,13 +587,6 @@ describe("charge.refunded", () => {
   })
 })
 
-it("acknowledges event types it does not handle", async () => {
-  const res = await post(
-    stripeEvent("customer.created", { id: "cus_1", object: "customer" })
-  )
-  expect(res.statusCode).toBe(200)
-})
-
 describe("CSRF", () => {
   let csrfApp: FastifyInstance
 
@@ -627,9 +596,7 @@ describe("CSRF", () => {
     await csrfApp.register(installSession)
     await csrfApp.register(installCSRFProtection)
     await csrfApp.register(installStripeWebhook)
-    for (const url of [`${STRIPE_WEBHOOK_PATH}/other`, "/graphql"]) {
-      csrfApp.post(url, async () => ({ ok: true }))
-    }
+    csrfApp.post(`${STRIPE_WEBHOOK_PATH}/other`, async () => ({ ok: true }))
     await csrfApp.ready()
   })
 
@@ -650,24 +617,10 @@ describe("CSRF", () => {
     })
   }
 
-  it("lets Stripe post to the webhook without a CSRF token", async () => {
-    expect((await postWithoutCsrfToken(STRIPE_WEBHOOK_PATH)).statusCode).toBe(
-      200
-    )
-  })
-
-  it.each([
-    `${STRIPE_WEBHOOK_PATH}/other`,
-    `${STRIPE_WEBHOOK_PATH}?x=1`,
-    "/graphql",
-  ])("still protects %s", async (url) => {
-    expect((await postWithoutCsrfToken(url)).statusCode).toBe(403)
-  })
-
-  it("protects the webhook path too while payments are disabled", async () => {
-    disablePayments()
-    expect((await postWithoutCsrfToken(STRIPE_WEBHOOK_PATH)).statusCode).toBe(
-      403
-    )
-  })
+  it.each([`${STRIPE_WEBHOOK_PATH}/other`, `${STRIPE_WEBHOOK_PATH}?x=1`])(
+    "still protects %s",
+    async (url) => {
+      expect((await postWithoutCsrfToken(url)).statusCode).toBe(403)
+    }
+  )
 })

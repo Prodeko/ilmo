@@ -23,6 +23,9 @@ enablePaymentsForEachTest()
 
 const pool = () => poolFromUrl(TEST_DATABASE_URL)
 
+type PaidEventOptions = Parameters<typeof createPaidEvent>[0]
+type PaidEvent = Awaited<ReturnType<typeof createPaidEvent>>
+
 const PaymentByUpdateTokenQuery = `
   query PaymentByUpdateToken($updateToken: String!) {
     paymentByUpdateToken(updateToken: $updateToken) {
@@ -98,98 +101,121 @@ describe("paymentByUpdateToken", () => {
     })
   })
 
-  it("shows a card payment", async () => {
-    const { registrations, tokens } = await createPaidEvent()
-    const payment = await insertPayment(pool(), registrations[0])
-
-    expect(await paymentByUpdateToken(tokens[0])).toMatchObject({
-      status: "PAID",
-      paidManually: false,
-      paidTotalCents: 1825,
-      paidTicketCents: 1800,
-      paidAt: payment.paid_at.toISOString(),
-      blockedReason: "ALREADY_PAID",
-    })
-  })
-
-  it("shows a manual payment", async () => {
-    const { registrations, tokens } = await createPaidEvent()
-    await insertPayment(pool(), registrations[0], { method: "MANUAL" })
-
-    expect(await paymentByUpdateToken(tokens[0])).toMatchObject({
-      status: "PAID_MANUALLY",
-      paidManually: true,
-      paidTotalCents: 1800,
-      blockedReason: "ALREADY_PAID",
-    })
-  })
-
-  it("shows a refund", async () => {
-    const { registrations, tokens } = await createPaidEvent()
-    const payment = await insertPayment(pool(), registrations[0])
-    await pool().query(
-      `update app_public.payments
-        set status = 'REFUNDED', refunded_amount_cents = 1800, refunded_at = now()
-        where id = $1`,
-      [payment.id]
-    )
-
-    expect(await paymentByUpdateToken(tokens[0])).toMatchObject({
-      status: "REFUNDED",
-      refundedAmountCents: 1800,
-      refundedAt: expect.any(String),
-      blockedReason: "PAYMENT_REFUNDED",
-    })
-  })
-
-  it("shows a free registration with zero amounts", async () => {
-    const { tokens } = await createPaidEvent({ priceCents: 0 })
-
-    expect(await paymentByUpdateToken(tokens[0])).toMatchObject({
-      status: "NOT_REQUIRED",
-      priceCents: 0,
-      serviceFeeCents: 0,
-      totalCents: 0,
-      blockedReason: "PAYMENT_NOT_REQUIRED",
-    })
-  })
-
-  it("shows that payment opens when registration closes", async () => {
-    const { tokens } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
-    })
-
-    expect(await paymentByUpdateToken(tokens[0])).toMatchObject({
-      paymentMode: "AFTER_REGISTRATION",
-      status: "UNPAID",
-      blockedReason: "PAYMENT_NOT_OPEN",
-    })
-  })
-
-  it("shows the queue position", async () => {
-    const { registrations, tokens } = await createPaidEvent({
-      quotaSize: 1,
-      registrationCount: 3,
-    })
-    const { rows } = await pool().query(
-      `select id, status, position from app_hidden.registrations_status_and_position
-        where id = any($1) and status = 'IN_QUEUE' order by position`,
-      [registrations.map((r) => r.id)]
-    )
-    const last = rows[rows.length - 1]
-    const token = tokens[registrations.findIndex((r) => r.id === last.id)]
-
-    expect(await paymentByUpdateToken(token)).toMatchObject({
-      queueStatus: "IN_QUEUE",
-      queuePosition: 2,
-      status: "UNPAID",
-      blockedReason: "IN_QUEUE",
-    })
-  })
-
-  it("is null for an unknown token", async () => {
-    await createPaidEvent()
-    expect(await paymentByUpdateToken("not-a-token")).toBeNull()
+  it.each<
+    [
+      string,
+      PaidEventOptions,
+      (
+        data: PaidEvent
+      ) => Promise<{ token: string; expected: Record<string, unknown> }>,
+    ]
+  >([
+    [
+      "a card payment",
+      {},
+      async ({ registrations, tokens }) => {
+        const payment = await insertPayment(pool(), registrations[0])
+        return {
+          token: tokens[0],
+          expected: {
+            status: "PAID",
+            paidManually: false,
+            paidTotalCents: 1825,
+            paidTicketCents: 1800,
+            paidAt: payment.paid_at.toISOString(),
+            blockedReason: "ALREADY_PAID",
+          },
+        }
+      },
+    ],
+    [
+      "a manual payment",
+      {},
+      async ({ registrations, tokens }) => {
+        await insertPayment(pool(), registrations[0], { method: "MANUAL" })
+        return {
+          token: tokens[0],
+          expected: {
+            status: "PAID_MANUALLY",
+            paidManually: true,
+            paidTotalCents: 1800,
+            blockedReason: "ALREADY_PAID",
+          },
+        }
+      },
+    ],
+    [
+      "a refund",
+      {},
+      async ({ registrations, tokens }) => {
+        const payment = await insertPayment(pool(), registrations[0])
+        await pool().query(
+          `update app_public.payments
+            set status = 'REFUNDED', refunded_amount_cents = 1800, refunded_at = now()
+            where id = $1`,
+          [payment.id]
+        )
+        return {
+          token: tokens[0],
+          expected: {
+            status: "REFUNDED",
+            refundedAmountCents: 1800,
+            refundedAt: expect.any(String),
+            blockedReason: "PAYMENT_REFUNDED",
+          },
+        }
+      },
+    ],
+    [
+      "a free registration with zero amounts",
+      { priceCents: 0 },
+      async ({ tokens }) => ({
+        token: tokens[0],
+        expected: {
+          status: "NOT_REQUIRED",
+          priceCents: 0,
+          serviceFeeCents: 0,
+          totalCents: 0,
+          blockedReason: "PAYMENT_NOT_REQUIRED",
+        },
+      }),
+    ],
+    [
+      "that payment opens when registration closes",
+      { paymentMode: "AFTER_REGISTRATION" },
+      async ({ tokens }) => ({
+        token: tokens[0],
+        expected: {
+          paymentMode: "AFTER_REGISTRATION",
+          status: "UNPAID",
+          blockedReason: "PAYMENT_NOT_OPEN",
+        },
+      }),
+    ],
+    [
+      "the queue position",
+      { quotaSize: 1, registrationCount: 3 },
+      async ({ registrations, tokens }) => {
+        const { rows } = await pool().query(
+          `select id, status, position from app_hidden.registrations_status_and_position
+            where id = any($1) and status = 'IN_QUEUE' order by position`,
+          [registrations.map((r) => r.id)]
+        )
+        const last = rows[rows.length - 1]
+        return {
+          token: tokens[registrations.findIndex((r) => r.id === last.id)],
+          expected: {
+            queueStatus: "IN_QUEUE",
+            queuePosition: 2,
+            status: "UNPAID",
+            blockedReason: "IN_QUEUE",
+          },
+        }
+      },
+    ],
+  ])("shows %s", async (_name, options, arrange) => {
+    const { token, expected } = await arrange(await createPaidEvent(options))
+    expect(await paymentByUpdateToken(token)).toMatchObject(expected)
   })
 
   it("hides database error text behind PAYMENT_LOOKUP_FAILED", async () => {
@@ -219,9 +245,17 @@ describe("paymentByUpdateToken", () => {
     }
   })
 
-  it("is null while payments are disabled", async () => {
-    const { tokens } = await createPaidEvent()
-    disablePayments()
-    expect(await paymentByUpdateToken(tokens[0])).toBeNull()
+  it.each<[string, (data: PaidEvent) => string]>([
+    ["for an unknown token", () => "not-a-token"],
+    [
+      "while payments are disabled",
+      ({ tokens }) => {
+        disablePayments()
+        return tokens[0]
+      },
+    ],
+  ])("is null %s", async (_name, tokenOf) => {
+    const token = tokenOf(await createPaidEvent())
+    expect(await paymentByUpdateToken(token)).toBeNull()
   })
 })

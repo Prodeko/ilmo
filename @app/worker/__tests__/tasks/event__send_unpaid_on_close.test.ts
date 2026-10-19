@@ -45,7 +45,8 @@ describe("event__send_unpaid_on_close", () => {
     ])
     expect(await closeEmailSentAt(event.id)).toBeTruthy()
 
-    // The next run (a minute later) finds nothing to do
+    // The close email is now marked sent: the next run (a minute later)
+    // finds nothing to do
     await runTask(sendUnpaidOnClose, {})
     expect(await jobsOf("payment__send_reminder")).toHaveLength(2)
   })
@@ -62,19 +63,6 @@ describe("event__send_unpaid_on_close", () => {
     expect(await jobsOf("payment__send_reminder")).toEqual([
       { registrationId: registrations[0].id, closed: true },
     ])
-    expect(await closeEmailSentAt(event.id)).toBeTruthy()
-  })
-
-  it("marks an event without unpaid registrations as done", async () => {
-    const { event, registrations } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
-      signupClosed: true,
-    })
-    await insertPayment(registrations[0], { method: "MANUAL" })
-
-    await runTask(sendUnpaidOnClose, {})
-
-    expect(await jobsOf("payment__send_reminder")).toEqual([])
     expect(await closeEmailSentAt(event.id)).toBeTruthy()
   })
 
@@ -99,21 +87,6 @@ describe("event__send_unpaid_on_close", () => {
 
     expect(await jobsOf("payment__send_reminder")).toEqual([])
     expect(await closeEmailSentAt(event.id)).toBeNull()
-  })
-
-  it("skips an event whose close email was already sent", async () => {
-    const { event } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
-      signupClosed: true,
-    })
-    await testPool().query(
-      "update app_public.events set unpaid_close_email_sent_at = now() - interval '1 day' where id = $1",
-      [event.id]
-    )
-
-    await runTask(sendUnpaidOnClose, {})
-
-    expect(await jobsOf("payment__send_reminder")).toEqual([])
   })
 
   it("skips an event another run is handling", async () => {

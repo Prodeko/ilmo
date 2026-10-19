@@ -1,5 +1,5 @@
 import sendConfirmationEmail from "../../src/tasks/registration__send_confirmation_email"
-import sendEmail from "../../src/tasks/send_email"
+import sendEmail, { loadTemplate } from "../../src/tasks/send_email"
 import {
   createPaidEvent,
   deleteTestData,
@@ -116,6 +116,15 @@ describe("registration__send_confirmation_email", () => {
     const { text } = JSON.parse(getEmails()[0].message)
     expect(text).not.toContain("Maksu")
     expect(text).not.toContain("Payment")
+
+    // Renders exactly like the email of an event without payments
+    const render = await loadTemplate("event_registration.mjml.njk")
+    const nonPaidVariables = Object.fromEntries(
+      NON_PAID_VARIABLE_KEYS.map((key) => [key, payload.variables[key]])
+    )
+    expect(await render(payload.variables)).toEqual(
+      await render(nonPaidVariables)
+    )
   })
 
   it.each([

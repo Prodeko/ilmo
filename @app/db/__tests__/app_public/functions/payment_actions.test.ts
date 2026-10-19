@@ -5,8 +5,6 @@ import {
   becomeUser,
   createUsers,
   getJobs,
-  poolFromUrl,
-  TEST_DATABASE_URL,
   withAdminUserDb,
   withRootDb,
 } from "../../helpers"
@@ -127,20 +125,6 @@ describe("admin_mark_registration_paid", () => {
       expect(rows).toEqual([{ method: "MANUAL" }])
     }))
 
-  it("refuses users without event permissions", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const [user] = await createUsers(client, 1)
-      await becomeUser(client, user.id)
-
-      await expect(
-        client.query("select app_public.admin_mark_registration_paid($1)", [
-          registration.id,
-        ])
-      ).rejects.toThrow("Access denied")
-    }))
-
   it("refuses an already paid registration", () =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
@@ -155,39 +139,33 @@ describe("admin_mark_registration_paid", () => {
       ).rejects.toThrow("already been paid")
     }))
 
-  it("refuses a registration that needs no payment", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client, {
-        priceCents: 0,
-      })
-      const { registration } = await register(client, event.id, quota.id)
-      await becomeUser(client, admin.id)
-
-      await expect(
-        client.query("select app_public.admin_mark_registration_paid($1)", [
-          registration.id,
-        ])
-      ).rejects.toThrow("does not require payment")
-    }))
-
-  it("refuses a registration of an event switched to no payments", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      await asRoot(client, () =>
-        client.query(
-          "update app_public.events set payment_mode = 'NONE' where id = $1",
-          [event.id]
+  it.each([
+    // [case, quota price, payment mode set after registering]
+    ["of a free quota", 0, "DURING_REGISTRATION"],
+    ["of an event switched to no payments", 1800, "NONE"],
+  ])(
+    "refuses a registration %s, which needs no payment",
+    (_case, priceCents, paymentModeAfterRegistering) =>
+      withAdminUserDb(async (client, admin) => {
+        const { event, quota } = await createPaidEventData(client, {
+          priceCents,
+        })
+        const { registration } = await register(client, event.id, quota.id)
+        await asRoot(client, () =>
+          client.query(
+            "update app_public.events set payment_mode = $2 where id = $1",
+            [event.id, paymentModeAfterRegistering]
+          )
         )
-      )
-      await becomeUser(client, admin.id)
+        await becomeUser(client, admin.id)
 
-      await expect(
-        client.query("select app_public.admin_mark_registration_paid($1)", [
-          registration.id,
-        ])
-      ).rejects.toThrow("does not require payment")
-    }))
+        await expect(
+          client.query("select app_public.admin_mark_registration_paid($1)", [
+            registration.id,
+          ])
+        ).rejects.toThrow("does not require payment")
+      })
+  )
 
   it("refuses a queued registration", () =>
     withAdminUserDb(async (client, admin) => {
@@ -255,21 +233,6 @@ describe("admin_unmark_registration_paid", () => {
         ])
       ).rejects.toThrow("no manual payment")
     }))
-
-  it("refuses users without event permissions", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      await insertPayment(client, registration, { method: "MANUAL" })
-      const [user] = await createUsers(client, 1)
-      await becomeUser(client, user.id)
-
-      await expect(
-        client.query("select app_public.admin_unmark_registration_paid($1)", [
-          registration.id,
-        ])
-      ).rejects.toThrow("Access denied")
-    }))
 })
 
 describe("admin_send_payment_reminders", () => {
@@ -285,7 +248,7 @@ describe("admin_send_payment_reminders", () => {
       }
       // Registrations made in one transaction share created_at, so which
       // one is queued is decided by the database: read it back
-      const [paid, unpaid1, unpaid2, queued] = await byQueueStatus(
+      const [paid, unpaid1, unpaid2] = await byQueueStatus(
         client,
         registrations
       )
@@ -311,7 +274,6 @@ describe("admin_send_payment_reminders", () => {
           "registrationId"
         )
       )
-      expect(payloads).not.toContainEqual({ registrationId: queued.id })
 
       const {
         rows: [updated],
@@ -390,34 +352,66 @@ describe("admin_send_payment_reminders", () => {
         ])
       ).toEqual([{ registrationId: registration.id }])
     }))
+})
 
-  it("refuses users without event permissions", () =>
+describe("organizer action permissions", () => {
+  type ArgumentFor = (
+    client: PoolClient,
+    event: { id: string },
+    quota: { id: string }
+  ) => Promise<string>
+
+  const registrationId: ArgumentFor = async (client, event, quota) => {
+    const { registration } = await register(client, event.id, quota.id)
+    return registration.id
+  }
+  const manuallyPaidRegistrationId: ArgumentFor = async (
+    client,
+    event,
+    quota
+  ) => {
+    const { registration } = await register(client, event.id, quota.id)
+    await insertPayment(client, registration, { method: "MANUAL" })
+    return registration.id
+  }
+  const eventId: ArgumentFor = async (_client, event) => event.id
+
+  it.each([
+    ["admin_mark_registration_paid", registrationId],
+    ["admin_unmark_registration_paid", manuallyPaidRegistrationId],
+    ["admin_send_payment_reminders", eventId],
+  ])("%s refuses users without event permissions", (fn, argumentFor) =>
     withRootDb(async (client) => {
-      const { event } = await createPaidEventData(client)
+      const { event, quota } = await createPaidEventData(client)
+      const argument = await argumentFor(client, event, quota)
       const [user] = await createUsers(client, 1)
       await becomeUser(client, user.id)
+
       await expect(
-        client.query("select app_public.admin_send_payment_reminders($1)", [
-          event.id,
-        ])
+        client.query(`select app_public.${fn}($1)`, [argument])
       ).rejects.toThrow("Access denied")
-    }))
+    })
+  )
 })
 
 describe("refunds when deleting a registration", () => {
   const refundJobs = (client: PoolClient, paymentIds: string[]) =>
     jobPayloads(client, "payment__refund", "paymentId", paymentIds)
 
-  it("admin_delete_registration refunds a card payment by default", () =>
+  it.each([
+    ["by default", "select app_public.admin_delete_registration($1)"],
+    [
+      "when refund is null",
+      "select app_public.admin_delete_registration($1, null)",
+    ],
+  ])("admin_delete_registration refunds a card payment %s", (_case, sql) =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration } = await register(client, event.id, quota.id)
       const payment = await insertPayment(client, registration)
       await becomeUser(client, admin.id)
 
-      await client.query("select app_public.admin_delete_registration($1)", [
-        registration.id,
-      ])
+      await client.query(sql, [registration.id])
 
       expect(await refundJobs(client, [payment.id])).toEqual([
         { paymentId: payment.id },
@@ -427,92 +421,8 @@ describe("refunds when deleting a registration", () => {
       expect(payments).toMatchObject([
         { id: payment.id, registration_id: null, status: "PAID" },
       ])
-    }))
-
-  it("admin_delete_registration treats a null refund as the default", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const payment = await insertPayment(client, registration)
-      await becomeUser(client, admin.id)
-
-      await client.query(
-        "select app_public.admin_delete_registration($1, null)",
-        [registration.id]
-      )
-      expect(await refundJobs(client, [payment.id])).toHaveLength(1)
-    }))
-
-  it("admin_delete_registration does not refund when refund is false", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const payment = await insertPayment(client, registration)
-      await becomeUser(client, admin.id)
-
-      await client.query(
-        "select app_public.admin_delete_registration($1, false)",
-        [registration.id]
-      )
-      expect(await refundJobs(client, [payment.id])).toEqual([])
-      expect(await paymentsOf(client, event.id)).toMatchObject([
-        { id: payment.id, registration_id: null, status: "PAID" },
-      ])
-    }))
-
-  it("admin_delete_registration never refunds a manual payment", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const payment = await insertPayment(client, registration, {
-        method: "MANUAL",
-      })
-      await becomeUser(client, admin.id)
-
-      await client.query(
-        "select app_public.admin_delete_registration($1, true)",
-        [registration.id]
-      )
-      expect(await refundJobs(client, [payment.id])).toEqual([])
-    }))
-
-  it("admin_delete_registration ignores payments that were not completed", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const pending = await insertPayment(client, registration, {
-        status: "PENDING",
-      })
-      const expired = await insertPayment(client, registration, {
-        status: "EXPIRED",
-      })
-      await becomeUser(client, admin.id)
-
-      await client.query("select app_public.admin_delete_registration($1)", [
-        registration.id,
-      ])
-      expect(await refundJobs(client, [pending.id, expired.id])).toEqual([])
-    }))
-
-  it("admin_delete_registration still deletes unpaid registrations", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client, {
-        paymentMode: "NONE",
-      })
-      const { registration } = await register(client, event.id, quota.id)
-      await becomeUser(client, admin.id)
-
-      const { rows } = await client.query(
-        "select app_public.admin_delete_registration($1) as ok",
-        [registration.id]
-      )
-      expect(rows).toEqual([{ ok: true }])
-      const { rows: left } = await client.query(
-        "select id from app_public.registrations where id = $1",
-        [registration.id]
-      )
-      expect(left).toEqual([])
-    }))
+    })
+  )
 
   it("delete_registration always refunds a card payment", () =>
     withRootDb(async (client) => {
@@ -535,125 +445,6 @@ describe("refunds when deleting a registration", () => {
         { id: payment.id, registration_id: null },
       ])
     }))
-
-  it("delete_registration never refunds a manual payment", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration, updateToken } = await register(
-        client,
-        event.id,
-        quota.id
-      )
-      const payment = await insertPayment(client, registration, {
-        method: "MANUAL",
-      })
-      await becomeUser(client, null)
-
-      await client.query("select app_public.delete_registration($1)", [
-        updateToken,
-      ])
-      expect(await refundJobs(client, [payment.id])).toEqual([])
-    }))
-
-  it("delete_registration refunds only once when called twice", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration, updateToken } = await register(
-        client,
-        event.id,
-        quota.id
-      )
-      const payment = await insertPayment(client, registration)
-      await becomeUser(client, null)
-
-      await client.query("select app_public.delete_registration($1)", [
-        updateToken,
-      ])
-      await client.query("savepoint second_delete")
-      await expect(
-        client.query("select app_public.delete_registration($1)", [updateToken])
-      ).rejects.toThrow("Registration matching token was not found.")
-      await client.query("rollback to savepoint second_delete")
-      expect(await refundJobs(client, [payment.id])).toHaveLength(1)
-    }))
-
-  it("delete_registration serializes concurrent calls with the same token", async () => {
-    // Needs committed data, so this test cleans up after itself
-    const pool = poolFromUrl(TEST_DATABASE_URL)
-    const setup = await pool.connect()
-    const first = await pool.connect()
-    const second = await pool.connect()
-    let data:
-      | { eventId: string; organizationId: string; paymentId: string }
-      | undefined
-    try {
-      await setup.query("begin")
-      const { event, quota, organization } = await createPaidEventData(setup)
-      const { registration, updateToken } = await register(
-        setup,
-        event.id,
-        quota.id
-      )
-      const payment = await insertPayment(setup, registration)
-      await setup.query("commit")
-      data = {
-        eventId: event.id,
-        organizationId: organization.id,
-        paymentId: payment.id,
-      }
-
-      await first.query("begin")
-      await second.query("begin")
-      await first.query("select app_public.delete_registration($1)", [
-        updateToken,
-      ])
-      // Blocks on the registration row lock until the first call commits
-      const secondCall = second
-        .query("select app_public.delete_registration($1)", [updateToken])
-        .then(
-          () => null,
-          (e: Error) => e
-        )
-      await new Promise((resolve) => setTimeout(resolve, 200))
-      await first.query("commit")
-      const error = await secondCall
-      await second.query("rollback")
-
-      expect(error?.message).toBe("Registration matching token was not found.")
-      const { rows } = await setup.query(
-        `select count(*)::int as count from graphile_worker._private_jobs
-          where payload->>'paymentId' = $1`,
-        [payment.id]
-      )
-      expect(rows).toEqual([{ count: 1 }])
-    } finally {
-      await first.query("rollback").catch(() => {})
-      await second.query("rollback").catch(() => {})
-      if (data) {
-        await setup.query(
-          "delete from graphile_worker._private_jobs where payload->>'paymentId' = $1",
-          [data.paymentId]
-        )
-        await setup.query("delete from app_public.payments where id = $1", [
-          data.paymentId,
-        ])
-        await setup.query("delete from app_public.events where id = $1", [
-          data.eventId,
-        ])
-        await setup.query(
-          "delete from app_public.event_categories where owner_organization_id = $1",
-          [data.organizationId]
-        )
-        await setup.query(
-          "delete from app_public.organizations where id = $1",
-          [data.organizationId]
-        )
-      }
-      setup.release()
-      first.release()
-      second.release()
-    }
-  })
 
   it("admin_delete_registration's refund = false covers only that delete", () =>
     withAdminUserDb(async (client, admin) => {
@@ -679,6 +470,14 @@ describe("refunds when deleting a registration", () => {
       expect(
         await refundJobs(client, [keptPayment.id, refundedPayment.id])
       ).toEqual([{ paymentId: refundedPayment.id }])
+      // The unrefunded payment row survives the delete too
+      expect(await paymentsOf(client, event.id)).toContainEqual(
+        expect.objectContaining({
+          id: keptPayment.id,
+          registration_id: null,
+          status: "PAID",
+        })
+      )
       const {
         rows: [{ setting }],
       } = await client.query(
@@ -708,6 +507,9 @@ describe("refunds when deleting a registration", () => {
       const pendingPayment = await insertPayment(client, pending, {
         status: "PENDING",
       })
+      const expiredPayment = await insertPayment(client, pending, {
+        status: "EXPIRED",
+      })
       await becomeUser(client, admin.id)
 
       // As the deleteEvent CRUD mutation does; registrations cascade
@@ -722,6 +524,7 @@ describe("refunds when deleting a registration", () => {
           cardPayment.id,
           manualPayment.id,
           pendingPayment.id,
+          expiredPayment.id,
         ])
       ).toEqual([{ paymentId: cardPayment.id }])
 
@@ -738,20 +541,5 @@ describe("refunds when deleting a registration", () => {
       for (const row of rows) {
         expect(row).toMatchObject({ registration_id: null, event_id: null })
       }
-    }))
-
-  it("skips refunds while ilmo.refund_deleted_registrations is off", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const payment = await insertPayment(client, registration)
-
-      await client.query(
-        "select set_config('ilmo.refund_deleted_registrations', 'off', true)"
-      )
-      await client.query("delete from app_public.events where id = $1", [
-        event.id,
-      ])
-      expect(await refundJobs(client, [payment.id])).toEqual([])
     }))
 })

@@ -13,12 +13,7 @@ import { getStripe, resetStripeClient } from "../src/payments"
 
 import type { JobHelpers, Task } from "graphile-worker"
 
-export {
-  deleteTestData,
-  getEmails,
-  poolFromUrl,
-  TEST_DATABASE_URL,
-} from "../../__tests__/helpers"
+export { deleteTestData, getEmails } from "../../__tests__/helpers"
 
 /*
  * Shared setup for the worker task tests. Tasks are called directly with job
@@ -143,10 +138,6 @@ export async function jobsOf(taskIdentifier: string, pool: Pool = testPool()) {
     [taskIdentifier]
   )
   return rows.map((row) => row.payload)
-}
-
-export async function clearJobs(pool: Pool = testPool()) {
-  await pool.query("delete from graphile_worker._private_jobs")
 }
 
 /******************************************************************************/

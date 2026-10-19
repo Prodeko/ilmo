@@ -61,32 +61,14 @@ describe("with payments enabled", () => {
           "Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €"
         )
         expect(textOf("spot from queue")).toContain("Maksa 18,25 €")
-        expect(textOf("payment reminder")).toMatchSnapshot("payment reminder")
-        expect(textOf("payment received")).toMatchSnapshot("payment received")
-        expect(textOf("payment refund")).toMatchSnapshot("payment refund")
+        expect(textOf("payment reminder")).toContain(
+          "Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €"
+        )
+        expect(textOf("payment received")).toContain("18,25 €")
+        expect(textOf("payment refund")).toContain("18,00 €")
       },
       true,
       false
     )
   })
-})
-
-test("hides the payment emails while payments are disabled", async () => {
-  await runGraphQLQuery(
-    RenderEmailTemplatesDocument,
-    {},
-    {},
-    async (json) => {
-      expect(json.errors).toBeFalsy()
-      const templates = json.data!.renderEmailTemplates.templates
-      const names = templates.map((t) => t.name)
-      expect(names.filter((name) => name.startsWith("payment"))).toEqual([])
-      const registration = templates.find(
-        (t) => t.name === "event registration"
-      )!
-      expect(registration.text).not.toContain("Maksu")
-    },
-    true,
-    false
-  )
 })

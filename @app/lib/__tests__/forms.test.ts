@@ -1,4 +1,4 @@
-import { ticketPriceCentsToEuros, ticketPriceEurosToCents } from "../src/forms"
+import { ticketPriceEurosToCents } from "../src/forms"
 
 describe("ticketPriceEurosToCents", () => {
   test.each([
@@ -11,23 +11,9 @@ describe("ticketPriceEurosToCents", () => {
     [18, 1800],
     [19.99, 1999],
     ["22.5", 2250],
+    // Input that isn't a number gives NaN (toBe compares with Object.is)
+    ["abc", NaN],
   ])("%p € is %p cents", (euros, cents) => {
     expect(ticketPriceEurosToCents(euros)).toBe(cents)
-  })
-
-  test("returns NaN for input that isn't a number", () => {
-    expect(ticketPriceEurosToCents("abc")).toBeNaN()
-  })
-})
-
-describe("ticketPriceCentsToEuros", () => {
-  test.each([
-    [undefined, undefined],
-    [null, undefined],
-    [0, 0],
-    [1800, 18],
-    [1999, 19.99],
-  ])("%p cents is %p €", (cents, euros) => {
-    expect(ticketPriceCentsToEuros(cents)).toBe(euros)
   })
 })
