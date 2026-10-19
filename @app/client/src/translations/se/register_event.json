@@ -30,6 +30,7 @@
   },
   "title": "Registrera dig till event:",
   "updateRegistration": {
+    "closed": "Registreringen till detta evenemang har stängt, så din registrering kan inte längre ändras. Kontakta evenemangets arrangörer.",
     "title": "Uppdatera information om händelseregistrering"
   },
   "you": "du!"

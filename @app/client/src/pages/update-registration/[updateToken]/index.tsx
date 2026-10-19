@@ -7,7 +7,7 @@ import {
 } from "@app/components"
 import { useUpdateEventRegistrationPageQuery } from "@app/graphql"
 import { filterObjectByKeys } from "@app/lib"
-import { Col, Row } from "antd"
+import { Alert, Col, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
@@ -55,16 +55,29 @@ const UpdateEventRegistrationPage: NextPage = () => {
           {event?.name[lang]} - {quota?.title[lang]}
         </Col>
       </Row>
-      <EventRegistrationForm
-        formRedirect={{
-          pathname: "/event/[slug]",
-          query: { slug: event?.slug },
-        }}
-        initialValues={constructInitialValues(registration)}
-        questions={event?.eventQuestions?.nodes}
-        type="update"
-        updateToken={updateToken as string}
-      />
+      {event && !event.signupOpen ? (
+        <Row>
+          <Col sm={{ offset: 6 }}>
+            <Alert
+              data-cy="update-registration-signup-closed"
+              message={t("updateRegistration.closed")}
+              type="info"
+              showIcon
+            />
+          </Col>
+        </Row>
+      ) : (
+        <EventRegistrationForm
+          formRedirect={{
+            pathname: "/event/[slug]",
+            query: { slug: event?.slug },
+          }}
+          initialValues={constructInitialValues(registration)}
+          questions={event?.eventQuestions?.nodes}
+          type="update"
+          updateToken={updateToken as string}
+        />
+      )}
     </SharedLayout>
   )
 }
