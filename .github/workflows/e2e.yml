@@ -49,6 +49,8 @@ jobs:
         # stubbed and the webhook gets signed fake events from the
         # completeStripeCheckout server command). Every other spec must pass
         # with payments on as well as off.
+        # `setup` resets the DB to committed migrations only; `watch --once`
+        # applies migrations/current/ on top, as `pnpm dev` does locally.
         run: |
           cp .env.ci .env
           {
@@ -57,6 +59,7 @@ jobs:
             echo "STRIPE_WEBHOOK_SECRET=whsec_dummy"
           } >> .env
           CONFIRM_DROP=1 pnpm run setup
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         # Mirror `pnpm dev`'s preamble: build @app/graphql (codegen + tsc) and
@@ -194,6 +197,7 @@ jobs:
             echo "KEYCLOAK_CLIENT_SECRET=ci"
           } >> .env
           CONFIRM_DROP=1 pnpm run setup
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         run: |
@@ -308,6 +312,7 @@ jobs:
             echo "KEYCLOAK_CLIENT_SECRET=ilmo-ci-secret"
           } >> .env
           CONFIRM_DROP=1 pnpm run setup
+          pnpm --filter @app/db run watch --once
 
       - name: Build server-side TypeScript
         run: |
