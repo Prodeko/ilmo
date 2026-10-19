@@ -5,7 +5,6 @@ import sendEmail from "../../src/tasks/send_email"
 import {
   createPaidEvent,
   deleteTestData,
-  disablePayments,
   enablePaymentsForEachTest,
   getEmails,
   insertPayment,
@@ -78,36 +77,29 @@ describe("payment__send_received_email", () => {
     expect(text).toMatch(/^Yhteensä\s+18,00 €$/m)
   })
 
-  it("skips a payment that is no longer paid", async () => {
+  it.each([
+    [
+      "deleted (undone) before the job ran",
+      async (registration) => {
+        const payment = await insertPayment(registration, { method: "MANUAL" })
+        await testPool().query(
+          "delete from app_public.payments where id = $1",
+          [payment.id]
+        )
+        return payment
+      },
+    ],
+    [
+      "that was refunded",
+      (registration) => insertPayment(registration, { status: "REFUNDED" }),
+    ],
+    [
+      "without a registration",
+      (registration) => insertPayment(registration, { detached: true }),
+    ],
+  ])("skips a payment %s", async (_name, createPayment) => {
     const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0], { method: "MANUAL" })
-    // Undone before the job ran
-    await testPool().query("delete from app_public.payments where id = $1", [
-      payment.id,
-    ])
-    const refunded = await insertPayment(registrations[0], {
-      status: "REFUNDED",
-    })
-
-    await runTask(sendReceivedEmail, { paymentId: payment.id })
-    await runTask(sendReceivedEmail, { paymentId: refunded.id })
-
-    expect(await jobsOf("send_email")).toEqual([])
-  })
-
-  it("skips a payment without a registration", async () => {
-    const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0], { detached: true })
-
-    await runTask(sendReceivedEmail, { paymentId: payment.id })
-
-    expect(await jobsOf("send_email")).toEqual([])
-  })
-
-  it("sends nothing while payments are disabled", async () => {
-    const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0])
-    disablePayments()
+    const payment = await createPayment(registrations[0])
 
     await runTask(sendReceivedEmail, { paymentId: payment.id })
 

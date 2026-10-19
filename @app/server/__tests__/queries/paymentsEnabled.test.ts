@@ -57,10 +57,3 @@ test("paymentsEnabled tracks the PAYMENTS_ENABLED / STRIPE_* environment", async
   process.env.PAYMENTS_ENABLED = "0"
   await expectPaymentsEnabled(false)
 })
-
-test("paymentsEnabled is false when nothing is configured", async () => {
-  for (const key of PAYMENTS_ENV_KEYS) {
-    delete process.env[key]
-  }
-  await expectPaymentsEnabled(false)
-})

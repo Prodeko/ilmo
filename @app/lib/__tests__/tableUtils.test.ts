@@ -62,6 +62,12 @@ describe("downloadRegistrations", () => {
       price: "18,00 €",
       Ruokavalio: "Vegan",
     })
+
+    const [labelled] = downloadRegistrations(questions, {
+      includePayments: true,
+      paymentStatusLabel: (status) => `label:${status}`,
+    })([registration()])
+    expect(labelled).toMatchObject({ paymentStatus: "label:PAID" })
   })
 
   test("writes empty payment cells when there is no price or status", () => {
@@ -69,14 +75,6 @@ describe("downloadRegistrations", () => {
       registration({ priceCents: null, paymentStatus: null }),
     ])
     expect(row).toMatchObject({ paymentStatus: "", price: "" })
-  })
-
-  test("writes the payment status through paymentStatusLabel", () => {
-    const [row] = downloadRegistrations(questions, {
-      includePayments: true,
-      paymentStatusLabel: (status) => `label:${status}`,
-    })([registration()])
-    expect(row).toMatchObject({ paymentStatus: "label:PAID" })
   })
 
   test("keeps a question labelled like a payment column", () => {
@@ -89,12 +87,5 @@ describe("downloadRegistrations", () => {
       "price (Ilmo)": "18,00 €",
       paymentStatus: "PAID",
     })
-  })
-
-  test("skips unfinished registrations", () => {
-    const rows = downloadRegistrations(questions, { includePayments: true })([
-      registration({ isFinished: false }),
-    ])
-    expect(rows).toEqual([])
   })
 })

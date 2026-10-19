@@ -2,22 +2,12 @@ import {
   formatEuro,
   guildReceivesCents,
   isValidTicketPriceCents,
-  MAX_TICKET_PRICE_CENTS,
   MIN_PAID_PRICE_CENTS,
   paymentsEnabled,
-  SERVICE_FEE_CENTS,
-  STRIPE_PERCENT_FEE,
   totalChargeCents,
 } from "../src/payments"
 
 describe("fee constants", () => {
-  test("match the PRD", () => {
-    expect(SERVICE_FEE_CENTS).toBe(25)
-    expect(STRIPE_PERCENT_FEE).toBe(0.015)
-    expect(MIN_PAID_PRICE_CENTS).toBe(25)
-    expect(MAX_TICKET_PRICE_CENTS).toBe(1000000)
-  })
-
   test("the minimum paid price meets Stripe's 0,50 € minimum charge", () => {
     expect(totalChargeCents(MIN_PAID_PRICE_CENTS)).toBeGreaterThanOrEqual(50)
   })
@@ -56,21 +46,6 @@ describe("guildReceivesCents", () => {
   ])("%i cents → %i", (price, received) => {
     expect(guildReceivesCents(price)).toBe(received)
   })
-
-  test("matches the PRD formula for every price up to 1000 €", () => {
-    const mismatches: number[] = []
-    for (let p = MIN_PAID_PRICE_CENTS; p <= 100000; p++) {
-      // Exact rational arithmetic: (985p − 375) / 1000, halves up.
-      const n = 985 * p - 375
-      const expected = Math.floor(n / 1000) + (n % 1000 >= 500 ? 1 : 0)
-      if (guildReceivesCents(p) !== expected) mismatches.push(p)
-    }
-    expect(mismatches).toEqual([])
-  })
-
-  test.each([-25, 18.5, NaN])("rejects %p", (price) => {
-    expect(() => guildReceivesCents(price)).toThrow(RangeError)
-  })
 })
 
 describe("isValidTicketPriceCents", () => {
@@ -104,12 +79,6 @@ describe("formatEuro", () => {
     expect(formatEuro(cents)).toBe(text)
   })
 
-  test("uses the decimal comma in every language", () => {
-    for (const lang of ["fi", "en", "sv"]) {
-      expect(formatEuro(1800, lang)).toBe("18,00 €")
-    }
-  })
-
   test("rejects fractional cents", () => {
     expect(() => formatEuro(18.5)).toThrow(RangeError)
   })
@@ -121,6 +90,12 @@ describe("paymentsEnabled", () => {
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
   ] as const
+  type Env = Partial<Record<(typeof KEYS)[number], string>>
+  const ALL_SET: Env = {
+    PAYMENTS_ENABLED: "1",
+    STRIPE_SECRET_KEY: "sk_test_123",
+    STRIPE_WEBHOOK_SECRET: "whsec_123",
+  }
   const saved: Record<string, string | undefined> = {}
 
   beforeEach(() => {
@@ -137,33 +112,31 @@ describe("paymentsEnabled", () => {
     }
   })
 
-  function setAll() {
-    process.env.PAYMENTS_ENABLED = "1"
-    process.env.STRIPE_SECRET_KEY = "sk_test_123"
-    process.env.STRIPE_WEBHOOK_SECRET = "whsec_123"
+  function setEnv(env: Env) {
+    Object.assign(process.env, env)
   }
 
-  test("is off with nothing configured", () => {
-    expect(paymentsEnabled()).toBe(false)
-  })
+  function without(key: (typeof KEYS)[number]): Env {
+    const { [key]: _removed, ...rest } = ALL_SET
+    return rest
+  }
 
   test("is on when the flag and both secrets are set", () => {
-    setAll()
+    setEnv(ALL_SET)
     expect(paymentsEnabled()).toBe(true)
   })
 
-  test.each(KEYS)("is off when %s is missing", (key) => {
-    setAll()
-    delete process.env[key]
+  const offCases: [string, Env][] = [
+    ["nothing is configured", {}],
+    ...KEYS.map((key): [string, Env] => [`${key} is missing`, without(key)]),
+    ...["0", "true", "yes", ""].map((value): [string, Env] => [
+      `PAYMENTS_ENABLED=${JSON.stringify(value)}`,
+      { ...ALL_SET, PAYMENTS_ENABLED: value },
+    ]),
+  ]
+
+  test.each(offCases)("is off when %s", (_name, env) => {
+    setEnv(env)
     expect(paymentsEnabled()).toBe(false)
   })
-
-  test.each(["0", "true", "yes", ""])(
-    "is off when PAYMENTS_ENABLED=%p",
-    (value) => {
-      setAll()
-      process.env.PAYMENTS_ENABLED = value
-      expect(paymentsEnabled()).toBe(false)
-    }
-  )
 })

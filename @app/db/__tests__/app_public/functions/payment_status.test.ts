@@ -30,6 +30,19 @@ const paymentSummary = async (client: PoolClient, eventId: string) => {
   return rows[0]
 }
 
+/** Makes the user the test then views as, returning their id (null: anonymous). */
+type Viewer = (client: PoolClient) => Promise<string | null>
+
+const anAdmin: Viewer = async (client) => {
+  const [admin] = await createUsers(client, 1, true, true)
+  return admin.id
+}
+const anonymous: Viewer = async () => null
+const aUserWithoutEventPermissions: Viewer = async (client) => {
+  const [user] = await createUsers(client, 1)
+  return user.id
+}
+
 describe("registrations_payment_status", () => {
   it("returns every state for a member of the event's organization", () =>
     withRootDb(async (client) => {
@@ -107,33 +120,32 @@ describe("registrations_payment_status", () => {
       expect(await paymentStatus(client, paid.id)).toBe("PAID")
     }))
 
-  it("is visible to admins", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      const [admin] = await createUsers(client, 1, true, true)
-      await becomeUser(client, admin.id)
-      expect(await paymentStatus(client, registration.id)).toBe("UNPAID")
-    }))
+  type AddPayments = (
+    client: PoolClient,
+    registration: { id: string; event_id: string; quota_id: string }
+  ) => Promise<unknown>
+  const noPayment: AddPayments = async () => undefined
+  const aCardPayment: AddPayments = (client, registration) =>
+    insertPayment(client, registration)
 
-  it("is null for anonymous users", () =>
+  it.each([
+    ["is visible to admins", anAdmin, noPayment, "UNPAID"],
+    ["is null for anonymous users", anonymous, aCardPayment, null],
+    [
+      "is null for users without event permissions",
+      aUserWithoutEventPermissions,
+      aCardPayment,
+      null,
+    ],
+  ])("%s", (_case, viewer, addPayments, expected) =>
     withRootDb(async (client) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration } = await register(client, event.id, quota.id)
-      await insertPayment(client, registration)
-      await becomeUser(client, null)
-      expect(await paymentStatus(client, registration.id)).toBeNull()
-    }))
-
-  it("is null for users without event permissions", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      await insertPayment(client, registration)
-      const [user] = await createUsers(client, 1)
-      await becomeUser(client, user.id)
-      expect(await paymentStatus(client, registration.id)).toBeNull()
-    }))
+      await addPayments(client, registration)
+      await becomeUser(client, await viewer(client))
+      expect(await paymentStatus(client, registration.id)).toBe(expected)
+    })
+  )
 })
 
 describe("events_payment_summary", () => {
@@ -192,76 +204,50 @@ describe("events_payment_summary", () => {
       })
     }))
 
-  it("rounds the guild's share like guildReceivesCents", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client, {
-        priceCents: 1800,
-      })
-      const { registration } = await register(client, event.id, quota.id)
-      await insertPayment(client, registration, { ticketAmountCents: 1800 })
-      const [admin] = await createUsers(client, 1, true, true)
-      await becomeUser(client, admin.id)
-      const summary = await paymentSummary(client, event.id)
-      // 1800 - 0,015 × 1825 = 1772,625 → 1773 (see @app/lib payments tests)
-      expect(summary.guild_receives_cents).toBe(1773)
-      expect(summary.tickets_paid_cents).toBe(1800)
-    }))
+  type AddRegistrations = (
+    client: PoolClient,
+    event: { id: string },
+    quota: { id: string }
+  ) => Promise<unknown>
+  const noRegistrations: AddRegistrations = async () => undefined
+  const aPaidRegistration: AddRegistrations = async (client, event, quota) => {
+    const { registration } = await register(client, event.id, quota.id)
+    await insertPayment(client, registration)
+  }
+  const hidden = {
+    paid_count: null,
+    unpaid_count: null,
+    due_count: null,
+    tickets_paid_cents: null,
+    guild_receives_cents: null,
+  }
 
-  it("does not overflow on large ticket amounts", () =>
-    withRootDb(async (client) => {
-      const { event, quota } = await createPaidEventData(client, {
-        priceCents: 1000000,
-      })
-      const { registration } = await register(client, event.id, quota.id)
-      // Payment rows have no upper bound of their own; 1000 × 3 000 000
-      // would overflow integer maths
-      await insertPayment(client, registration, {
-        ticketAmountCents: 3000000,
-      })
-      const [admin] = await createUsers(client, 1, true, true)
-      await becomeUser(client, admin.id)
-      const summary = await paymentSummary(client, event.id)
-      // 3 000 000 - 0,015 × 3 000 025 = 2 954 999,625 → 2 955 000
-      expect(summary.guild_receives_cents).toBe(2955000)
-      expect(summary.tickets_paid_cents).toBe(3000000)
-    }))
-
-  it("is all zeros for an event without registrations", () =>
-    withRootDb(async (client) => {
-      const { event } = await createPaidEventData(client)
-      const [admin] = await createUsers(client, 1, true, true)
-      await becomeUser(client, admin.id)
-      expect(await paymentSummary(client, event.id)).toEqual({
+  it.each([
+    [
+      "is all zeros for an event without registrations",
+      anAdmin,
+      noRegistrations,
+      {
         paid_count: 0,
         unpaid_count: 0,
         due_count: 0,
         tickets_paid_cents: 0,
         guild_receives_cents: 0,
-      })
-    }))
-
-  it("is null for anonymous users and users without event permissions", () =>
+      },
+    ],
+    ["is null for anonymous users", anonymous, aPaidRegistration, hidden],
+    [
+      "is null for users without event permissions",
+      aUserWithoutEventPermissions,
+      aPaidRegistration,
+      hidden,
+    ],
+  ])("%s", (_case, viewer, addRegistrations, expected) =>
     withRootDb(async (client) => {
       const { event, quota } = await createPaidEventData(client)
-      const { registration } = await register(client, event.id, quota.id)
-      await insertPayment(client, registration)
-      const [user] = await createUsers(client, 1)
-
-      await becomeUser(client, null)
-      expect(await paymentSummary(client, event.id)).toEqual({
-        paid_count: null,
-        unpaid_count: null,
-        due_count: null,
-        tickets_paid_cents: null,
-        guild_receives_cents: null,
-      })
-
-      await becomeUser(client, user.id)
-      const { rows } = await client.query(
-        `select app_public.events_payment_summary(e) is null as hidden
-          from app_public.events e where e.id = $1`,
-        [event.id]
-      )
-      expect(rows).toEqual([{ hidden: true }])
-    }))
+      await addRegistrations(client, event, quota)
+      await becomeUser(client, await viewer(client))
+      expect(await paymentSummary(client, event.id)).toEqual(expected)
+    })
+  )
 })

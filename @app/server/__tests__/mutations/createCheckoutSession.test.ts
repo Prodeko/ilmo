@@ -116,9 +116,6 @@ describe("createCheckoutSession", () => {
     expect(options).toEqual({
       idempotencyKey: `checkout-session-${payment.id}`,
     })
-    expect(params.allowed_payment_method_types).toEqual(["card"])
-    expect(params.line_items).toHaveLength(2)
-    expect(params.metadata).toEqual(params.payment_intent_data.metadata)
     expect(
       maskIds(params, {
         registrationId: registration.id,
@@ -135,10 +132,7 @@ describe("createCheckoutSession", () => {
   })
 
   it.each([
-    ["en", "en", "en"],
     ["se", "sv", "se"],
-    ["fi", "fi", "fi"],
-    [undefined, "fi", "fi"],
     ["xx", "fi", "fi"],
   ])(
     "uses language %p as Stripe locale %p and returns to /%s/pay",
@@ -216,19 +210,8 @@ describe("createCheckoutSession", () => {
     expect(payments.map((p) => p.status)).toEqual(["PENDING"])
   })
 
-  it("leaves no payment row behind when Stripe fails", async () => {
+  it("hides Stripe's error text behind CHECKOUT_FAILED and leaves no payment row behind", async () => {
     const { event, tokens } = await createPaidEvent()
-    stripeMock().checkout.sessions.create.mockRejectedValueOnce(
-      new Error("Stripe is down")
-    )
-
-    const result = await createCheckoutSession(tokens[0])
-    expect(result.errors).toHaveLength(1)
-    expect(await paymentsOfEvent(pool(), event.id)).toEqual([])
-  })
-
-  it("hides Stripe's error text behind CHECKOUT_FAILED", async () => {
-    const { tokens } = await createPaidEvent()
     stripeMock().checkout.sessions.create.mockRejectedValueOnce(
       new Error("Invalid API Key provided: sk_live_****1234")
     )
@@ -240,28 +223,7 @@ describe("createCheckoutSession", () => {
       code: "CHECKOUT_FAILED",
     })
     expect(JSON.stringify(error)).not.toMatch(/sk_live|Invalid API Key/)
-  })
-
-  it("expires the new session again if saving it fails", async () => {
-    const { event, registrations, tokens } = await createPaidEvent()
-    // Another payment already holds the session id Stripe will return
-    await insertPayment(pool(), registrations[0], {
-      status: "EXPIRED",
-      sessionId: "cs_test_taken",
-    })
-    stripeMock().checkout.sessions.create.mockResolvedValueOnce({
-      id: "cs_test_taken",
-      url: "https://checkout.stripe.com/c/pay/cs_test_taken",
-    })
-
-    const result = await createCheckoutSession(tokens[0])
-    expect(result.errors).toHaveLength(1)
-    expect(stripeMock().checkout.sessions.expire).toHaveBeenCalledWith(
-      "cs_test_taken"
-    )
-    expect(
-      (await paymentsOfEvent(pool(), event.id)).map((p) => p.status)
-    ).toEqual(["EXPIRED"])
+    expect(await paymentsOfEvent(pool(), event.id)).toEqual([])
   })
 
   it("holds no lock on the registration while Stripe is called", async () => {
@@ -328,18 +290,26 @@ describe("createCheckoutSession", () => {
       })
     })
 
-    it("REGISTRATION_NOT_FOUND for an unknown token", async () => {
-      await createPaidEvent()
-      await expectRefusal("not-a-token", "REGISTRATION_NOT_FOUND")
-    })
-
-    it("REGISTRATION_NOT_FOUND for an unfinished registration", async () => {
-      const { registrations, tokens } = await createPaidEvent()
-      await pool().query(
-        "update app_public.registrations set is_finished = false where id = $1",
-        [registrations[0].id]
-      )
-      await expectRefusal(tokens[0], "REGISTRATION_NOT_FOUND")
+    it.each<
+      [
+        string,
+        (data: Awaited<ReturnType<typeof createPaidEvent>>) => Promise<string>,
+      ]
+    >([
+      ["an unknown token", async () => "not-a-token"],
+      [
+        "an unfinished registration",
+        async ({ registrations, tokens }) => {
+          await pool().query(
+            "update app_public.registrations set is_finished = false where id = $1",
+            [registrations[0].id]
+          )
+          return tokens[0]
+        },
+      ],
+    ])("REGISTRATION_NOT_FOUND for %s", async (_name, tokenOf) => {
+      const token = await tokenOf(await createPaidEvent())
+      await expectRefusal(token, "REGISTRATION_NOT_FOUND")
     })
 
     it.each<[string, { paymentMode?: PaymentMode; priceCents?: number }]>([

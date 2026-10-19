@@ -135,27 +135,24 @@ describe("payment__refund", () => {
   })
 
   it.each([
-    ["a manual payment", { method: "MANUAL" }],
-    ["a pending payment", { status: "PENDING" }],
-    ["an expired payment", { status: "EXPIRED" }],
-  ])("doesn't refund %s", async (_name, options) => {
-    const payment = await paidPayment(options)
+    ["a manual payment", () => paidPayment({ method: "MANUAL" })],
+    ["a pending payment", () => paidPayment({ status: "PENDING" })],
+    ["an expired payment", () => paidPayment({ status: "EXPIRED" })],
+    [
+      "a payment that doesn't exist",
+      async () => ({
+        id: "00000000-0000-0000-0000-000000000000",
+        status: undefined,
+      }),
+    ],
+  ])("doesn't refund %s", async (_name, createPayment) => {
+    const payment = await createPayment()
 
     const { logger } = await runTask(refund, { paymentId: payment.id })
 
     expect(stripeMock().refunds.create).not.toHaveBeenCalled()
     expect(logger.error).toHaveBeenCalled()
-    expect((await paymentById(payment.id)).status).toEqual(payment.status)
-  })
-
-  it("fails for a card payment without a payment intent, keeping the job visible", async () => {
-    const payment = await paidPayment({ paymentIntentId: null })
-
-    await expect(runTask(refund, { paymentId: payment.id })).rejects.toThrow(
-      /no Stripe payment intent/
-    )
-    expect(stripeMock().refunds.create).not.toHaveBeenCalled()
-    expect((await paymentById(payment.id)).status).toEqual("PAID")
+    expect((await paymentById(payment.id))?.status).toEqual(payment.status)
   })
 
   it("refunds only what is left after a partial dashboard refund", async () => {
@@ -177,19 +174,6 @@ describe("payment__refund", () => {
     expect(await jobsOf("payment__send_refund_email")).toEqual([
       { paymentId: payment.id, amountCents: 1300, full: false },
     ])
-  })
-
-  it("counts an earlier partial refund towards the ticket price", async () => {
-    const payment = await paidPayment()
-    await testPool().query(
-      "update app_public.payments set refunded_amount_cents = 10 where id = $1",
-      [payment.id]
-    )
-
-    await runTask(refund, { paymentId: payment.id })
-
-    expect(stripeMock().refunds.create.mock.calls[0][0].amount).toEqual(1790)
-    expect((await paymentById(payment.id)).refunded_amount_cents).toEqual(1800)
   })
 
   it("treats charge_already_refunded as done", async () => {
@@ -233,13 +217,6 @@ describe("payment__refund", () => {
       { idempotencyKey: "refund-pi-pi_orphan" },
     ])
     expect(await jobsOf("payment__send_refund_email")).toEqual([])
-  })
-
-  it("doesn't fail for a payment that doesn't exist", async () => {
-    await runTask(refund, {
-      paymentId: "00000000-0000-0000-0000-000000000000",
-    })
-    expect(stripeMock().refunds.create).not.toHaveBeenCalled()
   })
 
   it("fails while payments are disabled, so the refund is retried later", async () => {

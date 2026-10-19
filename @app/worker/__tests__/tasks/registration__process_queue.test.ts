@@ -1,11 +1,14 @@
 import processQueue from "../../src/tasks/registration__process_queue"
+import sendEmail from "../../src/tasks/send_email"
 import {
   createPaidEvent,
   deleteTestData,
   disablePayments,
   enablePaymentsForEachTest,
+  getEmails,
   jobsOf,
   runTask,
+  sendQueuedEmails,
   testPool,
 } from "../helpers"
 
@@ -69,6 +72,9 @@ describe("registration__process_queue", () => {
       paymentMode: "DURING_REGISTRATION",
       payLink: `pay/${token}`,
     })
+    await sendQueuedEmails(sendEmail)
+    const { text } = JSON.parse(getEmails()[0].message)
+    expect(text).toContain("Maksa 18,25 €")
   })
 
   it("adds the payment link after close in AFTER_REGISTRATION mode", async () => {

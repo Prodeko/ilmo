@@ -21,127 +21,132 @@ describe("quotaRequiresPayment", () => {
 })
 
 describe("registrationFormPaymentVariant", () => {
-  test("during mode", () => {
-    expect(
-      registrationFormPaymentVariant(true, "DURING_REGISTRATION", 1800, false)
-    ).toBe("during")
-  })
-
-  test("after mode", () => {
-    expect(
-      registrationFormPaymentVariant(true, "AFTER_REGISTRATION", 1800, false)
-    ).toBe("after")
-  })
-
-  test("queued in either mode", () => {
-    expect(
-      registrationFormPaymentVariant(true, "DURING_REGISTRATION", 1800, true)
-    ).toBe("queued")
-    expect(
-      registrationFormPaymentVariant(true, "AFTER_REGISTRATION", 1800, true)
-    ).toBe("queued")
-  })
-
-  test("nothing when free, mode NONE or flag off", () => {
-    expect(
-      registrationFormPaymentVariant(true, "DURING_REGISTRATION", 0, true)
-    ).toBeNull()
-    expect(registrationFormPaymentVariant(true, "NONE", 1800, false)).toBe(null)
-    expect(
-      registrationFormPaymentVariant(false, "DURING_REGISTRATION", 1800, false)
-    ).toBeNull()
-  })
+  test.each([
+    [true, "DURING_REGISTRATION", 1800, false, "during"],
+    [true, "AFTER_REGISTRATION", 1800, false, "after"],
+    [true, "DURING_REGISTRATION", 1800, true, "queued"],
+    [true, "AFTER_REGISTRATION", 1800, true, "queued"],
+    [true, "DURING_REGISTRATION", 0, true, null],
+    [true, "NONE", 1800, false, null],
+    [false, "DURING_REGISTRATION", 1800, false, null],
+  ] as const)(
+    "enabled=%p mode=%p price=%p queued=%p → %p",
+    (on, mode, price, queued, out) => {
+      expect(registrationFormPaymentVariant(on, mode, price, queued)).toBe(out)
+    }
+  )
 })
 
 describe("payPageState", () => {
   const unpaid = { status: "UNPAID" as const, paidManually: false }
+  const paid = { status: "PAID" as const, paidManually: false }
 
-  test("payments disabled wins over everything", () => {
-    expect(payPageState(false, unpaid)).toBe("disabled")
-    expect(payPageState(false, null)).toBe("disabled")
-  })
-
-  test("not found", () => {
-    expect(payPageState(true, null)).toBe("notFound")
-    expect(payPageState(true, undefined)).toBe("notFound")
-  })
-
-  test("settled states", () => {
-    expect(payPageState(true, { status: "PAID", paidManually: false })).toBe(
-      "paid"
-    )
-    expect(payPageState(true, { status: "PAID", paidManually: true })).toBe(
-      "paidManually"
-    )
-    expect(
-      payPageState(true, { status: "PAID_MANUALLY", paidManually: true })
-    ).toBe("paidManually")
-    expect(
-      payPageState(true, { status: "REFUNDED", paidManually: false })
-    ).toBe("refunded")
-    expect(
-      payPageState(true, { status: "NOT_REQUIRED", paidManually: false })
-    ).toBe("free")
-  })
-
-  test("settled states ignore the return status", () => {
-    expect(
-      payPageState(
-        true,
-        { status: "PAID", paidManually: false },
-        { returnStatus: "success" }
-      )
-    ).toBe("paid")
-  })
-
-  test("blocked unpaid states", () => {
-    expect(payPageState(true, { ...unpaid, blockedReason: "IN_QUEUE" })).toBe(
-      "queued"
-    )
-    expect(
-      payPageState(true, { ...unpaid, blockedReason: "PAYMENT_NOT_OPEN" })
-    ).toBe("opensLater")
-  })
-
-  test("unpaid, cancelled and confirming", () => {
-    expect(payPageState(true, unpaid)).toBe("unpaid")
-    expect(payPageState(true, unpaid, { returnStatus: "cancelled" })).toBe(
-      "unpaid"
-    )
-    expect(payPageState(true, unpaid, { returnStatus: "success" })).toBe(
-      "confirming"
-    )
-    expect(
-      payPageState(true, unpaid, {
-        returnStatus: "success",
-        confirmTimedOut: true,
-      })
-    ).toBe("unpaid")
+  test.each([
+    // Payments disabled wins over everything
+    ["disabled, unpaid", false, unpaid, undefined, "disabled"],
+    ["disabled, no payment", false, null, undefined, "disabled"],
+    ["no payment", true, null, undefined, "notFound"],
+    ["undefined payment", true, undefined, undefined, "notFound"],
+    // Settled states
+    ["paid by card", true, paid, undefined, "paid"],
+    [
+      "PAID, paid manually",
+      true,
+      { status: "PAID", paidManually: true },
+      undefined,
+      "paidManually",
+    ],
+    [
+      "PAID_MANUALLY",
+      true,
+      { status: "PAID_MANUALLY", paidManually: true },
+      undefined,
+      "paidManually",
+    ],
+    [
+      "refunded",
+      true,
+      { status: "REFUNDED", paidManually: false },
+      undefined,
+      "refunded",
+    ],
+    [
+      "not required",
+      true,
+      { status: "NOT_REQUIRED", paidManually: false },
+      undefined,
+      "free",
+    ],
+    // Settled states ignore the return status
+    [
+      "paid, returned with success",
+      true,
+      paid,
+      { returnStatus: "success" },
+      "paid",
+    ],
+    // Blocked unpaid states
+    [
+      "unpaid, in queue",
+      true,
+      { ...unpaid, blockedReason: "IN_QUEUE" },
+      undefined,
+      "queued",
+    ],
+    [
+      "unpaid, payment not open",
+      true,
+      { ...unpaid, blockedReason: "PAYMENT_NOT_OPEN" },
+      undefined,
+      "opensLater",
+    ],
+    // Unpaid, cancelled and confirming
+    ["unpaid", true, unpaid, undefined, "unpaid"],
+    [
+      "unpaid, returned cancelled",
+      true,
+      unpaid,
+      { returnStatus: "cancelled" },
+      "unpaid",
+    ],
+    [
+      "unpaid, returned with success",
+      true,
+      unpaid,
+      { returnStatus: "success" },
+      "confirming",
+    ],
+    [
+      "unpaid, confirming timed out",
+      true,
+      unpaid,
+      { returnStatus: "success", confirmTimedOut: true },
+      "unpaid",
+    ],
+  ] as const)("%s → %p", (_name, enabled, payment, options, expected) => {
+    expect(payPageState(enabled, payment, options)).toBe(expected)
   })
 })
 
 describe("cancelRefund", () => {
-  test("card payment refunds the ticket price only", () => {
-    expect(
-      cancelRefund({
-        status: "PAID",
-        paidManually: false,
-        paidTotalCents: 1825,
-        paidTicketCents: 1800,
-      })
-    ).toEqual({ paidCents: 1825, serviceFeeCents: 25, refundCents: 1800 })
-  })
-
-  test("uses the stored ticket amount, not the current fee", () => {
-    expect(
-      cancelRefund({
-        status: "PAID",
-        paidManually: false,
-        paidTotalCents: 1830,
-        paidTicketCents: 1800,
-      })
-    ).toEqual({ paidCents: 1830, serviceFeeCents: 30, refundCents: 1800 })
-  })
+  test.each([
+    // A card payment refunds the ticket price only
+    [1825, 1800, { paidCents: 1825, serviceFeeCents: 25, refundCents: 1800 }],
+    // Uses the stored ticket amount, not the current fee
+    [1830, 1800, { paidCents: 1830, serviceFeeCents: 30, refundCents: 1800 }],
+  ])(
+    "a card payment of %i cents with a %i cent ticket refunds %p",
+    (paidTotalCents, paidTicketCents, expected) => {
+      expect(
+        cancelRefund({
+          status: "PAID",
+          paidManually: false,
+          paidTotalCents,
+          paidTicketCents,
+        })
+      ).toEqual(expected)
+    }
+  )
 
   test("nothing for manual, unpaid, refunded or unknown payments", () => {
     expect(

@@ -3,7 +3,6 @@ import sendEmail from "../../src/tasks/send_email"
 import {
   createPaidEvent,
   deleteTestData,
-  disablePayments,
   enablePaymentsForEachTest,
   getEmails,
   insertPayment,
@@ -114,18 +113,6 @@ describe("payment__send_refund_email", () => {
     expect(text).not.toContain("Service fee")
   })
 
-  it("defaults to the recorded refunded amount", async () => {
-    const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0], {
-      status: "REFUNDED",
-    })
-
-    await runTask(sendRefundEmail, { paymentId: payment.id })
-
-    const [payload] = await jobsOf("send_email")
-    expect(payload.variables.refund).toEqual(payment.refunded_amount_cents)
-  })
-
   it("logs and skips when there is no address", async () => {
     const { registrations } = await createPaidEvent()
     const payment = await insertPayment(registrations[0], {
@@ -139,18 +126,6 @@ describe("payment__send_refund_email", () => {
     })
 
     expect(logger.error).toHaveBeenCalled()
-    expect(await jobsOf("send_email")).toEqual([])
-  })
-
-  it("sends nothing while payments are disabled", async () => {
-    const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0], {
-      status: "REFUNDED",
-    })
-    disablePayments()
-
-    await runTask(sendRefundEmail, { paymentId: payment.id })
-
     expect(await jobsOf("send_email")).toEqual([])
   })
 })

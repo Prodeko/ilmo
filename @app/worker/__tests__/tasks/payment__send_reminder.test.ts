@@ -1,3 +1,5 @@
+import sendReceivedEmail from "../../src/tasks/payment__send_received_email"
+import sendRefundEmail from "../../src/tasks/payment__send_refund_email"
 import sendReminder from "../../src/tasks/payment__send_reminder"
 import sendEmail from "../../src/tasks/send_email"
 import {
@@ -17,6 +19,13 @@ jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
 enablePaymentsForEachTest()
 
 beforeEach(deleteTestData)
+
+async function firstRegistration(
+  options: Parameters<typeof createPaidEvent>[0] = {}
+) {
+  const { registrations } = await createPaidEvent(options)
+  return registrations[0]
+}
 
 describe("payment__send_reminder", () => {
   it("emails the payment link to an unpaid registration", async () => {
@@ -79,26 +88,21 @@ describe("payment__send_reminder", () => {
   })
 
   it.each([
-    ["by card", { method: "STRIPE" as const }],
-    ["by hand", { method: "MANUAL" as const }],
-    ["and refunded", { status: "REFUNDED" as const }],
-  ])("skips a registration paid %s in the meantime", async (_name, options) => {
-    const { registrations } = await createPaidEvent()
-    await insertPayment(registrations[0], options)
+    ["paid by card", { method: "STRIPE" as const }, 0],
+    ["paid by hand", { method: "MANUAL" as const }, 0],
+    ["paid and refunded", { status: "REFUNDED" as const }, 0],
+    ["whose payment attempt expired", { status: "EXPIRED" as const }, 1],
+  ])(
+    "a registration %s in the meantime gets %i reminders",
+    async (_name, options, reminders) => {
+      const registration = await firstRegistration()
+      await insertPayment(registration, options)
 
-    await runTask(sendReminder, { registrationId: registrations[0].id })
+      await runTask(sendReminder, { registrationId: registration.id })
 
-    expect(await jobsOf("send_email")).toEqual([])
-  })
-
-  it("reminds a registration whose earlier payment attempt expired", async () => {
-    const { registrations } = await createPaidEvent()
-    await insertPayment(registrations[0], { status: "EXPIRED" })
-
-    await runTask(sendReminder, { registrationId: registrations[0].id })
-
-    expect(await jobsOf("send_email")).toHaveLength(1)
-  })
+      expect(await jobsOf("send_email")).toHaveLength(reminders)
+    }
+  )
 
   it("skips a queued registration", async () => {
     const { registrations } = await createPaidEvent({
@@ -111,28 +115,58 @@ describe("payment__send_reminder", () => {
     expect(await jobsOf("send_email")).toEqual([])
   })
 
-  it("skips free quotas and events without payments", async () => {
-    const free = await createPaidEvent({ priceCents: 0 })
-    const none = await createPaidEvent({ paymentMode: "NONE" })
-
-    await runTask(sendReminder, { registrationId: free.registrations[0].id })
-    await runTask(sendReminder, { registrationId: none.registrations[0].id })
+  it.each([
+    [
+      "a free quota",
+      async () => (await firstRegistration({ priceCents: 0 })).id,
+    ],
+    [
+      "an event without payments",
+      async () => (await firstRegistration({ paymentMode: "NONE" })).id,
+    ],
+    [
+      "a deleted registration",
+      async () => "00000000-0000-0000-0000-000000000000",
+    ],
+  ])("skips %s", async (_name, registrationId) => {
+    await runTask(sendReminder, { registrationId: await registrationId() })
 
     expect(await jobsOf("send_email")).toEqual([])
   })
+})
 
-  it("skips a deleted registration", async () => {
-    await runTask(sendReminder, {
-      registrationId: "00000000-0000-0000-0000-000000000000",
-    })
-    expect(await jobsOf("send_email")).toEqual([])
-  })
-
-  it("sends nothing while payments are disabled", async () => {
-    const { registrations } = await createPaidEvent()
+// One test for the payment email tasks: nothing is sent while payments are
+// off (PRD §8)
+describe("payment emails while payments are disabled", () => {
+  it.each([
+    [
+      "payment__send_reminder",
+      sendReminder,
+      async () => ({ registrationId: (await firstRegistration()).id }),
+    ],
+    [
+      "payment__send_received_email",
+      sendReceivedEmail,
+      async () => ({
+        paymentId: (await insertPayment(await firstRegistration())).id,
+      }),
+    ],
+    [
+      "payment__send_refund_email",
+      sendRefundEmail,
+      async () => ({
+        paymentId: (
+          await insertPayment(await firstRegistration(), {
+            status: "REFUNDED",
+          })
+        ).id,
+      }),
+    ],
+  ])("%s sends nothing", async (_name, task, createPayload) => {
+    const payload = await createPayload()
     disablePayments()
 
-    await runTask(sendReminder, { registrationId: registrations[0].id })
+    await runTask(task, payload)
 
     expect(await jobsOf("send_email")).toEqual([])
   })
