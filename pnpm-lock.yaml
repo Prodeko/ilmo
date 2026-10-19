@@ -760,9 +760,15 @@ importers:
       '@types/nunjucks':
         specifier: ^3.2.1
         version: 3.2.6
+      '@types/pg':
+        specifier: ^8.11.10
+        version: 8.20.0
       mkdirp:
         specifier: ^1.0.4
         version: 1.0.4
+      pg:
+        specifier: ^8.7.3
+        version: 8.20.0
 
 packages:
 
