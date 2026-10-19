@@ -27,3 +27,10 @@ and commit your changes.
 
 This project is designed to work both with and without Docker. Please don't
 break this!
+
+## Pre-commit hook
+
+`pnpm install` sets up a git pre-commit hook (husky + lint-staged) that runs
+`eslint --fix` and `prettier --write` on the files you have staged. Type
+checking and tests still run in CI. Skip the hook with `git commit --no-verify`
+if you need to.
