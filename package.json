@@ -31,7 +31,8 @@
     "lib": "pnpm --filter @app/lib",
     "server": "pnpm --filter @app/server",
     "worker": "pnpm --filter @app/worker",
-    "postinstall": "npx next telemetry disable"
+    "postinstall": "npx next telemetry disable",
+    "prepare": "husky"
   },
   "packageManager": "pnpm@10.34.5",
   "author": "Prodeko webbitiimi <cto@prodeko.org>",
@@ -78,9 +79,11 @@
     "globals": "^15.14.0",
     "graphql": "^16.5.0",
     "graphql-config": "^4.3.3",
+    "husky": "^9.1.7",
     "inquirer": "^9.1.0",
     "jest": "^29.7.0",
     "json-sort-cli": "^2.0.15",
+    "lint-staged": "^17.6.0",
     "nodemon": "^2.0.19",
     "npm-check-updates": "^16.0.5",
     "prettier": "3.4.2",
@@ -91,6 +94,13 @@
     "ts-node": "10.8.2",
     "type-fest": "^2.18.0",
     "typescript": "5.7.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{graphql,md}": "prettier --write"
   },
   "pnpm": {
     "overrides": {
