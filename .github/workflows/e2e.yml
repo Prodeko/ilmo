@@ -44,10 +44,20 @@ jobs:
         uses: ./.github/actions/install-pg-dump
 
       - name: Setup environment and database
+        # Stripe payments are on here so that the payments_* specs run; the
+        # keys are dummies because the specs never reach Stripe (Checkout is
+        # stubbed and the webhook gets signed fake events from the
+        # completeStripeCheckout server command). Every other spec must pass
+        # with payments on as well as off.
         # `setup` resets the DB to committed migrations only; `watch --once`
         # applies migrations/current/ on top, as `pnpm dev` does locally.
         run: |
           cp .env.ci .env
+          {
+            echo "PAYMENTS_ENABLED=1"
+            echo "STRIPE_SECRET_KEY=sk_test_dummy"
+            echo "STRIPE_WEBHOOK_SECRET=whsec_dummy"
+          } >> .env
           CONFIRM_DROP=1 pnpm run setup
           pnpm --filter @app/db run watch --once
 

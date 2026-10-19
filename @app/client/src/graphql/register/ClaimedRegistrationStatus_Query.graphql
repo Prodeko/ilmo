@@ -1,0 +1,8 @@
+# Queue status of the registration claimed when the registration form opens.
+# Only fetched for paid quotas, to choose the payment block of the form.
+query ClaimedRegistrationStatus($updateToken: String!) {
+  registrationByUpdateToken(updateToken: $updateToken) {
+    id
+    status
+  }
+}

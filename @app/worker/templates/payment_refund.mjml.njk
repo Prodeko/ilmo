@@ -1,0 +1,45 @@
+{% extends "base.mjml.njk" %}
+{% from "payment_macros.njk" import eventHeader, paymentBox, amountTable, amountRow, note %}
+
+{#
+  Refund issued (board 15). A cancelled or deleted registration gets the
+  ticket price back and the service fee is kept. With `full`, a duplicate
+  payment was refunded in full: no service fee row, and refund equals paid.
+  Amounts are cents: paid, serviceFee, refund.
+#}
+
+{% block headerContent %}
+{{ eventHeader(eventName) }}
+{% endblock %}
+
+{% block content %}
+<mj-column width="100%">
+  {% if full %}
+  <mj-text>Maksoit ilmoittautumisesi tapahtumaan {{ eventName.fi }} kahdesti, joten ylimääräinen maksu on hyvitetty kokonaan.</mj-text>
+  {% else %}
+  <mj-text>Ilmoittautumisesi tapahtumaan {{ eventName.fi }} on poistettu, ja maksusi on hyvitetty.</mj-text>
+  {% endif %}
+  {% call paymentBox() %}
+    {% call amountTable() %}
+      {{ amountRow("Maksettu", paid | euro) }}
+      {% if not full and serviceFee %}{{ amountRow("Palvelumaksu (ei hyvitetä)", "−" + (serviceFee | euro)) }}{% endif %}
+      {{ amountRow("Hyvitys", refund | euro, strong=true) }}
+    {% endcall %}
+  {% endcall %}
+  {% call note() %}Hyvitys näkyy kortillasi yleensä 5–10 arkipäivän kuluessa.{% endcall %}
+  <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  {% if full %}
+  <mj-text>You paid for your registration to {{ eventName.en }} twice, so the extra payment has been refunded in full.</mj-text>
+  {% else %}
+  <mj-text>Your registration to {{ eventName.en }} has been deleted and your payment refunded.</mj-text>
+  {% endif %}
+  {% call paymentBox() %}
+    {% call amountTable() %}
+      {{ amountRow("Paid", paid | euro) }}
+      {% if not full and serviceFee %}{{ amountRow("Service fee (not refunded)", "−" + (serviceFee | euro)) }}{% endif %}
+      {{ amountRow("Refund", refund | euro, strong=true) }}
+    {% endcall %}
+  {% endcall %}
+  {% call note() %}Refunds usually show up on your card within 5–10 business days.{% endcall %}
+</mj-column>
+{% endblock %}

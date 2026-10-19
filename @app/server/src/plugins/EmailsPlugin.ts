@@ -6,8 +6,36 @@ import path from "node:path"
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 import { loadTemplate } from "../utils/emailUtils"
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors"
+import { paymentsEnabled } from "../utils/stripe"
 
 const EMAIL_SEND_TEMPLATE_ALLOWLIST = ["event_registration.mjml.njk"]
+
+/** Emails that exist only for payments; listed only while payments are on. */
+const PAYMENT_TEMPLATE_PREFIX = "payment_"
+
+/**
+ * Example payment variables for the email previews. Amounts are cents, as in
+ * the worker. Used only while payments are on, so that with payments off
+ * every preview renders exactly as before.
+ */
+const PREVIEW_PAYMENT_VARIABLES = {
+  closed: false,
+  firstName: "Teppo",
+  full: false,
+  isPaid: false,
+  isQueued: false,
+  paid: 1825,
+  paidAt: "1.1.2021 12:00",
+  payLink: "pay/12345",
+  paymentMethod: "STRIPE",
+  paymentMode: "DURING_REGISTRATION",
+  price: 1800,
+  refund: 1800,
+  registrationEndDate: "1.1.2021",
+  registrationEndTime: "12:00",
+  serviceFee: 25,
+  total: 1825,
+}
 
 const EmailsPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
@@ -34,6 +62,46 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       token: String
       url: String
       verifyLink: String
+      """
+      Ticket price in cents (payment emails).
+      """
+      price: Int
+      """
+      Service fee in cents (payment emails).
+      """
+      serviceFee: Int
+      """
+      Ticket price plus service fee, in cents (payment emails).
+      """
+      total: Int
+      """
+      The amount paid (refund email), in cents.
+      """
+      paid: Int
+      """
+      The amount refunded (refund email), in cents.
+      """
+      refund: Int
+      """
+      A duplicate payment was refunded in full (refund email).
+      """
+      full: Boolean
+      paymentMode: PaymentMode
+      paymentMethod: PaymentMethod
+      isQueued: Boolean
+      isPaid: Boolean
+      """
+      The payment link relative to the language root, e.g. \`pay/<update token>\`.
+      """
+      payLink: String
+      paidAt: String
+      registrationEndDate: String
+      registrationEndTime: String
+      firstName: String
+      """
+      The reminder is the email sent when registration closes.
+      """
+      closed: Boolean
     }
 
     """
@@ -99,6 +167,8 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           const text = html2text.fromString(html2textableHtml, {
             wordwrap: 120,
             tags: { img: { format: "skip" } },
+            // Amount tables of the payment emails (payment_macros.njk)
+            tables: [".amounts"],
           })
           // All templates end in .mjml.njk, remove the file extension
           const name = template.slice(0, -9).replace(/_/g, " ")
@@ -140,7 +210,15 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             "../../../worker/templates/"
           )
 
-          const templateFiles = fs.readdirSync(templatesFolder)
+          const withPayments = paymentsEnabled()
+          // Only emails: the folder also holds partials (payment_macros.njk)
+          const templateFiles = fs
+            .readdirSync(templatesFolder)
+            .filter((filename) => filename.endsWith(".mjml.njk"))
+            .filter(
+              (filename) =>
+                withPayments || !filename.startsWith(PAYMENT_TEMPLATE_PREFIX)
+            )
           const ret = templateFiles.map(async (filename) => {
             // Dummy variables for mjml templates
             const variables = {
@@ -158,6 +236,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               token: "12345",
               url: process.env.ROOT_URL,
               verifyLink: "",
+              ...(withPayments ? PREVIEW_PAYMENT_VARIABLES : {}),
             }
             const templateFn = await loadTemplate(filename)
             const html = await templateFn(variables)
@@ -166,6 +245,8 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               .fromString(html2textableHtml, {
                 wordwrap: 120,
                 tags: { img: { format: "skip" } },
+                // Amount tables of the payment emails (payment_macros.njk)
+                tables: [".amounts"],
               })
               .replace(/\n\s+\n/g, "\n\n")
 

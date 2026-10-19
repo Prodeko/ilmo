@@ -74,11 +74,13 @@
     "saveAsDraft": "Tallenna luonnoksena",
     "signupEmail": "Sähköposti"
   },
+  "free": "Maksuton",
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Avoin kiintiö",
   "organizer": "Järjestäjä",
+  "paymentMethods": "Maksu kortilla, Apple Paylla tai Google Paylla.",
   "queued": "Jonossa",
   "quota": "Kiintiö",
   "removeOption": "Poista vaihtoehto",
@@ -90,5 +92,6 @@
     "registrationStarts": "Ilmo aukeaa",
     "time": "Aika",
     "title": "Ilmoittautuminen aukeaa pian"
-  }
+  },
+  "inQueueCount": "{{count}} jonossa"
 }

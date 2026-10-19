@@ -137,6 +137,14 @@ To shut down the application press Ctrl-c. To stop the Docker data services:
 docker compose down
 ```
 
+### Stripe payments (optional)
+
+Paid events use Stripe and are off unless `PAYMENTS_ENABLED=1`,
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are all set. See
+[docs/payments.md](docs/payments.md) for testing locally with your own Stripe
+test-mode keys and the Stripe CLI, the Stripe dashboard setup for staging and
+production, and how to turn payments off.
+
 ### Useful commands
 
 Run tests:

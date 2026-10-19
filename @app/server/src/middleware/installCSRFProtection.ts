@@ -2,10 +2,13 @@ import fastifyCSRF from "@fastify/csrf-protection"
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 
+import { paymentsEnabled } from "../utils/stripe"
+
 import {
   cookieOptions as sessionCookieOptions,
   handleSessionCookie,
 } from "./installSession"
+import { STRIPE_WEBHOOK_PATH } from "./installStripeWebhook"
 
 const { ROOT_URL, NODE_ENV } = process.env
 const isDev = NODE_ENV === "development"
@@ -64,6 +67,14 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
       request.headers.referer === `${ROOT_URL}/graphiql`
     ) {
       // Bypass CSRF for GraphiQL in dev
+      done()
+    } else if (
+      request.method === "POST" &&
+      request.url === STRIPE_WEBHOOK_PATH &&
+      paymentsEnabled()
+    ) {
+      // Stripe webhooks authenticate with their signature, which
+      // installStripeWebhook.ts verifies. Exact path only.
       done()
     } else if (request.method === "POST") {
       // Add CSRF protection to POST requests

@@ -31,6 +31,7 @@ input AdminDeleteRegistrationInput {
   """
   clientMutationId: String
   id: UUID!
+  refund: Boolean
 }
 
 """The output of our `adminDeleteRegistration` mutation."""
@@ -71,6 +72,97 @@ type AdminDeleteUserPayload {
   """
   query: Query
   success: Boolean
+}
+
+"""All input for the `adminMarkRegistrationPaid` mutation."""
+input AdminMarkRegistrationPaidInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  registrationId: UUID!
+}
+
+"""The output of our `adminMarkRegistrationPaid` mutation."""
+type AdminMarkRegistrationPaidPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """Reads a single `Event` that is related to this `Payment`."""
+  event: Event
+  payment: Payment
+
+  """An edge for our `Payment`. May be used by Relay 1."""
+  paymentEdge(
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Quota` that is related to this `Payment`."""
+  quota: Quota
+
+  """Reads a single `Registration` that is related to this `Payment`."""
+  registration: Registration
+}
+
+"""All input for the `adminSendPaymentReminders` mutation."""
+input AdminSendPaymentRemindersInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+}
+
+"""The output of our `adminSendPaymentReminders` mutation."""
+type AdminSendPaymentRemindersPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
+"""All input for the `adminUnmarkRegistrationPaid` mutation."""
+input AdminUnmarkRegistrationPaidInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  registrationId: UUID!
+}
+
+"""The output of our `adminUnmarkRegistrationPaid` mutation."""
+type AdminUnmarkRegistrationPaidPayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """All input for the `adminUpdateRegistration` mutation."""
@@ -226,6 +318,11 @@ type ConfirmAccountDeletionPayload {
 """A field which must not contain spaces"""
 scalar ConstrainedName
 
+type CreateCheckoutSessionPayload {
+  """The Stripe Checkout page to redirect to."""
+  url: String!
+}
+
 """All input for the create `EventCategory` mutation."""
 input CreateEventCategoryInput {
   """
@@ -315,6 +412,7 @@ input CreateEventQuestionInput {
 """An input for mutations affecting `CreateEventQuota`"""
 input CreateEventQuotaInput {
   position: Int
+  priceCents: Int
   size: Int
   title: JSON
 }
@@ -698,17 +796,51 @@ type EmailTemplate {
 
 input EmailTemplateVariables {
   actionDescription: String
+
+  """The reminder is the email sent when registration closes."""
+  closed: Boolean
   deleteAccountLink: String
   eventLocation: String
   eventName: TranslatedInputField
   eventRegistrationUpdateLink: String
   eventSlug: String
   eventTime: String
+  firstName: String
+
+  """A duplicate payment was refunded in full (refund email)."""
+  full: Boolean
+  isPaid: Boolean
+  isQueued: Boolean
   link: String
   organizationName: String
+
+  """The amount paid (refund email), in cents."""
+  paid: Int
+  paidAt: String
+
+  """
+  The payment link relative to the language root, e.g. `pay/<update token>`.
+  """
+  payLink: String
+  paymentMethod: PaymentMethod
+  paymentMode: PaymentMode
+
+  """Ticket price in cents (payment emails)."""
+  price: Int
+
+  """The amount refunded (refund email), in cents."""
+  refund: Int
+  registrationEndDate: String
+  registrationEndTime: String
   registrationName: String
   registrationQuota: TranslatedInputField
+
+  """Service fee in cents (payment emails)."""
+  serviceFee: Int
   token: String
+
+  """Ticket price plus service fee, in cents (payment emails)."""
+  total: Int
   url: String
   verifyLink: String
 }
@@ -783,6 +915,11 @@ type Event {
   """A highlighted event."""
   isHighlighted: Boolean!
 
+  """
+  When an organizer last sent payment reminders to all unpaid participants.
+  """
+  lastPaymentReminderSentAt: Datetime
+
   """Event location."""
   location: String!
 
@@ -797,6 +934,50 @@ type Event {
 
   """Identifier of the event organizer"""
   ownerOrganizationId: UUID!
+
+  """
+  When payment is collected for this event. NONE means the event has no payments.
+  """
+  paymentMode: PaymentMode!
+
+  """
+  Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid and the estimated amount the guild receives. Null unless the current user may manage the event's payments.
+  """
+  paymentSummary: EventPaymentSummary
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
 
   """Reads and enables pagination through a set of `Quota`."""
   quotas(
@@ -872,6 +1053,11 @@ type Event {
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
 
+  """
+  Email the payment link to unpaid participants holding a spot when registration closes. Always true in AFTER_REGISTRATION mode.
+  """
+  sendUnpaidEmailOnClose: Boolean!
+
   """Designates whether event signup is closed or not."""
   signupClosed: Boolean
 
@@ -883,6 +1069,11 @@ type Event {
 
   """Slug for the event."""
   slug: String!
+
+  """
+  When the close-of-registration payment email was sent. Set once by the worker.
+  """
+  unpaidCloseEmailSentAt: Datetime
   updatedAt: Datetime!
   updatedBy: UUID
 }
@@ -1190,9 +1381,20 @@ input EventInputRecordInput {
   name: TranslatedField
   openQuotaSize: Int
   ownerOrganizationId: UUID
+  paymentMode: PaymentMode
   registrationEndTime: Datetime
   registrationStartTime: Datetime
+  sendUnpaidEmailOnClose: Boolean
   slug: String
+}
+
+"""Payment totals for an event, for organizers."""
+type EventPaymentSummary {
+  dueCount: Int
+  guildReceivesCents: Int
+  paidCount: Int
+  ticketsPaidCents: Int
+  unpaidCount: Int
 }
 
 """Main table for event questions."""
@@ -1551,7 +1753,7 @@ type Mutation {
   ): AcceptInvitationToOrganizationPayload
 
   """
-  Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed.
+  Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed. If the registration was paid by card and refund is true (the default), the ticket price is refunded; the service fee is not.
   """
   adminDeleteRegistration(
     """
@@ -1567,6 +1769,36 @@ type Mutation {
     """
     input: AdminDeleteUserInput!
   ): AdminDeleteUserPayload
+
+  """
+  Records a manual payment (cash, bank transfer) for a registration and emails the participant a payment confirmation.
+  """
+  adminMarkRegistrationPaid(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminMarkRegistrationPaidInput!
+  ): AdminMarkRegistrationPaidPayload
+
+  """
+  Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued. Refused for 10 minutes after the last reminders were sent.
+  """
+  adminSendPaymentReminders(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminSendPaymentRemindersInput!
+  ): AdminSendPaymentRemindersPayload
+
+  """
+  Removes a manual payment recorded with adminMarkRegistrationPaid. Card payments cannot be undone this way.
+  """
+  adminUnmarkRegistrationPaid(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminUnmarkRegistrationPaidInput!
+  ): AdminUnmarkRegistrationPaidPayload
 
   """
   Mutation only accessible to admin users. Allows updating a registration via the admin panel.
@@ -1606,6 +1838,15 @@ type Mutation {
     """
     input: ConfirmAccountDeletionInput!
   ): ConfirmAccountDeletionPayload
+
+  """
+  Starts Stripe Checkout for the registration with this update token and
+  returns the Checkout URL. Expires the registration's other open
+  Checkout Sessions. Fails with a PaymentErrorCode as the error code when
+  the registration can't be paid now. language (fi, en or se, default
+  fi) sets the Checkout language and the /pay page Stripe returns to.
+  """
+  createCheckoutSession(language: String, updateToken: String!): CreateCheckoutSessionPayload
 
   """
   Create an event as well as any related quotas and questions with one mutation.
@@ -2219,6 +2460,225 @@ type PasswordStrengthPayload {
   score: Int!
 }
 
+"""
+Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data.
+"""
+type Payment {
+  createdAt: Datetime!
+
+  """The organizer who recorded a manual payment."""
+  createdBy: UUID
+  currency: String!
+
+  """Reads a single `Event` that is related to this `Payment`."""
+  event: Event
+
+  """The event paid for. Null once the event has been deleted."""
+  eventId: UUID
+
+  """Snapshot of the event name when the payment was created."""
+  eventName: JSON!
+  id: UUID!
+  method: PaymentMethod!
+  paidAt: Datetime
+
+  """Reads a single `Quota` that is related to this `Payment`."""
+  quota: Quota
+
+  """The quota paid for. Null once the quota has been deleted."""
+  quotaId: UUID
+
+  """Snapshot of the quota title when the payment was created."""
+  quotaTitle: JSON!
+
+  """Amount refunded, in cents."""
+  refundedAmountCents: Int!
+  refundedAt: Datetime
+
+  """Reads a single `Registration` that is related to this `Payment`."""
+  registration: Registration
+
+  """
+  The registration paid for. Null once the registration has been deleted.
+  """
+  registrationId: UUID
+
+  """
+  Service fee paid on top of the ticket, in cents. 0 for manual payments.
+  """
+  serviceFeeCents: Int!
+  status: PaymentStatus!
+  stripeCheckoutSessionId: String
+  stripePaymentIntentId: String
+  stripeRefundId: String
+
+  """Ticket price paid, in cents."""
+  ticketAmountCents: Int!
+  updatedAt: Datetime!
+}
+
+"""
+A condition to be used against `Payment` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input PaymentCondition {
+  """Checks for equality with the object’s `createdBy` field."""
+  createdBy: UUID
+
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `quotaId` field."""
+  quotaId: UUID
+
+  """Checks for equality with the object’s `registrationId` field."""
+  registrationId: UUID
+
+  """Checks for equality with the object’s `stripeCheckoutSessionId` field."""
+  stripeCheckoutSessionId: String
+
+  """Checks for equality with the object’s `stripePaymentIntentId` field."""
+  stripePaymentIntentId: String
+}
+
+"""
+Why a registration can't be paid right now. The error code of
+createCheckoutSession, and blockedReason of paymentByUpdateToken.
+"""
+enum PaymentErrorCode {
+  """The registration has been paid (by card or marked paid by hand)."""
+  ALREADY_PAID
+
+  """The registration is in the queue; it is paid once it gets a spot."""
+  IN_QUEUE
+
+  """Stripe payments are not configured on this server."""
+  PAYMENTS_DISABLED
+
+  """
+  The event collects payment after registration closes, which it has not yet.
+  """
+  PAYMENT_NOT_OPEN
+
+  """The quota is free, or the event has no payments."""
+  PAYMENT_NOT_REQUIRED
+
+  """The registration's payment has been refunded."""
+  PAYMENT_REFUNDED
+
+  """No finished registration has this update token."""
+  REGISTRATION_NOT_FOUND
+}
+
+"""
+A filter to be used against `Payment` object types. All fields are combined with a logical ‘and.’
+"""
+input PaymentFilter {
+  """Checks for all expressions in this list."""
+  and: [PaymentFilter!]
+
+  """Filter by the object’s `createdBy` field."""
+  createdBy: UUIDFilter
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: PaymentFilter
+
+  """Checks for any expressions in this list."""
+  or: [PaymentFilter!]
+
+  """Filter by the object’s `quotaId` field."""
+  quotaId: UUIDFilter
+
+  """Filter by the object’s `registrationId` field."""
+  registrationId: UUIDFilter
+
+  """Filter by the object’s `stripeCheckoutSessionId` field."""
+  stripeCheckoutSessionId: StringFilter
+
+  """Filter by the object’s `stripePaymentIntentId` field."""
+  stripePaymentIntentId: StringFilter
+}
+
+"""
+How a payment was made: by card through Stripe Checkout, or marked paid by an organizer (cash, bank transfer).
+"""
+enum PaymentMethod {
+  MANUAL
+  STRIPE
+}
+
+"""
+When an event collects payment: not at all, right after registering, or once registration has closed.
+"""
+enum PaymentMode {
+  AFTER_REGISTRATION
+  DURING_REGISTRATION
+  NONE
+}
+
+"""State of a single payment attempt."""
+enum PaymentStatus {
+  EXPIRED
+  PAID
+  PENDING
+  REFUNDED
+}
+
+"""A connection to a list of `Payment` values."""
+type PaymentsConnection {
+  """
+  A list of edges which contains the `Payment` and cursor to aid in pagination.
+  """
+  edges: [PaymentsEdge!]!
+
+  """A list of `Payment` objects."""
+  nodes: [Payment!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Payment` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Payment` edge in the connection."""
+type PaymentsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Payment` at the end of the edge."""
+  node: Payment!
+}
+
+"""Methods to use when ordering `Payment`."""
+enum PaymentsOrderBy {
+  CREATED_BY_ASC
+  CREATED_BY_DESC
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  QUOTA_ID_ASC
+  QUOTA_ID_DESC
+  REGISTRATION_ID_ASC
+  REGISTRATION_ID_DESC
+  STRIPE_CHECKOUT_SESSION_ID_ASC
+  STRIPE_CHECKOUT_SESSION_ID_DESC
+  STRIPE_PAYMENT_INTENT_ID_ASC
+  STRIPE_PAYMENT_INTENT_ID_DESC
+}
+
 """The root query type which gives access points into the data universe."""
 type Query {
   """List all users. Only accessible to admin users."""
@@ -2404,6 +2864,54 @@ type Query {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
+  payment(id: UUID!): Payment
+  paymentByStripeCheckoutSessionId(stripeCheckoutSessionId: String!): Payment
+
+  """
+  The payment state of the registration with this update token, for the
+  /pay page. Null when payments are disabled or the token is unknown.
+  """
+  paymentByUpdateToken(updateToken: String!): RegistrationPayment
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection
+
+  """
+  True when Stripe payments are configured on this server. While false,
+  every event behaves as if its payment mode were NONE.
+  """
+  paymentsEnabled: Boolean!
   quota(id: UUID!): Quota
 
   """Reads and enables pagination through a set of `Quota`."""
@@ -2514,8 +3022,47 @@ type Quota {
   eventId: UUID!
   id: UUID!
 
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
+
   """Quota position. Used to order quotas."""
   position: Int!
+
+  """
+  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum, and at most 1 000 000 cents (10 000 €).
+  """
+  priceCents: Int!
 
   """Reads and enables pagination through a set of `Registration`."""
   registrations(
@@ -2683,8 +3230,52 @@ type Registration {
   """Last name of the person registered to an event."""
   lastName: ConstrainedName
 
+  """
+  Payment status of the registration. Null unless the current user may manage the event's payments, because registrations are publicly readable.
+  """
+  paymentStatus: RegistrationPaymentStatus
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
+
   """Returns the position of the registration."""
   position: Int
+
+  """
+  Ticket price in cents at the time of registering (a snapshot of the quota price). Null when no payment applies.
+  """
+  priceCents: Int
 
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
@@ -2714,6 +3305,9 @@ input RegistrationCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+
+  """Checks for equality with the object’s `paymentStatus` field."""
+  paymentStatus: RegistrationPaymentStatus
 
   """Checks for equality with the object’s `position` field."""
   position: Int
@@ -2759,6 +3353,9 @@ input RegistrationFilter {
   """Checks for any expressions in this list."""
   or: [RegistrationFilter!]
 
+  """Filter by the object’s `paymentStatus` field."""
+  paymentStatus: RegistrationPaymentStatusFilter
+
   """Filter by the object’s `position` field."""
   position: IntFilter
 
@@ -2770,6 +3367,100 @@ input RegistrationFilter {
 
   """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
+}
+
+"""What the /pay page shows for a registration. Amounts are in cents."""
+type RegistrationPayment {
+  """Why Pay is not available right now; null when it is."""
+  blockedReason: PaymentErrorCode
+  eventEndTime: Datetime!
+  eventId: UUID!
+  eventName: JSON!
+  eventSlug: String!
+  eventStartTime: Datetime!
+  firstName: String
+  lastName: String
+  paidAt: Datetime
+
+  """True when the paid payment was recorded by an organizer by hand."""
+  paidManually: Boolean!
+
+  """
+  The ticket part of the paid payment, without the service fee: what
+  cancelling refunds (paid or refunded payments only).
+  """
+  paidTicketCents: Int
+
+  """What was paid, fee included (paid or refunded payments only)."""
+  paidTotalCents: Int
+  paymentMode: PaymentMode!
+
+  """The ticket price the registration was made at. 0 when free."""
+  priceCents: Int!
+  queuePosition: Int
+
+  """Queue status; null while the registration is not yet placed."""
+  queueStatus: RegistrationStatus
+  quotaTitle: JSON!
+  refundedAmountCents: Int
+  refundedAt: Datetime
+  registrationEndTime: Datetime!
+
+  """The service fee charged on top of a paid ticket. 0 when free."""
+  serviceFeeCents: Int!
+  status: RegistrationPaymentStatus!
+  totalCents: Int!
+}
+
+"""Payment state of a registration as shown to organizers."""
+enum RegistrationPaymentStatus {
+  NOT_REQUIRED
+  PAID
+  PAID_MANUALLY
+  REFUNDED
+  UNPAID
+}
+
+"""
+A filter to be used against RegistrationPaymentStatus fields. All fields are combined with a logical ‘and.’
+"""
+input RegistrationPaymentStatusFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: RegistrationPaymentStatus
+
+  """Equal to the specified value."""
+  equalTo: RegistrationPaymentStatus
+
+  """Greater than the specified value."""
+  greaterThan: RegistrationPaymentStatus
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: RegistrationPaymentStatus
+
+  """Included in the specified list."""
+  in: [RegistrationPaymentStatus!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: RegistrationPaymentStatus
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: RegistrationPaymentStatus
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: RegistrationPaymentStatus
+
+  """Not equal to the specified value."""
+  notEqualTo: RegistrationPaymentStatus
+
+  """Not included in the specified list."""
+  notIn: [RegistrationPaymentStatus!]
 }
 
 enum RegistrationStatus {
@@ -2857,6 +3548,8 @@ enum RegistrationsOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
+  PAYMENT_STATUS_ASC
+  PAYMENT_STATUS_DESC
   POSITION_ASC
   POSITION_DESC
   PRIMARY_KEY_ASC
@@ -3365,6 +4058,58 @@ type Subscription {
   ): OrganizationsConnection
 
   """ (live)"""
+  payment(id: UUID!): Payment
+
+  """ (live)"""
+  paymentByStripeCheckoutSessionId(stripeCheckoutSessionId: String!): Payment
+
+  """
+  The payment state of the registration with this update token, for the
+  /pay page. Null when payments are disabled or the token is unknown. (live)
+  """
+  paymentByUpdateToken(updateToken: String!): RegistrationPayment
+
+  """Reads and enables pagination through a set of `Payment`. (live)"""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection
+
+  """
+  True when Stripe payments are configured on this server. While false,
+  every event behaves as if its payment mode were NONE. (live)
+  """
+  paymentsEnabled: Boolean!
+
+  """ (live)"""
   quota(id: UUID!): Quota
 
   """Reads and enables pagination through a set of `Quota`. (live)"""
@@ -3719,6 +4464,7 @@ input UpdateEventQuestionInput {
 input UpdateEventQuotaInput {
   id: UUID
   position: Int
+  priceCents: Int
   size: Int
   title: JSON
 }

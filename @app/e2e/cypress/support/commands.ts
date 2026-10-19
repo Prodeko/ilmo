@@ -120,6 +120,26 @@ function serverCommand(
   verification_token: string | null
 }>
 
+/**
+ * Whether the server runs with Stripe payments enabled.
+ */
+function serverCommand(command: "paymentsEnabled"): Chainable<{
+  enabled: boolean
+}>
+
+/**
+ * Pays for the registration behind `updateToken` as if Stripe Checkout had
+ * completed: posts a signed `checkout.session.completed` event to the
+ * webhook. Requires payments to be enabled.
+ */
+function serverCommand(
+  command: "completeStripeCheckout",
+  payload: { updateToken: string }
+): Chainable<{
+  paymentId: string
+  sessionId: string
+}>
+
 // The actual implementation of the 'serverCommand' function.
 function serverCommand(command: string, payload?: any): any {
   const url = `${Cypress.env(

@@ -1,0 +1,78 @@
+{
+  "cancel": {
+    "body": "Paikkasi siirtyy jonossa seuraavalle. Tätä ei voi perua.",
+    "deleteAndRefund": "Poista ja palauta {{amount}}",
+    "feeNotRefunded": "Palvelumaksu (ei palauteta)",
+    "keep": "Säilytä ilmoittautuminen",
+    "manualNote": "Järjestäjät ovat merkinneet maksusi, joten sitä ei palauteta automaattisesti. Ota yhteyttä järjestäjiin palautuksesta.",
+    "refundTiming": "Palautus näkyy tililläsi yleensä 5–10 arkipäivän kuluessa.",
+    "refundToCard": "Palautus kortillesi",
+    "title": "Poistetaanko ilmoittautumisesi?",
+    "youPaid": "Maksoit"
+  },
+  "cancelledNotice": "Maksu jäi kesken. Paikkasi on edelleen varattu, ja voit yrittää uudelleen alta tai myöhemmin vahvistussähköpostin linkistä.",
+  "confirmTimeoutNotice": "Emme ole vielä saaneet vahvistusta maksustasi. Jos maksoit, saat pian vahvistuksen sähköpostiisi. Voit myös ladata tämän sivun myöhemmin uudelleen.",
+  "confirmingNotice": "Vahvistetaan maksuasi Stripeltä. Sivu päivittyy itsestään muutamassa sekunnissa.",
+  "disabled": {
+    "body": "Verkkomaksut eivät ole juuri nyt käytössä. Ota yhteyttä järjestäjiin, jos sinulla on kysyttävää maksamisesta.",
+    "title": "Maksut eivät ole käytössä"
+  },
+  "editRegistration": "Muokkaa tai peru ilmoittautumisesi",
+  "errors": {
+    "checkoutFailed": "Maksusivun avaaminen epäonnistui"
+  },
+  "event": "Tapahtuma",
+  "name": "Nimi",
+  "notFound": {
+    "body": "Tarkista sähköpostisi maksulinkki.",
+    "title": "Ilmoittautumista ei löytynyt"
+  },
+  "paidBanner": "Maksettu {{amount}} {{date}}",
+  "pay": "Maksa {{total}}",
+  "payNow": "Maksa nyt",
+  "quota": "Kiintiö",
+  "serviceFee": "Palvelumaksu",
+  "states": {
+    "free": {
+      "body": "Kiintiösi on maksuton. Kaikki on valmista.",
+      "title": "Ei maksettavaa"
+    },
+    "opensLater": {
+      "body": "Maksaminen avautuu, kun ilmoittautuminen sulkeutuu {{date}} klo {{time}}. Maksulinkki lähetetään sinulle sähköpostitse.",
+      "title": "Maksaminen avautuu myöhemmin"
+    },
+    "paid": {
+      "body": "Maksoit {{amount}} {{date}} klo {{time}}. Vahvistus on lähetetty sähköpostiisi.",
+      "detail": "Stripe lähettää sinulle myös oman kuittinsa.",
+      "title": "Maksu vastaanotettu"
+    },
+    "paidManually": {
+      "body": "Järjestäjät ovat merkinneet ilmoittautumisesi maksetuksi.",
+      "title": "Maksu vastaanotettu"
+    },
+    "queued": {
+      "body": "Olet jonossa sijalla {{position}}. Maksat vain, jos saat paikan, ja lähetämme sinulle silloin maksulinkin.",
+      "title": "Olet jonossa"
+    },
+    "refunded": {
+      "body": "{{amount}} palautettiin kortillesi {{date}}.",
+      "detail": "Korttipalautus näkyy yleensä 5–10 arkipäivän kuluessa.",
+      "feeNote": "Palvelumaksua {{fee}} ei palauteta.",
+      "title": "Maksu palautettu"
+    }
+  },
+  "tags": {
+    "free": "Maksuton",
+    "inQueue": "Jonossa",
+    "notOpen": "Ei vielä auki",
+    "paid": "Maksettu",
+    "processing": "Käsitellään",
+    "refunded": "Palautettu",
+    "unpaid": "Maksamatta"
+  },
+  "ticket": "Lippu",
+  "time": "Aika",
+  "title": "Maksu",
+  "total": "Yhteensä",
+  "unpaidBanner": "Ilmoittautumistasi ei ole vielä maksettu."
+}

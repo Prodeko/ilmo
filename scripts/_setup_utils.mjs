@@ -2,12 +2,12 @@ import { promises as fsp } from "fs"
 import { platform } from "os"
 import { URL } from "url"
 
-import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+import { safeRandomHexString, safeRandomString } from "./lib/random.mjs"
 
 if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
   throw new Error("This project requires Node.js >= 20.0.0")
 }
-export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
+export { readDotenv, withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
@@ -135,6 +135,37 @@ export function updateDotenv(add, answers) {
     null,
     `\
 # Client secret from the Keycloak admin console:`
+  )
+
+  add(
+    "PAYMENTS_ENABLED",
+    null,
+    `\
+# Stripe payments. Leave these blank to keep payments disabled; no event
+# then takes payments. Payments are on only when PAYMENTS_ENABLED=1
+# and both Stripe secrets below are set.
+#
+#   Webhook endpoint:           ${rootUrl}/api/stripe/webhook
+#   Events to send:             checkout.session.completed,
+#                               checkout.session.expired, charge.refunded
+#
+# Use test-mode keys (sk_test_...) outside production. Locally, run
+# \`stripe listen --events checkout.session.completed,checkout.session.expired,charge.refunded --forward-to ${rootUrl}/api/stripe/webhook\`
+# and use the whsec_... secret it prints. Step by step: docs/payments.md`
+  )
+
+  add(
+    "STRIPE_SECRET_KEY",
+    null,
+    `\
+# Stripe secret API key (sk_test_... or sk_live_...):`
+  )
+
+  add(
+    "STRIPE_WEBHOOK_SECRET",
+    null,
+    `\
+# Signing secret of the webhook endpoint above (whsec_...):`
   )
 
   add(

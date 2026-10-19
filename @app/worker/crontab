@@ -15,3 +15,4 @@
 # * * * * * task ?opts {payload}
 * * * * * gdpr__delete_event_registrations
 * * * * * registration__delete_unfinished_registrations
+* * * * * event__send_unpaid_on_close

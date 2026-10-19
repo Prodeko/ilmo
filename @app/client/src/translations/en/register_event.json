@@ -21,6 +21,19 @@
       "provideLastName": "Please enter your last name"
     }
   },
+  "payment": {
+    "afterInfo": "Ticket {{price}} + {{fee}} service fee. You don't pay now. We'll email you a payment link when registration closes on {{date}} at {{time}}.",
+    "duringInfo": "Your spot is confirmed as soon as you submit. You'll then go to a secure payment page (card, Apple Pay or Google Pay). If you don't finish paying now, you can pay later using the link in your confirmation email.",
+    "joinQueue": "Join the queue",
+    "queueNotice": "This quota is full, so you'll be placed in the queue. You only pay if you get a spot.",
+    "redirecting": "Taking you to the payment page...",
+    "register": "Register",
+    "registerAndPay": "Register and pay {{total}}",
+    "serviceFee": "Service fee",
+    "ticket": "Ticket ({{quota}})",
+    "title": "Payment",
+    "total": "Total"
+  },
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
   "registrationDeleteComplete": "Deleted registration",

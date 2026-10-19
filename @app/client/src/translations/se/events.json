@@ -74,11 +74,13 @@
     "saveAsDraft": "Spara som utkast",
     "signupEmail": "E-post för eventregistrering"
   },
+  "free": "Gratis",
   "headerImage": "Händelsehuvudbild",
   "languages": "Språk",
   "numRegistrations": "Registrerade personer",
   "openQuota": "Öppen kvot",
   "organizer": "Arrangör",
+  "paymentMethods": "Betalas med kort, Apple Pay eller Google Pay.",
   "queued": "Kö",
   "quota": "Kvota",
   "removeOption": "Ta bort alternativ",

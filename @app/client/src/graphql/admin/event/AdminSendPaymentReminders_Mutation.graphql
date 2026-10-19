@@ -1,0 +1,5 @@
+mutation AdminSendPaymentReminders($input: AdminSendPaymentRemindersInput!) {
+  adminSendPaymentReminders(input: $input) {
+    integer
+  }
+}

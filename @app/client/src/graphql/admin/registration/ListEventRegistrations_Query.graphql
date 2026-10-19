@@ -6,6 +6,8 @@ fragment ListEventRegistrations_Registration on Registration {
   isFinished
   status
   position
+  priceCents
+  paymentStatus
   createdAt
   updatedAt
   quota {
@@ -15,7 +17,11 @@ fragment ListEventRegistrations_Registration on Registration {
 
 fragment ListEventRegistrations_Query on Query {
   registrations(
-    filter: { eventId: { equalTo: $eventId } }
+    filter: {
+      eventId: { equalTo: $eventId }
+      paymentStatus: $paymentStatus
+      status: $status
+    }
     first: $first
     offset: $offset
     orderBy: [QUOTA_ID_ASC, POSITION_ASC]
@@ -27,6 +33,12 @@ fragment ListEventRegistrations_Query on Query {
   }
 }
 
-query ListEventRegistrations($eventId: UUID!, $offset: Int!, $first: Int!) {
+query ListEventRegistrations(
+  $eventId: UUID!
+  $offset: Int!
+  $first: Int!
+  $paymentStatus: RegistrationPaymentStatusFilter
+  $status: RegistrationStatusFilter
+) {
   ...ListEventRegistrations_Query
 }
