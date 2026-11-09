@@ -1,6 +1,7 @@
 import qs from "querystring"
 
 import {
+  BellOutlined,
   LoginOutlined,
   MailOutlined,
   ProfileOutlined,
@@ -33,6 +34,11 @@ interface SettingsPageSpec {
 }
 
 export const pages = (t: Translate) => ({
+  "/settings/reminders": {
+    title: t("titles.reminders"),
+    icon: <BellOutlined />,
+    cy: "settingslayout-link-reminders",
+  } as SettingsPageSpec,
   "/settings/profile": {
     title: t("titles.index"),
     icon: <ProfileOutlined />,

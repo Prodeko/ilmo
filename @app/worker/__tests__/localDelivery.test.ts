@@ -83,3 +83,33 @@ it.each([false, true])(
     }
   }
 )
+
+it.each(["fi", "en"])(
+  "renders a %s registration reminder",
+  async (language) => {
+    await sendEmail(
+      {
+        options: {
+          to: "tester@example.com",
+          subject: "Registration opens soon",
+        },
+        template: "registration_reminder.mjml.njk",
+        variables: {
+          language,
+          eventName: "Reminder test event",
+          openingTime: "24.10.2026 18:00",
+          eventUrl: "https://example.com/event/test-event",
+        },
+      },
+      {} as any
+    )
+    const message = sendMail.mock.calls[0][0]
+    expect(message.text).toContain("Reminder test event")
+    expect(message.html).toContain("https://example.com/event/test-event")
+    expect(message.text).toContain(
+      language === "fi" ? "Ilmoittautuminen alkaa" : "Registration opens"
+    )
+    expect(message.text).toContain("18:00")
+    expect(message.icalEvent).toBeUndefined()
+  }
+)

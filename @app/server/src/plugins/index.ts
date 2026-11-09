@@ -8,6 +8,7 @@ import RateLimitPlugin from "./RateLimitPlugin"
 import RemoveOwnershipInfoForeignKeyConnections from "./RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "./RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "./SubscriptionsPlugin"
+import TelegramSettingsPlugin from "./TelegramSettingsPlugin"
 import TranslatePlugin from "./TranslatePlugin"
 import UploadsPlugin from "./UploadsPlugin"
 import ValidateRichTextFields from "./ValidateRichTextFields"
@@ -23,6 +24,7 @@ export {
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TelegramSettingsPlugin,
   TranslatePlugin,
   UploadsPlugin,
   ValidateRichTextFields,

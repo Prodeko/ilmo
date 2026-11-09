@@ -1,0 +1,70 @@
+{
+  "cancel": "Remove reminder",
+  "delivery": "Email reminder to {{email}}.",
+  "empty": "You have no registration reminders.",
+  "enable": "Set reminder",
+  "enabled": "Reminder set",
+  "expired": "Registration has opened",
+  "loadMore": "Show more",
+  "myReminders": "My reminders",
+  "opens": "Registration opens",
+  "paused": "Paused",
+  "pending": "Scheduled",
+  "sent": "Reminder sent",
+  "signIn": "Sign in",
+  "timingNote": "If your chosen reminder time has already passed, the reminder is sent as soon as possible.",
+  "unavailable": "Event unavailable",
+  "verifyEmail": "Verify your primary email to enable reminders",
+  "minutesBefore": "Reminder timing",
+  "save": "Save",
+  "leadTime": "{{minutes}} minutes before registration opens",
+  "presets": {
+    "5": "5 minutes before",
+    "10": "10 minutes before",
+    "15": "15 minutes before",
+    "30": "30 minutes before",
+    "60": "1 hour before",
+    "1440": "1 day before"
+  },
+  "channelLabel": "Reminder delivery method",
+  "channels": {
+    "email": "Email",
+    "telegram": "Telegram",
+    "both": "Both"
+  },
+  "telegram": {
+    "title": "Telegram reminders",
+    "connected": "Connected: {{name}}",
+    "connect": "Connect Telegram",
+    "disconnect": "Disconnect Telegram",
+    "open": "Open Telegram",
+    "check": "Refresh connection status",
+    "instructions": "Confirm the connection in Telegram, then return here.",
+    "connectHint": "Connect Telegram in settings",
+    "newLink": "Generate a new link",
+    "popupBlocked": "Your browser did not open Telegram automatically. Click Open Telegram to continue."
+  },
+  "preferences": {
+    "title": "Reminder preferences",
+    "explanation": "Choose reminder delivery and timing.",
+    "delivery": "Choose delivery",
+    "timing": "Choose timing",
+    "next": "Continue",
+    "back": "Back",
+    "getStarted": "Set up reminders",
+    "eventPrompt": "Don’t miss registration!",
+    "changeSettings": "Change reminder settings",
+    "saved": "Settings saved.",
+    "telegramUnavailable": "Telegram is currently unavailable. Choose email or try again later."
+  },
+  "leadTimes": {
+    "day": "1 day before registration opens",
+    "hour": "1 hour before registration opens"
+  },
+  "toast": {
+    "title": "Reminder set!",
+    "delivery": "Delivery method",
+    "timing": "Timing"
+  },
+  "recommended": "recommended"
+}

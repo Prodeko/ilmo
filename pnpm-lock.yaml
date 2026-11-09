@@ -370,6 +370,9 @@ importers:
       '@app/graphql':
         specifier: workspace:*
         version: link:../graphql
+      '@app/lib':
+        specifier: workspace:*
+        version: link:../lib
       '@faker-js/faker':
         specifier: ^9.3.0
         version: 9.9.0

@@ -1,0 +1,6 @@
+mutation EnableEventReminder($eventId: UUID!, $language: String!) {
+  enableEventReminder(input: {eventId: $eventId, language: $language}) {
+    boolean
+    __typename
+  }
+}

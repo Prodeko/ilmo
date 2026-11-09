@@ -25,6 +25,7 @@ import dayjs from "dayjs"
 import * as NextImage from "next/image"
 import { useRouter } from "next/router"
 
+import { EventReminder } from "../../../components/EventReminder"
 import { RegistrationCalendar } from "../../../components/RegistrationCalendar"
 
 import type { NextPage } from "next"
@@ -254,6 +255,16 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         >
           <EventQuotasCard
             event={event}
+            footer={
+              !event.isDraft &&
+              dayjs(event.registrationStartTime).isAfter(dayjs()) ? (
+                <EventReminder
+                  currentUser={currentUser}
+                  eventId={event.id}
+                  slug={event.slug}
+                />
+              ) : null
+            }
             registrations={registrations.nodes}
             signupState={signupState}
           />

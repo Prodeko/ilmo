@@ -1,0 +1,16 @@
+{% extends "base.mjml.njk" %}
+{% block content %}
+<mj-column width="100%">
+  {% if language == 'fi' %}
+  <mj-text><strong>Ilmoittautuminen avautuu pian: {{ eventName }}</strong></mj-text>
+  <mj-text>Ilmoittautuminen alkaa {{ openingTime }} (Suomen aikaa).</mj-text>
+  <mj-button href="{{ eventUrl }}">Avaa tapahtuma</mj-button>
+  <mj-text>Pyysit muistutuksen tähän tapahtumaan. Muistutus ei varaa paikkaa tapahtumasta.</mj-text>
+  {% else %}
+  <mj-text><strong>Registration opens soon: {{ eventName }}</strong></mj-text>
+  <mj-text>Registration opens {{ openingTime }} (Finland time).</mj-text>
+  <mj-button href="{{ eventUrl }}">Open event</mj-button>
+  <mj-text>You requested a reminder for this event. This reminder does not reserve a place.</mj-text>
+  {% endif %}
+</mj-column>
+{% endblock %}
