@@ -1,0 +1,8 @@
+mutation SetEventRegistrationReminder($eventId: UUID!, $enabled: Boolean!, $language: String!, $minutesBefore: Int = 30, $deliveryMethod: String = "email") {
+  setEventRegistrationReminder(
+    input: {eventId: $eventId, enabled: $enabled, language: $language, minutesBefore: $minutesBefore, deliveryMethod: $deliveryMethod}
+  ) {
+    boolean
+    __typename
+  }
+}

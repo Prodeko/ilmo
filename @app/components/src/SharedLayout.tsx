@@ -288,6 +288,17 @@ export function SharedLayout({
                         ),
                       },
                       {
+                        key: "reminders",
+                        label: (
+                          <Link
+                            data-cy="layout-link-reminders"
+                            href="/settings/reminders"
+                          >
+                            {t("reminders")}
+                          </Link>
+                        ),
+                      },
+                      {
                         key: "logout",
                         label: <a onClick={handleLogout}>{t("logout")}</a>,
                       },

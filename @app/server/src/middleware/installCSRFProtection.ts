@@ -58,6 +58,13 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
 
   app.addHook("onRequest", (request, reply, done) => {
     if (
+      request.method === "POST" &&
+      request.url === "/telegram/webhook" &&
+      process.env.TELEGRAM_WEBHOOK_SECRET
+    ) {
+      // Telegram authenticates this route with its webhook secret, not a browser session.
+      done()
+    } else if (
       isDev &&
       request.method === "POST" &&
       request.url === "/graphql" &&

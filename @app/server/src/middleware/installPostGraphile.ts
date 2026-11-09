@@ -34,6 +34,7 @@ import {
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TelegramSettingsPlugin,
   TranslatePlugin,
   UploadsPlugin,
   ValidateRichTextFields,
@@ -254,6 +255,8 @@ export function getPostGraphileOptions({
 
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
+
+      TelegramSettingsPlugin,
 
       // Translate text with Azure Translator API
       TranslatePlugin,

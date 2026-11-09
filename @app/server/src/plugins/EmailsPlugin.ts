@@ -160,7 +160,20 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               verifyLink: "",
             }
             const templateFn = await loadTemplate(filename)
-            const html = await templateFn(variables)
+            const html = await templateFn(
+              filename === "registration_reminder.mjml.njk"
+                ? {
+                    ...variables,
+                    language: "en",
+                    eventName: variables.eventName.en,
+                    openingTime: "1 January 2021 at 12:00",
+                    eventUrl: new URL(
+                      `/en/event/${variables.eventSlug}`,
+                      process.env.ROOT_URL
+                    ).href,
+                  }
+                : variables
+            )
             const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
             const text = html2text
               .fromString(html2textableHtml, {

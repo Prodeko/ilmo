@@ -1,0 +1,70 @@
+{
+  "cancel": "Ta bort påminnelsen",
+  "delivery": "E-postpåminnelse till {{email}}.",
+  "empty": "Du har inga påminnelser.",
+  "enable": "Ställ in påminnelse",
+  "enabled": "Påminnelse inställd",
+  "expired": "Anmälan har öppnat",
+  "loadMore": "Visa fler",
+  "myReminders": "Mina påminnelser",
+  "opens": "Anmälan öppnar",
+  "paused": "Pausad",
+  "pending": "Schemalagd",
+  "sent": "Påminnelse skickad",
+  "signIn": "Logga in",
+  "timingNote": "Om den valda tiden redan har passerat skickas påminnelsen så snart som möjligt.",
+  "unavailable": "Evenemanget är inte tillgängligt",
+  "verifyEmail": "Verifiera din primära e-postadress för att aktivera påminnelser",
+  "minutesBefore": "Tidpunkt för påminnelsen",
+  "save": "Spara",
+  "leadTime": "{{minutes}} minuter innan anmälan öppnar",
+  "presets": {
+    "5": "5 minuter före",
+    "10": "10 minuter före",
+    "15": "15 minuter före",
+    "30": "30 minuter före",
+    "60": "1 timme före",
+    "1440": "1 dag före"
+  },
+  "channelLabel": "Leveransmetod",
+  "channels": {
+    "email": "E-post",
+    "telegram": "Telegram",
+    "both": "Båda"
+  },
+  "telegram": {
+    "title": "Telegram-påminnelser",
+    "connected": "Ansluten: {{name}}",
+    "connect": "Anslut Telegram",
+    "disconnect": "Koppla från Telegram",
+    "open": "Öppna Telegram",
+    "check": "Uppdatera anslutningsstatus",
+    "instructions": "Bekräfta anslutningen i Telegram och återvänd sedan hit.",
+    "connectHint": "Anslut Telegram i inställningarna",
+    "newLink": "Skapa en ny länk",
+    "popupBlocked": "Webbläsaren öppnade inte Telegram automatiskt. Tryck på Öppna Telegram för att fortsätta."
+  },
+  "preferences": {
+    "title": "Påminnelseinställningar",
+    "explanation": "Välj leveranssätt och tidpunkt.",
+    "delivery": "Välj leveranssätt",
+    "timing": "Välj tidpunkt",
+    "next": "Fortsätt",
+    "back": "Tillbaka",
+    "getStarted": "Ställ in påminnelser",
+    "eventPrompt": "Missa inte anmälan!",
+    "changeSettings": "Ändra påminnelseinställningar",
+    "saved": "Inställningarna har sparats.",
+    "telegramUnavailable": "Telegram är inte tillgängligt just nu. Välj e-post eller försök senare."
+  },
+  "leadTimes": {
+    "day": "1 dag innan anmälan öppnar",
+    "hour": "1 timme innan anmälan öppnar"
+  },
+  "toast": {
+    "title": "Påminnelse inställd!",
+    "delivery": "Leveranssätt",
+    "timing": "Tidpunkt"
+  },
+  "recommended": "rekommenderas"
+}

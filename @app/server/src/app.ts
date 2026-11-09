@@ -114,6 +114,7 @@ export async function makeApp({
     )
     await app.register(installCypressServerCommand)
   }
+  await app.register(middleware.installTelegram)
   await app.register(middleware.installPostGraphile)
   await app.register(middleware.installFileUpload)
 

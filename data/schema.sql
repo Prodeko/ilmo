@@ -291,6 +291,53 @@ end;
 $$;
 
 
+--
+-- Name: connect_telegram(text, bigint, text); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid;
+begin
+  if chat_id is null or chat_id <= 0 then return false; end if;
+  delete from app_private.telegram_link_tokens t
+    where t.token_hash = public.digest(token, 'sha256') and t.expires_at > clock_timestamp()
+    returning t.user_id into v_user;
+  if v_user is null then return false; end if;
+  -- Do not silently move somebody else's Telegram chat to another account.
+  if exists(select 1 from app_public.telegram_accounts a where a.chat_id = chat_id and a.user_id <> v_user) then
+    return false;
+  end if;
+  insert into app_public.telegram_accounts(user_id, chat_id, username)
+    values(v_user, chat_id, username)
+    on conflict (user_id) do update set chat_id = excluded.chat_id, username = excluded.username;
+  return true;
+end;
+$$;
+
+
+--
+-- Name: disconnect_telegram(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.disconnect_telegram(target_user uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  delete from app_public.event_registration_reminders where user_id = target_user and delivery_method = 'telegram' and sent_at is null;
+  update app_public.event_registration_reminders set delivery_method = 'email', sent_at = email_sent_at
+    where user_id = target_user and delivery_method = 'both' and sent_at is null;
+  delete from app_private.telegram_link_tokens where user_id = target_user;
+  delete from app_public.telegram_accounts where user_id = target_user;
+end;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -756,6 +803,39 @@ $$;
 
 
 --
+-- Name: schedule_registration_reminder(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.schedule_registration_reminder(reminder_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_due timestamptz;
+  v_reminder app_public.event_registration_reminders;
+  v_key text := 'registration-reminder:' || reminder_id::text;
+begin
+  select * into v_reminder from app_public.event_registration_reminders where id = reminder_id;
+  select e.registration_start_time - make_interval(mins => v_reminder.minutes_before) into v_due
+    from app_public.events e where e.id = v_reminder.event_id
+      and v_reminder.sent_at is null and not e.is_draft and e.registration_start_time > now();
+  if v_due is not null and v_reminder.delivery_method in ('email', 'both') and v_reminder.email_sent_at is null then
+    perform graphile_worker.add_job('reminder__send_registration', json_build_object('id', reminder_id),
+      run_at := greatest(now(), v_due), job_key := v_key);
+  else
+    perform graphile_worker.remove_job(v_key);
+  end if;
+  if v_due is not null and v_reminder.delivery_method in ('telegram', 'both') and v_reminder.telegram_sent_at is null then
+    perform graphile_worker.add_job('reminder__send_telegram', json_build_object('id', reminder_id),
+      run_at := greatest(now(), v_due), job_key := v_key || ':telegram', queue_name := 'telegram-reminders');
+  else
+    perform graphile_worker.remove_job(v_key || ':telegram');
+  end if;
+end;
+$$;
+
+
+--
 -- Name: tg__add_audit_job(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -974,6 +1054,47 @@ $$;
 --
 
 COMMENT ON FUNCTION app_private.tg__registration_is_valid() IS 'This trigger validates that a registration is valid. That is, the related event is open to registrations.';
+
+
+--
+-- Name: tg__reschedule_registration_reminders(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__reschedule_registration_reminders() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_id uuid;
+begin
+  for v_id in select id from app_public.event_registration_reminders
+    where event_id = NEW.id and sent_at is null
+  loop
+    perform app_private.schedule_registration_reminder(v_id);
+  end loop;
+  return NEW;
+end;
+$$;
+
+
+--
+-- Name: tg__schedule_registration_reminder(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__schedule_registration_reminder() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if TG_OP = 'DELETE' then
+    perform graphile_worker.remove_job('registration-reminder:' || OLD.id::text);
+    perform graphile_worker.remove_job('registration-reminder:' || OLD.id::text || ':telegram');
+    return OLD;
+  end if;
+  perform app_private.schedule_registration_reminder(NEW.id);
+  return NEW;
+end;
+$$;
 
 
 --
@@ -2122,6 +2243,38 @@ COMMENT ON FUNCTION app_public.create_registration("registrationToken" text, "ev
 
 
 --
+-- Name: reminder_preferences; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.reminder_preferences (
+    user_id uuid NOT NULL,
+    minutes_before integer NOT NULL,
+    delivery_method text NOT NULL,
+    CONSTRAINT reminder_preferences_delivery_method_check CHECK ((delivery_method = ANY (ARRAY['email'::text, 'telegram'::text, 'both'::text]))),
+    CONSTRAINT reminder_preferences_minutes_before_check CHECK (((minutes_before >= 1) AND (minutes_before <= 10080)))
+);
+
+
+--
+-- Name: TABLE reminder_preferences; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.reminder_preferences IS '@omit create,update,delete
+Delivery and timing preferences for upcoming registration reminders.';
+
+
+--
+-- Name: current_reminder_preferences(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_reminder_preferences() RETURNS app_public.reminder_preferences
+    LANGUAGE sql STABLE
+    AS $$
+  select * from app_public.reminder_preferences where user_id = app_public.current_user_id();
+$$;
+
+
+--
 -- Name: current_session_id(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2137,6 +2290,45 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.current_session_id() IS 'Handy method to get the current session ID.';
+
+
+--
+-- Name: telegram_accounts; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.telegram_accounts (
+    user_id uuid NOT NULL,
+    chat_id bigint NOT NULL,
+    username text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT telegram_accounts_chat_id_check CHECK ((chat_id > 0))
+);
+
+
+--
+-- Name: TABLE telegram_accounts; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.telegram_accounts IS '@omit create,update,delete
+Telegram accounts linked by their owners.';
+
+
+--
+-- Name: COLUMN telegram_accounts.chat_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.telegram_accounts.chat_id IS '@omit';
+
+
+--
+-- Name: current_telegram_account(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_telegram_account() RETURNS app_public.telegram_accounts
+    LANGUAGE sql STABLE
+    AS $$
+  select * from app_public.telegram_accounts where user_id = app_public.current_user_id();
+$$;
 
 
 --
@@ -2339,6 +2531,47 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.delete_registration("updateToken" text) IS 'Delete event registration.';
+
+
+--
+-- Name: disconnect_telegram(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.disconnect_telegram() RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if app_public.current_user_id() is null then
+    raise exception 'Sign in to disconnect Telegram.' using errcode = 'LOGIN';
+  end if;
+  perform app_private.disconnect_telegram(app_public.current_user_id());
+  return true;
+end;
+$$;
+
+
+--
+-- Name: enable_event_reminder(uuid, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.enable_event_reminder(event_id uuid, language text DEFAULT 'fi'::text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_preferences app_public.reminder_preferences;
+begin
+  if app_public.current_user_id() is null then
+    raise exception 'Sign in to enable reminders.' using errcode = 'LOGIN';
+  end if;
+  select * into v_preferences from app_public.reminder_preferences where user_id = app_public.current_user_id();
+  if not found then
+    raise exception 'Set up reminder preferences first.' using errcode = 'CHECK';
+  end if;
+  return app_public.set_event_registration_reminder(event_id, true, language, v_preferences.minutes_before, v_preferences.delivery_method);
+end;
+$$;
 
 
 --
@@ -2922,6 +3155,29 @@ COMMENT ON FUNCTION app_public.request_account_deletion() IS 'Begin the account 
 
 
 --
+-- Name: request_telegram_link(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.request_telegram_link() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user uuid := app_public.current_user_id();
+  v_token text := encode(public.gen_random_bytes(24), 'hex');
+begin
+  if v_user is null then
+    raise exception 'Sign in to connect Telegram.' using errcode = 'LOGIN';
+  end if;
+  insert into app_private.telegram_link_tokens(user_id, token_hash, expires_at)
+    values(v_user, public.digest(v_token, 'sha256'), now() + interval '15 minutes')
+    on conflict (user_id) do update set token_hash = excluded.token_hash, expires_at = excluded.expires_at;
+  return v_token;
+end;
+$$;
+
+
+--
 -- Name: resend_email_verification_code(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2950,6 +3206,58 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.resend_email_verification_code(email_id uuid) IS 'If you didn''t receive the verification code for this email, we can resend it. We silently cap the rate of resends on the backend, so calls to this function may not result in another email being sent if it has been called recently.';
+
+
+--
+-- Name: save_reminder_preferences(integer, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) RETURNS app_public.reminder_preferences
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid := app_public.current_user_id();
+  v_preferences app_public.reminder_preferences;
+begin
+  if v_user is null then
+    raise exception 'Sign in to manage reminder preferences.' using errcode = 'LOGIN';
+  end if;
+  if minutes_before is null or minutes_before not between 1 and 10080
+    or delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
+    raise exception 'Choose a delivery method and a lead time between 1 minute and 7 days.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
+    raise exception 'Connect Telegram before saving Telegram reminders.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('email', 'both') and not exists(select 1 from app_public.user_emails where user_id = v_user and is_primary and is_verified) then
+    raise exception 'Verify your primary email before saving reminders.' using errcode = 'EMAIL';
+  end if;
+  insert into app_public.reminder_preferences as p(user_id, minutes_before, delivery_method)
+    values(v_user, minutes_before, delivery_method)
+    on conflict(user_id) do update set minutes_before = excluded.minutes_before, delivery_method = excluded.delivery_method
+    returning * into v_preferences;
+  -- Lock reminders in a stable order before rescheduling them.
+  perform 1 from app_public.event_registration_reminders r
+    join app_public.events e on e.id = r.event_id
+    where r.user_id = v_user and r.sent_at is null and e.registration_start_time > now()
+    order by r.id for update of r;
+  update app_public.event_registration_reminders r
+    set minutes_before = v_preferences.minutes_before,
+      delivery_method = v_preferences.delivery_method,
+      sent_at = case
+        when v_preferences.delivery_method = 'email' then r.email_sent_at
+        when v_preferences.delivery_method = 'telegram' then r.telegram_sent_at
+        when r.email_sent_at is not null and r.telegram_sent_at is not null
+          then greatest(r.email_sent_at, r.telegram_sent_at)
+        else null end
+    from app_public.events e
+    where r.user_id = v_user and r.event_id = e.id
+      and r.sent_at is null and e.registration_start_time > now();
+  return v_preferences;
+end;
+$$;
 
 
 --
@@ -2986,6 +3294,63 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) IS 'Make an existing user admin. Only accessible to admin users.';
+
+
+--
+-- Name: set_event_registration_reminder(uuid, boolean, text, integer, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text DEFAULT 'fi'::text, minutes_before integer DEFAULT 30, delivery_method text DEFAULT 'email'::text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid := app_public.current_user_id();
+begin
+  if v_user is null then
+    raise exception 'Please sign in to manage reminders.' using errcode = 'LOGIN';
+  end if;
+  if not enabled then
+    delete from app_public.event_registration_reminders r
+      where r.user_id = v_user and r.event_id = event_id;
+    return false;
+  end if;
+  if minutes_before is null or minutes_before < 1 or minutes_before > 10080 then
+    raise exception 'Choose a reminder between 1 minute and 7 days before opening.' using errcode = 'CHECK';
+  end if;
+  if language not in ('fi', 'en') or language is null then
+    raise exception 'Unsupported reminder language.' using errcode = 'CHECK';
+  end if;
+  if delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
+    raise exception 'Unsupported delivery method.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
+    raise exception 'Connect Telegram before enabling Telegram reminders.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('email', 'both') and not exists(select 1 from app_public.user_emails
+    where user_id = v_user and is_primary and is_verified) then
+    raise exception 'Verify your primary email before enabling reminders.' using errcode = 'EMAIL';
+  end if;
+  perform 1 from app_public.events e where e.id = event_id
+    and not e.is_draft and e.registration_start_time > now() for share;
+  if not found then
+    raise exception 'Reminders are only available before registration opens.' using errcode = 'CLOSD';
+  end if;
+  insert into app_public.event_registration_reminders(user_id, event_id, language, minutes_before, delivery_method)
+    values (v_user, event_id, language, minutes_before, delivery_method)
+    on conflict on constraint event_registration_reminders_user_id_event_id_key do update
+      set minutes_before = excluded.minutes_before, language = excluded.language, delivery_method = excluded.delivery_method,
+        sent_at = case
+          when excluded.delivery_method = 'email' then event_registration_reminders.email_sent_at
+          when excluded.delivery_method = 'telegram' then event_registration_reminders.telegram_sent_at
+          when event_registration_reminders.email_sent_at is not null and event_registration_reminders.telegram_sent_at is not null
+            then greatest(event_registration_reminders.email_sent_at, event_registration_reminders.telegram_sent_at)
+          else null end
+      where event_registration_reminders.sent_at is null;
+  return true;
+end;
+$$;
 
 
 --
@@ -3712,6 +4077,52 @@ COMMENT ON TABLE app_private.registration_secrets IS 'The contents of this table
 
 
 --
+-- Name: telegram_link_tokens; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_link_tokens (
+    user_id uuid NOT NULL,
+    token_hash bytea NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: telegram_poll_state; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_poll_state (
+    id boolean DEFAULT true NOT NULL,
+    next_offset bigint DEFAULT 0 NOT NULL,
+    CONSTRAINT telegram_poll_state_id_check CHECK (id)
+);
+
+
+--
+-- Name: telegram_preferences; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_preferences (
+    chat_id bigint NOT NULL,
+    language text DEFAULT 'auto'::text NOT NULL,
+    detected_language text DEFAULT 'en'::text NOT NULL,
+    CONSTRAINT telegram_preferences_chat_id_check CHECK ((chat_id > 0)),
+    CONSTRAINT telegram_preferences_detected_language_check CHECK ((detected_language = ANY (ARRAY['fi'::text, 'en'::text]))),
+    CONSTRAINT telegram_preferences_language_check CHECK ((language = ANY (ARRAY['auto'::text, 'fi'::text, 'en'::text])))
+);
+
+
+--
+-- Name: telegram_updates; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_updates (
+    update_id bigint NOT NULL,
+    processed_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: unregistered_email_password_resets; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -3865,6 +4276,35 @@ COMMENT ON COLUMN app_public.event_categories.color IS 'Color color the event ca
 
 
 --
+-- Name: event_registration_reminders; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_registration_reminders (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    event_id uuid NOT NULL,
+    language text DEFAULT 'fi'::text NOT NULL,
+    minutes_before integer DEFAULT 30 NOT NULL,
+    delivery_method text DEFAULT 'email'::text NOT NULL,
+    email_sent_at timestamp with time zone,
+    telegram_sent_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    sent_at timestamp with time zone,
+    CONSTRAINT event_registration_reminders_delivery_method_check CHECK ((delivery_method = ANY (ARRAY['email'::text, 'telegram'::text, 'both'::text]))),
+    CONSTRAINT event_registration_reminders_language_check CHECK ((language = ANY (ARRAY['fi'::text, 'en'::text]))),
+    CONSTRAINT event_registration_reminders_minutes_before_check CHECK (((minutes_before >= 1) AND (minutes_before <= 10080)))
+);
+
+
+--
+-- Name: TABLE event_registration_reminders; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.event_registration_reminders IS '@omit create,update
+Registration reminders requested by the current user, before registration opens.';
+
+
+--
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -3968,6 +4408,46 @@ ALTER TABLE ONLY app_private.sessions
 
 
 --
+-- Name: telegram_link_tokens telegram_link_tokens_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_token_hash_key; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: telegram_poll_state telegram_poll_state_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_poll_state
+    ADD CONSTRAINT telegram_poll_state_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: telegram_preferences telegram_preferences_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_preferences
+    ADD CONSTRAINT telegram_preferences_pkey PRIMARY KEY (chat_id);
+
+
+--
+-- Name: telegram_updates telegram_updates_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_updates
+    ADD CONSTRAINT telegram_updates_pkey PRIMARY KEY (update_id);
+
+
+--
 -- Name: unregistered_email_password_resets unregistered_email_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4021,6 +4501,22 @@ ALTER TABLE ONLY app_public.event_categories
 
 ALTER TABLE ONLY app_public.event_questions
     ADD CONSTRAINT event_questions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_user_id_event_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_user_id_event_id_key UNIQUE (user_id, event_id);
 
 
 --
@@ -4117,6 +4613,30 @@ ALTER TABLE ONLY app_public.registrations
 
 ALTER TABLE ONLY app_public.registrations
     ADD CONSTRAINT registrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reminder_preferences reminder_preferences_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.reminder_preferences
+    ADD CONSTRAINT reminder_preferences_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_chat_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_chat_id_key UNIQUE (chat_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -4262,6 +4782,13 @@ CREATE INDEX event_questions_position_idx ON app_public.event_questions USING bt
 --
 
 CREATE INDEX event_questions_updated_by_idx ON app_public.event_questions USING btree (updated_by);
+
+
+--
+-- Name: event_registration_reminders_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_registration_reminders_event_id_idx ON app_public.event_registration_reminders USING btree (event_id);
 
 
 --
@@ -4720,6 +5247,20 @@ CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emai
 
 
 --
+-- Name: events reschedule_registration_reminders; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER reschedule_registration_reminders AFTER UPDATE OF registration_start_time, is_draft ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__reschedule_registration_reminders();
+
+
+--
+-- Name: event_registration_reminders schedule_registration_reminder; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER schedule_registration_reminder AFTER INSERT OR DELETE OR UPDATE OF minutes_before, delivery_method ON app_public.event_registration_reminders FOR EACH ROW EXECUTE FUNCTION app_private.tg__schedule_registration_reminder();
+
+
+--
 -- Name: registration_secrets registration_secrets_event_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4749,6 +5290,14 @@ ALTER TABLE ONLY app_private.registration_secrets
 
 ALTER TABLE ONLY app_private.sessions
     ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4821,6 +5370,22 @@ ALTER TABLE ONLY app_public.event_questions
 
 ALTER TABLE ONLY app_public.event_questions
     ADD CONSTRAINT event_questions_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4960,6 +5525,22 @@ ALTER TABLE ONLY app_public.registrations
 
 
 --
+-- Name: reminder_preferences reminder_preferences_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.reminder_preferences
+    ADD CONSTRAINT reminder_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: telegram_accounts telegram_accounts_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_authentications user_authentications_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -5030,6 +5611,12 @@ ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: event_registration_reminders; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_registration_reminders ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
@@ -5126,6 +5713,27 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: reminder_preferences own_reminder_preferences; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_reminder_preferences ON app_public.reminder_preferences USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: event_registration_reminders own_reminders; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_reminders ON app_public.event_registration_reminders USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: telegram_accounts own_telegram_account; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_telegram_account ON app_public.telegram_accounts USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: quotas; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -5136,6 +5744,12 @@ ALTER TABLE app_public.quotas ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.registrations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: reminder_preferences; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.reminder_preferences ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: event_categories select_all; Type: POLICY; Schema: app_public; Owner: -
@@ -5213,6 +5827,12 @@ CREATE POLICY select_own ON app_public.user_authentications FOR SELECT USING ((u
 
 CREATE POLICY select_own ON app_public.user_emails FOR SELECT USING ((user_id = app_public.current_user_id()));
 
+
+--
+-- Name: telegram_accounts; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.telegram_accounts ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: registrations update_all; Type: POLICY; Schema: app_public; Owner: -
@@ -5293,6 +5913,20 @@ REVOKE ALL ON FUNCTION app_private.assert_valid_password(new_password text) FROM
 
 
 --
+-- Name: FUNCTION connect_telegram(token text, chat_id bigint, username text); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(target_user uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.disconnect_telegram(target_user uuid) FROM PUBLIC;
+
+
+--
 -- Name: TABLE users; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5356,6 +5990,13 @@ REVOKE ALL ON FUNCTION app_private.reset_password(user_id uuid, reset_token text
 
 
 --
+-- Name: FUNCTION schedule_registration_reminder(reminder_id uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.schedule_registration_reminder(reminder_id uuid) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION tg__add_audit_job(); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -5395,6 +6036,20 @@ REVOKE ALL ON FUNCTION app_private.tg__refresh_materialized_view() FROM PUBLIC;
 --
 
 REVOKE ALL ON FUNCTION app_private.tg__registration_is_valid() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION tg__reschedule_registration_reminders(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__reschedule_registration_reminders() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION tg__schedule_registration_reminder(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__schedule_registration_reminder() FROM PUBLIC;
 
 
 --
@@ -5820,11 +6475,41 @@ GRANT ALL ON FUNCTION app_public.create_registration("registrationToken" text, "
 
 
 --
+-- Name: TABLE reminder_preferences; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.reminder_preferences TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_reminder_preferences(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_reminder_preferences() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_reminder_preferences() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION current_session_id(); Type: ACL; Schema: app_public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_public.current_session_id() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.current_session_id() TO ilmo_visitor;
+
+
+--
+-- Name: TABLE telegram_accounts; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.telegram_accounts TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_telegram_account(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_telegram_account() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_telegram_account() TO ilmo_visitor;
 
 
 --
@@ -5897,6 +6582,22 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO il
 
 REVOKE ALL ON FUNCTION app_public.delete_registration("updateToken" text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.disconnect_telegram() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.disconnect_telegram() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION enable_event_reminder(event_id uuid, language text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.enable_event_reminder(event_id uuid, language text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.enable_event_reminder(event_id uuid, language text) TO ilmo_visitor;
 
 
 --
@@ -6042,6 +6743,14 @@ GRANT ALL ON FUNCTION app_public.request_account_deletion() TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION request_telegram_link(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.request_telegram_link() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.request_telegram_link() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION resend_email_verification_code(email_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -6050,11 +6759,27 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 
 
 --
+-- Name: FUNCTION save_reminder_preferences(minutes_before integer, delivery_method text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION set_admin_status(id uuid, is_admin boolean); Type: ACL; Schema: app_public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text) TO ilmo_visitor;
 
 
 --
@@ -6225,6 +6950,13 @@ GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_p
 --
 
 GRANT INSERT(color),UPDATE(color) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: TABLE event_registration_reminders; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.event_registration_reminders TO ilmo_visitor;
 
 
 --

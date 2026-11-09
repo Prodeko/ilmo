@@ -13,11 +13,12 @@ module.exports = {
     "/settings/delete": ["settings"],
     "/settings/emails": ["settings"],
     "/settings/security": ["settings"],
+    "/settings/reminders": ["settings", "reminders"],
     "/invitations/accept": ["invitations"],
     "/create-event-category": ["events"],
     "/update-registration/[updateToken]": ["register_event"],
     "rgx:^/admin": ["admin", "events", "home", "register_event"],
-    "rgx:^/event": ["events", "register_event"],
+    "rgx:^/event": ["events", "register_event", "reminders"],
   },
   loadLocaleFrom: (lang, ns) =>
     import(`./src/translations/${lang}/${ns}.json`).then((m) => m.default),

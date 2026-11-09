@@ -1,0 +1,6 @@
+mutation DisconnectTelegram {
+  disconnectTelegram(input: {}) {
+    boolean
+    __typename
+  }
+}
