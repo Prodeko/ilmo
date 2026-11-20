@@ -52,7 +52,9 @@ export function ConfirmOnModal({
   const specific = translatedList(t, `features.flags.${flagKey}.turnOn`)
   const willSee =
     specific.length > 0 ? specific : [t("features.confirmOn.generic", { name })]
-  const { previewed, lastPreviewStart } = preview
+  const { previewable, previewed, lastPreviewStart } = preview
+  // Without a preview there is nothing to suggest or warn about
+  const suggestPreview = previewable && !previewed
 
   const footer = [
     <Button key="cancel" data-cy="feature-confirm-cancel" onClick={onCancel}>
@@ -61,12 +63,12 @@ export function ConfirmOnModal({
     <Button
       key="on"
       data-cy="feature-confirm-on"
-      type={previewed ? "primary" : "default"}
+      type={suggestPreview ? "default" : "primary"}
       onClick={() => onConfirm(FeatureState.On)}
     >
       {t("features.confirmOn.ok")}
     </Button>,
-    ...(previewed
+    ...(!suggestPreview
       ? []
       : [
           <Button
@@ -93,7 +95,7 @@ export function ConfirmOnModal({
           <Text>{t("features.confirmOn.willSee")}</Text>
           <Bullets items={willSee} />
         </div>
-        {previewed ? (
+        {!previewable ? null : previewed ? (
           <Alert
             data-cy="feature-confirm-previewed"
             message={

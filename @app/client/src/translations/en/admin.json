@@ -269,6 +269,7 @@
       "tryAgain": "Try again"
     },
     "neverChanged": "Never changed",
+    "noAdminPreview": "Hidden from everyone. Admins only is not offered: admins have nothing to preview here, so it would behave as Off.",
     "retired": "Retired: this feature is permanent and always on.",
     "retry": "Retry",
     "saveFailed": {

@@ -269,6 +269,7 @@
       "tryAgain": "Försök igen"
     },
     "neverChanged": "Aldrig ändrad",
+    "noAdminPreview": "Dold för alla. Bara administratörer erbjuds inte: administratörer har inget att förhandsgranska här, så den skulle fungera som Av.",
     "retired": "Pensionerad: funktionen är permanent och alltid på.",
     "retry": "Försök igen",
     "saveFailed": {

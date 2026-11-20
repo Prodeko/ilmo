@@ -1,4 +1,5 @@
 import { FeatureState } from "@app/graphql"
+import { featureAdminPreview } from "@app/lib"
 
 import type {
   AdminFeatures_FeatureFlagEventFragment,
@@ -51,6 +52,8 @@ export const eventsOf = (
   events.filter((event): event is FeatureFlagEvent => event?.key === key)
 
 export interface PreviewInfo {
+  /** Whether Admins only lets admins preview the feature at all. */
+  previewable: boolean
   /** Whether admins have previewed the feature before it goes on. */
   previewed: boolean
   /** The most recent switch into admins_only, if the audit log has one. */
@@ -62,25 +65,35 @@ export interface PreviewInfo {
  * in it now.
  */
 export const previewInfo = (
-  flag: Pick<AdminFeatures_FeatureFlagFragment, "state">,
+  flag: Pick<AdminFeatures_FeatureFlagFragment, "key" | "state">,
   flagEvents: readonly FeatureFlagEvent[]
 ): PreviewInfo => {
   const lastPreviewStart =
     flagEvents.find((event) => event.newState === FeatureState.AdminsOnly) ??
     null
   return {
+    previewable: featureAdminPreview(flag.key),
     previewed:
       lastPreviewStart !== null || flag.state === FeatureState.AdminsOnly,
     lastPreviewStart,
   }
 }
 
-/** Whether a state can be chosen for a flag. Off is always reachable. */
+/**
+ * Whether a state can be chosen for a flag. Off is always reachable; Admins
+ * only is not offered for a feature admins cannot preview.
+ */
 export const stateSelectable = (
-  flag: Pick<AdminFeatures_FeatureFlagFragment, "available" | "retiredAt">,
+  flag: Pick<
+    AdminFeatures_FeatureFlagFragment,
+    "key" | "available" | "retiredAt"
+  >,
   state: FeatureState
 ): boolean => {
   if (flag.retiredAt) {
+    return false
+  }
+  if (state === FeatureState.AdminsOnly && !featureAdminPreview(flag.key)) {
     return false
   }
   return flag.available || state === FeatureState.Off

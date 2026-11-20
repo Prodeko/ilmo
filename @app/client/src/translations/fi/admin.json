@@ -269,6 +269,7 @@
       "tryAgain": "Yritä uudelleen"
     },
     "neverChanged": "Ei koskaan muutettu",
+    "noAdminPreview": "Piilossa kaikilta. Vain ylläpitäjät -tilaa ei tarjota: ylläpitäjillä ei ole tässä mitään esikatseltavaa, joten se toimisi kuin Pois.",
     "retired": "Vakiintunut: tämä ominaisuus on pysyvä ja aina päällä.",
     "retry": "Yritä uudelleen",
     "saveFailed": {

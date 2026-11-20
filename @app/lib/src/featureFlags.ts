@@ -15,6 +15,8 @@
  *     // Only for features that need server configuration. The server marks
  *     // the flag unavailable at boot unless every variable is non-empty.
  *     requiresEnv: ["MY_SERVICE_SECRET"],
+ *     // Only for features without anything a signed-in admin can see.
+ *     adminPreview: false,
  *   },
  *
  * The Features page (/admin/features) names the flag from the optional
@@ -36,6 +38,13 @@ export interface FeatureDefinition {
    * feature reads as off whatever its state.
    */
   readonly requiresEnv?: readonly string[]
+  /**
+   * False for a feature that has nothing a signed-in admin could preview: it
+   * only serves outside callers or runs in the server or worker, where
+   * Admins only reads as off. The Features page then does not offer Admins
+   * only for it.
+   */
+  readonly adminPreview?: false
 }
 
 export const FEATURES = {
@@ -77,6 +86,8 @@ export const FEATURES = {
     description:
       "MCP server at /mcp for AI assistants: browse events, register, and let admins create draft events.",
     requiresEnv: ["KEYCLOAK_ISSUER"],
+    // /mcp is called by MCP clients, not from an admin's browser session
+    adminPreview: false,
   },
   payments: {
     description:
@@ -103,6 +114,13 @@ export const FEATURE_FLAG_STATES: readonly FeatureFlagState[] = [
 /** Every key in the registry. */
 export const featureKeys = (): FeatureKey[] =>
   Object.keys(FEATURES) as FeatureKey[]
+
+/**
+ * Whether Admins only lets admins preview a feature. Keys outside the
+ * registry can be previewed.
+ */
+export const featureAdminPreview = (key: string): boolean =>
+  (FEATURES as Record<string, FeatureDefinition>)[key]?.adminPreview !== false
 
 /**
  * Whether the environment holds every variable a feature requires. Features

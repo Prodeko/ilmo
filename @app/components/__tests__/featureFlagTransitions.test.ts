@@ -55,7 +55,8 @@ describe("previewInfo", () => {
       [event("a", Off, On, "1"), event("b", Off, AdminsOnly, "2")],
       "a"
     )
-    expect(previewInfo({ state: Off }, events)).toEqual({
+    expect(previewInfo({ key: "a", state: Off }, events)).toEqual({
+      previewable: true,
       previewed: false,
       lastPreviewStart: null,
     })
@@ -68,16 +69,23 @@ describe("previewInfo", () => {
       event("a", Off, AdminsOnly, "2"),
       event("a", Off, AdminsOnly, "1"),
     ]
-    const info = previewInfo({ state: Off }, events)
+    const info = previewInfo({ key: "a", state: Off }, events)
     expect(info.previewed).toBe(true)
     expect(info.lastPreviewStart?.id).toBe("2")
   })
 
   it("counts the current admins_only state as a preview", () => {
-    expect(previewInfo({ state: AdminsOnly }, [])).toEqual({
+    expect(previewInfo({ key: "a", state: AdminsOnly }, [])).toEqual({
+      previewable: true,
       previewed: true,
       lastPreviewStart: null,
     })
+  })
+
+  it("is not previewable for a feature admins cannot preview", () => {
+    expect(previewInfo({ key: "mcp_server", state: Off }, []).previewable).toBe(
+      false
+    )
   })
 })
 
@@ -95,7 +103,7 @@ describe("eventsOf", () => {
 
 describe("stateSelectable", () => {
   it("allows every state for an available flag", () => {
-    const flag = { available: true, retiredAt: null }
+    const flag = { key: "a", available: true, retiredAt: null }
     expect([Off, AdminsOnly, On].map((s) => stateSelectable(flag, s))).toEqual([
       true,
       true,
@@ -104,7 +112,7 @@ describe("stateSelectable", () => {
   })
 
   it("allows only Off for an unavailable flag", () => {
-    const flag = { available: false, retiredAt: null }
+    const flag = { key: "a", available: false, retiredAt: null }
     expect([Off, AdminsOnly, On].map((s) => stateSelectable(flag, s))).toEqual([
       true,
       false,
@@ -112,8 +120,21 @@ describe("stateSelectable", () => {
     ])
   })
 
+  it("does not offer Admins only for a feature admins cannot preview", () => {
+    const flag = { key: "mcp_server", available: true, retiredAt: null }
+    expect([Off, AdminsOnly, On].map((s) => stateSelectable(flag, s))).toEqual([
+      true,
+      false,
+      true,
+    ])
+  })
+
   it("allows nothing for a retired flag", () => {
-    const flag = { available: true, retiredAt: "2026-11-01T10:00:00Z" }
+    const flag = {
+      key: "a",
+      available: true,
+      retiredAt: "2026-11-01T10:00:00Z",
+    }
     expect([Off, AdminsOnly, On].map((s) => stateSelectable(flag, s))).toEqual([
       false,
       false,

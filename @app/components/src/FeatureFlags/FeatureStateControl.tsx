@@ -1,5 +1,6 @@
 import { CheckOutlined, LoadingOutlined, LockOutlined } from "@ant-design/icons"
 import { FeatureState } from "@app/graphql"
+import { featureAdminPreview } from "@app/lib"
 import {
   Button,
   ConfigProvider,
@@ -100,6 +101,9 @@ export function FeatureStateControl({
       state: t(`features.states.${stateKey(flag.state)}`),
     })
     noteType = "danger"
+  } else if (!featureAdminPreview(key) && flag.state !== FeatureState.On) {
+    // Admins only is not offered; a flag already in it behaves as off
+    note = t("features.noAdminPreview")
   } else {
     note = t(`features.sees.${stateKey(flag.state)}`)
   }
