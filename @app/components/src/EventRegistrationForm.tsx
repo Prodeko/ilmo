@@ -5,28 +5,46 @@ import {
   QuestionType,
   UpdateEventRegistrationDocument,
   useClaimRegistrationTokenMutation,
+  useCreateCheckoutSessionMutation,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
 import {
   arePropsEqual,
+  CancelRefund,
+  formatEuro,
+  isStripeCheckoutUrl,
   registrationFormItemLayout,
+  RegistrationFormPaymentVariant,
+  SERVICE_FEE_CENTS,
   tailFormItemLayout,
+  totalChargeCents,
 } from "@app/lib"
 import {
+  Alert,
   Button,
   Checkbox,
   Form,
   Input,
   message,
+  Modal,
   Popconfirm,
   Radio,
   Space,
   Typography,
 } from "antd"
+import dayjs from "dayjs"
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
-import { ErrorAlert, useTranslation } from "."
+import { useCelebrate } from "./celebrate"
+import {
+  CancelRefundBreakdown,
+  ErrorAlert,
+  paymentBoxStyle,
+  PaymentNote,
+  PriceBreakdown,
+  useTranslation,
+} from "."
 
 const { Text } = Typography
 
@@ -35,8 +53,8 @@ interface EventRegistrationFormProps {
   isAdmin?: boolean
   questions: EventPage_QuestionFragment[]
   formRedirect?: { pathname: string; query: { [key: string]: string } } | string
-  // SubmitAction is used when this form is displayed in the admin panel
-  submitAction?: () => void
+  // Runs after submission/deletion; new signups include their registration ID.
+  submitAction?: (registrationId?: string) => void
   // eventId and quotaId are used when type is "create"
   eventId?: string
   quotaId?: string
@@ -44,7 +62,34 @@ interface EventRegistrationFormProps {
   updateToken?: string
   initialValues?: any
   // Used to delete an unfinished registration
-  setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
+  setUpdateToken?: React.Dispatch<React.SetStateAction<string | undefined>>
+  // Used by the event form's preview tab: the form is validated but never
+  // submitted. Leave eventId and quotaId out so no registration is claimed.
+  preview?: boolean
+  // Payment block of the create form (board 2). Null or missing when the
+  // quota is free, the event has no payments or payments are disabled.
+  payment?: RegistrationFormPayment | null
+  // True while it is not yet known whether the payment block applies (the
+  // claimed spot's queue status is loading); submitting waits for it
+  paymentLoading?: boolean
+  // Payment of the registration being updated, for the delete confirmation
+  // (board 6). Null or missing when there is nothing paid.
+  paymentOnDelete?: { refund: CancelRefund | null; paidManually: boolean }
+}
+
+export interface RegistrationFormPayment {
+  variant: RegistrationFormPaymentVariant
+  quotaTitle: string
+  priceCents: number
+  registrationEndTime: string
+}
+
+// Same columns as the inputs of registrationFormItemLayout
+const paymentFormItemLayout = {
+  wrapperCol: {
+    xs: { span: 24, offset: 0 },
+    sm: { span: 12, offset: 6 },
+  },
 }
 
 // important React.memo, otherwise the form fields may be cleared as
@@ -62,10 +107,15 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       submitAction,
       initialValues,
       setUpdateToken,
+      preview,
+      payment,
+      paymentLoading,
+      paymentOnDelete,
     } = props
 
     const { t, lang } = useTranslation("register_event")
     const router = useRouter()
+    const celebrate = useCelebrate()
 
     // Handling form values, errors and submission
     const [form] = Form.useForm()
@@ -76,6 +126,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const [registrationToken, setRegistrationToken] = useState<
       string | undefined
     >(undefined)
+    const [claimedUpdateToken, setClaimedUpdateToken] = useState<
+      string | undefined
+    >(undefined)
+    const [redirectingToCheckout, setRedirectingToCheckout] = useState(false)
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
     // Mutations
     const mutation =
@@ -85,6 +140,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const [, formMutation] = useMutation(mutation)
     const [, deleteRegistration] = useDeleteEventRegistrationMutation()
     const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
+    const [, createCheckoutSession] = useCreateCheckoutSessionMutation()
 
     useEffect(() => {
       form.setFieldsValue(initialValues)
@@ -111,6 +167,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
               )
             }
             setRegistrationToken(registrationToken)
+            setClaimedUpdateToken(updateToken)
             setUpdateToken?.(updateToken)
           } catch (e) {
             setFormError(e)
@@ -119,9 +176,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       })()
     }, [claimRegistrationToken, setUpdateToken, eventId, quotaId, type])
 
-    const doDelete = useCallback(async () => {
+    const doDelete = useCallback(async (): Promise<boolean> => {
       setFormError(null)
       setDeleting(true)
+      let deleted = false
       try {
         if (updateToken) {
           const { data, error } = await deleteRegistration({
@@ -143,11 +201,13 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             key: "registration-delete-complete",
             content: `${t("registrationDeleteComplete")}`,
           })
+          deleted = true
         }
       } catch (e) {
         setFormError(e)
       }
       setDeleting(false)
+      return deleted
     }, [deleteRegistration, updateToken, submitAction, formRedirect, router, t])
 
     const handleSubmit = useCallback(
@@ -173,11 +233,48 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                   ...trimmedValues,
                   updateToken,
                 }
-          const { error } = await formMutation({ input })
+          const { data, error } = await formMutation({ input })
           if (error) throw error
 
+          if (type === "create") {
+            celebrate()
+            // The registration is finished: forget the claimed token so
+            // that going back to this page (e.g. from Stripe, restored from
+            // the back/forward cache) can't delete the registration
+            setUpdateToken?.(undefined)
+          }
+
+          // Pay during registration: go straight to Stripe Checkout. The
+          // registration is already saved, so if this fails we fall back to
+          // the normal success flow; the confirmation email has the link.
+          if (
+            type === "create" &&
+            payment?.variant === "during" &&
+            claimedUpdateToken
+          ) {
+            setRedirectingToCheckout(true)
+            const { data: checkout } = await createCheckoutSession({
+              updateToken: claimedUpdateToken,
+              language: lang,
+            })
+            const url = checkout?.createCheckoutSession?.url
+            if (isStripeCheckoutUrl(url)) {
+              message.success({
+                key: "registration-signup-complete",
+                content: `${t("eventSignupComplete")}`,
+              })
+              window.location.assign(url!)
+              return
+            }
+            setRedirectingToCheckout(false)
+          }
+
           if (submitAction) {
-            submitAction()
+            submitAction(
+              type === "create"
+                ? data?.createRegistration?.registration?.id
+                : undefined
+            )
           }
           if (formRedirect) {
             router.push(formRedirect)
@@ -199,6 +296,11 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       [
         registrationToken,
         updateToken,
+        claimedUpdateToken,
+        setUpdateToken,
+        payment,
+        createCheckoutSession,
+        lang,
         submitAction,
         formRedirect,
         formMutation,
@@ -207,6 +309,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         quotaId,
         type,
         t,
+        celebrate,
       ]
     )
 
@@ -226,15 +329,64 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       )
     }, [isAdmin, questions, initialValues, lang])
 
+    const paymentVariant = type === "create" ? payment?.variant : undefined
+    const priceCents = payment?.priceCents ?? 0
+    const totalCents = priceCents > 0 ? totalChargeCents(priceCents) : 0
+    const submitLabel =
+      type === "create" && paymentLoading
+        ? t("payment.register")
+        : paymentVariant === "during"
+          ? t("payment.registerAndPay", {
+              total: formatEuro(totalCents, lang),
+            })
+          : paymentVariant === "after"
+            ? t("payment.register")
+            : paymentVariant === "queued"
+              ? t("payment.joinQueue")
+              : t(`common:${type}`)
+    const refundOnDelete = paymentOnDelete?.refund
+
     return (
       <Form
         {...registrationFormItemLayout}
         colon={false}
+        // The preview is shown inside the event form, and a <form> nested in
+        // another <form> can submit the outer one. Render a <div> instead,
+        // submit with a plain button and keep Enter from submitting the
+        // event form.
+        component={preview ? "div" : undefined}
         form={form}
         initialValues={initialValues}
         labelWrap
-        onFinish={handleSubmit}
+        onFinish={
+          preview
+            ? () => {
+                // Show the same celebration registrants will see
+                celebrate()
+                message.info(t("previewNotSubmitted"))
+              }
+            : handleSubmit
+        }
+        onKeyDown={
+          preview
+            ? (e: React.KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  form.submit()
+                }
+              }
+            : undefined
+        }
       >
+        {paymentVariant === "queued" && (
+          <Form.Item {...paymentFormItemLayout}>
+            <Alert
+              data-cy="eventregistrationform-payment-queue-notice"
+              message={t("payment.queueNotice")}
+              type="warning"
+            />
+          </Form.Item>
+        )}
         <Form.Item
           label={t("forms.firstName")}
           name="firstName"
@@ -343,6 +495,46 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             </Form.Item>
           )
         })}
+        {paymentVariant === "during" && (
+          <Form.Item {...paymentFormItemLayout}>
+            <section
+              data-cy="eventregistrationform-payment-summary"
+              style={paymentBoxStyle}
+            >
+              <Typography.Text strong>{t("payment.title")}</Typography.Text>
+              <PriceBreakdown
+                lang={lang}
+                priceCents={priceCents}
+                serviceFeeCents={SERVICE_FEE_CENTS}
+                serviceFeeLabel={t("payment.serviceFee")}
+                ticketLabel={t("payment.ticket", {
+                  quota: payment?.quotaTitle,
+                })}
+                totalCents={totalCents}
+                totalLabel={t("payment.total")}
+              />
+              <PaymentNote>{t("payment.duringInfo")}</PaymentNote>
+            </section>
+          </Form.Item>
+        )}
+        {paymentVariant === "after" && (
+          <Form.Item {...paymentFormItemLayout}>
+            <section
+              data-cy="eventregistrationform-payment-summary"
+              style={paymentBoxStyle}
+            >
+              <Typography.Text strong>{t("payment.title")}</Typography.Text>
+              <Typography.Text>
+                {t("payment.afterInfo", {
+                  price: formatEuro(priceCents, lang),
+                  fee: formatEuro(SERVICE_FEE_CENTS, lang),
+                  date: dayjs(payment?.registrationEndTime).format("D.M.YYYY"),
+                  time: dayjs(payment?.registrationEndTime).format("HH:mm"),
+                })}
+              </Typography.Text>
+            </section>
+          </Form.Item>
+        )}
         {formError && (
           <Form.Item {...tailFormItemLayout}>
             <ErrorAlert
@@ -359,22 +551,86 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         <Form.Item {...tailFormItemLayout}>
           <Button
             data-cy="eventregistrationform-button-submit"
-            htmlType="submit"
+            htmlType={preview ? "button" : "submit"}
+            // Wait for the registration token before allowing a new
+            // registration to be submitted
             loading={
-              formError
-                ? false
-                : (type === "create" && !!registrationToken) ||
-                    type === "update"
-                  ? false
-                  : true
+              redirectingToCheckout || (type === "create" && paymentLoading)
+                ? true
+                : !preview &&
+                  !formError &&
+                  type === "create" &&
+                  !registrationToken
             }
             type="primary"
+            onClick={preview ? () => form.submit() : undefined}
           >
-            {t(`common:${type}`)}
+            {redirectingToCheckout ? t("payment.redirecting") : submitLabel}
           </Button>
-          {type === "update" && !isAdmin ? (
+          {type === "update" && !isAdmin && refundOnDelete ? (
+            <>
+              <Button
+                data-cy="eventregistrationform-button-delete-registration"
+                loading={deleting}
+                style={{ marginLeft: 5 }}
+                danger
+                onClick={() => setDeleteModalOpen(true)}
+              >
+                {t("deleteRegistration")}
+              </Button>
+              <Modal
+                cancelText={t("payments:cancel.keep")}
+                data-cy="eventregistrationform-delete-refund-modal"
+                okButtonProps={{
+                  danger: true,
+                  loading: deleting,
+                  // data-* attributes are passed through to the button
+                  ...({
+                    "data-cy": "eventregistrationform-button-delete-and-refund",
+                  } as Record<string, string>),
+                }}
+                okText={t("payments:cancel.deleteAndRefund", {
+                  amount: formatEuro(refundOnDelete.refundCents, lang),
+                })}
+                open={deleteModalOpen}
+                title={t("payments:cancel.title")}
+                onCancel={() => setDeleteModalOpen(false)}
+                onOk={async () => {
+                  // Stays open, showing the error, if deleting fails
+                  if (await doDelete()) {
+                    setDeleteModalOpen(false)
+                  }
+                }}
+              >
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  <Typography.Text>{t("payments:cancel.body")}</Typography.Text>
+                  <CancelRefundBreakdown
+                    feeLabel={t("payments:cancel.feeNotRefunded")}
+                    lang={lang}
+                    paidLabel={t("payments:cancel.youPaid")}
+                    refund={refundOnDelete}
+                    refundLabel={t("payments:cancel.refundToCard")}
+                  />
+                  <PaymentNote>{t("payments:cancel.refundTiming")}</PaymentNote>
+                  {formError && (
+                    <ErrorAlert
+                      error={formError}
+                      message={t("deleteRegistrationFailed")}
+                    />
+                  )}
+                </Space>
+              </Modal>
+            </>
+          ) : type === "update" && !isAdmin ? (
             <Popconfirm
               cancelText={t("common:no")}
+              description={
+                paymentOnDelete?.paidManually ? (
+                  <div style={{ maxWidth: 320 }}>
+                    {t("payments:cancel.manualNote")}
+                  </div>
+                ) : undefined
+              }
               okText={t("common:yes")}
               placement="top"
               title={t("deleteRegistrationConfirmText")}

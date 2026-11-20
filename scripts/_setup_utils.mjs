@@ -1,17 +1,17 @@
 import { promises as fsp } from "fs"
 import { platform } from "os"
-import { URL } from "url"
+import { fileURLToPath, URL } from "url"
 
-import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+import { safeRandomHexString, safeRandomString } from "./lib/random.mjs"
 
 if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
   throw new Error("This project requires Node.js >= 20.0.0")
 }
-export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
+export { readDotenv, withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
-  return new URL(".", meta.url).pathname
+  return fileURLToPath(new URL(".", meta.url))
 }
 
 const __dirname = dirname(import.meta)
@@ -135,6 +135,32 @@ export function updateDotenv(add, answers) {
     null,
     `\
 # Client secret from the Keycloak admin console:`
+  )
+
+  add(
+    "STRIPE_SECRET_KEY",
+    null,
+    `\
+# Stripe payments. Leave these blank to keep payments unavailable. With both
+# secrets set, developers switch payments on and off with the \`payments\`
+# feature flag; without them the flag cannot be switched on.
+#
+#   Webhook endpoint:           ${rootUrl}/api/stripe/webhook
+#   Events to send:             checkout.session.completed,
+#                               checkout.session.expired, charge.refunded
+#
+# Use test-mode keys (sk_test_...) outside production. Locally, run
+# \`stripe listen --events checkout.session.completed,checkout.session.expired,charge.refunded --forward-to ${rootUrl}/api/stripe/webhook\`
+# and use the whsec_... secret it prints. Step by step: docs/payments.md
+#
+# Stripe secret API key (sk_test_... or sk_live_...):`
+  )
+
+  add(
+    "STRIPE_WEBHOOK_SECRET",
+    null,
+    `\
+# Signing secret of the webhook endpoint above (whsec_...):`
   )
 
   add(

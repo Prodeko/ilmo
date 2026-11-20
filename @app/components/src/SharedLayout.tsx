@@ -32,6 +32,7 @@ import {
   H3,
   LocaleSelect,
   Redirect,
+  REGISTRATION_REMINDERS_ENABLED,
   StandardWidth,
   useIlmoContext,
   useIsMobile,
@@ -294,6 +295,21 @@ export function SharedLayout({
                             </Link>
                           ),
                         },
+                        ...(REGISTRATION_REMINDERS_ENABLED
+                          ? [
+                              {
+                                key: "reminders",
+                                label: (
+                                  <Link
+                                    data-cy="layout-link-reminders"
+                                    href="/settings/reminders"
+                                  >
+                                    {t("reminders")}
+                                  </Link>
+                                ),
+                              },
+                            ]
+                          : []),
                         {
                           key: "logout",
                           label: <a onClick={handleLogout}>{t("logout")}</a>,
@@ -331,7 +347,15 @@ export function SharedLayout({
         </Header>
         <Layout hasSider={!!sider}>
           {sider ? sider : null}
-          <Content style={{ minHeight: contentMinHeight }}>
+          {/* Without the footer the content fills the rest of the window, so
+              the light body background doesn't show below short pages */}
+          <Content
+            style={{
+              minHeight: displayFooter
+                ? contentMinHeight
+                : "calc(100vh - 64px)",
+            }}
+          >
             {renderChildren({
               error,
               stale,

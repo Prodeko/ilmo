@@ -19,7 +19,10 @@ export const SettingsSideMenu: React.FC<SettingsSideMenuProps> = ({
   items,
   initialKey,
 }) => {
-  const menuItems: MenuProps["items"] = Object.keys(items).map((pageHref) => {
+  const visible = Object.keys(items).filter(
+    (pageHref) => !items[pageHref].hidden
+  )
+  const menuItems: MenuProps["items"] = visible.map((pageHref) => {
     const { cy, icon, warnIfUnverified, titleProps, title } = items[pageHref]
     return {
       key: pageHref,

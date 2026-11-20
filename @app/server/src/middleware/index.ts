@@ -1,6 +1,7 @@
 import installCSRFProtection from "./installCSRFProtection"
 import installDatabasePools from "./installDatabasePools"
 import installErrorHandler from "./installErrorHandler"
+import installExternalRoutes from "./installExternalRoutes"
 import installFeatureFlags from "./installFeatureFlags"
 import installFileUpload from "./installFileUpload"
 import installHealth from "./installHealth"
@@ -13,12 +14,14 @@ import installSameOrigin from "./installSameOrigin"
 import installSession from "./installSession"
 import installSSR from "./installSSR"
 import installStaticUploads from "./installStaticUploads"
+import installTelegramPolling from "./installTelegramPolling"
 import installWorkerUtils from "./installWorkerUtils"
 
 export {
   installCSRFProtection,
   installDatabasePools,
   installErrorHandler,
+  installExternalRoutes,
   installFeatureFlags,
   installFileUpload,
   installHealth,
@@ -31,5 +34,6 @@ export {
   installSession,
   installSSR,
   installStaticUploads,
+  installTelegramPolling,
   installWorkerUtils,
 }

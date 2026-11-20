@@ -1,0 +1,70 @@
+{
+  "cancel": "Poista muistutus",
+  "delivery": "Sähköpostimuistutus osoitteeseen {{email}}.",
+  "empty": "Sinulla ei ole ilmoittautumismuistutuksia.",
+  "enable": "Aseta muistutus",
+  "enabled": "Muistutus asetettu",
+  "expired": "Ilmoittautuminen on avautunut",
+  "loadMore": "Näytä lisää",
+  "myReminders": "Omat muistutukset",
+  "opens": "Ilmoittautuminen alkaa",
+  "paused": "Keskeytetty",
+  "pending": "Ajastettu",
+  "sent": "Muistutus lähetetty",
+  "signIn": "Kirjaudu sisään",
+  "timingNote": "Jos valitsemasi muistutusaika on jo mennyt, muistutus lähetetään mahdollisimman pian.",
+  "unavailable": "Tapahtuma ei ole saatavilla",
+  "verifyEmail": "Vahvista ensisijainen sähköpostisi ottaaksesi muistutukset käyttöön",
+  "minutesBefore": "Muistutuksen ajankohta",
+  "save": "Tallenna",
+  "leadTime": "{{minutes}} minuuttia ennen ilmoittautumisen alkua",
+  "presets": {
+    "5": "5 minuuttia ennen",
+    "10": "10 minuuttia ennen",
+    "15": "15 minuuttia ennen",
+    "30": "30 minuuttia ennen",
+    "60": "Tunti ennen",
+    "1440": "Päivä ennen"
+  },
+  "channelLabel": "Muistutuksen toimitustapa",
+  "channels": {
+    "email": "Sähköposti",
+    "telegram": "Telegram",
+    "both": "Molemmat"
+  },
+  "telegram": {
+    "title": "Telegram-muistutukset",
+    "connected": "Yhdistetty: {{name}}",
+    "connect": "Yhdistä Telegram",
+    "disconnect": "Katkaise Telegram-yhteys",
+    "open": "Avaa Telegram",
+    "check": "Päivitä yhteyden tila",
+    "instructions": "Vahvista yhteys Telegramissa ja palaa sitten tänne.",
+    "connectHint": "Yhdistä Telegram asetuksissa",
+    "newLink": "Luo uusi linkki",
+    "popupBlocked": "Selain ei avannut Telegramia automaattisesti. Jatka painamalla Avaa Telegram."
+  },
+  "preferences": {
+    "title": "Muistutusasetukset",
+    "explanation": "Valitse muistutuksen toimitustapa ja ajankohta.",
+    "delivery": "Valitse toimitustapa",
+    "timing": "Valitse ajankohta",
+    "next": "Jatka",
+    "back": "Takaisin",
+    "getStarted": "Ota muistutukset käyttöön",
+    "eventPrompt": "Älä missaa ilmoittautumista!",
+    "changeSettings": "Muuta muistutusasetuksia",
+    "saved": "Asetukset tallennettu.",
+    "telegramUnavailable": "Telegram ei ole nyt saatavilla. Valitse sähköposti tai yritä myöhemmin uudelleen."
+  },
+  "leadTimes": {
+    "day": "Päivä ennen ilmoittautumisen alkua",
+    "hour": "Tunti ennen ilmoittautumisen alkua"
+  },
+  "toast": {
+    "title": "Muistutus asetettu!",
+    "delivery": "Toimitustapa",
+    "timing": "Ajankohta"
+  },
+  "recommended": "suositeltu"
+}

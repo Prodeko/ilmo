@@ -1,0 +1,13 @@
+mutation SaveReminderPreferences($minutesBefore: Int!, $deliveryMethod: String!) {
+  saveReminderPreferences(
+    input: {minutesBefore: $minutesBefore, deliveryMethod: $deliveryMethod}
+  ) {
+    reminderPreference {
+      userId
+      minutesBefore
+      deliveryMethod
+      __typename
+    }
+    __typename
+  }
+}

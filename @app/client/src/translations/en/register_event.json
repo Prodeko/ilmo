@@ -1,4 +1,12 @@
 {
+  "calendar": {
+    "addAnother": "Add event to calendar",
+    "apple": "Apple Calendar / download .ics",
+    "emailConfirmation": "Check your email for your registration confirmation.",
+    "emailSent": "We’ve emailed your confirmation and calendar invitation. It may take a moment to arrive.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "You’re currently on the waiting list. We’ll send you a confirmation email when a place becomes available for you."
+  },
   "confirmGoBack": "Are you sure? You will lose your registration spot.",
   "deleteRegistration": "Delete registration",
   "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
@@ -20,6 +28,20 @@
       "provideLastName": "Please enter your last name"
     }
   },
+  "payment": {
+    "afterInfo": "Ticket {{price}} + {{fee}} service fee. You don't pay now. We'll email you a payment link when registration closes on {{date}} at {{time}}.",
+    "duringInfo": "Your spot is confirmed as soon as you submit. You'll then go to a secure payment page (card, Apple Pay or Google Pay). If you don't finish paying now, you can pay later using the link in your confirmation email.",
+    "joinQueue": "Join the queue",
+    "queueNotice": "This quota is full, so you'll be placed in the queue. You only pay if you get a spot.",
+    "redirecting": "Taking you to the payment page...",
+    "register": "Register",
+    "registerAndPay": "Register and pay {{total}}",
+    "serviceFee": "Service fee",
+    "ticket": "Ticket ({{quota}})",
+    "title": "Payment",
+    "total": "Total"
+  },
+  "previewNotSubmitted": "Preview: no registration was submitted",
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
   "registrationDeleteComplete": "Deleted registration",

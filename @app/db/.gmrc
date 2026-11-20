@@ -69,7 +69,7 @@
     "!afterReset.sql",
     {
       "_": "command",
-      "command": "DATABASE_URL=\"$GM_DBURL\" pnpm --filter @app/worker run install-db-schema"
+      "command": "cross-env DATABASE_URL=\"$GM_DBURL\" pnpm --filter @app/worker run install-db-schema"
     }
   ],
 

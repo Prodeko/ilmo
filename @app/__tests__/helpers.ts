@@ -65,6 +65,9 @@ export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
     `BEGIN;
+      delete from app_public.payments;
+      delete from app_private.stripe_events;
+      delete from app_private.stripe_early_refunds;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
@@ -82,20 +85,19 @@ export const deleteTestEventData = (pool: Pool) => {
 }
 
 /**
- * The flag state every test starts from: off, or on (and available) when the
- * suite runs with TEST_FEATURE_FLAGS=on, see scripts/test.mjs.
+ * The flag state every test starts from: off, or on when the suite runs with
+ * TEST_FEATURE_FLAGS=on, see scripts/test.mjs.
  */
 export const featureFlagBaseline = (): FeatureFlagState =>
   process.env.TEST_FEATURE_FLAGS === "on" ? "on" : "off"
 
+// Also marks every flag available again: a server booted by a test records
+// the availability of integration-backed flags from its own environment.
 export const resetFeatureFlags = (pool: Pool) =>
-  featureFlagBaseline() === "on"
-    ? pool.query(
-        "update app_public.feature_flags set state = 'on', available = true where state <> 'on' or not available"
-      )
-    : pool.query(
-        "update app_public.feature_flags set state = 'off' where state <> 'off'"
-      )
+  pool.query(
+    "update app_public.feature_flags set state = $1, available = true where state <> $1 or not available",
+    [featureFlagBaseline()]
+  )
 
 export const deleteTestData = async () => {
   const pool = poolFromUrl(TEST_DATABASE_URL)

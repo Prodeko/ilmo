@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react"
 import {
   ButtonLink,
+  CALENDAR_INVITES_ENABLED,
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
   PageHeader,
+  PAYMENTS_FEATURE_ENABLED,
   Redirect,
+  REGISTRATION_REMINDERS_ENABLED,
   SharedLayout,
   SignupState,
   useIsMobile,
@@ -24,6 +27,9 @@ import { Col, Divider, message, notification, Row } from "antd"
 import dayjs from "dayjs"
 import * as NextImage from "next/image"
 import { useRouter } from "next/router"
+
+import { EventReminder } from "../../../components/EventReminder"
+import { RegistrationCalendar } from "../../../components/RegistrationCalendar"
 
 import type { NextPage } from "next"
 
@@ -55,7 +61,11 @@ const EventPage: NextPage = () => {
   return (
     <SharedLayout query={query} title={title}>
       {loadingElement || (
-        <EventPageInner currentUser={query.data.currentUser} event={event} />
+        <EventPageInner
+          currentUser={query.data.currentUser}
+          event={event}
+          paymentsEnabled={PAYMENTS_FEATURE_ENABLED}
+        />
       )}
     </SharedLayout>
   )
@@ -64,6 +74,7 @@ const EventPage: NextPage = () => {
 interface EventPageInnerProps {
   event: EventPage_EventFragment
   currentUser: SharedLayout_UserFragment
+  paymentsEnabled: boolean
 }
 
 const POLL_SERVER_TIME_MINUTES_BEFORE = 15
@@ -72,6 +83,7 @@ const NOTIFICATION_KEY = "time-notification"
 const EventPageInner: React.FC<EventPageInnerProps> = ({
   event,
   currentUser,
+  paymentsEnabled,
 }) => {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -217,6 +229,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         onBack={() => router.push("/")}
       />
       <Row>
+        {CALENDAR_INVITES_ENABLED && (
+          <Col span={24}>
+            <RegistrationCalendar event={event} />
+          </Col>
+        )}
         <Col
           sm={{ span: 16 }}
           style={{ display: "inline-block" }}
@@ -250,6 +267,18 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         >
           <EventQuotasCard
             event={event}
+            footer={
+              REGISTRATION_REMINDERS_ENABLED &&
+              !event.isDraft &&
+              dayjs(event.registrationStartTime).isAfter(dayjs()) ? (
+                <EventReminder
+                  currentUser={currentUser}
+                  eventId={event.id}
+                  slug={event.slug}
+                />
+              ) : null
+            }
+            paymentsEnabled={paymentsEnabled}
             registrations={registrations.nodes}
             signupState={signupState}
           />

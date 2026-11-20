@@ -13,6 +13,7 @@ import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {
   enhanceHttpServerWithSubscriptions,
+  HttpRequestHandler,
   makePluginHook,
   Middleware,
   postgraphile,
@@ -29,11 +30,13 @@ import {
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
+  PaymentsPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TelegramSettingsPlugin,
   TranslatePlugin,
   UploadsPlugin,
   ValidateRichTextFields,
@@ -44,6 +47,12 @@ import handleErrors from "../utils/handleErrors"
 import { RequestLogger } from "./installKeycloak"
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
+
+declare module "fastify" {
+  export interface FastifyInstance {
+    postgraphile: HttpRequestHandler
+  }
+}
 
 export interface OurGraphQLContext {
   pgClient: PoolClient
@@ -260,6 +269,8 @@ export function getPostGraphileOptions({
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
 
+      TelegramSettingsPlugin,
+
       // Translate text with Azure Translator API
       TranslatePlugin,
 
@@ -280,6 +291,9 @@ export function getPostGraphileOptions({
 
       // Calculate password strength with zxcvbn-ts on the server side
       PasswordStrengthPlugin,
+
+      // Stripe payments: the pay page query and Checkout
+      PaymentsPlugin,
 
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
@@ -435,6 +449,8 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       workerUtils,
     })
   )
+
+  app.decorate("postgraphile", middleware)
 
   app.options(
     middleware.graphqlRoute,

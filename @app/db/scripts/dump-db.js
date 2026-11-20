@@ -25,18 +25,37 @@ const NOISE =
 const outPath = "../../data/schema.sql"
 const out = fs.createWriteStream(outPath)
 
-const child = spawn(
-  process.env.PG_DUMP || "pg_dump",
-  [
-    "--no-sync",
-    "--schema-only",
-    "--no-owner",
-    "--exclude-schema=graphile_migrate",
-    "--exclude-schema=graphile_worker",
-    connectionString,
-  ],
-  { stdio: ["ignore", "pipe", "inherit"] }
-)
+const pgDumpArgs = [
+  "--no-sync",
+  "--schema-only",
+  "--no-owner",
+  "--exclude-schema=graphile_migrate",
+  "--exclude-schema=graphile_worker",
+]
+
+// On Windows there's usually no local pg_dump, so run one in a throwaway
+// Docker container instead. CI dumps with pg_dump 16+, whose output differs
+// from the db container's pg_dump 14, so use a postgres:16 image and reach the
+// host-mapped port through host.docker.internal. Set PG_DUMP to force a local
+// binary, or PG_DUMP_DOCKER_IMAGE to pick another image.
+const dockerImage =
+  process.env.PG_DUMP_DOCKER_IMAGE ||
+  (process.platform === "win32" && !process.env.PG_DUMP ? "postgres:16" : "")
+
+let command, args
+if (dockerImage) {
+  const url = new URL(connectionString)
+  if (["localhost", "127.0.0.1"].includes(url.hostname)) {
+    url.hostname = "host.docker.internal"
+  }
+  command = "docker"
+  args = ["run", "--rm", dockerImage, "pg_dump", ...pgDumpArgs, url.toString()]
+} else {
+  command = process.env.PG_DUMP || "pg_dump"
+  args = [...pgDumpArgs, connectionString]
+}
+
+const child = spawn(command, args, { stdio: ["ignore", "pipe", "inherit"] })
 
 let pending = ""
 child.stdout.on("data", (chunk) => {

@@ -3,12 +3,14 @@ import {
   fromEmail,
   projectName,
 } from "@app/config"
+import { formatEuro } from "@app/lib"
 import chalk from "chalk"
 import html2text from "html-to-text"
 import mjml2html from "mjml"
 import nodemailer from "nodemailer"
 import nunjucks from "nunjucks"
 
+import { getLocalEmailSettings, localRecipientAllowed } from "../localEmail"
 import getTransport from "../transport"
 
 import type { Task } from "graphile-worker"
@@ -22,9 +24,22 @@ global.TEST_EMAILS = []
 const njk = new nunjucks.Environment(
   new nunjucks.FileSystemLoader(`${__dirname}/../../../worker/templates/`)
 )
+// Money is integer cents in template variables; `{{ total | euro }}` -> 18,25 €
+njk.addFilter("euro", (cents: number) => formatEuro(cents))
 
 const isTest = process.env.NODE_ENV === "test"
 const isDev = process.env.NODE_ENV !== "production"
+
+/**
+ * A nodemailer attachment that survives the JSON job payload: `content` is a
+ * string, base64 encoded when `encoding` is "base64".
+ */
+export interface EmailAttachment {
+  filename: string
+  content: string
+  contentType?: string
+  encoding?: "base64" | "utf8"
+}
 
 export interface SendEmailPayload {
   options: {
@@ -36,15 +51,24 @@ export interface SendEmailPayload {
   variables: {
     [varName: string]: any
   }
+  attachments?: EmailAttachment[]
 }
 
 const task: Task = async (inPayload) => {
   const payload: SendEmailPayload = inPayload as any
+  const { options: inOptions, template, variables, attachments } = payload
+  const localSettings = await getLocalEmailSettings()
+  if (localSettings && !localRecipientAllowed(inOptions.to, localSettings)) {
+    console.log(
+      "Skipped local email: recipient is outside the delivery allowlist."
+    )
+    return
+  }
   const transport = await getTransport()
-  const { options: inOptions, template, variables } = payload
   const options = {
     from: fromEmail,
     ...inOptions,
+    ...(attachments ? { attachments } : {}),
   }
   if (template) {
     const templateFn = await loadTemplate(template)
@@ -54,11 +78,16 @@ const task: Task = async (inPayload) => {
       .fromString(html2textableHtml, {
         wordwrap: 120,
         tags: { img: { format: "skip" } },
+        // Amount tables of the payment emails (payment_macros.njk)
+        tables: [".amounts"],
       })
       .replace(/\n\s+\n/g, "\n\n")
     Object.assign(options, { html, text })
   }
   const info = await transport.sendMail(options)
+  if (localSettings) {
+    console.log(`Local email accepted by SendGrid: ${info.messageId}`)
+  }
   if (isTest) {
     global.TEST_EMAILS.push(info)
   } else if (isDev) {

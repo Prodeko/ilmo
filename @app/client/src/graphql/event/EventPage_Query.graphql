@@ -9,9 +9,11 @@ fragment EventFields on Event {
   registrationStartTime
   registrationEndTime
   isHighlighted
+  highlightText
   isDraft
   headerImageFile
   openQuotaSize
+  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -44,6 +46,7 @@ fragment EventPage_Quota on Quota {
   position
   title
   size
+  priceCents
 }
 
 fragment EventPage_Registration on Registration {

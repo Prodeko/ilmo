@@ -1,4 +1,5 @@
 import { emailFooterText as footerText, projectName } from "@app/config"
+import { formatEuro } from "@app/lib"
 import mjml2html from "mjml"
 import nunjucks from "nunjucks"
 
@@ -7,6 +8,8 @@ const isDev = process.env.NODE_ENV !== "production"
 const njk = new nunjucks.Environment(
   new nunjucks.FileSystemLoader(`${__dirname}/../../../worker/templates/`)
 )
+// Money is integer cents in template variables; `{{ total | euro }}` -> 18,25 €
+njk.addFilter("euro", (cents: number) => formatEuro(cents))
 
 // TODO: Code duplication with @app/worker/src/send_email.ts
 const templatePromises = {}

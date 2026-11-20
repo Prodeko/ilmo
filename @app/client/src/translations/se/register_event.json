@@ -1,4 +1,12 @@
 {
+  "calendar": {
+    "addAnother": "Lägg till evenemanget i kalendern",
+    "apple": "Apple Calendar / ladda ner .ics",
+    "emailConfirmation": "Kontrollera din e-post för bekräftelsen på din anmälan.",
+    "emailSent": "Vi har mejlat din bekräftelse och kalenderinbjudan. Det kan ta en stund innan den kommer fram.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "Du står för närvarande på väntelistan. Vi skickar en bekräftelse via e-post när en plats blir ledig för dig."
+  },
   "confirmGoBack": "Är du säker? Du kommer att förlora din registreringsplats.",
   "deleteRegistration": "Ta bort registrering",
   "deleteRegistrationConfirmText": "Är du säker på att du vill ta bort din registrering?",
@@ -20,6 +28,20 @@
       "provideLastName": "Ange ditt efternamn"
     }
   },
+  "payment": {
+    "afterInfo": "Biljett {{price}} + {{fee}} serviceavgift. Du betalar inte nu. Vi mejlar dig en betalningslänk när anmälan stänger {{date}} kl. {{time}}.",
+    "duringInfo": "Din plats bekräftas så fort du skickar anmälan. Sedan kommer du till en säker betalningssida (kort, Apple Pay eller Google Pay). Om du inte betalar nu kan du betala senare via länken i ditt bekräftelsemejl.",
+    "joinQueue": "Ställ dig i kön",
+    "queueNotice": "Kvoten är full, så du placeras i kön. Du betalar bara om du får en plats.",
+    "redirecting": "Du skickas till betalningssidan...",
+    "register": "Anmäl dig",
+    "registerAndPay": "Anmäl dig och betala {{total}}",
+    "serviceFee": "Serviceavgift",
+    "ticket": "Biljett ({{quota}})",
+    "title": "Betalning",
+    "total": "Totalt"
+  },
+  "previewNotSubmitted": "Förhandsvisning: ingen anmälan skickades",
   "recentlyRegisteredHeader": "Nyligen registrerad:",
   "recentlyRegisteredListItem": "nyligen registrerad till kvoten",
   "registrationDeleteComplete": "Raderad registrering",

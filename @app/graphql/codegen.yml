@@ -1,6 +1,8 @@
 overwrite: true
 schema: "../../data/schema.graphql"
-documents: "../client/src/**/*.graphql"
+documents:
+  - "../client/src/**/*.graphql"
+  - "../server/src/**/*.graphql"
 hooks:
   afterAllFileWrite:
     - node scripts/addToPersistedOperations.mjs

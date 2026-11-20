@@ -4,11 +4,13 @@ import FeatureFlagsPlugin from "./FeatureFlagsPlugin"
 import OrdersPlugin from "./OrdersPlugin"
 import PassportLoginPlugin from "./PassportLoginPlugin"
 import PasswordStrengthPlugin from "./PasswordStrengthPlugin"
+import PaymentsPlugin from "./PaymentsPlugin"
 import PrimaryKeyMutationsOnlyPlugin from "./PrimaryKeyMutationsOnlyPlugin"
 import RateLimitPlugin from "./RateLimitPlugin"
 import RemoveOwnershipInfoForeignKeyConnections from "./RemoveOwnershipInfoForeignKeyConnections"
 import RemoveQueryQueryPlugin from "./RemoveQueryQueryPlugin"
 import SubscriptionsPlugin from "./SubscriptionsPlugin"
+import TelegramSettingsPlugin from "./TelegramSettingsPlugin"
 import TranslatePlugin from "./TranslatePlugin"
 import UploadsPlugin from "./UploadsPlugin"
 import ValidateRichTextFields from "./ValidateRichTextFields"
@@ -20,11 +22,13 @@ export {
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
+  PaymentsPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TelegramSettingsPlugin,
   TranslatePlugin,
   UploadsPlugin,
   ValidateRichTextFields,
