@@ -52,6 +52,7 @@ fragment EventFields on Event {
   registrationStartTime
   registrationEndTime
   isHighlighted
+  highlightText
   isDraft
   headerImageFile
   openQuotaSize

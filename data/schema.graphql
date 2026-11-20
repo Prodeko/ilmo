@@ -774,6 +774,9 @@ type Event {
   """Header image for the event"""
   headerImageFile: String
 
+  """Text shown on the ribbon of a highlighted event."""
+  highlightText: TranslatedField
+
   """Unique identifier for the event."""
   id: UUID!
 
@@ -1184,6 +1187,7 @@ input EventInputRecordInput {
   eventEndTime: Datetime
   eventStartTime: Datetime
   headerImageFile: Upload
+  highlightText: TranslatedField
   isDraft: Boolean
   isHighlighted: Boolean
   location: String

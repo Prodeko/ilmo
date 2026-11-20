@@ -16,6 +16,7 @@ const event = {
   registrationStartTime: "2030-04-01T09:00:00.000Z",
   registrationEndTime: "2030-04-20T20:59:59.000Z",
   isHighlighted: true,
+  highlightText: { fi: "Pian täynnä", en: "Filling up" },
   isDraft: false,
   headerImageFile: "https://example.com/header.png",
   openQuotaSize: 5,
@@ -58,6 +59,10 @@ describe("toFormValues", () => {
     expect(values.categoryId).toBe("category-1")
     expect(values.slug).toBe("2030-5-1-vuosijuhla")
     expect(values.openQuotaSize).toBe(5)
+    expect(values.highlightText).toEqual({
+      fi: "Pian täynnä",
+      en: "Filling up",
+    })
     expect(values.eventTime.map((d) => d.toISOString())).toEqual([
       "2030-05-01T15:00:00.000Z",
       "2030-05-01T22:00:00.000Z",
@@ -135,6 +140,7 @@ describe("toEventInput", () => {
         isHighlighted: false,
         isDraft: true,
         slug: "2030-5-1-vuosijuhla",
+        highlightText: null,
         eventStartTime: "2030-05-01T15:00:00.000Z",
         eventEndTime: "2030-05-01T22:00:00.000Z",
         registrationStartTime: "2030-04-01T09:00:00.000Z",
@@ -179,6 +185,34 @@ describe("toEventInput", () => {
     ).toBeUndefined()
   })
 
+  it("saves trimmed ribbon texts in the selected languages", () => {
+    expect(
+      toEventInput({
+        ...formValues,
+        isHighlighted: true,
+        languages: ["fi"],
+        highlightText: { fi: " Pian täynnä ", en: "Filling up" },
+      }).event.highlightText
+    ).toEqual({ fi: "Pian täynnä" })
+  })
+
+  it("clears the ribbon text when it is empty or the event is not highlighted", () => {
+    expect(
+      toEventInput({
+        ...formValues,
+        isHighlighted: true,
+        highlightText: { fi: " ", en: "" },
+      }).event.highlightText
+    ).toBeNull()
+    expect(
+      toEventInput({
+        ...formValues,
+        isHighlighted: false,
+        highlightText: { fi: "Pian täynnä" },
+      }).event.highlightText
+    ).toBeNull()
+  })
+
   it("sends an empty quota list when the form has no quotas", () => {
     expect(toEventInput({ ...formValues, quotas: undefined }).quotas).toEqual(
       []
@@ -194,6 +228,7 @@ describe("toEventInput", () => {
       name: { fi: "Vuosijuhla", en: "Annual gala" },
       location: "Otaniemi",
       isHighlighted: true,
+      highlightText: { fi: "Pian täynnä", en: "Filling up" },
       isDraft: false,
       slug: "2030-5-1-vuosijuhla",
       eventStartTime: "2030-05-01T15:00:00.000Z",

@@ -27,6 +27,7 @@ export type FormValues = {
   eventTime?: dayjs.Dayjs[]
   registrationTime?: dayjs.Dayjs[]
   isHighlighted?: boolean
+  highlightText?: Scalars["TranslatedField"]["input"] | null
   // The stored image's URL until a new file is chosen
   headerImageFile?: string | UploadFile
   isDraft?: boolean
@@ -67,6 +68,20 @@ export function getEventSlug(
   return slug
 }
 
+// The ribbon texts to save: only non-empty texts in the selected languages,
+// and none when the event is not highlighted. An empty result is null, which
+// shows the default ribbon text.
+function getHighlightText({
+  isHighlighted,
+  highlightText,
+  languages,
+}: FormValues): EventInputRecordInput["highlightText"] {
+  const entries = Object.entries((isHighlighted && highlightText) || {})
+    .map(([lang, text]) => [lang, text?.trim()] as const)
+    .filter(([lang, text]) => text && languages?.includes(lang))
+  return entries.length > 0 ? Object.fromEntries(entries) : null
+}
+
 type UpdateFormEvent = NonNullable<UpdateEventPageQuery["event"]>
 
 // The update form's initial values for an event loaded by UpdateEventPage
@@ -81,6 +96,7 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
     "registrationStartTime",
     "registrationEndTime",
     "isHighlighted",
+    "highlightText",
     "isDraft",
     "headerImageFile",
     "quotas",
@@ -159,6 +175,7 @@ export function toEventInput(values: SubmittedFormValues): EventInput {
       "isDraft",
     ]),
     slug: getEventSlug(name, eventTime),
+    highlightText: getHighlightText(values),
     eventStartTime: eventTime[0].toISOString(),
     eventEndTime: eventTime[1].toISOString(),
     registrationStartTime: registrationTime[0].toISOString(),

@@ -20,6 +20,8 @@
     "eventTime": "Tapahtuman ajankohta",
     "fillRequiredToSave": "Täytä kaikki pakolliset kentät tallentaaksesi",
     "highlightEvent": "Korostettu tapahtuma",
+    "highlightText": "Korostuksen teksti",
+    "highlightTextHelp": "Jätä tyhjäksi, niin näytetään oletusteksti \"Nätti tapahtuma!\".",
     "isDraft": "Luonnos",
     "isHighlighted": "Korostettu",
     "isNotDraft": "Julkaistu",
