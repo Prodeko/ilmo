@@ -3,7 +3,15 @@
  * fixed translation ("Nätti tapahtuma!"); `highlight_text` lets the event
  * creator write their own, per language. A null value, or a missing language,
  * falls back to the default translation in the client.
+ *
+ * The client shows the text input and the custom ribbon only while the
+ * `ribbon_text` flag is enabled. The database does not gate it: a stored text
+ * is kept while the flag is off.
  */
+
+insert into app_public.feature_flags (key, description)
+  values ('ribbon_text', E'Custom ribbon text for highlighted events.')
+  on conflict (key) do nothing;
 
 alter table app_public.events add column if not exists highlight_text translated_field;
 
