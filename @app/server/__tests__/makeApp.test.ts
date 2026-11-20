@@ -4,9 +4,32 @@ import { makeApp } from "../src/app"
 
 /*
  * makeApp with everything heavy (database pools, Redis, PostGraphile,
- * Next.js) stubbed; the health, same-origin, session and CSRF plugins are
- * the real ones, in makeApp's order.
+ * Next.js) stubbed; the health, same-origin, session, CSRF and external
+ * route plugins are the real ones, in makeApp's order. The external route
+ * registry holds one test module.
  */
+
+jest.mock("../src/externalRoutes", () => {
+  const actual = jest.requireActual("../src/externalRoutes")
+  const ok = async () => ({ ok: true })
+  return {
+    ...actual,
+    externalRoutes: [
+      {
+        name: "test webhook",
+        configured: () => true,
+        paths: [
+          { method: "POST", path: "/hooks/test", csrfExempt: true },
+          { method: "POST", path: "/hooks/test/protected" },
+        ],
+        register: async (app: FastifyInstance) => {
+          app.post("/hooks/test", ok)
+          app.post("/hooks/test/protected", ok)
+        },
+      },
+    ],
+  }
+})
 
 jest.mock("../src/middleware", () => {
   const actual = jest.requireActual("../src/middleware")
@@ -60,6 +83,27 @@ it("rejects a POST to /graphql without a CSRF token", async () => {
     url: "/graphql",
     headers: { "content-type": "application/json" },
     payload: { query: "{__typename}" },
+  })
+  expect(res.statusCode).toBe(403)
+})
+
+it("serves a registered external route without a CSRF token when it is exempt", async () => {
+  const res = await app.inject({
+    method: "POST",
+    url: "/hooks/test",
+    headers: { "content-type": "application/json" },
+    payload: {},
+  })
+  expect(res.statusCode).toBe(200)
+  expect(res.json()).toEqual({ ok: true })
+})
+
+it("rejects an external route that is not exempt without a CSRF token", async () => {
+  const res = await app.inject({
+    method: "POST",
+    url: "/hooks/test/protected",
+    headers: { "content-type": "application/json" },
+    payload: {},
   })
   expect(res.statusCode).toBe(403)
 })

@@ -1,6 +1,8 @@
 import { fastify, FastifyInstance, LightMyRequestResponse } from "fastify"
 
+import { ExternalRouteModule } from "../../src/externalRoutes"
 import installCSRFProtection from "../../src/middleware/installCSRFProtection"
+import installExternalRoutes from "../../src/middleware/installExternalRoutes"
 import installSameOrigin from "../../src/middleware/installSameOrigin"
 import installSession from "../../src/middleware/installSession"
 
@@ -152,5 +154,77 @@ describe("CSRF protection in development", () => {
   it("still rejects other POSTs without a token", async () => {
     const res = await postGraphql(app, {})
     expect(res.statusCode).toBe(403)
+  })
+})
+
+describe("CSRF exemptions from the external route registry", () => {
+  const ok = async () => ({ ok: true })
+
+  const webhook: ExternalRouteModule = {
+    name: "test webhook",
+    configured: () => true,
+    paths: [
+      { method: "POST", path: "/hooks/test", csrfExempt: true },
+      { method: "POST", path: "/hooks/test/protected" },
+    ],
+    register: async (app) => {
+      app.post("/hooks/test", ok)
+      app.post("/hooks/test/protected", ok)
+    },
+  }
+
+  const notConfigured: ExternalRouteModule = {
+    name: "not configured",
+    configured: () => false,
+    paths: [{ method: "POST", path: "/hooks/off", csrfExempt: true }],
+    register: async (app) => {
+      app.post("/hooks/off", ok)
+    },
+  }
+
+  let app: FastifyInstance
+
+  beforeEach(async () => {
+    const externalRoutes = [webhook, notConfigured]
+    app = fastify()
+    await app.register(installSameOrigin)
+    await app.register(installSession)
+    await app.register(installCSRFProtection, { externalRoutes })
+    await app.register(installExternalRoutes, { externalRoutes })
+    app.post("/graphql", ok)
+    // Not external routes: a path below an exempt one, and the path of a
+    // module that is not configured
+    app.post("/hooks/test/other", ok)
+    app.post("/hooks/off", ok)
+    await app.ready()
+  })
+
+  afterEach(async () => {
+    await app.close()
+  })
+
+  function postWithoutToken(url: string) {
+    return app.inject({
+      method: "POST",
+      url,
+      headers: { "content-type": "application/json" },
+      payload: {},
+    })
+  }
+
+  it.each(["/hooks/test", "/hooks/test?x=1"])(
+    "lets %s through without a token",
+    async (url) => {
+      expect((await postWithoutToken(url)).statusCode).toBe(200)
+    }
+  )
+
+  it.each([
+    "/graphql",
+    "/hooks/test/protected",
+    "/hooks/test/other",
+    "/hooks/off",
+  ])("still rejects %s without a token", async (url) => {
+    expect((await postWithoutToken(url)).statusCode).toBe(403)
   })
 })

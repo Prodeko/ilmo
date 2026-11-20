@@ -1,6 +1,7 @@
 import installCSRFProtection from "./installCSRFProtection"
 import installDatabasePools from "./installDatabasePools"
 import installErrorHandler from "./installErrorHandler"
+import installExternalRoutes from "./installExternalRoutes"
 import installFileUpload from "./installFileUpload"
 import installHealth from "./installHealth"
 import installHelmet from "./installHelmet"
@@ -18,6 +19,7 @@ export {
   installCSRFProtection,
   installDatabasePools,
   installErrorHandler,
+  installExternalRoutes,
   installFileUpload,
   installHealth,
   installHelmet,
