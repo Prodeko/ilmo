@@ -1,30 +1,151 @@
-import { Dispatch, SetStateAction } from "react"
+import { Dispatch, SetStateAction, useRef, useState } from "react"
 import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
-import { range, tailFormItemLayout } from "@app/lib"
-import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
-import dayjs from "dayjs"
+import { range } from "@app/lib"
+import { css } from "@emotion/css"
+import { DatePicker, Form, Input, InputRef, Select, Space, Switch } from "antd"
+import dayjs, { Dayjs } from "dayjs"
 
-import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
+import { Editor, FileUpload, useTranslation } from "../."
 
 import { FormValues } from "."
 
+import type { RangePickerProps } from "antd/es/date-picker"
 import type { UploadFile } from "antd/lib/upload/interface"
 
 const { Option } = Select
 const { Group } = Input
 const { RangePicker } = DatePicker
 
+// Typing a time can store a half-filled range, so require both ends
+const bothEndsSet = (_: unknown, value?: Array<Dayjs | null>) =>
+  value?.[0] && value?.[1] ? Promise.resolve() : Promise.reject()
+
+const timeUnits = ["hour", "minute", "second"] as const
+// Hide the time scroll columns and put the time boxes on the OK button's row
+const timePopup = css`
+  .ant-picker-time-panel {
+    display: none;
+  }
+  && .ant-picker-footer {
+    display: flex;
+    align-items: center;
+  }
+  && .ant-picker-footer-extra {
+    flex: 1;
+    border-bottom: none;
+  }
+`
+
+// RangePicker whose time is typed into HH : mm : ss boxes below the calendar
+// instead of picked from scroll columns
+const TimeRangePicker: React.FC<RangePickerProps> = ({
+  value,
+  onChange,
+  ...props
+}) => {
+  const [active, setActive] = useState(0)
+  // Dates picked in the open popup before OK is pressed
+  const [pending, setPending] = useState<RangePickerProps["value"]>(null)
+  // Digits typed so far in the focused box, shown unpadded while typing
+  const [draft, setDraft] = useState<{ box: number; text: string } | null>(null)
+  const boxes = useRef<Array<InputRef | null>>([])
+  const current = pending ?? value
+  const date = current?.[active]
+
+  function typeDigits(i: number, input: string) {
+    if (!date) return
+    const unit = timeUnits[i]
+    const text = input.replace(/\D/g, "").slice(0, 2)
+    setDraft({ box: i, text })
+    if (!text) return
+
+    const max = unit === "hour" ? 23 : 59
+    const next = [...(current ?? [null, null])] as [Dayjs | null, Dayjs | null]
+    next[active] = date[unit](Math.min(Number(text), max))
+    setPending(next)
+    onChange?.(next, ["", ""])
+
+    // Two digits fill the box: continue with the next one
+    if (text.length === 2 && i < timeUnits.length - 1) focusBox(i + 1)
+  }
+
+  // Deferred so the boxes are enabled before they get focus
+  function focusBox(i: number) {
+    setTimeout(() => boxes.current[i]?.focus())
+  }
+
+  return (
+    <RangePicker
+      {...props}
+      classNames={{ popup: { root: timePopup } }}
+      order={false}
+      renderExtraFooter={() => (
+        <Space size={4}>
+          {timeUnits.map((unit, i) => (
+            <Input
+              key={unit}
+              ref={(el) => {
+                boxes.current[i] = el
+              }}
+              data-cy={`eventform-input-time-${unit}`}
+              disabled={!date}
+              inputMode="numeric"
+              maxLength={2}
+              size="small"
+              style={{ width: 40, textAlign: "center" }}
+              value={
+                draft?.box === i
+                  ? draft.text
+                  : date
+                    ? String(date[unit]()).padStart(2, "0")
+                    : ""
+              }
+              onBlur={() => setDraft(null)}
+              onChange={(e) => typeDigits(i, e.target.value)}
+              onFocus={(e) => {
+                setDraft(null)
+                e.target.select()
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight" && i < timeUnits.length - 1) {
+                  e.preventDefault()
+                  focusBox(i + 1)
+                } else if (e.key === "ArrowLeft" && i > 0) {
+                  e.preventDefault()
+                  focusBox(i - 1)
+                }
+              }}
+            />
+          ))}
+        </Space>
+      )}
+      value={value}
+      onCalendarChange={(dates, _, info) => {
+        const changed = info.range === "end" ? 1 : 0
+        let next = dates
+        // A start moved past the end clears the end (order={false} keeps
+        // the picker from swapping them instead)
+        if (changed === 0 && dates?.[0] && dates[1]?.isBefore(dates[0])) {
+          next = [dates[0], null]
+          onChange?.(next, ["", ""])
+        }
+        setPending(next)
+        // A date was picked: continue with its hours
+        if (next?.[changed]) focusBox(0)
+      }}
+      onChange={onChange}
+      onFocus={(_, info) => setActive(info.range === "end" ? 1 : 0)}
+      onOpenChange={(open) => !open && setPending(null)}
+    />
+  )
+}
+
 interface MainTabProps {
   type: "update" | "create"
   formValues: FormValues
   data: CreateEventPageQuery | UpdateEventPageQuery
-  formSubmitting: boolean
   selectedLanguages: string[]
   setSelectedLanguages: Dispatch<SetStateAction<string[]>>
-  isDraft: boolean
-  setIsDraft: Dispatch<SetStateAction<boolean>>
-  tabErrors: string[] | null
-  formError: any
   supportedLanguages: Array<string | null | undefined> | null | undefined
 }
 
@@ -35,11 +156,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     formValues,
     selectedLanguages,
     setSelectedLanguages,
-    isDraft,
-    setIsDraft,
-    formError,
-    tabErrors,
-    formSubmitting,
     supportedLanguages,
   } = props
   const { t, lang } = useTranslation("events")
@@ -227,13 +343,13 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
         name="eventTime"
         rules={[
           {
-            type: "array",
             required: true,
             message: t("forms.rules.event.provideEventTime"),
+            validator: bothEndsSet,
           },
         ]}
       >
-        <RangePicker
+        <TimeRangePicker
           data-cy="eventform-input-event-time"
           format="YYYY-MM-DD HH:mm:ss"
           showTime
@@ -244,17 +360,21 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
         name="registrationTime"
         rules={[
           {
-            type: "array",
             required: true,
             message: t("forms.rules.event.provideRegistrationTime"),
+            validator: bothEndsSet,
           },
         ]}
       >
-        <RangePicker
+        <TimeRangePicker
           data-cy="eventform-input-registration-time"
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,
+            defaultOpenValue: [
+              dayjs().hour(12).minute(0).second(0),
+              dayjs().hour(23).minute(59).second(59),
+            ],
           }}
         />
       </Form.Item>
@@ -278,48 +398,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           defaultFileList={getUploadDefaultFileList()}
           maxCount={1}
         />
-      </Form.Item>
-      <Form.Item
-        label={t("forms.saveAsDraft")}
-        name="isDraft"
-        valuePropName="checked"
-      >
-        <Switch
-          data-cy="eventform-switch-save-as-draft"
-          defaultChecked={isDraft}
-          onChange={(checked) => setIsDraft(checked)}
-        />
-      </Form.Item>
-      {formError && (
-        <Form.Item {...tailFormItemLayout}>
-          <ErrorAlert
-            error={formError}
-            message={
-              type === "create"
-                ? t("errors.eventCreateFailed")
-                : t("errors.eventUpdateFailed")
-            }
-          />
-        </Form.Item>
-      )}
-      {tabErrors ? (
-        <Form.Item label={t("errors.formTabErrors")}>
-          {tabErrors?.map((e, i) => (
-            <Row key={i}>
-              <span style={{ color: "red" }}>{e}</span>
-            </Row>
-          ))}
-        </Form.Item>
-      ) : null}
-      <Form.Item {...tailFormItemLayout}>
-        <Button
-          data-cy="eventform-button-submit"
-          disabled={selectedLanguages.length === 0 ? true : false}
-          htmlType="submit"
-          loading={formSubmitting}
-        >
-          {t(`common:${type}`)}
-        </Button>
       </Form.Item>
     </>
   )

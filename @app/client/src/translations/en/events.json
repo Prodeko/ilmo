@@ -11,7 +11,6 @@
     "eventCategoryCreationFailed": "Creating event category failed",
     "eventCreateFailed": "Creating event failed",
     "eventUpdateFailed": "Updating event failed",
-    "formTabErrors": "Other errors",
     "mustProvideEventQuota": "Must provide at least one quota for the event"
   },
   "eventName": "Event",
@@ -19,6 +18,7 @@
   "eventSignupNotOpen": "Event signup is not open",
   "forms": {
     "eventTime": "Event time",
+    "fillRequiredToSave": "Fill in all required fields to save",
     "highlightEvent": "Highlighted event",
     "isDraft": "Draft",
     "isHighlighted": "Highlighted",

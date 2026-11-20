@@ -11,7 +11,6 @@
     "eventCategoryCreationFailed": "Det gick inte att skapa händelsekategori",
     "eventCreateFailed": "Det gick inte att skapa händelse",
     "eventUpdateFailed": "Uppdateringen misslyckades",
-    "formTabErrors": "Andra fel",
     "mustProvideEventQuota": "Måste tillhandahålla minst en kvot för evenemanget"
   },
   "eventName": "Händelse",
@@ -19,6 +18,7 @@
   "eventSignupNotOpen": "Händelseregistreringen är inte öppen",
   "forms": {
     "eventTime": "Händelsetid",
+    "fillRequiredToSave": "Fyll i alla obligatoriska fält för att spara",
     "highlightEvent": "Markerad händelse",
     "isDraft": "Utkast",
     "isHighlighted": "Markerad",
