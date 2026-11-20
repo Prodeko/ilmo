@@ -143,8 +143,9 @@ jobs:
         run: pnpm build
 
       - name: Test
-        # --runInBand: debezium/postgres has a single replication slot,
-        # so parallel jest workers race on it.
+        # One test file at a time: debezium/postgres has a single replication
+        # slot, so parallel jest workers race on it. scripts/test.mjs runs the
+        # files in one worker that jest restarts to bound its memory.
         run: pnpm test --ci --runInBand
 
   docker:

@@ -141,8 +141,26 @@ async function main() {
       }
     )
   } else {
-    // Run once, so just run the tests
-    const argsWithoutDelayArg = cmdArgs.filter((arg) => arg !== "--delay")
-    spawnSync("jest", ["-i", ...argsWithoutDelayArg], opts)
+    // Run once, so just run the tests. The tests share one database and
+    // must run one file at a time. Jest's in-band mode (-i, --runInBand)
+    // keeps every file in this one process, whose heap grows with each file
+    // until Node runs out of memory, so run the files in a single worker
+    // instead: jest restarts it when it passes workerIdleMemoryLimit
+    // (jest.config.ts). Both flags are accepted and mean the same here. The
+    // worker's heap limit is raised above that threshold so that the file
+    // which crosses it can still finish.
+    const jestArgs = cmdArgs.filter(
+      (arg) => arg !== "--delay" && arg !== "-i" && arg !== "--runInBand"
+    )
+    spawnSync("jest", ["--maxWorkers=1", ...jestArgs], {
+      ...opts,
+      env: {
+        ...process.env,
+        npm_config_loglevel: "silent",
+        NODE_OPTIONS: [process.env.NODE_OPTIONS, "--max-old-space-size=4096"]
+          .filter(Boolean)
+          .join(" "),
+      },
+    })
   }
 }
