@@ -14,7 +14,10 @@ import {
   User,
 } from "../../__tests__/data"
 
-import { toggleRefreshMaterializedViewTrigger } from "./utils"
+import {
+  refreshRegistrationPositions,
+  toggleRegistrationPositionTriggers,
+} from "./utils"
 
 if (process.env.NODE_ENV !== "development") {
   console.error("This script should only be ran in development!")
@@ -120,11 +123,12 @@ async function main() {
   const pgPool = new Pool({ connectionString })
   const client = await pgPool.connect()
   try {
-    await toggleRefreshMaterializedViewTrigger(client, "disable")
+    await toggleRegistrationPositionTriggers(client, "disable")
     await client.query("begin")
     await generateData(client)
     await client.query("commit")
-    await toggleRefreshMaterializedViewTrigger(client, "enable")
+    await toggleRegistrationPositionTriggers(client, "enable")
+    await refreshRegistrationPositions(client)
   } catch (e) {
     if (typeof e.code === "string" && e.code.match(/^[0-9A-Z]{5}$/)) {
       console.error([e.message, e.code, e.detail, e.hint, e.where].join("\n"))
