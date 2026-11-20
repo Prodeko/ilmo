@@ -26,6 +26,7 @@ import { CombinedError, UseQueryState } from "urql"
 
 import headerLogo from "../assets/header-logo.png"
 
+import { FeatureFlagsProvider } from "./Feature"
 import {
   ErrorResult,
   H3,
@@ -203,164 +204,166 @@ export function SharedLayout({
   })
 
   return (
-    <Layout>
-      <Header
-        style={{
-          boxShadow: "0 2px 8px #f0f1f2",
-          zIndex: 1,
-          overflow: "hidden",
-        }}
-      >
-        <Head>
-          <title>{title ? `${title} — ${projectName}` : projectName}</title>
-        </Head>
-        <Row wrap={false}>
-          <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
-            <Link href="/">
-              <Image
-                alt="Prodeko"
-                height={50}
-                placeholder="blur"
-                src={headerLogo}
-                width={50}
-                priority
-              />
-            </Link>
-          </Col>
-          {!isMobile ? (
-            <Col span={8}>
-              <H3
-                data-cy="layout-header-title"
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  textAlign: "center",
-                  lineHeight: "64px",
-                }}
-              >
-                {titleHref ? (
-                  <Link
-                    as={titleHrefAs}
-                    data-cy="layout-header-titlelink"
-                    href={titleHref}
-                  >
-                    {title}
-                  </Link>
-                ) : (
-                  title
-                )}
-              </H3>
+    <FeatureFlagsProvider data={data}>
+      <Layout>
+        <Header
+          style={{
+            boxShadow: "0 2px 8px #f0f1f2",
+            zIndex: 1,
+            overflow: "hidden",
+          }}
+        >
+          <Head>
+            <title>{title ? `${title} — ${projectName}` : projectName}</title>
+          </Head>
+          <Row wrap={false}>
+            <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
+              <Link href="/">
+                <Image
+                  alt="Prodeko"
+                  height={50}
+                  placeholder="blur"
+                  src={headerLogo}
+                  width={50}
+                  priority
+                />
+              </Link>
             </Col>
-          ) : null}
-          <Col sm={8} style={{ textAlign: "right" }} xs={12}>
-            <Space size="large">
-              <LocaleSelect />
-              {data && data.currentUser ? (
-                <Dropdown
-                  menu={{
-                    items: [
-                      ...(data.currentUser.isAdmin
-                        ? [
-                            {
-                              key: "admin",
-                              label: (
-                                <Link
-                                  data-cy="layout-link-admin"
-                                  href="/admin/event/list"
-                                >
-                                  {t("admin")}
-                                </Link>
-                              ),
-                            },
-                          ]
-                        : []),
-                      {
-                        key: "settings",
-                        label: (
-                          <Link
-                            data-cy="layout-link-settings"
-                            href="/settings/profile"
-                          >
-                            <Warn okay={data.currentUser.isVerified}>
-                              {t("settings")}
-                            </Warn>
-                          </Link>
-                        ),
-                      },
-                      {
-                        key: "logout",
-                        label: <a onClick={handleLogout}>{t("logout")}</a>,
-                      },
-                    ],
+            {!isMobile ? (
+              <Col span={8}>
+                <H3
+                  data-cy="layout-header-title"
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    textAlign: "center",
+                    lineHeight: "64px",
                   }}
-                  trigger={["click"]}
                 >
-                  <span
-                    data-cy="layout-dropdown-user"
-                    style={{ whiteSpace: "nowrap", marginRight: 12 }}
-                  >
-                    <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
-                    <Warn okay={data.currentUser.isVerified}>
-                      <span style={{ marginLeft: 8, marginRight: 8 }}>
-                        {data.currentUser.name}
-                      </span>
-                      <DownOutlined
-                        style={{ fontSize: 10, verticalAlign: "baseline" }}
-                      />
-                    </Warn>
-                  </span>
-                </Dropdown>
-              ) : forbidsLoggedIn ? null : (
-                <Link
-                  data-cy="header-login-button"
-                  href={`/login?next=${encodeURIComponent(currentUrl)}`}
-                >
-                  {t("signin")}
-                </Link>
-              )}
-            </Space>
-          </Col>
-        </Row>
-      </Header>
-      <Layout hasSider={!!sider}>
-        {sider ? sider : null}
-        <Content style={{ minHeight: contentMinHeight }}>
-          {renderChildren({
-            error,
-            stale,
-            fetching,
-            currentUser: data?.currentUser,
-          })}
-        </Content>
-      </Layout>
-
-      {displayFooter && (
-        <Footer>
-          <StandardWidth>
-            <Row justify="space-between">
-              <Col span={12}>
-                <Text>
-                  &copy; {new Date().getFullYear()} {orgName}{" "}
-                </Text>
+                  {titleHref ? (
+                    <Link
+                      as={titleHrefAs}
+                      data-cy="layout-header-titlelink"
+                      href={titleHref}
+                    >
+                      {title}
+                    </Link>
+                  ) : (
+                    title
+                  )}
+                </H3>
               </Col>
-              {process.env.PRIVACY_URL && (
-                <Col span={12} style={{ textAlign: "right" }}>
-                  <Text>
-                    <span>
-                      <a
-                        href={process.env.PRIVACY_URL}
-                        style={{ textDecoration: "underline" }}
-                      >
-                        {t("privacyPolicy")}
-                      </a>
+            ) : null}
+            <Col sm={8} style={{ textAlign: "right" }} xs={12}>
+              <Space size="large">
+                <LocaleSelect />
+                {data && data.currentUser ? (
+                  <Dropdown
+                    menu={{
+                      items: [
+                        ...(data.currentUser.isAdmin
+                          ? [
+                              {
+                                key: "admin",
+                                label: (
+                                  <Link
+                                    data-cy="layout-link-admin"
+                                    href="/admin/event/list"
+                                  >
+                                    {t("admin")}
+                                  </Link>
+                                ),
+                              },
+                            ]
+                          : []),
+                        {
+                          key: "settings",
+                          label: (
+                            <Link
+                              data-cy="layout-link-settings"
+                              href="/settings/profile"
+                            >
+                              <Warn okay={data.currentUser.isVerified}>
+                                {t("settings")}
+                              </Warn>
+                            </Link>
+                          ),
+                        },
+                        {
+                          key: "logout",
+                          label: <a onClick={handleLogout}>{t("logout")}</a>,
+                        },
+                      ],
+                    }}
+                    trigger={["click"]}
+                  >
+                    <span
+                      data-cy="layout-dropdown-user"
+                      style={{ whiteSpace: "nowrap", marginRight: 12 }}
+                    >
+                      <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
+                      <Warn okay={data.currentUser.isVerified}>
+                        <span style={{ marginLeft: 8, marginRight: 8 }}>
+                          {data.currentUser.name}
+                        </span>
+                        <DownOutlined
+                          style={{ fontSize: 10, verticalAlign: "baseline" }}
+                        />
+                      </Warn>
                     </span>
+                  </Dropdown>
+                ) : forbidsLoggedIn ? null : (
+                  <Link
+                    data-cy="header-login-button"
+                    href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                  >
+                    {t("signin")}
+                  </Link>
+                )}
+              </Space>
+            </Col>
+          </Row>
+        </Header>
+        <Layout hasSider={!!sider}>
+          {sider ? sider : null}
+          <Content style={{ minHeight: contentMinHeight }}>
+            {renderChildren({
+              error,
+              stale,
+              fetching,
+              currentUser: data?.currentUser,
+            })}
+          </Content>
+        </Layout>
+
+        {displayFooter && (
+          <Footer>
+            <StandardWidth>
+              <Row justify="space-between">
+                <Col span={12}>
+                  <Text>
+                    &copy; {new Date().getFullYear()} {orgName}{" "}
                   </Text>
                 </Col>
-              )}
-            </Row>
-          </StandardWidth>
-        </Footer>
-      )}
-    </Layout>
+                {process.env.PRIVACY_URL && (
+                  <Col span={12} style={{ textAlign: "right" }}>
+                    <Text>
+                      <span>
+                        <a
+                          href={process.env.PRIVACY_URL}
+                          style={{ textDecoration: "underline" }}
+                        >
+                          {t("privacyPolicy")}
+                        </a>
+                      </span>
+                    </Text>
+                  </Col>
+                )}
+              </Row>
+            </StandardWidth>
+          </Footer>
+        )}
+      </Layout>
+    </FeatureFlagsProvider>
   )
 }

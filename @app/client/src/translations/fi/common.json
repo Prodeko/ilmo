@@ -15,6 +15,12 @@
   "email": "Sähköposti",
   "emailSwitchLabel": "Näytä html-versio",
   "error": "Virhe",
+  "featurePreview": {
+    "adminHint": "Ei vielä julkaistu. Pyydä kehittäjää julkaisemaan se.",
+    "developerHint": "Muut käyttäjät eivät vielä näe tätä.",
+    "manage": "Hallitse Ominaisuudet-sivulla",
+    "tag": "Esikatselu: näkyy vain ylläpitäjille"
+  },
   "head": {
     "description": "Prodeko ilmo",
     "title": "Prodeko ilmo"

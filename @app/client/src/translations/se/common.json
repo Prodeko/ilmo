@@ -15,6 +15,12 @@
   "email": "E-post",
   "emailSwitchLabel": "Visa html-version",
   "error": "Fel",
+  "featurePreview": {
+    "adminHint": "Inte publicerad ännu. Be en utvecklare att publicera den.",
+    "developerHint": "Andra användare ser inte detta ännu.",
+    "manage": "Hantera på sidan Funktioner",
+    "tag": "Förhandsvisning: syns bara för administratörer"
+  },
   "head": {
     "description": "Prodeko händelseregistrering",
     "title": "Prodeko event registrering"
