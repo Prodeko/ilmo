@@ -5,6 +5,7 @@ import {
   EventQuotasCard,
   EventRegistrationsTables,
   Feature,
+  LoadingPadded,
   PageHeader,
   Redirect,
   SharedLayout,
@@ -59,9 +60,14 @@ const EventPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title={title}>
-      {loadingElement || (
-        <EventPageInner currentUser={query.data.currentUser} event={event} />
-      )}
+      {/* The page also needs the shared query (the viewer and the feature
+          flags), which can finish after the event query */}
+      {loadingElement ||
+        (query.data ? (
+          <EventPageInner currentUser={query.data.currentUser} event={event} />
+        ) : (
+          <LoadingPadded size="huge" />
+        ))}
     </SharedLayout>
   )
 }
