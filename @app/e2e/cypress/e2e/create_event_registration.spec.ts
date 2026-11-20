@@ -72,7 +72,10 @@ context("Create event registration", () => {
             expect(calendar).to.contain(`UID:${event.id}@`)
             expect(calendar).to.contain("DTSTART:")
             expect(calendar).to.contain("DTEND:")
-            expect(calendar).to.contain(`/event/${event.slug}`)
+            // Long lines are folded at 75 octets (RFC 5545), so a long
+            // event URL can span two lines
+            const unfolded = calendar.replace(/\r\n[ \t]/g, "")
+            expect(unfolded).to.contain(`/event/${event.slug}`)
             expect(calendar).not.to.contain("etunimi.sukunimi@prodeko.org")
           })
         })

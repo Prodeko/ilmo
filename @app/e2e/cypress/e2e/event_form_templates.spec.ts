@@ -39,7 +39,9 @@ context("Event form templates, preview and day click", () => {
         existingUser: true,
       })
       cy.visit(Cypress.env("ROOT_URL") + "/admin/event/create")
-      cy.get(".ant-tabs-tab").as("tabs")
+      // The form renders before the page query brings the flags; the
+      // preview tab shows that they have arrived
+      cy.get(".ant-tabs-tab").should("have.length", 5).as("tabs")
 
       // A day click fills in the whole range and closes the calendar
       const month = dayjs()
