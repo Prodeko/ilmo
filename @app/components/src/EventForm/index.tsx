@@ -12,9 +12,8 @@ import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
-import { ButtonLink, useTranslation } from "../."
+import { ButtonLink, useFeature, useTranslation } from "../."
 import { useCelebrate } from "../celebrate"
-import { PAYMENTS_FEATURE_ENABLED } from "../featureSwitches"
 
 import { EmailTab } from "./EmailTab"
 import { EventFormFooter } from "./EventFormFooter"
@@ -62,7 +61,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
   const { supportedLanguages } = data || {}
-  const paymentsEnabled = PAYMENTS_FEATURE_ENABLED
+  const paymentsEnabled = useFeature("payments")
   const languagesLower = useMemo(
     () => lowercased(supportedLanguages),
     [supportedLanguages]
@@ -207,8 +206,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     [TAB.Questions]: t("admin:events.tabs.questions"),
   }
 
-  // Registration form preview tab: the feature's only switch
-  const formPreview = true
+  // Registration form preview tab
+  const showPreviewTab = useFeature("form_preview")
 
   const mainTabProps = {
     type,
@@ -276,7 +275,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               />
             ),
           },
-          ...(formPreview
+          ...(showPreviewTab
             ? [
                 {
                   key: TAB.Preview,

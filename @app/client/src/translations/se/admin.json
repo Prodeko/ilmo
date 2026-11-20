@@ -86,6 +86,55 @@
     "dismiss": "Stäng",
     "empty": "Inga funktioner ännu. Funktioner visas här när de läggs till i appen, och var och en är först avslagen.",
     "flags": {
+      "calendar_invites": {
+        "name": "Kalenderinbjudningar",
+        "turnOn": [
+          "Registreringens bekräftelsemejl innehåller en kalenderinbjudan.",
+          "Evenemangssidan visar kalenderlänkar efter registreringen."
+        ],
+        "stops": [
+          "Nya bekräftelsemejl har ingen kalenderinbjudan och kalenderlänkarna döljs."
+        ],
+        "keeps": [
+          "Redan skickade inbjudningar finns kvar i mottagarnas kalendrar."
+        ]
+      },
+      "confetti": {
+        "name": "Konfetti",
+        "turnOn": [
+          "Konfetti visas efter att ett evenemang eller en registrering har skapats, utom för användare som föredrar mindre rörelse."
+        ],
+        "stops": [
+          "Ingen mer konfetti."
+        ],
+        "keeps": [
+          "Att skapa evenemang och registreringar fungerar som förut."
+        ]
+      },
+      "event_templates": {
+        "name": "Evenemangsmallar",
+        "turnOn": [
+          "Evenemangsformulärets flikar för kvoter och frågor erbjuder mallar och färdiga kvoter och frågor."
+        ],
+        "stops": [
+          "Mallvalen döljs och flikarna visar bara listorna."
+        ],
+        "keeps": [
+          "Kvoter och frågor som lagts till från en mall finns kvar i sina evenemang."
+        ]
+      },
+      "form_preview": {
+        "name": "Förhandsvisning av registreringsformuläret",
+        "turnOn": [
+          "Evenemangsformuläret får fliken Förhandsvisning som visar registreringsformuläret så som de som registrerar sig ser det."
+        ],
+        "stops": [
+          "Fliken Förhandsvisning döljs."
+        ],
+        "keeps": [
+          "Ingenting skickas någonsin från förhandsvisningen, så inga uppgifter ändras."
+        ]
+      },
       "keycloak_names": {
         "name": "Namn från Keycloak",
         "turnOn": [
@@ -98,6 +147,34 @@
         "keeps": [
           "För- och efternamn sparas fortfarande vid varje Keycloak-inloggning.",
           "Redan gjorda registreringar behåller sina namn."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP-server",
+        "turnOn": [
+          "MCP-servern svarar på /mcp: AI-assistenter som loggat in via Keycloak kan bläddra bland evenemang och registrera sig, och administratörer kan skapa utkast till evenemang."
+        ],
+        "stops": [
+          "/mcp och dess OAuth-sökvägar svarar 404."
+        ],
+        "keeps": [
+          "Evenemang och registreringar som gjorts via MCP behålls."
+        ]
+      },
+      "payments": {
+        "name": "Betalningar",
+        "turnOn": [
+          "Administratörer kan prissätta kvoter och välja när de som registrerar sig betalar.",
+          "De som registrerar sig i betalda kvoter betalar via Stripe Checkout, och betalningsmejl och påminnelser skickas.",
+          "Administratörer får betalningsverktygen för sina evenemang."
+        ],
+        "stops": [
+          "Priser och betalningsinställningar döljs och kan inte anges, och betalning blockeras.",
+          "Inga nya betalningsmejl eller påminnelser skickas."
+        ],
+        "keeps": [
+          "Redan gjorda betalningar förblir registrerade och visas för de som registrerat sig.",
+          "Återbetalningar och Stripes betalningsaviseringar fortsätter att fungera."
         ]
       },
       "prefill_answers": {
@@ -114,6 +191,60 @@
         "keeps": [
           "Frågorna behåller sin Telegram- eller specialdietmarkering och fungerar som vanliga textfrågor.",
           "Användare kan fortfarande radera de anmälningsuppgifter de har sparat."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Registreringspåminnelser",
+        "turnOn": [
+          "Evenemangssidan erbjuder en påminnelse innan registreringen öppnar.",
+          "Inställningarna får en sida med användarens påminnelser och påminnelseinställningar.",
+          "Påminnelsemejl skickas innan registreringen öppnar."
+        ],
+        "stops": [
+          "Påminnelseknappen, påminnelsesidan och dess menylänkar döljs.",
+          "Inga påminnelser skickas. En påminnelse som infaller medan funktionen är av skickas inte senare."
+        ],
+        "keeps": [
+          "Sparade påminnelser och påminnelseinställningar behålls."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Bandtext",
+        "turnOn": [
+          "Evenemangsformuläret visar fält för bandtext för framhävda evenemang.",
+          "Evenemangskorten visar den egna bandtexten."
+        ],
+        "stops": [
+          "Evenemangskorten visar standardtexten och evenemangsformuläret döljer fälten."
+        ],
+        "keeps": [
+          "Sparade bandtexter behålls, även när ett evenemang sparas."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram-påminnelser",
+        "turnOn": [
+          "Användare kan koppla ett Telegram-konto och välja Telegram för sina påminnelser.",
+          "Påminnelser skickas också via Telegram-boten."
+        ],
+        "stops": [
+          "Telegram kan inte längre kopplas eller väljas, och inga påminnelser skickas via Telegram."
+        ],
+        "keeps": [
+          "Kopplade konton förblir kopplade."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Inskrivna tider",
+        "turnOn": [
+          "Evenemangsformuläret använder fält för timmar, minuter och sekunder för evenemangets och registreringens tider.",
+          "Ett klick på en dag i kalendern fyller i standardtider."
+        ],
+        "stops": [
+          "Evenemangsformuläret går tillbaka till rullande tidskolumner."
+        ],
+        "keeps": [
+          "Sparade evenemangs- och registreringstider förblir oförändrade."
         ]
       }
     },

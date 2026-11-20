@@ -20,11 +20,9 @@ import {
   Typography,
 } from "antd"
 
-import { useTranslation } from "../."
+import { Feature, useFeature, useTranslation } from "../."
 import { Draggable } from "../Draggable"
-import { PAYMENTS_FEATURE_ENABLED } from "../featureSwitches"
 
-import { EventTemplates } from "./fields/EventTemplates"
 import { QuotaPriceField, QuotaPriceWarning } from "./fields/QuotaPriceField"
 import { QuotaTemplateFields } from "./fields/QuotaTemplateFields"
 
@@ -44,10 +42,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
     const form = Form.useFormInstance()
     const paymentMode = Form.useWatch("paymentMode", form)
     // Prices only mean something when the event collects payments
+    const paymentsEnabled = useFeature("payments")
     const showPrices =
-      PAYMENTS_FEATURE_ENABLED &&
-      !!paymentMode &&
-      paymentMode !== PaymentMode.None
+      paymentsEnabled && !!paymentMode && paymentMode !== PaymentMode.None
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
@@ -55,9 +52,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
 
     return (
       <DndProvider backend={HTML5Backend}>
-        <EventTemplates>
+        <Feature name="event_templates">
           <QuotaTemplateFields selectedLanguages={selectedLanguages} />
-        </EventTemplates>
+        </Feature>
         <Form.List
           name="quotas"
           rules={[
@@ -215,10 +212,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
         </Space>
         <Typography.Paragraph style={{ marginTop: 8 }} type="secondary">
           {t("overflowQuotaInfo")}
-          <EventTemplates>
-            {" "}
-            {t("templates.quotas.openQuotaHint")}
-          </EventTemplates>
+          <Feature name="event_templates">
+            {` ${t("templates.quotas.openQuotaHint")}`}
+          </Feature>
         </Typography.Paragraph>
         {showPrices && (
           <Space

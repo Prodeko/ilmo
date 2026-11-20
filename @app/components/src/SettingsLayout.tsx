@@ -19,15 +19,10 @@ import {
   SharedLayoutChildProps,
   SharedLayoutProps,
 } from "./SharedLayout"
-import {
-  Redirect,
-  REGISTRATION_REMINDERS_ENABLED,
-  SettingsSideMenu,
-  useIsMobile,
-  useTranslation,
-} from "."
+import { Redirect, SettingsSideMenu, useIsMobile, useTranslation } from "."
 
 import type { User } from "@app/graphql"
+import type { FeatureKey } from "@app/lib"
 import type { TextProps } from "antd/lib/typography/Text"
 
 const { Sider } = Layout
@@ -37,8 +32,11 @@ interface SettingsPageSpec {
   cy: string
   warnIfUnverified?: boolean
   titleProps?: TextProps
-  /** Left out of the menu; the page itself decides what it shows. */
-  hidden?: boolean
+  /**
+   * Left out of the menu while this feature is off; the page itself decides
+   * what it shows.
+   */
+  feature?: FeatureKey
 }
 
 export const pages = (t: Translate) => ({
@@ -46,7 +44,7 @@ export const pages = (t: Translate) => ({
     title: t("titles.reminders"),
     icon: <BellOutlined />,
     cy: "settingslayout-link-reminders",
-    hidden: !REGISTRATION_REMINDERS_ENABLED,
+    feature: "registration_reminders",
   } as SettingsPageSpec,
   "/settings/profile": {
     title: t("titles.index"),

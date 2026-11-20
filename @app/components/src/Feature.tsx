@@ -36,6 +36,20 @@ const noFeatures: FeatureFlagsContextValue = {
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextValue>(noFeatures)
 
+/**
+ * Whether a feature is enabled for the viewer, read straight from a query
+ * that includes the shared layout fragment. For the few components that
+ * render SharedLayout themselves and so sit outside its provider; everything
+ * inside the layout uses useFeature. Off while loading.
+ */
+export const featureEnabledIn = (
+  data:
+    | Pick<SharedLayout_QueryFragment, "enabledFeaturesList">
+    | null
+    | undefined,
+  key: FeatureKey
+): boolean => Boolean(data?.enabledFeaturesList?.includes(key))
+
 /** True when the user is an admin with the developer role. */
 export const isDeveloperUser = (
   user: { isAdmin: boolean; isDeveloper: boolean } | null | undefined

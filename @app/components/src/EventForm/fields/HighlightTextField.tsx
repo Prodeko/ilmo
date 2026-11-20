@@ -1,7 +1,6 @@
 import { Form, Input } from "antd"
 
-import { useTranslation } from "../.."
-import { useRibbonText } from "../../ribbonText"
+import { useFeature, useTranslation } from "../.."
 
 const { Group } = Input
 
@@ -22,10 +21,10 @@ export const HighlightTextField: React.FC<HighlightTextFieldProps> = ({
   selectedLanguages,
 }) => {
   const { t } = useTranslation("events")
-  const ribbonText = useRibbonText()
+  const customRibbonText = useFeature("ribbon_text")
   const isHighlighted = Form.useWatch("isHighlighted")
 
-  if (!ribbonText) {
+  if (!customRibbonText) {
     return (
       <Form.Item name="highlightText" hidden noStyle>
         <KeepValue />

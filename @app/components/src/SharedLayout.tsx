@@ -26,13 +26,16 @@ import { CombinedError, UseQueryState } from "urql"
 
 import headerLogo from "../assets/header-logo.png"
 
-import { FeatureFlagsProvider, isDeveloperUser } from "./Feature"
+import {
+  featureEnabledIn,
+  FeatureFlagsProvider,
+  isDeveloperUser,
+} from "./Feature"
 import {
   ErrorResult,
   H3,
   LocaleSelect,
   Redirect,
-  REGISTRATION_REMINDERS_ENABLED,
   StandardWidth,
   useIlmoContext,
   useIsMobile,
@@ -195,6 +198,9 @@ export function SharedLayout({
   }
 
   const { data, fetching, error, stale } = query
+  // This layout provides the flags to its children, so it reads its own
+  // from the same query instead of useFeature
+  const registrationReminders = featureEnabledIn(data, "registration_reminders")
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
@@ -295,7 +301,7 @@ export function SharedLayout({
                             </Link>
                           ),
                         },
-                        ...(REGISTRATION_REMINDERS_ENABLED
+                        ...(registrationReminders
                           ? [
                               {
                                 key: "reminders",

@@ -4,8 +4,7 @@ import { range } from "@app/lib"
 import { DatePicker, Form, Input, Select, Switch } from "antd"
 import dayjs, { Dayjs } from "dayjs"
 
-import { Editor, FileUpload, useTranslation } from "../."
-import { PAYMENTS_FEATURE_ENABLED } from "../featureSwitches"
+import { Editor, Feature, FileUpload, useFeature, useTranslation } from "../."
 
 import { HighlightTextField } from "./fields/HighlightTextField"
 import { PaymentSettingsFields } from "./fields/PaymentSettingsFields"
@@ -49,8 +48,8 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
 
   // The control for the event and registration times: typed HH : mm : ss
   // boxes (TimeRangePicker) or the time scroll columns (RangePicker)
-  const typedTimeInput = true
-  const DateTimeRangePicker = typedTimeInput
+  const typedTimes = useFeature("typed_time_input")
+  const DateTimeRangePicker = typedTimes
     ? TimeRangePicker
     : ScrollTimeRangePicker
 
@@ -296,7 +295,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           maxCount={1}
         />
       </Form.Item>
-      {PAYMENTS_FEATURE_ENABLED && (
+      <Feature name="payments">
         <PaymentSettingsFields
           hasRegistrations={
             type === "update" &&
@@ -310,7 +309,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
               : undefined
           }
         />
-      )}
+      </Feature>
     </>
   )
 }

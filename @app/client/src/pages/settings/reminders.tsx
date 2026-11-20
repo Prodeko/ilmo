@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
 import {
   ErrorAlert,
+  featureEnabledIn,
   FourOhFour,
   Link,
   PageHeader,
-  REGISTRATION_REMINDERS_ENABLED,
   SettingsLayout,
-  TELEGRAM_REMINDERS_ENABLED,
   useTranslation,
 } from "@app/components"
 import {
@@ -21,13 +20,6 @@ import { ReminderPreferences } from "../../components/ReminderPreferences"
 import { TelegramConnection } from "../../components/TelegramConnection"
 
 export default function RemindersPage() {
-  if (!REGISTRATION_REMINDERS_ENABLED) {
-    return <FourOhFour />
-  }
-  return <Reminders />
-}
-
-function Reminders() {
   const { t, lang } = useTranslation("reminders")
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -46,9 +38,13 @@ function Reminders() {
   const language = lang === "en" ? "en" : "fi"
   // Without a bot username the page offers no way to choose or link Telegram;
   // a linked account can still be disconnected.
-  const botUsername = TELEGRAM_REMINDERS_ENABLED
+  const botUsername = featureEnabledIn(query.data, "telegram_reminders")
     ? query.data?.telegramBotUsername
     : null
+  // The page renders the layout, so it reads the flags from its own query
+  if (query.data && !featureEnabledIn(query.data, "registration_reminders")) {
+    return <FourOhFour />
+  }
   return (
     <SettingsLayout href="/settings/reminders" query={query}>
       <PageHeader title={t("myReminders")} />

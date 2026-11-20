@@ -43,6 +43,20 @@ export const FEATURES = {
     description:
       "Prefill the registration form with the first and last name from Keycloak instead of splitting the display name.",
   },
+  typed_time_input: {
+    description:
+      "Typed hour, minute and second boxes for the event and registration times in the event form, and default times when a day is clicked.",
+  },
+  event_templates: {
+    description:
+      "Event templates in the event form: template selectors and ready-made quotas and questions.",
+  },
+  form_preview: {
+    description: "Registration form preview tab in the event form.",
+  },
+  confetti: {
+    description: "Confetti after an event or a registration has been created.",
+  },
   ribbon_text: {
     description: "Custom ribbon text for highlighted events.",
   },

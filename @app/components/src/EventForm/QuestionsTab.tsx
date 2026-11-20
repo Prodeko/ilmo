@@ -32,7 +32,6 @@ import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
 
-import { EventTemplates } from "./fields/EventTemplates"
 import {
   KeepQuestionPrefill,
   QuestionPrefillSelect,
@@ -317,12 +316,12 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
     return (
       <>
-        <EventTemplates>
+        <Feature name="event_templates">
           <QuestionTemplateFields
             selectedLanguages={selectedLanguages}
             onChange={forceUpdate}
           />
-        </EventTemplates>
+        </Feature>
         <Typography.Paragraph>
           <Trans
             components={{ b: <strong /> }}

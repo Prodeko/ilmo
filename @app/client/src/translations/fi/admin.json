@@ -86,6 +86,55 @@
     "dismiss": "Sulje",
     "empty": "Ominaisuuksia ei vielä ole. Ne ilmestyvät tänne, kun niitä lisätään sovellukseen, ja jokainen on aluksi pois päältä.",
     "flags": {
+      "calendar_invites": {
+        "name": "Kalenterikutsut",
+        "turnOn": [
+          "Ilmoittautumisen vahvistussähköpostissa on kalenterikutsu.",
+          "Tapahtumasivu näyttää kalenterilinkit ilmoittautumisen jälkeen."
+        ],
+        "stops": [
+          "Uusissa vahvistussähköposteissa ei ole kalenterikutsua ja kalenterilinkit piilotetaan."
+        ],
+        "keeps": [
+          "Jo lähetetyt kutsut pysyvät vastaanottajien kalentereissa."
+        ]
+      },
+      "confetti": {
+        "name": "Konfetti",
+        "turnOn": [
+          "Tapahtuman tai ilmoittautumisen luomisen jälkeen näytetään konfettia, paitsi käyttäjille, jotka haluavat vähemmän liikettä."
+        ],
+        "stops": [
+          "Konfettia ei enää näytetä."
+        ],
+        "keeps": [
+          "Tapahtumien ja ilmoittautumisten luominen toimii kuten ennenkin."
+        ]
+      },
+      "event_templates": {
+        "name": "Tapahtumapohjat",
+        "turnOn": [
+          "Tapahtumalomakkeen kiintiö- ja kysymysvälilehdet tarjoavat pohjia sekä valmiita kiintiöitä ja kysymyksiä."
+        ],
+        "stops": [
+          "Pohjien valinnat piilotetaan ja välilehdillä näkyvät pelkät listat."
+        ],
+        "keeps": [
+          "Pohjasta lisätyt kiintiöt ja kysymykset säilyvät tapahtumissaan."
+        ]
+      },
+      "form_preview": {
+        "name": "Ilmoittautumislomakkeen esikatselu",
+        "turnOn": [
+          "Tapahtumalomakkeeseen tulee Esikatselu-välilehti, joka näyttää ilmoittautumislomakkeen niin kuin ilmoittautujat sen näkevät."
+        ],
+        "stops": [
+          "Esikatselu-välilehti piilotetaan."
+        ],
+        "keeps": [
+          "Esikatselusta ei koskaan lähetetä mitään, joten tiedot eivät muutu."
+        ]
+      },
       "keycloak_names": {
         "name": "Nimet Keycloakista",
         "turnOn": [
@@ -98,6 +147,34 @@
         "keeps": [
           "Etu- ja sukunimet tallennetaan edelleen jokaisella Keycloak-kirjautumisella.",
           "Jo tehdyt ilmoittautumiset säilyttävät nimensä."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP-palvelin",
+        "turnOn": [
+          "MCP-palvelin vastaa osoitteessa /mcp: Keycloakin kautta kirjautuneet tekoälyavustajat voivat selata tapahtumia ja ilmoittautua, ja ylläpitäjät voivat luoda tapahtumaluonnoksia."
+        ],
+        "stops": [
+          "/mcp ja sen OAuth-tunnistuspolut vastaavat 404."
+        ],
+        "keeps": [
+          "MCP:n kautta tehdyt tapahtumat ja ilmoittautumiset säilyvät."
+        ]
+      },
+      "payments": {
+        "name": "Maksut",
+        "turnOn": [
+          "Ylläpitäjät voivat hinnoitella kiintiöitä ja valita, milloin ilmoittautujat maksavat.",
+          "Maksullisten kiintiöiden ilmoittautujat maksavat Stripe Checkoutissa, ja maksusähköpostit ja -muistutukset lähetetään.",
+          "Ylläpitäjät saavat tapahtumiensa maksutyökalut."
+        ],
+        "stops": [
+          "Hinnat ja maksuasetukset piilotetaan eikä niitä voi asettaa, ja maksaminen estetään.",
+          "Uusia maksusähköposteja tai -muistutuksia ei lähetetä."
+        ],
+        "keeps": [
+          "Jo tehdyt maksut pysyvät kirjattuina ja näkyvät ilmoittautujille.",
+          "Hyvitykset ja Stripen maksuilmoitukset toimivat edelleen."
         ]
       },
       "prefill_answers": {
@@ -114,6 +191,60 @@
         "keeps": [
           "Kysymykset säilyttävät Telegram- tai erityisruokavaliomerkintänsä ja toimivat tavallisina tekstikysymyksinä.",
           "Käyttäjät voivat edelleen poistaa tallentamansa ilmoittautumistiedot."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Ilmoittautumismuistutukset",
+        "turnOn": [
+          "Tapahtumasivu tarjoaa muistutusta ennen ilmoittautumisen alkua.",
+          "Asetuksiin tulee muistutussivu käyttäjän muistutuksille ja muistutusasetuksille.",
+          "Muistutussähköpostit lähetetään ennen ilmoittautumisen alkua."
+        ],
+        "stops": [
+          "Muistutuspainike, muistutussivu ja sen valikkolinkit piilotetaan.",
+          "Muistutuksia ei lähetetä. Muistutusta, jonka aika tulee kun ominaisuus on pois päältä, ei lähetetä myöhemmin."
+        ],
+        "keeps": [
+          "Tallennetut muistutukset ja muistutusasetukset säilyvät."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Nauhan teksti",
+        "turnOn": [
+          "Tapahtumalomake näyttää nauhan tekstikentät korostetuille tapahtumille.",
+          "Tapahtumakorteissa näkyy oma nauhan teksti."
+        ],
+        "stops": [
+          "Tapahtumakorteissa näkyy oletusteksti ja tapahtumalomake piilottaa kentät."
+        ],
+        "keeps": [
+          "Tallennetut nauhan tekstit säilyvät, myös kun tapahtuma tallennetaan."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram-muistutukset",
+        "turnOn": [
+          "Käyttäjät voivat yhdistää Telegram-tilin ja valita Telegramin muistutuksilleen.",
+          "Muistutukset lähetetään myös Telegram-botin kautta."
+        ],
+        "stops": [
+          "Telegramia ei voi enää yhdistää tai valita, eikä muistutuksia lähetetä Telegramin kautta."
+        ],
+        "keeps": [
+          "Yhdistetyt tilit pysyvät yhdistettyinä."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Kirjoitettavat ajat",
+        "turnOn": [
+          "Tapahtumalomakkeessa tapahtuman ja ilmoittautumisen ajat kirjoitetaan tunti-, minuutti- ja sekuntikenttiin.",
+          "Päivän valitseminen kalenterista täyttää oletusajat."
+        ],
+        "stops": [
+          "Tapahtumalomake palaa vieritettäviin aikasarakkeisiin."
+        ],
+        "keeps": [
+          "Tallennetut tapahtuman ja ilmoittautumisen ajat pysyvät ennallaan."
         ]
       }
     },

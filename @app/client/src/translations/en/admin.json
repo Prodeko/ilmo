@@ -86,6 +86,55 @@
     "dismiss": "Dismiss",
     "empty": "No features yet. Features appear here as they are added to the app, and each one starts as Off.",
     "flags": {
+      "calendar_invites": {
+        "name": "Calendar invitations",
+        "turnOn": [
+          "Registration confirmation emails carry a calendar invitation.",
+          "The event page shows calendar links after signing up."
+        ],
+        "stops": [
+          "New confirmation emails have no calendar invitation and the calendar links are hidden."
+        ],
+        "keeps": [
+          "Invitations already sent stay in recipients' calendars."
+        ]
+      },
+      "confetti": {
+        "name": "Confetti",
+        "turnOn": [
+          "Confetti is shown after an event or a registration has been created, except to users who prefer reduced motion."
+        ],
+        "stops": [
+          "No more confetti."
+        ],
+        "keeps": [
+          "Creating events and registrations works as before."
+        ]
+      },
+      "event_templates": {
+        "name": "Event templates",
+        "turnOn": [
+          "The quotas and questions tabs of the event form offer templates and ready-made quotas and questions."
+        ],
+        "stops": [
+          "The template selectors are hidden and the tabs show the plain lists."
+        ],
+        "keeps": [
+          "Quotas and questions added from a template stay on their events."
+        ]
+      },
+      "form_preview": {
+        "name": "Registration form preview",
+        "turnOn": [
+          "The event form gets a Preview tab that shows the registration form as registrants see it."
+        ],
+        "stops": [
+          "The Preview tab is hidden."
+        ],
+        "keeps": [
+          "Nothing is ever submitted from the preview, so no data changes."
+        ]
+      },
       "keycloak_names": {
         "name": "Names from Keycloak",
         "turnOn": [
@@ -98,6 +147,34 @@
         "keeps": [
           "First and last names are still stored at every Keycloak login.",
           "Registrations already made keep their names."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP server",
+        "turnOn": [
+          "The MCP server answers at /mcp: AI assistants signed in through Keycloak can browse events and register, and admins can create draft events."
+        ],
+        "stops": [
+          "/mcp and its OAuth discovery paths answer 404."
+        ],
+        "keeps": [
+          "Events and registrations made through MCP are kept."
+        ]
+      },
+      "payments": {
+        "name": "Payments",
+        "turnOn": [
+          "Admins can price quotas and choose when registrants pay.",
+          "Registrants of paid quotas pay through Stripe Checkout, and payment emails and reminders are sent.",
+          "Admins get the payment tools for their events."
+        ],
+        "stops": [
+          "Prices and payment settings are hidden and cannot be set, and paying is blocked.",
+          "No new payment emails or reminders are sent."
+        ],
+        "keeps": [
+          "Payments already made stay recorded and are shown to registrants.",
+          "Refunds and Stripe payment notifications keep working."
         ]
       },
       "prefill_answers": {
@@ -114,6 +191,60 @@
         "keeps": [
           "Questions keep their Telegram or dietary restriction marking and work as ordinary text questions.",
           "Users can still delete the registration details they saved."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Registration reminders",
+        "turnOn": [
+          "The event page offers a reminder before registration opens.",
+          "The settings get a reminders page with the user's reminders and reminder settings.",
+          "Reminder emails are sent before registration opens."
+        ],
+        "stops": [
+          "The reminder button, the reminders page and its menu links are hidden.",
+          "No reminders are sent. A reminder that falls due while the flag is off is not sent later."
+        ],
+        "keeps": [
+          "Saved reminders and reminder settings are kept."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Ribbon text",
+        "turnOn": [
+          "The event form shows ribbon text inputs for highlighted events.",
+          "Event cards show the custom ribbon text."
+        ],
+        "stops": [
+          "Event cards show the default ribbon text and the event form hides the inputs."
+        ],
+        "keeps": [
+          "Stored ribbon texts are kept, also when an event is saved."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram reminders",
+        "turnOn": [
+          "Users can link a Telegram account and choose Telegram for their reminders.",
+          "Reminders also go out through the Telegram bot."
+        ],
+        "stops": [
+          "Telegram can no longer be linked or chosen, and no reminders go out through Telegram."
+        ],
+        "keeps": [
+          "Linked accounts stay linked."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Typed times",
+        "turnOn": [
+          "The event form uses typed hour, minute and second boxes for the event and registration times.",
+          "Clicking a day in the calendar fills in default times."
+        ],
+        "stops": [
+          "The event form goes back to the time scroll columns."
+        ],
+        "keeps": [
+          "Saved event and registration times stay as they are."
         ]
       }
     },

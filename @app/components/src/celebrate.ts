@@ -1,3 +1,5 @@
+import { useFeature } from "./Feature"
+
 /**
  * Shoots confetti from both bottom corners of the screen, e.g. after an
  * event or a registration has been created. The confetti is drawn on its
@@ -24,7 +26,6 @@ async function noCelebration() {}
  * saved (also from the registration form preview).
  */
 export function useCelebrate() {
-  // Confetti: the feature's only switch, for every place it fires
-  const confetti = true
-  return confetti ? celebrate : noCelebration
+  const withConfetti = useFeature("confetti")
+  return withConfetti ? celebrate : noCelebration
 }
