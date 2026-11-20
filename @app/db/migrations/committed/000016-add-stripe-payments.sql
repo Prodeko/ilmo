@@ -1,5 +1,5 @@
 --! Previous: sha1:a82534fccfc43de4a5611c2911fbf0d72b9b9c05
---! Hash: sha1:9efdb963bf8c8b6ab9929c19c4f39c05b763fd19
+--! Hash: sha1:2d0e3bfdffaad38a79c33c652bec25f568cd46e4
 --! Message: add Stripe payments
 
 --! split: 70-payments.sql
@@ -21,8 +21,8 @@
  *
  * Money is always integer cents.
  *
- * Built on current/30-event-ribbon-text.sql: create_event and update_event
- * keep `highlight_text` and its update rule.
+ * Built on committed/000010-add-ribbon-text-to-events.sql: create_event and
+ * update_event keep `highlight_text` and its update rule.
  *
  * This file is idempotent: the first block removes everything it creates so
  * that `graphile-migrate watch` can re-run it.
@@ -514,12 +514,13 @@ comment on function app_hidden.backfill_registration_prices(event_id uuid) is
   E'Sets price_cents from the quota price on finished registrations of a paid event that have no price yet. Returns the number of registrations updated.';
 
 /*
- * Built on current/30-event-ribbon-text.sql. `highlight_text` is not
- * coalesced like the other fields: a null must be able to clear a previously
- * written text. It is instead updated together with `is_highlighted`, so
- * partial updates that leave both out keep the old text. The payment
- * settings follow the default rule (omitted keeps); a paid payment mode is
- * refused while payments are off, but omitting it keeps a stored one.
+ * Built on committed/000010-add-ribbon-text-to-events.sql. `highlight_text`
+ * is not coalesced like the other fields: a null must be able to clear a
+ * previously written text. It is instead updated together with
+ * `is_highlighted`, so partial updates that leave both out keep the old text.
+ * The payment settings follow the default rule (omitted keeps); a paid
+ * payment mode is refused while payments are off, but omitting it keeps a
+ * stored one.
  */
 create or replace function app_public.update_event(
   id uuid,

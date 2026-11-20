@@ -1,4 +1,4 @@
-# Releasing registration reminders
+# Running registration reminders in production
 
 This feature runs in the existing Ilmo server, Graphile Worker and PostgreSQL.
 It does not require a new Azure service. Email is sent through the existing
@@ -6,11 +6,11 @@ SendGrid transport; Telegram is sent through the Bot API.
 
 ## Database migration
 
-The schema is in `@app/db/migrations/current/51-registration-reminders.sql`
-(reminders, preferences and scheduling) and `52-telegram-reminders.sql`
-(Telegram linking, bot language and polling state), with the feature flag rows
-`registration_reminders` and `telegram_reminders`. They become part of a
-committed migration when maintainers commit `current/`.
+The schema is in the committed migrations
+`@app/db/migrations/committed/000013-add-registration-reminders.sql` (reminders,
+preferences and scheduling) and `000014-add-telegram-reminders.sql` (Telegram
+linking, bot language and polling state), with the feature flag rows
+`registration_reminders` and `telegram_reminders`.
 
 This is a schema migration, not a local data export. Production users choose
 preferences and link their own Telegram accounts. The SQL initializes a polling
@@ -31,8 +31,8 @@ feature flag registry in `@app/lib/src/featureFlags.ts`):
   `reminder__send_telegram` and `telegram__reply` tasks. Disconnecting always
   works.
 
-Apply committed migrations once using the new release and production connection
-settings, before starting its server and worker:
+Apply committed migrations once with the new application image and the
+production connection settings, before starting its server and worker:
 
 ```sh
 pnpm db migrate
@@ -78,7 +78,7 @@ A push to `main` runs CI and end-to-end tests before the production workflow
 builds `prodekoregistry.azurecr.io/ilmo/ilmo:sha-<commit>` and calls
 `/srv/www/ilmo/deploy.sh` over SSH. That VM script is not in this repository.
 
-Before releasing, verify that the VM script:
+Verify that the VM script:
 
 - Deploys the same new image to both the server and worker.
 - Applies committed migrations before starting the new application.
@@ -96,7 +96,7 @@ Run `pnpm lint`, `pnpm test --ci --runInBand`, and `pnpm build` with local
 services running. CI also exercises the Docker image and Cypress browser tests.
 Automated Telegram tests mock outbound requests and send no real notifications.
 
-On a staging deployment or before announcing production availability:
+On a staging deployment, with both flags switched on:
 
 1. Sign in with a test account and open a published event whose registration
    opens in the future. Complete setup and link the test bot by pressing Start.
@@ -126,7 +126,7 @@ On a staging deployment or before announcing production availability:
   `@app/worker/src/tasks/reminder__send_registration.ts`.
 - Email appearance: `@app/worker/templates/registration_reminder.mjml.njk`.
 
-Change source files, update the corresponding tests, and use the normal PR and
-release process. Message wording is maintained in code, not BotFather. See also
+Change source files, update the corresponding tests, and use the normal pull
+request process. Message wording is maintained in code, not BotFather. See also
 [registration reminders](registration-reminders.md) and
 [Telegram reminders](telegram-reminders.md).

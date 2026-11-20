@@ -13,7 +13,7 @@ import type { Task } from "graphile-worker"
 
 /** Sends a bot reply, whatever the flags. */
 export const sendTelegramReply: Task = async (payload, { withPgClient }) => {
-  // Keep supporting text-only jobs queued before the language feature deployment.
+  // A job carries a ready `text`, or a `reply` translated at delivery time.
   const { chatId, text, reply, callbackQueryId } = payload as {
     chatId: number
     text?: string

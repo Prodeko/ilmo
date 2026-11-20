@@ -28,12 +28,11 @@ the existing email transport, so local delivery still follows
 
 ### Multiple reminders
 
-Keep one reminder per event for now: a single clear opt-in and status is
-simpler, and avoids duplicate immediate messages when several selected times
-have already passed. Multiple times could be a later optional advanced
-preference (for example, 30 and 15 minutes). This would require separate
-delivery records per time, grouped cancellation, and a policy for elapsed
-reminders; it is not enabled by this change.
+Each event has one reminder: a single clear opt-in and status is simpler, and
+avoids duplicate immediate messages when several selected times have already
+passed. Several reminder times per event (for example, 30 and 15 minutes) would
+need separate delivery records per time, grouped cancellation, and a policy for
+elapsed reminders.
 
 ## Scheduling and delivery
 

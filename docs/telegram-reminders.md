@@ -76,8 +76,7 @@ bot; the bot cannot detect a client setting change without an update.
 All new bot replies and Telegram reminders resolve the preference at delivery
 time. Changing it also affects reminders that were scheduled earlier. Event
 names fall back to an available translation if necessary. Email reminders keep
-the language saved with the reminder. Legacy text-only reply jobs queued before
-this feature was deployed retain their original text.
+the language saved with the reminder.
 
 Preferences are stored privately per Telegram chat, including before linking,
 and survive `/stop` and reconnecting. Chat identifiers and preferences are not

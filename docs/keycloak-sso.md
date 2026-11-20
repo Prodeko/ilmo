@@ -65,7 +65,7 @@ database.
 ## Developer access
 
 The realm role `ilmo-developer` lets an admin switch runtime feature flags. It
-is meant for the few people who deploy and release ilmo, not for every admin.
+is meant for the few people who deploy and operate ilmo, not for every admin.
 Create and assign it in the membership-registry UI exactly like `ilmo-admin`.
 The existing realm-roles mapper already sends it; no new mapper is needed.
 

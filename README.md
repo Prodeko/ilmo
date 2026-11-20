@@ -183,8 +183,8 @@ Run a command in a specific workspace:
 pnpm --filter @app/foo run <cmd>
 ```
 
-For notification releases, see the
-[reminder release runbook](docs/reminder-release.md).
+To run reminders and the Telegram bot in production, see
+[docs/reminder-operations.md](docs/reminder-operations.md).
 
 ## Building the production docker image
 
