@@ -26,7 +26,7 @@ import {
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
-import { celebrate } from "./celebrate"
+import { useCelebrate } from "./celebrate"
 import { ErrorAlert, useTranslation } from "."
 
 import type { Rule } from "antd/lib/form"
@@ -73,6 +73,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
 
     const { t, lang } = useTranslation("register_event")
     const router = useRouter()
+    const celebrate = useCelebrate()
 
     // Handling form values, errors and submission
     const [form] = Form.useForm()
@@ -208,6 +209,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         quotaId,
         type,
         t,
+        celebrate,
       ]
     )
 

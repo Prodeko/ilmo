@@ -4,7 +4,7 @@
  * own canvas over the page, so it keeps going through a page change.
  * Nothing is shown to users who prefer reduced motion.
  */
-export async function celebrate() {
+async function celebrate() {
   // Loaded on demand: the library needs the browser and is only used here
   const { default: confetti } = await import("canvas-confetti")
   const shared = {
@@ -15,4 +15,16 @@ export async function celebrate() {
   }
   confetti({ ...shared, angle: 60, origin: { x: 0, y: 1 } })
   confetti({ ...shared, angle: 120, origin: { x: 1, y: 1 } })
+}
+
+async function noCelebration() {}
+
+/**
+ * Returns the function to call after a new event or registration has been
+ * saved (also from the registration form preview).
+ */
+export function useCelebrate() {
+  // Confetti: the feature's only switch, for every place it fires
+  const confetti = true
+  return confetti ? celebrate : noCelebration
 }

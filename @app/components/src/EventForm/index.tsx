@@ -12,7 +12,7 @@ import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
 import { ButtonLink, useTranslation } from "../."
-import { celebrate } from "../celebrate"
+import { useCelebrate } from "../celebrate"
 
 import { EmailTab } from "./EmailTab"
 import { EventFormFooter } from "./EventFormFooter"
@@ -72,6 +72,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   // Translations, router, urql
   const { t, lang } = useTranslation("events")
   const router = useRouter()
+  const celebrate = useCelebrate()
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
@@ -183,7 +184,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       }
       setFormSubmitting(false)
     },
-    [mutation, formRedirect, router, t, type, eventId]
+    [mutation, formRedirect, router, t, type, eventId, celebrate]
   )
 
   const tabLabels: Record<string, string> = {
