@@ -117,14 +117,14 @@ CREATE TYPE app_public.claim_registration_token_output AS (
 --
 
 CREATE DOMAIN app_public.constrained_name AS text
-	CONSTRAINT constrained_name_check CHECK ((VALUE !~ '\s'::text));
+	CONSTRAINT constrained_name_check CHECK ((VALUE ~ '\S'::text));
 
 
 --
 -- Name: DOMAIN constrained_name; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON DOMAIN app_public.constrained_name IS 'A field which must not contain spaces';
+COMMENT ON DOMAIN app_public.constrained_name IS 'A name field which must not be empty or contain only whitespace';
 
 
 --
@@ -327,6 +327,8 @@ CREATE TABLE app_public.users (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     is_developer boolean DEFAULT false NOT NULL,
+    first_name text,
+    last_name text,
     CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
     CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
 );
@@ -379,6 +381,20 @@ COMMENT ON COLUMN app_public.users.is_admin IS 'If true, the user has elevated p
 --
 
 COMMENT ON COLUMN app_public.users.is_developer IS 'If true and the user is also an admin, the user can manage feature flags.';
+
+
+--
+-- Name: COLUMN users.first_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.first_name IS 'The user''s first name(s), from the Keycloak `given_name` claim. Null for users that have not logged in with Keycloak.';
+
+
+--
+-- Name: COLUMN users.last_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.last_name IS 'The user''s last name, from the Keycloak `family_name` claim. Null for users that have not logged in with Keycloak.';
 
 
 --
@@ -3732,6 +3748,7 @@ CREATE FUNCTION app_public.update_registration("updateToken" text, "firstName" t
 declare
   v_registration_secret app_private.registration_secrets;
   v_registration app_public.registrations;
+  v_event app_public.events;
   v_required_question_ids uuid[];
 begin
   select * into v_registration_secret
@@ -3740,6 +3757,13 @@ begin
 
   if v_registration_secret is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
+
+  select * into v_event from app_public.events where id = v_registration_secret.event_id;
+
+  if not app_public.current_user_is_admin()
+    and ((v_event is null) or not (select app_public.events_signup_open(v_event))) then
+    raise exception 'Updating a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
