@@ -2,6 +2,8 @@ import { makeWrapResolversPlugin } from "graphile-utils"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
+import { constructRateLimitKey, rateLimitRequester } from "./RateLimitPlugin"
+
 const EventRegistrationPlugin = makeWrapResolversPlugin({
   Mutation: {
     createRegistration: {
@@ -22,8 +24,16 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
           const result = await resolve()
 
           const workerUtils = context.workerUtils
-          const ipAddress = context.ipAddress
           const { eventId, quotaId } = args.input
+          const requester = await rateLimitRequester(
+            pgClient,
+            context.ipAddress
+          )
+          const key = constructRateLimitKey(
+            "claimRegistrationToken",
+            `${eventId}:${quotaId}`,
+            requester
+          )
 
           // After successfull registration delete the rate limit key from redis.
           // Awaiting here ensures the job row is committed before this resolver
@@ -32,9 +42,7 @@ const EventRegistrationPlugin = makeWrapResolversPlugin({
           // unawaited fire-and-forget pattern raced the test queries that
           // immediately read the queue.
           await workerUtils.addJob("registration__delete_rate_limit_key", {
-            eventId,
-            quotaId,
-            ipAddress,
+            key,
           })
 
           // Return the result of our original mutation

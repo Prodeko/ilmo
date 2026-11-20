@@ -1,4 +1,5 @@
 import { makeWrapResolversPlugin } from "graphile-utils"
+import { PoolClient } from "pg"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 
@@ -9,12 +10,30 @@ if (!process.env.NODE_ENV) {
 // 30 minutes timeout
 const RATE_LIMIT_TIMEOUT = 30
 
-function constructRateLimitKey(
-  fieldName: string,
-  id: string,
+/**
+ * Signed-in users are limited per user rather than per session: with Keycloak
+ * SSO a fresh session costs a single redirect, so a per-session limit could be
+ * reset at will. current_user_id() also proves the session still exists; a
+ * stale cookie falls back to the IP address like an anonymous request.
+ */
+export async function rateLimitRequester(
+  pgClient: PoolClient,
   ipAddress: string
 ) {
-  return `rate-limit:${fieldName}:${id}:${ipAddress}`
+  const {
+    rows: [row],
+  } = await pgClient.query<{ user_id: string | null }>(
+    "select app_public.current_user_id() as user_id"
+  )
+  return row?.user_id ? `user:${row.user_id}` : `ip:${ipAddress}`
+}
+
+export function constructRateLimitKey(
+  fieldName: string,
+  id: string,
+  requester: string
+) {
+  return `rate-limit:${fieldName}:${id}:${requester}`
 }
 
 class RateLimitException extends Error {
@@ -49,7 +68,8 @@ function rateLimitResolver(
       // to set a rate limit key to redis
       const result = await resolve()
 
-      const key = constructRateLimitKey(fieldName, rateLimitId, ipAddress)
+      const requester = await rateLimitRequester(pgClient, ipAddress)
+      const key = constructRateLimitKey(fieldName, rateLimitId, requester)
       const current = Number(await redisClient.get(key))
 
       if (current >= limit) {

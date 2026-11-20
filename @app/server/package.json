@@ -28,6 +28,7 @@
     "@graphile/persisted-operations": "^0.1.1",
     "@graphile/pg-pubsub": "^4.12.3",
     "@graphile/subscriptions-lds": "^4.12.3",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/graphql-upload": "^8.0.11",
     "@zxcvbn-ts/core": "^2.0.4",
     "@zxcvbn-ts/language-common": "^2.0.1",
@@ -48,6 +49,7 @@
     "helmet": "^8.0.0",
     "html-to-text": "^8.2.1",
     "ioredis": "^5.2.2",
+    "jose": "^5.10.0",
     "lodash": "^4.17.21",
     "mjml": "^4.13.0",
     "mock-req": "^0.2.0",
@@ -63,7 +65,8 @@
     "slugify": "^1.6.5",
     "source-map-support": "^0.5.21",
     "tslib": "^2.6.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.3.0",

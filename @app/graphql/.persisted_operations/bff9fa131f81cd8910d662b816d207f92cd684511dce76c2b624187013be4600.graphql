@@ -1,0 +1,43 @@
+fragment McpEventSummary on Event {
+  id
+  slug
+  name
+  location
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
+  signupOpen
+  signupUpcoming
+  ownerOrganization {
+    name
+    __typename
+  }
+  category {
+    name
+    __typename
+  }
+  __typename
+}
+query McpEvents {
+  signupOpenEvents: events(
+    filter: {signupOpen: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_END_TIME_ASC]
+  ) {
+    nodes {
+      ...McpEventSummary
+      __typename
+    }
+    __typename
+  }
+  signupUpcomingEvents: events(
+    filter: {signupUpcoming: {equalTo: true}, isDraft: {equalTo: false}}
+    orderBy: [IS_HIGHLIGHTED_DESC, REGISTRATION_START_TIME_ASC]
+  ) {
+    nodes {
+      ...McpEventSummary
+      __typename
+    }
+    __typename
+  }
+}

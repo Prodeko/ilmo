@@ -1,3 +1,4 @@
+import { mcpRoutes } from "./mcp/routes"
 import { telegramWebhook } from "./telegramWebhook"
 
 import type { FeatureKey } from "@app/lib"
@@ -60,7 +61,10 @@ export interface ExternalRouteModule {
 }
 
 /** The registry. Add a module here; do not edit app.ts or the CSRF plugin. */
-export const externalRoutes: readonly ExternalRouteModule[] = [telegramWebhook]
+export const externalRoutes: readonly ExternalRouteModule[] = [
+  telegramWebhook,
+  mcpRoutes,
+]
 
 export interface CsrfExemption {
   method: ExternalRouteMethod

@@ -1,0 +1,163 @@
+{
+  "realm": "ilmo-dev",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "ilmo-admin",
+        "description": "Maps to app_public.users.is_admin; the name is ILMO_ADMIN_ROLE in @app/server/src/utils/keycloak.ts"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ilmo-dev",
+      "name": "ilmokilke (dev)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "secret": "ilmo-dev-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false,
+      "redirectUris": ["http://localhost:5678/auth/keycloak/callback"],
+      "webOrigins": ["http://localhost:5678"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5678/"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        },
+        {
+          "name": "locale",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "locale",
+            "claim.name": "locale",
+            "jsonType.label": "String",
+            "multivalued": "false",
+            "aggregate.attrs": "false",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "ilmo-mcp",
+      "name": "ilmokilke MCP (dev)",
+      "description": "Public client for MCP clients. Access tokens carry the /mcp resource as audience.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "consentRequired": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": false,
+      "redirectUris": [
+        "http://localhost:33418/callback",
+        "http://localhost:6274/oauth/callback",
+        "http://localhost:6274/oauth/callback/debug"
+      ],
+      "webOrigins": ["http://localhost:6274"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "consent.screen.text": "Ilmon MCP-palvelin voi lukea tapahtumia ja ilmoittaa sinut tapahtumiin puolestasi. / The ilmo MCP server can read events and register you to events on your behalf."
+      },
+      "protocolMappers": [
+        {
+          "name": "mcp audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.custom.audience": "http://localhost:5678/mcp",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "dev-member",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "dev-member@example.com",
+      "firstName": "Dev",
+      "lastName": "Member",
+      "attributes": {
+        "locale": ["fi"]
+      },
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev-member-password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["default-roles-ilmo-dev"]
+    },
+    {
+      "username": "dev-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "dev-admin@example.com",
+      "firstName": "Dev",
+      "lastName": "Admin",
+      "attributes": {
+        "locale": ["en"]
+      },
+      "requiredActions": [],
+      "realmRoles": ["default-roles-ilmo-dev", "ilmo-admin"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev-admin-password",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "ilmo-mcp",
+      "roles": ["ilmo-admin"]
+    }
+  ]
+}

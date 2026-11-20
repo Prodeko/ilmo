@@ -1,0 +1,59 @@
+fragment McpEventSummary on Event {
+  id
+  slug
+  name
+  location
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
+  signupOpen
+  signupUpcoming
+  ownerOrganization {
+    name
+    __typename
+  }
+  category {
+    name
+    __typename
+  }
+  __typename
+}
+query McpEvent($slug: String!) {
+  currentUser {
+    name
+    primaryEmail
+    __typename
+  }
+  eventBySlug(slug: $slug) {
+    ...McpEventSummary
+    description
+    isDraft
+    openQuotaSize
+    quotas(orderBy: POSITION_ASC) {
+      nodes {
+        id
+        title
+        size
+        registrations {
+          totalCount
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    eventQuestions(orderBy: POSITION_ASC) {
+      nodes {
+        id
+        type
+        label
+        isRequired
+        data
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}

@@ -8,6 +8,8 @@ import {
 } from "../../src/externalRoutes"
 import installExternalRoutes from "../../src/middleware/installExternalRoutes"
 
+import type { FeatureKey } from "@app/lib"
+
 const ok = async () => ({ ok: true })
 
 function module(
@@ -100,6 +102,120 @@ it("refuses a declared path under another method", async () => {
   ).rejects.toThrow("registered PUT /hook")
 })
 
+describe("the feature flag gate", () => {
+  // The registry may not have a key a test can use, so the tests pass their own.
+  const testFlag = "external_routes_test" as FeatureKey
+
+  function gated(
+    overrides: Partial<ExternalRouteModule> = {},
+    calls: string[] = []
+  ) {
+    return module({
+      name: "gated",
+      feature: testFlag,
+      paths: [
+        { method: "POST", path: "/gated" },
+        { method: "GET", path: "/gated" },
+      ],
+      register: async (scope) => {
+        scope.addHook("onRequest", async (request) => {
+          calls.push(`hook ${request.method}`)
+        })
+        scope.post("/gated", async () => {
+          calls.push("POST")
+          return { ok: true }
+        })
+        scope.get("/gated", async () => {
+          calls.push("GET")
+          return { ok: true }
+        })
+      },
+      ...overrides,
+    })
+  }
+
+  it.each([
+    ["a plain plugin", (register: ExternalRouteModule["register"]) => register],
+    [
+      "a fastify-plugin",
+      (register: ExternalRouteModule["register"]) => fp(register),
+    ],
+  ])(
+    "answers 404 before any of the module's code runs while the flag is off, with %s",
+    async (_, wrap) => {
+      const calls: string[] = []
+      const base = gated({}, calls)
+      const isFeatureEnabled = jest.fn(async () => false)
+      await app.register(installExternalRoutes, {
+        externalRoutes: [{ ...base, register: wrap(base.register) }],
+        isFeatureEnabled,
+      })
+
+      for (const method of ["POST", "GET", "HEAD"] as const) {
+        const res = await app.inject({ method, url: "/gated" })
+        expect(res.statusCode).toBe(404)
+      }
+      expect(calls).toEqual([])
+      expect(isFeatureEnabled).toHaveBeenCalledWith(testFlag)
+    }
+  )
+
+  it("reads the flag on every request", async () => {
+    const calls: string[] = []
+    let enabled = true
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated({}, calls)],
+      isFeatureEnabled: async () => enabled,
+    })
+
+    expect(
+      (await app.inject({ method: "POST", url: "/gated" })).json()
+    ).toEqual({ ok: true })
+    enabled = false
+    expect(
+      (await app.inject({ method: "POST", url: "/gated" })).statusCode
+    ).toBe(404)
+    enabled = true
+    expect(
+      (await app.inject({ method: "GET", url: "/gated" })).statusCode
+    ).toBe(200)
+    expect(calls).toEqual(["hook POST", "POST", "hook GET", "GET"])
+  })
+
+  it("keeps the routes answering while the flag is off when gateWhenOff is false", async () => {
+    const isFeatureEnabled = jest.fn(async () => false)
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated({ gateWhenOff: false })],
+      isFeatureEnabled,
+    })
+
+    expect(
+      (await app.inject({ method: "POST", url: "/gated" })).statusCode
+    ).toBe(200)
+    expect(isFeatureEnabled).not.toHaveBeenCalled()
+  })
+
+  it("does not read any flag for a module without a feature, nor for other modules", async () => {
+    const isFeatureEnabled = jest.fn(async () => false)
+    const open = module({
+      name: "open",
+      paths: [{ method: "POST", path: "/open" }],
+      register: async (scope) => {
+        scope.post("/open", ok)
+      },
+    })
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated(), open],
+      isFeatureEnabled,
+    })
+
+    expect(
+      (await app.inject({ method: "POST", url: "/open" })).statusCode
+    ).toBe(200)
+    expect(isFeatureEnabled).not.toHaveBeenCalled()
+  })
+})
+
 describe("csrfExemptions", () => {
   it("lists the exempt paths of configured modules", () => {
     expect(
@@ -121,27 +237,53 @@ describe("csrfExemptions", () => {
     ).toEqual([{ method: "POST", path: "/a" }])
   })
 
-  it("lists the Telegram webhook only when it is configured", () => {
-    expect(externalRoutes.map((m) => m.name)).toEqual(["telegram"])
+  describe("for the registry as it stands", () => {
     const saved = { ...process.env }
-    try {
+    const telegramWebhookEnv = {
+      TELEGRAM_BOT_TOKEN: "test-token",
+      TELEGRAM_UPDATE_MODE: "webhook",
+      TELEGRAM_WEBHOOK_SECRET: "test-webhook-secret",
+    }
+    beforeEach(() => {
       delete process.env.TELEGRAM_BOT_TOKEN
+      process.env.KEYCLOAK_ISSUER = ""
+    })
+    afterEach(() => {
+      process.env = { ...saved }
+    })
+
+    it("has the Telegram webhook and the MCP server", () => {
+      expect(externalRoutes.map((m) => m.name)).toEqual(["telegram", "mcp"])
+    })
+
+    it("is empty when neither is configured", () => {
       expect(csrfExemptions()).toEqual([])
-      Object.assign(process.env, {
-        TELEGRAM_BOT_TOKEN: "test-token",
-        TELEGRAM_UPDATE_MODE: "webhook",
-        TELEGRAM_WEBHOOK_SECRET: "test-webhook-secret",
-      })
+    })
+
+    it("exempts the Telegram webhook only when it is configured", () => {
+      Object.assign(process.env, telegramWebhookEnv)
       expect(csrfExemptions()).toEqual([
         { method: "POST", path: "/telegram/webhook" },
       ])
-    } finally {
-      process.env = saved
-    }
+    })
+
+    it("exempts POST /mcp when Keycloak is configured", () => {
+      process.env.KEYCLOAK_ISSUER = "https://id.example.org/realms/test"
+      expect(csrfExemptions()).toEqual([{ method: "POST", path: "/mcp" }])
+    })
+
+    it("exempts both when both are configured", () => {
+      Object.assign(process.env, telegramWebhookEnv)
+      process.env.KEYCLOAK_ISSUER = "https://id.example.org/realms/test"
+      expect(csrfExemptions()).toEqual([
+        { method: "POST", path: "/telegram/webhook" },
+        { method: "POST", path: "/mcp" },
+      ])
+    })
   })
 })
 
-describe("feature flag gate", () => {
+describe("feature flag gate with a registry key", () => {
   const gated = (overrides: Partial<ExternalRouteModule> = {}) =>
     module({
       name: "gated",
