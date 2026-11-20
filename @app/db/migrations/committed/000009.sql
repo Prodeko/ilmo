@@ -1,3 +1,7 @@
+--! Previous: sha1:2efc6fb4bc77a403bed7fcfd1788a939a2526b11
+--! Hash: sha1:55cca1f2b587be1b60c12afcba0d49bb9db000c4
+
+--! split: 2-registration-positions-table.sql
 /*
  * Registration statuses and positions are kept in a table that is maintained
  * per event. Every change to an event's registrations, quota sizes or open
