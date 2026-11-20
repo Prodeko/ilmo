@@ -26,7 +26,7 @@ import { CombinedError, UseQueryState } from "urql"
 
 import headerLogo from "../assets/header-logo.png"
 
-import { FeatureFlagsProvider } from "./Feature"
+import { FeatureFlagsProvider, isDeveloperUser } from "./Feature"
 import {
   ErrorResult,
   H3,
@@ -67,6 +67,8 @@ export enum AuthRestrict {
   LOGGED_OUT = 1 << 0,
   LOGGED_IN = 1 << 1,
   NOT_ADMIN = 1 << 2,
+  /** Not an admin with the developer role (feature flag management). */
+  NOT_DEVELOPER = 1 << 3,
 }
 
 export interface SharedLayoutProps {
@@ -117,6 +119,7 @@ export function SharedLayout({
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
   const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
+  const forbidsNotDeveloper = forbidWhen & AuthRestrict.NOT_DEVELOPER
 
   const isSSR = typeof window === "undefined"
 
@@ -164,7 +167,9 @@ export function SharedLayout({
     if (
       data &&
       data.currentUser &&
-      (forbidsLoggedIn || (forbidsNotAdmin && !data.currentUser.isAdmin))
+      (forbidsLoggedIn ||
+        (forbidsNotAdmin && !data.currentUser.isAdmin) ||
+        (forbidsNotDeveloper && !isDeveloperUser(data.currentUser)))
     ) {
       if (!isSSR && !noHandleErrors) {
         // Antd messages don't work with SSR
