@@ -1,3 +1,8 @@
+--! Previous: sha1:c867d3dba142e9cbe690540ff9f8c88deccf6419
+--! Hash: sha1:b562ae35d2c8babe2177bc3e03adcc1433789825
+--! Message: add Stripe payments
+
+--! split: 70-payments.sql
 /*
  * Stripe payments: schema and database functions.
  *
