@@ -12,13 +12,16 @@ import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
 import { ButtonLink, useTranslation } from "../."
+import { celebrate } from "../celebrate"
 
 import { EmailTab } from "./EmailTab"
 import { EventFormFooter } from "./EventFormFooter"
 import { MainTab } from "./MainTab"
+import { PreviewTab } from "./PreviewTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
+import { RequiredMark } from "./RequiredMark"
 import { FormValues, SubmittedFormValues, toEventInput } from "./values"
 
 export * from "./values"
@@ -33,10 +36,19 @@ interface EventFormProps {
   initialValues?: any
 }
 
+// Tab label with the same red asterisk antd shows next to required fields
+const RequiredTabLabel: React.FC<{ label: string }> = ({ label }) => (
+  <span>
+    <RequiredMark />
+    {label}
+  </span>
+)
+
 enum TAB {
   General = "general",
   Quotas = "quotas",
   Questions = "questions",
+  Preview = "preview",
   Registrations = "registrations",
   Email = "email",
 }
@@ -162,6 +174,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const { error } = await mutation({ input })
         if (error) throw error
 
+        if (type === "create") celebrate()
+
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
@@ -213,13 +227,13 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         items={[
           {
             key: TAB.General,
-            label: tabLabels[TAB.General],
+            label: <RequiredTabLabel label={tabLabels[TAB.General]} />,
             forceRender: true,
             children: <MainTab {...mainTabProps} />,
           },
           {
             key: TAB.Quotas,
-            label: tabLabels[TAB.Quotas],
+            label: <RequiredTabLabel label={tabLabels[TAB.Quotas]} />,
             forceRender: true,
             children: (
               <QuotasTab
@@ -240,6 +254,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                 selectedLanguages={selectedLanguages}
               />
             ),
+          },
+          {
+            key: TAB.Preview,
+            label: t("admin:events.tabs.preview"),
+            // Only render when active so the preview uses the current questions
+            children:
+              activeTab === TAB.Preview ? (
+                <PreviewTab form={form} selectedLanguages={selectedLanguages} />
+              ) : null,
           },
           ...(type === "update"
             ? [

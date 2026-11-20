@@ -3,9 +3,9 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   DragOutlined,
-  MinusCircleTwoTone,
+  MinusCircleOutlined,
   MinusOutlined,
-  PlusCircleTwoTone,
+  PlusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
 import { QuestionType } from "@app/graphql"
@@ -21,13 +21,24 @@ import {
   Row,
   Select,
   Space,
+  theme,
   Tooltip,
+  Typography,
 } from "antd"
+import Trans from "next-translate/Trans"
 
 import { useTranslation } from "../."
 import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
+
+import {
+  buildPresetQuestions,
+  buildTemplateQuestions,
+  questionPresets,
+  questionTemplates,
+} from "./eventTemplates"
+import { TemplateSelector } from "./TemplateSelector"
 
 import type { SelectValue } from "antd/lib/select"
 
@@ -40,6 +51,9 @@ type QuestionData = {
   label: string
   isRequired: boolean
   data: string[]
+  // Set on questions created from a preset checkbox or an event template
+  presetKey?: string
+  templateKey?: string
 }
 
 interface QuestionsTabProps {
@@ -59,11 +73,40 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
      * particularly well with antd's form model.
      */
 
-    const { t } = useTranslation("events")
+    const { t, lang } = useTranslation("events")
+    const { token } = theme.useToken()
     const isMobile = useIsMobile()
     const [, forceUpdate] = useReducer((x) => x + 1, 0)
     const { getFieldValue, setFieldsValue } = form
     const questions = getFieldValue("questions") as QuestionData[]
+
+    function presetKeysOf(questions: QuestionData[] = []) {
+      // A preset can add several questions, so dedupe the keys
+      const keys = questions.map((q) => q?.presetKey).filter(Boolean)
+      return [...new Set(keys)] as string[]
+    }
+
+    // Presets that were ticked by hand, so a template doesn't add them twice
+    function buildTemplateWithoutTickedPresets(templateKey: string) {
+      const current = (getFieldValue("questions") as QuestionData[]) ?? []
+      const ticked = presetKeysOf(current.filter((q) => !q?.templateKey))
+      return buildTemplateQuestions(templateKey, selectedLanguages).filter(
+        (q) => !ticked.includes(q.presetKey)
+      )
+    }
+
+    function handlePresetsChange(checked: string[]) {
+      const current = (getFieldValue("questions") as QuestionData[]) ?? []
+      const present = presetKeysOf(current)
+      const kept = current.filter(
+        (q) => !q?.presetKey || checked.includes(q.presetKey)
+      )
+      const added = checked
+        .filter((key) => !present.includes(key))
+        .flatMap((key) => buildPresetQuestions(key, selectedLanguages))
+      form.setFieldValue("questions", [...kept, ...added])
+      forceUpdate()
+    }
 
     function handleTypeChange(val: SelectValue, index: number) {
       if (val === "TEXT") {
@@ -142,9 +185,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
     function renderQuestionDataField(index: number, i: number) {
       const addDataOption = (
         <Tooltip title={t("addOption")}>
-          <PlusCircleTwoTone
+          <PlusCircleOutlined
             data-cy={`eventform-questions-${index}-add-option`}
-            twoToneColor="lightgreen"
+            style={{ color: token.colorSuccess }}
             onClick={() => handleAddOption(index)}
           />
         </Tooltip>
@@ -163,31 +206,42 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
       const firstLanguage = selectedLanguages?.[0]
 
       return selectedLanguages.map((l) => {
+        const icon =
+          l !== firstLanguage
+            ? null
+            : i === 0
+              ? addDataOption
+              : removeDataOption(index, i)
         return (
-          <Form.Item
+          <div
             key={l}
-            name={[index, "data", i, l.toLowerCase()]}
-            rules={[
-              {
-                required: true,
-                message: t("forms.rules.questions.provideQuestionData"),
-              },
-            ]}
-            noStyle
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
           >
-            <Input
-              data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
-              placeholder={`${t("common:option")} ${i} ${t(
-                `common:lang.in.${l}`
-              )}`}
-              suffix={
-                <>
-                  {i === 0 && l === firstLanguage && addDataOption}
-                  {i > 0 && l === firstLanguage && removeDataOption(index, i)}
-                </>
-              }
-            />
-          </Form.Item>
+            <Form.Item
+              name={[index, "data", i, l.toLowerCase()]}
+              rules={[
+                {
+                  required: true,
+                  message: t("forms.rules.questions.provideQuestionData"),
+                },
+              ]}
+              noStyle
+            >
+              <Input.TextArea
+                data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
+                placeholder={`${t("common:option")} ${i} ${t(
+                  `common:lang.in.${l}`
+                )}`}
+                style={{ flex: 1 }}
+                // Grow taller instead of cutting off long option texts
+                autoSize
+                // An option is a single line of text, so Enter adds no newline
+                onPressEnter={(e) => e.preventDefault()}
+              />
+            </Form.Item>
+            {/* Reserve the icon's width on every row so the fields line up */}
+            <span style={{ flex: "none", width: 14 }}>{icon}</span>
+          </div>
         )
       })
     }
@@ -282,6 +336,33 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
     return (
       <>
+        <TemplateSelector
+          build={buildTemplateWithoutTickedPresets}
+          listName="questions"
+          templateKeys={questionTemplates.map((template) => template.key)}
+          onApplied={forceUpdate}
+        />
+        <Form.Item
+          label={t("templates.questions.presets")}
+          labelCol={{ flex: "none" }}
+          wrapperCol={{ flex: "auto" }}
+        >
+          <Checkbox.Group
+            data-cy="eventform-questions-presets"
+            options={Object.entries(questionPresets).map(([key, preset]) => ({
+              value: key,
+              label: preset[0].label[lang as "fi" | "en"] ?? preset[0].label.en,
+            }))}
+            value={presetKeysOf(questions)}
+            onChange={(checked) => handlePresetsChange(checked as string[])}
+          />
+        </Form.Item>
+        <Typography.Paragraph>
+          <Trans
+            components={{ b: <strong /> }}
+            i18nKey="events:questionsAutomaticallyCollected"
+          />
+        </Typography.Paragraph>
         <DndProvider backend={HTML5Backend}>
           <Form.List name="questions">
             {(fields, { add, remove, move }) => (
@@ -374,9 +455,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         </Col>
                         <Col span="1">
                           <Tooltip title={t("removeQuestion")}>
-                            <MinusCircleTwoTone
+                            <MinusCircleOutlined
                               data-cy="eventform-questions-remove-question"
-                              twoToneColor="red"
+                              style={{ color: token.colorError }}
                               onClick={() => {
                                 remove(name)
                                 forceUpdate()

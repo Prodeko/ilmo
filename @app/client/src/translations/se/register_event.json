@@ -21,6 +21,7 @@
       "provideLastName": "Ange ditt efternamn"
     }
   },
+  "previewNotSubmitted": "Förhandsvisning: ingen anmälan skickades",
   "recentlyRegisteredHeader": "Nyligen registrerad:",
   "recentlyRegisteredListItem": "nyligen registrerad till kvoten",
   "registrationDeleteComplete": "Raderad registrering",

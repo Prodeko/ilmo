@@ -1,6 +1,6 @@
 import { promises as fsp } from "fs"
 import { platform } from "os"
-import { URL } from "url"
+import { fileURLToPath, URL } from "url"
 
 import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
 
@@ -11,7 +11,7 @@ export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
-  return new URL(".", meta.url).pathname
+  return fileURLToPath(new URL(".", meta.url))
 }
 
 const __dirname = dirname(import.meta)

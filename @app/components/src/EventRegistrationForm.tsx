@@ -26,6 +26,7 @@ import {
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
+import { celebrate } from "./celebrate"
 import { ErrorAlert, useTranslation } from "."
 
 import type { Rule } from "antd/lib/form"
@@ -47,6 +48,9 @@ interface EventRegistrationFormProps {
   initialValues?: any
   // Used to delete an unfinished registration
   setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
+  // Used by the event form's preview tab: the form is validated but never
+  // submitted. Leave eventId and quotaId out so no registration is claimed.
+  preview?: boolean
 }
 
 // important React.memo, otherwise the form fields may be cleared as
@@ -64,6 +68,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       submitAction,
       initialValues,
       setUpdateToken,
+      preview,
     } = props
 
     const { t, lang } = useTranslation("register_event")
@@ -171,6 +176,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
           const { error } = await formMutation({ input })
           if (error) throw error
 
+          if (type === "create") celebrate()
           if (submitAction) {
             submitAction()
           }
@@ -235,10 +241,33 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       <Form
         {...registrationFormItemLayout}
         colon={false}
+        // The preview is shown inside the event form, and a <form> nested in
+        // another <form> can submit the outer one. Render a <div> instead,
+        // submit with a plain button and keep Enter from submitting the
+        // event form.
+        component={preview ? "div" : undefined}
         form={form}
         initialValues={initialValues}
         labelWrap
-        onFinish={handleSubmit}
+        onFinish={
+          preview
+            ? () => {
+                // Show the same celebration registrants will see
+                celebrate()
+                message.info(t("previewNotSubmitted"))
+              }
+            : handleSubmit
+        }
+        onKeyDown={
+          preview
+            ? (e: React.KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  form.submit()
+                }
+              }
+            : undefined
+        }
       >
         <Form.Item
           label={t("forms.firstName")}
@@ -364,16 +393,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         <Form.Item {...tailFormItemLayout}>
           <Button
             data-cy="eventregistrationform-button-submit"
-            htmlType="submit"
+            htmlType={preview ? "button" : "submit"}
+            // Wait for the registration token before allowing a new
+            // registration to be submitted
             loading={
-              formError
-                ? false
-                : (type === "create" && !!registrationToken) ||
-                    type === "update"
-                  ? false
-                  : true
+              !preview && !formError && type === "create" && !registrationToken
             }
             type="primary"
+            onClick={preview ? () => form.submit() : undefined}
           >
             {t(`common:${type}`)}
           </Button>

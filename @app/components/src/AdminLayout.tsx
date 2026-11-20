@@ -165,6 +165,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         }
       `}
       collapsedWidth={40}
+      // Wide enough for the longest menu label ("Evenemangskategorier")
+      // next to its icon and submenu arrow; antd's default is 200
+      width={240}
     >
       <AdminSideMenu items={items} />
     </Sider>
