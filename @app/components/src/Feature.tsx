@@ -26,12 +26,15 @@ export interface FeatureFlagsContextValue {
   preview: readonly string[]
   /** Whether the viewer may manage feature flags. */
   isDeveloper: boolean
+  /** Whether the flags have loaded. Until then every feature reads as off. */
+  loaded: boolean
 }
 
 const noFeatures: FeatureFlagsContextValue = {
   enabled: [],
   preview: [],
   isDeveloper: false,
+  loaded: false,
 }
 
 const FeatureFlagsContext = createContext<FeatureFlagsContextValue>(noFeatures)
@@ -83,6 +86,7 @@ export function FeatureFlagsProvider({
         (key): key is string => typeof key === "string" && enabled.includes(key)
       ),
       isDeveloper,
+      loaded: !!enabledList,
     }
   }, [enabledList, previewList, isDeveloper])
 
@@ -95,6 +99,14 @@ export function FeatureFlagsProvider({
 
 export function useFeatureFlags(): FeatureFlagsContextValue {
   return useContext(FeatureFlagsContext)
+}
+
+/**
+ * Whether the flags have loaded. A component whose layout depends on several
+ * flags can wait for them instead of rendering with every feature off first.
+ */
+export function useFeatureFlagsLoaded(): boolean {
+  return useContext(FeatureFlagsContext).loaded
 }
 
 /** Whether a feature is enabled for the viewer. Off while loading. */

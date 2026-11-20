@@ -7,12 +7,17 @@ import {
   UpdateEventPageQuery,
 } from "@app/graphql"
 import { formItemLayout, lowercased } from "@app/lib"
-import { Badge, Col, Form, Row, Tabs } from "antd"
+import { Badge, Col, Form, Row, Skeleton, Tabs } from "antd"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
-import { ButtonLink, useFeature, useTranslation } from "../."
+import {
+  ButtonLink,
+  useFeature,
+  useFeatureFlagsLoaded,
+  useTranslation,
+} from "../."
 import { useCelebrate } from "../celebrate"
 
 import { EmailTab } from "./EmailTab"
@@ -57,7 +62,7 @@ enum TAB {
 // Tabs holding the event's form fields, which the footer moves between
 const FORM_TABS = [TAB.General, TAB.Quotas, TAB.Questions]
 
-export const EventForm: React.FC<EventFormProps> = (props) => {
+const EventFormContent: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
   const { supportedLanguages } = data || {}
@@ -375,3 +380,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     </Form>
   )
 }
+
+/**
+ * The event create and update form. Several of its fields and tabs depend on
+ * feature flags, so it waits for them rather than rendering with every
+ * feature off and then swapping controls in.
+ */
+export const EventForm: React.FC<EventFormProps> = (props) =>
+  useFeatureFlagsLoaded() ? (
+    <EventFormContent {...props} />
+  ) : (
+    <Skeleton active />
+  )

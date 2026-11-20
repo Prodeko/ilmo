@@ -126,6 +126,12 @@ describe("event form", () => {
     jest.spyOn(console, "error").mockImplementation(() => {})
   })
 
+  it("waits for the flags before rendering", () => {
+    const html = renderForm(undefined)
+    expect(html).toContain("ant-skeleton")
+    expect(html).not.toContain("eventform-")
+  })
+
   it("renders without the gated parts while their flags are off", () => {
     const html = renderForm([])
     expect(html).toContain('data-cy="eventform-input-event-time"')
