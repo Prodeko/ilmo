@@ -1,0 +1,58 @@
+{% extends "base.mjml.njk" %}
+{% from "payment_macros.njk" import eventHeader, paymentBox, amountTable, amountRow %}
+
+{#
+  Payment received (board 14). Sent when a card payment is confirmed by
+  Stripe and when an organizer marks a registration paid by hand. A manual
+  payment has no service fee: leave serviceFee out (or 0) and total equals
+  the ticket price.
+  Amounts are cents: price, serviceFee, total.
+#}
+
+{% block headerContent %}
+{{ eventHeader(eventName) }}
+{% endblock %}
+
+{% block content %}
+<mj-column width="100%">
+  <mj-text>Maksusi on vastaanotettu. Nähdään tapahtumassa!</mj-text>
+  <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
+    - Nimi: {{ registrationName }} <br />
+    - Kiintiö: {{ registrationQuota.fi }} <br />
+    - Ajankohta: {{ eventTime }} <br />
+    - Paikka: {{ eventLocation }} <br />
+  </mj-text>
+  {% call paymentBox("success") %}
+    {% call amountTable() %}
+      {{ amountRow("Lippu", price | euro) }}
+      {% if serviceFee %}{{ amountRow("Palvelumaksu", serviceFee | euro) }}{% endif %}
+      {{ amountRow("Yhteensä", total | euro, strong=true) }}
+      {{ amountRow("Maksettu", paidAt, muted=true) }}
+    {% endcall %}
+  {% endcall %}
+  <mj-text>
+    Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
+    <a href="{{ url }}/fi/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/fi/{{ eventRegistrationUpdateLink }}</a>
+  </mj-text>
+  <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  <mj-text>Your payment has been received. See you at the event!</mj-text>
+  <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
+    - Name: {{ registrationName }} <br />
+    - Quota: {{ registrationQuota.en }} <br />
+    - Event time: {{ eventTime }} <br />
+    - Event location: {{ eventLocation }} <br />
+  </mj-text>
+  {% call paymentBox("success") %}
+    {% call amountTable() %}
+      {{ amountRow("Ticket", price | euro) }}
+      {% if serviceFee %}{{ amountRow("Service fee", serviceFee | euro) }}{% endif %}
+      {{ amountRow("Total", total | euro, strong=true) }}
+      {{ amountRow("Paid", paidAt, muted=true) }}
+    {% endcall %}
+  {% endcall %}
+  <mj-text>
+    You can update or delete your registration via this link:
+    <a href="{{ url }}/en/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/en/{{ eventRegistrationUpdateLink }}</a>
+  </mj-text>
+</mj-column>
+{% endblock %}

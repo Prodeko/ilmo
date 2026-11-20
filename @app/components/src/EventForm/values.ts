@@ -1,7 +1,12 @@
 // Mapping between an event and the event form's values. An event field is
 // added to the form in three places here: FormValues, toFormValues and
 // toEventInput.
-import { filterObjectByKeys } from "@app/lib"
+import { PaymentMode } from "@app/graphql"
+import {
+  filterObjectByKeys,
+  ticketPriceCentsToEuros,
+  ticketPriceEurosToCents,
+} from "@app/lib"
 import dayjs from "dayjs"
 import slugify from "slugify"
 
@@ -16,6 +21,10 @@ import type {
 } from "@app/graphql"
 import type { UploadFile } from "antd/lib/upload/interface"
 import type { JsonValue } from "type-fest"
+
+// A quota in the form. The ticket price is edited in euros; it is undefined
+// when the form has no price input for the quota (payments off).
+export type FormQuota = Quota & { price?: number | null }
 
 export type FormValues = {
   languages?: string[]
@@ -32,8 +41,18 @@ export type FormValues = {
   headerImageFile?: string | UploadFile
   isDraft?: boolean
   openQuotaSize?: number
-  quotas?: Quota[]
+  quotas?: FormQuota[]
   questions?: EventQuestion[]
+  paymentMode?: PaymentMode
+  sendUnpaidEmailOnClose?: boolean
+}
+
+// Features that change what the form sends
+export type EventInputOptions = {
+  // Payment settings and quota prices are sent only while payments are on,
+  // so that events are saved exactly as before otherwise (and the database
+  // keeps stored settings: it refuses paid settings while payments are off)
+  payments?: boolean
 }
 
 // The form only submits once validation has passed, which requires both
@@ -102,6 +121,8 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
     "quotas",
     "eventQuestions",
     "openQuotaSize",
+    "paymentMode",
+    "sendUnpaidEmailOnClose",
   ]) as Partial<UpdateFormEvent> | null | undefined
 
   const {
@@ -119,15 +140,18 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
     dayjs(registrationStartTime),
     dayjs(registrationEndTime),
   ]
-  const quotas = quotasConnection?.nodes.map((quota) =>
-    filterObjectByKeys(quota, [
+  const quotas = quotasConnection?.nodes.map((quota) => ({
+    ...filterObjectByKeys(quota, [
       "id",
       "position",
       "title",
       "size",
       "registrations",
-    ])
-  )
+      "priceCents",
+    ]),
+    // The quota form edits the ticket price in euros
+    price: ticketPriceCentsToEuros(quota.priceCents),
+  }))
   const questions = questionsConnection?.nodes.map((question) =>
     filterObjectByKeys(question, [
       "id",
@@ -153,7 +177,10 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
 }
 
 // The createEvent and updateEvent input for the submitted form values
-export function toEventInput(values: SubmittedFormValues): EventInput {
+export function toEventInput(
+  values: SubmittedFormValues,
+  { payments = false }: EventInputOptions = {}
+): EventInput {
   const {
     name,
     eventTime,
@@ -184,18 +211,33 @@ export function toEventInput(values: SubmittedFormValues): EventInput {
     headerImageFile:
       typeof headerFile === "object" ? headerFile?.originFileObj : undefined,
     openQuotaSize,
+    ...(payments
+      ? {
+          paymentMode: values.paymentMode ?? PaymentMode.None,
+          // The close email is always on in AFTER_REGISTRATION mode
+          sendUnpaidEmailOnClose:
+            values.paymentMode === PaymentMode.AfterRegistration ||
+            !!values.sendUnpaidEmailOnClose,
+        }
+      : {}),
   }
 
   // The list order sets the positions
   const quotas =
-    formQuotas?.map((q, index) =>
-      filterObjectByKeys({ ...q, position: index }, [
+    formQuotas?.map((q, index) => {
+      const quota = filterObjectByKeys({ ...q, position: index }, [
         "id",
         "position",
         "title",
         "size",
       ])
-    ) || []
+      // A cleared price input is sent as 0 (free). Without a price in the
+      // form, priceCents is omitted: the database keeps the current price,
+      // or makes a new quota free.
+      return payments && q.price !== undefined
+        ? { ...quota, priceCents: ticketPriceEurosToCents(q.price) }
+        : quota
+    }) || []
 
   // Questions may be empty
   const questions = formQuestions?.map((q, index) =>

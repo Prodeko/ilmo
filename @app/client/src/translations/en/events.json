@@ -76,12 +76,14 @@
     "saveAsDraft": "Save as draft",
     "signupEmail": "Event signup email"
   },
+  "free": "Free",
   "headerImage": "Event header image",
   "languages": "Languages",
   "numRegistrations": "Registered people",
   "openQuota": "Overflow quota",
   "organizer": "Organizer",
   "overflowQuotaInfo": "The overflow quota is shared by all quotas: when a registrant’s own quota is full, they get a spot in the overflow quota if there is room. After that, registrants go to the queue.",
+  "paymentMethods": "Paid by card, Apple Pay or Google Pay.",
   "previewInfo": "This is how the registration form looks to registrants. You can try the form, but nothing is submitted from the preview.",
   "questionsAutomaticallyCollected": "<b>First name</b>, <b>last name</b> and <b>email</b> are collected from registrants automatically, so you do not need to add them as questions.",
   "queued": "Queue",
@@ -113,5 +115,6 @@
     "registrationStarts": "Opens",
     "time": "Current time",
     "title": "Registration opens soon"
-  }
+  },
+  "inQueueCount": "{{count}} in queue"
 }

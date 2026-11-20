@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CreateEventDocument,
   CreateEventPageQuery,
+  PaymentMode,
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
@@ -13,6 +14,7 @@ import { CombinedError, useMutation } from "urql"
 
 import { ButtonLink, useTranslation } from "../."
 import { useCelebrate } from "../celebrate"
+import { PAYMENTS_FEATURE_ENABLED } from "../featureSwitches"
 
 import { EmailTab } from "./EmailTab"
 import { EventFormFooter } from "./EventFormFooter"
@@ -60,6 +62,7 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
   const { supportedLanguages } = data || {}
+  const paymentsEnabled = PAYMENTS_FEATURE_ENABLED
   const languagesLower = useMemo(
     () => lowercased(supportedLanguages),
     [supportedLanguages]
@@ -162,7 +165,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
-        const commonInput = toEventInput(values)
+        const commonInput = toEventInput(values, {
+          payments: paymentsEnabled,
+        })
         const input =
           type === "update"
             ? {
@@ -184,7 +189,16 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       }
       setFormSubmitting(false)
     },
-    [mutation, formRedirect, router, t, type, eventId, celebrate]
+    [
+      mutation,
+      formRedirect,
+      router,
+      t,
+      type,
+      eventId,
+      celebrate,
+      paymentsEnabled,
+    ]
   )
 
   const tabLabels: Record<string, string> = {
@@ -214,6 +228,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         isDraft,
         isHighlighted: false,
         openQuotaSize: 0,
+        ...(paymentsEnabled
+          ? { paymentMode: PaymentMode.None, sendUnpaidEmailOnClose: false }
+          : {}),
         ...initialValues,
       }}
       onFinish={handleSubmit}
@@ -284,9 +301,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                   forceRender: true,
                   children: (
                     <RegistrationsTab
+                      eventId={eventId as string}
                       eventSlug={
                         (data as UpdateEventPageQuery)?.event?.slug as string
                       }
+                      paymentsEnabled={paymentsEnabled}
                       questions={
                         (data as UpdateEventPageQuery)?.event?.eventQuestions
                           ?.nodes

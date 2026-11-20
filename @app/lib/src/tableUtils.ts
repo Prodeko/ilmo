@@ -4,7 +4,9 @@ import {
 } from "@app/graphql"
 import dayjs from "dayjs"
 
-import { CsvRow, filterObjectByKeys } from "."
+import { formatEuro } from "./payments"
+import { CsvRow } from "./types"
+import { filterObjectByKeys } from "./utils"
 
 /**
  * Table utils
@@ -43,9 +45,57 @@ const registrationColsToDownload = [
   "answers",
 ]
 
-export function downloadRegistrations(
-  questions: EventPage_QuestionFragment[] | undefined
+interface DownloadRegistrationsOptions {
+  /**
+   * Adds the payment status and ticket price columns. Only set when payments
+   * are on for the site and the event, so the CSV is unchanged otherwise.
+   */
+  includePayments?: boolean
+  /**
+   * The text written for a payment status (for example a translated label);
+   * the raw status (PAID, PAID_MANUALLY, ...) by default.
+   */
+  paymentStatusLabel?: (status: string) => string
+}
+
+/**
+ * Returns a copy of a CSV row with the payment status and ticket price columns
+ * inserted right after the quota column, before the answer columns. A
+ * question whose label is already "paymentStatus" or "price" keeps its
+ * column; the payment column then gets a " (Ilmo)" suffix.
+ */
+function withPaymentColumns(
+  row: Record<string, any>,
+  registration: ListEventRegistrations_RegistrationFragment,
+  paymentStatusLabel: (status: string) => string
 ) {
+  const columnName = (name: string) => (name in row ? `${name} (Ilmo)` : name)
+  const paymentColumns = {
+    [columnName("paymentStatus")]: registration.paymentStatus
+      ? paymentStatusLabel(registration.paymentStatus)
+      : "",
+    [columnName("price")]:
+      registration.priceCents != null
+        ? formatEuro(registration.priceCents)
+        : "",
+  }
+  return Object.keys(row).reduce(
+    (acc, key) =>
+      key === "quota"
+        ? { ...acc, [key]: row[key], ...paymentColumns }
+        : { ...acc, [key]: row[key] },
+    {} as Record<string, any>
+  )
+}
+
+export function downloadRegistrations(
+  questions: EventPage_QuestionFragment[] | undefined,
+  options: DownloadRegistrationsOptions = {}
+) {
+  const {
+    includePayments = false,
+    paymentStatusLabel = (status: string) => status,
+  } = options
   return (data: ListEventRegistrations_RegistrationFragment[]) => {
     return data.reduce((acc, cur) => {
       if (cur.isFinished) {
@@ -72,7 +122,11 @@ export function downloadRegistrations(
           }
         })
         delete newRow["answers"]
-        acc.push(newRow as CsvRow)
+        acc.push(
+          (includePayments
+            ? withPaymentColumns(newRow, cur, paymentStatusLabel)
+            : newRow) as CsvRow
+        )
       }
       return acc
     }, [] as CsvRow[])

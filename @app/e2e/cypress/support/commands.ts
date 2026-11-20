@@ -141,6 +141,19 @@ function serverCommand(
   verification_token: string | null
 }>
 
+/**
+ * Pays for the registration behind `updateToken` as if Stripe Checkout had
+ * completed: posts a signed `checkout.session.completed` event to the
+ * webhook. Requires Stripe to be configured.
+ */
+function serverCommand(
+  command: "completeStripeCheckout",
+  payload: { updateToken: string }
+): Chainable<{
+  paymentId: string
+  sessionId: string
+}>
+
 // The actual implementation of the 'serverCommand' function.
 function serverCommand(command: string, payload?: any): any {
   const url = `${Cypress.env(

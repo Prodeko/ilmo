@@ -1,6 +1,7 @@
 import dayjs from "dayjs"
 
 import { calendarInvitationContributor } from "./calendarInvitation"
+import { paymentEmailContributor } from "./paymentEmail"
 
 import type { EmailAttachment, SendEmailPayload } from "./tasks/send_email"
 import type { JobHelpers } from "graphile-worker"
@@ -86,6 +87,7 @@ export type RegistrationEmailContributor = (
 /** The contributors of the registration emails, in merge order. */
 export const registrationEmailContributors: RegistrationEmailContributor[] = [
   calendarInvitationContributor,
+  paymentEmailContributor,
 ]
 
 export function getFormattedEventTime(event: {

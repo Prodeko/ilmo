@@ -76,12 +76,14 @@
     "saveAsDraft": "Tallenna luonnoksena",
     "signupEmail": "Sähköposti"
   },
+  "free": "Maksuton",
   "headerImage": "Tapahtuman kansikuva",
   "languages": "Kielet",
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Ylivuotokiintiö",
   "organizer": "Järjestäjä",
   "overflowQuotaInfo": "Ylivuotokiintiö on yhteinen kaikille kiintiöille: kun ilmoittautujan oma kiintiö on täynnä, hän saa paikan ylivuotokiintiöstä, jos siinä on tilaa. Sen jälkeen ilmoittautujat menevät jonoon.",
+  "paymentMethods": "Maksu kortilla, Apple Paylla tai Google Paylla.",
   "previewInfo": "Näin ilmoittautumislomake näkyy ilmoittautujille. Voit kokeilla lomaketta, mutta esikatselusta ei lähetetä ilmoittautumista.",
   "questionsAutomaticallyCollected": "<b>Etunimi</b>, <b>sukunimi</b> ja <b>sähköposti</b> kysytään ilmoittautujilta automaattisesti, joten niitä ei tarvitse lisätä kysymyksiksi.",
   "queued": "Jonossa",
@@ -113,5 +115,6 @@
     "registrationStarts": "Ilmo aukeaa",
     "time": "Aika",
     "title": "Ilmoittautuminen aukeaa pian"
-  }
+  },
+  "inQueueCount": "{{count}} jonossa"
 }

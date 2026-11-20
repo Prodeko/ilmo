@@ -6,6 +6,7 @@ import {
   EventQuotasCard,
   EventRegistrationsTables,
   PageHeader,
+  PAYMENTS_FEATURE_ENABLED,
   Redirect,
   REGISTRATION_REMINDERS_ENABLED,
   SharedLayout,
@@ -55,7 +56,11 @@ const EventPage: NextPage = () => {
   return (
     <SharedLayout query={query} title={title}>
       {loadingElement || (
-        <EventPageInner currentUser={query.data.currentUser} event={event} />
+        <EventPageInner
+          currentUser={query.data.currentUser}
+          event={event}
+          paymentsEnabled={PAYMENTS_FEATURE_ENABLED}
+        />
       )}
     </SharedLayout>
   )
@@ -64,6 +69,7 @@ const EventPage: NextPage = () => {
 interface EventPageInnerProps {
   event: EventPage_EventFragment
   currentUser: SharedLayout_UserFragment
+  paymentsEnabled: boolean
 }
 
 const POLL_SERVER_TIME_MINUTES_BEFORE = 15
@@ -72,6 +78,7 @@ const NOTIFICATION_KEY = "time-notification"
 const EventPageInner: React.FC<EventPageInnerProps> = ({
   event,
   currentUser,
+  paymentsEnabled,
 }) => {
   const router = useRouter()
   const isMobile = useIsMobile()
@@ -270,6 +277,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
                 />
               ) : null
             }
+            paymentsEnabled={paymentsEnabled}
             registrations={registrations.nodes}
             signupState={signupState}
           />

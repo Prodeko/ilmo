@@ -1,4 +1,5 @@
 import { mcpRoutes } from "./mcp/routes"
+import { stripeWebhook } from "./stripeWebhook"
 import { telegramWebhook } from "./telegramWebhook"
 
 import type { FeatureKey } from "@app/lib"
@@ -64,6 +65,7 @@ export interface ExternalRouteModule {
 export const externalRoutes: readonly ExternalRouteModule[] = [
   telegramWebhook,
   mcpRoutes,
+  stripeWebhook,
 ]
 
 export interface CsrfExemption {

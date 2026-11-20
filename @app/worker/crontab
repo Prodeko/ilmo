@@ -16,3 +16,4 @@
 * * * * * gdpr__delete_event_registrations
 * * * * * registration__delete_unfinished_registrations
 */15 * * * * sessions__delete_inactive_mcp_sessions
+* * * * * event__send_unpaid_on_close

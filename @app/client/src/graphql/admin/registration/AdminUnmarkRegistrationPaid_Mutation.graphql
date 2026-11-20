@@ -1,0 +1,7 @@
+mutation AdminUnmarkRegistrationPaid(
+  $input: AdminUnmarkRegistrationPaidInput!
+) {
+  adminUnmarkRegistrationPaid(input: $input) {
+    boolean
+  }
+}

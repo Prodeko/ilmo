@@ -1,4 +1,5 @@
 import { calendarInvitationContributor } from "../src/calendarInvitation"
+import { paymentEmailContributor } from "../src/paymentEmail"
 import {
   buildRegistrationEmail,
   markRegistrationEmailSent,
@@ -83,7 +84,10 @@ afterEach(() => {
 })
 
 it("has one contributor per email block", () => {
-  expect(registrationEmailContributors).toEqual([calendarInvitationContributor])
+  expect(registrationEmailContributors).toEqual([
+    calendarInvitationContributor,
+    paymentEmailContributor,
+  ])
 })
 
 describe("buildRegistrationEmail", () => {

@@ -1,0 +1,45 @@
+fragment ListEventRegistrations_Query on Query {
+  registrations(
+    filter: {eventId: {equalTo: $eventId}, paymentStatus: $paymentStatus, status: $status}
+    first: $first
+    offset: $offset
+    orderBy: [QUOTA_ID_ASC, POSITION_ASC]
+  ) {
+    nodes {
+      ...ListEventRegistrations_Registration
+      __typename
+    }
+    totalCount
+    __typename
+  }
+  __typename
+}
+fragment ListEventRegistrations_Registration on Registration {
+  id
+  fullName
+  email
+  answers
+  isFinished
+  status
+  position
+  priceCents
+  paymentStatus
+  createdAt
+  updatedAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
+  priceCents
+  __typename
+}
+query ListEventRegistrations($eventId: UUID!, $offset: Int!, $first: Int!, $paymentStatus: RegistrationPaymentStatusFilter, $status: RegistrationStatusFilter) {
+  ...ListEventRegistrations_Query
+}

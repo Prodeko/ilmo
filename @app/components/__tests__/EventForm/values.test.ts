@@ -94,6 +94,21 @@ describe("toFormValues", () => {
     expect(values).not.toHaveProperty("createdAt")
   })
 
+  it("maps the payment settings and edits quota prices in euros", () => {
+    const values = toFormValues({
+      ...event,
+      paymentMode: "AFTER_REGISTRATION",
+      sendUnpaidEmailOnClose: true,
+      quotas: {
+        nodes: [{ ...event!.quotas.nodes[0], priceCents: 1850 }],
+      },
+    } as unknown as UpdateEventPageQuery["event"])
+
+    expect(values.paymentMode).toBe("AFTER_REGISTRATION")
+    expect(values.sendUnpaidEmailOnClose).toBe(true)
+    expect(values.quotas?.[0]).toMatchObject({ priceCents: 1850, price: 18.5 })
+  })
+
   it("gives empty values while the event is loading", () => {
     const values = toFormValues(undefined)
 
@@ -211,6 +226,62 @@ describe("toEventInput", () => {
         highlightText: { fi: "Pian täynnä" },
       }).event.highlightText
     ).toBeNull()
+  })
+
+  describe("payment settings", () => {
+    const paidValues = {
+      ...formValues,
+      paymentMode: "DURING_REGISTRATION",
+      sendUnpaidEmailOnClose: false,
+      quotas: [
+        { id: "quota-2", title: { fi: "B" }, size: 3, price: 18.5 },
+        { title: { fi: "A" }, size: 4, price: null },
+        { title: { fi: "C" }, size: 5 },
+      ],
+    } as any
+
+    it("leaves them out while payments are off", () => {
+      const input = toEventInput(paidValues)
+
+      expect(input.event).not.toHaveProperty("paymentMode")
+      expect(input.event).not.toHaveProperty("sendUnpaidEmailOnClose")
+      input.quotas.forEach((quota) =>
+        expect(quota).not.toHaveProperty("priceCents")
+      )
+    })
+
+    it("sends them and quota prices in cents while payments are on", () => {
+      const input = toEventInput(paidValues, { payments: true })
+
+      expect(input.event).toMatchObject({
+        paymentMode: "DURING_REGISTRATION",
+        sendUnpaidEmailOnClose: false,
+      })
+      // A cleared price is free; a quota without a price input keeps its
+      // stored price (or is free when new)
+      expect(input.quotas.map((q) => q.priceCents)).toEqual([
+        1850,
+        0,
+        undefined,
+      ])
+      expect(input.quotas[2]).not.toHaveProperty("priceCents")
+    })
+
+    it("always sends the close email in AFTER_REGISTRATION mode", () => {
+      const input = toEventInput(
+        { ...paidValues, paymentMode: "AFTER_REGISTRATION" },
+        { payments: true }
+      )
+      expect(input.event.sendUnpaidEmailOnClose).toBe(true)
+    })
+
+    it("defaults to no payments", () => {
+      const input = toEventInput(
+        { ...formValues, paymentMode: undefined },
+        { payments: true }
+      )
+      expect(input.event.paymentMode).toBe("NONE")
+    })
   })
 
   it("sends an empty quota list when the form has no quotas", () => {

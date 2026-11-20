@@ -244,19 +244,29 @@ describe("csrfExemptions", () => {
       TELEGRAM_UPDATE_MODE: "webhook",
       TELEGRAM_WEBHOOK_SECRET: "test-webhook-secret",
     }
+    const stripeEnv = {
+      STRIPE_SECRET_KEY: "sk_test_123",
+      STRIPE_WEBHOOK_SECRET: "whsec_test",
+    }
     beforeEach(() => {
       delete process.env.TELEGRAM_BOT_TOKEN
+      delete process.env.STRIPE_SECRET_KEY
+      delete process.env.STRIPE_WEBHOOK_SECRET
       process.env.KEYCLOAK_ISSUER = ""
     })
     afterEach(() => {
       process.env = { ...saved }
     })
 
-    it("has the Telegram webhook and the MCP server", () => {
-      expect(externalRoutes.map((m) => m.name)).toEqual(["telegram", "mcp"])
+    it("has the Telegram webhook, the MCP server and the Stripe webhook", () => {
+      expect(externalRoutes.map((m) => m.name)).toEqual([
+        "telegram",
+        "mcp",
+        "stripe",
+      ])
     })
 
-    it("is empty when neither is configured", () => {
+    it("is empty when none is configured", () => {
       expect(csrfExemptions()).toEqual([])
     })
 
@@ -272,12 +282,27 @@ describe("csrfExemptions", () => {
       expect(csrfExemptions()).toEqual([{ method: "POST", path: "/mcp" }])
     })
 
-    it("exempts both when both are configured", () => {
-      Object.assign(process.env, telegramWebhookEnv)
+    it("exempts the Stripe webhook only when both Stripe secrets are set", () => {
+      process.env.STRIPE_SECRET_KEY = stripeEnv.STRIPE_SECRET_KEY
+      expect(csrfExemptions()).toEqual([])
+      Object.assign(process.env, stripeEnv)
+      expect(csrfExemptions()).toEqual([
+        { method: "POST", path: "/api/stripe/webhook" },
+      ])
+    })
+
+    it("keeps the Stripe webhook answering while the payments flag is off", () => {
+      const stripe = externalRoutes.find((m) => m.name === "stripe")
+      expect(stripe).toMatchObject({ feature: "payments", gateWhenOff: false })
+    })
+
+    it("exempts all three when all are configured", () => {
+      Object.assign(process.env, telegramWebhookEnv, stripeEnv)
       process.env.KEYCLOAK_ISSUER = "https://id.example.org/realms/test"
       expect(csrfExemptions()).toEqual([
         { method: "POST", path: "/telegram/webhook" },
         { method: "POST", path: "/mcp" },
+        { method: "POST", path: "/api/stripe/webhook" },
       ])
     })
   })

@@ -54,6 +54,11 @@ export const FEATURES = {
       "MCP server at /mcp for AI assistants: browse events, register, and let admins create draft events.",
     requiresEnv: ["KEYCLOAK_ISSUER"],
   },
+  payments: {
+    description:
+      "Stripe payments for paid quotas: prices, the pay page, Checkout, organizer payment tools and payment emails.",
+    requiresEnv: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+  },
 } as const satisfies Record<string, FeatureDefinition>
 
 export type FeatureKey = keyof typeof FEATURES

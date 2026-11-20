@@ -182,3 +182,27 @@ export async function syncFeatureAvailability(
   }
   return { available, missing }
 }
+
+/**
+ * Whether a feature is enabled for the user of a GraphQL request: on for
+ * everyone, or `admins_only` and the request's session belongs to an admin.
+ * `pgClient` is the request's client, which carries the session; it is
+ * queried only when the flag is not on for everyone.
+ */
+export async function isFeatureEnabledForSession(
+  key: FeatureKey,
+  pgClient: { query: Pool["query"] }
+): Promise<boolean> {
+  if (await isFeatureEnabled(key)) {
+    return true
+  }
+  if (!(await isFeatureEnabled(key, { asAdmin: true }))) {
+    return false
+  }
+  const {
+    rows: [row],
+  } = await pgClient.query<{ is_admin: boolean }>(
+    "select app_public.current_user_is_admin() as is_admin"
+  )
+  return Boolean(row?.is_admin)
+}

@@ -6,6 +6,7 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
+import { PaymentMode } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
@@ -21,8 +22,10 @@ import {
 
 import { useTranslation } from "../."
 import { Draggable } from "../Draggable"
+import { PAYMENTS_FEATURE_ENABLED } from "../featureSwitches"
 
 import { EventTemplates } from "./fields/EventTemplates"
+import { QuotaPriceField, QuotaPriceWarning } from "./fields/QuotaPriceField"
 import { QuotaTemplateFields } from "./fields/QuotaTemplateFields"
 
 interface QuotasTabProps {
@@ -39,6 +42,12 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
     const { t } = useTranslation("events")
     const { token } = theme.useToken()
     const form = Form.useFormInstance()
+    const paymentMode = Form.useWatch("paymentMode", form)
+    // Prices only mean something when the event collects payments
+    const showPrices =
+      PAYMENTS_FEATURE_ENABLED &&
+      !!paymentMode &&
+      paymentMode !== PaymentMode.None
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
@@ -128,6 +137,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                           placeholder={t("forms.placeholders.quota.size")}
                         />
                       </Form.Item>
+                      {showPrices && (
+                        <QuotaPriceField index={index} name={name} />
+                      )}
                       {numRegistrations === 0 ? (
                         <Tooltip title={t("removeQuota")}>
                           <MinusCircleOutlined
@@ -142,6 +154,12 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                         </div>
                       )}
                     </Space>
+                    {showPrices && (
+                      <QuotaPriceWarning
+                        initialValues={initialValues}
+                        name={name}
+                      />
+                    )}
                   </Draggable>
                 )
               })}
@@ -202,6 +220,23 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
             {t("templates.quotas.openQuotaHint")}
           </EventTemplates>
         </Typography.Paragraph>
+        {showPrices && (
+          <Space
+            direction="vertical"
+            size={2}
+            style={{ display: "flex", marginTop: 16 }}
+          >
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteFree")}
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteFees")}
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteOpenQuota")}
+            </Typography.Text>
+          </Space>
+        )}
       </DndProvider>
     )
   },

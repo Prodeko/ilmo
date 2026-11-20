@@ -1,0 +1,11 @@
+mutation AdminMarkRegistrationPaid($input: AdminMarkRegistrationPaidInput!) {
+  adminMarkRegistrationPaid(input: $input) {
+    payment {
+      id
+    }
+    registration {
+      id
+      paymentStatus
+    }
+  }
+}

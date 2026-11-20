@@ -14,3 +14,12 @@ export const REGISTRATION_REMINDERS_ENABLED: boolean = false
 
 /** telegram_reminders: Telegram options in the reminder settings. */
 export const TELEGRAM_REMINDERS_ENABLED: boolean = false
+
+/**
+ * payments: prices on the event and register pages, the payment settings and
+ * quota prices in the event form, and the organizer payment tools. The pay
+ * page and the payment section of the update page do not read it: the
+ * server answers for payments already made and blocks Pay while the flag is
+ * off.
+ */
+export const PAYMENTS_FEATURE_ENABLED: boolean = false

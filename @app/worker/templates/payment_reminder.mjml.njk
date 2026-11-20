@@ -1,0 +1,43 @@
+{% extends "base.mjml.njk" %}
+{% from "payment_macros.njk" import eventHeader, paymentBox, payButton, note %}
+
+{#
+  Payment reminder (board 13). Sent by the organizers' "Send reminder to all
+  unpaid" action and, with `closed`, by the automatic email when
+  registration closes.
+  Amounts are cents: price, serviceFee, total.
+#}
+
+{% block headerContent %}
+{{ eventHeader(eventName) }}
+{% endblock %}
+
+{% block content %}
+<mj-column width="100%">
+  {% if closed %}
+  <mj-text><strong>Ilmoittautuminen on päättynyt.</strong></mj-text>
+  {% endif %}
+  <mj-text>Hei {{ firstName }},</mj-text>
+  <mj-text>
+    ilmoittautumisesi tapahtumaan {{ eventName.fi }} (kiintiö: {{ registrationQuota.fi }}) on vielä maksamatta. Voit maksaa osallistumisen alla olevasta linkistä:
+  </mj-text>
+  {% call paymentBox() %}
+    Lippu {{ price | euro }} + palvelumaksu {{ serviceFee | euro }} = <strong>{{ total | euro }}</strong>
+    {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
+  {% endcall %}
+  {% call note() %}Jos et pääse tapahtumaan, ota yhteyttä järjestäjiin.{% endcall %}
+  <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  {% if closed %}
+  <mj-text><strong>Registration has closed.</strong></mj-text>
+  {% endif %}
+  <mj-text>Hi {{ firstName }},</mj-text>
+  <mj-text>
+    your registration to {{ eventName.en }} (quota: {{ registrationQuota.en }}) hasn't been paid yet. Please pay using the link below:
+  </mj-text>
+  {% call paymentBox() %}
+    Ticket {{ price | euro }} + service fee {{ serviceFee | euro }} = <strong>{{ total | euro }}</strong>
+    {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
+  {% endcall %}
+  {% call note() %}If you can't attend, please contact the organizers.{% endcall %}
+</mj-column>
+{% endblock %}

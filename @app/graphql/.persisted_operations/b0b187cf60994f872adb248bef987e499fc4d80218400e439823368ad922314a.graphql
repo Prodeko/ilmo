@@ -1,0 +1,34 @@
+fragment EventFields on Event {
+  id
+  name
+  slug
+  description
+  location
+  eventStartTime
+  eventEndTime
+  registrationStartTime
+  registrationEndTime
+  isHighlighted
+  highlightText
+  isDraft
+  headerImageFile
+  openQuotaSize
+  paymentMode
+  signupOpen
+  signupUpcoming
+  signupClosed
+  createdBy
+  updatedBy
+  createdAt
+  updatedAt
+  __typename
+}
+mutation UpdateEvent($input: UpdateEventInput!) {
+  updateEvent(input: $input) {
+    event {
+      ...EventFields
+      __typename
+    }
+    __typename
+  }
+}
