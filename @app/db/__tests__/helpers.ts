@@ -112,11 +112,7 @@ export const withDeveloperUserDb = <T>(
   fn: (client: PoolClient, user: User) => Promise<T>
 ) =>
   withRootDb(async (client) => {
-    const [user] = await createUsers(client, 1, true, true)
-    await client.query(
-      "update app_public.users set is_developer = true where id = $1",
-      [user.id]
-    )
+    const [user] = await createUsers(client, 1, true, true, true)
     await becomeUser(client, user.id)
     await fn(client, user)
   })

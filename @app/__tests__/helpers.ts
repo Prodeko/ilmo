@@ -3,6 +3,8 @@ import { readdirSync } from "node:fs"
 import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 
+import type { FeatureFlagState, FeatureKey } from "@app/lib"
+
 export {
   constructAnswersFromQuestions,
   createEventCategories,
@@ -79,10 +81,16 @@ export const deleteTestEventData = (pool: Pool) => {
   )
 }
 
+export const resetFeatureFlags = (pool: Pool) =>
+  pool.query(
+    "update app_public.feature_flags set state = 'off' where state <> 'off'"
+  )
+
 export const deleteTestData = async () => {
   const pool = poolFromUrl(TEST_DATABASE_URL)
   await deleteTestUsers(pool)
   await deleteTestEventData(pool)
+  await resetFeatureFlags(pool)
 }
 
 /* Quickly becomes root, does the thing, and then reverts back to previous role */
@@ -102,6 +110,35 @@ export const asRoot = async <T>(
     } catch (e) {
       // Transaction was probably aborted, don't clobber the error
     }
+  }
+}
+
+/******************************************************************************/
+// Feature flags
+
+/**
+ * Sets the state of a feature flag directly, bypassing the developer check
+ * and the audit log. With a pool the change is committed; with a client it
+ * belongs to the client's transaction. deleteTestData switches every flag
+ * back off. Fails for a key without a row, which means the migration that
+ * adds the feature has not run.
+ */
+export const setFeatureFlag = async (
+  client: Pool | PoolClient,
+  key: FeatureKey,
+  state: FeatureFlagState
+) => {
+  const update = (c: Pool | PoolClient) =>
+    c.query(
+      "update app_public.feature_flags set state = $2 where key = $1 returning key",
+      [key, state]
+    )
+  const { rowCount } =
+    client instanceof Pool ? await update(client) : await asRoot(client, update)
+  if (!rowCount) {
+    throw new Error(
+      `Feature flag "${key}" has no row in app_public.feature_flags`
+    )
   }
 }
 
