@@ -26,6 +26,17 @@ const njk = new nunjucks.Environment(
 const isTest = process.env.NODE_ENV === "test"
 const isDev = process.env.NODE_ENV !== "production"
 
+/**
+ * A nodemailer attachment that survives the JSON job payload: `content` is a
+ * string, base64 encoded when `encoding` is "base64".
+ */
+export interface EmailAttachment {
+  filename: string
+  content: string
+  contentType?: string
+  encoding?: "base64" | "utf8"
+}
+
 export interface SendEmailPayload {
   options: {
     from?: string
@@ -36,15 +47,17 @@ export interface SendEmailPayload {
   variables: {
     [varName: string]: any
   }
+  attachments?: EmailAttachment[]
 }
 
 const task: Task = async (inPayload) => {
   const payload: SendEmailPayload = inPayload as any
   const transport = await getTransport()
-  const { options: inOptions, template, variables } = payload
+  const { options: inOptions, template, variables, attachments } = payload
   const options = {
     from: fromEmail,
     ...inOptions,
+    ...(attachments ? { attachments } : {}),
   }
   if (template) {
     const templateFn = await loadTemplate(template)
