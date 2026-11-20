@@ -1,3 +1,8 @@
+--! Previous: sha1:3eef78ec40875835e95adcc5589f1babca8d9827
+--! Hash: sha1:6e21d1632031e084a8170854cdbaa50c796b0b88
+--! Message: add flags for client-only features
+
+--! split: 40-client-feature-flags.sql
 /*
  * Flags of features that only the client gates: the typed time boxes, event
  * templates and the registration form preview in the event form, and the
