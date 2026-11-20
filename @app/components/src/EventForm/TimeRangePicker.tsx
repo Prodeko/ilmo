@@ -3,6 +3,8 @@ import { css } from "@emotion/css"
 import { DatePicker, Input, InputRef, Space } from "antd"
 import { Dayjs } from "dayjs"
 
+import { dayClickRange } from "./timeRange"
+
 import type { RangePickerProps } from "antd/es/date-picker"
 
 const { RangePicker } = DatePicker
@@ -23,13 +25,25 @@ const timePopup = css`
   }
 `
 
+export type TimeRangePickerProps = RangePickerProps & {
+  // Clicking a new start day in the calendar fills in the whole range at
+  // once, from 12:00 that day to 23:59:59 this many days later, and closes
+  // the calendar. Typed times and clicks on the same day work as usual.
+  dayClickEndAfterDays?: number
+}
+
 // RangePicker whose time is typed into HH : mm : ss boxes below the calendar
 // instead of picked from scroll columns
-export const TimeRangePicker: React.FC<RangePickerProps> = ({
+export const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
   value,
   onChange,
+  dayClickEndAfterDays,
   ...props
 }) => {
+  const [open, setOpen] = useState(false)
+  // Typing into the input and clicking a day both report a calendar change,
+  // so remember whether the latest one started on a day in the calendar
+  const clickedDay = useRef(false)
   const [active, setActive] = useState(0)
   // Dates picked in the open popup before OK is pressed
   const [pending, setPending] = useState<RangePickerProps["value"]>(null)
@@ -65,7 +79,19 @@ export const TimeRangePicker: React.FC<RangePickerProps> = ({
     <RangePicker
       {...props}
       classNames={{ popup: { root: timePopup } }}
+      open={open}
       order={false}
+      panelRender={(panel) => (
+        <div
+          onMouseDown={(e) => {
+            clickedDay.current = !!(e.target as HTMLElement).closest(
+              ".ant-picker-cell"
+            )
+          }}
+        >
+          {panel}
+        </div>
+      )}
       renderExtraFooter={() => (
         <Space size={4}>
           {timeUnits.map((unit, i) => (
@@ -109,6 +135,22 @@ export const TimeRangePicker: React.FC<RangePickerProps> = ({
       value={value}
       onCalendarChange={(dates, _, info) => {
         const changed = info.range === "end" ? 1 : 0
+        const clicked = clickedDay.current
+        clickedDay.current = false
+        const day = dates?.[0]
+        const previousDay = current?.[0]
+        if (
+          dayClickEndAfterDays !== undefined &&
+          clicked &&
+          changed === 0 &&
+          day &&
+          !(previousDay && day.isSame(previousDay, "day"))
+        ) {
+          onChange?.(dayClickRange(day, dayClickEndAfterDays), ["", ""])
+          setPending(null)
+          setOpen(false)
+          return
+        }
         let next = dates
         // A start moved past the end clears the end (order={false} keeps
         // the picker from swapping them instead)
@@ -122,7 +164,10 @@ export const TimeRangePicker: React.FC<RangePickerProps> = ({
       }}
       onChange={onChange}
       onFocus={(_, info) => setActive(info.range === "end" ? 1 : 0)}
-      onOpenChange={(open) => !open && setPending(null)}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) setPending(null)
+      }}
     />
   )
 }

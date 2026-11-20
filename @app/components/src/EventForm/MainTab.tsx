@@ -6,7 +6,7 @@ import dayjs, { Dayjs } from "dayjs"
 
 import { Editor, FileUpload, useTranslation } from "../."
 
-import { TimeRangePicker } from "./TimeRangePicker"
+import { TimeRangePicker, TimeRangePickerProps } from "./TimeRangePicker"
 import { FormValues } from "."
 
 import type { UploadFile } from "antd/lib/upload/interface"
@@ -14,6 +14,12 @@ import type { UploadFile } from "antd/lib/upload/interface"
 const { Option } = Select
 const { Group } = Input
 const { RangePicker } = DatePicker
+
+// The scroll column picker has no day click, so it drops that option
+const ScrollTimeRangePicker: React.FC<TimeRangePickerProps> = ({
+  dayClickEndAfterDays: _,
+  ...props
+}) => <RangePicker {...props} />
 
 // Typing a time can store a half-filled range, so require both ends
 const bothEndsSet = (_: unknown, value?: Array<Dayjs | null>) =>
@@ -42,7 +48,9 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
   // The control for the event and registration times: typed HH : mm : ss
   // boxes (TimeRangePicker) or the time scroll columns (RangePicker)
   const typedTimeInput = true
-  const DateTimeRangePicker = typedTimeInput ? TimeRangePicker : RangePicker
+  const DateTimeRangePicker = typedTimeInput
+    ? TimeRangePicker
+    : ScrollTimeRangePicker
 
   function getUploadDefaultFileList(): Array<UploadFile> | undefined {
     if (type === "update") {
@@ -235,6 +243,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <DateTimeRangePicker
           data-cy="eventform-input-event-time"
+          dayClickEndAfterDays={0}
           format="YYYY-MM-DD HH:mm:ss"
           showTime
         />
@@ -252,6 +261,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <DateTimeRangePicker
           data-cy="eventform-input-registration-time"
+          dayClickEndAfterDays={7}
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,
