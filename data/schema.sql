@@ -226,7 +226,8 @@ CREATE TYPE app_public.event_input AS (
 	header_image_file text,
 	open_quota_size smallint,
 	owner_organization_id uuid,
-	category_id uuid
+	category_id uuid,
+	highlight_text app_public.translated_field
 );
 
 
@@ -1580,6 +1581,7 @@ CREATE TABLE app_public.events (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    highlight_text app_public.translated_field,
     CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
     CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
     CONSTRAINT _cnstr_check_events_open_quota_size CHECK ((open_quota_size >= 0)),
@@ -1701,6 +1703,13 @@ COMMENT ON COLUMN app_public.events.category_id IS 'Identifier of a related even
 
 
 --
+-- Name: COLUMN events.highlight_text; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.highlight_text IS 'Text shown on the ribbon of a highlighted event.';
+
+
+--
 -- Name: create_event(app_public.event_input, app_public.create_event_quotas[], app_public.create_event_questions[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1726,6 +1735,7 @@ begin
     registration_start_time,
     registration_end_time,
     is_highlighted,
+    highlight_text,
     is_draft,
     header_image_file,
     open_quota_size,
@@ -1742,6 +1752,7 @@ begin
     event.registration_start_time,
     event.registration_end_time,
     event.is_highlighted,
+    event.highlight_text,
     event.is_draft,
     event.header_image_file,
     event.open_quota_size,
@@ -3637,6 +3648,10 @@ begin
       registration_start_time = coalesce(event.registration_start_time, registration_start_time),
       registration_end_time = coalesce(event.registration_end_time, registration_end_time),
       is_highlighted = coalesce(event.is_highlighted, is_highlighted),
+      highlight_text = case
+        when event.is_highlighted is null then highlight_text
+        else event.highlight_text
+      end,
       is_draft = coalesce(event.is_draft, is_draft),
       header_image_file = coalesce(event.header_image_file, header_image_file),
       open_quota_size = coalesce(event.open_quota_size, open_quota_size),
@@ -3658,7 +3673,7 @@ $$;
 -- Name: FUNCTION update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation.';
+COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.';
 
 
 --
@@ -6118,6 +6133,13 @@ GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_p
 --
 
 GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN events.highlight_text; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(highlight_text),UPDATE(highlight_text) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

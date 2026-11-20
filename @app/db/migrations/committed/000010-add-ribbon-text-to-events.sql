@@ -1,3 +1,11 @@
+--! Previous: sha1:55cca1f2b587be1b60c12afcba0d49bb9db000c4
+--! Hash: sha1:6a27de940ca793691367877926325018df8ff888
+--! Message: add ribbon text to events
+
+--! split: 1-current.sql
+-- Enter migration here
+
+--! split: 30-event-ribbon-text.sql
 /*
  * Highlighted events carry a ribbon on the event card. Its text used to be a
  * fixed translation ("Nätti tapahtuma!"); `highlight_text` lets the event
