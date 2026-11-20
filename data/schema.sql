@@ -128,6 +128,16 @@ COMMENT ON DOMAIN app_public.constrained_name IS 'A name field which must not be
 
 
 --
+-- Name: question_prefill; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.question_prefill AS ENUM (
+    'TELEGRAM',
+    'DIETARY_RESTRICTIONS'
+);
+
+
+--
 -- Name: question_type; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -185,7 +195,8 @@ CREATE TYPE app_public.create_event_questions AS (
 	type app_public.question_type,
 	label app_public.translated_field,
 	is_required boolean,
-	data app_public.translated_field[]
+	data app_public.translated_field[],
+	prefill app_public.question_prefill
 );
 
 
@@ -375,7 +386,8 @@ CREATE TYPE app_public.update_event_questions AS (
 	type app_public.question_type,
 	label app_public.translated_field,
 	is_required boolean,
-	data app_public.translated_field[]
+	data app_public.translated_field[],
+	prefill app_public.question_prefill
 );
 
 
@@ -2751,6 +2763,8 @@ CREATE TABLE app_public.event_questions (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    prefill app_public.question_prefill,
+    CONSTRAINT _cnstr_prefill_text_only CHECK (((prefill IS NULL) OR (type = 'TEXT'::app_public.question_type))),
     CONSTRAINT _cnstr_validate_question_data CHECK (app_public.validate_question_data(type, data))
 );
 
@@ -2812,6 +2826,13 @@ COMMENT ON COLUMN app_public.event_questions.data IS 'Question data.';
 
 
 --
+-- Name: COLUMN event_questions.prefill; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_questions.prefill IS 'Which registration profile field prefills the answer to this question, if any.';
+
+
+--
 -- Name: create_event_questions(uuid, app_public.create_event_questions[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2833,8 +2854,8 @@ begin
 
   -- Create questions
   foreach v_input in array questions loop
-    insert into app_public.event_questions(event_id, position, type, label, is_required, data)
-      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
+    insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
+      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
       returning * into v_question;
 
     v_ret := array_append(v_ret, v_question);
@@ -3461,6 +3482,34 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.delete_registration("updateToken" text) IS 'Delete event registration.';
+
+
+--
+-- Name: delete_registration_profile(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.delete_registration_profile() RETURNS boolean
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user_id uuid := app_public.current_user_id();
+begin
+  if v_user_id is null then
+    raise exception 'You must log in to delete your registration profile' using errcode = 'LOGIN';
+  end if;
+
+  delete from app_public.registration_profiles where user_id = v_user_id;
+  return found;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION delete_registration_profile(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.delete_registration_profile() IS 'Delete the values saved to prefill your event registrations.';
 
 
 --
@@ -4603,6 +4652,96 @@ COMMENT ON FUNCTION app_public.set_feature_flag(key text, state app_public.featu
 
 
 --
+-- Name: registration_profiles; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.registration_profiles (
+    user_id uuid NOT NULL,
+    telegram text,
+    dietary_restrictions text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT registration_profiles_dietary_restrictions_check CHECK ((length(dietary_restrictions) <= 1000)),
+    CONSTRAINT registration_profiles_telegram_check CHECK ((length(telegram) <= 64))
+);
+
+
+--
+-- Name: TABLE registration_profiles; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.registration_profiles IS 'Values used to prefill event registration answers. Only visible to the user themselves.';
+
+
+--
+-- Name: COLUMN registration_profiles.user_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.user_id IS 'The user this registration profile belongs to.';
+
+
+--
+-- Name: COLUMN registration_profiles.telegram; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.telegram IS 'Telegram handle.';
+
+
+--
+-- Name: COLUMN registration_profiles.dietary_restrictions; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.dietary_restrictions IS 'Dietary restrictions and allergies.';
+
+
+--
+-- Name: set_registration_profile(text, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_registration_profile(telegram text DEFAULT NULL::text, dietary_restrictions text DEFAULT NULL::text) RETURNS app_public.registration_profiles
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user_id uuid := app_public.current_user_id();
+  v_profile app_public.registration_profiles;
+begin
+  if v_user_id is null then
+    raise exception 'You must log in to update your registration profile' using errcode = 'LOGIN';
+  end if;
+
+  if not app_public.feature_enabled('prefill_answers') then
+    raise exception 'Saving registration answers is not enabled' using errcode = 'FTOFF';
+  end if;
+
+  insert into app_public.registration_profiles(user_id, telegram, dietary_restrictions)
+    values (v_user_id, nullif(trim(telegram), ''), nullif(trim(dietary_restrictions), ''))
+  on conflict (user_id) do update
+    set
+      telegram = case
+        when telegram is null then registration_profiles.telegram
+        else excluded.telegram
+      end,
+      dietary_restrictions = case
+        when dietary_restrictions is null then registration_profiles.dietary_restrictions
+        else excluded.dietary_restrictions
+      end
+  returning * into v_profile;
+
+  return v_profile;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION set_registration_profile(telegram text, dietary_restrictions text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) IS 'Set the values used to prefill your event registrations. A null value keeps the saved one and an empty value clears it.';
+
+
+--
 -- Name: supported_languages(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -4938,13 +5077,13 @@ begin
     if exists(select 1 from app_public.event_questions where id = v_input.id) then
       -- Update existing event questions by id
       update app_public.event_questions
-        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data
+        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data, prefill = v_input.prefill
         where id = v_input.id
       returning * into v_question;
     else
       -- Create new questions that didn't exist before
-      insert into app_public.event_questions(event_id, position, type, label, is_required, data)
-        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
+      insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
+        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
       returning * into v_question;
     end if;
 
@@ -5963,6 +6102,14 @@ ALTER TABLE ONLY app_public.quotas
 
 
 --
+-- Name: registration_profiles registration_profiles_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_profiles
+    ADD CONSTRAINT registration_profiles_pkey PRIMARY KEY (user_id);
+
+
+--
 -- Name: registrations registrations_email_event_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -6474,6 +6621,13 @@ CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.payments FO
 --
 
 CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+
+
+--
+-- Name: registration_profiles _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registration_profiles FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
 
 
 --
@@ -7009,6 +7163,14 @@ ALTER TABLE ONLY app_public.quotas
 
 
 --
+-- Name: registration_profiles registration_profiles_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_profiles
+    ADD CONSTRAINT registration_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: registrations registrations_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -7134,6 +7296,13 @@ ALTER TABLE app_private.user_email_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_private.user_secrets ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: registration_profiles delete_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY delete_own ON app_public.registration_profiles FOR DELETE USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: user_authentications delete_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -7176,6 +7345,13 @@ ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.feature_flags ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registration_profiles insert_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY insert_own ON app_public.registration_profiles FOR INSERT WITH CHECK ((user_id = app_public.current_user_id()));
+
 
 --
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
@@ -7306,6 +7482,12 @@ ALTER TABLE app_public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.quotas ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: registration_profiles; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.registration_profiles ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registrations; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -7395,6 +7577,13 @@ CREATE POLICY select_member ON app_public.organization_memberships FOR SELECT US
 
 
 --
+-- Name: registration_profiles select_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_own ON app_public.registration_profiles FOR SELECT USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: user_authentications select_own; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -7419,6 +7608,13 @@ ALTER TABLE app_public.telegram_accounts ENABLE ROW LEVEL SECURITY;
 --
 
 CREATE POLICY update_all ON app_public.registrations FOR UPDATE USING (true);
+
+
+--
+-- Name: registration_profiles update_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY update_own ON app_public.registration_profiles FOR UPDATE USING ((user_id = app_public.current_user_id()));
 
 
 --
@@ -8078,6 +8274,13 @@ GRANT INSERT(data),UPDATE(data) ON TABLE app_public.event_questions TO ilmo_visi
 
 
 --
+-- Name: COLUMN event_questions.prefill; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(prefill),UPDATE(prefill) ON TABLE app_public.event_questions TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION create_event_questions(event_id uuid, questions app_public.create_event_questions[]); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -8295,6 +8498,14 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO il
 
 REVOKE ALL ON FUNCTION app_public.delete_registration("updateToken" text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION delete_registration_profile(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.delete_registration_profile() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.delete_registration_profile() TO ilmo_visitor;
 
 
 --
@@ -8548,6 +8759,42 @@ GRANT SELECT ON TABLE app_public.feature_flags TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE registration_profiles; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.user_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(user_id) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.telegram; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(telegram),UPDATE(telegram) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.dietary_restrictions; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(dietary_restrictions),UPDATE(dietary_restrictions) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_registration_profile(telegram text, dietary_restrictions text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) TO ilmo_visitor;
 
 
 --

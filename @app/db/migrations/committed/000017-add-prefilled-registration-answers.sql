@@ -1,3 +1,8 @@
+--! Previous: sha1:b562ae35d2c8babe2177bc3e03adcc1433789825
+--! Hash: sha1:1e67556e1c3cdd39107441fb9df66cfa79d64cf9
+--! Message: add prefilled registration answers
+
+--! split: 80-registration-prefill.sql
 /*
  * Registration prefill. The registration form prefills the registrant's name
  * and email from their account. Telegram handles and dietary restrictions are
