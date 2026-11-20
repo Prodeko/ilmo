@@ -53,6 +53,7 @@ describe("when account doesn't already exist", () => {
           "created_at": "[DATE]",
           "id": "[ID]",
           "is_admin": false,
+          "is_developer": false,
           "is_verified": true,
           "name": "Webbitiimi",
           "updated_at": "[DATE]",

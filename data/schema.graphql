@@ -1384,6 +1384,206 @@ enum EventsOrderBy {
   UPDATED_BY_DESC
 }
 
+"""
+A feature that can be switched on or off at runtime. Rows are created by migrations.
+"""
+type FeatureFlag {
+  """
+  False when the server lacks the configuration the feature needs; the feature then reads as off whatever its state.
+  """
+  available: Boolean!
+
+  """What the flag gates."""
+  description: String!
+
+  """Identifier of the feature, as used in code."""
+  key: String!
+
+  """
+  Set when the gates have been removed from code. A retired flag reads as on.
+  """
+  retiredAt: Datetime
+
+  """Who the feature is enabled for."""
+  state: FeatureState!
+
+  """When the state was last changed."""
+  updatedAt: Datetime!
+
+  """Who last changed the state."""
+  updatedBy: UUID
+}
+
+"""
+A condition to be used against `FeatureFlag` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input FeatureFlagCondition {
+  """Checks for equality with the object’s `key` field."""
+  key: String
+
+  """Checks for equality with the object’s `updatedBy` field."""
+  updatedBy: UUID
+}
+
+"""The return type of our `featureFlagEvents` query."""
+type FeatureFlagEventsRecord {
+  actorId: UUID
+  actorName: String
+  actorUsername: String
+  createdAt: Datetime
+  id: UUID
+  key: String
+  newState: FeatureState
+  oldState: FeatureState
+}
+
+"""
+A filter to be used against `FeatureFlagEventsRecord` object types. All fields are combined with a logical ‘and.’
+"""
+input FeatureFlagEventsRecordFilter {
+  """Filter by the object’s `actorId` field."""
+  actorId: UUIDFilter
+
+  """Filter by the object’s `actorName` field."""
+  actorName: StringFilter
+
+  """Filter by the object’s `actorUsername` field."""
+  actorUsername: StringFilter
+
+  """Checks for all expressions in this list."""
+  and: [FeatureFlagEventsRecordFilter!]
+
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `key` field."""
+  key: StringFilter
+
+  """Filter by the object’s `newState` field."""
+  newState: FeatureStateFilter
+
+  """Negates the expression."""
+  not: FeatureFlagEventsRecordFilter
+
+  """Filter by the object’s `oldState` field."""
+  oldState: FeatureStateFilter
+
+  """Checks for any expressions in this list."""
+  or: [FeatureFlagEventsRecordFilter!]
+}
+
+"""
+A filter to be used against `FeatureFlag` object types. All fields are combined with a logical ‘and.’
+"""
+input FeatureFlagFilter {
+  """Checks for all expressions in this list."""
+  and: [FeatureFlagFilter!]
+
+  """Filter by the object’s `key` field."""
+  key: StringFilter
+
+  """Negates the expression."""
+  not: FeatureFlagFilter
+
+  """Checks for any expressions in this list."""
+  or: [FeatureFlagFilter!]
+
+  """Filter by the object’s `updatedBy` field."""
+  updatedBy: UUIDFilter
+}
+
+"""A connection to a list of `FeatureFlag` values."""
+type FeatureFlagsConnection {
+  """
+  A list of edges which contains the `FeatureFlag` and cursor to aid in pagination.
+  """
+  edges: [FeatureFlagsEdge!]!
+
+  """A list of `FeatureFlag` objects."""
+  nodes: [FeatureFlag!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `FeatureFlag` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `FeatureFlag` edge in the connection."""
+type FeatureFlagsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `FeatureFlag` at the end of the edge."""
+  node: FeatureFlag!
+}
+
+"""Methods to use when ordering `FeatureFlag`."""
+enum FeatureFlagsOrderBy {
+  KEY_ASC
+  KEY_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  UPDATED_BY_ASC
+  UPDATED_BY_DESC
+}
+
+"""
+State of a feature flag: off for everyone, on for signed-in admins only, or on for everyone.
+"""
+enum FeatureState {
+  ADMINS_ONLY
+  OFF
+  ON
+}
+
+"""
+A filter to be used against FeatureState fields. All fields are combined with a logical ‘and.’
+"""
+input FeatureStateFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: FeatureState
+
+  """Equal to the specified value."""
+  equalTo: FeatureState
+
+  """Greater than the specified value."""
+  greaterThan: FeatureState
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: FeatureState
+
+  """Included in the specified list."""
+  in: [FeatureState!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: FeatureState
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: FeatureState
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: FeatureState
+
+  """Not equal to the specified value."""
+  notEqualTo: FeatureState
+
+  """Not included in the specified list."""
+  notIn: [FeatureState!]
+}
+
 """All input for the `forgotPassword` mutation."""
 input ForgotPasswordInput {
   """
@@ -1795,6 +1995,16 @@ type Mutation {
     """
     input: SetAdminStatusInput!
   ): SetAdminStatusPayload
+
+  """
+  Changes the state of an existing feature flag. Only accessible to developers.
+  """
+  setFeatureFlag(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetFeatureFlagInput!
+  ): SetFeatureFlagPayload
 
   """
   The owner of an `Organization` may use this mutation to transfer ownership to a different organization member. Take care, if you assign ownership to someone who cannot or will not access their account then you may need to contact support to have ownership reassigned.
@@ -2257,6 +2467,25 @@ type Query {
 
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
+
+  """
+  Returns true if the current user is both an admin and a developer, false otherwise.
+  """
+  currentUserIsDeveloper: Boolean
+
+  """Keys of the features enabled for the current user."""
+  enabledFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 
@@ -2363,6 +2592,58 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
+  featureFlag(key: String!): FeatureFlag
+
+  """
+  Feature flag state changes, newest first, optionally for one key. Only accessible to developers.
+  """
+  featureFlagEventsList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagEventsRecordFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+    flagKey: String
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [FeatureFlagEventsRecord]
+
+  """Reads and enables pagination through a set of `FeatureFlag`."""
+  featureFlags(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: FeatureFlagCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `FeatureFlag`."""
+    orderBy: [FeatureFlagsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): FeatureFlagsConnection
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 
@@ -3002,6 +3283,38 @@ type SetAdminStatusPayload {
   success: Boolean
 }
 
+"""All input for the `setFeatureFlag` mutation."""
+input SetFeatureFlagInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  key: String!
+  state: FeatureState!
+}
+
+"""The output of our `setFeatureFlag` mutation."""
+type SetFeatureFlagPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  featureFlag: FeatureFlag
+
+  """An edge for our `FeatureFlag`. May be used by Relay 1."""
+  featureFlagEdge(
+    """The method to use when ordering `FeatureFlag`."""
+    orderBy: [FeatureFlagsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): FeatureFlagsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """
 A filter to be used against String fields. All fields are combined with a logical ‘and.’
 """
@@ -3197,8 +3510,27 @@ type Subscription {
   """The currently logged in user (or null if not logged in). (live)"""
   currentUser: User
 
+  """
+  Returns true if the current user is both an admin and a developer, false otherwise. (live)
+  """
+  currentUserIsDeveloper: Boolean
+
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload!
+
+  """Keys of the features enabled for the current user. (live)"""
+  enabledFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
 
   """ (live)"""
   event(id: UUID!): Event
@@ -3318,6 +3650,60 @@ type Subscription {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
+
+  """ (live)"""
+  featureFlag(key: String!): FeatureFlag
+
+  """
+  Feature flag state changes, newest first, optionally for one key. Only accessible to developers. (live)
+  """
+  featureFlagEventsList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagEventsRecordFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+    flagKey: String
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [FeatureFlagEventsRecord]
+
+  """Reads and enables pagination through a set of `FeatureFlag`. (live)"""
+  featureFlags(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: FeatureFlagCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `FeatureFlag`."""
+    orderBy: [FeatureFlagsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): FeatureFlagsConnection
 
   """ (live)"""
   organization(id: UUID!): Organization
@@ -3859,6 +4245,11 @@ type User {
 
   """If true, the user has elevated privileges."""
   isAdmin: Boolean!
+
+  """
+  If true and the user is also an admin, the user can manage feature flags.
+  """
+  isDeveloper: Boolean!
   isVerified: Boolean!
 
   """Public-facing name (or pseudonym) of the user."""

@@ -231,6 +231,24 @@ CREATE TYPE app_public.event_input AS (
 
 
 --
+-- Name: feature_state; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.feature_state AS ENUM (
+    'off',
+    'admins_only',
+    'on'
+);
+
+
+--
+-- Name: TYPE feature_state; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.feature_state IS 'State of a feature flag: off for everyone, on for signed-in admins only, or on for everyone.';
+
+
+--
 -- Name: hex_color; Type: DOMAIN; Schema: app_public; Owner: -
 --
 
@@ -308,6 +326,7 @@ CREATE TABLE app_public.users (
     is_verified boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_developer boolean DEFAULT false NOT NULL,
     CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
     CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
 );
@@ -353,6 +372,13 @@ COMMENT ON COLUMN app_public.users.avatar_url IS 'Optional avatar URL.';
 --
 
 COMMENT ON COLUMN app_public.users.is_admin IS 'If true, the user has elevated privileges.';
+
+
+--
+-- Name: COLUMN users.is_developer; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.is_developer IS 'If true and the user is also an admin, the user can manage feature flags.';
 
 
 --
@@ -753,6 +779,31 @@ begin
   end if;
 end;
 $$;
+
+
+--
+-- Name: set_feature_available(text, boolean); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.set_feature_available(key text, available boolean) RETURNS boolean
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  with updated as (
+    update app_public.feature_flags as f
+    set available = set_feature_available.available
+    where f.key = set_feature_available.key
+    returning 1
+  )
+  select exists (select 1 from updated);
+$$;
+
+
+--
+-- Name: FUNCTION set_feature_available(key text, available boolean); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.set_feature_available(key text, available boolean) IS 'Records whether the server has the configuration a feature needs. Returns false for an unknown key. Does not change `updated_at`, which tracks state changes.';
 
 
 --
@@ -1270,6 +1321,21 @@ CREATE PROCEDURE app_public.check_is_admin()
 begin
   if not app_public.current_user_is_admin() then
     raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+end;
+$$;
+
+
+--
+-- Name: check_is_developer(); Type: PROCEDURE; Schema: app_public; Owner: -
+--
+
+CREATE PROCEDURE app_public.check_is_developer()
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if not app_public.current_user_is_developer() then
+    raise exception 'Access denied. Only developers are allowed to use this mutation.' using errcode = 'DNIED';
   end if;
 end;
 $$;
@@ -2243,6 +2309,31 @@ COMMENT ON FUNCTION app_public.current_user_is_admin() IS 'Returns true if the c
 
 
 --
+-- Name: current_user_is_developer(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_user_is_developer() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (
+    select 1
+    from app_public.users
+    where
+      id = app_public.current_user_id()
+      and is_admin = true
+      and is_developer = true)
+$$;
+
+
+--
+-- Name: FUNCTION current_user_is_developer(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.current_user_is_developer() IS 'Returns true if the current user is both an admin and a developer, false otherwise.';
+
+
+--
 -- Name: current_user_is_owner_organization_member(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2342,6 +2433,29 @@ COMMENT ON FUNCTION app_public.delete_registration("updateToken" text) IS 'Delet
 
 
 --
+-- Name: enabled_features(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.enabled_features() RETURNS SETOF text
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select f.key
+  from app_public.feature_flags as f
+  where app_public.feature_enabled(f.key)
+  order by f.key;
+$$;
+
+
+--
+-- Name: FUNCTION enabled_features(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.enabled_features() IS '@simpleCollections only
+Keys of the features enabled for the current user.';
+
+
+--
 -- Name: events_signup_closed(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2393,6 +2507,72 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.events_signup_upcoming(e app_public.events) IS 'Designates whether event signup is upcoming or not.';
+
+
+--
+-- Name: feature_enabled(text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.feature_enabled(key text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (
+    select 1
+    from app_public.feature_flags as f
+    where
+      f.key = feature_enabled.key
+      and (
+        f.retired_at is not null
+        or (
+          f.available
+          and (
+            f.state = 'on'
+            or (f.state = 'admins_only' and app_public.current_user_is_admin())
+          )
+        )
+      ))
+$$;
+
+
+--
+-- Name: FUNCTION feature_enabled(key text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.feature_enabled(key text) IS '@omit
+True when the feature is enabled for the current user. Unknown keys read as off.';
+
+
+--
+-- Name: feature_flag_events(text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.feature_flag_events(flag_key text DEFAULT NULL::text) RETURNS TABLE(id uuid, key text, old_state app_public.feature_state, new_state app_public.feature_state, actor_id uuid, actor_username text, actor_name text, created_at timestamp with time zone)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  -- Cannot use call app_public.check_is_developer(); in a non volatile function
+  if not app_public.current_user_is_developer() then
+    raise exception 'Access denied. Only developers are allowed to use this query.' using errcode = 'DNIED';
+  end if;
+
+  return query
+    select e.id, e.key, e.old_state, e.new_state, e.actor, u.username::text, u.name, e.created_at
+    from app_private.feature_flag_events as e
+    left join app_public.users as u on u.id = e.actor
+    where flag_key is null or e.key = flag_key
+    order by e.created_at desc, e.id;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION feature_flag_events(flag_key text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.feature_flag_events(flag_key text) IS '@simpleCollections only
+Feature flag state changes, newest first, optionally for one key. Only accessible to developers.';
 
 
 --
@@ -2986,6 +3166,139 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) IS 'Make an existing user admin. Only accessible to admin users.';
+
+
+--
+-- Name: feature_flags; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.feature_flags (
+    key text NOT NULL,
+    state app_public.feature_state DEFAULT 'off'::app_public.feature_state NOT NULL,
+    available boolean DEFAULT true NOT NULL,
+    description text NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_by uuid,
+    retired_at timestamp with time zone,
+    CONSTRAINT feature_flags_key_check CHECK ((key ~ '^[a-z][a-z0-9_]*$'::text))
+);
+
+
+--
+-- Name: TABLE feature_flags; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.feature_flags IS 'A feature that can be switched on or off at runtime. Rows are created by migrations.';
+
+
+--
+-- Name: COLUMN feature_flags.key; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.key IS 'Identifier of the feature, as used in code.';
+
+
+--
+-- Name: COLUMN feature_flags.state; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.state IS 'Who the feature is enabled for.';
+
+
+--
+-- Name: COLUMN feature_flags.available; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.available IS 'False when the server lacks the configuration the feature needs; the feature then reads as off whatever its state.';
+
+
+--
+-- Name: COLUMN feature_flags.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.description IS 'What the flag gates.';
+
+
+--
+-- Name: COLUMN feature_flags.updated_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.updated_at IS 'When the state was last changed.';
+
+
+--
+-- Name: COLUMN feature_flags.updated_by; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.updated_by IS 'Who last changed the state.';
+
+
+--
+-- Name: COLUMN feature_flags.retired_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.retired_at IS 'Set when the gates have been removed from code. A retired flag reads as on.';
+
+
+--
+-- Name: set_feature_flag(text, app_public.feature_state); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) RETURNS app_public.feature_flags
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_flag app_public.feature_flags;
+  v_old_state app_public.feature_state;
+begin
+  call app_public.check_is_developer();
+
+  select * into v_flag
+  from app_public.feature_flags as f
+  where f.key = key
+  for update;
+
+  if v_flag.key is null then
+    raise exception 'Unknown feature flag "%".', key using errcode = 'NTFND';
+  end if;
+
+  if v_flag.retired_at is not null then
+    raise exception 'Feature flag "%" is retired and cannot be changed.', key using errcode = 'DNIED';
+  end if;
+
+  if state <> 'off' and not v_flag.available then
+    raise exception 'Feature flag "%" is not available: the server lacks the configuration it needs.', key using errcode = 'FTUNA';
+  end if;
+
+  if v_flag.state = state then
+    return v_flag;
+  end if;
+
+  v_old_state = v_flag.state;
+
+  update app_public.feature_flags as f
+  set
+    state = state,
+    updated_at = now(),
+    updated_by = app_public.current_user_id()
+  where f.key = key
+  returning * into v_flag;
+
+  insert into app_private.feature_flag_events (key, old_state, new_state, actor)
+  values (key, v_old_state, state, app_public.current_user_id());
+
+  return v_flag;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION set_feature_flag(key text, state app_public.feature_state); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) IS 'Changes the state of an existing feature flag. Only accessible to developers.';
 
 
 --
@@ -3687,6 +4000,27 @@ COMMENT ON MATERIALIZED VIEW app_hidden.registrations_status_and_position IS 'Ra
 
 
 --
+-- Name: feature_flag_events; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.feature_flag_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    key text NOT NULL,
+    old_state app_public.feature_state NOT NULL,
+    new_state app_public.feature_state NOT NULL,
+    actor uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE feature_flag_events; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TABLE app_private.feature_flag_events IS 'One row per feature flag state change.';
+
+
+--
 -- Name: registration_secrets; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -3936,6 +4270,14 @@ COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile
 
 
 --
+-- Name: feature_flag_events feature_flag_events_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.feature_flag_events
+    ADD CONSTRAINT feature_flag_events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: registration_secrets registration_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4037,6 +4379,14 @@ ALTER TABLE ONLY app_public.events
 
 ALTER TABLE ONLY app_public.events
     ADD CONSTRAINT events_slug_key UNIQUE (slug);
+
+
+--
+-- Name: feature_flags feature_flags_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.feature_flags
+    ADD CONSTRAINT feature_flags_pkey PRIMARY KEY (key);
 
 
 --
@@ -4178,6 +4528,20 @@ CREATE UNIQUE INDEX registrations_status_and_position_id_idx ON app_hidden.regis
 --
 
 CREATE INDEX registrations_status_and_position_quota_id_idx ON app_hidden.registrations_status_and_position USING btree (quota_id);
+
+
+--
+-- Name: feature_flag_events_actor_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX feature_flag_events_actor_idx ON app_private.feature_flag_events USING btree (actor);
+
+
+--
+-- Name: feature_flag_events_key_created_at_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX feature_flag_events_key_created_at_idx ON app_private.feature_flag_events USING btree (key, created_at);
 
 
 --
@@ -4339,6 +4703,13 @@ CREATE INDEX events_registration_start_time_idx ON app_public.events USING btree
 --
 
 CREATE INDEX events_updated_by_idx ON app_public.events USING btree (updated_by);
+
+
+--
+-- Name: feature_flags_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX feature_flags_updated_by_idx ON app_public.feature_flags USING btree (updated_by);
 
 
 --
@@ -4720,6 +5091,14 @@ CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emai
 
 
 --
+-- Name: feature_flag_events feature_flag_events_actor_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.feature_flag_events
+    ADD CONSTRAINT feature_flag_events_actor_fkey FOREIGN KEY (actor) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: registration_secrets registration_secrets_event_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4856,6 +5235,21 @@ ALTER TABLE ONLY app_public.events
 
 
 --
+-- Name: feature_flags feature_flags_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.feature_flags
+    ADD CONSTRAINT feature_flags_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: CONSTRAINT feature_flags_updated_by_fkey ON feature_flags; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON CONSTRAINT feature_flags_updated_by_fkey ON app_public.feature_flags IS '@omit many';
+
+
+--
 -- Name: organization_invitations organization_invitations_organization_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4976,6 +5370,12 @@ ALTER TABLE ONLY app_public.user_emails
 
 
 --
+-- Name: feature_flag_events; Type: ROW SECURITY; Schema: app_private; Owner: -
+--
+
+ALTER TABLE app_private.feature_flag_events ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registration_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
 --
 
@@ -5036,6 +5436,12 @@ ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: feature_flags; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.feature_flags ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
@@ -5191,6 +5597,13 @@ CREATE POLICY select_all ON app_public.registrations FOR SELECT USING (true);
 --
 
 CREATE POLICY select_all ON app_public.users FOR SELECT USING (true);
+
+
+--
+-- Name: feature_flags select_developer; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_developer ON app_public.feature_flags FOR SELECT USING (app_public.current_user_is_developer());
 
 
 --
@@ -5363,6 +5776,13 @@ REVOKE ALL ON FUNCTION app_private.reset_password(user_id uuid, reset_token text
 
 
 --
+-- Name: FUNCTION set_feature_available(key text, available boolean); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.set_feature_available(key text, available boolean) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION tg__add_audit_job(); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -5479,6 +5899,14 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 REVOKE ALL ON PROCEDURE app_public.check_is_admin() FROM PUBLIC;
 GRANT ALL ON PROCEDURE app_public.check_is_admin() TO ilmo_visitor;
+
+
+--
+-- Name: PROCEDURE check_is_developer(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON PROCEDURE app_public.check_is_developer() FROM PUBLIC;
+GRANT ALL ON PROCEDURE app_public.check_is_developer() TO ilmo_visitor;
 
 
 --
@@ -5875,6 +6303,14 @@ GRANT ALL ON FUNCTION app_public.current_user_is_admin() TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION current_user_is_developer(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_user_is_developer() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_user_is_developer() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION current_user_is_owner_organization_member(owner_organization_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5907,6 +6343,14 @@ GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" text) TO ilmo
 
 
 --
+-- Name: FUNCTION enabled_features(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.enabled_features() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.enabled_features() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION events_signup_closed(e app_public.events); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5928,6 +6372,22 @@ GRANT ALL ON FUNCTION app_public.events_signup_open(e app_public.events) TO ilmo
 
 REVOKE ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION feature_enabled(key text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.feature_enabled(key text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.feature_enabled(key text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION feature_flag_events(flag_key text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.feature_flag_events(flag_key text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.feature_flag_events(flag_key text) TO ilmo_visitor;
 
 
 --
@@ -6062,6 +6522,21 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 
 REVOKE ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE feature_flags; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.feature_flags TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_feature_flag(key text, state app_public.feature_state); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) TO ilmo_visitor;
 
 
 --
