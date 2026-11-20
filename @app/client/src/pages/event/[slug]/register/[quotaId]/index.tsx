@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   EventRegistrationForm,
   PageHeader,
@@ -12,6 +12,7 @@ import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
+import { buildRegistrationInitialValues } from "@app/lib"
 import { Col, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
@@ -35,16 +36,11 @@ const EventRegistrationPage: NextPage = () => {
   const quota = data?.quota
   const { signupClosed, signupUpcoming } = event || {}
 
-  const { name, primaryEmail } = currentUser || {}
-  // TODO: The users table schema could be changed to include first
-  // and last names. For now infer first and last name like this...
-  const [firstName, lastName] = name ? name.split(" ") : []
-
-  const formInitialValues = {
-    firstName,
-    lastName,
-    email: primaryEmail,
-  }
+  const questions = event?.eventQuestions?.nodes
+  const formInitialValues = useMemo(
+    () => buildRegistrationInitialValues({ currentUser, questions }),
+    [currentUser, questions]
+  )
 
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
@@ -108,7 +104,7 @@ const EventRegistrationPage: NextPage = () => {
               query: { slug: event?.slug },
             }}
             initialValues={formInitialValues}
-            questions={event?.eventQuestions?.nodes}
+            questions={questions}
             quotaId={quota?.id}
             // Used to delete an unfinished registration
             setUpdateToken={setUpdateToken}
