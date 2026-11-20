@@ -1,5 +1,5 @@
 --! Previous: sha1:2d0e3bfdffaad38a79c33c652bec25f568cd46e4
---! Hash: sha1:ec68e215bbc46bfe658b32d5f7e51ab753d60961
+--! Hash: sha1:e6c07bb0eee04ba2170556cfa2513b876b52f4cc
 --! Message: add prefilled registration answers
 
 --! split: 80-registration-prefill.sql
@@ -15,11 +15,15 @@ do $$
 begin
   create type app_public.question_prefill as enum (
     'TELEGRAM',
-    'DIETARY_RESTRICTIONS'
+    'DIETARY_RESTRICTIONS',
+    'NONE'
   );
 exception when duplicate_object then null;
 end
 $$;
+
+comment on type app_public.question_prefill is
+  E'Which registration profile field prefills the answer to a question. NONE is only an input value: it clears the prefill of a question in `updateEvent`, where an omitted prefill keeps the stored one.';
 
 alter table app_public.event_questions
   add column if not exists prefill app_public.question_prefill;
@@ -29,6 +33,13 @@ alter table app_public.event_questions
   drop constraint if exists _cnstr_prefill_text_only;
 alter table app_public.event_questions
   add constraint _cnstr_prefill_text_only check(prefill is null or type = 'TEXT');
+
+-- 'NONE' only exists in the input types, see update_event_questions; a
+-- question without a prefill stores null
+alter table app_public.event_questions
+  drop constraint if exists _cnstr_prefill_not_none;
+alter table app_public.event_questions
+  add constraint _cnstr_prefill_not_none check(prefill <> 'NONE');
 
 comment on column app_public.event_questions.prefill is
   E'Which registration profile field prefills the answer to this question, if any.';
@@ -74,7 +85,7 @@ begin
   -- Create questions
   foreach v_input in array questions loop
     insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
-      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
+      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
 
     v_ret := array_append(v_ret, v_question);
@@ -84,6 +95,12 @@ begin
 end;
 $$ language plpgsql volatile security invoker set search_path = pg_catalog, public, pg_temp;
 
+/*
+ * `prefill` follows the update rule of update_event: an omitted (null)
+ * prefill keeps the stored one, so callers that do not know about prefills
+ * leave them untouched. 'NONE' clears it, and so does a type other than
+ * TEXT, because only TEXT answers can be prefilled.
+ */
 create or replace function app_public.update_event_questions(
   event_id uuid,
   questions app_public.update_event_questions[]
@@ -115,13 +132,17 @@ begin
     if exists(select 1 from app_public.event_questions where id = v_input.id) then
       -- Update existing event questions by id
       update app_public.event_questions
-        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data, prefill = v_input.prefill
+        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data,
+          prefill = case
+            when v_input.type <> 'TEXT' or v_input.prefill = 'NONE' then null
+            else coalesce(v_input.prefill, prefill)
+          end
         where id = v_input.id
       returning * into v_question;
     else
       -- Create new questions that didn't exist before
       insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
-        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
+        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
     end if;
 

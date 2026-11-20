@@ -3737,8 +3737,12 @@ type Query {
   userEmail(id: UUID!): UserEmail
 }
 
+"""
+Which registration profile field prefills the answer to a question. NONE is only an input value: it clears the prefill of a question in `updateEvent`, where an omitted prefill keeps the stored one.
+"""
 enum QuestionPrefill {
   DIETARY_RESTRICTIONS
+  NONE
   TELEGRAM
 }
 

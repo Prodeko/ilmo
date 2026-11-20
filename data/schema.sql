@@ -133,8 +133,16 @@ COMMENT ON DOMAIN app_public.constrained_name IS 'A name field which must not be
 
 CREATE TYPE app_public.question_prefill AS ENUM (
     'TELEGRAM',
-    'DIETARY_RESTRICTIONS'
+    'DIETARY_RESTRICTIONS',
+    'NONE'
 );
+
+
+--
+-- Name: TYPE question_prefill; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.question_prefill IS 'Which registration profile field prefills the answer to a question. NONE is only an input value: it clears the prefill of a question in `updateEvent`, where an omitted prefill keeps the stored one.';
 
 
 --
@@ -2764,6 +2772,7 @@ CREATE TABLE app_public.event_questions (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     prefill app_public.question_prefill,
+    CONSTRAINT _cnstr_prefill_not_none CHECK ((prefill <> 'NONE'::app_public.question_prefill)),
     CONSTRAINT _cnstr_prefill_text_only CHECK (((prefill IS NULL) OR (type = 'TEXT'::app_public.question_type))),
     CONSTRAINT _cnstr_validate_question_data CHECK (app_public.validate_question_data(type, data))
 );
@@ -2855,7 +2864,7 @@ begin
   -- Create questions
   foreach v_input in array questions loop
     insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
-      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
+      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
 
     v_ret := array_append(v_ret, v_question);
@@ -5077,13 +5086,17 @@ begin
     if exists(select 1 from app_public.event_questions where id = v_input.id) then
       -- Update existing event questions by id
       update app_public.event_questions
-        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data, prefill = v_input.prefill
+        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data,
+          prefill = case
+            when v_input.type <> 'TEXT' or v_input.prefill = 'NONE' then null
+            else coalesce(v_input.prefill, prefill)
+          end
         where id = v_input.id
       returning * into v_question;
     else
       -- Create new questions that didn't exist before
       insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
-        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, v_input.prefill)
+        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
     end if;
 

@@ -177,6 +177,7 @@ describe("toEventInput", () => {
           label: { fi: "Kysymys" },
           isRequired: false,
           data: null,
+          prefill: "NONE",
         },
       ],
     })
@@ -284,6 +285,18 @@ describe("toEventInput", () => {
       )
       expect(input.event.paymentMode).toBe("NONE")
     })
+  })
+
+  it("sends a question without a prefill as NONE, which clears it", () => {
+    const values = toFormValues(event) as any
+    const input = toEventInput({
+      ...values,
+      questions: [
+        { ...values.questions[0], prefill: null },
+        { ...values.questions[0], id: undefined, prefill: undefined },
+      ],
+    })
+    expect(input.questions?.map((q) => q.prefill)).toEqual(["NONE", "NONE"])
   })
 
   it("sends an empty quota list when the form has no quotas", () => {

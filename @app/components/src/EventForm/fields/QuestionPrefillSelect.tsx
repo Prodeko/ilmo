@@ -6,9 +6,13 @@ import { useTranslation } from "../.."
 // Holds a form value without showing it
 const KeepValue: React.FC<{ value?: unknown }> = () => null
 
+// The prefills an admin can choose. NONE is only sent to clear a prefill, see
+// toEventInput.
+type ProfilePrefill = Exclude<QuestionPrefill, QuestionPrefill.None>
+
 // A prefill question is a TEXT question with a fixed label, filled in for
 // every selected language when the admin picks what the answer prefills from
-const PREFILL_LABELS: Record<QuestionPrefill, Record<string, string>> = {
+const PREFILL_LABELS: Record<ProfilePrefill, Record<string, string>> = {
   [QuestionPrefill.Telegram]: {
     fi: "Telegram-käyttäjänimi",
     en: "Telegram username",
@@ -20,6 +24,7 @@ const PREFILL_LABELS: Record<QuestionPrefill, Record<string, string>> = {
 }
 
 const AUTO_LABELS = Object.values(PREFILL_LABELS)
+const PROFILE_PREFILLS = Object.keys(PREFILL_LABELS) as ProfilePrefill[]
 
 /**
  * Labels for a question that now prefills from `prefill`. A label the admin
@@ -27,7 +32,7 @@ const AUTO_LABELS = Object.values(PREFILL_LABELS)
  * replaced.
  */
 export function prefillQuestionLabel(
-  prefill: QuestionPrefill,
+  prefill: ProfilePrefill,
   selectedLanguages: string[],
   currentLabel: Record<string, string> | null | undefined
 ): Record<string, string> {
@@ -79,7 +84,7 @@ export const QuestionPrefillSelect: React.FC<QuestionPrefillSelectProps> = ({
   const { t } = useTranslation("events")
   const form = Form.useFormInstance()
 
-  function handleChange(prefill: QuestionPrefill | undefined) {
+  function handleChange(prefill: ProfilePrefill | undefined) {
     if (prefill) {
       const label = form.getFieldValue(["questions", name, "label"])
       form.setFieldValue(
@@ -99,7 +104,7 @@ export const QuestionPrefillSelect: React.FC<QuestionPrefillSelectProps> = ({
     >
       <Select
         data-cy={`eventform-select-questions-${name}-prefill`}
-        options={Object.values(QuestionPrefill).map((prefill) => ({
+        options={PROFILE_PREFILLS.map((prefill) => ({
           value: prefill,
           label: t(`prefill.${prefill}`),
         }))}

@@ -1,7 +1,7 @@
 // Mapping between an event and the event form's values. An event field is
 // added to the form in three places here: FormValues, toFormValues and
 // toEventInput.
-import { PaymentMode } from "@app/graphql"
+import { PaymentMode, QuestionPrefill } from "@app/graphql"
 import {
   filterObjectByKeys,
   ticketPriceCentsToEuros,
@@ -240,10 +240,16 @@ export function toEventInput(
         : quota
     }) || []
 
-  // Questions may be empty
+  // Questions may be empty. The prefill is always sent: the database keeps
+  // an omitted (null) prefill, so no prefill is sent as NONE, which clears it.
   const questions = formQuestions?.map((q, index) =>
     filterObjectByKeys(
-      { ...q, position: index, isRequired: q.isRequired ?? false },
+      {
+        ...q,
+        position: index,
+        isRequired: q.isRequired ?? false,
+        prefill: q.prefill ?? QuestionPrefill.None,
+      },
       ["id", "position", "type", "label", "isRequired", "data", "prefill"]
     )
   )

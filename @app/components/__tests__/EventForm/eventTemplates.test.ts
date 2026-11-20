@@ -128,6 +128,7 @@ describe("a form filled from templates", () => {
       label: { fi: "Telegram", en: "Telegram" },
       isRequired: true,
       data: null,
+      prefill: "NONE",
     })
     for (const item of [...quotaInput, ...(questionInput ?? [])]) {
       expect(item).not.toHaveProperty("presetKey")
