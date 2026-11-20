@@ -21,6 +21,7 @@
       "provideLastName": "Please enter your last name"
     }
   },
+  "previewNotSubmitted": "Preview: no registration was submitted",
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
   "registrationDeleteComplete": "Deleted registration",

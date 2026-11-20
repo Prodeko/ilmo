@@ -21,6 +21,7 @@
       "provideLastName": "Anna sukunimi"
     }
   },
+  "previewNotSubmitted": "Esikatselu: ilmoittautumista ei lähetetty",
   "recentlyRegisteredHeader": "Äskettäin ilmoittautuneet:",
   "recentlyRegisteredListItem": "ilmoittautui juuri kiintiöön",
   "registrationDeleteComplete": "Ilmoittautuminen poistettu onnistuneesti",

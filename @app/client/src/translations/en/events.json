@@ -1,5 +1,5 @@
 {
-  "addOpenQuota": "Add open quota",
+  "addOpenQuota": "Add overflow quota",
   "addOption": "Add option",
   "addQuestion": "Add question",
   "addQuota": "Add quota",
@@ -11,14 +11,14 @@
     "eventCategoryCreationFailed": "Creating event category failed",
     "eventCreateFailed": "Creating event failed",
     "eventUpdateFailed": "Updating event failed",
-    "formTabErrors": "Other errors",
-    "mustProvideEventQuota": "Must provide at least one quota for the event"
+    "mustProvideEventQuota": "The event must have at least one quota. An overflow quota alone is not enough."
   },
   "eventName": "Event",
   "eventNotFound": "Event not found",
   "eventSignupNotOpen": "Event signup is not open",
   "forms": {
     "eventTime": "Event time",
+    "fillRequiredToSave": "Fill in all required fields to save",
     "highlightEvent": "Highlighted event",
     "isDraft": "Draft",
     "isHighlighted": "Highlighted",
@@ -77,14 +77,35 @@
   "headerImage": "Event header image",
   "languages": "Languages",
   "numRegistrations": "Registered people",
-  "openQuota": "Open quota",
+  "openQuota": "Overflow quota",
   "organizer": "Organizer",
+  "overflowQuotaInfo": "The overflow quota is shared by all quotas: when a registrant’s own quota is full, they get a spot in the overflow quota if there is room. After that, registrants go to the queue.",
+  "previewInfo": "This is how the registration form looks to registrants. You can try the form, but nothing is submitted from the preview.",
+  "questionsAutomaticallyCollected": "<b>First name</b>, <b>last name</b> and <b>email</b> are collected from registrants automatically, so you do not need to add them as questions.",
   "queued": "Queue",
   "quota": "Quota",
   "removeOption": "Remove option",
   "removeQuestion": "Remove question",
   "removeQuota": "Remove quota",
   "spots": "spots",
+  "templates": {
+    "questions": {
+      "confirmRemove": "Questions created by the event template will be removed, even if you have edited them. Continue?",
+      "label": "Event template",
+      "none": "No event template",
+      "presets": "Ready-made questions",
+      "sitsit": "Sitsit"
+    },
+    "quotas": {
+      "confirmRemove": "Quotas created by the quota template will be removed, even if you have edited them. Continue?",
+      "label": "Quota template",
+      "none": "No quota template",
+      "openQuotaHint": "For a quota anyone can register to, add the “Open quota” quota.",
+      "presets": "Add individual quotas",
+      "yearGroups": "Quotas for all year groups",
+      "yearGroupsNote": "Remember to set a size for each quota."
+    }
+  },
   "timer": {
     "instructions": "The page will update automatically once the registration opens. Please do not refresh the page.",
     "registrationStarts": "Opens",

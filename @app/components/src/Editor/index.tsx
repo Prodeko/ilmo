@@ -86,7 +86,16 @@ export const Editor: React.FC<EditorProps> = ({
   ]
 
   // See https://github.com/ianstormtaylor/slate/pull/4540#issuecomment-951380551
-  editor.children = newValue
+  if (editor.children !== newValue) {
+    editor.children = newValue
+    // The document was replaced from outside the editor (language switch or
+    // form reset); drop the cursor, pending marks and undo history that
+    // point into the previous one. Edits made in the editor come back as the
+    // same array, so typing doesn't reset anything.
+    editor.selection = null
+    editor.marks = null
+    editor.history = { undos: [], redos: [] }
+  }
 
   useEffect(() => {
     const textValue = newValue.map((val) => serialize(val)).join("")

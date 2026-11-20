@@ -1,11 +1,12 @@
 import { Dispatch, SetStateAction } from "react"
 import { CreateEventPageQuery, UpdateEventPageQuery } from "@app/graphql"
-import { range, tailFormItemLayout } from "@app/lib"
-import { Button, DatePicker, Form, Input, Row, Select, Switch } from "antd"
-import dayjs from "dayjs"
+import { range } from "@app/lib"
+import { DatePicker, Form, Input, Select, Switch } from "antd"
+import dayjs, { Dayjs } from "dayjs"
 
-import { Editor, ErrorAlert, FileUpload, useTranslation } from "../."
+import { Editor, FileUpload, useTranslation } from "../."
 
+import { TimeRangePicker, TimeRangePickerProps } from "./TimeRangePicker"
 import { FormValues } from "."
 
 import type { UploadFile } from "antd/lib/upload/interface"
@@ -14,17 +15,22 @@ const { Option } = Select
 const { Group } = Input
 const { RangePicker } = DatePicker
 
+// The scroll column picker has no day click, so it drops that option
+const ScrollTimeRangePicker: React.FC<TimeRangePickerProps> = ({
+  dayClickEndAfterDays: _,
+  ...props
+}) => <RangePicker {...props} />
+
+// Typing a time can store a half-filled range, so require both ends
+const bothEndsSet = (_: unknown, value?: Array<Dayjs | null>) =>
+  value?.[0] && value?.[1] ? Promise.resolve() : Promise.reject()
+
 interface MainTabProps {
   type: "update" | "create"
   formValues: FormValues
   data: CreateEventPageQuery | UpdateEventPageQuery
-  formSubmitting: boolean
   selectedLanguages: string[]
   setSelectedLanguages: Dispatch<SetStateAction<string[]>>
-  isDraft: boolean
-  setIsDraft: Dispatch<SetStateAction<boolean>>
-  tabErrors: string[] | null
-  formError: any
   supportedLanguages: Array<string | null | undefined> | null | undefined
 }
 
@@ -35,14 +41,16 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     formValues,
     selectedLanguages,
     setSelectedLanguages,
-    isDraft,
-    setIsDraft,
-    formError,
-    tabErrors,
-    formSubmitting,
     supportedLanguages,
   } = props
   const { t, lang } = useTranslation("events")
+
+  // The control for the event and registration times: typed HH : mm : ss
+  // boxes (TimeRangePicker) or the time scroll columns (RangePicker)
+  const typedTimeInput = true
+  const DateTimeRangePicker = typedTimeInput
+    ? TimeRangePicker
+    : ScrollTimeRangePicker
 
   function getUploadDefaultFileList(): Array<UploadFile> | undefined {
     if (type === "update") {
@@ -227,14 +235,15 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
         name="eventTime"
         rules={[
           {
-            type: "array",
             required: true,
             message: t("forms.rules.event.provideEventTime"),
+            validator: bothEndsSet,
           },
         ]}
       >
-        <RangePicker
+        <DateTimeRangePicker
           data-cy="eventform-input-event-time"
+          dayClickEndAfterDays={0}
           format="YYYY-MM-DD HH:mm:ss"
           showTime
         />
@@ -244,17 +253,22 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
         name="registrationTime"
         rules={[
           {
-            type: "array",
             required: true,
             message: t("forms.rules.event.provideRegistrationTime"),
+            validator: bothEndsSet,
           },
         ]}
       >
-        <RangePicker
+        <DateTimeRangePicker
           data-cy="eventform-input-registration-time"
+          dayClickEndAfterDays={7}
           format="YYYY-MM-DD HH:mm:ss"
           showTime={{
             hideDisabledOptions: true,
+            defaultOpenValue: [
+              dayjs().hour(12).minute(0).second(0),
+              dayjs().hour(23).minute(59).second(59),
+            ],
           }}
         />
       </Form.Item>
@@ -278,48 +292,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           defaultFileList={getUploadDefaultFileList()}
           maxCount={1}
         />
-      </Form.Item>
-      <Form.Item
-        label={t("forms.saveAsDraft")}
-        name="isDraft"
-        valuePropName="checked"
-      >
-        <Switch
-          data-cy="eventform-switch-save-as-draft"
-          defaultChecked={isDraft}
-          onChange={(checked) => setIsDraft(checked)}
-        />
-      </Form.Item>
-      {formError && (
-        <Form.Item {...tailFormItemLayout}>
-          <ErrorAlert
-            error={formError}
-            message={
-              type === "create"
-                ? t("errors.eventCreateFailed")
-                : t("errors.eventUpdateFailed")
-            }
-          />
-        </Form.Item>
-      )}
-      {tabErrors ? (
-        <Form.Item label={t("errors.formTabErrors")}>
-          {tabErrors?.map((e, i) => (
-            <Row key={i}>
-              <span style={{ color: "red" }}>{e}</span>
-            </Row>
-          ))}
-        </Form.Item>
-      ) : null}
-      <Form.Item {...tailFormItemLayout}>
-        <Button
-          data-cy="eventform-button-submit"
-          disabled={selectedLanguages.length === 0 ? true : false}
-          htmlType="submit"
-          loading={formSubmitting}
-        >
-          {t(`common:${type}`)}
-        </Button>
       </Form.Item>
     </>
   )

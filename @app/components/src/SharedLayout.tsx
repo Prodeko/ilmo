@@ -324,7 +324,13 @@ export function SharedLayout({
       </Header>
       <Layout hasSider={!!sider}>
         {sider ? sider : null}
-        <Content style={{ minHeight: contentMinHeight }}>
+        {/* Without the footer the content fills the rest of the window, so
+            the light body background doesn't show below short pages */}
+        <Content
+          style={{
+            minHeight: displayFooter ? contentMinHeight : "calc(100vh - 64px)",
+          }}
+        >
           {renderChildren({
             error,
             stale,
