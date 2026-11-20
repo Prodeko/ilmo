@@ -1,14 +1,3 @@
-fragment ListEventsPage_Query on Query {
-  ...SharedLayout_Query
-  eventCategories {
-    nodes {
-      ...EventPage_EventCategory
-      __typename
-    }
-    __typename
-  }
-  __typename
-}
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
@@ -23,6 +12,8 @@ fragment SharedLayout_Query on Query {
   }
   ssoLoginEnabled
   supportedLanguages
+  enabledFeaturesList
+  adminPreviewFeaturesList
   __typename
 }
 fragment SharedLayout_User on User {
@@ -31,6 +22,7 @@ fragment SharedLayout_User on User {
   username
   avatarUrl
   isAdmin
+  isDeveloper
   isVerified
   primaryEmail
   userEmails(first: 50) {
@@ -71,25 +63,6 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment EventPage_EventCategory on EventCategory {
-  id
-  description
-  name
-  color
-  ownerOrganization {
-    ...EventPage_Organization
-    __typename
-  }
-  updatedAt
-  __typename
-}
-fragment EventPage_Organization on Organization {
-  id
-  name
-  slug
-  color
-  __typename
-}
-query ListEventsPage {
-  ...ListEventsPage_Query
+query Shared {
+  ...SharedLayout_Query
 }

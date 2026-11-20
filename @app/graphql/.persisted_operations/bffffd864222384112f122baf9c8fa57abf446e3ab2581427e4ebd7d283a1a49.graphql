@@ -1,11 +1,3 @@
-fragment OrganizationPage_Query on Query {
-  ...SharedLayout_Query
-  organizationBySlug(slug: $slug) {
-    ...OrganizationPage_Organization
-    __typename
-  }
-  __typename
-}
 fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
@@ -20,6 +12,8 @@ fragment SharedLayout_Query on Query {
   }
   ssoLoginEnabled
   supportedLanguages
+  enabledFeaturesList
+  adminPreviewFeaturesList
   __typename
 }
 fragment SharedLayout_User on User {
@@ -28,6 +22,7 @@ fragment SharedLayout_User on User {
   username
   avatarUrl
   isAdmin
+  isDeveloper
   isVerified
   primaryEmail
   userEmails(first: 50) {
@@ -68,38 +63,12 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment OrganizationPage_Organization on Organization {
-  ...EventPage_Organization
-  currentUserIsOwner
-  organizationMemberships(first: 10, offset: $offset, orderBy: [MEMBER_NAME_ASC]) {
-    nodes {
-      ...OrganizationPage_Membership
-      __typename
-    }
-    totalCount
-    __typename
-  }
-  __typename
-}
-fragment EventPage_Organization on Organization {
-  id
-  name
-  slug
-  color
-  __typename
-}
-fragment OrganizationPage_Membership on OrganizationMembership {
-  id
-  createdAt
-  isOwner
-  user {
+query InvitationDetail($id: UUID!, $code: String) {
+  ...SharedLayout_Query
+  organizationForInvitation(invitationId: $id, code: $code) {
     id
-    username
     name
+    slug
     __typename
   }
-  __typename
-}
-query OrganizationPage($slug: String!, $offset: Int = 0) {
-  ...OrganizationPage_Query
 }

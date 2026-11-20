@@ -1,12 +1,35 @@
-fragment EventPage_Subscription on Subscription {
+fragment UpdateEventRegistrationPage_Query on Query {
+  ...SharedLayout_Query
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Registration
+    quota {
+      ...EventPage_Quota
+      __typename
+    }
+    event {
+      ...EventPage_Event
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment SharedLayout_Query on Query {
   currentUser {
     ...SharedLayout_User
     __typename
   }
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
+  organizations(orderBy: SLUG_ASC) {
+    nodes {
+      ...SharedLayout_Organization
+      __typename
+    }
     __typename
   }
+  ssoLoginEnabled
+  supportedLanguages
+  enabledFeaturesList
+  adminPreviewFeaturesList
   __typename
 }
 fragment SharedLayout_User on User {
@@ -15,6 +38,7 @@ fragment SharedLayout_User on User {
   username
   avatarUrl
   isAdmin
+  isDeveloper
   isVerified
   primaryEmail
   userEmails(first: 50) {
@@ -47,6 +71,26 @@ fragment SharedLayout_UserEmail on UserEmail {
   isVerified
   isPrimary
   createdAt
+  __typename
+}
+fragment SharedLayout_Organization on Organization {
+  id
+  name
+  slug
+  __typename
+}
+fragment UpdateEventRegistrationPage_Registration on Registration {
+  id
+  firstName
+  lastName
+  answers
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
   __typename
 }
 fragment EventPage_Event on Event {
@@ -124,13 +168,6 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-fragment EventPage_Quota on Quota {
-  id
-  position
-  title
-  size
-  __typename
-}
 fragment EventPage_Registration on Registration {
   id
   fullName
@@ -152,6 +189,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-subscription EventPage($slug: String!) {
-  ...EventPage_Subscription
+query UpdateEventRegistrationPage($updateToken: String!) {
+  ...UpdateEventRegistrationPage_Query
 }

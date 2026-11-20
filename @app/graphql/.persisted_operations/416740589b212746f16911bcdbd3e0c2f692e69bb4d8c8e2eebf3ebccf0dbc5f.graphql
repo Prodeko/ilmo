@@ -24,6 +24,8 @@ fragment SharedLayout_Query on Query {
   }
   ssoLoginEnabled
   supportedLanguages
+  enabledFeaturesList
+  adminPreviewFeaturesList
   __typename
 }
 fragment SharedLayout_User on User {
@@ -32,6 +34,7 @@ fragment SharedLayout_User on User {
   username
   avatarUrl
   isAdmin
+  isDeveloper
   isVerified
   primaryEmail
   userEmails(first: 50) {

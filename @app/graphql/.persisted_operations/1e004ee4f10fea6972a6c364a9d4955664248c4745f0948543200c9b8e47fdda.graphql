@@ -1,8 +1,10 @@
-fragment UpdateEventCategoryPage_Query on Query {
+fragment CreateEventPage_Query on Query {
   ...SharedLayout_Query
-  eventCategory(id: $id) {
-    id
-    ...EventPage_EventCategory
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
+      __typename
+    }
     __typename
   }
   __typename
@@ -21,6 +23,8 @@ fragment SharedLayout_Query on Query {
   }
   ssoLoginEnabled
   supportedLanguages
+  enabledFeaturesList
+  adminPreviewFeaturesList
   __typename
 }
 fragment SharedLayout_User on User {
@@ -29,6 +33,7 @@ fragment SharedLayout_User on User {
   username
   avatarUrl
   isAdmin
+  isDeveloper
   isVerified
   primaryEmail
   userEmails(first: 50) {
@@ -88,6 +93,6 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-query UpdateEventCategoryPage($id: UUID!) {
-  ...UpdateEventCategoryPage_Query
+query CreateEventPage {
+  ...CreateEventPage_Query
 }
