@@ -2,17 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CreateEventDocument,
   CreateEventPageQuery,
-  EventQuestion,
-  Quota,
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
-import { filterObjectByKeys, formItemLayout, lowercased } from "@app/lib"
+import { formItemLayout, lowercased } from "@app/lib"
 import { Badge, Col, Form, Row, Tabs } from "antd"
-import dayjs from "dayjs"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
-import slugify from "slugify"
 import { CombinedError, useMutation } from "urql"
 
 import { ButtonLink, useTranslation } from "../."
@@ -23,25 +19,9 @@ import { MainTab } from "./MainTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
+import { FormValues, SubmittedFormValues, toEventInput } from "./values"
 
-import type { Scalars } from "@app/graphql"
-import type { JsonValue } from "type-fest"
-
-export type FormValues = {
-  languages?: string[]
-  ownerOrganizationId?: string
-  categoryId?: string
-  name?: Scalars["TranslatedField"]["input"]
-  description?: JsonValue
-  location?: string
-  eventTime?: dayjs.Dayjs[]
-  registrationTime?: dayjs.Dayjs[]
-  isHighlighted?: boolean
-  headerImageFile?: string
-  isDraft?: boolean
-  quotas?: Quota[]
-  Questions?: EventQuestion[]
-}
+export * from "./values"
 
 interface EventFormProps {
   type: "update" | "create"
@@ -51,25 +31,6 @@ interface EventFormProps {
   // i.e. we are updating an existing event
   eventId?: string
   initialValues?: any
-}
-
-export function getEventSlug(
-  name?: Scalars["TranslatedField"]["input"],
-  dates?: dayjs.Dayjs[]
-) {
-  const eventStartTime = dates?.[0].toISOString()
-
-  const nameFi = name?.fi
-  const nameSlug = nameFi
-    ? nameFi
-    : Object.values(name || {})?.[0] || ("" as string)
-
-  const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
-  const slug = slugify(`${daySlug}-${nameSlug}`, {
-    lower: true,
-  })
-
-  return slug
 }
 
 enum TAB {
@@ -180,78 +141,15 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   }, [setFieldsValue, initialValues, initialSelectedLanguages])
 
   const handleSubmit = useCallback(
-    async (values) => {
+    async (values: SubmittedFormValues) => {
       setFormSubmitting(true)
       setFormError(null)
       try {
-        const {
-          name,
-          eventTime,
-          registrationTime,
-          openQuotaSize,
-          quotas: formQuotas,
-          questions: formQuestions,
-          headerImageFile: headerFile,
-        } = values
-
-        if (!formQuotas?.length) {
+        if (!values.quotas?.length) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
-        const eventStartTime = eventTime[0].toISOString()
-        const eventEndTime = eventTime[1].toISOString()
-
-        const registrationStartTime = registrationTime[0].toISOString()
-        const registrationEndTime = registrationTime[1].toISOString()
-
-        const slug = getEventSlug(name, eventTime)
-        const headerImageFile = headerFile?.originFileObj
-
-        const event = {
-          ...filterObjectByKeys(values, [
-            "ownerOrganizationId",
-            "categoryId",
-            "name",
-            "description",
-            "location",
-            "isHighlighted",
-            "isDraft",
-          ]),
-          slug,
-          eventStartTime,
-          eventEndTime,
-          registrationStartTime,
-          registrationEndTime,
-          headerImageFile,
-          openQuotaSize,
-        }
-
-        // FormQuotas can be empty if only the open quota is specified
-        const quotas =
-          formQuotas?.map((q: Quota, index: number) => {
-            // Set quota position
-            q.position = index
-            return filterObjectByKeys(q, ["id", "position", "title", "size"])
-          }) || []
-
-        // Questions may be empty
-        const questions = formQuestions?.map(
-          (q: EventQuestion, index: number) => {
-            // Set question position and isRequired
-            q.position = index
-            q.isRequired = q.isRequired ?? false
-            return filterObjectByKeys(q, [
-              "id",
-              "position",
-              "type",
-              "label",
-              "isRequired",
-              "data",
-            ])
-          }
-        )
-
-        const commonInput = { event, quotas, questions }
+        const commonInput = toEventInput(values)
         const input =
           type === "update"
             ? {
