@@ -1,32 +1,28 @@
 import { UpdateEventRegistrationDocument } from "@app/graphql"
-import dayjs from "dayjs"
 
 import {
   asRoot,
   createEventDataAndLogin,
   deleteTestData,
+  poolFromUrl,
   removePropFromObject,
   runGraphQLQuery,
   setup,
-  sleep,
   teardown,
+  TEST_DATABASE_URL,
 } from "../helpers"
 
-// Event times where signup is open for one second from now. NOW() runs in the
-// database, so tests sleep past the window instead of faking timers.
-function shortSignupTimes() {
-  const registrationStartTime = dayjs().toDate()
-  const registrationEndTime = dayjs(registrationStartTime)
-    .add(1, "second")
-    .toDate()
-  const eventStartTime = dayjs(registrationEndTime).add(7, "day").toDate()
-  const eventEndTime = dayjs(eventStartTime).add(7, "day").toDate()
-  return [
-    registrationStartTime,
-    registrationEndTime,
-    eventStartTime,
-    eventEndTime,
-  ]
+// Closes signup of an event created with open signup by moving its end into
+// the past. The signup window is checked against NOW() in the database, so
+// the end time is set there too.
+async function closeSignup(eventId: string) {
+  const { rowCount } = await poolFromUrl(TEST_DATABASE_URL).query(
+    `update app_public.events
+       set registration_end_time = now() - interval '1 minute'
+       where id = $1 and registration_start_time < now() - interval '1 minute'`,
+    [eventId]
+  )
+  expect(rowCount).toBe(1)
 }
 
 beforeEach(deleteTestData)
@@ -154,14 +150,12 @@ describe("UpdateRegistration", () => {
   })
 
   it("can't update registration once event signup has closed", async () => {
-    const { registrations, registrationSecrets } =
-      await createEventDataAndLogin({
-        eventOptions: { create: true, times: shortSignupTimes() },
-      })
+    const { events, registrations, registrationSecrets } =
+      await createEventDataAndLogin()
     const { update_token: updateToken } = registrationSecrets[0]
     const answers = registrations[0].answers
 
-    await sleep(1000)
+    await closeSignup(events[0].id)
 
     await runGraphQLQuery(
       UpdateEventRegistrationDocument,
@@ -194,7 +188,7 @@ describe("UpdateRegistration", () => {
   })
 
   it("admin can update registration after event signup has closed", async () => {
-    const { registrations, registrationSecrets, session } =
+    const { events, registrations, registrationSecrets, session } =
       await createEventDataAndLogin({
         userOptions: {
           create: true,
@@ -202,12 +196,11 @@ describe("UpdateRegistration", () => {
           isVerified: true,
           isAdmin: true,
         },
-        eventOptions: { create: true, times: shortSignupTimes() },
       })
     const { update_token: updateToken } = registrationSecrets[0]
     const answers = registrations[0].answers
 
-    await sleep(1000)
+    await closeSignup(events[0].id)
 
     await runGraphQLQuery(
       UpdateEventRegistrationDocument,
