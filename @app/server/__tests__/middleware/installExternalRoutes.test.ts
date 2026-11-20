@@ -233,7 +233,20 @@ describe("csrfExemptions", () => {
     ).toEqual([{ method: "POST", path: "/a" }])
   })
 
-  it("is empty for the registry as it stands", () => {
-    expect(csrfExemptions()).toEqual([])
+  describe("for the registry as it stands", () => {
+    const savedIssuer = process.env.KEYCLOAK_ISSUER
+    afterEach(() => {
+      process.env.KEYCLOAK_ISSUER = savedIssuer
+    })
+
+    it("exempts POST /mcp when Keycloak is configured", () => {
+      process.env.KEYCLOAK_ISSUER = "https://id.example.org/realms/test"
+      expect(csrfExemptions()).toEqual([{ method: "POST", path: "/mcp" }])
+    })
+
+    it("is empty when Keycloak is not configured", () => {
+      process.env.KEYCLOAK_ISSUER = ""
+      expect(csrfExemptions()).toEqual([])
+    })
   })
 })

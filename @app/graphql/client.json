@@ -59,5 +59,8 @@
    "SettingsPassword": "4ccd52e00c526690ac5b44ca911534e96f936acd4ff02a2785d9932bbe11ff6c",
    "UnlinkUserAuthentication": "efef5d154b91120114a5ae97193bb83daee1223c150c8bda2d6655a47482fb70",
    "UpdateUser": "f3860479c8aaf60b1901dca62029b57c96953064a5a65a4ed92cf8e5173ed441",
-   "VerifyEmail": "37dc92ddb2ef943241e08bdfa7ee71c207fc876df739992d93ded6b9e76819d1"
+   "VerifyEmail": "37dc92ddb2ef943241e08bdfa7ee71c207fc876df739992d93ded6b9e76819d1",
+   "McpEvents": "bff9fa131f81cd8910d662b816d207f92cd684511dce76c2b624187013be4600",
+   "McpEventOptions": "f7628c3bb9d2c33edc0ed649e869f4c22705211dfdb1f60642912a58c4954b44",
+   "McpEvent": "2703b7592181b359bf05cb2ab656c103127d6ee13d7cb8b2cea72e34568a1fdf"
 }

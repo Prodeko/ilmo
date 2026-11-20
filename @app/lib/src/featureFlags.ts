@@ -32,7 +32,13 @@ export interface FeatureDefinition {
   readonly requiresEnv?: readonly string[]
 }
 
-export const FEATURES = {} as const satisfies Record<string, FeatureDefinition>
+export const FEATURES = {
+  mcp_server: {
+    description:
+      "MCP server at /mcp for AI assistants: browse events, register, and let admins create draft events.",
+    requiresEnv: ["KEYCLOAK_ISSUER"],
+  },
+} as const satisfies Record<string, FeatureDefinition>
 
 export type FeatureKey = keyof typeof FEATURES
 

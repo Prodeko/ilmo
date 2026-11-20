@@ -1,3 +1,5 @@
+import { mcpRoutes } from "./mcp/routes"
+
 import type { FeatureKey } from "@app/lib"
 import type { FastifyPluginAsync } from "fastify"
 
@@ -58,7 +60,7 @@ export interface ExternalRouteModule {
 }
 
 /** The registry. Add a module here; do not edit app.ts or the CSRF plugin. */
-export const externalRoutes: readonly ExternalRouteModule[] = []
+export const externalRoutes: readonly ExternalRouteModule[] = [mcpRoutes]
 
 export interface CsrfExemption {
   method: ExternalRouteMethod

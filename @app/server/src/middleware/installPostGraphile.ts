@@ -14,6 +14,7 @@ import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {
   enhanceHttpServerWithSubscriptions,
+  HttpRequestHandler,
   makePluginHook,
   Middleware,
   postgraphile,
@@ -45,6 +46,12 @@ import handleErrors from "../utils/handleErrors"
 import { RequestLogger } from "./installKeycloak"
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
+
+declare module "fastify" {
+  export interface FastifyInstance {
+    postgraphile: HttpRequestHandler
+  }
+}
 
 export interface OurGraphQLContext {
   pgClient: PoolClient
@@ -439,6 +446,8 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       workerUtils,
     })
   )
+
+  app.decorate("postgraphile", middleware)
 
   app.options(
     middleware.graphqlRoute,
