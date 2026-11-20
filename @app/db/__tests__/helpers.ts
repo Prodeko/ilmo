@@ -108,6 +108,19 @@ export const withAdminUserDb = <T>(
     await fn(client, user)
   })
 
+export const withDeveloperUserDb = <T>(
+  fn: (client: PoolClient, user: User) => Promise<T>
+) =>
+  withRootDb(async (client) => {
+    const [user] = await createUsers(client, 1, true, true)
+    await client.query(
+      "update app_public.users set is_developer = true where id = $1",
+      [user.id]
+    )
+    await becomeUser(client, user.id)
+    await fn(client, user)
+  })
+
 export const withAnonymousDb = <T>(fn: (client: PoolClient) => Promise<T>) =>
   withRootDb(async (client) => {
     await becomeUser(client, null)
@@ -132,6 +145,33 @@ export const becomeUser = async (
     [process.env.DATABASE_VISITOR, session ? session.uuid : ""]
   )
 }
+
+export type FeatureState = "off" | "admins_only" | "on"
+
+/*
+ * Inserts a feature flag row, or overwrites an existing one, as root. The
+ * surrounding test transaction is rolled back, so nothing needs cleaning up.
+ */
+export const upsertFeatureFlag = (
+  client: PoolClient,
+  key: string,
+  state: FeatureState,
+  {
+    available = true,
+    retired = false,
+  }: { available?: boolean; retired?: boolean } = {}
+) =>
+  asRoot(client, () =>
+    client.query(
+      `insert into app_public.feature_flags (key, state, available, description, retired_at)
+      values ($1, $2, $3, 'Test flag', case when $4::boolean then now() end)
+      on conflict (key) do update
+      set state = excluded.state,
+        available = excluded.available,
+        retired_at = excluded.retired_at`,
+      [key, state, available, retired]
+    )
+  )
 
 export const getSessions = async (client: PoolClient, userId: string) => {
   const { rows } = await asRoot(client, () =>
