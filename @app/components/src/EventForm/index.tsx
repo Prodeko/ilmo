@@ -193,6 +193,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
     [TAB.Questions]: t("admin:events.tabs.questions"),
   }
 
+  // Registration form preview tab: the feature's only switch
+  const formPreview = true
+
   const mainTabProps = {
     type,
     data,
@@ -256,15 +259,23 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
               />
             ),
           },
-          {
-            key: TAB.Preview,
-            label: t("admin:events.tabs.preview"),
-            // Only render when active so the preview uses the current questions
-            children:
-              activeTab === TAB.Preview ? (
-                <PreviewTab form={form} selectedLanguages={selectedLanguages} />
-              ) : null,
-          },
+          ...(formPreview
+            ? [
+                {
+                  key: TAB.Preview,
+                  label: t("admin:events.tabs.preview"),
+                  // Only render when active so the preview uses the current
+                  // questions
+                  children:
+                    activeTab === TAB.Preview ? (
+                      <PreviewTab
+                        form={form}
+                        selectedLanguages={selectedLanguages}
+                      />
+                    ) : null,
+                },
+              ]
+            : []),
           ...(type === "update"
             ? [
                 {
