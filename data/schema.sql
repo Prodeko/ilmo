@@ -3277,7 +3277,7 @@ begin
   select array(
     select id from app_public.event_questions as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(questions))
+    and q.id not in (select id from unnest(questions) where id is not null)
   )
   into v_question_ids_to_delete;
 
@@ -3342,7 +3342,7 @@ begin
   select array(
     select id from app_public.quotas as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(quotas))
+    and q.id not in (select id from unnest(quotas) where id is not null)
   )
   into v_quota_ids_to_delete;
 
@@ -5063,6 +5063,13 @@ CREATE POLICY manage_admin ON app_public.event_questions USING (app_public.curre
 --
 
 CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin());
+
+
+--
+-- Name: organizations manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.organizations USING (app_public.current_user_is_admin());
 
 
 --
