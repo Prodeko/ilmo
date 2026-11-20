@@ -24,7 +24,9 @@ feature flag registry in `@app/lib/src/featureFlags.ts`):
 - `registration_reminders`: the reminder button, settings page and menu link,
   enabling reminders and saving preferences (FTOFF while off), and the
   `reminder__send_registration` task. A reminder that comes due while the flag
-  is off is not sent later. Cancelling a reminder always works.
+  is off is not sent later. Cancelling a reminder always works: while the flag
+  is off, the settings page still lists a user's reminders and linked Telegram
+  account so they can be removed and disconnected, and offers nothing else.
 - `telegram_reminders`: also needs `registration_reminders`. The server marks it
   unavailable without `TELEGRAM_BOT_TOKEN`. Gates the Telegram channel and link
   codes (FTOFF while off), the webhook (404), polling, and the

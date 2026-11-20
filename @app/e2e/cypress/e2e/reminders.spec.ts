@@ -68,6 +68,12 @@ context("Registration reminder preferences", () => {
         cy.visit(`${Cypress.env("ROOT_URL")}/en/settings/reminders`)
         cy.getCy("reminder-preferences-edit").should("exist")
         cy.contains("15 minutes before registration opens").should("exist")
+
+        // With reminders off, an existing reminder can still be removed
+        cy.serverCommand("setFeatureFlags", { registration_reminders: "off" })
+        cy.reload()
+        cy.getCy("reminders-off-notice").should("exist")
+        cy.getCy("reminder-preferences-edit").should("not.exist")
         cy.getCy("reminder-cancel").click()
         cy.contains("You have no registration reminders.").should("exist")
       }

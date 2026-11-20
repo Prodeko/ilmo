@@ -36,19 +36,43 @@ export default function RemindersPage() {
   const [mutation, setReminder] = useSetEventRegistrationReminderMutation()
   const reminders = query.data?.eventRegistrationReminders
   const language = lang === "en" ? "en" : "fi"
+  // The page renders the layout, so it reads the flags from its own query
+  const remindersOn = featureEnabledIn(query.data, "registration_reminders")
   // Without a bot username the page offers no way to choose or link Telegram;
   // a linked account can still be disconnected.
-  const botUsername = featureEnabledIn(query.data, "telegram_reminders")
-    ? query.data?.telegramBotUsername
-    : null
-  // The page renders the layout, so it reads the flags from its own query
-  if (query.data && !featureEnabledIn(query.data, "registration_reminders")) {
+  const botUsername =
+    remindersOn && featureEnabledIn(query.data, "telegram_reminders")
+      ? query.data?.telegramBotUsername
+      : null
+  // While reminders are off the page only offers ways out: removing
+  // reminders and disconnecting Telegram. It stays in that mode after the
+  // last one is gone, and is not found for users who have nothing to remove.
+  const hasSomethingToRemove =
+    !!query.data?.currentTelegramAccount || !!reminders?.totalCount
+  const [hadSomethingToRemove, setHadSomethingToRemove] = useState(false)
+  useEffect(() => {
+    if (hasSomethingToRemove) setHadSomethingToRemove(true)
+  }, [hasSomethingToRemove])
+  if (
+    query.data &&
+    !remindersOn &&
+    !hasSomethingToRemove &&
+    !hadSomethingToRemove
+  ) {
     return <FourOhFour />
   }
   return (
     <SettingsLayout href="/settings/reminders" query={query}>
       <PageHeader title={t("myReminders")} />
-      {query.data && (
+      {query.data && !remindersOn && (
+        <Alert
+          data-cy="reminders-off-notice"
+          message={t("offNotice")}
+          style={{ marginBottom: 24 }}
+          type="info"
+        />
+      )}
+      {query.data && remindersOn && (
         <>
           <Typography.Title level={4}>
             {t("preferences.title")}
@@ -121,7 +145,9 @@ export default function RemindersPage() {
         botUsername={botUsername}
         refresh={() => refresh({ requestPolicy: "network-only" })}
       />
-      <Typography.Paragraph>{t("timingNote")}</Typography.Paragraph>
+      {remindersOn && (
+        <Typography.Paragraph>{t("timingNote")}</Typography.Paragraph>
+      )}
       {query.error && <ErrorAlert error={query.error} />}
       {mutation.error && <ErrorAlert error={mutation.error} />}
       <List

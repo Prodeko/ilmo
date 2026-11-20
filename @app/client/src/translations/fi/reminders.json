@@ -6,6 +6,7 @@
   "enabled": "Muistutus asetettu",
   "expired": "Ilmoittautuminen on avautunut",
   "loadMore": "Näytä lisää",
+  "offNotice": "Muistutukset eivät ole nyt käytössä. Voit silti poistaa muistutuksesi ja katkaista Telegram-yhteyden.",
   "myReminders": "Omat muistutukset",
   "opens": "Ilmoittautuminen alkaa",
   "paused": "Keskeytetty",

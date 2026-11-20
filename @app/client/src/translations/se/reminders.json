@@ -6,6 +6,7 @@
   "enabled": "Påminnelse inställd",
   "expired": "Anmälan har öppnat",
   "loadMore": "Visa fler",
+  "offNotice": "Påminnelser används inte just nu. Du kan ändå ta bort dina påminnelser och koppla från Telegram.",
   "myReminders": "Mina påminnelser",
   "opens": "Anmälan öppnar",
   "paused": "Pausad",

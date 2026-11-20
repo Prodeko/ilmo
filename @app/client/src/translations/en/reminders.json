@@ -6,6 +6,7 @@
   "enabled": "Reminder set",
   "expired": "Registration has opened",
   "loadMore": "Show more",
+  "offNotice": "Reminders are not in use right now. You can still remove your reminders and disconnect Telegram.",
   "myReminders": "My reminders",
   "opens": "Registration opens",
   "paused": "Paused",
