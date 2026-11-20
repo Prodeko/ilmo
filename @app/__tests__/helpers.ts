@@ -81,10 +81,21 @@ export const deleteTestEventData = (pool: Pool) => {
   )
 }
 
+/**
+ * The flag state every test starts from: off, or on (and available) when the
+ * suite runs with TEST_FEATURE_FLAGS=on, see scripts/test.mjs.
+ */
+export const featureFlagBaseline = (): FeatureFlagState =>
+  process.env.TEST_FEATURE_FLAGS === "on" ? "on" : "off"
+
 export const resetFeatureFlags = (pool: Pool) =>
-  pool.query(
-    "update app_public.feature_flags set state = 'off' where state <> 'off'"
-  )
+  featureFlagBaseline() === "on"
+    ? pool.query(
+        "update app_public.feature_flags set state = 'on', available = true where state <> 'on' or not available"
+      )
+    : pool.query(
+        "update app_public.feature_flags set state = 'off' where state <> 'off'"
+      )
 
 export const deleteTestData = async () => {
   const pool = poolFromUrl(TEST_DATABASE_URL)
