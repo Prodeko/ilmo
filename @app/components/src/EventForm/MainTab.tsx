@@ -6,6 +6,7 @@ import dayjs, { Dayjs } from "dayjs"
 
 import { Editor, FileUpload, useTranslation } from "../."
 
+import { HighlightTextField } from "./fields/HighlightTextField"
 import { TimeRangePicker, TimeRangePickerProps } from "./TimeRangePicker"
 import { FormValues } from "."
 
@@ -44,7 +45,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
     supportedLanguages,
   } = props
   const { t, lang } = useTranslation("events")
-  const isHighlighted = Form.useWatch("isHighlighted")
 
   // The control for the event and registration times: typed HH : mm : ss
   // boxes (TimeRangePicker) or the time scroll columns (RangePicker)
@@ -280,29 +280,7 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
       >
         <Switch data-cy="eventform-switch-highlight" />
       </Form.Item>
-      {isHighlighted && (
-        <Form.Item
-          extra={t("forms.highlightTextHelp")}
-          label={t("forms.highlightText")}
-        >
-          <Group compact>
-            {selectedLanguages.map((l, i) => (
-              <Form.Item
-                key={l}
-                name={["highlightText", l.toLowerCase()]}
-                noStyle
-              >
-                <Input
-                  data-cy={`eventform-input-highlight-text-${l}`}
-                  maxLength={40}
-                  placeholder={t(`common:lang.in.${l}`)}
-                  style={i > 0 ? { marginTop: 5 } : undefined}
-                />
-              </Form.Item>
-            ))}
-          </Group>
-        </Form.Item>
-      )}
+      <HighlightTextField selectedLanguages={selectedLanguages} />
       <Form.Item
         getValueFromEvent={(e) => e[0]}
         label={t("headerImage")}
