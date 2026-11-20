@@ -2022,7 +2022,7 @@ type Mutation {
   translateText(fromLanguage: SupportedLanguages!, text: String!, toLanguage: SupportedLanguages!): TranslateTextPayload!
 
   """
-  Updates an event as well as any related quotas and questions with one mutation.
+  Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.
   """
   updateEvent(
     """

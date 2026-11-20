@@ -134,3 +134,6 @@ begin
   return v_event;
 end;
 $$ language plpgsql volatile security invoker set search_path = pg_catalog, public, pg_temp;
+
+comment on function app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) is
+  E'Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.';
