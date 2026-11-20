@@ -9,7 +9,6 @@ import {
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
-  Checkbox,
   Form,
   Input,
   InputNumber,
@@ -23,20 +22,8 @@ import {
 import { useTranslation } from "../."
 import { Draggable } from "../Draggable"
 
-import {
-  buildPresetQuota,
-  buildTemplateQuotas,
-  quotaPresets,
-  quotaTemplates,
-} from "./eventTemplates"
-import { RequiredMark } from "./RequiredMark"
-import { TemplateSelector } from "./TemplateSelector"
-
-type QuotaData = {
-  // Set on quotas created from a preset checkbox or a quota template
-  presetKey?: string
-  templateKey?: string
-}
+import { EventTemplates } from "./fields/EventTemplates"
+import { QuotaTemplateFields } from "./fields/QuotaTemplateFields"
 
 interface QuotasTabProps {
   initialValues?: any
@@ -49,36 +36,9 @@ interface QuotasTabProps {
 export const QuotasTab: React.FC<QuotasTabProps> = memo(
   ({ initialValues, selectedLanguages }) => {
     const [hasOpenQuota, setHasOpenQuota] = useState(false)
-    const { t, lang } = useTranslation("events")
+    const { t } = useTranslation("events")
     const { token } = theme.useToken()
     const form = Form.useFormInstance()
-    const quotas = (Form.useWatch("quotas", form) ?? []) as QuotaData[]
-
-    function presetKeysOf(quotas: QuotaData[]) {
-      const keys = quotas.map((q) => q?.presetKey).filter(Boolean)
-      return [...new Set(keys)] as string[]
-    }
-
-    // Presets that were ticked by hand, so a template doesn't add them twice
-    function buildTemplateWithoutTickedPresets(templateKey: string) {
-      const current = (form.getFieldValue("quotas") ?? []) as QuotaData[]
-      const ticked = presetKeysOf(current.filter((q) => !q?.templateKey))
-      return buildTemplateQuotas(templateKey, selectedLanguages).filter(
-        (q) => !ticked.includes(q.presetKey)
-      )
-    }
-
-    function handlePresetsChange(checked: string[]) {
-      const current = (form.getFieldValue("quotas") ?? []) as QuotaData[]
-      const present = presetKeysOf(current)
-      const kept = current.filter(
-        (q) => !q?.presetKey || checked.includes(q.presetKey)
-      )
-      const added = checked
-        .filter((key) => !present.includes(key))
-        .map((key) => buildPresetQuota(key, selectedLanguages))
-      form.setFieldValue("quotas", [...kept, ...added])
-    }
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
@@ -86,34 +46,9 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
 
     return (
       <DndProvider backend={HTML5Backend}>
-        <TemplateSelector
-          build={buildTemplateWithoutTickedPresets}
-          listName="quotas"
-          notes={{
-            yearGroups: (
-              <>
-                <RequiredMark />
-                {t("templates.quotas.yearGroupsNote")}
-              </>
-            ),
-          }}
-          templateKeys={quotaTemplates.map((template) => template.key)}
-        />
-        <Form.Item
-          label={t("templates.quotas.presets")}
-          labelCol={{ flex: "none" }}
-          wrapperCol={{ flex: "auto" }}
-        >
-          <Checkbox.Group
-            data-cy="eventform-quotas-presets"
-            options={Object.entries(quotaPresets).map(([key, preset]) => ({
-              value: key,
-              label: preset.title[lang as "fi" | "en"] ?? preset.title.en,
-            }))}
-            value={presetKeysOf(quotas)}
-            onChange={(checked) => handlePresetsChange(checked as string[])}
-          />
-        </Form.Item>
+        <EventTemplates>
+          <QuotaTemplateFields selectedLanguages={selectedLanguages} />
+        </EventTemplates>
         <Form.List
           name="quotas"
           rules={[
@@ -262,6 +197,10 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
         </Space>
         <Typography.Paragraph style={{ marginTop: 8 }} type="secondary">
           {t("overflowQuotaInfo")}
+          <EventTemplates>
+            {" "}
+            {t("templates.quotas.openQuotaHint")}
+          </EventTemplates>
         </Typography.Paragraph>
       </DndProvider>
     )

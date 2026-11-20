@@ -192,3 +192,59 @@ export function buildTemplateQuotas(templateKey: string, languages: string[]) {
     buildPresetQuota(presetKey, languages, templateKey)
   )
 }
+
+/**
+ * The helpers below change an EventForm list (quotas or questions) when a
+ * preset checkbox or the template selector changes. Items without a
+ * `presetKey` or `templateKey` were added by hand and are always kept.
+ */
+
+export type TemplateItem = { presetKey?: string; templateKey?: string }
+
+// The presets that have items in the list. A preset can add several items.
+export function presetKeysOf(items: Array<TemplateItem | undefined> = []) {
+  const keys = items.map((item) => item?.presetKey).filter(Boolean)
+  return [...new Set(keys)] as string[]
+}
+
+// The list after the preset checkboxes changed to `checked`: items of
+// unticked presets are removed and newly ticked presets are added at the end
+export function togglePresets<T extends TemplateItem>(
+  items: Array<T | undefined>,
+  checked: string[],
+  buildPreset: (presetKey: string) => T[]
+) {
+  const present = presetKeysOf(items)
+  const kept = items.filter(
+    (item) => !item?.presetKey || checked.includes(item.presetKey)
+  )
+  const added = checked
+    .filter((key) => !present.includes(key))
+    .flatMap((key) => buildPreset(key))
+  return [...kept, ...added]
+}
+
+// A template's items, leaving out the presets that were ticked by hand so
+// they are not added twice
+export function withoutHandPickedPresets<T extends TemplateItem>(
+  items: Array<TemplateItem | undefined>,
+  templateItems: T[]
+) {
+  const ticked = presetKeysOf(items.filter((item) => !item?.templateKey))
+  return templateItems.filter(
+    (item) => !item.presetKey || !ticked.includes(item.presetKey)
+  )
+}
+
+// The list after switching templates: the previous template's items are
+// replaced by the new template's items
+export function replaceTemplateItems<T extends TemplateItem>(
+  items: Array<T | undefined>,
+  templateItems: T[]
+) {
+  return [...items.filter((item) => !item?.templateKey), ...templateItems]
+}
+
+export function hasTemplateItems(items: Array<TemplateItem | undefined>) {
+  return items.some((item) => item?.templateKey)
+}

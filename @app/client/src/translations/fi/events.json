@@ -79,7 +79,7 @@
   "numRegistrations": "Ilmoittautuneita",
   "openQuota": "Ylivuotokiintiö",
   "organizer": "Järjestäjä",
-  "overflowQuotaInfo": "Ylivuotokiintiö on yhteinen kaikille kiintiöille: kun ilmoittautujan oma kiintiö on täynnä, hän saa paikan ylivuotokiintiöstä, jos siinä on tilaa. Sen jälkeen ilmoittautujat menevät jonoon. Jos haluat kiintiön, johon kuka tahansa voi ilmoittautua, lisää kiintiö “Avoin kiintiö”.",
+  "overflowQuotaInfo": "Ylivuotokiintiö on yhteinen kaikille kiintiöille: kun ilmoittautujan oma kiintiö on täynnä, hän saa paikan ylivuotokiintiöstä, jos siinä on tilaa. Sen jälkeen ilmoittautujat menevät jonoon.",
   "previewInfo": "Näin ilmoittautumislomake näkyy ilmoittautujille. Voit kokeilla lomaketta, mutta esikatselusta ei lähetetä ilmoittautumista.",
   "questionsAutomaticallyCollected": "<b>Etunimi</b>, <b>sukunimi</b> ja <b>sähköposti</b> kysytään ilmoittautujilta automaattisesti, joten niitä ei tarvitse lisätä kysymyksiksi.",
   "queued": "Jonossa",
@@ -100,6 +100,7 @@
       "confirmRemove": "Kiintiöpohjan luomat kiintiöt poistetaan, myös jos olet muokannut niitä. Jatketaanko?",
       "label": "Kiintiöpohja",
       "none": "Ei kiintiöpohjaa",
+      "openQuotaHint": "Jos haluat kiintiön, johon kuka tahansa voi ilmoittautua, lisää kiintiö “Avoin kiintiö”.",
       "presets": "Lisää yksittäiset kiintiöt",
       "yearGroups": "Kiintiöt kaikille vuosikursseille",
       "yearGroupsNote": "Muista lisätä kiintiöille koot."

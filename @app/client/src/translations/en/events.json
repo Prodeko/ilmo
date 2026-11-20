@@ -79,7 +79,7 @@
   "numRegistrations": "Registered people",
   "openQuota": "Overflow quota",
   "organizer": "Organizer",
-  "overflowQuotaInfo": "The overflow quota is shared by all quotas: when a registrant’s own quota is full, they get a spot in the overflow quota if there is room. After that, registrants go to the queue. For a quota anyone can register to, add the “Open quota” quota.",
+  "overflowQuotaInfo": "The overflow quota is shared by all quotas: when a registrant’s own quota is full, they get a spot in the overflow quota if there is room. After that, registrants go to the queue.",
   "previewInfo": "This is how the registration form looks to registrants. You can try the form, but nothing is submitted from the preview.",
   "questionsAutomaticallyCollected": "<b>First name</b>, <b>last name</b> and <b>email</b> are collected from registrants automatically, so you do not need to add them as questions.",
   "queued": "Queue",
@@ -100,6 +100,7 @@
       "confirmRemove": "Quotas created by the quota template will be removed, even if you have edited them. Continue?",
       "label": "Quota template",
       "none": "No quota template",
+      "openQuotaHint": "For a quota anyone can register to, add the “Open quota” quota.",
       "presets": "Add individual quotas",
       "yearGroups": "Quotas for all year groups",
       "yearGroupsNote": "Remember to set a size for each quota."

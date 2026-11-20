@@ -79,7 +79,7 @@
   "numRegistrations": "Registrerade personer",
   "openQuota": "Överflödskvot",
   "organizer": "Arrangör",
-  "overflowQuotaInfo": "Överflödskvoten delas av alla kvoter: när en deltagares egen kvot är full får hen en plats i överflödskvoten om det finns plats. Därefter hamnar deltagarna i kön. För en kvot som vem som helst kan anmäla sig till, lägg till kvoten ”Öppen kvot”.",
+  "overflowQuotaInfo": "Överflödskvoten delas av alla kvoter: när en deltagares egen kvot är full får hen en plats i överflödskvoten om det finns plats. Därefter hamnar deltagarna i kön.",
   "previewInfo": "Så här ser anmälningsformuläret ut för deltagarna. Du kan prova formuläret, men inget skickas från förhandsvisningen.",
   "questionsAutomaticallyCollected": "<b>Förnamn</b>, <b>efternamn</b> och <b>e-post</b> samlas in automatiskt av alla som anmäler sig, så du behöver inte lägga till dem som frågor.",
   "queued": "Kö",
@@ -100,6 +100,7 @@
       "confirmRemove": "Kvoter som skapats av kvotmallen tas bort, även om du har redigerat dem. Fortsätta?",
       "label": "Kvotmall",
       "none": "Ingen kvotmall",
+      "openQuotaHint": "För en kvot som vem som helst kan anmäla sig till, lägg till kvoten ”Öppen kvot”.",
       "presets": "Lägg till enskilda kvoter",
       "yearGroups": "Kvoter för alla årskurser",
       "yearGroupsNote": "Kom ihåg att ange en storlek för varje kvot."

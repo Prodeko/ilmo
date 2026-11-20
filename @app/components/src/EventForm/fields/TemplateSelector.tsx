@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { Form, Modal, Radio, Typography } from "antd"
 
-import { useTranslation } from "../."
-
-import { NO_TEMPLATE } from "./eventTemplates"
-
-type TemplateItem = { templateKey?: string }
+import { useTranslation } from "../.."
+import {
+  hasTemplateItems,
+  NO_TEMPLATE,
+  replaceTemplateItems,
+  TemplateItem,
+} from "../eventTemplates"
 
 interface TemplateSelectorProps {
   // The EventForm list the template fills in
@@ -42,14 +44,16 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   }
 
   function applyTemplate(templateKey: string) {
-    const kept = currentItems().filter((item) => !item?.templateKey)
-    form.setFieldValue(listName, [...kept, ...build(templateKey)])
+    form.setFieldValue(
+      listName,
+      replaceTemplateItems(currentItems(), build(templateKey))
+    )
     setSelectedTemplate(templateKey)
     onApplied?.()
   }
 
   function handleTemplateChange(templateKey: string) {
-    if (!currentItems().some((item) => item?.templateKey)) {
+    if (!hasTemplateItems(currentItems())) {
       applyTemplate(templateKey)
       return
     }
