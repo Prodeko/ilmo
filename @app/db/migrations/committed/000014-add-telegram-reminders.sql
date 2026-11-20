@@ -1,3 +1,8 @@
+--! Previous: sha1:5174a822aa4302fac083da3c1afc453b4798012a
+--! Hash: sha1:afe4a17a3f29df372db6863dbbd3d8f6b63800ed
+--! Message: add Telegram reminders
+
+--! split: 52-telegram-reminders.sql
 /*
  * Telegram reminders: a user links a Telegram chat to their account through
  * the bot, and registration reminders (51-registration-reminders.sql) can

@@ -310,6 +310,53 @@ end;
 $$;
 
 
+--
+-- Name: connect_telegram(text, bigint, text); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid;
+begin
+  if chat_id is null or chat_id <= 0 then return false; end if;
+  delete from app_private.telegram_link_tokens t
+    where t.token_hash = public.digest(token, 'sha256') and t.expires_at > clock_timestamp()
+    returning t.user_id into v_user;
+  if v_user is null then return false; end if;
+  -- Do not silently move somebody else's Telegram chat to another account.
+  if exists(select 1 from app_public.telegram_accounts a where a.chat_id = chat_id and a.user_id <> v_user) then
+    return false;
+  end if;
+  insert into app_public.telegram_accounts(user_id, chat_id, username)
+    values(v_user, chat_id, username)
+    on conflict (user_id) do update set chat_id = excluded.chat_id, username = excluded.username;
+  return true;
+end;
+$$;
+
+
+--
+-- Name: disconnect_telegram(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.disconnect_telegram(target_user uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  delete from app_public.event_registration_reminders where user_id = target_user and delivery_method = 'telegram' and sent_at is null;
+  update app_public.event_registration_reminders set delivery_method = 'email', sent_at = email_sent_at
+    where user_id = target_user and delivery_method = 'both' and sent_at is null;
+  delete from app_private.telegram_link_tokens where user_id = target_user;
+  delete from app_public.telegram_accounts where user_id = target_user;
+end;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -2415,6 +2462,45 @@ COMMENT ON FUNCTION app_public.current_session_id() IS 'Handy method to get the 
 
 
 --
+-- Name: telegram_accounts; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.telegram_accounts (
+    user_id uuid NOT NULL,
+    chat_id bigint NOT NULL,
+    username text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT telegram_accounts_chat_id_check CHECK ((chat_id > 0))
+);
+
+
+--
+-- Name: TABLE telegram_accounts; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.telegram_accounts IS '@omit create,update,delete
+Telegram accounts linked by their owners.';
+
+
+--
+-- Name: COLUMN telegram_accounts.chat_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.telegram_accounts.chat_id IS '@omit';
+
+
+--
+-- Name: current_telegram_account(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_telegram_account() RETURNS app_public.telegram_accounts
+    LANGUAGE sql STABLE
+    AS $$
+  select * from app_public.telegram_accounts where user_id = app_public.current_user_id();
+$$;
+
+
+--
 -- Name: current_user(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2639,6 +2725,24 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.delete_registration("updateToken" text) IS 'Delete event registration.';
+
+
+--
+-- Name: disconnect_telegram(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.disconnect_telegram() RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if app_public.current_user_id() is null then
+    raise exception 'Sign in to disconnect Telegram.' using errcode = 'LOGIN';
+  end if;
+  perform app_private.disconnect_telegram(app_public.current_user_id());
+  return true;
+end;
+$$;
 
 
 --
@@ -3334,6 +3438,32 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.request_account_deletion() IS 'Begin the account deletion flow by requesting the confirmation email';
+
+
+--
+-- Name: request_telegram_link(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.request_telegram_link() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user uuid := app_public.current_user_id();
+  v_token text := encode(public.gen_random_bytes(24), 'hex');
+begin
+  if v_user is null then
+    raise exception 'Sign in to connect Telegram.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  insert into app_private.telegram_link_tokens(user_id, token_hash, expires_at)
+    values(v_user, public.digest(v_token, 'sha256'), now() + interval '15 minutes')
+    on conflict (user_id) do update set token_hash = excluded.token_hash, expires_at = excluded.expires_at;
+  return v_token;
+end;
+$$;
 
 
 --
@@ -4360,6 +4490,52 @@ COMMENT ON TABLE app_private.registration_secrets IS 'The contents of this table
 
 
 --
+-- Name: telegram_link_tokens; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_link_tokens (
+    user_id uuid NOT NULL,
+    token_hash bytea NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: telegram_poll_state; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_poll_state (
+    id boolean DEFAULT true NOT NULL,
+    next_offset bigint DEFAULT 0 NOT NULL,
+    CONSTRAINT telegram_poll_state_id_check CHECK (id)
+);
+
+
+--
+-- Name: telegram_preferences; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_preferences (
+    chat_id bigint NOT NULL,
+    language text DEFAULT 'auto'::text NOT NULL,
+    detected_language text DEFAULT 'en'::text NOT NULL,
+    CONSTRAINT telegram_preferences_chat_id_check CHECK ((chat_id > 0)),
+    CONSTRAINT telegram_preferences_detected_language_check CHECK ((detected_language = ANY (ARRAY['fi'::text, 'en'::text]))),
+    CONSTRAINT telegram_preferences_language_check CHECK ((language = ANY (ARRAY['auto'::text, 'fi'::text, 'en'::text])))
+);
+
+
+--
+-- Name: telegram_updates; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_updates (
+    update_id bigint NOT NULL,
+    processed_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: unregistered_email_password_resets; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -4661,6 +4837,46 @@ ALTER TABLE ONLY app_private.sessions
 
 
 --
+-- Name: telegram_link_tokens telegram_link_tokens_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_token_hash_key; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: telegram_poll_state telegram_poll_state_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_poll_state
+    ADD CONSTRAINT telegram_poll_state_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: telegram_preferences telegram_preferences_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_preferences
+    ADD CONSTRAINT telegram_preferences_pkey PRIMARY KEY (chat_id);
+
+
+--
+-- Name: telegram_updates telegram_updates_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_updates
+    ADD CONSTRAINT telegram_updates_pkey PRIMARY KEY (update_id);
+
+
+--
 -- Name: unregistered_email_password_resets unregistered_email_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -4842,6 +5058,22 @@ ALTER TABLE ONLY app_public.registrations
 
 ALTER TABLE ONLY app_public.reminder_preferences
     ADD CONSTRAINT reminder_preferences_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_chat_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_chat_id_key UNIQUE (chat_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -5534,6 +5766,14 @@ ALTER TABLE ONLY app_private.sessions
 
 
 --
+-- Name: telegram_link_tokens telegram_link_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_authentication_secrets user_authentication_secrets_user_authentication_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -5781,6 +6021,14 @@ ALTER TABLE ONLY app_public.reminder_preferences
 
 
 --
+-- Name: telegram_accounts telegram_accounts_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_authentications user_authentications_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -5999,6 +6247,13 @@ CREATE POLICY own_reminders ON app_public.event_registration_reminders USING ((u
 
 
 --
+-- Name: telegram_accounts own_telegram_account; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_telegram_account ON app_public.telegram_accounts USING ((user_id = app_public.current_user_id()));
+
+
+--
 -- Name: quotas; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
@@ -6101,6 +6356,12 @@ CREATE POLICY select_own ON app_public.user_emails FOR SELECT USING ((user_id = 
 
 
 --
+-- Name: telegram_accounts; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.telegram_accounts ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registrations update_all; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -6176,6 +6437,20 @@ GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
 --
 
 REVOKE ALL ON FUNCTION app_private.assert_valid_password(new_password text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION connect_telegram(token text, chat_id bigint, username text); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(target_user uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.disconnect_telegram(target_user uuid) FROM PUBLIC;
 
 
 --
@@ -6780,6 +7055,21 @@ GRANT ALL ON FUNCTION app_public.current_session_id() TO ilmo_visitor;
 
 
 --
+-- Name: TABLE telegram_accounts; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.telegram_accounts TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_telegram_account(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_telegram_account() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_telegram_account() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION "current_user"(); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -6857,6 +7147,14 @@ GRANT ALL ON FUNCTION app_public.delete_organization(organization_id uuid) TO il
 
 REVOKE ALL ON FUNCTION app_public.delete_registration("updateToken" text) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.disconnect_telegram() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.disconnect_telegram() TO ilmo_visitor;
 
 
 --
@@ -7031,6 +7329,14 @@ GRANT ALL ON FUNCTION app_public.remove_from_organization(organization_id uuid, 
 
 REVOKE ALL ON FUNCTION app_public.request_account_deletion() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.request_account_deletion() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION request_telegram_link(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.request_telegram_link() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.request_telegram_link() TO ilmo_visitor;
 
 
 --
