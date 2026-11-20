@@ -3,6 +3,13 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
 
 import {
+  csrfExemptions,
+  ExternalRouteModule,
+  externalRoutes,
+  isCsrfExempt,
+} from "../externalRoutes"
+
+import {
   cookieOptions as sessionCookieOptions,
   handleSessionCookie,
 } from "./installSession"
@@ -46,7 +53,19 @@ async function handleCsrfToken(request: FastifyRequest, reply: FastifyReply) {
   }
 }
 
-const CSRFProtection: FastifyPluginAsync = async (app) => {
+export interface CSRFProtectionOptions {
+  /** Defaults to the registry in externalRoutes.ts. */
+  externalRoutes?: readonly ExternalRouteModule[]
+}
+
+const CSRFProtection: FastifyPluginAsync<CSRFProtectionOptions> = async (
+  app,
+  options
+) => {
+  // External routes authenticate without the session cookie; their exempt
+  // paths come from the registry, never from a list kept here.
+  const exemptions = csrfExemptions(options.externalRoutes ?? externalRoutes)
+
   await app.register(fastifyCSRF, {
     sessionPlugin: "@fastify/secure-session",
   })
@@ -64,6 +83,8 @@ const CSRFProtection: FastifyPluginAsync = async (app) => {
       request.headers.referer === `${ROOT_URL}/graphiql`
     ) {
       // Bypass CSRF for GraphiQL in dev
+      done()
+    } else if (isCsrfExempt(exemptions, request.method, request.url)) {
       done()
     } else if (request.method === "POST") {
       // Add CSRF protection to POST requests
