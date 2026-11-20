@@ -36,7 +36,7 @@ export function constructRateLimitKey(
   return `rate-limit:${fieldName}:${id}:${requester}`
 }
 
-class RateLimitException extends Error {
+export class RateLimitException extends Error {
   code: string
   constructor(message: string) {
     super(message)

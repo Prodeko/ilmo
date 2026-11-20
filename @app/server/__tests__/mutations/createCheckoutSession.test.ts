@@ -1,3 +1,4 @@
+import { CHECKOUT_RATE_LIMIT } from "../../src/plugins/PaymentsPlugin"
 import {
   deleteTestData,
   poolFromUrl,
@@ -280,6 +281,26 @@ describe("createCheckoutSession", () => {
     })
     expect(expire).toHaveBeenCalledWith("cs_test_superseded")
     expect(await paymentsOfEvent(pool(), event.id)).toEqual([])
+  })
+
+  it(`refuses more than ${CHECKOUT_RATE_LIMIT} attempts per registration and requester before calling Stripe`, async () => {
+    const { tokens } = await createPaidEvent({ registrationCount: 2 })
+    const { create } = stripeMock().checkout.sessions
+    for (let i = 0; i < CHECKOUT_RATE_LIMIT; i++) {
+      const result = await createCheckoutSession(tokens[0])
+      expect(result.errors).toBeFalsy()
+    }
+    expect(create).toHaveBeenCalledTimes(CHECKOUT_RATE_LIMIT)
+
+    const limited = await createCheckoutSession(tokens[0])
+    expect(limited.errors![0].extensions!.exception).toMatchObject({
+      code: "RLIMIT",
+    })
+    expect(create).toHaveBeenCalledTimes(CHECKOUT_RATE_LIMIT)
+
+    // Another registration has its own limit
+    const other = await createCheckoutSession(tokens[1])
+    expect(other.errors).toBeFalsy()
   })
 
   describe("refusals", () => {

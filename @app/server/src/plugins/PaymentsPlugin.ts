@@ -1,5 +1,6 @@
 import { SERVICE_FEE_CENTS, totalChargeCents } from "@app/lib"
 import { gql, makeExtendSchemaPlugin } from "graphile-utils"
+import { createHash } from "node:crypto"
 import { Pool } from "pg"
 
 import { createCheckoutSession } from "../payments/checkout"
@@ -15,7 +16,50 @@ import {
 import { isFeatureEnabledForSession } from "../utils/featureFlags"
 import { paymentsConfigured } from "../utils/stripe"
 
+import {
+  constructRateLimitKey,
+  RateLimitException,
+  rateLimitRequester,
+} from "./RateLimitPlugin"
+
 import type { OurGraphQLContext } from "../middleware/installPostGraphile"
+
+/**
+ * Checkout Sessions one requester (signed-in user, else IP address) may start
+ * for one registration within CHECKOUT_RATE_LIMIT_MINUTES. Every attempt
+ * counts, also failed ones, so that a script can't create Stripe sessions in
+ * a loop. Keyed per registration so that participants behind one shared IP
+ * address don't limit each other.
+ */
+export const CHECKOUT_RATE_LIMIT = 10
+const CHECKOUT_RATE_LIMIT_MINUTES = 30
+
+async function checkCheckoutRateLimit(
+  context: OurGraphQLContext,
+  updateToken: string
+) {
+  const { pgClient, ipAddress, redisClient } = context
+  const requester = await rateLimitRequester(pgClient, ipAddress)
+  // The update token is a secret: only a digest of it goes into Redis
+  const registrationKey = createHash("sha256")
+    .update(updateToken)
+    .digest("hex")
+    .slice(0, 32)
+  const key = constructRateLimitKey(
+    "createCheckoutSession",
+    registrationKey,
+    requester
+  )
+  const attempts = await redisClient.incr(key)
+  if (attempts === 1) {
+    await redisClient.expire(key, CHECKOUT_RATE_LIMIT_MINUTES * 60)
+  }
+  if (attempts > CHECKOUT_RATE_LIMIT) {
+    throw new RateLimitException(
+      `Too many requests. You have been rate-limited for ${CHECKOUT_RATE_LIMIT_MINUTES} minutes.`
+    )
+  }
+}
 
 /**
  * The RegistrationPayment of paymentByUpdateToken, or null. While payments
@@ -198,6 +242,7 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
         ) {
           throw new PaymentError("PAYMENTS_DISABLED")
         }
+        await checkCheckoutRateLimit(context, args.updateToken)
         try {
           const url = await createCheckoutSession({
             rootPgPool: context.rootPgPool,
