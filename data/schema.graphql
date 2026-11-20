@@ -906,6 +906,9 @@ type Event {
   """Header image for the event"""
   headerImageFile: String
 
+  """Text shown on the ribbon of a highlighted event."""
+  highlightText: TranslatedField
+
   """Unique identifier for the event."""
   id: UUID!
 
@@ -1316,6 +1319,7 @@ input EventInputRecordInput {
   eventEndTime: Datetime
   eventStartTime: Datetime
   headerImageFile: Upload
+  highlightText: TranslatedField
   isDraft: Boolean
   isHighlighted: Boolean
   location: String
@@ -2293,7 +2297,7 @@ type Mutation {
   translateText(fromLanguage: SupportedLanguages!, text: String!, toLanguage: SupportedLanguages!): TranslateTextPayload!
 
   """
-  Updates an event as well as any related quotas and questions with one mutation.
+  Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.
   """
   updateEvent(
     """

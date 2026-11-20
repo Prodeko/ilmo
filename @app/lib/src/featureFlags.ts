@@ -33,6 +33,9 @@ export interface FeatureDefinition {
 }
 
 export const FEATURES = {
+  ribbon_text: {
+    description: "Custom ribbon text for highlighted events.",
+  },
   calendar_invites: {
     description:
       "Calendar invitation in registration emails and calendar links after signing up.",
