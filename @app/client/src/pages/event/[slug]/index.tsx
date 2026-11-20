@@ -17,7 +17,7 @@ import {
   EventPage_EventFragment,
   SharedLayout_UserFragment,
   useCurrentTimeSubscription,
-  useEventPageSubscription,
+  useEventPageQuery,
   useSharedQuery,
 } from "@app/graphql"
 import { Col, Divider, message, notification, Row } from "antd"
@@ -35,10 +35,15 @@ const EventPage: NextPage = () => {
   const slug = useQuerySlug()
   const { t, lang } = useTranslation("events")
   const [query] = useSharedQuery()
-  const [subscription] = useEventPageSubscription({ variables: { slug } })
-  const loadingElement = useLoading(subscription, "eventBySlug")
-  const event = subscription?.data?.eventBySlug
-  const { fetching, stale } = subscription
+  // Registrations stay fresh through the eventRegistrations subscription.
+  // Everything else is fetched again whenever the page is opened.
+  const [eventPage] = useEventPageQuery({
+    variables: { slug },
+    requestPolicy: "cache-and-network",
+  })
+  const loadingElement = useLoading(eventPage, "eventBySlug")
+  const event = eventPage?.data?.eventBySlug
+  const { fetching, stale } = eventPage
   const name = event?.name[lang]
   const title =
     fetching || stale
@@ -98,7 +103,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
   }, [router, event])
 
   const handleSignupState = useCallback((time, startTime, endTime) => {
-    // The EventPage subscription delivers the event once per page load, so
+    // The EventPage query fetches the event once per page load, so
     // event.signup* (computed columns, https://www.graphile.org/postgraphile/computed-columns/)
     // would not change while the page is open. This is why we replicate the
     // signup* fields on the frontend based on a timestamp fetched from the server.

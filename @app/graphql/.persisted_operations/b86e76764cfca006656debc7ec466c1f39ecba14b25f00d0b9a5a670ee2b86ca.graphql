@@ -1,4 +1,4 @@
-fragment EventPage_Subscription on Subscription {
+fragment EventPage_Query on Query {
   currentUser {
     ...SharedLayout_User
     __typename
@@ -153,6 +153,6 @@ fragment EventPage_Question on EventQuestion {
   data
   __typename
 }
-subscription EventPage($slug: String!) {
-  ...EventPage_Subscription
+query EventPage($slug: String!) {
+  ...EventPage_Query
 }

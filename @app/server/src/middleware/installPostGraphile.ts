@@ -140,10 +140,10 @@ export function getPostGraphileOptions({
     websockets: ["v1"],
     websocketMiddlewares,
 
-    // Exposes the Query fields on the Subscription type, which the event page
-    // subscribes to. No live source plugin is installed, so such a
-    // subscription delivers its result once.
-    live: !isJestTest,
+    // No live queries: Query fields are not exposed on the Subscription type.
+    // Clients stay fresh through the custom subscriptions in
+    // SubscriptionsPlugin or by refetching.
+    live: false,
 
     // We don't enable query batching since urql doesn't support it, and we don't really need it
     enableQueryBatching: false,
