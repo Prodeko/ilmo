@@ -19,7 +19,13 @@ import {
   SharedLayoutChildProps,
   SharedLayoutProps,
 } from "./SharedLayout"
-import { Redirect, SettingsSideMenu, useIsMobile, useTranslation } from "."
+import {
+  Redirect,
+  REGISTRATION_REMINDERS_ENABLED,
+  SettingsSideMenu,
+  useIsMobile,
+  useTranslation,
+} from "."
 
 import type { User } from "@app/graphql"
 import type { TextProps } from "antd/lib/typography/Text"
@@ -31,6 +37,8 @@ interface SettingsPageSpec {
   cy: string
   warnIfUnverified?: boolean
   titleProps?: TextProps
+  /** Left out of the menu; the page itself decides what it shows. */
+  hidden?: boolean
 }
 
 export const pages = (t: Translate) => ({
@@ -38,6 +46,7 @@ export const pages = (t: Translate) => ({
     title: t("titles.reminders"),
     icon: <BellOutlined />,
     cy: "settingslayout-link-reminders",
+    hidden: !REGISTRATION_REMINDERS_ENABLED,
   } as SettingsPageSpec,
   "/settings/profile": {
     title: t("titles.index"),

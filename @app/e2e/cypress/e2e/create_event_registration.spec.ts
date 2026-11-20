@@ -9,6 +9,7 @@ context("Create event registration", () => {
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
 
   it("can register to an event", () => {
+    cy.serverCommand("setFeatureFlags", { calendar_invites: "on" })
     // Setup
     cy.serverCommand("createTestEventData").as("createEventDataResult")
 

@@ -12,7 +12,16 @@
  *
  * The Telegram tables and functions used here are in
  * 52-telegram-reminders.sql.
+ *
+ * Gated by the `registration_reminders` flag: enabling a reminder and saving
+ * preferences raise FTOFF while it is off, and the worker tasks do nothing.
+ * Cancelling a reminder stays possible. Choosing the Telegram channel also
+ * needs `telegram_reminders`.
  */
+
+insert into app_public.feature_flags (key, description)
+  values ('registration_reminders', E'Reminders before registration opens: the reminder button, reminder settings and reminder emails.')
+  on conflict (key) do nothing;
 
 create table if not exists app_public.event_registration_reminders (
   id uuid primary key default gen_random_uuid(),
@@ -117,6 +126,9 @@ begin
       where r.user_id = v_user and r.event_id = event_id;
     return false;
   end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
+  end if;
   if minutes_before is null or minutes_before < 1 or minutes_before > 10080 then
     raise exception 'Choose a reminder between 1 minute and 7 days before opening.' using errcode = 'CHECK';
   end if;
@@ -125,6 +137,9 @@ begin
   end if;
   if delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
     raise exception 'Unsupported delivery method.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
   end if;
   if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
     raise exception 'Connect Telegram before enabling Telegram reminders.' using errcode = 'CHECK';
@@ -189,9 +204,15 @@ begin
   if v_user is null then
     raise exception 'Sign in to manage reminder preferences.' using errcode = 'LOGIN';
   end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
+  end if;
   if minutes_before is null or minutes_before not between 1 and 10080
     or delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
     raise exception 'Choose a delivery method and a lead time between 1 minute and 7 days.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
   end if;
   if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
     raise exception 'Connect Telegram before saving Telegram reminders.' using errcode = 'CHECK';
@@ -233,6 +254,9 @@ declare
 begin
   if app_public.current_user_id() is null then
     raise exception 'Sign in to enable reminders.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
   end if;
   select * into v_preferences from app_public.reminder_preferences where user_id = app_public.current_user_id();
   if not found then

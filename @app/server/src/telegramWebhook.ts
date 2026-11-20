@@ -36,6 +36,7 @@ function secretMatches(header: unknown, secret: string) {
 export const telegramWebhook: ExternalRouteModule = {
   name: "telegram",
   paths: [{ method: "POST", path: TELEGRAM_WEBHOOK_PATH, csrfExempt: true }],
+  feature: "telegram_reminders",
   configured: () =>
     telegramUpdateMode() === "webhook" &&
     Boolean(process.env.TELEGRAM_BOT_TOKEN) &&

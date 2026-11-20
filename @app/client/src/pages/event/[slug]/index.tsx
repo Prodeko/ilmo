@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react"
 import {
   ButtonLink,
+  CALENDAR_INVITES_ENABLED,
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
   PageHeader,
   Redirect,
+  REGISTRATION_REMINDERS_ENABLED,
   SharedLayout,
   SignupState,
   useIsMobile,
@@ -219,9 +221,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         onBack={() => router.push("/")}
       />
       <Row>
-        <Col span={24}>
-          <RegistrationCalendar event={event} />
-        </Col>
+        {CALENDAR_INVITES_ENABLED && (
+          <Col span={24}>
+            <RegistrationCalendar event={event} />
+          </Col>
+        )}
         <Col
           sm={{ span: 16 }}
           style={{ display: "inline-block" }}
@@ -256,6 +260,7 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
           <EventQuotasCard
             event={event}
             footer={
+              REGISTRATION_REMINDERS_ENABLED &&
               !event.isDraft &&
               dayjs(event.registrationStartTime).isAfter(dayjs()) ? (
                 <EventReminder

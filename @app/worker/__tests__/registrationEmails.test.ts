@@ -12,7 +12,7 @@ const event = {
   event_end_time: "2026-10-24T19:00:00Z",
 }
 
-function helpers(status = "IN_QUOTA", finished = true) {
+function helpers(status = "IN_QUOTA", finished = true, calendarInvites = true) {
   const registration = {
     id: "registration",
     event_id: "event",
@@ -27,6 +27,8 @@ function helpers(status = "IN_QUOTA", finished = true) {
     addJob: jest.fn().mockResolvedValue(undefined),
     query: jest.fn(async (sql: string) => {
       if (sql.startsWith("update")) return { rows: [] }
+      if (sql.includes("feature_enabled"))
+        return { rows: [{ enabled: calendarInvites }] }
       if (sql.includes("registration_secrets"))
         return {
           rows: [
@@ -98,4 +100,24 @@ it("attaches an invitation when a user receives a place from the queue", async (
   const payload = context.addJob.mock.calls[0][1]
   expect(payload.template).toBe("spot_from_queue.mjml.njk")
   expect(invitations(payload)).toHaveLength(1)
+})
+
+describe("with calendar_invites off", () => {
+  it.each([
+    ["confirmation", confirmation, { id: "registration" }],
+    [
+      "spot from queue",
+      promotion,
+      { receivedSpot: { id: "registration", event_id: "event" } },
+    ],
+  ])("sends the %s email without an invitation", async (_, task, payload) => {
+    const context = helpers("IN_QUOTA", true, false)
+    await task(payload as any, context as any)
+    const email = context.addJob.mock.calls[0][1]
+    expect(email).not.toHaveProperty("attachments")
+    expect(context.query).toHaveBeenCalledWith(
+      "select app_public.feature_enabled($1) as enabled",
+      ["calendar_invites"]
+    )
+  })
 })

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react"
 import {
   ErrorAlert,
+  FourOhFour,
   Link,
   PageHeader,
+  REGISTRATION_REMINDERS_ENABLED,
   SettingsLayout,
+  TELEGRAM_REMINDERS_ENABLED,
   useTranslation,
 } from "@app/components"
 import {
@@ -17,7 +20,14 @@ import { ReminderLeadTime } from "../../components/ReminderLeadTime"
 import { ReminderPreferences } from "../../components/ReminderPreferences"
 import { TelegramConnection } from "../../components/TelegramConnection"
 
-export default function Reminders() {
+export default function RemindersPage() {
+  if (!REGISTRATION_REMINDERS_ENABLED) {
+    return <FourOhFour />
+  }
+  return <Reminders />
+}
+
+function Reminders() {
   const { t, lang } = useTranslation("reminders")
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -34,6 +44,11 @@ export default function Reminders() {
   const [mutation, setReminder] = useSetEventRegistrationReminderMutation()
   const reminders = query.data?.eventRegistrationReminders
   const language = lang === "en" ? "en" : "fi"
+  // Without a bot username the page offers no way to choose or link Telegram;
+  // a linked account can still be disconnected.
+  const botUsername = TELEGRAM_REMINDERS_ENABLED
+    ? query.data?.telegramBotUsername
+    : null
   return (
     <SettingsLayout href="/settings/reminders" query={query}>
       <PageHeader title={t("myReminders")} />
@@ -87,7 +102,7 @@ export default function Reminders() {
             {editing && (
               <ReminderPreferences
                 account={query.data.currentTelegramAccount}
-                botUsername={query.data.telegramBotUsername}
+                botUsername={botUsername}
                 preferences={query.data.currentReminderPreferences}
                 refresh={() => refresh({ requestPolicy: "network-only" })}
                 verified={
@@ -107,7 +122,7 @@ export default function Reminders() {
       )}
       <TelegramConnection
         account={query.data?.currentTelegramAccount}
-        botUsername={query.data?.telegramBotUsername}
+        botUsername={botUsername}
         refresh={() => refresh({ requestPolicy: "network-only" })}
       />
       <Typography.Paragraph>{t("timingNote")}</Typography.Paragraph>

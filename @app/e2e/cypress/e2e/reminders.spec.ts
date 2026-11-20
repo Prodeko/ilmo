@@ -4,6 +4,9 @@ context("Registration reminder preferences", () => {
   beforeEach(() => cy.serverCommand("clearTestUsers"))
   beforeEach(() => cy.serverCommand("clearTestEventData"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
+  beforeEach(() =>
+    cy.serverCommand("setFeatureFlags", { registration_reminders: "on" })
+  )
 
   it("sets up once, persists preferences, and enables again without onboarding", () => {
     cy.serverCommand("createTestEventData", { eventSignupUpcoming: true }).then(

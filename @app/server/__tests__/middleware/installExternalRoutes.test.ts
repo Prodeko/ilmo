@@ -140,3 +140,54 @@ describe("csrfExemptions", () => {
     }
   })
 })
+
+describe("feature flag gate", () => {
+  const gated = (overrides: Partial<ExternalRouteModule> = {}) =>
+    module({
+      name: "gated",
+      feature: "telegram_reminders",
+      paths: [{ method: "POST", path: "/gated" }],
+      register: async (scope) => {
+        scope.post("/gated", ok)
+      },
+      ...overrides,
+    })
+
+  it("answers 404 while the flag is off, checked per request", async () => {
+    let enabled = false
+    const isFeatureEnabled = jest.fn(async () => enabled)
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated()],
+      isFeatureEnabled,
+    })
+    const off = await app.inject({ method: "POST", url: "/gated" })
+    expect(off.statusCode).toBe(404)
+    enabled = true
+    const on = await app.inject({ method: "POST", url: "/gated" })
+    expect(on.statusCode).toBe(200)
+    expect(isFeatureEnabled).toHaveBeenCalledWith("telegram_reminders")
+  })
+
+  it("does not gate a module with gateWhenOff false", async () => {
+    const isFeatureEnabled = jest.fn(async () => false)
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated({ gateWhenOff: false })],
+      isFeatureEnabled,
+    })
+    const response = await app.inject({ method: "POST", url: "/gated" })
+    expect(response.statusCode).toBe(200)
+    expect(isFeatureEnabled).not.toHaveBeenCalled()
+  })
+
+  it("does not gate other routes", async () => {
+    const isFeatureEnabled = jest.fn(async () => false)
+    app.post("/outside", ok)
+    await app.register(installExternalRoutes, {
+      externalRoutes: [gated()],
+      isFeatureEnabled,
+    })
+    const response = await app.inject({ method: "POST", url: "/outside" })
+    expect(response.statusCode).toBe(200)
+    expect(isFeatureEnabled).not.toHaveBeenCalled()
+  })
+})

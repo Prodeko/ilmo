@@ -31,7 +31,8 @@ export function TelegramConnection({
     }, 3000)
     return () => window.clearInterval(timer)
   }, [link, account, expiresAt, refresh])
-  if (!botUsername) return null
+  // Disconnecting stays possible when the bot is unavailable.
+  if (!botUsername && !account) return null
   const connect = async () => {
     // Open synchronously from the click so browser popup protection permits it.
     const tab = window.open("about:blank", "_blank")

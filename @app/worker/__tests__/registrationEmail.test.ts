@@ -50,6 +50,8 @@ function fakeQuery(data: Rows) {
       rows: row && row[key] === values[0] ? [row] : [],
     })
     if (sql.startsWith("update")) return { rows: [] }
+    // Every feature flag is off.
+    if (sql.includes("feature_enabled")) return { rows: [{ enabled: false }] }
     if (sql.includes("app_private.registration_secrets"))
       return one(data.registrationSecret, "registration_id")
     if (sql.includes("app_public.registrations")) return one(data.registration)

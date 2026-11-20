@@ -6,16 +6,30 @@ SendGrid transport; Telegram is sent through the Bot API.
 
 ## Database migration
 
-Migrations `000005.sql` and `000006.sql` contain only notification changes:
-reminder preferences, Telegram linking/language state, scheduling, and
-propagation of preference changes to upcoming unsent reminders. The pre-existing
-admin organization policy and quota/question fixes remain unchanged in
-`migrations/current/` and are separate from this feature.
+The schema is in `@app/db/migrations/current/51-registration-reminders.sql`
+(reminders, preferences and scheduling) and `52-telegram-reminders.sql`
+(Telegram linking, bot language and polling state), with the feature flag rows
+`registration_reminders` and `telegram_reminders`. They become part of a
+committed migration when maintainers commit `current/`.
 
 This is a schema migration, not a local data export. Production users choose
 preferences and link their own Telegram accounts. The SQL initializes a polling
-offset and backfills an email-delivery checkpoint only if reminder rows already
-exist in the target database.
+offset.
+
+## Feature flags
+
+Both features are off until switched on in `app_public.feature_flags` (see the
+feature flag registry in `@app/lib/src/featureFlags.ts`):
+
+- `registration_reminders`: the reminder button, settings page and menu link,
+  enabling reminders and saving preferences (FTOFF while off), and the
+  `reminder__send_registration` task. A reminder that comes due while the flag
+  is off is not sent later. Cancelling a reminder always works.
+- `telegram_reminders`: also needs `registration_reminders`. The server marks it
+  unavailable without `TELEGRAM_BOT_TOKEN`. Gates the Telegram channel and link
+  codes (FTOFF while off), the webhook (404), polling, and the
+  `reminder__send_telegram` and `telegram__reply` tasks. Disconnecting always
+  works.
 
 Apply committed migrations once using the new release and production connection
 settings, before starting its server and worker:

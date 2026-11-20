@@ -32,7 +32,21 @@ export interface FeatureDefinition {
   readonly requiresEnv?: readonly string[]
 }
 
-export const FEATURES = {} as const satisfies Record<string, FeatureDefinition>
+export const FEATURES = {
+  calendar_invites: {
+    description:
+      "Calendar invitation in registration emails and calendar links after signing up.",
+  },
+  registration_reminders: {
+    description:
+      "Reminders before registration opens: the reminder button, reminder settings and reminder emails.",
+  },
+  telegram_reminders: {
+    description:
+      "Registration reminders through the Telegram bot, and linking a Telegram account.",
+    requiresEnv: ["TELEGRAM_BOT_TOKEN"],
+  },
+} as const satisfies Record<string, FeatureDefinition>
 
 export type FeatureKey = keyof typeof FEATURES
 

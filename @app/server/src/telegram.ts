@@ -5,6 +5,11 @@ import {
 } from "@app/lib/dist/cjs/telegram"
 import { Pool, PoolClient } from "pg"
 
+import { isFeatureEnabled } from "./utils/featureFlags"
+
+/** How long the poller waits before checking again while the flag is off. */
+const POLLING_IDLE_MS = 30000
+
 interface TelegramUser {
   id: number
   username?: string
@@ -140,9 +145,22 @@ export async function handleTelegramUpdate(pool: Pool, update: TelegramUpdate) {
   }
 }
 
-export function startTelegramPolling(pool: Pool) {
+export function startTelegramPolling(
+  pool: Pool,
+  {
+    isEnabled = () => isFeatureEnabled("telegram_reminders"),
+  }: { isEnabled?: () => Promise<boolean> } = {}
+) {
   let stopped = false
   let wake: (() => void) | undefined
+  const sleep = (ms: number) =>
+    new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, ms)
+      wake = () => {
+        clearTimeout(timer)
+        resolve()
+      }
+    })
   const done = (async () => {
     // Session advisory lock prevents two local servers from polling the same bot.
     const client = await pool.connect()
@@ -157,6 +175,11 @@ export function startTelegramPolling(pool: Pool) {
         let checkedWebhook = false
         while (!stopped) {
           try {
+            // While the feature is off, leave updates with Telegram.
+            if (!(await isEnabled())) {
+              await sleep(POLLING_IDLE_MS)
+              continue
+            }
             if (!checkedWebhook) {
               const info = await telegramRequest<{ url: string }>(
                 "getWebhookInfo",
@@ -214,14 +237,7 @@ export function startTelegramPolling(pool: Pool) {
                 ? `API ${error.code}`
                 : "connection or processing failed"
             )
-            if (!stopped)
-              await new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, 5000)
-                wake = () => {
-                  clearTimeout(timer)
-                  resolve()
-                }
-              })
+            if (!stopped) await sleep(5000)
           }
         }
       } finally {

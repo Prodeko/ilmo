@@ -31,6 +31,7 @@ import {
   H3,
   LocaleSelect,
   Redirect,
+  REGISTRATION_REMINDERS_ENABLED,
   StandardWidth,
   useIlmoContext,
   useIsMobile,
@@ -287,17 +288,21 @@ export function SharedLayout({
                           </Link>
                         ),
                       },
-                      {
-                        key: "reminders",
-                        label: (
-                          <Link
-                            data-cy="layout-link-reminders"
-                            href="/settings/reminders"
-                          >
-                            {t("reminders")}
-                          </Link>
-                        ),
-                      },
+                      ...(REGISTRATION_REMINDERS_ENABLED
+                        ? [
+                            {
+                              key: "reminders",
+                              label: (
+                                <Link
+                                  data-cy="layout-link-reminders"
+                                  href="/settings/reminders"
+                                >
+                                  {t("reminders")}
+                                </Link>
+                              ),
+                            },
+                          ]
+                        : []),
                       {
                         key: "logout",
                         label: <a onClick={handleLogout}>{t("logout")}</a>,

@@ -81,9 +81,11 @@ export const deleteTestEventData = (pool: Pool) => {
   )
 }
 
+// Also marks every flag available again: a server booted by a test records
+// the availability of integration-backed flags from its own environment.
 export const resetFeatureFlags = (pool: Pool) =>
   pool.query(
-    "update app_public.feature_flags set state = 'off' where state <> 'off'"
+    "update app_public.feature_flags set state = 'off', available = true where state <> 'off' or not available"
   )
 
 export const deleteTestData = async () => {

@@ -7,6 +7,7 @@ jest.mock("@app/lib/dist/cjs/telegram", () => ({
   telegramRequest: jest.fn(),
 }))
 
+const on = async () => true
 const flush = () => new Promise<void>((resolve) => setImmediate(resolve))
 function database() {
   const client = {
@@ -42,7 +43,7 @@ it("retries a failed initial connection and starts polling after network recover
       return { url: "" } as any
     })
     .mockRejectedValueOnce(new Error("Telegram connection failed"))
-  const stop = startTelegramPolling(db.pool as any)
+  const stop = startTelegramPolling(db.pool as any, { isEnabled: on })
   await flush()
   expect(telegramRequest).toHaveBeenCalledTimes(1)
   await jest.advanceTimersByTimeAsync(5000)
@@ -64,7 +65,7 @@ it("stops promptly while waiting to retry a failed startup", async () => {
   jest
     .mocked(telegramRequest)
     .mockRejectedValue(new Error("Telegram connection failed"))
-  const stop = startTelegramPolling(db.pool as any)
+  const stop = startTelegramPolling(db.pool as any, { isEnabled: on })
   await flush()
   await stop()
   expect(telegramRequest).toHaveBeenCalledTimes(1)
@@ -75,9 +76,36 @@ it("does not poll when a webhook is active", async () => {
   jest
     .mocked(telegramRequest)
     .mockResolvedValue({ url: "https://example.com/telegram/webhook" })
-  const stop = startTelegramPolling(db.pool as any)
+  const stop = startTelegramPolling(db.pool as any, { isEnabled: on })
   await flush()
   await stop()
   expect(telegramRequest).toHaveBeenCalledTimes(1)
   expect(db.client.release).toHaveBeenCalledTimes(1)
+})
+
+it("leaves updates with Telegram while telegram_reminders is off", async () => {
+  const db = database()
+  let enabled = false
+  const isEnabled = jest.fn(async () => enabled)
+  jest.mocked(telegramRequest).mockImplementation(async (method) => {
+    if (method === "getUpdates") return new Promise(() => {}) as any
+    return { url: "" } as any
+  })
+  const stop = startTelegramPolling(db.pool as any, { isEnabled })
+  await flush()
+  expect(isEnabled).toHaveBeenCalledTimes(1)
+  expect(telegramRequest).not.toHaveBeenCalled()
+  await jest.advanceTimersByTimeAsync(30000)
+  await flush()
+  expect(isEnabled).toHaveBeenCalledTimes(2)
+  expect(telegramRequest).not.toHaveBeenCalled()
+  enabled = true
+  await jest.advanceTimersByTimeAsync(30000)
+  await flush()
+  expect(telegramRequest).toHaveBeenCalledWith(
+    "getUpdates",
+    expect.objectContaining({ offset: 0 })
+  )
+  // getUpdates never settles here; stop without waiting for it.
+  void stop()
 })

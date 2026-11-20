@@ -4,6 +4,8 @@ import {
   telegramRequest,
 } from "@app/lib/dist/cjs/telegram"
 
+import { withFeature } from "../featureFlags"
+
 import sendEmail from "./send_email"
 
 import type { Task } from "graphile-worker"
@@ -223,4 +225,11 @@ export function registrationReminderTask(channel: "email" | "telegram"): Task {
   }
 }
 
-export default registrationReminderTask("email")
+/** Sends the email of a registration reminder, whatever the flags. */
+export const sendRegistrationReminderEmail = registrationReminderTask("email")
+
+// A reminder that comes due while the feature is off is not sent later.
+export default withFeature(
+  "registration_reminders",
+  sendRegistrationReminderEmail
+)

@@ -1,4 +1,4 @@
-import task from "../src/tasks/reminder__send_registration"
+import { sendRegistrationReminderEmail as task } from "../src/tasks/reminder__send_registration"
 import sendEmail from "../src/tasks/send_email"
 
 jest.mock("../src/tasks/send_email", () => ({

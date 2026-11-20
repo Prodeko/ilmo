@@ -7,9 +7,12 @@ import {
   telegramRequest,
 } from "@app/lib/dist/cjs/telegram"
 
+import { withFeature } from "../featureFlags"
+
 import type { Task } from "graphile-worker"
 
-const task: Task = async (payload, { withPgClient }) => {
+/** Sends a bot reply, whatever the flags. */
+export const sendTelegramReply: Task = async (payload, { withPgClient }) => {
   // Keep supporting text-only jobs queued before the language feature deployment.
   const { chatId, text, reply, callbackQueryId } = payload as {
     chatId: number
@@ -50,4 +53,4 @@ const task: Task = async (payload, { withPgClient }) => {
     throw error
   }
 }
-export default task
+export default withFeature("telegram_reminders", sendTelegramReply)

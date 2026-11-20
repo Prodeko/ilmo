@@ -7,7 +7,16 @@
  * valid 15 minutes) that the user sends to the bot with /start; the server's
  * bot update processing consumes it with `app_private.connect_telegram`.
  * Chat identifiers are only exposed to the server, never in GraphQL.
+ *
+ * Gated by the `telegram_reminders` flag (which the server marks unavailable
+ * without TELEGRAM_BOT_TOKEN): requesting a link code raises FTOFF while it is
+ * off, the bot webhook answers 404, polling pauses and the Telegram worker
+ * tasks do nothing. Disconnecting stays possible.
  */
+
+insert into app_public.feature_flags (key, description)
+  values ('telegram_reminders', E'Registration reminders through the Telegram bot, and linking a Telegram account.')
+  on conflict (key) do nothing;
 
 create table if not exists app_public.telegram_accounts (
   user_id uuid primary key references app_public.users(id) on delete cascade,
@@ -44,6 +53,9 @@ declare
 begin
   if v_user is null then
     raise exception 'Sign in to connect Telegram.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
   end if;
   insert into app_private.telegram_link_tokens(user_id, token_hash, expires_at)
     values(v_user, public.digest(v_token, 'sha256'), now() + interval '15 minutes')

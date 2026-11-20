@@ -1,6 +1,8 @@
 import { fromEmail } from "@app/config"
 import { calendarDescription, createEventCalendar } from "@app/lib"
 
+import { isFeatureEnabled } from "./featureFlags"
+
 import type {
   RegistrationEmailContext,
   RegistrationEmailContribution,
@@ -58,13 +60,16 @@ export function registrationCalendarInvitation(
 /**
  * Registration email contributor: attaches a calendar invitation to the
  * confirmation of a registration that has a place, and to the notice of a
- * place received from the queue.
+ * place received from the queue, while `calendar_invites` is enabled.
  */
 export async function calendarInvitationContributor(
   ctx: RegistrationEmailContext
 ): Promise<RegistrationEmailContribution> {
-  const { kind, registration, event, rootUrl } = ctx
+  const { kind, query, registration, event, rootUrl } = ctx
   if (!rootUrl || !registration.email) {
+    return {}
+  }
+  if (!(await isFeatureEnabled(query, "calendar_invites"))) {
     return {}
   }
   if (

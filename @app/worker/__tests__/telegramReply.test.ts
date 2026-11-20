@@ -1,6 +1,6 @@
 import { TelegramError, telegramRequest } from "@app/lib/dist/cjs/telegram"
 
-import replyTask from "../src/tasks/telegram__reply"
+import { sendTelegramReply as replyTask } from "../src/tasks/telegram__reply"
 
 jest.mock("@app/lib/dist/cjs/telegram", () => ({
   ...jest.requireActual("@app/lib/dist/cjs/telegram"),

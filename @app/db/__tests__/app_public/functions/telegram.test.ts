@@ -8,8 +8,20 @@ import {
   createEvents,
   createOrganizations,
   createUsers,
+  poolFromUrl,
+  resetFeatureFlags,
+  setFeatureFlag,
+  TEST_DATABASE_URL,
   withRootDb,
 } from "../../helpers"
+
+// The features under test are on; their gates are tested in reminder_feature_flags.test.ts.
+beforeAll(async () => {
+  const pool = poolFromUrl(TEST_DATABASE_URL)
+  await setFeatureFlag(pool, "registration_reminders", "on")
+  await setFeatureFlag(pool, "telegram_reminders", "on")
+})
+afterAll(() => resetFeatureFlags(poolFromUrl(TEST_DATABASE_URL)))
 
 async function link(client: PoolClient, chatId = 12345) {
   const token = (
