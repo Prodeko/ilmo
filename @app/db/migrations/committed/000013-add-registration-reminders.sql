@@ -1,5 +1,5 @@
---! Previous: sha1:b5a91cba1dbd2e7332a44497b7e3a74ba6a9ce31
---! Hash: sha1:5174a822aa4302fac083da3c1afc453b4798012a
+--! Previous: sha1:51c8483bf2ba1cedaf50a8530c75ba90e66d6a06
+--! Hash: sha1:e75a7381038ac7c4847cf9b0c0d13f3d4b3847f5
 --! Message: add registration reminders
 
 --! split: 51-registration-reminders.sql

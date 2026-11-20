@@ -1,5 +1,5 @@
---! Previous: sha1:6e21d1632031e084a8170854cdbaa50c796b0b88
---! Hash: sha1:b5a91cba1dbd2e7332a44497b7e3a74ba6a9ce31
+--! Previous: sha1:5be9acbd207f7b3514e90e1ecd7b6db2951c5dd9
+--! Hash: sha1:51c8483bf2ba1cedaf50a8530c75ba90e66d6a06
 --! Message: add calendar invites
 
 --! split: 50-calendar-invites.sql

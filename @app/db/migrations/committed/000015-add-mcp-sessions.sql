@@ -1,5 +1,5 @@
---! Previous: sha1:afe4a17a3f29df372db6863dbbd3d8f6b63800ed
---! Hash: sha1:c867d3dba142e9cbe690540ff9f8c88deccf6419
+--! Previous: sha1:86191a97641e77baa1b163178f5f23cfcad7ed04
+--! Hash: sha1:a82534fccfc43de4a5611c2911fbf0d72b9b9c05
 --! Message: add MCP sessions
 
 --! split: 60-mcp-sessions.sql

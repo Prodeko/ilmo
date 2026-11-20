@@ -1,5 +1,5 @@
---! Previous: sha1:2efc6fb4bc77a403bed7fcfd1788a939a2526b11
---! Hash: sha1:55cca1f2b587be1b60c12afcba0d49bb9db000c4
+--! Previous: sha1:587c7c362b23a8020f9802cae49b6487968c3e39
+--! Hash: sha1:e6e9f29d163b6c919d2114541679abba74355693
 
 --! split: 2-registration-positions-table.sql
 /*

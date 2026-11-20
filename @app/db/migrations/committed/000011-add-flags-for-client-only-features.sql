@@ -1,5 +1,5 @@
---! Previous: sha1:3eef78ec40875835e95adcc5589f1babca8d9827
---! Hash: sha1:6e21d1632031e084a8170854cdbaa50c796b0b88
+--! Previous: sha1:db141b611cd614d76926a295bf8e0432d3b99aba
+--! Hash: sha1:5be9acbd207f7b3514e90e1ecd7b6db2951c5dd9
 --! Message: add flags for client-only features
 
 --! split: 40-client-feature-flags.sql

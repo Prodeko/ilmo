@@ -1,5 +1,5 @@
---! Previous: sha1:5174a822aa4302fac083da3c1afc453b4798012a
---! Hash: sha1:afe4a17a3f29df372db6863dbbd3d8f6b63800ed
+--! Previous: sha1:e75a7381038ac7c4847cf9b0c0d13f3d4b3847f5
+--! Hash: sha1:86191a97641e77baa1b163178f5f23cfcad7ed04
 --! Message: add Telegram reminders
 
 --! split: 52-telegram-reminders.sql

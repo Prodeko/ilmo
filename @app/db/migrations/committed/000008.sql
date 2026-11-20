@@ -1,5 +1,5 @@
 --! Previous: sha1:afc6149bc215d6e6cf1bcabba9005f9b07e231e0
---! Hash: sha1:2efc6fb4bc77a403bed7fcfd1788a939a2526b11
+--! Hash: sha1:587c7c362b23a8020f9802cae49b6487968c3e39
 
 --! split: 2-block-registration-update-after-close.sql
 /*
@@ -61,7 +61,36 @@ $$ language plpgsql volatile security definer set search_path to pg_catalog, pub
  * nothing but spaces, so require at least one non-whitespace character
  * instead. Null is still allowed because claimRegistrationToken creates a
  * registration before the names are known.
+ *
+ * The old check accepted an empty string, so stored names may be '' (or, for
+ * any value that bypassed it, only whitespace), which the new check rejects.
+ * `registrations.first_name` and `last_name` are the only columns of this
+ * type. Both are nullable, and null already means "no name given" (see
+ * claimRegistrationToken above, and registrations_full_name, which gives null
+ * then), so blank names become null before the check is added. The update
+ * runs with the table's user triggers disabled: it only normalises how a
+ * missing name is stored, so it must not queue confirmation emails
+ * (_500_send_registration_email) or overwrite updated_at and updated_by.
  */
+
+do $$
+begin
+  if exists (
+    select 1 from app_public.registrations
+    where first_name !~ '\S' or last_name !~ '\S'
+  ) then
+    alter table app_public.registrations disable trigger user;
+
+    update app_public.registrations
+      set
+        first_name = case when first_name ~ '\S' then first_name end,
+        last_name = case when last_name ~ '\S' then last_name end
+      where first_name !~ '\S' or last_name !~ '\S';
+
+    alter table app_public.registrations enable trigger user;
+  end if;
+end
+$$;
 
 alter domain app_public.constrained_name
   drop constraint if exists constrained_name_check;

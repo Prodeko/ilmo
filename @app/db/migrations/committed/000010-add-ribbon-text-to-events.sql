@@ -1,5 +1,5 @@
---! Previous: sha1:55cca1f2b587be1b60c12afcba0d49bb9db000c4
---! Hash: sha1:3eef78ec40875835e95adcc5589f1babca8d9827
+--! Previous: sha1:e6e9f29d163b6c919d2114541679abba74355693
+--! Hash: sha1:db141b611cd614d76926a295bf8e0432d3b99aba
 --! Message: add ribbon text to events
 
 --! split: 30-event-ribbon-text.sql
