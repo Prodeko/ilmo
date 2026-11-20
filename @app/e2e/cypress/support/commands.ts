@@ -31,8 +31,12 @@ type User = {
   username: string
   name: string
   is_admin: boolean
+  is_developer: boolean
   is_verified: boolean
 }
+
+/** States by flag key; the keys are those of @app/lib/src/featureFlags.ts. */
+type FeatureFlagStates = Record<string, "off" | "admins_only" | "on">
 
 function getCy(cyName: string): Chainable<JQuery<HTMLElement>> {
   return cy.get(`[data-cy=${cyName}]`)
@@ -53,9 +57,22 @@ function serverCommand(command: "clearTestOrganizations"): Chainable<{
 }>
 
 /**
- * Deletes all event data generated for e2e tests.
+ * Deletes all event data generated for e2e tests and switches every feature
+ * flag off.
  */
 function serverCommand(command: "clearTestEventData"): Chainable<{
+  success: true
+}>
+
+/**
+ * Sets feature flag states, e.g. `{ payments: "on" }`. Every key must have a
+ * row in app_public.feature_flags. The server's flag cache is cleared, so the
+ * change applies to the next request.
+ */
+function serverCommand(
+  command: "setFeatureFlags",
+  payload: FeatureFlagStates
+): Chainable<{
   success: true
 }>
 
@@ -90,6 +107,8 @@ function serverCommand(
  * - verified: false
  * - name: `${username}`
  * - password: `TestUserPassword`
+ * - isAdmin: false
+ * - isDeveloper: false (feature flag management; needs isAdmin as well)
  * - next: `/`
  */
 function serverCommand(
@@ -100,6 +119,8 @@ function serverCommand(
     verified?: boolean
     name?: string
     password?: string
+    isAdmin?: boolean
+    isDeveloper?: boolean
     next?: string
   }
 ): Chainable<{
@@ -137,6 +158,8 @@ function login(payload?: {
   name?: string
   verified?: boolean
   isAdmin?: boolean
+  /** Feature flag management; needs isAdmin as well. */
+  isDeveloper?: boolean
   password?: string
   orgs?: [[string, string] | [string, string, boolean]]
   existingUser?: true

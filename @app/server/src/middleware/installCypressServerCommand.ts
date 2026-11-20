@@ -10,7 +10,12 @@ import {
   Registration,
   User,
 } from "@app/graphql"
-import { RegistrationSecret, Session } from "@app/lib"
+import {
+  FEATURE_FLAG_STATES,
+  FeatureFlagState,
+  RegistrationSecret,
+  Session,
+} from "@app/lib"
 import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
 import {
@@ -22,6 +27,8 @@ import {
 import fp from "fastify-plugin"
 import { Pool, PoolClient } from "pg"
 import slugify from "slugify"
+
+import { invalidateFeatureFlags } from "../utils/featureFlags"
 
 import type { RouteGenericInterface } from "fastify/types/route"
 import type { SnakeCasedProperties } from "type-fest"
@@ -150,9 +157,14 @@ async function runCommand(
       delete from app_public.organizations;
 
       -- Delete graphile worker jobs (storage moved to _private_jobs in 0.16)
-      delete from graphile_worker._private_jobs;`
+      delete from graphile_worker._private_jobs;
+
+      update app_public.feature_flags set state = 'off' where state <> 'off';`
     )
+    invalidateFeatureFlags()
     return { success: true }
+  } else if (command === "setFeatureFlags") {
+    return setFeatureFlags(rootPgPool, payload)
   } else if (command === "createUser") {
     if (!payload) {
       throw new Error("Payload required")
@@ -166,6 +178,7 @@ async function runCommand(
       password = "TestUserPassword",
       verified = false,
       isAdmin = false,
+      isDeveloper = false,
     } = payload
 
     if (!username.startsWith("testuser")) {
@@ -180,6 +193,7 @@ async function runCommand(
       password,
       verified,
       isAdmin,
+      isDeveloper,
     })
 
     let verificationToken: string | null = null
@@ -201,6 +215,7 @@ async function runCommand(
       orgs = [],
       verified = false,
       isAdmin = false,
+      isDeveloper = false,
       existingUser = false,
     } = payload
     const client = await rootPgPool.connect()
@@ -225,6 +240,7 @@ async function runCommand(
         password,
         verified,
         isAdmin,
+        isDeveloper,
       })
       otherUser = await reallyCreateUser(rootPgPool, {
         username: "testuser_other",
@@ -318,6 +334,7 @@ async function reallyCreateUser(
     password,
     verified,
     isAdmin,
+    isDeveloper = false,
   }: {
     username?: string
     email?: string
@@ -326,6 +343,7 @@ async function reallyCreateUser(
     password?: string
     verified?: boolean
     isAdmin?: boolean
+    isDeveloper?: boolean
   }
 ): Promise<SnakeCasedProperties<User>> {
   const {
@@ -342,7 +360,61 @@ async function reallyCreateUser(
     )`,
     [username, email, name, avatarUrl, password, verified, isAdmin]
   )
+  if (isDeveloper) {
+    // Developer rights come from Keycloak or a direct update only.
+    const {
+      rows: [developer],
+    } = await rootPgPool.query(
+      "update app_public.users set is_developer = true where id = $1 returning *",
+      [user.id]
+    )
+    return developer
+  }
   return user
+}
+
+/**
+ * Sets feature flag states, `{ key: state }`, bypassing the developer check
+ * and the audit log. Every key must have a row; clearTestEventData switches
+ * all flags back off.
+ */
+async function setFeatureFlags(
+  rootPgPool: Pool,
+  payload: { [key: string]: unknown }
+) {
+  const entries = Object.entries(payload)
+  for (const [key, state] of entries) {
+    if (!FEATURE_FLAG_STATES.includes(state as FeatureFlagState)) {
+      throw new Error(
+        `Invalid state ${JSON.stringify(state)} for feature flag "${key}"`
+      )
+    }
+  }
+  const client = await rootPgPool.connect()
+  try {
+    await client.query("begin")
+    try {
+      for (const [key, state] of entries) {
+        const { rowCount } = await client.query(
+          "update app_public.feature_flags set state = $2 where key = $1",
+          [key, state]
+        )
+        if (!rowCount) {
+          throw new Error(
+            `Feature flag "${key}" has no row in app_public.feature_flags`
+          )
+        }
+      }
+      await client.query("commit")
+    } catch (e) {
+      await client.query("rollback")
+      throw e
+    }
+  } finally {
+    client.release()
+  }
+  invalidateFeatureFlags()
+  return { success: true }
 }
 
 async function createEventData(
