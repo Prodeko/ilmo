@@ -13,7 +13,7 @@ interface PaymentReceivedEmailPayload {
 const { ROOT_URL } = process.env
 
 /**
- * Payment received email (board 14), sent when the webhook marks a card
+ * Payment received email, sent when the webhook marks a card
  * payment paid and when an organizer marks a registration paid by hand. A
  * manual payment has no service fee, so its row is left out and the total is
  * the ticket price.

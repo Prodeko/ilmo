@@ -53,7 +53,7 @@ const UpdateEventRegistrationPage: NextPage = () => {
   const event = registration?.event
   const quota = registration?.quota
 
-  // Payments (board 6). paymentByUpdateToken is null while Stripe is not
+  // paymentByUpdateToken is null while Stripe is not
   // configured; while the payments flag is off it still describes a payment
   // already made (blockedReason PAYMENTS_DISABLED).
   const payment = data?.paymentByUpdateToken

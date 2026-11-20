@@ -17,8 +17,8 @@ interface QuotaPriceProps {
 }
 
 /**
- * Ticket price input and the live "Guild receives" estimate for one quota
- * (board 8). The price is edited in euros and stored as cents on submit.
+ * Ticket price input and the live "Guild receives" estimate for one quota.
+ * The price is edited in euros and stored as cents on submit.
  */
 export const QuotaPriceField: React.FC<QuotaPriceProps> = ({ name, index }) => {
   const { t } = useTranslation("admin")

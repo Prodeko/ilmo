@@ -40,7 +40,7 @@ interface PaymentStatusTagProps {
   queued: boolean
 }
 
-/** The Payment column of the registrations table (board 9). */
+/** The Payment column of the registrations table. */
 export const PaymentStatusTag: React.FC<PaymentStatusTagProps> = ({
   paymentStatus,
   queued,
@@ -69,7 +69,7 @@ interface PaymentSummaryProps {
   summary: EventPaymentSummary | null | undefined
 }
 
-/** Summary tiles above the registrations table (board 9). */
+/** Summary tiles above the registrations table. */
 export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ summary }) => {
   const { t } = useTranslation("admin")
   const tiles = [

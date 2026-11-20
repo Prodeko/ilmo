@@ -19,7 +19,7 @@ export interface PaymentReminderPayload {
 const { ROOT_URL } = process.env
 
 /**
- * Payment reminder (board 13), queued by the organizers' bulk reminder
+ * Payment reminder, queued by the organizers' bulk reminder
  * (admin_send_payment_reminders) and by event__send_unpaid_on_close. Checks
  * again when it runs, so a registration paid, refunded, moved or deleted in
  * the meantime gets nothing. Does nothing while the `payments` flag is off.

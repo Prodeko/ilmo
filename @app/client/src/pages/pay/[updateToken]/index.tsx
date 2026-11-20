@@ -46,7 +46,7 @@ const PayPage: NextPage = () => {
     confirmTimedOut,
   })
 
-  // Poll while confirming (board 4, "Returned, confirming")
+  // Poll while confirming
   const confirming = state === "confirming"
   useEffect(() => {
     if (!confirming) return

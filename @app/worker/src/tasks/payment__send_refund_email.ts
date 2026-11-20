@@ -48,7 +48,7 @@ async function recipientOf(
   return null
 }
 
-/** Refund issued email (board 15). */
+/** Refund issued email. */
 const task: Task = async (inPayload, { addJob, query, logger }) => {
   const {
     paymentId,

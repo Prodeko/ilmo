@@ -3,8 +3,8 @@ import { Pool, PoolClient } from "pg"
 /**
  * Why a registration can't be paid right now. Returned as the error `code`
  * of `createCheckoutSession` and as `blockedReason` of
- * `paymentByUpdateToken`, so the /pay page can map both to its states
- * (board 5). Also declared as the `PaymentErrorCode` GraphQL enum.
+ * `paymentByUpdateToken`, so the /pay page can map both to its states.
+ * Also declared as the `PaymentErrorCode` GraphQL enum.
  */
 export const PAYMENT_ERROR_CODES = [
   "PAYMENTS_DISABLED",

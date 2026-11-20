@@ -32,7 +32,7 @@ export function quotaRequiresPayment(
 export type RegistrationFormPaymentVariant = "during" | "after" | "queued"
 
 /**
- * The payment block of the registration form (board 2), or null when the
+ * The payment block of the registration form, or null when the
  * form looks exactly as it does without payments.
  */
 export function registrationFormPaymentVariant(
@@ -108,7 +108,7 @@ export interface CancelRefund {
 }
 
 /**
- * What a participant gets back when they cancel (board 6): the stored ticket
+ * What a participant gets back when they cancel: the stored ticket
  * amount of a card payment, which is what the refund job refunds; the
  * service fee is the rest of what was paid. Null when nothing is refunded
  * automatically (unpaid, free, refunded already, or paid by hand).

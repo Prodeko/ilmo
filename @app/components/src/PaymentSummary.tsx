@@ -96,7 +96,7 @@ interface CancelRefundBreakdownProps {
   lang?: string
 }
 
-/** What a cancelling participant paid and gets back (board 6). */
+/** What a cancelling participant paid and gets back. */
 export const CancelRefundBreakdown: React.FC<CancelRefundBreakdownProps> = ({
   refund,
   paidLabel,

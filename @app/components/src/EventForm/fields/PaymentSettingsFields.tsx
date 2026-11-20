@@ -26,7 +26,7 @@ interface PaymentSettingsFieldsProps {
 }
 
 /**
- * The Payments section of the General tab (board 7). Placed by MainTab only
+ * The Payments section of the General tab. Placed by MainTab only
  * while the payments feature is on.
  */
 export const PaymentSettingsFields: React.FC<PaymentSettingsFieldsProps> = ({
@@ -62,7 +62,7 @@ export const PaymentSettingsFields: React.FC<PaymentSettingsFieldsProps> = ({
               <Radio
                 key={value}
                 data-cy={`eventform-radio-payment-mode-${value}`}
-                // Bordered option cards (board 7)
+                // Bordered option cards
                 style={{
                   display: "flex",
                   alignItems: "flex-start",

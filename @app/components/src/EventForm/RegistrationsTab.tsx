@@ -207,7 +207,7 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
     ]
 
     // With payments the row actions sit at the right end of the row and a
-    // Payment column follows the queue status (board 9).
+    // Payment column follows the queue status.
     const columns = showPayments
       ? !isMobile
         ? [

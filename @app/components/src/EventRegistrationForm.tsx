@@ -70,14 +70,14 @@ interface EventRegistrationFormProps {
   // Used by the event form's preview tab: the form is validated but never
   // submitted. Leave eventId and quotaId out so no registration is claimed.
   preview?: boolean
-  // Payment block of the create form (board 2). Null or missing when the
+  // Payment block of the create form. Null or missing when the
   // quota is free, the event has no payments or payments are disabled.
   payment?: RegistrationFormPayment | null
   // True while it is not yet known whether the payment block applies (the
   // claimed spot's queue status is loading); submitting waits for it
   paymentLoading?: boolean
-  // Payment of the registration being updated, for the delete confirmation
-  // (board 6). Null or missing when there is nothing paid.
+  // Payment of the registration being updated, for the delete confirmation.
+  // Null or missing when there is nothing paid.
   paymentOnDelete?: { refund: CancelRefund | null; paidManually: boolean }
   // Offer to remember the answers to prefill questions in the signed-in
   // user's registration profile. Used when type is "create"
