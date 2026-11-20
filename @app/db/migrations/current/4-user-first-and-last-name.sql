@@ -15,3 +15,15 @@ comment on column app_public.users.first_name is
   E'The user''s first name(s), from the Keycloak `given_name` claim. Null for users that have not logged in with Keycloak.';
 comment on column app_public.users.last_name is
   E'The user''s last name, from the Keycloak `family_name` claim. Null for users that have not logged in with Keycloak.';
+
+/*
+ * The registration form prefers these names over splitting the display name
+ * only while `keycloak_names` is on. The login callback stores them whatever
+ * the flag's state.
+ */
+insert into app_public.feature_flags (key, description)
+  values (
+    'keycloak_names',
+    'Prefill the registration form with the first and last name from Keycloak instead of splitting the display name.'
+  )
+  on conflict (key) do nothing;

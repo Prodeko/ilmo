@@ -84,6 +84,22 @@
     "deletedUser": "Poistettu käyttäjä",
     "dismiss": "Sulje",
     "empty": "Ominaisuuksia ei vielä ole. Ne ilmestyvät tänne, kun niitä lisätään sovellukseen, ja jokainen on aluksi pois päältä.",
+    "flags": {
+      "keycloak_names": {
+        "name": "Nimet Keycloakista",
+        "turnOn": [
+          "Ilmoittautumislomake täyttää Keycloakista tallennetun etu- ja sukunimen.",
+          "Ilman niitä lomake täyttää näyttönimen vain, jos siinä on enintään kaksi sanaa."
+        ],
+        "stops": [
+          "Ilmoittautumislomake jakaa taas näyttönimen etu- ja sukunimeksi."
+        ],
+        "keeps": [
+          "Etu- ja sukunimet tallennetaan edelleen jokaisella Keycloak-kirjautumisella.",
+          "Jo tehdyt ilmoittautumiset säilyttävät nimensä."
+        ]
+      }
+    },
     "footer": "Uudet ominaisuudet tulevat sovelluksen päivitysten mukana ja ovat aluksi pois päältä.",
     "history": "Historia",
     "historyDrawer": {

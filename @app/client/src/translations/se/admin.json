@@ -84,6 +84,22 @@
     "deletedUser": "Raderad användare",
     "dismiss": "Stäng",
     "empty": "Inga funktioner ännu. Funktioner visas här när de läggs till i appen, och var och en är först avslagen.",
+    "flags": {
+      "keycloak_names": {
+        "name": "Namn från Keycloak",
+        "turnOn": [
+          "Registreringsformuläret fyller i för- och efternamnet som sparats från Keycloak.",
+          "Utan dem fyller formuläret i visningsnamnet bara om det har högst två ord."
+        ],
+        "stops": [
+          "Registreringsformuläret delar åter visningsnamnet i för- och efternamn."
+        ],
+        "keeps": [
+          "För- och efternamn sparas fortfarande vid varje Keycloak-inloggning.",
+          "Redan gjorda registreringar behåller sina namn."
+        ]
+      }
+    },
     "footer": "Nya funktioner kommer med uppdateringar av appen och är först avslagna.",
     "history": "Historik",
     "historyDrawer": {

@@ -84,6 +84,22 @@
     "deletedUser": "Deleted user",
     "dismiss": "Dismiss",
     "empty": "No features yet. Features appear here as they are added to the app, and each one starts as Off.",
+    "flags": {
+      "keycloak_names": {
+        "name": "Names from Keycloak",
+        "turnOn": [
+          "The registration form fills in the first and last name stored from Keycloak.",
+          "Without them, it fills in a display name only when it has at most two words."
+        ],
+        "stops": [
+          "The registration form goes back to splitting the display name into first and last name."
+        ],
+        "keeps": [
+          "First and last names are still stored at every Keycloak login.",
+          "Registrations already made keep their names."
+        ]
+      }
+    },
     "footer": "New features arrive with app updates and start as Off.",
     "history": "History",
     "historyDrawer": {

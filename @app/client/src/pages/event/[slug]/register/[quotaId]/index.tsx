@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from "react"
+import { ComponentProps, useCallback, useMemo, useState } from "react"
 import {
   EventRegistrationForm,
   PageHeader,
   RecentRegistrationsList,
   Redirect,
   SharedLayout,
+  useFeature,
   useLoading,
   useTranslation,
 } from "@app/components"
@@ -12,11 +13,48 @@ import {
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
-import { buildRegistrationInitialValues } from "@app/lib"
+import {
+  buildRegistrationInitialValues,
+  RegistrationPrefillUser,
+} from "@app/lib"
 import { Col, Popconfirm, Row } from "antd"
 import { useRouter } from "next/router"
 
 import type { NextPage } from "next"
+
+interface PrefilledRegistrationFormProps
+  extends Omit<ComponentProps<typeof EventRegistrationForm>, "initialValues"> {
+  currentUser: RegistrationPrefillUser | null | undefined
+}
+
+/**
+ * The create form with its initial values. Rendered inside SharedLayout so
+ * that useFeature reads the flags the layout provides.
+ */
+const PrefilledRegistrationForm = ({
+  currentUser,
+  questions,
+  ...formProps
+}: PrefilledRegistrationFormProps) => {
+  const keycloakNames = useFeature("keycloak_names")
+  const initialValues = useMemo(
+    () =>
+      buildRegistrationInitialValues({
+        currentUser,
+        questions,
+        features: { keycloak_names: keycloakNames },
+      }),
+    [currentUser, questions, keycloakNames]
+  )
+
+  return (
+    <EventRegistrationForm
+      {...formProps}
+      initialValues={initialValues}
+      questions={questions}
+    />
+  )
+}
 
 const EventRegistrationPage: NextPage = () => {
   const { t, lang } = useTranslation("register_event")
@@ -37,10 +75,6 @@ const EventRegistrationPage: NextPage = () => {
   const { signupClosed, signupUpcoming } = event || {}
 
   const questions = event?.eventQuestions?.nodes
-  const formInitialValues = useMemo(
-    () => buildRegistrationInitialValues({ currentUser, questions }),
-    [currentUser, questions]
-  )
 
   const [, deleteRegistration] = useDeleteEventRegistrationMutation()
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
@@ -97,13 +131,13 @@ const EventRegistrationPage: NextPage = () => {
               />
             </Col>
           </Row>
-          <EventRegistrationForm
+          <PrefilledRegistrationForm
+            currentUser={currentUser}
             eventId={event?.id}
             formRedirect={{
               pathname: "/event/[slug]",
               query: { slug: event?.slug },
             }}
-            initialValues={formInitialValues}
             questions={questions}
             quotaId={quota?.id}
             // Used to delete an unfinished registration
