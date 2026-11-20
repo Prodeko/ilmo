@@ -8,6 +8,7 @@ import {
 } from "@app/graphql"
 import { formItemLayout, lowercased } from "@app/lib"
 import { Badge, Col, Form, Row, Skeleton, Tabs } from "antd"
+import isEqual from "lodash/isEqual"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
@@ -149,7 +150,15 @@ const EventFormContent: React.FC<EventFormProps> = (props) => {
     type === "update" ? UpdateEventDocument : CreateEventDocument
   const [, mutation] = useMutation(eventMutation)
 
+  // The initial values last put into the form. The page's query hands in a
+  // new object whenever the cached event is written again (e.g. by another
+  // query that loads the same event), which must not discard the user's edits.
+  const appliedInitialValues = useRef<unknown>(null)
   useEffect(() => {
+    const next = [initialValues, initialSelectedLanguages]
+    if (isEqual(appliedInitialValues.current, next)) return
+    appliedInitialValues.current = next
+
     // Set form initialValues if they have changed after the initial rendering
     setFieldsValue(initialValues)
 
