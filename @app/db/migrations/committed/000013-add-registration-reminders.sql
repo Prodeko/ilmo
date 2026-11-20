@@ -1,3 +1,8 @@
+--! Previous: sha1:b5a91cba1dbd2e7332a44497b7e3a74ba6a9ce31
+--! Hash: sha1:5174a822aa4302fac083da3c1afc453b4798012a
+--! Message: add registration reminders
+
+--! split: 51-registration-reminders.sql
 /*
  * Registration reminders: a signed-in user asks to be reminded a chosen time
  * before an event's registration opens, by email, Telegram or both.
