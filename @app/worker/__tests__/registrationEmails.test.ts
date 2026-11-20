@@ -65,6 +65,7 @@ it.each(["IN_QUOTA", "IN_OPEN_QUOTA"])(
     const [invitation] = invitations(payload)
     expect(invitation.filename).toBe("event.ics")
     expect(invitation.content).toContain("METHOD:REQUEST\r\n")
+    expect(payload.variables.isWaitlisted).toBe(false)
     expect(payload.variables.eventRegistrationUpdateLink).toContain(
       "private-token"
     )
@@ -72,10 +73,20 @@ it.each(["IN_QUOTA", "IN_OPEN_QUOTA"])(
   }
 )
 
-it("sends a queue confirmation without a calendar invitation", async () => {
+it("sends a waitlist confirmation without a calendar invitation", async () => {
   const context = helpers("IN_QUEUE")
   await confirmation({ id: "registration" }, context as any)
-  expect(invitations(context.addJob.mock.calls[0][1])).toEqual([])
+  const payload = context.addJob.mock.calls[0][1]
+  expect(invitations(payload)).toEqual([])
+  expect(payload.variables.isWaitlisted).toBe(true)
+  expect(payload.options.subject).toContain("Added to waiting list")
+})
+
+it("does not send a confirmation for an unfinished signup", async () => {
+  jest.spyOn(console, "error").mockImplementation(() => {})
+  const context = helpers("IN_QUOTA", false)
+  await confirmation({ id: "registration" }, context as any)
+  expect(context.addJob).not.toHaveBeenCalled()
 })
 
 it("attaches an invitation when a user receives a place from the queue", async () => {

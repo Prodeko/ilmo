@@ -17,8 +17,6 @@ import type { JobHelpers } from "graphile-worker"
 
 type Query = JobHelpers["query"]
 
-const { ROOT_URL } = process.env
-
 export type RegistrationEmailKind = "confirmation" | "spotFromQueue"
 
 /* Rows are `select *`; only the columns used here are typed. */
@@ -29,6 +27,7 @@ export interface RegistrationRow {
   email: string | null
   first_name: string
   last_name: string
+  is_finished: boolean
   /** `app_public.registrations_status(registration)` */
   status: string | null
   [column: string]: any
@@ -114,10 +113,16 @@ type CheckedRows = {
 interface KindSpec {
   /** Checks in order; logs and returns false to abort, or throws. */
   check(rows: LoadedRows): rows is CheckedRows
-  subject(event: EventRow): string
+  subject(rows: CheckedRows): string
+  /** Template variables of this kind, merged after the shared ones. */
+  variables?(rows: CheckedRows): { [varName: string]: any }
   template: string
   /** Marks the email of this kind as sent for the registration. */
   markSentSql: string
+}
+
+function isQueued(registration: RegistrationRow) {
+  return registration.status === "IN_QUEUE"
 }
 
 function abort(message: string): false {
@@ -130,6 +135,9 @@ const kinds: Record<RegistrationEmailKind, KindSpec> = {
     check(rows): rows is CheckedRows {
       const { registration, event, quota, registrationSecret } = rows
       if (!registration) return abort("Registration not found; aborting")
+      if (!registration.is_finished) {
+        return abort("Registration is not finished; aborting")
+      }
       if (!event) return abort("No event found; aborting")
       if (!quota) return abort("No quota found; aborting")
       if (!registrationSecret) {
@@ -141,10 +149,15 @@ const kinds: Record<RegistrationEmailKind, KindSpec> = {
       if (!registration.email) return abort("No email specified; aborting")
       return true
     },
-    subject: (event) =>
-      event.name.fi
-        ? `${event.name.fi} - Rekisteröinti onnnistui`
-        : `${event.name.en} - Registration successful`,
+    subject: ({ event, registration }) => {
+      const queued = isQueued(registration)
+      return event.name.fi
+        ? `${event.name.fi} - ${queued ? "Ilmoittautuminen jonoon" : "Ilmoittautuminen onnistui"}`
+        : `${event.name.en} - ${queued ? "Added to waiting list" : "Registration successful"}`
+    },
+    variables: ({ registration }) => ({
+      isWaitlisted: isQueued(registration),
+    }),
     template: "event_registration.mjml.njk",
     markSentSql:
       "update app_private.registration_secrets set confirmation_email_sent = true where registration_id = $1",
@@ -163,13 +176,16 @@ const kinds: Record<RegistrationEmailKind, KindSpec> = {
         // cascades); fail the job rather than skip the email silently.
         throw new Error("Registration not found")
       }
+      if (!registration.is_finished) {
+        return abort("Registration is not finished; aborting")
+      }
       if (!event || !quota) {
         return abort("Event or quota not found; aborting")
       }
       if (!registration.email) return abort("No email specified; aborting")
       return true
     },
-    subject: (event) =>
+    subject: ({ event }) =>
       event.name.fi
         ? `${event.name.fi} - Olet saanut paikan jonosta`
         : `${event.name.en} - You have received a spot from the queue`,
@@ -232,10 +248,11 @@ export async function buildRegistrationEmail(
     return null
   }
   const { registration, event, quota, registrationSecret } = rows
+  const rootUrl = process.env.ROOT_URL
   const ctx: RegistrationEmailContext = {
     kind,
     query,
-    rootUrl: ROOT_URL,
+    rootUrl,
     registration,
     event,
     quota,
@@ -245,7 +262,7 @@ export async function buildRegistrationEmail(
   const contributions = await Promise.all(contributors.map((c) => c(ctx)))
   const variables = Object.assign(
     {
-      url: ROOT_URL,
+      url: rootUrl,
       eventName: event.name,
       registrationName: `${registration.first_name} ${registration.last_name}`,
       registrationQuota: quota.title,
@@ -253,6 +270,7 @@ export async function buildRegistrationEmail(
       eventSlug: event.slug,
       eventLocation: event.location,
       eventRegistrationUpdateLink: `update-registration/${registrationSecret.update_token}`,
+      ...spec.variables?.(rows),
     },
     ...contributions.map((c) => c.variables)
   )
@@ -261,7 +279,7 @@ export async function buildRegistrationEmail(
   return {
     options: {
       to: registration.email!,
-      subject: spec.subject(event),
+      subject: spec.subject(rows),
     },
     template: spec.template,
     variables,

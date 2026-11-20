@@ -21,6 +21,8 @@ function rows() {
       email: "tester@example.com",
       first_name: "Test",
       last_name: "User",
+      is_finished: true,
+      status: "IN_QUOTA",
     } as any,
     event: {
       id: "event",
@@ -93,12 +95,49 @@ describe("buildRegistrationEmail", () => {
     expect(payload).toEqual({
       options: {
         to: "tester@example.com",
-        subject: "Testi - Rekisteröinti onnnistui",
+        subject: "Testi - Ilmoittautuminen onnistui",
       },
       template: "event_registration.mjml.njk",
-      variables: baseVariables,
+      variables: { ...baseVariables, isWaitlisted: false },
     })
     expect(consoleError).not.toHaveBeenCalled()
+  })
+
+  it("builds the confirmation of a queued registration", async () => {
+    const data = rows()
+    data.registration.status = "IN_QUEUE"
+    const payload = await buildRegistrationEmail(
+      fakeQuery(data),
+      "registration",
+      "confirmation",
+      []
+    )
+    expect(payload!.options.subject).toBe("Testi - Ilmoittautuminen jonoon")
+    expect(payload!.variables.isWaitlisted).toBe(true)
+    data.event.name = { en: "Test" }
+    const english = await buildRegistrationEmail(
+      fakeQuery(data),
+      "registration",
+      "confirmation",
+      []
+    )
+    expect(english!.options.subject).toBe("Test - Added to waiting list")
+  })
+
+  it("reads ROOT_URL when the email is built", async () => {
+    const saved = process.env.ROOT_URL
+    process.env.ROOT_URL = "https://changed.example.com"
+    try {
+      const payload = await buildRegistrationEmail(
+        fakeQuery(rows()),
+        "registration",
+        "spotFromQueue",
+        []
+      )
+      expect(payload!.variables.url).toBe("https://changed.example.com")
+    } finally {
+      process.env.ROOT_URL = saved
+    }
   })
 
   it("builds the spot from queue email", async () => {
@@ -224,6 +263,12 @@ describe("buildRegistrationEmail", () => {
       "Registration not found; aborting",
     ],
     [
+      "an unfinished registration",
+      "confirmation",
+      (d) => (d.registration.is_finished = false),
+      "Registration is not finished; aborting",
+    ],
+    [
       "no event",
       "confirmation",
       (d) => (d.event = undefined),
@@ -273,6 +318,12 @@ describe("buildRegistrationEmail", () => {
       "spotFromQueue",
       (d) => (d.registrationSecret.received_spot_from_queue_email_sent = true),
       "Received spot from queue email already sent; aborting",
+    ],
+    [
+      "an unfinished registration",
+      "spotFromQueue",
+      (d) => (d.registration.is_finished = false),
+      "Registration is not finished; aborting",
     ],
     [
       "no event",
