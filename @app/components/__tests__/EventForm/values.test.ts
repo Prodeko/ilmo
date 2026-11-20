@@ -45,6 +45,7 @@ const event = {
         label: { fi: "Kysymys", en: "Question" },
         isRequired: true,
         data: null,
+        prefill: "TELEGRAM",
       },
     ],
   },
@@ -88,6 +89,7 @@ describe("toFormValues", () => {
         label: { fi: "Kysymys", en: "Question" },
         isRequired: true,
         data: null,
+        prefill: "TELEGRAM",
       },
     ])
     expect(values).not.toHaveProperty("id")
@@ -325,6 +327,7 @@ describe("toEventInput", () => {
         label: { fi: "Kysymys", en: "Question" },
         isRequired: true,
         data: null,
+        prefill: "TELEGRAM",
       },
     ])
   })

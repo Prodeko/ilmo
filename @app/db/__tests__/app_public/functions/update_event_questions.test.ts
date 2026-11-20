@@ -36,8 +36,8 @@ describe("Test app_public.update_event_questions function", () => {
         `select app_public.update_event_questions(
           $1,
           array[
-            row($2::uuid, 0::smallint, 'TEXT'::app_public.question_type, $3::app_public.translated_field, false, null),
-            row(null, 1::smallint, 'TEXT'::app_public.question_type, $4::app_public.translated_field, false, null)
+            row($2::uuid, 0::smallint, 'TEXT'::app_public.question_type, $3::app_public.translated_field, false, null, null),
+            row(null, 1::smallint, 'TEXT'::app_public.question_type, $4::app_public.translated_field, false, null, null)
           ]::app_public.update_event_questions[]
         )`,
         [

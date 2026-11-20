@@ -1,14 +1,21 @@
-fragment UpdateEventPage_Query on Query {
+fragment CreateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  event(id: $id) {
-    ...UpdateEventPage_Event
-    __typename
-  }
-  eventCategories(orderBy: NAME_ASC) {
-    nodes {
-      ...EventPage_EventCategory
+  currentUser {
+    id
+    firstName
+    lastName
+    registrationProfile {
+      ...RegistrationProfile
       __typename
     }
+    __typename
+  }
+  eventBySlug(slug: $slug) {
+    ...EventPage_Event
+    __typename
+  }
+  quota(id: $quotaId) {
+    ...EventPage_Quota
     __typename
   }
   __typename
@@ -78,10 +85,14 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment UpdateEventPage_Event on Event {
+fragment RegistrationProfile on RegistrationProfile {
+  userId
+  telegram
+  dietaryRestrictions
+  __typename
+}
+fragment EventPage_Event on Event {
   ...EventFields
-  paymentMode
-  sendUnpaidEmailOnClose
   category {
     ...EventPage_EventCategory
     __typename
@@ -93,11 +104,13 @@ fragment UpdateEventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      priceCents
-      registrations {
-        totalCount
-        __typename
-      }
+      __typename
+    }
+    __typename
+  }
+  registrations(orderBy: POSITION_ASC) {
+    nodes {
+      ...EventPage_Registration
       __typename
     }
     __typename
@@ -163,6 +176,18 @@ fragment EventPage_Quota on Quota {
   priceCents
   __typename
 }
+fragment EventPage_Registration on Registration {
+  id
+  fullName
+  status
+  position
+  createdAt
+  quota {
+    ...EventPage_Quota
+    __typename
+  }
+  __typename
+}
 fragment EventPage_Question on EventQuestion {
   id
   position
@@ -170,8 +195,9 @@ fragment EventPage_Question on EventQuestion {
   label
   isRequired
   data
+  prefill
   __typename
 }
-query UpdateEventPage($id: UUID!) {
-  ...UpdateEventPage_Query
+query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
+  ...CreateEventRegistrationPage_Query
 }

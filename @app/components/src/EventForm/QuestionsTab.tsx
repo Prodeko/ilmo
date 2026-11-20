@@ -8,7 +8,7 @@ import {
   PlusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
-import { QuestionType } from "@app/graphql"
+import { QuestionPrefill, QuestionType } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
@@ -27,12 +27,16 @@ import {
 } from "antd"
 import Trans from "next-translate/Trans"
 
-import { useTranslation } from "../."
+import { Feature, useTranslation } from "../."
 import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
 
 import { EventTemplates } from "./fields/EventTemplates"
+import {
+  KeepQuestionPrefill,
+  QuestionPrefillSelect,
+} from "./fields/QuestionPrefillSelect"
 import { QuestionTemplateFields } from "./fields/QuestionTemplateFields"
 
 import type { SelectValue } from "antd/lib/select"
@@ -46,6 +50,7 @@ type QuestionData = {
   label: string
   isRequired: boolean
   data: string[]
+  prefill?: QuestionPrefill | null
 }
 
 interface QuestionsTabProps {
@@ -87,10 +92,12 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
         if (!hasData) {
           questions[index].data = [""]
-          setFieldsValue({
-            questions,
-          })
         }
+        // Only TEXT answers can be prefilled
+        questions[index].prefill = null
+        setFieldsValue({
+          questions,
+        })
       }
       forceUpdate()
     }
@@ -216,8 +223,18 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         <>
           <Col {...colSpan}>{questionLabel}</Col>
           <Col {...colSpan}>
-            {/* TEXT questions don't have any data associated with them.
-              This Col is included for layout. */}
+            {/* TEXT questions have no options. An answer can be prefilled
+              from the registrant's registration profile. */}
+            <Feature
+              fallback={<KeepQuestionPrefill name={index} />}
+              name="prefill_answers"
+            >
+              <QuestionPrefillSelect
+                name={index}
+                selectedLanguages={selectedLanguages}
+                onChange={forceUpdate}
+              />
+            </Feature>
           </Col>
         </>
       )
@@ -349,6 +366,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         <Form.Item name={[name, "position"]} noStyle required>
                           <Input type="hidden" />
                         </Form.Item>
+                        {questions?.[index]?.type?.toUpperCase() !==
+                          QuestionType.Text && (
+                          <KeepQuestionPrefill name={name} />
+                        )}
                         <Col
                           md={{ span: 4 }}
                           sm={{ span: 12 }}

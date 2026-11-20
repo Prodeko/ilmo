@@ -13,13 +13,15 @@
   "deleteRegistrationFailed": "Det gick inte att ta bort händelseregistreringen",
   "errors": {
     "registrationFailed": "Registrering till evenemanget misslyckades",
-    "registrationUpdateFailed": "Det gick inte att uppdatera registreringsinformationen"
+    "registrationUpdateFailed": "Det gick inte att uppdatera registreringsinformationen",
+    "rememberAnswersFailed": "Din anmälan sparades, men det gick inte att komma ihåg dina svar"
   },
   "eventSignupComplete": "Händelseregistrering sparad",
   "forms": {
     "email": "E-post",
     "firstName": "Förnamn",
     "lastName": "Efternamn",
+    "rememberAnswers": "Kom ihåg dessa svar till mina följande anmälningar",
     "rules": {
       "emailEmpty": "Ange din e-post",
       "emailValid": "Inmatningen är inte giltig e-post",

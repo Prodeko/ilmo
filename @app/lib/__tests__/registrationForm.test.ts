@@ -1,4 +1,8 @@
-import { buildRegistrationInitialValues } from "../src/registrationForm"
+import {
+  buildRegistrationInitialValues,
+  buildRegistrationProfileUpdate,
+  hasPrefillQuestions,
+} from "../src/registrationForm"
 
 const user = (name: string | null, primaryEmail: string | null = null) => ({
   name,
@@ -232,5 +236,166 @@ describe("buildRegistrationInitialValues", () => {
         ).toMatchObject({ firstName: undefined, lastName: undefined })
       }
     })
+  })
+})
+
+const profileUser = {
+  name: "Teemu Teekkari",
+  primaryEmail: "teemu@example.com",
+  registrationProfile: { telegram: "@teemu", dietaryRestrictions: "Vegan" },
+}
+
+const prefillQuestions = [
+  { id: "q-telegram", prefill: "TELEGRAM" },
+  { id: "q-plain", prefill: null },
+  { id: "q-diet", prefill: "DIETARY_RESTRICTIONS" },
+]
+
+describe("buildRegistrationInitialValues answer prefill", () => {
+  it("does not prefill answers while prefill_answers is off", () => {
+    for (const features of [
+      undefined,
+      {},
+      { prefill_answers: false },
+    ] as const) {
+      expect(
+        buildRegistrationInitialValues({
+          currentUser: profileUser,
+          questions: prefillQuestions,
+          features,
+        })
+      ).toStrictEqual({
+        firstName: "Teemu",
+        lastName: "Teekkari",
+        email: "teemu@example.com",
+      })
+    }
+  })
+
+  describe("with prefill_answers on", () => {
+    const features = { prefill_answers: true }
+
+    it("prefills the questions marked for prefill from the profile", () => {
+      expect(
+        buildRegistrationInitialValues({
+          currentUser: profileUser,
+          questions: prefillQuestions,
+          features,
+        })
+      ).toStrictEqual({
+        firstName: "Teemu",
+        lastName: "Teekkari",
+        email: "teemu@example.com",
+        answers: { "q-telegram": "@teemu", "q-diet": "Vegan" },
+      })
+    })
+
+    it("leaves out fields the profile does not have", () => {
+      expect(
+        buildRegistrationInitialValues({
+          currentUser: {
+            ...profileUser,
+            registrationProfile: { telegram: null, dietaryRestrictions: "" },
+          },
+          questions: prefillQuestions,
+          features,
+        })
+      ).not.toHaveProperty("answers")
+      expect(
+        buildRegistrationInitialValues({
+          currentUser: {
+            ...profileUser,
+            registrationProfile: { telegram: "@teemu" },
+          },
+          questions: prefillQuestions,
+          features,
+        }).answers
+      ).toStrictEqual({ "q-telegram": "@teemu" })
+    })
+
+    it("prefills nothing without a profile or a signed-in user", () => {
+      for (const currentUser of [
+        null,
+        { ...profileUser, registrationProfile: null },
+      ]) {
+        expect(
+          buildRegistrationInitialValues({
+            currentUser,
+            questions: prefillQuestions,
+            features,
+          })
+        ).not.toHaveProperty("answers")
+      }
+    })
+
+    it("ignores unknown prefill values", () => {
+      expect(
+        buildRegistrationInitialValues({
+          currentUser: profileUser,
+          questions: [{ id: "q1", prefill: "SHOE_SIZE" }],
+          features,
+        })
+      ).not.toHaveProperty("answers")
+    })
+  })
+})
+
+describe("hasPrefillQuestions", () => {
+  it("is true only when a question is marked for prefill", () => {
+    expect(hasPrefillQuestions(prefillQuestions)).toBe(true)
+    expect(hasPrefillQuestions([{ id: "q1", prefill: null }])).toBe(false)
+    expect(hasPrefillQuestions([{ id: "q1" }])).toBe(false)
+    expect(hasPrefillQuestions(null)).toBe(false)
+  })
+})
+
+describe("buildRegistrationProfileUpdate", () => {
+  it("returns the trimmed answers of the prefill questions", () => {
+    expect(
+      buildRegistrationProfileUpdate(prefillQuestions, {
+        "q-telegram": " @teemu ",
+        "q-plain": "something else",
+        "q-diet": "Vegan",
+      })
+    ).toStrictEqual({ telegram: "@teemu", dietaryRestrictions: "Vegan" })
+  })
+
+  it("keeps fields the event does not ask for as null", () => {
+    expect(
+      buildRegistrationProfileUpdate(
+        [{ id: "q-telegram", prefill: "TELEGRAM" }],
+        {
+          "q-telegram": "@teemu",
+        }
+      )
+    ).toStrictEqual({ telegram: "@teemu", dietaryRestrictions: null })
+  })
+
+  it("clears a field whose answer was left empty", () => {
+    expect(
+      buildRegistrationProfileUpdate(prefillQuestions, { "q-diet": "Vegan" })
+    ).toStrictEqual({ telegram: "", dietaryRestrictions: "Vegan" })
+  })
+
+  it("leaves out an over-length answer", () => {
+    expect(
+      buildRegistrationProfileUpdate(prefillQuestions, {
+        "q-telegram": "@" + "a".repeat(64),
+        "q-diet": "d".repeat(1000),
+      })
+    ).toStrictEqual({ telegram: null, dietaryRestrictions: "d".repeat(1000) })
+    expect(
+      buildRegistrationProfileUpdate(
+        [{ id: "q-telegram", prefill: "TELEGRAM" }],
+        { "q-telegram": "@" + "a".repeat(64) }
+      )
+    ).toBeNull()
+  })
+
+  it("returns null when no question is marked for prefill", () => {
+    expect(
+      buildRegistrationProfileUpdate([{ id: "q-plain" }], { "q-plain": "x" })
+    ).toBeNull()
+    expect(buildRegistrationProfileUpdate(undefined, undefined)).toBeNull()
   })
 })

@@ -127,12 +127,24 @@ const GENERATORS_BY_TYPE: Record<string, Generator> = {
 /*
  * Values for single attributes whose constraints a value by type cannot
  * meet: ordered timestamps, foreign keys, the id an update matches on,
- * jsonb stored in a translated_field column and question types that require
- * answer options.
+ * jsonb stored in a translated_field column and question types, options and
+ * prefills that depend on each other.
  */
 const rowId: Generator = ({ rowId }) => rowId
+// Only a TEXT question can prefill its answer, and a TEXT question has no
+// answer options, so variant 0 is a prefilled TEXT question and variant 1 a
+// RADIO question with options
 const questionType: Generator = ({ variant }) =>
-  (["RADIO", "CHECKBOX"] as const)[variant]
+  (["TEXT", "RADIO"] as const)[variant]
+const questionData: Generator = (ctx) =>
+  ctx.variant === 0 ? null : [translated(ctx)]
+const questionPrefill: Generator = ({ variant }) =>
+  variant === 0 ? "TELEGRAM" : null
+const questionOverrides = {
+  type: questionType,
+  data: questionData,
+  prefill: questionPrefill,
+}
 
 const OVERRIDES: Record<string, Record<string, Generator>> = {
   [EVENT_INPUT.name]: {
@@ -147,8 +159,8 @@ const OVERRIDES: Record<string, Record<string, Generator>> = {
   // Typed jsonb in the input, stored in a translated_field column
   [CREATE_QUOTAS.name]: { title: translated },
   [UPDATE_QUOTAS.name]: { id: rowId, title: translated },
-  [CREATE_QUESTIONS.name]: { type: questionType },
-  [UPDATE_QUESTIONS.name]: { id: rowId, type: questionType },
+  [CREATE_QUESTIONS.name]: questionOverrides,
+  [UPDATE_QUESTIONS.name]: { id: rowId, ...questionOverrides },
 }
 
 /*

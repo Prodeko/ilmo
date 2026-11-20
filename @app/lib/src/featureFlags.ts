@@ -69,6 +69,10 @@ export const FEATURES = {
       "Stripe payments for paid quotas: prices, the pay page, Checkout, organizer payment tools and payment emails.",
     requiresEnv: ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
   },
+  prefill_answers: {
+    description:
+      "Prefill Telegram and dietary restriction answers from a registration profile the user saves on request.",
+  },
 } as const satisfies Record<string, FeatureDefinition>
 
 export type FeatureKey = keyof typeof FEATURES

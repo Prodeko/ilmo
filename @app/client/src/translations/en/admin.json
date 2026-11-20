@@ -99,6 +99,22 @@
           "First and last names are still stored at every Keycloak login.",
           "Registrations already made keep their names."
         ]
+      },
+      "prefill_answers": {
+        "name": "Remembered registration answers",
+        "turnOn": [
+          "Admins can mark a text question as asking for the registrant's Telegram handle or dietary restrictions.",
+          "The registration form prefills those answers from the user's saved registration details, and offers to remember new answers.",
+          "The profile settings page shows the registration details for editing."
+        ],
+        "stops": [
+          "Answers are no longer prefilled and the registration form no longer offers to remember them.",
+          "Registration details can no longer be saved or edited."
+        ],
+        "keeps": [
+          "Questions keep their Telegram or dietary restriction marking and work as ordinary text questions.",
+          "Users can still delete the registration details they saved."
+        ]
       }
     },
     "footer": "New features arrive with app updates and start as Off.",

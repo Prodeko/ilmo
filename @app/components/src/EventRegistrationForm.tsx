@@ -7,11 +7,14 @@ import {
   useClaimRegistrationTokenMutation,
   useCreateCheckoutSessionMutation,
   useDeleteEventRegistrationMutation,
+  useSetRegistrationProfileMutation,
 } from "@app/graphql"
 import {
   arePropsEqual,
+  buildRegistrationProfileUpdate,
   CancelRefund,
   formatEuro,
+  hasPrefillQuestions,
   isStripeCheckoutUrl,
   registrationFormItemLayout,
   RegistrationFormPaymentVariant,
@@ -40,6 +43,7 @@ import { useCelebrate } from "./celebrate"
 import {
   CancelRefundBreakdown,
   ErrorAlert,
+  Feature,
   paymentBoxStyle,
   PaymentNote,
   PriceBreakdown,
@@ -75,6 +79,9 @@ interface EventRegistrationFormProps {
   // Payment of the registration being updated, for the delete confirmation
   // (board 6). Null or missing when there is nothing paid.
   paymentOnDelete?: { refund: CancelRefund | null; paidManually: boolean }
+  // Offer to remember the answers to prefill questions in the signed-in
+  // user's registration profile. Used when type is "create"
+  canRememberAnswers?: boolean
 }
 
 export interface RegistrationFormPayment {
@@ -111,6 +118,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       payment,
       paymentLoading,
       paymentOnDelete,
+      canRememberAnswers,
     } = props
 
     const { t, lang } = useTranslation("register_event")
@@ -141,6 +149,33 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const [, deleteRegistration] = useDeleteEventRegistrationMutation()
     const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
     const [, createCheckoutSession] = useCreateCheckoutSessionMutation()
+    const [, setRegistrationProfile] = useSetRegistrationProfileMutation()
+
+    // The registrant opts in to saving their answers with a checkbox, shown
+    // only while prefill_answers is on and the event has prefill questions
+    const offerRememberAnswers =
+      type === "create" &&
+      !!canRememberAnswers &&
+      hasPrefillQuestions(questions)
+
+    // Saves the answers to prefill questions after a successful registration.
+    // A failure here never undoes or fails the registration itself.
+    const rememberAnswers = useCallback(
+      async (answers: Record<string, unknown> | undefined) => {
+        const update = buildRegistrationProfileUpdate(questions, answers)
+        if (!update) return
+        try {
+          const { error } = await setRegistrationProfile(update)
+          if (error) throw error
+        } catch {
+          message.warning({
+            key: "registration-remember-answers-failed",
+            content: t("errors.rememberAnswersFailed"),
+          })
+        }
+      },
+      [questions, setRegistrationProfile, t]
+    )
 
     useEffect(() => {
       form.setFieldsValue(initialValues)
@@ -214,12 +249,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       async (values) => {
         setFormError(null)
         try {
+          // The checkbox is not part of the registration
+          const { rememberAnswers: remember, ...registrationValues } = values
           // Names may contain spaces (e.g. "Anna Maria"), but strip the ones
           // around them
           const trimmedValues = {
-            ...values,
-            firstName: values.firstName?.trim(),
-            lastName: values.lastName?.trim(),
+            ...registrationValues,
+            firstName: registrationValues.firstName?.trim(),
+            lastName: registrationValues.lastName?.trim(),
           }
           const input =
             type === "create"
@@ -242,6 +279,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             // that going back to this page (e.g. from Stripe, restored from
             // the back/forward cache) can't delete the registration
             setUpdateToken?.(undefined)
+          }
+
+          if (offerRememberAnswers && remember) {
+            await rememberAnswers(registrationValues.answers)
           }
 
           // Pay during registration: go straight to Stripe Checkout. The
@@ -304,6 +345,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         submitAction,
         formRedirect,
         formMutation,
+        offerRememberAnswers,
+        rememberAnswers,
         router,
         eventId,
         quotaId,
@@ -535,6 +578,19 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             </section>
           </Form.Item>
         )}
+        {offerRememberAnswers ? (
+          <Feature name="prefill_answers">
+            <Form.Item
+              {...tailFormItemLayout}
+              name="rememberAnswers"
+              valuePropName="checked"
+            >
+              <Checkbox data-cy="eventregistrationform-checkbox-remember-answers">
+                {t("forms.rememberAnswers")}
+              </Checkbox>
+            </Form.Item>
+          </Feature>
+        ) : null}
         {formError && (
           <Form.Item {...tailFormItemLayout}>
             <ErrorAlert

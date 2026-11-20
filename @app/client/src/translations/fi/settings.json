@@ -2,16 +2,20 @@
   "buttons": {
     "addEmail": "Lisää sähköposti",
     "changePassphrase": "Vaihda salasana",
+    "deleteRegistrationProfile": "Poista ilmoittautumistiedot",
     "permanentDelete": "POISTA KÄYTTÄJÄ LOPULLISESTI",
     "resetPassphrase": "Resetoi salasana",
     "returnHome": "Palaa etusivulle",
     "updateProfile": "Päivitä tiedot",
+    "updateRegistrationProfile": "Päivitä ilmoittautumistiedot",
     "wantToDeleteAccount": "Haluan poistaa käyttäjäni"
   },
   "errors": {
     "accountDeleteFailedOrgOwner1": "Et voi poistaa tiliäsi, kun olet organisaation omistaja.",
     "accountDeleteFailedOrgOwner2": "Määritä omistajuutesi toiselle käyttäjälle tai poista organisaatio jokaisen omistamasi organisaation kohdalla.",
     "deleteFailed": "Poistopyyntö epäonnistui",
+    "errorDeletingRegistrationProfile": "Ilmoittautumistietojen poistaminen epäonnistui",
+    "errorUpdatingRegistrationProfile": "Ilmoittautumistietojen päivittäminen epäonnistui",
     "errorUpdatingUsername": "Virhe päivitettäesssä käyttäjänimeä",
     "incorrectOldPassword": "Väärä vanha salasana",
     "usernameTaken": "Tämä käyttäjänimi on jo käytössä, valitse toinen käyttäjänimi"
@@ -22,18 +26,24 @@
       "emailAddFailed": "Virhe lisättäessä sähköpostia",
       "passwordChangeFailed": "Salasanan vaihtaminen epäonnistui",
       "passwordChanged": "Salasana vaihdettu!",
-      "profileUpdated": "Profiili päivitetty"
+      "profileUpdated": "Profiili päivitetty",
+      "registrationProfileDeleted": "Ilmoittautumistiedot poistettu",
+      "registrationProfileUpdated": "Ilmoittautumistiedot päivitetty"
     },
     "label": {
-      "newEmail": "Uusi sähköposti",
+      "dietaryRestrictions": "Erityisruokavaliot",
+      "newEmail": "Uusi sähköpostil",
       "newPassphrase": "Uusi salasana",
-      "oldPassphrase": "Vanha salasana"
+      "oldPassphrase": "Vanha salasana",
+      "telegram": "Telegram"
     },
     "messages": {
+      "dietaryRestrictionsTooLong": "Erityisruokavaliot saavat olla enintään 1000 merkkiä",
       "email": "Kirjoita sähköpostiosoite",
       "name": "Kirjoita nimesi",
       "newPassword": "Vahvista tunnuslause",
       "oldPassword": "Kirjoita salasana",
+      "telegramTooLong": "Telegram saa olla enintään 64 merkkiä",
       "username": "Valitse käyttäjätunnus"
     }
   },
@@ -84,11 +94,17 @@
       "socialLoginNoPassword": "Rekisteröit tilisi sosiaalisen kirjautumisen kautta, joten sinulla ei ole tällä hetkellä salasanaa. Jos haluat tunnuslauseen, paina alla olevaa painiketta ja pyydä salasanan vaihtosähköposti osoitteeseen {{email}} (voit valita toisen sähköpostin asettamalla sen ensisijaiseksi"
     }
   },
+  "registrationProfile": {
+    "deleteConfirm": "Poistetaanko tallentamasi ilmoittautumistiedot?",
+    "description": "Näillä tiedoilla esitäytetään ilmoittautumislomakkeen Telegram- ja erityisruokavaliokysymykset. Tiedot näkyvät vain sinulle. Ne tallentuvat täällä tai kun valitset ilmoittautuessasi \"Muista nämä vastaukset\".",
+    "offDescription": "Ilmoittautumisvastausten esitäyttö on tällä hetkellä pois käytöstä. Voit silti poistaa tallentamasi ilmoittautumistiedot."
+  },
   "titles": {
     "accounts": "Linkitetyt tilit",
     "delete": "Poista käyttäjä",
     "emails": "Sähköpostiosoitteet",
     "index": "Muokkaa tiliä",
+    "registrationProfile": "Ilmoittautumistiedot",
     "reminders": "Omat muistutukset",
     "security": "Vaihda salasana"
   }

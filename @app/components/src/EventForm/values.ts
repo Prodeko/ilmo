@@ -160,6 +160,7 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
       "label",
       "isRequired",
       "data",
+      "prefill",
     ])
   )
   const languages = Object.keys(name || {})
@@ -243,7 +244,7 @@ export function toEventInput(
   const questions = formQuestions?.map((q, index) =>
     filterObjectByKeys(
       { ...q, position: index, isRequired: q.isRequired ?? false },
-      ["id", "position", "type", "label", "isRequired", "data"]
+      ["id", "position", "type", "label", "isRequired", "data", "prefill"]
     )
   )
 

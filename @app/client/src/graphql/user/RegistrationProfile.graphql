@@ -1,0 +1,34 @@
+fragment RegistrationProfile on RegistrationProfile {
+  userId
+  telegram
+  dietaryRestrictions
+}
+
+query RegistrationProfile {
+  currentUser {
+    id
+    registrationProfile {
+      ...RegistrationProfile
+    }
+  }
+}
+
+# A null value keeps the saved one and an empty value clears it
+mutation SetRegistrationProfile(
+  $telegram: String
+  $dietaryRestrictions: String
+) {
+  setRegistrationProfile(
+    input: { telegram: $telegram, dietaryRestrictions: $dietaryRestrictions }
+  ) {
+    registrationProfile {
+      ...RegistrationProfile
+    }
+  }
+}
+
+mutation DeleteRegistrationProfile {
+  deleteRegistrationProfile(input: {}) {
+    boolean
+  }
+}

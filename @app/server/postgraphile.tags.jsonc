@@ -147,6 +147,21 @@
         "tags": {
           "omit": "create,update,delete"
         }
+      },
+      // A registration profile is read through `User.registrationProfile` and
+      // written with the `setRegistrationProfile` mutation.
+      "app_public.registration_profiles": {
+        "tags": {
+          "omit": "create,update,delete,all"
+        },
+        "constraint": {
+          // user_id is the primary key, so a user has at most one profile
+          "registration_profiles_user_id_fkey": {
+            "tags": {
+              "omit": "many"
+            }
+          }
+        }
       }
     },
     "procedure": {
