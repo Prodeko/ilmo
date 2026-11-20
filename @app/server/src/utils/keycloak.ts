@@ -14,6 +14,10 @@ export { keycloakEnabled, sanitizeNext }
 export type RequestLogger = Pick<FastifyBaseLogger, "debug" | "warn" | "error">
 
 export const ILMO_ADMIN_ROLE = "ilmo-admin"
+// Lets an admin switch feature flags. There is no in-app way to grant it: it
+// comes from this realm role only (or a direct SQL update for accounts that
+// never log in through SSO).
+export const ILMO_DEVELOPER_ROLE = "ilmo-developer"
 
 // Local accounts kept for break-glass access; an SSO login must never link
 // onto (or flip is_admin on) these rows. Compared lowercase (username is citext),
@@ -42,6 +46,8 @@ export interface KeycloakProfile {
    * quietly demotes every admin on their next login.
    */
   readonly isAdmin: boolean | null
+  /** Same three-valued semantics as `isAdmin`, for ILMO_DEVELOPER_ROLE. */
+  readonly isDeveloper: boolean | null
 }
 
 export function mapKeycloakClaims(
@@ -64,10 +70,10 @@ export function mapKeycloakClaims(
     : null
   if (roles === null) {
     // "No roles claim" and "no roles" are indistinguishable in the payload,
-    // so the missing claim maps to isAdmin: null rather than false.
+    // so the missing claim maps to isAdmin/isDeveloper: null rather than false.
     logger?.warn(
       { sub },
-      "keycloak id token has no usable realm_access.roles claim; admin status is unknown — check the client's realm-roles mapper"
+      "keycloak id token has no usable realm_access.roles claim; admin and developer status are unknown — check the client's realm-roles mapper"
     )
   }
   if (claims.email_verified === undefined) {
@@ -92,5 +98,6 @@ export function mapKeycloakClaims(
         ? rawLocale
         : null,
     isAdmin: roles === null ? null : roles.includes(ILMO_ADMIN_ROLE),
+    isDeveloper: roles === null ? null : roles.includes(ILMO_DEVELOPER_ROLE),
   }
 }

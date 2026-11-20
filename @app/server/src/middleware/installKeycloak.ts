@@ -385,7 +385,7 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
       return loginErrorRedirect(reply, "email_not_verified")
     }
 
-    // Registering the identity, the break-glass veto, the is_admin stamp and
+    // Registering the identity, the break-glass veto, the role stamps and
     // the session row are one decision: none of them may survive without the
     // others, so they share a single connection and a single transaction.
     const establishSession = async (): Promise<
@@ -480,20 +480,20 @@ const InstallKeycloak: FastifyPluginAsync = async (app) => {
           return { error: "account_conflict" }
         }
 
-        // The registry is the source of truth for admin rights, so this both
-        // grants and revokes — but only when the token actually answered the
-        // roles question. isAdmin: null means the mapper is broken and the
-        // roles are unknown; stamping false here would demote every admin one
-        // login at a time.
-        if (profile.isAdmin === null) {
+        // The registry is the source of truth for admin and developer rights,
+        // so this both grants and revokes — but only when the token actually
+        // answered the roles question. null means the mapper is broken and
+        // the roles are unknown; stamping false here would demote every admin
+        // (and developer) one login at a time.
+        if (profile.isAdmin === null || profile.isDeveloper === null) {
           request.log.error(
             { sub: profile.sub, userId: user.id },
-            "keycloak id token carried no usable realm_access.roles claim; leaving is_admin untouched — check the client's realm-roles mapper"
+            "keycloak id token carried no usable realm_access.roles claim; leaving is_admin and is_developer untouched — check the client's realm-roles mapper"
           )
         } else {
           await client.query(
-            `update app_public.users set is_admin = $1 where id = $2`,
-            [profile.isAdmin, user.id]
+            `update app_public.users set is_admin = $1, is_developer = $2 where id = $3`,
+            [profile.isAdmin, profile.isDeveloper, user.id]
           )
         }
 

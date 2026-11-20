@@ -23,6 +23,31 @@ describe("mapKeycloakClaims", () => {
       usernameSuggestion: "matti.meikalainen",
       locale: "fi",
       isAdmin: true,
+      isDeveloper: false,
+    })
+  })
+
+  it("is a developer with the ilmo-developer role", () => {
+    const claims = {
+      ...baseClaims,
+      realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+    }
+    expect(mapKeycloakClaims(claims)).toMatchObject({
+      isAdmin: true,
+      isDeveloper: true,
+    })
+  })
+
+  it("maps the developer role independently of the admin role", () => {
+    // The database requires both for developer rights; the mapping reports
+    // each role as the token states it.
+    const claims = {
+      ...baseClaims,
+      realm_access: { roles: ["membership", "ilmo-developer"] },
+    }
+    expect(mapKeycloakClaims(claims)).toMatchObject({
+      isAdmin: false,
+      isDeveloper: true,
     })
   })
 
@@ -36,6 +61,7 @@ describe("mapKeycloakClaims", () => {
     // null is what lets the callback skip the re-stamp instead of demoting.
     const { realm_access: _dropped, ...claims } = baseClaims
     expect(mapKeycloakClaims(claims).isAdmin).toBeNull()
+    expect(mapKeycloakClaims(claims).isDeveloper).toBeNull()
   })
 
   it("maps admin status to unknown when roles is not an array", () => {
@@ -47,6 +73,9 @@ describe("mapKeycloakClaims", () => {
         ...baseClaims,
         realm_access: { roles: "ilmo-admin" },
       }).isAdmin
+    ).toBeNull()
+    expect(
+      mapKeycloakClaims({ ...baseClaims, realm_access: {} }).isDeveloper
     ).toBeNull()
   })
 

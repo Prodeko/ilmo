@@ -607,6 +607,50 @@ describe("GET /auth/keycloak/callback", () => {
     expect(user.is_admin).toBe(true)
   })
 
+  describe("ilmo-developer role", () => {
+    const readRoles = async () => {
+      const {
+        rows: [user],
+      } = await pool.query(
+        `select u.is_admin, u.is_developer from app_public.users u
+           join app_public.user_authentications ua on ua.user_id = u.id
+          where ua.identifier = 'kc-sub-1'`
+      )
+      return user
+    }
+
+    it("stamps is_developer true when the role is present", async () => {
+      const res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: true })
+    })
+
+    it("revokes is_developer at the next login once the role is gone", async () => {
+      let res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin"] },
+      })
+      expect(res.statusCode).toBe(302)
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: false })
+    })
+
+    it("leaves is_developer untouched when the id token has no realm_access claim", async () => {
+      let res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      res = await doCallback({ realm_access: undefined })
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe("/event/foo")
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: true })
+    })
+  })
+
   it("sends a cancelled sign-in home without an error", async () => {
     const login = await startLogin()
     mockOidc.authorizationCodeGrant.mockRejectedValue(

@@ -62,6 +62,28 @@ would land on them is refused and their `is_admin` is left alone.
 Organization membership is unrelated to Keycloak and stays in ilmo's own
 database.
 
+## Developer access
+
+The realm role `ilmo-developer` lets an admin switch runtime feature flags. It
+is meant for the few people who deploy and release ilmo, not for every admin.
+Create and assign it in the membership-registry UI exactly like `ilmo-admin`.
+The existing realm-roles mapper already sends it; no new mapper is needed.
+
+Ilmo stamps `users.is_developer` from the ID token on every SSO login, in the
+same transaction and with the same rules as `is_admin`: the role is granted and
+revoked at the member's next login, and a token without a `realm_access.roles`
+claim leaves the column untouched. Developer rights apply only together with
+admin rights, so a developer also needs `ilmo-admin`.
+
+Unlike admin, the developer permission has no in-app toggle: an admin could
+otherwise grant it to themselves. Local and break-glass accounts never pass
+through Keycloak, so they are developers only if an operator sets the column
+directly:
+
+```sql
+update app_public.users set is_developer = true where username = '...';
+```
+
 ## Account linking
 
 A first SSO login binds to an existing ilmo account in two ways. When the
