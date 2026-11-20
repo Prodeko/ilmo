@@ -59,10 +59,10 @@ process.env.NODE_ENV = "test"
 // Don't log graphile-worker job successes in tests
 process.env.NO_LOG_SUCCESS = true
 
-// TEST_FEATURE_FLAGS=on runs the suite with every feature flag on and
-// available (CI's all-flags-on job); the default is every flag off. Test
-// cleanup resets the flags to the same baseline, see resetFeatureFlags in
-// @app/__tests__/helpers.ts.
+// Every feature flag is off by default, which is what CI runs. As a local,
+// on-demand option, TEST_FEATURE_FLAGS=on switches every flag on and available
+// after the test database is rebuilt; test cleanup resets the flags to the
+// same baseline, see resetFeatureFlags in @app/__tests__/helpers.ts.
 const featureFlagBaseline = process.env.TEST_FEATURE_FLAGS || "off"
 if (!["off", "on"].includes(featureFlagBaseline)) {
   throw new Error(

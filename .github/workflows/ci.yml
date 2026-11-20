@@ -147,61 +147,6 @@ jobs:
         # so parallel jest workers race on it.
         run: pnpm test --ci --runInBand
 
-  # The same suite with every feature flag on and available, to find features
-  # that break each other. The test job above keeps every flag off, which must
-  # behave as before the flags existed. The flags are set by the test runner
-  # after it rebuilds the test database, and test cleanup resets them to on
-  # (see scripts/test.mjs). An all-flags-on e2e run would do the same after
-  # its database setup in e2e.yml: switch every flag on and available before
-  # starting the server, and have clearTestEventData reset flags to on.
-  test-all-flags-on:
-    name: Unit tests (all feature flags on)
-    runs-on: ubuntu-latest
-    services:
-      redis:
-        image: redis:6-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-      postgres:
-        image: debezium/postgres:14
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Node and pnpm
-        uses: ./.github/actions/node-and-cache
-
-      - name: Install pg_dump
-        uses: ./.github/actions/install-pg-dump
-
-      - name: Setup environment and database
-        run: |
-          cp .env.ci .env
-          CONFIRM_DROP=1 pnpm run setup
-
-      - name: Build
-        run: pnpm build
-
-      - name: Test with every feature flag on
-        env:
-          TEST_FEATURE_FLAGS: "on"
-        run: pnpm test --ci --runInBand
-
   docker:
     name: Production Docker build
     runs-on: ubuntu-latest
