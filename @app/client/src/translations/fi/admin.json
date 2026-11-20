@@ -35,6 +35,105 @@
       "showEvent": "Tapahtumasivulle"
     }
   },
+  "features": {
+    "adminsOnlyInfo": "Vain ylläpitäjät -tilassa voit kokeilla ominaisuutta ennen julkaisua. Kirjautuneet ylläpitäjät näkevät sen Esikatselu-merkinnällä. Muut eivät näe sitä, ja sähköpostit ja muistutukset toimivat kuin se olisi pois päältä.",
+    "cancel": "Peruuta",
+    "changeHistory": "Muutoshistoria",
+    "changedOutside": "Muutettu tämän sivun ulkopuolella",
+    "columns": {
+      "actions": "Toiminnot",
+      "feature": "Ominaisuus",
+      "lastChanged": "Viimeksi muutettu",
+      "state": "Tila"
+    },
+    "confirmOff": {
+      "genericKeeps": "Jo tallennetut tiedot säilyvät ennallaan, ja jo aloitettu viedään loppuun.",
+      "genericStops": "Kukaan ei voi aloittaa ominaisuuden {{name}} käyttöä.",
+      "intro": {
+        "admins_only": "Muut kuin kirjautuneet ylläpitäjät lakkaavat näkemästä sen, ja sähköpostit ja muistutukset toimivat kuin se olisi pois päältä. Jo aloitettu jatkuu normaalisti.",
+        "off": "Pois kytkeminen piilottaa tavat aloittaa käyttö. Jo aloitettu jatkuu normaalisti."
+      },
+      "keeps": "Toimii edelleen",
+      "ok": {
+        "admins_only": "Rajaa vain ylläpitäjille",
+        "off": "Kytke {{name}} pois"
+      },
+      "stops": "Loppuu heti",
+      "title": {
+        "admins_only": "Rajataanko {{name}} vain ylläpitäjille?",
+        "off": "Kytketäänkö {{name}} pois päältä?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "Muutos tulee voimaan heti. Voit kytkeä sen takaisin pois tältä sivulta.",
+      "generic": "Kaiken, mitä {{name}} lisää, jokaisella sivulla sekä sähköposteissa ja muistutuksissa.",
+      "neverPreviewed": "Kukaan ei ole vielä esikatsellut tätä. Kokeile ensin tilaa Vain ylläpitäjät: näet ominaisuuden oikeilla sivuilla, muut eivät näe sitä, eivätkä sähköpostit muutu.",
+      "ok": "Kytke päälle kaikille",
+      "preview": "Esikatsele ensin ylläpitäjänä",
+      "previewedSince": "Ylläpitäjät ovat esikatselleet tätä {{date}} alkaen. {{actor}} asetti tilaksi Vain ylläpitäjät.",
+      "previewing": "Ylläpitäjät esikatselevat tätä parhaillaan.",
+      "title": "Kytketäänkö {{name}} päälle kaikille?",
+      "willSee": "Kaikki alkavat nähdä:"
+    },
+    "counts": {
+      "admins_only": "{{count}} vain ylläpitäjille",
+      "off": "{{count}} pois päältä",
+      "on": "{{count}} päällä"
+    },
+    "defaultOff": "Oletus: Pois",
+    "deletedUser": "Poistettu käyttäjä",
+    "dismiss": "Sulje",
+    "empty": "Ominaisuuksia ei vielä ole. Ne ilmestyvät tänne, kun niitä lisätään sovellukseen, ja jokainen on aluksi pois päältä.",
+    "footer": "Uudet ominaisuudet tulevat sovelluksen päivitysten mukana ja ovat aluksi pois päältä.",
+    "history": "Historia",
+    "historyDrawer": {
+      "allFeatures": "Kaikki ominaisuudet",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Ominaisuus",
+      "footerAll": "Näytetään kaikki {{count}} muutosta. Muutoksia ei voi muokata eikä poistaa.",
+      "footerOne": "Ennen {{date}} {{name}} oli pois päältä, mikä on uusien ominaisuuksien oletus.",
+      "none": "Ei vielä muutoksia. Uudet ominaisuudet ovat aluksi pois päältä.",
+      "title": "Muutoshistoria",
+      "titleFor": "Muutoshistoria: {{name}}"
+    },
+    "historyLabel": "Ominaisuuden {{name}} muutoshistoria",
+    "intro": "Kytke sivuston ominaisuuksia päälle ja pois. Muutokset tulevat voimaan heti.",
+    "introDevelopers": "Vain kehittäjät näkevät tämän sivun. Kaikki ylläpitäjät näkevät ominaisuudet, joiden tila on Vain ylläpitäjät.",
+    "loadError": {
+      "description": "Mikään ei muuttunut. Jokainen ominaisuus pysyy käyttäjille nykyisessä tilassaan. Yritä hetken päästä uudelleen.",
+      "title": "Ominaisuuksia ei voitu ladata",
+      "tryAgain": "Yritä uudelleen"
+    },
+    "neverChanged": "Ei koskaan muutettu",
+    "retired": "Vakiintunut: tämä ominaisuus on pysyvä ja aina päällä.",
+    "retry": "Yritä uudelleen",
+    "saveFailed": {
+      "admins_only": "Ominaisuutta {{name}} ei voitu asettaa tilaan Vain ylläpitäjät. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen.",
+      "off": "Ominaisuutta {{name}} ei voitu kytkeä pois. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen.",
+      "on": "Ominaisuutta {{name}} ei voitu kytkeä päälle. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen."
+    },
+    "saved": {
+      "admins_only": "{{name}} näkyy nyt vain ylläpitäjille.",
+      "off": "{{name}} on nyt pois päältä.",
+      "on": "{{name}} on nyt päällä kaikille."
+    },
+    "saving": "Tallennetaan…",
+    "savingNote": "Tallennetaan. Muutos tulee voimaan, kun tallennus valmistuu.",
+    "sees": {
+      "admins_only": "Näkyy vain ylläpitäjille. Sähköpostit ja muistutukset toimivat kuin se olisi pois päältä.",
+      "off": "Piilossa kaikilta",
+      "on": "Näkyy kaikille"
+    },
+    "stateGroupLabel": "Ominaisuuden {{name}} tila",
+    "states": {
+      "admins_only": "Vain ylläpitäjät",
+      "off": "Pois",
+      "on": "Päällä"
+    },
+    "title": "Ominaisuudet",
+    "unavailable": "Ei määritetty: palvelimelta puuttuvat tämän ominaisuuden tarvitsemat asetukset. Kehittäjän täytyy lisätä ne, ennen kuin ominaisuuden voi kytkeä päälle.",
+    "you": "{{name}} (sinä)"
+  },
   "notifications": {
     "deleteFailed": "Poisto epäonnistui",
     "deleteSuccess": "Poistettu onnistuneesti",

@@ -1,0 +1,7 @@
+mutation SetFeatureFlag($input: SetFeatureFlagInput!) {
+  setFeatureFlag(input: $input) {
+    featureFlag {
+      ...AdminFeatures_FeatureFlag
+    }
+  }
+}

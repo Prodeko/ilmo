@@ -35,6 +35,105 @@
       "showEvent": "Show event"
     }
   },
+  "features": {
+    "adminsOnlyInfo": "Admins only lets you try a feature before release. Signed-in admins see it with a Preview tag. Everyone else does not, and emails and reminders treat it as off.",
+    "cancel": "Cancel",
+    "changeHistory": "Change history",
+    "changedOutside": "Changed outside this page",
+    "columns": {
+      "actions": "Actions",
+      "feature": "Feature",
+      "lastChanged": "Last changed",
+      "state": "State"
+    },
+    "confirmOff": {
+      "genericKeeps": "Data already saved stays as it is, and anything already started completes.",
+      "genericStops": "Nobody can start using {{name}}.",
+      "intro": {
+        "admins_only": "Everyone except signed-in admins stops seeing it, and emails and reminders treat it as off. Anything already started keeps working.",
+        "off": "Turning off hides the ways in. Anything already started keeps working."
+      },
+      "keeps": "Keeps working",
+      "ok": {
+        "admins_only": "Limit to admins only",
+        "off": "Turn off {{name}}"
+      },
+      "stops": "Stops now",
+      "title": {
+        "admins_only": "Limit {{name}} to admins?",
+        "off": "Turn off {{name}}?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "The change applies right away. You can turn it off again on this page.",
+      "generic": "Everything {{name}} adds, on every page and in emails and reminders.",
+      "neverPreviewed": "Nobody has previewed this yet. Try Admins only first: you see it on real pages, nobody else does, and no emails change.",
+      "ok": "Turn on for everyone",
+      "preview": "Preview for admins first",
+      "previewedSince": "Admins have previewed this since {{date}}. {{actor}} set it to Admins only.",
+      "previewing": "Admins are previewing this now.",
+      "title": "Turn on {{name}} for everyone?",
+      "willSee": "Everyone will start seeing:"
+    },
+    "counts": {
+      "admins_only": "{{count}} admins only",
+      "off": "{{count}} off",
+      "on": "{{count}} on"
+    },
+    "defaultOff": "Default: Off",
+    "deletedUser": "Deleted user",
+    "dismiss": "Dismiss",
+    "empty": "No features yet. Features appear here as they are added to the app, and each one starts as Off.",
+    "footer": "New features arrive with app updates and start as Off.",
+    "history": "History",
+    "historyDrawer": {
+      "allFeatures": "All features",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Feature",
+      "footerAll": "Showing all {{count}} changes. Changes cannot be edited or deleted.",
+      "footerOne": "Before {{date}} {{name}} was Off, the default for new features.",
+      "none": "No changes yet. New features start as Off.",
+      "title": "Change history",
+      "titleFor": "Change history: {{name}}"
+    },
+    "historyLabel": "Change history of {{name}}",
+    "intro": "Switch features on and off for this site. Changes apply right away.",
+    "introDevelopers": "Only developers see this page; all admins see features set to Admins only.",
+    "loadError": {
+      "description": "Nothing has changed. Every feature keeps its current state for users. Try again in a moment.",
+      "title": "Could not load features",
+      "tryAgain": "Try again"
+    },
+    "neverChanged": "Never changed",
+    "retired": "Retired: this feature is permanent and always on.",
+    "retry": "Retry",
+    "saveFailed": {
+      "admins_only": "Could not set {{name}} to Admins only. It is still {{state}}. Check your connection and try again.",
+      "off": "Could not turn off {{name}}. It is still {{state}}. Check your connection and try again.",
+      "on": "Could not turn on {{name}}. It is still {{state}}. Check your connection and try again."
+    },
+    "saved": {
+      "admins_only": "{{name}} is now visible to admins only.",
+      "off": "{{name}} is now off.",
+      "on": "{{name}} is now on for everyone."
+    },
+    "saving": "Saving…",
+    "savingNote": "Saving. The change applies when this finishes.",
+    "sees": {
+      "admins_only": "Visible to admins only. Emails and reminders treat it as off.",
+      "off": "Hidden from everyone",
+      "on": "Visible to everyone"
+    },
+    "stateGroupLabel": "State of {{name}}",
+    "states": {
+      "admins_only": "Admins only",
+      "off": "Off",
+      "on": "On"
+    },
+    "title": "Features",
+    "unavailable": "Not configured: the server lacks the settings this feature needs. A developer needs to add them before this can be switched on.",
+    "you": "{{name}} (you)"
+  },
   "notifications": {
     "deleteFailed": "Failed to delete",
     "deleteSuccess": "Deleted successfully",

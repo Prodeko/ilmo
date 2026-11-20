@@ -76,8 +76,27 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
+          keys: {
+            // Feature flags are identified by their key, not an id.
+            FeatureFlag: (data) => (data.key as string | undefined) ?? null,
+          },
           updates: {
             Mutation: {
+              setFeatureFlag(_result, _args, cache, _info) {
+                // Refetch what depends on flag states: the layout's enabled
+                // and preview lists and the change history.
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) =>
+                    [
+                      "enabledFeaturesList",
+                      "adminPreviewFeaturesList",
+                      "featureFlagEventsList",
+                    ].includes(field.fieldName)
+                  )
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
               logout(result, _args, cache, _info) {
                 // Invalidate currentUser on logout. This refetches queries that
                 // depend on the currentUser field.

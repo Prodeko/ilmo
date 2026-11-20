@@ -35,6 +35,105 @@
       "showEvent": "Visa händelse"
     }
   },
+  "features": {
+    "adminsOnlyInfo": "Med Bara administratörer kan du prova en funktion innan den publiceras. Inloggade administratörer ser den med en förhandsvisningsetikett. Andra ser den inte, och e-post och påminnelser behandlar den som avslagen.",
+    "cancel": "Avbryt",
+    "changeHistory": "Ändringshistorik",
+    "changedOutside": "Ändrad utanför den här sidan",
+    "columns": {
+      "actions": "Åtgärder",
+      "feature": "Funktion",
+      "lastChanged": "Senast ändrad",
+      "state": "Läge"
+    },
+    "confirmOff": {
+      "genericKeeps": "Data som redan har sparats förblir som den är, och det som redan har påbörjats slutförs.",
+      "genericStops": "Ingen kan börja använda {{name}}.",
+      "intro": {
+        "admins_only": "Alla utom inloggade administratörer slutar se den, och e-post och påminnelser behandlar den som avslagen. Det som redan har påbörjats fortsätter att fungera.",
+        "off": "Att slå av döljer vägarna in. Det som redan har påbörjats fortsätter att fungera."
+      },
+      "keeps": "Fortsätter att fungera",
+      "ok": {
+        "admins_only": "Begränsa till administratörer",
+        "off": "Slå av {{name}}"
+      },
+      "stops": "Upphör nu",
+      "title": {
+        "admins_only": "Begränsa {{name}} till administratörer?",
+        "off": "Slå av {{name}}?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "Ändringen gäller direkt. Du kan slå av den igen på den här sidan.",
+      "generic": "Allt som {{name}} lägger till, på varje sida och i e-post och påminnelser.",
+      "neverPreviewed": "Ingen har förhandsvisat detta ännu. Prova Bara administratörer först: du ser funktionen på riktiga sidor, ingen annan gör det och ingen e-post ändras.",
+      "ok": "Slå på för alla",
+      "preview": "Förhandsvisa för administratörer först",
+      "previewedSince": "Administratörer har förhandsvisat detta sedan {{date}}. {{actor}} ställde in Bara administratörer.",
+      "previewing": "Administratörer förhandsvisar detta just nu.",
+      "title": "Slå på {{name}} för alla?",
+      "willSee": "Alla börjar se:"
+    },
+    "counts": {
+      "admins_only": "{{count}} bara administratörer",
+      "off": "{{count}} av",
+      "on": "{{count}} på"
+    },
+    "defaultOff": "Standard: Av",
+    "deletedUser": "Raderad användare",
+    "dismiss": "Stäng",
+    "empty": "Inga funktioner ännu. Funktioner visas här när de läggs till i appen, och var och en är först avslagen.",
+    "footer": "Nya funktioner kommer med uppdateringar av appen och är först avslagna.",
+    "history": "Historik",
+    "historyDrawer": {
+      "allFeatures": "Alla funktioner",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Funktion",
+      "footerAll": "Visar alla {{count}} ändringar. Ändringar kan inte redigeras eller raderas.",
+      "footerOne": "Före {{date}} var {{name}} av, standardläget för nya funktioner.",
+      "none": "Inga ändringar ännu. Nya funktioner är först avslagna.",
+      "title": "Ändringshistorik",
+      "titleFor": "Ändringshistorik: {{name}}"
+    },
+    "historyLabel": "Ändringshistorik för {{name}}",
+    "intro": "Slå på och av funktioner på den här webbplatsen. Ändringarna gäller direkt.",
+    "introDevelopers": "Bara utvecklare ser den här sidan. Alla administratörer ser funktioner som är inställda på Bara administratörer.",
+    "loadError": {
+      "description": "Ingenting har ändrats. Varje funktion behåller sitt nuvarande läge för användarna. Försök igen om en stund.",
+      "title": "Det gick inte att läsa in funktionerna",
+      "tryAgain": "Försök igen"
+    },
+    "neverChanged": "Aldrig ändrad",
+    "retired": "Pensionerad: funktionen är permanent och alltid på.",
+    "retry": "Försök igen",
+    "saveFailed": {
+      "admins_only": "Det gick inte att ställa in {{name}} på Bara administratörer. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen.",
+      "off": "Det gick inte att slå av {{name}}. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen.",
+      "on": "Det gick inte att slå på {{name}}. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen."
+    },
+    "saved": {
+      "admins_only": "{{name}} syns nu bara för administratörer.",
+      "off": "{{name}} är nu av.",
+      "on": "{{name}} är nu på för alla."
+    },
+    "saving": "Sparar…",
+    "savingNote": "Sparar. Ändringen gäller när det är klart.",
+    "sees": {
+      "admins_only": "Syns bara för administratörer. E-post och påminnelser behandlar den som avslagen.",
+      "off": "Dold för alla",
+      "on": "Syns för alla"
+    },
+    "stateGroupLabel": "Läge för {{name}}",
+    "states": {
+      "admins_only": "Bara administratörer",
+      "off": "Av",
+      "on": "På"
+    },
+    "title": "Funktioner",
+    "unavailable": "Inte konfigurerad: servern saknar inställningar som funktionen behöver. En utvecklare måste lägga till dem innan den kan slås på.",
+    "you": "{{name}} (du)"
+  },
   "notifications": {
     "deleteFailed": "Det gick inte att ta bort",
     "deleteSuccess": "Raderades framgångsrikt",

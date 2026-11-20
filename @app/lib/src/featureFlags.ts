@@ -17,6 +17,12 @@
  *     requiresEnv: ["MY_SERVICE_SECRET"],
  *   },
  *
+ * The Features page (/admin/features) names the flag from the optional
+ * translations under `features.flags.<key>` in the client's admin.json:
+ * `name`, `turnOn` (what everyone starts seeing), `stops` and `keeps` (what
+ * turning it off ends and what keeps working) and `notConfigured`. Without
+ * them it shows the key and generic texts.
+ *
  * Removing a flag starts by deleting its entry: `FeatureKey` then no longer
  * accepts the key, so the compiler lists every gate that still names it.
  */
