@@ -4,6 +4,9 @@ fragment CreateEventRegistrationPage_Query on Query {
     id
     firstName
     lastName
+    registrationProfile {
+      ...RegistrationProfile
+    }
   }
   eventBySlug(slug: $slug) {
     ...EventPage_Event

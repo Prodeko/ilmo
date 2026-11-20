@@ -64,6 +64,7 @@ fragment EventPage_Question on EventQuestion {
   label
   isRequired
   data
+  prefill
 }
 
 fragment EventPage_Event on Event {

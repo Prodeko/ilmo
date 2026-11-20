@@ -1,17 +1,15 @@
-fragment CreateEventRegistrationPage_Query on Query {
+fragment UpdateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
-  currentUser {
-    id
-    firstName
-    lastName
-    __typename
-  }
-  eventBySlug(slug: $slug) {
-    ...EventPage_Event
-    __typename
-  }
-  quota(id: $quotaId) {
-    ...EventPage_Quota
+  registrationByUpdateToken(updateToken: $updateToken) {
+    ...UpdateEventRegistrationPage_Registration
+    quota {
+      ...EventPage_Quota
+      __typename
+    }
+    event {
+      ...EventPage_Event
+      __typename
+    }
     __typename
   }
   __typename
@@ -79,6 +77,20 @@ fragment SharedLayout_Organization on Organization {
   id
   name
   slug
+  __typename
+}
+fragment UpdateEventRegistrationPage_Registration on Registration {
+  id
+  firstName
+  lastName
+  answers
+  __typename
+}
+fragment EventPage_Quota on Quota {
+  id
+  position
+  title
+  size
   __typename
 }
 fragment EventPage_Event on Event {
@@ -156,13 +168,6 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-fragment EventPage_Quota on Quota {
-  id
-  position
-  title
-  size
-  __typename
-}
 fragment EventPage_Registration on Registration {
   id
   fullName
@@ -182,8 +187,9 @@ fragment EventPage_Question on EventQuestion {
   label
   isRequired
   data
+  prefill
   __typename
 }
-query CreateEventRegistrationPage($slug: String!, $quotaId: UUID!) {
-  ...CreateEventRegistrationPage_Query
+query UpdateEventRegistrationPage($updateToken: String!) {
+  ...UpdateEventRegistrationPage_Query
 }

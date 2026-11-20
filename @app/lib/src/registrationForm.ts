@@ -12,19 +12,50 @@ export interface RegistrationPrefillUser {
   firstName?: string | null
   /** Last name from Keycloak; null for accounts that never used it. */
   lastName?: string | null
+  /** The answer defaults the user has saved; only readable by the user. */
+  registrationProfile?: RegistrationProfileValues | null
+}
+
+/** The fields of `app_public.registration_profiles` that prefill answers. */
+export interface RegistrationProfileValues {
+  telegram?: string | null
+  dietaryRestrictions?: string | null
+}
+
+/**
+ * The values of `app_public.question_prefill`: which registration profile
+ * field an event question asks for.
+ */
+export type QuestionPrefillField = "TELEGRAM" | "DIETARY_RESTRICTIONS"
+
+/** The registration profile field each prefill question reads and writes. */
+export const QUESTION_PREFILL_PROFILE_FIELDS: Readonly<
+  Record<QuestionPrefillField, keyof RegistrationProfileValues>
+> = {
+  TELEGRAM: "telegram",
+  DIETARY_RESTRICTIONS: "dietaryRestrictions",
 }
 
 /** A question of the event the registration form is shown for. */
 export interface RegistrationPrefillQuestion {
   id: string
+  /** Set on TEXT questions whose answer comes from the registration profile. */
+  prefill?: string | null
 }
+
+const profileFieldOf = (
+  question: RegistrationPrefillQuestion
+): keyof RegistrationProfileValues | undefined =>
+  question.prefill
+    ? QUESTION_PREFILL_PROFILE_FIELDS[question.prefill as QuestionPrefillField]
+    : undefined
 
 export interface RegistrationPrefillInput {
   /** The signed-in user, or null/undefined when signed out or loading. */
   currentUser?: RegistrationPrefillUser | null
   /**
-   * The questions of the event. Not used for the initial values yet; taken
-   * here so that answer defaults are derived in this function too.
+   * The questions of the event. Questions marked for prefill get their
+   * answer from the user's registration profile.
    */
   questions?: readonly RegistrationPrefillQuestion[] | null
   /**
@@ -38,6 +69,11 @@ export interface RegistrationInitialValues {
   firstName: string | undefined
   lastName: string | undefined
   email: string | null | undefined
+  /**
+   * Answers by question id. Present only when at least one answer is
+   * prefilled.
+   */
+  answers?: Record<string, string>
 }
 
 type NamePair = [string | undefined, string | undefined]
@@ -70,28 +106,52 @@ const keycloakOrUnambiguousName = (user: RegistrationPrefillUser): NamePair => {
 }
 
 /**
+ * Answers to the questions marked for prefill, from the registration profile.
+ * Questions without a saved value are left out.
+ */
+const prefilledAnswers = (
+  questions: readonly RegistrationPrefillQuestion[] | null | undefined,
+  profile: RegistrationProfileValues | null | undefined
+): Record<string, string> => {
+  const answers: Record<string, string> = {}
+  for (const question of questions ?? []) {
+    const field = profileFieldOf(question)
+    const value = field ? profile?.[field] : undefined
+    if (value) {
+      answers[question.id] = value
+    }
+  }
+  return answers
+}
+
+/**
  * The initial values of the registration form for a new registration.
  *
  * Without the `keycloak_names` feature the first and last name are inferred
  * from the user's display name by splitting it on single spaces. With it,
  * the Keycloak first and last name are preferred, and the display name is
  * used only when it splits unambiguously. The email is the primary email.
+ * Answers to questions marked for prefill come from the user's registration
+ * profile.
  *
  * Pure: the register page memoises the result, so the form is only reset
  * when the inputs change.
  */
 export const buildRegistrationInitialValues = ({
   currentUser,
+  questions,
   features,
 }: RegistrationPrefillInput): RegistrationInitialValues => {
   const user = currentUser || {}
   const [firstName, lastName] = features?.keycloak_names
     ? keycloakOrUnambiguousName(user)
     : splitDisplayName(user.name)
+  const answers = prefilledAnswers(questions, user.registrationProfile)
 
   return {
     firstName,
     lastName,
     email: user.primaryEmail,
+    ...(Object.keys(answers).length > 0 ? { answers } : {}),
   }
 }

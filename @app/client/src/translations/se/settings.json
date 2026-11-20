@@ -6,12 +6,14 @@
     "resetPassphrase": "Återställ lösenfras",
     "returnHome": "Återgå till hemsidan",
     "updateProfile": "Uppdatera profil",
+    "updateRegistrationProfile": "Uppdatera anmälningsuppgifter",
     "wantToDeleteAccount": "Jag vill ta bort mitt konto"
   },
   "errors": {
     "accountDeleteFailedOrgOwner1": "Du kan inte ta bort ditt konto medan du är ägare till en organisation.",
     "accountDeleteFailedOrgOwner2": "För varje organisation du är ägare till, tilldela antingen ditt ägande till en annan användare eller ta bort organisationen för att fortsätta.",
     "deleteFailed": "Begäran om borttagning misslyckades",
+    "errorUpdatingRegistrationProfile": "Det gick inte att uppdatera anmälningsuppgifterna",
     "errorUpdatingUsername": "Fel vid uppdatering av användarnamn",
     "incorrectOldPassword": "Felaktig gammal lösenordsfras",
     "usernameTaken": "Detta användarnamn används redan, välj ett annat namn"
@@ -22,18 +24,23 @@
       "emailAddFailed": "Fel vid tillägg av e-post",
       "passwordChangeFailed": "Det gick inte att ändra lösenordsfras",
       "passwordChanged": "Lösenordet ändrat!",
-      "profileUpdated": "Profil uppdaterad"
+      "profileUpdated": "Profil uppdaterad",
+      "registrationProfileUpdated": "Anmälningsuppgifterna har uppdaterats"
     },
     "label": {
+      "dietaryRestrictions": "Specialdieter",
       "newEmail": "Ny e-post",
       "newPassphrase": "Ny lösenordsfras",
-      "oldPassphrase": "Gammal lösenfras"
+      "oldPassphrase": "Gammal lösenfras",
+      "telegram": "Telegram"
     },
     "messages": {
+      "dietaryRestrictionsTooLong": "Specialdieter får vara högst 1000 tecken",
       "email": "Ange en e-postadress",
       "name": "Ange ditt namn",
       "newPassword": "Bekräfta din lösenfras",
       "oldPassword": "Ange din lösenfras",
+      "telegramTooLong": "Telegram får vara högst 64 tecken",
       "username": "Välj ett användarnamn"
     }
   },
@@ -84,11 +91,15 @@
       "socialLoginNoPassword": "Du registrerade ditt konto genom social inloggning, så du har för närvarande ingen lösenfras. Om du vill ha en lösenfras, tryck på knappen nedan för att begära ett e-postmeddelande för återställning av lösenfras till '{{email}}' (du kan välj en annan e-postadress genom att göra den till primär i)"
     }
   },
+  "registrationProfile": {
+    "description": "Dessa uppgifter förifyller frågorna om Telegram och specialdieter i anmälningsformulär. Endast du kan se dem, och de uppdateras när du anmäler dig till ett evenemang."
+  },
   "titles": {
     "accounts": "Länkade konton",
     "delete": "Radera konto",
     "emails": "E-postadresser",
     "index": "Redigera profil",
+    "registrationProfile": "Anmälningsuppgifter",
     "security": "Ändra lösenfras"
   }
 }

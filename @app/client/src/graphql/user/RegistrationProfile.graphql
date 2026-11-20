@@ -1,0 +1,27 @@
+fragment RegistrationProfile on RegistrationProfile {
+  userId
+  telegram
+  dietaryRestrictions
+}
+
+query RegistrationProfile {
+  currentUser {
+    id
+    registrationProfile {
+      ...RegistrationProfile
+    }
+  }
+}
+
+mutation SetRegistrationProfile(
+  $telegram: String!
+  $dietaryRestrictions: String!
+) {
+  setRegistrationProfile(
+    input: { telegram: $telegram, dietaryRestrictions: $dietaryRestrictions }
+  ) {
+    registrationProfile {
+      ...RegistrationProfile
+    }
+  }
+}

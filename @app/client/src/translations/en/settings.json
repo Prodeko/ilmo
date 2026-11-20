@@ -6,12 +6,14 @@
     "resetPassphrase": "Reset passphrase",
     "returnHome": "Return to homepage",
     "updateProfile": "Update profile",
+    "updateRegistrationProfile": "Update registration details",
     "wantToDeleteAccount": "I want to delete my account"
   },
   "errors": {
     "accountDeleteFailedOrgOwner1": "You cannot delete your account whilst you are the owner of an organization.",
     "accountDeleteFailedOrgOwner2": "For each organization you are the owner of, please either assign your ownership to another user or delete the organization to continue.",
     "deleteFailed": "Requesting deletion failed",
+    "errorUpdatingRegistrationProfile": "Updating registration details failed",
     "errorUpdatingUsername": "Error updating username",
     "incorrectOldPassword": "Incorrect old passphrase",
     "usernameTaken": "This username is already in use, please pick a different name"
@@ -22,18 +24,23 @@
       "emailAddFailed": "Error adding email",
       "passwordChangeFailed": "Changing passphrase failed",
       "passwordChanged": "Password changed!",
-      "profileUpdated": "Profile updated"
+      "profileUpdated": "Profile updated",
+      "registrationProfileUpdated": "Registration details updated"
     },
     "label": {
+      "dietaryRestrictions": "Dietary restrictions",
       "newEmail": "New email",
       "newPassphrase": "New passphrase",
-      "oldPassphrase": "Old passphrase"
+      "oldPassphrase": "Old passphrase",
+      "telegram": "Telegram"
     },
     "messages": {
+      "dietaryRestrictionsTooLong": "Dietary restrictions can be at most 1000 characters",
       "email": "Please enter an email address",
       "name": "Please enter your name",
       "newPassword": "Please confirm your passphrase",
       "oldPassword": "Please input your passphrase",
+      "telegramTooLong": "Telegram can be at most 64 characters",
       "username": "Please choose a username"
     }
   },
@@ -84,11 +91,15 @@
       "socialLoginNoPassword": "You registered your account through social login, so you do not currently have a passphrase. If you would like a passphrase, press the button below to request a passphrase reset email to '{{email}}' (you can choose a different email by making it primary in)"
     }
   },
+  "registrationProfile": {
+    "description": "These details prefill the Telegram and dietary restriction questions in registration forms. Only you can see them, and they are updated when you register to an event."
+  },
   "titles": {
     "accounts": "Linked accounts",
     "delete": "Delete account",
     "emails": "Email addresses",
     "index": "Edit profile",
+    "registrationProfile": "Registration details",
     "security": "Change passphrase"
   }
 }

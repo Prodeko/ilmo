@@ -1,13 +1,12 @@
-fragment UpdateEventRegistrationPage_Query on Query {
+fragment UpdateEventPage_Query on Query {
   ...SharedLayout_Query
-  registrationByUpdateToken(updateToken: $updateToken) {
-    ...UpdateEventRegistrationPage_Registration
-    quota {
-      ...EventPage_Quota
-      __typename
-    }
-    event {
-      ...EventPage_Event
+  event(id: $id) {
+    ...UpdateEventPage_Event
+    __typename
+  }
+  eventCategories(orderBy: NAME_ASC) {
+    nodes {
+      ...EventPage_EventCategory
       __typename
     }
     __typename
@@ -79,21 +78,7 @@ fragment SharedLayout_Organization on Organization {
   slug
   __typename
 }
-fragment UpdateEventRegistrationPage_Registration on Registration {
-  id
-  firstName
-  lastName
-  answers
-  __typename
-}
-fragment EventPage_Quota on Quota {
-  id
-  position
-  title
-  size
-  __typename
-}
-fragment EventPage_Event on Event {
+fragment UpdateEventPage_Event on Event {
   ...EventFields
   category {
     ...EventPage_EventCategory
@@ -106,13 +91,10 @@ fragment EventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
-      __typename
-    }
-    __typename
-  }
-  registrations(orderBy: POSITION_ASC) {
-    nodes {
-      ...EventPage_Registration
+      registrations {
+        totalCount
+        __typename
+      }
       __typename
     }
     __typename
@@ -168,16 +150,11 @@ fragment EventPage_Organization on Organization {
   color
   __typename
 }
-fragment EventPage_Registration on Registration {
+fragment EventPage_Quota on Quota {
   id
-  fullName
-  status
   position
-  createdAt
-  quota {
-    ...EventPage_Quota
-    __typename
-  }
+  title
+  size
   __typename
 }
 fragment EventPage_Question on EventQuestion {
@@ -187,8 +164,9 @@ fragment EventPage_Question on EventQuestion {
   label
   isRequired
   data
+  prefill
   __typename
 }
-query UpdateEventRegistrationPage($updateToken: String!) {
-  ...UpdateEventRegistrationPage_Query
+query UpdateEventPage($id: UUID!) {
+  ...UpdateEventPage_Query
 }
