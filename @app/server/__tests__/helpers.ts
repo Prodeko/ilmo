@@ -29,26 +29,48 @@ import {
   createRegistrationSecrets,
   createSession,
   createUsers,
+  deleteTestData as deleteSharedTestData,
   poolFromUrl,
   refreshMaterializedView,
+  setFeatureFlag as setSharedFeatureFlag,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
+import {
+  configureFeatureFlags,
+  invalidateFeatureFlags,
+} from "../src/utils/featureFlags"
 
 export * from "../../__tests__/helpers"
 
 const MockReq = require("mock-req")
 
+/*
+ * The server caches flag states for a few seconds. These two shadow the
+ * shared helpers of the same name and drop that cache, so a test sees its own
+ * flag changes immediately.
+ */
+export const setFeatureFlag: typeof setSharedFeatureFlag = async (...args) => {
+  await setSharedFeatureFlag(...args)
+  invalidateFeatureFlags()
+}
+
+export const deleteTestData: typeof deleteSharedTestData = async () => {
+  await deleteSharedTestData()
+  invalidateFeatureFlags()
+}
+
 interface CreateUserAndLogInArgs {
   isAdmin?: boolean
+  isDeveloper?: boolean
 }
 
 export async function createUserAndLogIn(args?: CreateUserAndLogInArgs) {
-  const { isAdmin = false } = args || {}
+  const { isAdmin = false, isDeveloper = false } = args || {}
   const pool = poolFromUrl(TEST_DATABASE_URL!)
   const client = await pool.connect()
   try {
-    const [user] = await createUsers(client, 1, true, isAdmin)
+    const [user] = await createUsers(client, 1, true, isAdmin, isDeveloper)
     const session = await createSession(client, user.id)
 
     return { user, session }
@@ -63,6 +85,7 @@ interface CreateEventDataAndLogin {
     amount?: number
     isVerified?: boolean
     isAdmin?: boolean
+    isDeveloper?: boolean
   }
   organizationOptions?: {
     create: boolean
@@ -131,7 +154,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         client,
         userOptions.amount,
         userOptions.isVerified,
-        userOptions.isAdmin
+        userOptions.isAdmin,
+        userOptions.isDeveloper
       )
     }
     const primaryUser = users[0]
@@ -366,6 +390,8 @@ export const setup = async () => {
     "app_public",
     options
   )
+  // As installFeatureFlags does at boot
+  configureFeatureFlags(rootPgPool)
 
   // Store the context
   ctx = {

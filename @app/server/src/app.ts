@@ -95,6 +95,7 @@ export async function makeApp({
   await app.register(middleware.installHealth)
 
   await app.register(middleware.installDatabasePools)
+  await app.register(middleware.installFeatureFlags)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
   await app.register(middleware.installHelmet)

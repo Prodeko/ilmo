@@ -1,5 +1,6 @@
 import EmailsPlugin from "./EmailsPlugin"
 import EventRegistrationPlugin from "./EventRegistrationPlugin"
+import FeatureFlagsPlugin from "./FeatureFlagsPlugin"
 import OrdersPlugin from "./OrdersPlugin"
 import PassportLoginPlugin from "./PassportLoginPlugin"
 import PasswordStrengthPlugin from "./PasswordStrengthPlugin"
@@ -15,6 +16,7 @@ import ValidateRichTextFields from "./ValidateRichTextFields"
 export {
   EmailsPlugin,
   EventRegistrationPlugin,
+  FeatureFlagsPlugin,
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,

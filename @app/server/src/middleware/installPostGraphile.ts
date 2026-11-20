@@ -26,6 +26,7 @@ import { convertHandler } from "../app"
 import {
   EmailsPlugin,
   EventRegistrationPlugin,
+  FeatureFlagsPlugin,
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
@@ -241,6 +242,9 @@ export function getPostGraphileOptions({
 
       // Wrap createRegistration mutation
       EventRegistrationPlugin,
+
+      // Clear the server's feature flag cache when a flag is switched
+      FeatureFlagsPlugin,
 
       // Render email templates
       EmailsPlugin,
