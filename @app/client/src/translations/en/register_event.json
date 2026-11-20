@@ -30,6 +30,7 @@
   },
   "title": "Register to event:",
   "updateRegistration": {
+    "closed": "Registration for this event has closed, so your registration can no longer be changed. Please contact the event organizers.",
     "title": "Update event registration information"
   },
   "you": "You!"

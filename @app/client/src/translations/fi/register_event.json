@@ -30,6 +30,7 @@
   },
   "title": "Ilmoittaudu tapahtumaan:",
   "updateRegistration": {
+    "closed": "Ilmoittautuminen tähän tapahtumaan on päättynyt, joten ilmoittautumistasi ei voi enää muuttaa. Ota yhteyttä tapahtuman järjestäjiin.",
     "title": "Päivitä rekisteröitymistiedot"
   },
   "you": "Sinä!"

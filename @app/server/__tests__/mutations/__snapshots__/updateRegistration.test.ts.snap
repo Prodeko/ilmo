@@ -1,5 +1,31 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`UpdateRegistration admin can update registration after event signup has closed 1`] = `
+{
+  "data": {
+    "updateRegistration": {
+      "registration": {
+        "answers": "[random-3]",
+        "createdAt": "[timestamp-1]",
+        "firstName": "Päivi",
+        "fullName": "Päivi Tetty",
+        "id": "[id-1]",
+        "lastName": "Tetty",
+        "position": 1,
+        "quota": {
+          "id": "[id-2]",
+          "position": 0,
+          "size": "[random-2]",
+          "title": "[random-1]",
+        },
+        "status": "IN_QUOTA",
+        "updatedAt": "[timestamp-2]",
+      },
+    },
+  },
+}
+`;
+
 exports[`UpdateRegistration can update a registration with a valid updateToken 1`] = `
 {
   "data": {
@@ -37,7 +63,7 @@ exports[`UpdateRegistration can't update registration if registration token is n
         "exception": {
           "code": "NTFND",
           "severity": "ERROR",
-          "where": "PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 12 at RAISE",
+          "where": "PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 13 at RAISE",
         },
       },
       "locations": [
@@ -68,7 +94,7 @@ exports[`UpdateRegistration can't update registration if required answers are no
           "severity": "ERROR",
           "where": "PL/pgSQL function app_public.validate_registration_answers(uuid,uuid[],jsonb) line 50 at RAISE
 SQL statement "SELECT app_public.validate_registration_answers(v_registration_secret.event_id, v_required_question_ids, answers)"
-PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 18 at PERFORM",
+PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 26 at PERFORM",
         },
       },
       "locations": [
@@ -78,6 +104,35 @@ PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 18 a
         },
       ],
       "message": "Required question not answered.",
+      "path": [
+        "updateRegistration",
+      ],
+    },
+  ],
+}
+`;
+
+exports[`UpdateRegistration can't update registration once event signup has closed 1`] = `
+{
+  "data": {
+    "updateRegistration": null,
+  },
+  "errors": [
+    {
+      "extensions": {
+        "exception": {
+          "code": "DNIED",
+          "severity": "ERROR",
+          "where": "PL/pgSQL function app_public.update_registration(text,text,text,jsonb) line 20 at RAISE",
+        },
+      },
+      "locations": [
+        {
+          "column": 3,
+          "line": 2,
+        },
+      ],
+      "message": "Updating a registration after event signup has closed is not allowed. Please contact the event organizers.",
       "path": [
         "updateRegistration",
       ],
