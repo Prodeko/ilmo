@@ -9,14 +9,17 @@ import { Button, Card, Popover } from "antd"
 import { useIsMobile, useTranslation } from "./hooks"
 import { Link, ProgressBar, SignupState } from "."
 
+import type { ReactNode } from "react"
+
 interface EventQuotasCardProps {
   event: EventPage_EventFragment
   registrations: EventPage_RegistrationFragment[]
   signupState: SignupState
+  footer?: ReactNode
 }
 
 export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
-  ({ event, registrations, signupState }) => {
+  ({ event, registrations, signupState, footer }) => {
     const { t, lang } = useTranslation("events")
     const isMobile = useIsMobile()
     const { slug, quotas } = event
@@ -76,6 +79,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
             </div>
           )
         })}
+        {footer && <div style={{ marginTop: 16 }}>{footer}</div>}
       </Card>
     )
   },

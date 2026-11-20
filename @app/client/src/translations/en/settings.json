@@ -89,6 +89,7 @@
     "delete": "Delete account",
     "emails": "Email addresses",
     "index": "Edit profile",
+    "reminders": "My reminders",
     "security": "Change passphrase"
   }
 }

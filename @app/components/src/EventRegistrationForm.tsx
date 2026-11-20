@@ -37,8 +37,8 @@ interface EventRegistrationFormProps {
   isAdmin?: boolean
   questions: EventPage_QuestionFragment[]
   formRedirect?: { pathname: string; query: { [key: string]: string } } | string
-  // SubmitAction is used when this form is displayed in the admin panel
-  submitAction?: () => void
+  // Runs after submission/deletion; new signups include their registration ID.
+  submitAction?: (registrationId?: string) => void
   // eventId and quotaId are used when type is "create"
   eventId?: string
   quotaId?: string
@@ -168,11 +168,15 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                   ...values,
                   updateToken,
                 }
-          const { error } = await formMutation({ input })
+          const { data, error } = await formMutation({ input })
           if (error) throw error
 
           if (submitAction) {
-            submitAction()
+            submitAction(
+              type === "create"
+                ? data?.createRegistration?.registration?.id
+                : undefined
+            )
           }
           if (formRedirect) {
             router.push(formRedirect)

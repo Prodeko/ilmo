@@ -1,0 +1,36 @@
+query EventRegistrationReminder($eventId: UUID!) {
+  currentUser {
+    id
+    userEmails {
+      nodes {
+        isPrimary
+        isVerified
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  telegramBotUsername
+  currentReminderPreferences {
+    userId
+    minutesBefore
+    deliveryMethod
+    __typename
+  }
+  currentTelegramAccount {
+    userId
+    username
+    __typename
+  }
+  eventRegistrationReminders(condition: {eventId: $eventId}, first: 1) {
+    nodes {
+      id
+      deliveryMethod
+      minutesBefore
+      sentAt
+      __typename
+    }
+    __typename
+  }
+}

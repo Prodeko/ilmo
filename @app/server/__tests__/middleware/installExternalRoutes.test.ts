@@ -1,7 +1,11 @@
 import { fastify, FastifyInstance } from "fastify"
 import fp from "fastify-plugin"
 
-import { csrfExemptions, ExternalRouteModule } from "../../src/externalRoutes"
+import {
+  csrfExemptions,
+  ExternalRouteModule,
+  externalRoutes,
+} from "../../src/externalRoutes"
 import installExternalRoutes from "../../src/middleware/installExternalRoutes"
 
 const ok = async () => ({ ok: true })
@@ -117,7 +121,22 @@ describe("csrfExemptions", () => {
     ).toEqual([{ method: "POST", path: "/a" }])
   })
 
-  it("is empty for the registry as it stands", () => {
-    expect(csrfExemptions()).toEqual([])
+  it("lists the Telegram webhook only when it is configured", () => {
+    expect(externalRoutes.map((m) => m.name)).toEqual(["telegram"])
+    const saved = { ...process.env }
+    try {
+      delete process.env.TELEGRAM_BOT_TOKEN
+      expect(csrfExemptions()).toEqual([])
+      Object.assign(process.env, {
+        TELEGRAM_BOT_TOKEN: "test-token",
+        TELEGRAM_UPDATE_MODE: "webhook",
+        TELEGRAM_WEBHOOK_SECRET: "test-webhook-secret",
+      })
+      expect(csrfExemptions()).toEqual([
+        { method: "POST", path: "/telegram/webhook" },
+      ])
+    } finally {
+      process.env = saved
+    }
   })
 })

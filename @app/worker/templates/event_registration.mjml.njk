@@ -2,7 +2,14 @@
 
 {% block content %}
 <mj-column width="100%">
+  {% if isWaitlisted %}
+  <mj-text>
+    Olet tällä hetkellä tapahtuman jonossa. Lähetämme sinulle vahvistusviestin,
+    kun saat paikan tapahtumaan.
+  </mj-text>
+  {% else %}
   <mj-text>Ilmoittautuminen tapahtumaan onnistui:</mj-text>
+  {% endif %}
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Nimi: {{ registrationName }} <br />
     - Kiintiö: {{ registrationQuota.fi }} <br />
@@ -18,7 +25,14 @@
   </mj-text
   >
   <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  {% if isWaitlisted %}
+  <mj-text>
+    You're currently on the waiting list. We'll send you a confirmation email
+    when a place becomes available for you.
+  </mj-text>
+  {% else %}
   <mj-text>Successfully registered to the event:</mj-text>
+  {% endif %}
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Name: {{ registrationName }} <br />
     - Quota: {{ registrationQuota.en }} <br />

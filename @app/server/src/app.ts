@@ -106,6 +106,8 @@ export async function makeApp({
   await app.register(middleware.installKeycloak)
   // Webhooks and other routes called from outside; see externalRoutes.ts
   await app.register(middleware.installExternalRoutes)
+  // Telegram bot updates by polling; webhook mode is an external route
+  await app.register(middleware.installTelegramPolling)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
     // Loaded dynamically so the production bundle never imports

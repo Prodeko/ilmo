@@ -1,3 +1,4 @@
+import { calendarInvitationContributor } from "../src/calendarInvitation"
 import {
   buildRegistrationEmail,
   markRegistrationEmailSent,
@@ -77,8 +78,8 @@ afterEach(() => {
   consoleError.mockRestore()
 })
 
-it("has no contributors by default", () => {
-  expect(registrationEmailContributors).toEqual([])
+it("has one contributor per email block", () => {
+  expect(registrationEmailContributors).toEqual([calendarInvitationContributor])
 })
 
 describe("buildRegistrationEmail", () => {

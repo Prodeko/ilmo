@@ -25,7 +25,7 @@
       "profileUpdated": "Profiili päivitetty"
     },
     "label": {
-      "newEmail": "Uusi sähköpostil",
+      "newEmail": "Uusi sähköposti",
       "newPassphrase": "Uusi salasana",
       "oldPassphrase": "Vanha salasana"
     },
@@ -89,6 +89,7 @@
     "delete": "Poista käyttäjä",
     "emails": "Sähköpostiosoitteet",
     "index": "Muokkaa tiliä",
+    "reminders": "Omat muistutukset",
     "security": "Vaihda salasana"
   }
 }

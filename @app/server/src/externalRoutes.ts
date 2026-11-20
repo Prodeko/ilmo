@@ -1,4 +1,7 @@
-import { FastifyPluginAsync } from "fastify"
+import { telegramWebhook } from "./telegramWebhook"
+
+import type { FeatureKey } from "@app/lib"
+import type { FastifyPluginAsync } from "fastify"
 
 /**
  * Routes that are called from outside the web client: webhooks, API
@@ -41,11 +44,11 @@ export interface ExternalRouteModule {
    */
   configured: () => boolean
   /**
-   * Key of the feature flag that controls this module's routes. When a flag
-   * gate is in place, the routes answer 404 while the flag is off.
-   * `installExternalRoutes` does not read it.
+   * Key of the feature flag that controls this module's routes.
+   * `installExternalRoutes` answers 404 on them, per request, while the flag
+   * is off (unless `gateWhenOff` is false).
    */
-  feature?: string
+  feature?: FeatureKey
   /**
    * Whether the flag gate applies to the routes. Defaults to true; false
    * keeps the routes answering while the flag is off, for callers that must
@@ -57,7 +60,7 @@ export interface ExternalRouteModule {
 }
 
 /** The registry. Add a module here; do not edit app.ts or the CSRF plugin. */
-export const externalRoutes: readonly ExternalRouteModule[] = []
+export const externalRoutes: readonly ExternalRouteModule[] = [telegramWebhook]
 
 export interface CsrfExemption {
   method: ExternalRouteMethod

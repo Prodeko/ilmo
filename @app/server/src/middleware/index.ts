@@ -14,6 +14,7 @@ import installSameOrigin from "./installSameOrigin"
 import installSession from "./installSession"
 import installSSR from "./installSSR"
 import installStaticUploads from "./installStaticUploads"
+import installTelegramPolling from "./installTelegramPolling"
 import installWorkerUtils from "./installWorkerUtils"
 
 export {
@@ -33,5 +34,6 @@ export {
   installSession,
   installSSR,
   installStaticUploads,
+  installTelegramPolling,
   installWorkerUtils,
 }

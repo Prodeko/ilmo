@@ -1,5 +1,8 @@
 /// <reference types="Cypress" />
 
+// Matches REGISTRATION_CALENDAR_DURATION_SECONDS in RegistrationCalendar.tsx.
+const REGISTRATION_CALENDAR_DURATION_SECONDS = 12
+
 context("Create event registration", () => {
   beforeEach(() => cy.serverCommand("clearTestUsers"))
   beforeEach(() => cy.serverCommand("clearTestEventData"))
@@ -30,6 +33,59 @@ context("Create event registration", () => {
       cy.url().should("equal", Cypress.env("ROOT_URL") + `/event/${event.slug}`)
       cy.getCy("eventpage-signups-quota-0-table").should("contain", "Etunimi")
       cy.getCy("eventpage-signups-quota-0-table").should("contain", "Sukunimi")
+      cy.getCy("registration-calendar")
+        .should("be.visible")
+        .and("contain", "Ilmoittautuminen tallennettu")
+      // The calendar toast replaces the brief signup message.
+      cy.get(".ant-message-notice").should("not.exist")
+      cy.getCy("registration-calendar-google").should("not.be.visible")
+      cy.getCy("registration-calendar-microsoft365").should("not.be.visible")
+      cy.getCy("registration-calendar-outlook").should("not.be.visible")
+      cy.getCy("registration-calendar-download").should("not.be.visible")
+      cy.getCy("registration-calendar-other").click()
+      cy.getCy("registration-calendar-google")
+        .should("be.visible")
+        .invoke("attr", "href")
+        .then((href) => {
+          const url = new URL(href!)
+          expect(url.hostname).to.equal("www.google.com")
+          expect(url.pathname).to.equal("/calendar/render")
+          expect(url.searchParams.get("action")).to.equal("TEMPLATE")
+          expect(url.searchParams.get("details")).to.contain(
+            `/event/${event.slug}`
+          )
+        })
+      cy.getCy("registration-calendar-outlook").should("be.visible")
+      cy.getCy("registration-calendar-microsoft365").should("be.visible")
+      cy.getCy("registration-calendar-download")
+        .should("have.attr", "download", `${event.slug}.ics`)
+        .invoke("attr", "href")
+        .then((href) => {
+          cy.window().then(async (win) => {
+            const response = await win.fetch(href!)
+            expect(response.headers.get("content-type")).to.contain(
+              "text/calendar"
+            )
+            const calendar = await response.text()
+            expect(calendar).to.contain("BEGIN:VCALENDAR\r\n")
+            expect(calendar).to.contain(`UID:${event.id}@`)
+            expect(calendar).to.contain("DTSTART:")
+            expect(calendar).to.contain("DTEND:")
+            expect(calendar).to.contain(`/event/${event.slug}`)
+            expect(calendar).not.to.contain("etunimi.sukunimi@prodeko.org")
+          })
+        })
+      // Using the calendar options keeps the toast open past its timeout.
+      cy.wait((REGISTRATION_CALENDAR_DURATION_SECONDS + 1) * 1000)
+      cy.getCy("registration-calendar-google").should("be.visible")
+      cy.getCy("registration-calendar")
+        .find(".ant-notification-notice-close")
+        .click()
+      cy.getCy("registration-calendar").should("not.exist")
+      // The confirmation is shown once, not again on reload.
+      cy.reload()
+      cy.getCy("eventpage-quotas-card").should("be.visible")
+      cy.getCy("registration-calendar").should("not.exist")
     })
   })
 

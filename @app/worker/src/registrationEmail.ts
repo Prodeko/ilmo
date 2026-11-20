@@ -1,5 +1,7 @@
 import dayjs from "dayjs"
 
+import { calendarInvitationContributor } from "./calendarInvitation"
+
 import type { EmailAttachment, SendEmailPayload } from "./tasks/send_email"
 import type { JobHelpers } from "graphile-worker"
 
@@ -27,6 +29,8 @@ export interface RegistrationRow {
   email: string | null
   first_name: string
   last_name: string
+  /** `app_public.registrations_status(registration)` */
+  status: string | null
   [column: string]: any
 }
 export interface EventRow {
@@ -81,7 +85,9 @@ export type RegistrationEmailContributor = (
 ) => Promise<RegistrationEmailContribution>
 
 /** The contributors of the registration emails, in merge order. */
-export const registrationEmailContributors: RegistrationEmailContributor[] = []
+export const registrationEmailContributors: RegistrationEmailContributor[] = [
+  calendarInvitationContributor,
+]
 
 export function getFormattedEventTime(event: {
   event_start_time: string | Date
@@ -180,7 +186,7 @@ async function loadRows(
   const {
     rows: [registration],
   } = await query<RegistrationRow>(
-    "select * from app_public.registrations where id = $1",
+    "select r.*, app_public.registrations_status(r) as status from app_public.registrations as r where r.id = $1",
     [registrationId]
   )
   const {

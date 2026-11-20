@@ -5,10 +5,15 @@ import {
   ExternalRouteModule,
   externalRoutes as registry,
 } from "../externalRoutes"
+import { isFeatureEnabled as readFeatureFlag } from "../utils/featureFlags"
+
+import type { FeatureKey } from "@app/lib"
 
 export interface ExternalRoutesOptions {
   /** Defaults to the registry in externalRoutes.ts. */
   externalRoutes?: readonly ExternalRouteModule[]
+  /** Defaults to the server's `isFeatureEnabled`. */
+  isFeatureEnabled?: (key: FeatureKey) => Promise<boolean>
 }
 
 function isDeclared(module: ExternalRouteModule, method: string, url: string) {
@@ -35,11 +40,13 @@ function assertDeclared(module: ExternalRouteModule, route: RouteOptions) {
 /**
  * Registers the routes of every configured module in the external route
  * registry. Each module gets its own encapsulated context, in which any
- * route it did not declare is an error.
+ * route it did not declare is an error, and in which the routes answer 404
+ * while the module's feature flag is off (checked per request; the CSRF
+ * check of a non-exempt route still runs first).
  */
 const ExternalRoutes: FastifyPluginAsync<ExternalRoutesOptions> = async (
   app,
-  { externalRoutes = registry }
+  { externalRoutes = registry, isFeatureEnabled = readFeatureFlag }
 ) => {
   for (const module of externalRoutes) {
     if (!module.configured()) {
@@ -48,6 +55,15 @@ const ExternalRoutes: FastifyPluginAsync<ExternalRoutesOptions> = async (
     }
     await app.register(async (scope) => {
       scope.addHook("onRoute", (route) => assertDeclared(module, route))
+      const { feature } = module
+      if (feature && module.gateWhenOff !== false) {
+        scope.addHook("onRequest", async (_request, reply) => {
+          if (!(await isFeatureEnabled(feature))) {
+            reply.callNotFound()
+            return reply
+          }
+        })
+      }
       await scope.register(module.register)
     })
   }

@@ -1,4 +1,12 @@
 {
+  "calendar": {
+    "addAnother": "Lägg till evenemanget i kalendern",
+    "apple": "Apple Calendar / ladda ner .ics",
+    "emailConfirmation": "Kontrollera din e-post för bekräftelsen på din anmälan.",
+    "emailSent": "Vi har mejlat din bekräftelse och kalenderinbjudan. Det kan ta en stund innan den kommer fram.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "Du står för närvarande på väntelistan. Vi skickar en bekräftelse via e-post när en plats blir ledig för dig."
+  },
   "confirmGoBack": "Är du säker? Du kommer att förlora din registreringsplats.",
   "deleteRegistration": "Ta bort registrering",
   "deleteRegistrationConfirmText": "Är du säker på att du vill ta bort din registrering?",

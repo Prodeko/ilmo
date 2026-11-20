@@ -175,6 +175,9 @@ Run a command in a specific workspace:
 pnpm --filter @app/foo run <cmd>
 ```
 
+For notification releases, see the
+[reminder release runbook](docs/reminder-release.md).
+
 ## Building the production docker image
 
 To build the production image, use `docker build` as shown below. You should
