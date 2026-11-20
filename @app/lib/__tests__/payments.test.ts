@@ -38,7 +38,7 @@ describe("guildReceivesCents", () => {
     [1800, 1773],
     // 2200 − 0,015 × 2225 = 2166,625
     [2200, 2167],
-    // PRD example: a 10,00 € ticket gives the guild ≈ 9,85 €
+    // A 10,00 € ticket gives the guild ≈ 9,85 €
     [1000, 985],
     // 75 − 0,015 × 100 = 73,5 exactly: halves round up
     [75, 74],

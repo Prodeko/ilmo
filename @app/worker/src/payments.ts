@@ -55,7 +55,8 @@ export type TranslatedField = { fi?: string; en?: string }
 
 /**
  * The payment link of a registration, relative to `${url}/${lang}/` like
- * `eventRegistrationUpdateLink`. It reuses the update token (PRD §6.7).
+ * `eventRegistrationUpdateLink`. It reuses the update token, so whoever can
+ * edit the registration can also pay for it.
  */
 export function payLink(updateToken: string): string {
   return `pay/${updateToken}`

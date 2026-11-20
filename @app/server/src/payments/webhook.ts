@@ -163,7 +163,7 @@ async function handleUnknownPaidSession(
  * Locks the registration before the payment (the same order as Checkout
  * creation and deletion) and then decides:
  * - the registration is gone: keep the money as PAID and refund the ticket
- *   price (PRD §6.8);
+ *   price; the service fee is kept, as for any other cancellation;
  * - it already has another PAID payment (a second session, or a manual
  *   payment): refund this one in full, fee included. One registration can
  *   have only one PAID row, so the duplicate is detached from the

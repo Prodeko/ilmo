@@ -4,7 +4,7 @@ import type { PaymentReminderPayload } from "./payment__send_reminder"
 import type { Task } from "graphile-worker"
 
 /**
- * Close-of-registration payment email (PRD §6.9), run every minute from the
+ * Close-of-registration payment email, run every minute from the
  * crontab. Finds events that collect payments, have the close email on, whose
  * registration has ended and whose close email hasn't been sent, and queues a
  * payment reminder (with `closed: true`) for every finished, unpaid

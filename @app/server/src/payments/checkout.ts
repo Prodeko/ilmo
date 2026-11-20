@@ -40,7 +40,7 @@ interface PendingPayment {
 
 /**
  * Expires the registration's other open Checkout Sessions so that only the
- * newest one can be paid (PRD §6.7). A session that was completed meanwhile
+ * newest one can be paid. A session that was completed meanwhile
  * means the payment is being confirmed by the webhook: refuse instead of
  * opening a second one (its row stays PENDING for the webhook).
  *

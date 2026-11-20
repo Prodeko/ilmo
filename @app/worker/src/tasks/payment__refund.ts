@@ -15,7 +15,7 @@ export interface PaymentRefundPayload {
   /**
    * Refund the whole charge, service fee included. Used for a duplicate
    * payment of an already paid registration; otherwise only the ticket price
-   * is refunded and the service fee is kept (PRD §6.11).
+   * is refunded and the service fee is kept.
    */
   full?: boolean
 }
