@@ -5,13 +5,15 @@
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
   "errors": {
     "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui",
-    "registrationUpdateFailed": "Tietojen päivittäminen epäonnistui"
+    "registrationUpdateFailed": "Tietojen päivittäminen epäonnistui",
+    "rememberAnswersFailed": "Ilmoittautumisesi tallentui, mutta vastaustesi muistaminen epäonnistui"
   },
   "eventSignupComplete": "Ilmoittautuminen tallennettu",
   "forms": {
     "email": "Sähköposti",
     "firstName": "Etunimi",
     "lastName": "Sukunimi",
+    "rememberAnswers": "Muista nämä vastaukset seuraavia ilmoittautumisiani varten",
     "rules": {
       "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
       "emailValid": "Tarkista sähköpostiosoite",

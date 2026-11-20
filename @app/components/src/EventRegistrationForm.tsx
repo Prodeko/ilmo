@@ -6,9 +6,12 @@ import {
   UpdateEventRegistrationDocument,
   useClaimRegistrationTokenMutation,
   useDeleteEventRegistrationMutation,
+  useSetRegistrationProfileMutation,
 } from "@app/graphql"
 import {
   arePropsEqual,
+  buildRegistrationProfileUpdate,
+  hasPrefillQuestions,
   registrationFormItemLayout,
   tailFormItemLayout,
 } from "@app/lib"
@@ -26,7 +29,7 @@ import {
 import { useRouter } from "next/router"
 import { CombinedError, useMutation } from "urql"
 
-import { ErrorAlert, useTranslation } from "."
+import { ErrorAlert, Feature, useTranslation } from "."
 
 const { Text } = Typography
 
@@ -45,6 +48,9 @@ interface EventRegistrationFormProps {
   initialValues?: any
   // Used to delete an unfinished registration
   setUpdateToken?: React.Dispatch<React.SetStateAction<string>>
+  // Offer to remember the answers to prefill questions in the signed-in
+  // user's registration profile. Used when type is "create"
+  canRememberAnswers?: boolean
 }
 
 // important React.memo, otherwise the form fields may be cleared as
@@ -62,6 +68,7 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       submitAction,
       initialValues,
       setUpdateToken,
+      canRememberAnswers,
     } = props
 
     const { t, lang } = useTranslation("register_event")
@@ -85,6 +92,33 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
     const [, formMutation] = useMutation(mutation)
     const [, deleteRegistration] = useDeleteEventRegistrationMutation()
     const [, claimRegistrationToken] = useClaimRegistrationTokenMutation()
+    const [, setRegistrationProfile] = useSetRegistrationProfileMutation()
+
+    // The registrant opts in to saving their answers with a checkbox, shown
+    // only while prefill_answers is on and the event has prefill questions
+    const offerRememberAnswers =
+      type === "create" &&
+      !!canRememberAnswers &&
+      hasPrefillQuestions(questions)
+
+    // Saves the answers to prefill questions after a successful registration.
+    // A failure here never undoes or fails the registration itself.
+    const rememberAnswers = useCallback(
+      async (answers: Record<string, unknown> | undefined) => {
+        const update = buildRegistrationProfileUpdate(questions, answers)
+        if (!update) return
+        try {
+          const { error } = await setRegistrationProfile(update)
+          if (error) throw error
+        } catch {
+          message.warning({
+            key: "registration-remember-answers-failed",
+            content: t("errors.rememberAnswersFailed"),
+          })
+        }
+      },
+      [questions, setRegistrationProfile, t]
+    )
 
     useEffect(() => {
       form.setFieldsValue(initialValues)
@@ -154,12 +188,14 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
       async (values) => {
         setFormError(null)
         try {
+          // The checkbox is not part of the registration
+          const { rememberAnswers: remember, ...registrationValues } = values
           // Names may contain spaces (e.g. "Anna Maria"), but strip the ones
           // around them
           const trimmedValues = {
-            ...values,
-            firstName: values.firstName?.trim(),
-            lastName: values.lastName?.trim(),
+            ...registrationValues,
+            firstName: registrationValues.firstName?.trim(),
+            lastName: registrationValues.lastName?.trim(),
           }
           const input =
             type === "create"
@@ -175,6 +211,10 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
                 }
           const { error } = await formMutation({ input })
           if (error) throw error
+
+          if (offerRememberAnswers && remember) {
+            await rememberAnswers(registrationValues.answers)
+          }
 
           if (submitAction) {
             submitAction()
@@ -202,6 +242,8 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
         submitAction,
         formRedirect,
         formMutation,
+        offerRememberAnswers,
+        rememberAnswers,
         router,
         eventId,
         quotaId,
@@ -343,6 +385,19 @@ export const EventRegistrationForm: React.FC<EventRegistrationFormProps> = memo(
             </Form.Item>
           )
         })}
+        {offerRememberAnswers ? (
+          <Feature name="prefill_answers">
+            <Form.Item
+              {...tailFormItemLayout}
+              name="rememberAnswers"
+              valuePropName="checked"
+            >
+              <Checkbox data-cy="eventregistrationform-checkbox-remember-answers">
+                {t("forms.rememberAnswers")}
+              </Checkbox>
+            </Form.Item>
+          </Feature>
+        ) : null}
         {formError && (
           <Form.Item {...tailFormItemLayout}>
             <ErrorAlert

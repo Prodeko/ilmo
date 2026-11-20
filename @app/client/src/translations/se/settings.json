@@ -2,6 +2,7 @@
   "buttons": {
     "addEmail": "Lägg till e-post",
     "changePassphrase": "Ändra lösenfras",
+    "deleteRegistrationProfile": "Radera anmälningsuppgifter",
     "permanentDelete": "RADERA MITT KONTO PERMANENT",
     "resetPassphrase": "Återställ lösenfras",
     "returnHome": "Återgå till hemsidan",
@@ -13,6 +14,7 @@
     "accountDeleteFailedOrgOwner1": "Du kan inte ta bort ditt konto medan du är ägare till en organisation.",
     "accountDeleteFailedOrgOwner2": "För varje organisation du är ägare till, tilldela antingen ditt ägande till en annan användare eller ta bort organisationen för att fortsätta.",
     "deleteFailed": "Begäran om borttagning misslyckades",
+    "errorDeletingRegistrationProfile": "Det gick inte att radera anmälningsuppgifterna",
     "errorUpdatingRegistrationProfile": "Det gick inte att uppdatera anmälningsuppgifterna",
     "errorUpdatingUsername": "Fel vid uppdatering av användarnamn",
     "incorrectOldPassword": "Felaktig gammal lösenordsfras",
@@ -25,6 +27,7 @@
       "passwordChangeFailed": "Det gick inte att ändra lösenordsfras",
       "passwordChanged": "Lösenordet ändrat!",
       "profileUpdated": "Profil uppdaterad",
+      "registrationProfileDeleted": "Anmälningsuppgifterna har raderats",
       "registrationProfileUpdated": "Anmälningsuppgifterna har uppdaterats"
     },
     "label": {
@@ -92,7 +95,9 @@
     }
   },
   "registrationProfile": {
-    "description": "Dessa uppgifter förifyller frågorna om Telegram och specialdieter i anmälningsformulär. Endast du kan se dem, och de uppdateras när du anmäler dig till ett evenemang."
+    "deleteConfirm": "Radera dina sparade anmälningsuppgifter?",
+    "description": "Dessa uppgifter fyller i Telegram- och specialdietfrågorna i anmälningsformulär. Endast du kan se dem. De sparas här, eller när du kryssar i \"Kom ihåg dessa svar\" vid anmälan.",
+    "offDescription": "Förifyllning av anmälningssvar är för tillfället avstängd. Du kan fortfarande radera de anmälningsuppgifter du har sparat."
   },
   "titles": {
     "accounts": "Länkade konton",

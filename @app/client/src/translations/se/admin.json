@@ -98,6 +98,22 @@
           "För- och efternamn sparas fortfarande vid varje Keycloak-inloggning.",
           "Redan gjorda registreringar behåller sina namn."
         ]
+      },
+      "prefill_answers": {
+        "name": "Sparade anmälningssvar",
+        "turnOn": [
+          "Administratörer kan markera en textfråga som frågar efter deltagarens Telegram-användarnamn eller specialdieter.",
+          "Anmälningsformuläret fyller i dessa svar från användarens sparade anmälningsuppgifter och erbjuder att komma ihåg nya svar.",
+          "Profilinställningarna visar anmälningsuppgifterna för redigering."
+        ],
+        "stops": [
+          "Svaren fylls inte längre i och anmälningsformuläret erbjuder inte längre att komma ihåg dem.",
+          "Anmälningsuppgifterna kan inte längre sparas eller redigeras."
+        ],
+        "keeps": [
+          "Frågorna behåller sin Telegram- eller specialdietmarkering och fungerar som vanliga textfrågor.",
+          "Användare kan fortfarande radera de anmälningsuppgifter de har sparat."
+        ]
       }
     },
     "footer": "Nya funktioner kommer med uppdateringar av appen och är först avslagna.",

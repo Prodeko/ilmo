@@ -2,6 +2,7 @@
   "buttons": {
     "addEmail": "Add email",
     "changePassphrase": "Change passphrase",
+    "deleteRegistrationProfile": "Delete registration details",
     "permanentDelete": "PERMANENTLY DELETE MY ACCOUNT",
     "resetPassphrase": "Reset passphrase",
     "returnHome": "Return to homepage",
@@ -13,6 +14,7 @@
     "accountDeleteFailedOrgOwner1": "You cannot delete your account whilst you are the owner of an organization.",
     "accountDeleteFailedOrgOwner2": "For each organization you are the owner of, please either assign your ownership to another user or delete the organization to continue.",
     "deleteFailed": "Requesting deletion failed",
+    "errorDeletingRegistrationProfile": "Deleting registration details failed",
     "errorUpdatingRegistrationProfile": "Updating registration details failed",
     "errorUpdatingUsername": "Error updating username",
     "incorrectOldPassword": "Incorrect old passphrase",
@@ -25,6 +27,7 @@
       "passwordChangeFailed": "Changing passphrase failed",
       "passwordChanged": "Password changed!",
       "profileUpdated": "Profile updated",
+      "registrationProfileDeleted": "Registration details deleted",
       "registrationProfileUpdated": "Registration details updated"
     },
     "label": {
@@ -92,7 +95,9 @@
     }
   },
   "registrationProfile": {
-    "description": "These details prefill the Telegram and dietary restriction questions in registration forms. Only you can see them, and they are updated when you register to an event."
+    "deleteConfirm": "Delete your saved registration details?",
+    "description": "These details prefill the Telegram and dietary restriction questions in registration forms. Only you can see them. They are saved here, or when you tick \"Remember these answers\" while registering.",
+    "offDescription": "Prefilling registration answers is currently turned off. You can still delete the registration details you saved."
   },
   "titles": {
     "accounts": "Linked accounts",

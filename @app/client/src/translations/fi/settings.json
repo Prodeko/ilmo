@@ -2,6 +2,7 @@
   "buttons": {
     "addEmail": "Lisää sähköposti",
     "changePassphrase": "Vaihda salasana",
+    "deleteRegistrationProfile": "Poista ilmoittautumistiedot",
     "permanentDelete": "POISTA KÄYTTÄJÄ LOPULLISESTI",
     "resetPassphrase": "Resetoi salasana",
     "returnHome": "Palaa etusivulle",
@@ -13,6 +14,7 @@
     "accountDeleteFailedOrgOwner1": "Et voi poistaa tiliäsi, kun olet organisaation omistaja.",
     "accountDeleteFailedOrgOwner2": "Määritä omistajuutesi toiselle käyttäjälle tai poista organisaatio jokaisen omistamasi organisaation kohdalla.",
     "deleteFailed": "Poistopyyntö epäonnistui",
+    "errorDeletingRegistrationProfile": "Ilmoittautumistietojen poistaminen epäonnistui",
     "errorUpdatingRegistrationProfile": "Ilmoittautumistietojen päivittäminen epäonnistui",
     "errorUpdatingUsername": "Virhe päivitettäesssä käyttäjänimeä",
     "incorrectOldPassword": "Väärä vanha salasana",
@@ -25,6 +27,7 @@
       "passwordChangeFailed": "Salasanan vaihtaminen epäonnistui",
       "passwordChanged": "Salasana vaihdettu!",
       "profileUpdated": "Profiili päivitetty",
+      "registrationProfileDeleted": "Ilmoittautumistiedot poistettu",
       "registrationProfileUpdated": "Ilmoittautumistiedot päivitetty"
     },
     "label": {
@@ -92,7 +95,9 @@
     }
   },
   "registrationProfile": {
-    "description": "Näillä tiedoilla esitäytetään ilmoittautumislomakkeen telegram- ja erityisruokavaliokysymykset. Tiedot näkyvät vain sinulle, ja ne päivittyvät, kun ilmoittaudut tapahtumaan."
+    "deleteConfirm": "Poistetaanko tallentamasi ilmoittautumistiedot?",
+    "description": "Näillä tiedoilla esitäytetään ilmoittautumislomakkeen Telegram- ja erityisruokavaliokysymykset. Tiedot näkyvät vain sinulle. Ne tallentuvat täällä tai kun valitset ilmoittautuessasi \"Muista nämä vastaukset\".",
+    "offDescription": "Ilmoittautumisvastausten esitäyttö on tällä hetkellä pois käytöstä. Voit silti poistaa tallentamasi ilmoittautumistiedot."
   },
   "titles": {
     "accounts": "Linkitetyt tilit",

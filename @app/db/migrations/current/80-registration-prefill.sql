@@ -173,12 +173,23 @@ grant
 on app_public.registration_profiles to :DATABASE_VISITOR;
 
 /*
- * Creates or replaces the current user's registration profile. Empty values
- * are stored as null.
+ * Answers are saved into the registration profile only when the user asks
+ * for it: on the settings page, or by ticking "remember these answers" in
+ * the registration form, which calls set_registration_profile after the
+ * registration succeeded. Nothing saves them inside the registration itself.
+ */
+drop trigger if exists _500_save_registration_profile on app_public.registrations;
+drop function if exists app_private.tg_registrations__save_registration_profile();
+
+/*
+ * Creates or updates the current user's registration profile. A null
+ * argument keeps the saved value and an empty one clears it, so the
+ * registration form can save only the fields its event asks for. Refused
+ * while `prefill_answers` is off; delete_registration_profile still works.
  */
 create or replace function app_public.set_registration_profile(
-  telegram text,
-  dietary_restrictions text
+  telegram text default null,
+  dietary_restrictions text default null
 )
 returns app_public.registration_profiles as $$
 #variable_conflict use_variable
@@ -190,79 +201,59 @@ begin
     raise exception 'You must log in to update your registration profile' using errcode = 'LOGIN';
   end if;
 
+  if not app_public.feature_enabled('prefill_answers') then
+    raise exception 'Saving registration answers is not enabled' using errcode = 'FTOFF';
+  end if;
+
   insert into app_public.registration_profiles(user_id, telegram, dietary_restrictions)
     values (v_user_id, nullif(trim(telegram), ''), nullif(trim(dietary_restrictions), ''))
   on conflict (user_id) do update
-    set telegram = excluded.telegram, dietary_restrictions = excluded.dietary_restrictions
+    set
+      telegram = case
+        when telegram is null then registration_profiles.telegram
+        else excluded.telegram
+      end,
+      dietary_restrictions = case
+        when dietary_restrictions is null then registration_profiles.dietary_restrictions
+        else excluded.dietary_restrictions
+      end
   returning * into v_profile;
 
   return v_profile;
 end;
 $$ language plpgsql volatile security invoker set search_path = pg_catalog, public, pg_temp;
 comment on function app_public.set_registration_profile(telegram text, dietary_restrictions text) is
-  E'Set the values used to prefill your event registrations.';
+  E'Set the values used to prefill your event registrations. A null value keeps the saved one and an empty value clears it.';
 
 /*
- * When a logged in user finishes a registration of their own, the answers to
- * prefill questions are saved into their registration profile so that the
- * next registration is prefilled with them. A registration made for someone
- * else (with an email that isn't the user's) is left alone, and so are empty
- * answers: clearing a saved value is done on the settings page.
+ * Deletes the current user's registration profile. Not gated: removing your
+ * own data keeps working while `prefill_answers` is off.
  */
-create or replace function app_private.tg_registrations__save_registration_profile()
-returns trigger as $$
+create or replace function app_public.delete_registration_profile()
+returns boolean as $$
 declare
   v_user_id uuid := app_public.current_user_id();
-  v_telegram text;
-  v_dietary_restrictions text;
 begin
-  if v_user_id is null or not exists(
-    select 1 from app_public.user_emails
-    where user_id = v_user_id and email = NEW.email
-  ) then
-    return NEW;
+  if v_user_id is null then
+    raise exception 'You must log in to delete your registration profile' using errcode = 'LOGIN';
   end if;
 
-  select nullif(trim(NEW.answers ->> q.id::text), '') into v_telegram
-    from app_public.event_questions as q
-    where q.event_id = NEW.event_id and q.prefill = 'TELEGRAM'
-    order by q.position
-    limit 1;
-
-  select nullif(trim(NEW.answers ->> q.id::text), '') into v_dietary_restrictions
-    from app_public.event_questions as q
-    where q.event_id = NEW.event_id and q.prefill = 'DIETARY_RESTRICTIONS'
-    order by q.position
-    limit 1;
-
-  -- An answer too long for the profile is not saved. Failing the
-  -- registration over it is not an option.
-  if length(v_telegram) > 64 then
-    v_telegram := null;
-  end if;
-  if length(v_dietary_restrictions) > 1000 then
-    v_dietary_restrictions := null;
-  end if;
-
-  if v_telegram is null and v_dietary_restrictions is null then
-    return NEW;
-  end if;
-
-  insert into app_public.registration_profiles(user_id, telegram, dietary_restrictions)
-    values (v_user_id, v_telegram, v_dietary_restrictions)
-  on conflict (user_id) do update
-    set
-      telegram = coalesce(excluded.telegram, registration_profiles.telegram),
-      dietary_restrictions = coalesce(excluded.dietary_restrictions, registration_profiles.dietary_restrictions);
-
-  return NEW;
+  delete from app_public.registration_profiles where user_id = v_user_id;
+  return found;
 end;
-$$ language plpgsql volatile security definer set search_path to pg_catalog, public, pg_temp;
-comment on function app_private.tg_registrations__save_registration_profile() is
-  E'Saves answers to prefill questions into the registering user''s registration profile.';
+$$ language plpgsql volatile security invoker set search_path = pg_catalog, public, pg_temp;
+comment on function app_public.delete_registration_profile() is
+  E'Delete the values saved to prefill your event registrations.';
 
-drop trigger if exists _500_save_registration_profile on app_public.registrations;
-create trigger _500_save_registration_profile
-  after update on app_public.registrations
-  for each row when (NEW.is_finished and not OLD.is_finished)
-  execute procedure app_private.tg_registrations__save_registration_profile();
+/*
+ * The question type select offers prefill questions, the register page
+ * prefills their answers and the registration form and settings page save
+ * them only while `prefill_answers` is on. Questions keep their `prefill`
+ * marking whatever the flag's state.
+ */
+insert into app_public.feature_flags (key, description)
+  values (
+    'prefill_answers',
+    'Prefill Telegram and dietary restriction answers from a registration profile the user saves on request.'
+  )
+  on conflict (key) do nothing;

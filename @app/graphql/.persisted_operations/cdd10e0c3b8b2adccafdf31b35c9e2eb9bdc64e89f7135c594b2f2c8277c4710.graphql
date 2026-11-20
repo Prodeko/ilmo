@@ -4,7 +4,7 @@ fragment RegistrationProfile on RegistrationProfile {
   dietaryRestrictions
   __typename
 }
-mutation SetRegistrationProfile($telegram: String!, $dietaryRestrictions: String!) {
+mutation SetRegistrationProfile($telegram: String, $dietaryRestrictions: String) {
   setRegistrationProfile(
     input: {telegram: $telegram, dietaryRestrictions: $dietaryRestrictions}
   ) {

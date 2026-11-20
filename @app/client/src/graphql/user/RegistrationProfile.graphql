@@ -13,9 +13,10 @@ query RegistrationProfile {
   }
 }
 
+# A null value keeps the saved one and an empty value clears it
 mutation SetRegistrationProfile(
-  $telegram: String!
-  $dietaryRestrictions: String!
+  $telegram: String
+  $dietaryRestrictions: String
 ) {
   setRegistrationProfile(
     input: { telegram: $telegram, dietaryRestrictions: $dietaryRestrictions }
@@ -23,5 +24,11 @@ mutation SetRegistrationProfile(
     registrationProfile {
       ...RegistrationProfile
     }
+  }
+}
+
+mutation DeleteRegistrationProfile {
+  deleteRegistrationProfile(input: {}) {
+    boolean
   }
 }

@@ -98,6 +98,22 @@
           "Etu- ja sukunimet tallennetaan edelleen jokaisella Keycloak-kirjautumisella.",
           "Jo tehdyt ilmoittautumiset säilyttävät nimensä."
         ]
+      },
+      "prefill_answers": {
+        "name": "Muistetut ilmoittautumisvastaukset",
+        "turnOn": [
+          "Ylläpitäjät voivat merkitä tekstikysymyksen kysymään ilmoittautujan Telegram-käyttäjänimeä tai erityisruokavalioita.",
+          "Ilmoittautumislomake esitäyttää nämä vastaukset käyttäjän tallentamista ilmoittautumistiedoista ja tarjoaa uusien vastausten muistamista.",
+          "Profiilin asetussivulla ilmoittautumistietoja voi muokata."
+        ],
+        "stops": [
+          "Vastauksia ei enää esitäytetä, eikä ilmoittautumislomake tarjoa niiden muistamista.",
+          "Ilmoittautumistietoja ei voi enää tallentaa tai muokata."
+        ],
+        "keeps": [
+          "Kysymykset säilyttävät Telegram- tai erityisruokavaliomerkintänsä ja toimivat tavallisina tekstikysymyksinä.",
+          "Käyttäjät voivat edelleen poistaa tallentamansa ilmoittautumistiedot."
+        ]
       }
     },
     "footer": "Uudet ominaisuudet tulevat sovelluksen päivitysten mukana ja ovat aluksi pois päältä.",

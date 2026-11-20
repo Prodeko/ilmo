@@ -9,6 +9,8 @@ import {
   createQuestions,
   createQuotas,
   createUsers,
+  FeatureState,
+  upsertFeatureFlag,
   withAnonymousDb,
   withRootDb,
   withUserDb,
@@ -16,8 +18,8 @@ import {
 
 async function setRegistrationProfile(
   client: PoolClient,
-  telegram: string,
-  dietaryRestrictions: string
+  telegram: string | null,
+  dietaryRestrictions: string | null
 ) {
   const {
     rows: [profile],
@@ -27,6 +29,18 @@ async function setRegistrationProfile(
   )
   return profile
 }
+
+async function deleteRegistrationProfile(client: PoolClient) {
+  const {
+    rows: [{ deleted }],
+  } = await client.query(
+    `select app_public.delete_registration_profile() as deleted`
+  )
+  return deleted
+}
+
+const setPrefillAnswers = (client: PoolClient, state: FeatureState) =>
+  upsertFeatureFlag(client, "prefill_answers", state)
 
 /**
  * Creates an open event whose two TEXT questions are marked to be prefilled
@@ -100,90 +114,181 @@ async function getProfile(client: PoolClient, userId: string) {
 }
 
 describe("app_public.registration_profiles", () => {
-  it("can set and update own registration profile", () =>
-    withUserDb(async (client, user) => {
-      const created = await setRegistrationProfile(client, "@testi", "Vegaani")
-      expect(created).toMatchObject({
-        user_id: user.id,
-        telegram: "@testi",
-        dietary_restrictions: "Vegaani",
-      })
+  describe("with prefill_answers on", () => {
+    it("can set and update own registration profile", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        const created = await setRegistrationProfile(
+          client,
+          "@testi",
+          "Vegaani"
+        )
+        expect(created).toMatchObject({
+          user_id: user.id,
+          telegram: "@testi",
+          dietary_restrictions: "Vegaani",
+        })
 
-      // Empty values are stored as null
-      const updated = await setRegistrationProfile(client, "  @uusi ", "")
-      expect(updated).toMatchObject({
-        user_id: user.id,
-        telegram: "@uusi",
-        dietary_restrictions: null,
-      })
-    }))
+        // Empty values clear the saved value
+        const updated = await setRegistrationProfile(client, "  @uusi ", "")
+        expect(updated).toMatchObject({
+          user_id: user.id,
+          telegram: "@uusi",
+          dietary_restrictions: null,
+        })
+      }))
 
-  it("cannot see another user's registration profile", () =>
-    withRootDb(async (client) => {
-      const [user, otherUser] = await createUsers(client, 2)
-      await becomeUser(client, user.id)
-      await setRegistrationProfile(client, "@testi", "Gluteeniton")
+    it("keeps the saved value of a null argument", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@vanha", "Vegaani")
 
-      await becomeUser(client, otherUser.id)
-      const { rows } = await client.query(
-        `select * from app_public.registration_profiles`
-      )
-      expect(rows).toHaveLength(0)
-    }))
+        expect(
+          await setRegistrationProfile(client, "@uusi", null)
+        ).toMatchObject({ telegram: "@uusi", dietary_restrictions: "Vegaani" })
+        expect(
+          await setRegistrationProfile(client, null, "Gluteeniton")
+        ).toMatchObject({
+          telegram: "@uusi",
+          dietary_restrictions: "Gluteeniton",
+        })
+      }))
 
-  it("cannot set a registration profile when logged out", () =>
-    withAnonymousDb(async (client) => {
-      const promise = setRegistrationProfile(client, "@testi", "Vegaani")
-      await expect(promise).rejects.toMatchObject({ code: "LOGIN" })
-    }))
+    it("refuses an over-length value and keeps the saved profile", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@testi", "Vegaani")
 
-  it("saves prefill answers when the user finishes their registration", () =>
-    withUserDb(async (client, user) => {
-      const { registration, telegramQuestion, dietaryQuestion } =
-        await setupRegistration(client, user._email)
+        await client.query("savepoint too_long")
+        await expect(
+          setRegistrationProfile(client, "@" + "a".repeat(64), null)
+        ).rejects.toMatchObject({ code: "23514" })
+        await client.query("rollback to savepoint too_long")
 
-      await becomeUser(client, user.id)
-      await finishRegistration(client, registration.id, {
-        [telegramQuestion.id]: "@testi",
-        [dietaryQuestion.id]: "Laktoositon",
-      })
+        expect(await getProfile(client, user.id)).toMatchObject({
+          telegram: "@testi",
+          dietary_restrictions: "Vegaani",
+        })
+      }))
 
-      expect(await getProfile(client, user.id)).toMatchObject({
-        telegram: "@testi",
-        dietary_restrictions: "Laktoositon",
-      })
-    }))
+    it("cannot see another user's registration profile", () =>
+      withRootDb(async (client) => {
+        await setPrefillAnswers(client, "on")
+        const [user, otherUser] = await createUsers(client, 2)
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@testi", "Gluteeniton")
 
-  it("keeps saved values that a registration leaves unanswered", () =>
-    withUserDb(async (client, user) => {
-      await setRegistrationProfile(client, "@vanha", "Vegaani")
-      const { registration, telegramQuestion } = await setupRegistration(
-        client,
-        user._email
-      )
+        await becomeUser(client, otherUser.id)
+        const { rows } = await client.query(
+          `select * from app_public.registration_profiles`
+        )
+        expect(rows).toHaveLength(0)
+      }))
 
-      await becomeUser(client, user.id)
-      await finishRegistration(client, registration.id, {
-        [telegramQuestion.id]: "@uusi",
-      })
+    it("cannot set a registration profile when logged out", () =>
+      withAnonymousDb(async (client) => {
+        await setPrefillAnswers(client, "on")
+        const promise = setRegistrationProfile(client, "@testi", "Vegaani")
+        await expect(promise).rejects.toMatchObject({ code: "LOGIN" })
+      }))
 
-      expect(await getProfile(client, user.id)).toMatchObject({
-        telegram: "@uusi",
-        dietary_restrictions: "Vegaani",
-      })
-    }))
+    it("can delete own registration profile", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@testi", "Vegaani")
 
-  it("does not save answers of a registration made for someone else", () =>
-    withUserDb(async (client, user) => {
-      const { registration, telegramQuestion, dietaryQuestion } =
-        await setupRegistration(client, "kaveri@example.com")
+        expect(await deleteRegistrationProfile(client)).toBe(true)
+        expect(await deleteRegistrationProfile(client)).toBe(false)
+        expect(await getProfile(client, user.id)).toBeUndefined()
+      }))
 
-      await becomeUser(client, user.id)
-      await finishRegistration(client, registration.id, {
-        [telegramQuestion.id]: "@kaveri",
-        [dietaryQuestion.id]: "Pähkinäallergia",
-      })
+    it("does not save answers when the user finishes a registration", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        const { registration, telegramQuestion, dietaryQuestion } =
+          await setupRegistration(client, user._email)
 
-      expect(await getProfile(client, user.id)).toBeUndefined()
-    }))
+        await becomeUser(client, user.id)
+        await finishRegistration(client, registration.id, {
+          [telegramQuestion.id]: "@testi",
+          [dietaryQuestion.id]: "Laktoositon",
+        })
+
+        expect(await getProfile(client, user.id)).toBeUndefined()
+      }))
+
+    it("finishes a registration whose prefill answer is over-length", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@vanha", "Vegaani")
+        const { registration, telegramQuestion } = await setupRegistration(
+          client,
+          user._email
+        )
+
+        await becomeUser(client, user.id)
+        await finishRegistration(client, registration.id, {
+          [telegramQuestion.id]: "@" + "a".repeat(200),
+        })
+
+        await becomeRoot(client)
+        const {
+          rows: [finished],
+        } = await client.query(
+          `select is_finished from app_public.registrations where id = $1`,
+          [registration.id]
+        )
+        expect(finished.is_finished).toBe(true)
+        expect(await getProfile(client, user.id)).toMatchObject({
+          telegram: "@vanha",
+          dietary_restrictions: "Vegaani",
+        })
+      }))
+  })
+
+  describe("with prefill_answers off", () => {
+    it("refuses to save a registration profile", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "off")
+        await becomeUser(client, user.id)
+        const promise = setRegistrationProfile(client, "@testi", "Vegaani")
+        await expect(promise).rejects.toMatchObject({ code: "FTOFF" })
+      }))
+
+    it("still reads and deletes own registration profile", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "on")
+        await becomeUser(client, user.id)
+        await setRegistrationProfile(client, "@testi", "Vegaani")
+        await setPrefillAnswers(client, "off")
+        await becomeUser(client, user.id)
+
+        const { rows } = await client.query(
+          `select telegram from app_public.registration_profiles`
+        )
+        expect(rows).toEqual([{ telegram: "@testi" }])
+        expect(await deleteRegistrationProfile(client)).toBe(true)
+        expect(await getProfile(client, user.id)).toBeUndefined()
+      }))
+
+    it("does not save answers when the user finishes a registration", () =>
+      withUserDb(async (client, user) => {
+        await setPrefillAnswers(client, "off")
+        const { registration, telegramQuestion, dietaryQuestion } =
+          await setupRegistration(client, user._email)
+
+        await becomeUser(client, user.id)
+        await finishRegistration(client, registration.id, {
+          [telegramQuestion.id]: "@testi",
+          [dietaryQuestion.id]: "Laktoositon",
+        })
+
+        expect(await getProfile(client, user.id)).toBeUndefined()
+      }))
+  })
 })

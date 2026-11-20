@@ -37,19 +37,24 @@ const PrefilledRegistrationForm = ({
   ...formProps
 }: PrefilledRegistrationFormProps) => {
   const keycloakNames = useFeature("keycloak_names")
+  const prefillAnswers = useFeature("prefill_answers")
   const initialValues = useMemo(
     () =>
       buildRegistrationInitialValues({
         currentUser,
         questions,
-        features: { keycloak_names: keycloakNames },
+        features: {
+          keycloak_names: keycloakNames,
+          prefill_answers: prefillAnswers,
+        },
       }),
-    [currentUser, questions, keycloakNames]
+    [currentUser, questions, keycloakNames, prefillAnswers]
   )
 
   return (
     <EventRegistrationForm
       {...formProps}
+      canRememberAnswers={!!currentUser && prefillAnswers}
       initialValues={initialValues}
       questions={questions}
     />

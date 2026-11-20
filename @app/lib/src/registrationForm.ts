@@ -131,8 +131,8 @@ const prefilledAnswers = (
  * from the user's display name by splitting it on single spaces. With it,
  * the Keycloak first and last name are preferred, and the display name is
  * used only when it splits unambiguously. The email is the primary email.
- * Answers to questions marked for prefill come from the user's registration
- * profile.
+ * With the `prefill_answers` feature, answers to questions marked for prefill
+ * come from the user's registration profile.
  *
  * Pure: the register page memoises the result, so the form is only reset
  * when the inputs change.
@@ -146,7 +146,9 @@ export const buildRegistrationInitialValues = ({
   const [firstName, lastName] = features?.keycloak_names
     ? keycloakOrUnambiguousName(user)
     : splitDisplayName(user.name)
-  const answers = prefilledAnswers(questions, user.registrationProfile)
+  const answers = features?.prefill_answers
+    ? prefilledAnswers(questions, user.registrationProfile)
+    : {}
 
   return {
     firstName,
@@ -154,4 +156,50 @@ export const buildRegistrationInitialValues = ({
     email: user.primaryEmail,
     ...(Object.keys(answers).length > 0 ? { answers } : {}),
   }
+}
+
+/** The longest value each registration profile field accepts. */
+export const REGISTRATION_PROFILE_MAX_LENGTHS: Readonly<
+  Record<keyof RegistrationProfileValues, number>
+> = {
+  telegram: 64,
+  dietaryRestrictions: 1000,
+}
+
+/** Whether any of the questions is marked for prefill. */
+export const hasPrefillQuestions = (
+  questions: readonly RegistrationPrefillQuestion[] | null | undefined
+): boolean => (questions ?? []).some((question) => !!profileFieldOf(question))
+
+/**
+ * The arguments of `setRegistrationProfile` that remember the answers given
+ * to the questions marked for prefill, for when the registrant ticks
+ * "remember these answers". Only the fields the event asks for are set, the
+ * others stay null (keep the saved value). An empty answer clears the saved
+ * value. An answer longer than the profile accepts is left out, so that it
+ * does not overwrite the saved value. Null when there is nothing to save.
+ */
+export const buildRegistrationProfileUpdate = (
+  questions: readonly RegistrationPrefillQuestion[] | null | undefined,
+  answers: Record<string, unknown> | null | undefined
+): { telegram: string | null; dietaryRestrictions: string | null } | null => {
+  const update: {
+    telegram: string | null
+    dietaryRestrictions: string | null
+  } = { telegram: null, dietaryRestrictions: null }
+  let changed = false
+  for (const question of questions ?? []) {
+    const field = profileFieldOf(question)
+    if (!field || update[field] !== null) {
+      continue
+    }
+    const answer = answers?.[question.id]
+    const value = typeof answer === "string" ? answer.trim() : ""
+    if (value.length > REGISTRATION_PROFILE_MAX_LENGTHS[field]) {
+      continue
+    }
+    update[field] = value
+    changed = true
+  }
+  return changed ? update : null
 }

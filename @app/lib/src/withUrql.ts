@@ -17,11 +17,23 @@ import { getSessionAndCSRFToken } from "."
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
 import type { SSRExchange } from "@urql/core"
+import type { Cache } from "@urql/exchange-graphcache"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import type { Client } from "graphql-ws"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
+
+/**
+ * Invalidates one field of the signed-in user, so that queries selecting it
+ * refetch. Does nothing when no user is cached.
+ */
+function invalidateCurrentUserField(cache: Cache, fieldName: string) {
+  const userKey = cache.resolve("Query", "currentUser")
+  if (typeof userKey === "string") {
+    cache.invalidate(userKey, fieldName)
+  }
+}
 
 let wsClient: Client | null = null
 let rootURL: string | null = null
@@ -79,6 +91,9 @@ export const withUrql = withUrqlClient(
           keys: {
             // Feature flags are identified by their key, not an id.
             FeatureFlag: (data) => (data.key as string | undefined) ?? null,
+            // A user has at most one registration profile.
+            RegistrationProfile: (data) =>
+              (data.userId as string | undefined) ?? null,
           },
           updates: {
             Mutation: {
@@ -96,6 +111,12 @@ export const withUrql = withUrqlClient(
                     ].includes(field.fieldName)
                   )
                   .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              setRegistrationProfile(_result, _args, cache, _info) {
+                invalidateCurrentUserField(cache, "registrationProfile")
+              },
+              deleteRegistrationProfile(_result, _args, cache, _info) {
+                invalidateCurrentUserField(cache, "registrationProfile")
               },
               logout(result, _args, cache, _info) {
                 // Invalidate currentUser on logout. This refetches queries that

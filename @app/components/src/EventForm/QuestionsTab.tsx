@@ -24,7 +24,7 @@ import {
   Tooltip,
 } from "antd"
 
-import { useTranslation } from "../."
+import { useFeature, useTranslation } from "../."
 import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
@@ -74,6 +74,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
      */
 
     const { t } = useTranslation("events")
+    // Prefill questions are offered only while prefill_answers is on. While
+    // it is off, a question marked for prefill shows as the TEXT question it
+    // is stored as, and keeps its marking unless its type is changed.
+    const prefillAnswers = useFeature("prefill_answers")
     const isMobile = useIsMobile()
     const [, forceUpdate] = useReducer((x) => x + 1, 0)
     const { getFieldValue, setFieldsValue } = form
@@ -364,9 +368,13 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                             is stored as a TEXT question with `prefill` set */}
                           <Form.Item
                             getValueProps={(type) => ({
-                              value:
-                                getFieldValue(["questions", name, "prefill"]) ??
-                                type,
+                              value: prefillAnswers
+                                ? (getFieldValue([
+                                    "questions",
+                                    name,
+                                    "prefill",
+                                  ]) ?? type)
+                                : type,
                             })}
                             name={[name, "type"]}
                             normalize={(val) =>
@@ -397,7 +405,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                                   {type}
                                 </Option>
                               ))}
-                              {Object.values(QuestionPrefill).map((prefill) => (
+                              {(prefillAnswers
+                                ? Object.values(QuestionPrefill)
+                                : []
+                              ).map((prefill) => (
                                 <Option
                                   key={prefill}
                                   data-cy={`eventform-select-questions-type-${index}-option-${prefill}`}

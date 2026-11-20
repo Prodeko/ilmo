@@ -43,6 +43,10 @@ export const FEATURES = {
     description:
       "Prefill the registration form with the first and last name from Keycloak instead of splitting the display name.",
   },
+  prefill_answers: {
+    description:
+      "Prefill Telegram and dietary restriction answers from a registration profile the user saves on request.",
+  },
 } as const satisfies Record<string, FeatureDefinition>
 
 export type FeatureKey = keyof typeof FEATURES
