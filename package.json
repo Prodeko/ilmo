@@ -10,6 +10,7 @@
     "start": "node ./scripts/start.mjs",
     "test": "node scripts/test.mjs",
     "test:watch": "node scripts/test.mjs --watch",
+    "stress": "bash stress/run.sh",
     "lint": "tsc -b && pnpm prettier:all --check && pnpm eslint .",
     "lint:fix": "pnpm eslint --fix . && pnpm prettier:all --write && jsonsort @app/client/src/translations",
     "eslint": "eslint",

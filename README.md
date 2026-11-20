@@ -5,8 +5,7 @@
 - Node.js v20 LTS
 - pnpm 10 (`npm install -g pnpm`)
 - Docker (for db + redis services)
-- PostgreSQL with wal2json — the project ships a Docker image with wal2json
-  included, so no host install is needed
+- PostgreSQL — the project runs it in Docker, so no host install is needed
 
 ## NOT FOR BEGINNERS
 
@@ -52,8 +51,8 @@ CONFIRM_DROP=1 pnpm setup:db
 pnpm dev
 ```
 
-The server runs on http://localhost:5678. The Postgres (with wal2json) and Redis
-services run in Docker; everything else runs on the host.
+The server runs on http://localhost:5678. The Postgres and Redis services run in
+Docker; everything else runs on the host.
 
 ## Table of contents
 
@@ -77,7 +76,7 @@ Then install dependencies:
 pnpm install
 ```
 
-Start the data services (PostgreSQL with wal2json, and Redis) in Docker:
+Start the data services (PostgreSQL and Redis) in Docker:
 
 ```sh
 docker compose up -d db redis

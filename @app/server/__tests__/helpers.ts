@@ -31,7 +31,6 @@ import {
   createUsers,
   deleteTestData as deleteSharedTestData,
   poolFromUrl,
-  refreshMaterializedView,
   setFeatureFlag as setSharedFeatureFlag,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
@@ -250,8 +249,6 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         quotas[0].id
       )
     }
-
-    await refreshMaterializedView(client)
 
     await client.query("commit")
     return {

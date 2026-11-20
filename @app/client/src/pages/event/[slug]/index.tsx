@@ -98,14 +98,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
   }, [router, event])
 
   const handleSignupState = useCallback((time, startTime, endTime) => {
-    // This page uses Postgraphile live queries (https://www.graphile.org/postgraphile/live-queries/)
-    // to automaticaly update information (registrations, quota sizes, description etc.).
-    // We cannot rely on event.signup* since those fields are exposed to the API
-    // using Postgraphile computed columns (https://www.graphile.org/postgraphile/computed-columns/).
-    // Computed columns are a known limitation of the @graphile/subscriptions-lds plugin
-    // which uses wal2json to detect updates in the database. It cannot detect updates on
-    // computed column fields. This is why we replicate the signup* fields on the frontend
-    // based on a timestamp fetched from the server.
+    // The EventPage subscription delivers the event once per page load, so
+    // event.signup* (computed columns, https://www.graphile.org/postgraphile/computed-columns/)
+    // would not change while the page is open. This is why we replicate the
+    // signup* fields on the frontend based on a timestamp fetched from the server.
     if (time.isBefore(startTime)) {
       setSignupState({ upcoming: true, open: false, closed: false })
     } else if (time.isAfter(startTime) && time.isBefore(endTime)) {
