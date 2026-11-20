@@ -7,6 +7,7 @@ context("Update event", () => {
 
   it("admin can update an existing event", () => {
     // Setup
+    cy.serverCommand("setFeatureFlags", { ribbon_text: "on" })
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
       "createEventDataResult"
     )

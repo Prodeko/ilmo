@@ -17,6 +17,14 @@ context("Event form templates, preview and day click", () => {
   beforeEach(() => cy.serverCommand("clearTestUsers"))
   beforeEach(() => cy.serverCommand("clearTestEventData"))
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
+  // After clearTestEventData, which switches every flag off
+  beforeEach(() =>
+    cy.serverCommand("setFeatureFlags", {
+      event_templates: "on",
+      form_preview: "on",
+      typed_time_input: "on",
+    })
+  )
 
   it("admin can fill the event form from templates and preview it", () => {
     cy.serverCommand("createTestEventData", {
