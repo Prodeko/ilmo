@@ -1224,6 +1224,33 @@ List all users. Only accessible to admin users.';
 
 
 --
+-- Name: admin_preview_features(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_preview_features() RETURNS SETOF text
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select f.key
+  from app_public.feature_flags as f
+  where
+    app_public.current_user_is_admin()
+    and f.retired_at is null
+    and f.available
+    and f.state = 'admins_only'
+  order by f.key;
+$$;
+
+
+--
+-- Name: FUNCTION admin_preview_features(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_preview_features() IS '@simpleCollections only
+Keys of the features enabled for the current user only because they are in admins_only. Empty unless the current user is an admin.';
+
+
+--
 -- Name: admin_update_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -5875,6 +5902,14 @@ GRANT ALL ON FUNCTION app_public.admin_delete_user(id uuid) TO ilmo_visitor;
 
 REVOKE ALL ON FUNCTION app_public.admin_list_users() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.admin_list_users() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_preview_features(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_preview_features() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_preview_features() TO ilmo_visitor;
 
 
 --

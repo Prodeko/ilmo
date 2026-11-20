@@ -2465,6 +2465,22 @@ type Query {
     orderBy: [UsersOrderBy!]
   ): UsersConnection
 
+  """
+  Keys of the features enabled for the current user only because they are in admins_only. Empty unless the current user is an admin.
+  """
+  adminPreviewFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
+
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
 
@@ -3503,6 +3519,22 @@ type Subscription {
     """The method to use when ordering `User`."""
     orderBy: [UsersOrderBy!]
   ): UsersConnection
+
+  """
+  Keys of the features enabled for the current user only because they are in admins_only. Empty unless the current user is an admin. (live)
+  """
+  adminPreviewFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
 
   """Returns the server time every second."""
   currentTime: Date!
