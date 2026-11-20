@@ -561,8 +561,26 @@ CREATE TABLE app_private.sessions (
     uuid uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_active timestamp with time zone DEFAULT now() NOT NULL
+    last_active timestamp with time zone DEFAULT now() NOT NULL,
+    kind text DEFAULT 'web'::text NOT NULL,
+    oauth_sid text,
+    CONSTRAINT sessions_kind_check CHECK ((kind = ANY (ARRAY['web'::text, 'mcp'::text]))),
+    CONSTRAINT sessions_oauth_sid_check CHECK (((kind = 'mcp'::text) = (oauth_sid IS NOT NULL)))
 );
+
+
+--
+-- Name: COLUMN sessions.kind; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.kind IS 'How the session was established: web (session cookie) or mcp (Keycloak access token on /mcp).';
+
+
+--
+-- Name: COLUMN sessions.oauth_sid; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.oauth_sid IS 'Keycloak session id (the access token sid claim) of an mcp session.';
 
 
 --
@@ -5163,6 +5181,13 @@ CREATE INDEX registration_secrets_quota_id_idx ON app_private.registration_secre
 --
 
 CREATE INDEX registration_secrets_registration_id_idx ON app_private.registration_secrets USING btree (registration_id);
+
+
+--
+-- Name: sessions_mcp_oauth_sid_key; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE UNIQUE INDEX sessions_mcp_oauth_sid_key ON app_private.sessions USING btree (oauth_sid) WHERE (kind = 'mcp'::text);
 
 
 --

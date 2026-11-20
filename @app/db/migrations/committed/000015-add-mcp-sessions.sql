@@ -1,3 +1,8 @@
+--! Previous: sha1:afe4a17a3f29df372db6863dbbd3d8f6b63800ed
+--! Hash: sha1:c867d3dba142e9cbe690540ff9f8c88deccf6419
+--! Message: add MCP sessions
+
+--! split: 60-mcp-sessions.sql
 /*
  * MCP server: the `mcp_server` flag, and Keycloak-token sessions.
  *
