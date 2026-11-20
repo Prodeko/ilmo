@@ -23,21 +23,18 @@ context("CSRF protection", () => {
         .then((cookie) => {
           cy.setCookie("csrfToken", cookie!.value + "a")
         })
+      // The event page loads the event with a request to /graphql, which
+      // now carries a wrong csrfToken
       cy.getCy("homepage-signup-open-events")
         .getCy(`eventcard-eventpage-link-${event.slug}`)
         .click()
-
-      // Triggers a request to /graphql with a wrong csrfToken
-      cy.get("[data-cy=eventpage-quotas-link-0]", { timeout: 5000 }).should(
-        "not.be.disabled"
-      )
-      cy.getCy("eventpage-quotas-link-0").click()
 
       // Assertions
       cy.get(".ant-result").should("contain", "Väärä CSRF-tunnus")
 
       // Can recover from csrf error
       cy.getCy("error-csrf-refresh").click()
+      cy.getCy("eventpage-quotas-link-0").should("not.be.disabled").click()
       cy.contains("h3", "Ilmoittaudu tapahtumaan").should("be.visible")
     })
   })
