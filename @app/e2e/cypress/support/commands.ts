@@ -77,6 +77,30 @@ function serverCommand(
 }>
 
 /**
+ * Creates or resets a flag row that no feature uses, for tests of the
+ * Features page, and clears its change history. The key must start with
+ * `test_e2e_`. Defaults: state `off`, available.
+ */
+function serverCommand(
+  command: "createTestFeatureFlag",
+  payload: {
+    key: `test_e2e_${string}`
+    state?: "off" | "admins_only" | "on"
+    available?: boolean
+    description?: string
+  }
+): Chainable<{
+  success: true
+}>
+
+/**
+ * Deletes every flag row created by createTestFeatureFlag, with its history.
+ */
+function serverCommand(command: "deleteTestFeatureFlags"): Chainable<{
+  success: true
+}>
+
+/**
  * Generate event data for e2e tests.
  */
 function serverCommand(

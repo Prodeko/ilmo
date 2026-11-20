@@ -165,6 +165,10 @@ async function runCommand(
     return { success: true }
   } else if (command === "setFeatureFlags") {
     return setFeatureFlags(rootPgPool, payload)
+  } else if (command === "createTestFeatureFlag") {
+    return createTestFeatureFlag(rootPgPool, payload)
+  } else if (command === "deleteTestFeatureFlags") {
+    return deleteTestFeatureFlags(rootPgPool)
   } else if (command === "createUser") {
     if (!payload) {
       throw new Error("Payload required")
@@ -378,6 +382,73 @@ async function reallyCreateUser(
  * and the audit log. Every key must have a row; clearTestEventData switches
  * all flags back off.
  */
+/** Keys of flag rows that e2e tests may create and delete. */
+const TEST_FEATURE_FLAG_PREFIX = "test_e2e_"
+
+/**
+ * Creates (or resets) a flag row that no feature uses, for tests of the
+ * Features page. Its change history is cleared. deleteTestFeatureFlags
+ * removes it again.
+ */
+async function createTestFeatureFlag(
+  rootPgPool: Pool,
+  payload: { [key: string]: unknown } | undefined
+) {
+  const {
+    key,
+    state = "off",
+    available = true,
+    description = "Feature flag created by an e2e test",
+  } = (payload ?? {}) as {
+    key?: unknown
+    state?: unknown
+    available?: unknown
+    description?: unknown
+  }
+  if (typeof key !== "string" || !key.startsWith(TEST_FEATURE_FLAG_PREFIX)) {
+    throw new Error(
+      `Test feature flag keys must start with "${TEST_FEATURE_FLAG_PREFIX}"`
+    )
+  }
+  if (!FEATURE_FLAG_STATES.includes(state as FeatureFlagState)) {
+    throw new Error(
+      `Invalid state ${JSON.stringify(state)} for feature flag "${key}"`
+    )
+  }
+  await rootPgPool.query(
+    `with deleted_events as (
+       delete from app_private.feature_flag_events where key = $1
+     )
+     insert into app_public.feature_flags (key, state, available, description)
+     values ($1, $2, $3, $4)
+     on conflict (key) do update
+     set
+       state = excluded.state,
+       available = excluded.available,
+       description = excluded.description,
+       updated_at = now(),
+       updated_by = null,
+       retired_at = null`,
+    [key, state, Boolean(available), String(description)]
+  )
+  invalidateFeatureFlags()
+  return { success: true }
+}
+
+/** Deletes the flag rows and history created by createTestFeatureFlag. */
+async function deleteTestFeatureFlags(rootPgPool: Pool) {
+  const pattern = `${TEST_FEATURE_FLAG_PREFIX.replace(/_/g, "\\_")}%`
+  await rootPgPool.query(
+    `with deleted_events as (
+       delete from app_private.feature_flag_events where key like $1
+     )
+     delete from app_public.feature_flags where key like $1`,
+    [pattern]
+  )
+  invalidateFeatureFlags()
+  return { success: true }
+}
+
 async function setFeatureFlags(
   rootPgPool: Pool,
   payload: { [key: string]: unknown }
