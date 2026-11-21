@@ -67,7 +67,6 @@ export const deleteTestEventData = (pool: Pool) => {
     `BEGIN;
       delete from app_public.payments;
       delete from app_private.stripe_events;
-      delete from app_private.stripe_early_refunds;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;

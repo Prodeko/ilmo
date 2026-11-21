@@ -351,7 +351,7 @@ describe("Round trip of event input types through create_event and update_event"
       )
       // The fixture helpers switch to the root role, run as the admin again
       await becomeUser(client, user.id)
-      // Paid payment settings are refused while payments are off
+      // Quota prices are refused while payments are off
       await upsertFeatureFlag(client, "payments", "on")
 
       const attributes: Record<string, Attribute[]> = {}

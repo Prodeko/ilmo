@@ -29,8 +29,9 @@ beforeAll(async () => {
 afterAll(() => resetFeatureFlags(poolFromUrl(TEST_DATABASE_URL)))
 
 /*
- * Organizer actions (mark paid, undo, reminders) and the refunds queued when
- * a paid registration is deleted.
+ * Organizer actions (mark paid, undo, reminders), and what happens to
+ * payments when a paid registration or event is deleted: nothing is refunded
+ * and the payment rows stay.
  */
 
 const jobPayloads = async (
@@ -104,7 +105,6 @@ describe("admin_mark_registration_paid", () => {
         status: "PAID",
         ticket_amount_cents: 1800,
         service_fee_cents: 0,
-        refunded_amount_cents: 0,
         currency: "eur",
         created_by: admin.id,
       })
@@ -152,33 +152,41 @@ describe("admin_mark_registration_paid", () => {
       ).rejects.toThrow("already been paid")
     }))
 
-  it.each([
-    // [case, quota price, payment mode set after registering]
-    ["of a free quota", 0, "DURING_REGISTRATION"],
-    ["of an event switched to no payments", 1800, "NONE"],
-  ])(
-    "refuses a registration %s, which needs no payment",
-    (_case, priceCents, paymentModeAfterRegistering) =>
-      withAdminUserDb(async (client, admin) => {
-        const { event, quota } = await createPaidEventData(client, {
-          priceCents,
-        })
-        const { registration } = await register(client, event.id, quota.id)
-        await asRoot(client, () =>
-          client.query(
-            "update app_public.events set payment_mode = $2 where id = $1",
-            [event.id, paymentModeAfterRegistering]
-          )
-        )
-        await becomeUser(client, admin.id)
-
-        await expect(
-          client.query("select app_public.admin_mark_registration_paid($1)", [
-            registration.id,
-          ])
-        ).rejects.toThrow("does not require payment")
+  it("refuses a registration of a free quota, which needs no payment", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client, {
+        priceCents: 0,
       })
-  )
+      const { registration } = await register(client, event.id, quota.id)
+      await becomeUser(client, admin.id)
+
+      await expect(
+        client.query("select app_public.admin_mark_registration_paid($1)", [
+          registration.id,
+        ])
+      ).rejects.toThrow("does not require payment")
+    }))
+
+  it("records the current quota price", () =>
+    withAdminUserDb(async (client, admin) => {
+      const { event, quota } = await createPaidEventData(client, {
+        priceCents: 1800,
+      })
+      const { registration } = await register(client, event.id, quota.id)
+      await asRoot(client, () =>
+        client.query(
+          "update app_public.quotas set price_cents = 2200 where id = $1",
+          [quota.id]
+        )
+      )
+      await becomeUser(client, admin.id)
+
+      const { rows } = await client.query(
+        "select ticket_amount_cents from app_public.admin_mark_registration_paid($1)",
+        [registration.id]
+      )
+      expect(rows).toEqual([{ ticket_amount_cents: 2200 }])
+    }))
 
   it("refuses a queued registration", () =>
     withAdminUserDb(async (client, admin) => {
@@ -300,7 +308,7 @@ describe("admin_send_payment_reminders", () => {
   it("sends nothing and keeps the timestamp empty when nobody is unpaid", () =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client, {
-        paymentMode: "NONE",
+        priceCents: 0,
       })
       const { registration } = await register(client, event.id, quota.id)
       await becomeUser(client, admin.id)
@@ -407,37 +415,29 @@ describe("organizer action permissions", () => {
   )
 })
 
-describe("refunds when deleting a registration", () => {
-  const refundJobs = (client: PoolClient, paymentIds: string[]) =>
-    jobPayloads(client, "payment__refund", "paymentId", paymentIds)
-
-  it.each([
-    ["by default", "select app_public.admin_delete_registration($1)"],
-    [
-      "when refund is null",
-      "select app_public.admin_delete_registration($1, null)",
-    ],
-  ])("admin_delete_registration refunds a card payment %s", (_case, sql) =>
+describe("deleting paid registrations and events", () => {
+  it("admin_delete_registration deletes a paid registration and keeps its payment, detached", () =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration } = await register(client, event.id, quota.id)
       const payment = await insertPayment(client, registration)
       await becomeUser(client, admin.id)
 
-      await client.query(sql, [registration.id])
-
-      expect(await refundJobs(client, [payment.id])).toEqual([
-        { paymentId: payment.id },
+      await client.query("select app_public.admin_delete_registration($1)", [
+        registration.id,
       ])
-      // The payment row survives the delete for bookkeeping
-      const payments = await paymentsOf(client, event.id)
-      expect(payments).toMatchObject([
+
+      expect(await paymentsOf(client, event.id)).toMatchObject([
         { id: payment.id, registration_id: null, status: "PAID" },
       ])
-    })
-  )
+      // Nothing is refunded: no job is queued for the payment
+      const jobs = await getJobs(client)
+      expect(
+        jobs.filter((job) => job.payload?.paymentId === payment.id)
+      ).toEqual([])
+    }))
 
-  it("delete_registration always refunds a card payment", () =>
+  it("delete_registration lets a participant delete a paid registration while signup is open", () =>
     withRootDb(async (client) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration, updateToken } = await register(
@@ -448,58 +448,17 @@ describe("refunds when deleting a registration", () => {
       const payment = await insertPayment(client, registration)
       await becomeUser(client, null)
 
-      await client.query("select app_public.delete_registration($1)", [
-        updateToken,
-      ])
-      expect(await refundJobs(client, [payment.id])).toEqual([
-        { paymentId: payment.id },
-      ])
+      const { rows } = await client.query(
+        "select app_public.delete_registration($1) as ok",
+        [updateToken]
+      )
+      expect(rows).toEqual([{ ok: true }])
       expect(await paymentsOf(client, event.id)).toMatchObject([
-        { id: payment.id, registration_id: null },
+        { id: payment.id, registration_id: null, status: "PAID" },
       ])
     }))
 
-  it("admin_delete_registration's refund = false covers only that delete", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await createPaidEventData(client)
-      const { registration: kept } = await register(client, event.id, quota.id)
-      const { registration: refunded } = await register(
-        client,
-        event.id,
-        quota.id
-      )
-      const keptPayment = await insertPayment(client, kept)
-      const refundedPayment = await insertPayment(client, refunded)
-      await becomeUser(client, admin.id)
-
-      await client.query(
-        "select app_public.admin_delete_registration($1, false)",
-        [kept.id]
-      )
-      await client.query("select app_public.admin_delete_registration($1)", [
-        refunded.id,
-      ])
-
-      expect(
-        await refundJobs(client, [keptPayment.id, refundedPayment.id])
-      ).toEqual([{ paymentId: refundedPayment.id }])
-      // The unrefunded payment row survives the delete too
-      expect(await paymentsOf(client, event.id)).toContainEqual(
-        expect.objectContaining({
-          id: keptPayment.id,
-          registration_id: null,
-          status: "PAID",
-        })
-      )
-      const {
-        rows: [{ setting }],
-      } = await client.query(
-        "select current_setting('ilmo.refund_deleted_registrations', true) as setting"
-      )
-      expect(setting).toBe("")
-    }))
-
-  it("deleting an event refunds its card payments", () =>
+  it("deleting an event keeps every payment row", () =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration: card } = await register(client, event.id, quota.id)
@@ -520,9 +479,6 @@ describe("refunds when deleting a registration", () => {
       const pendingPayment = await insertPayment(client, pending, {
         status: "PENDING",
       })
-      const expiredPayment = await insertPayment(client, pending, {
-        status: "EXPIRED",
-      })
       await becomeUser(client, admin.id)
 
       // As the deleteEvent CRUD mutation does; registrations cascade
@@ -532,16 +488,6 @@ describe("refunds when deleting a registration", () => {
       )
       expect(rowCount).toBe(1)
 
-      expect(
-        await refundJobs(client, [
-          cardPayment.id,
-          manualPayment.id,
-          pendingPayment.id,
-          expiredPayment.id,
-        ])
-      ).toEqual([{ paymentId: cardPayment.id }])
-
-      // Every payment row survives for bookkeeping
       const rows = await asRoot(client, async () => {
         const { rows } = await client.query(
           `select id, registration_id, event_id, status from app_public.payments

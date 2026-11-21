@@ -1,5 +1,5 @@
---! Previous: sha1:2d0e3bfdffaad38a79c33c652bec25f568cd46e4
---! Hash: sha1:e6c07bb0eee04ba2170556cfa2513b876b52f4cc
+--! Previous: sha1:ee27fe2667031e53f857909f275a6687335676cd
+--! Hash: sha1:9539962ddef96c2ce2693e6cfd004f2028048e1f
 --! Message: add prefilled registration answers
 
 --! split: 80-registration-prefill.sql

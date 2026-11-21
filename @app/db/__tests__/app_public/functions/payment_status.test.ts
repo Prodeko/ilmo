@@ -85,11 +85,6 @@ describe("registrations_payment_status", () => {
         event.id,
         quota.id
       )
-      const { registration: refunded } = await register(
-        client,
-        event.id,
-        quota.id
-      )
       const { registration: free } = await register(
         client,
         event.id,
@@ -104,7 +99,6 @@ describe("registrations_payment_status", () => {
         method: "MANUAL",
         status: "PAID",
       })
-      await insertPayment(client, refunded, { status: "REFUNDED" })
 
       const member = await createOrganizationMember(client, organization.id)
       await becomeUser(client, member.id)
@@ -112,11 +106,10 @@ describe("registrations_payment_status", () => {
       expect(await paymentStatus(client, unpaid.id)).toBe("UNPAID")
       expect(await paymentStatus(client, paid.id)).toBe("PAID")
       expect(await paymentStatus(client, paidManually.id)).toBe("PAID_MANUALLY")
-      expect(await paymentStatus(client, refunded.id)).toBe("REFUNDED")
       expect(await paymentStatus(client, free.id)).toBe("NOT_REQUIRED")
     }))
 
-  it("is NOT_REQUIRED for an unpaid registration once the event has no payments", () =>
+  it("is NOT_REQUIRED for an unpaid registration once its quota is free, and PAID for a paid one whatever the price", () =>
     withRootDb(async (client) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration: unpaid } = await register(
@@ -125,17 +118,38 @@ describe("registrations_payment_status", () => {
         quota.id
       )
       const { registration: paid } = await register(client, event.id, quota.id)
-      await insertPayment(client, paid)
+      // Paid less than the quota costs now
+      await insertPayment(client, paid, { ticketAmountCents: 900 })
       await client.query(
-        "update app_public.events set payment_mode = 'NONE' where id = $1",
-        [event.id]
+        "update app_public.quotas set price_cents = 0 where id = $1",
+        [quota.id]
       )
       const [admin] = await createUsers(client, 1, true, true)
       await becomeUser(client, admin.id)
 
       expect(await paymentStatus(client, unpaid.id)).toBe("NOT_REQUIRED")
-      // Payments made before the switch are still shown
       expect(await paymentStatus(client, paid.id)).toBe("PAID")
+    }))
+
+  it("is NOT_REQUIRED for an unfinished registration", () =>
+    withRootDb(async (client) => {
+      const { event, quota } = await createPaidEventData(client)
+      const {
+        rows: [tokens],
+      } = await client.query(
+        "select * from app_public.claim_registration_token($1, $2)",
+        [event.id, quota.id]
+      )
+      const {
+        rows: [{ registration_id }],
+      } = await client.query(
+        "select registration_id from app_private.registration_secrets where registration_token = $1",
+        [tokens.registration_token]
+      )
+      const [admin] = await createUsers(client, 1, true, true)
+      await becomeUser(client, admin.id)
+
+      expect(await paymentStatus(client, registration_id)).toBe("NOT_REQUIRED")
     }))
 
   type AddPayments = (
@@ -207,6 +221,26 @@ describe("events_payment_summary", () => {
       })
       // A queued registration that paid anyway still counts towards the money
       await insertPayment(client, queued, { ticketAmountCents: 1000 })
+      // A card payment of a deleted registration, and a manual one
+      const { registration: deleted } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      const { registration: deletedManual } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      await insertPayment(client, deleted, { ticketAmountCents: 1000 })
+      await insertPayment(client, deletedManual, {
+        method: "MANUAL",
+        ticketAmountCents: 1000,
+      })
+      await client.query(
+        "delete from app_public.registrations where id = any($1)",
+        [[deleted.id, deletedManual.id]]
+      )
 
       const member = await createOrganizationMember(client, organization.id)
       await becomeUser(client, member.id)
@@ -215,10 +249,12 @@ describe("events_payment_summary", () => {
         paid_count: 2,
         unpaid_count: 3,
         due_count: 5,
-        tickets_paid_cents: 3000,
-        // Two card payments: 1000 - 1,5 % × 1025 = 984,625 → 985 each.
-        // The manual payment reaches the guild in full.
-        guild_receives_cents: 985 + 1000 + 985,
+        tickets_paid_cents: 5000,
+        // Three card payments: 1000 - 1,5 % × 1025 = 984,625 → 985 each.
+        // The manual payments reach the guild in full.
+        guild_receives_cents: 985 + 1000 + 985 + 985 + 1000,
+        // Only the card payment of the deleted registration
+        unlinked_card_payment_count: 1,
       })
     }))
 
@@ -238,6 +274,7 @@ describe("events_payment_summary", () => {
     due_count: null,
     tickets_paid_cents: null,
     guild_receives_cents: null,
+    unlinked_card_payment_count: null,
   }
 
   it.each([
@@ -251,6 +288,7 @@ describe("events_payment_summary", () => {
         due_count: 0,
         tickets_paid_cents: 0,
         guild_receives_cents: 0,
+        unlinked_card_payment_count: 0,
       },
     ],
     ["is null for anonymous users", anonymous, aPaidRegistration, hidden],

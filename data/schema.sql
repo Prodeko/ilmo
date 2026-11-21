@@ -229,24 +229,6 @@ CREATE DOMAIN app_public.email AS public.citext
 
 
 --
--- Name: payment_mode; Type: TYPE; Schema: app_public; Owner: -
---
-
-CREATE TYPE app_public.payment_mode AS ENUM (
-    'NONE',
-    'DURING_REGISTRATION',
-    'AFTER_REGISTRATION'
-);
-
-
---
--- Name: TYPE payment_mode; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TYPE app_public.payment_mode IS 'When an event collects payment: not at all, right after registering, or once registration has closed.';
-
-
---
 -- Name: event_input; Type: TYPE; Schema: app_public; Owner: -
 --
 
@@ -265,9 +247,7 @@ CREATE TYPE app_public.event_input AS (
 	open_quota_size smallint,
 	owner_organization_id uuid,
 	category_id uuid,
-	highlight_text app_public.translated_field,
-	payment_mode app_public.payment_mode,
-	send_unpaid_email_on_close boolean
+	highlight_text app_public.translated_field
 );
 
 
@@ -280,7 +260,8 @@ CREATE TYPE app_public.event_payment_summary AS (
 	unpaid_count integer,
 	due_count integer,
 	tickets_paid_cents integer,
-	guild_receives_cents integer
+	guild_receives_cents integer,
+	unlinked_card_payment_count integer
 );
 
 
@@ -341,8 +322,7 @@ COMMENT ON TYPE app_public.payment_method IS 'How a payment was made: by card th
 CREATE TYPE app_public.payment_status AS ENUM (
     'PENDING',
     'PAID',
-    'EXPIRED',
-    'REFUNDED'
+    'EXPIRED'
 );
 
 
@@ -361,8 +341,7 @@ CREATE TYPE app_public.registration_payment_status AS ENUM (
     'NOT_REQUIRED',
     'UNPAID',
     'PAID',
-    'PAID_MANUALLY',
-    'REFUNDED'
+    'PAID_MANUALLY'
 );
 
 
@@ -410,46 +389,6 @@ CREATE TYPE app_public.update_event_quotas AS (
 	size smallint,
 	price_cents integer
 );
-
-
---
--- Name: backfill_registration_prices(uuid); Type: FUNCTION; Schema: app_hidden; Owner: -
---
-
-CREATE FUNCTION app_hidden.backfill_registration_prices(event_id uuid) RETURNS integer
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  v_count integer;
-begin
-  if not app_private.current_user_can_manage_event_payments(backfill_registration_prices.event_id) then
-    raise exception 'Access denied.' using errcode = 'DNIED';
-  end if;
-
-  update app_public.registrations as r
-    set price_cents = q.price_cents
-    from app_public.quotas as q, app_public.events as e
-    where
-      r.event_id = backfill_registration_prices.event_id
-      and q.id = r.quota_id
-      and e.id = r.event_id
-      and e.payment_mode <> 'NONE'
-      and r.is_finished is true
-      and r.price_cents is null
-      and q.price_cents > 0;
-
-  get diagnostics v_count = row_count;
-  return v_count;
-end;
-$$;
-
-
---
--- Name: FUNCTION backfill_registration_prices(event_id uuid); Type: COMMENT; Schema: app_hidden; Owner: -
---
-
-COMMENT ON FUNCTION app_hidden.backfill_registration_prices(event_id uuid) IS 'Sets price_cents from the quota price on finished registrations of a paid event that have no price yet. Returns the number of registrations updated.';
 
 
 --
@@ -515,38 +454,6 @@ $$;
 --
 
 COMMENT ON FUNCTION app_private.current_user_can_manage_event_payments(event_id uuid) IS 'True if the current user may see and manage payments of the event: admins and members of the event''s owner organization.';
-
-
---
--- Name: delete_registration_without_refund(uuid); Type: FUNCTION; Schema: app_private; Owner: -
---
-
-CREATE FUNCTION app_private.delete_registration_without_refund(registration_id uuid) RETURNS uuid
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  v_previous_setting text := current_setting('ilmo.refund_deleted_registrations', true);
-  v_registration_id uuid;
-begin
-  perform set_config('ilmo.refund_deleted_registrations', 'off', true);
-
-  delete from app_public.registrations r
-    where r.id = delete_registration_without_refund.registration_id
-    returning r.id into v_registration_id;
-
-  perform set_config('ilmo.refund_deleted_registrations', coalesce(v_previous_setting, ''), true);
-
-  return v_registration_id;
-end;
-$$;
-
-
---
--- Name: FUNCTION delete_registration_without_refund(registration_id uuid); Type: COMMENT; Schema: app_private; Owner: -
---
-
-COMMENT ON FUNCTION app_private.delete_registration_without_refund(registration_id uuid) IS 'Deletes a registration without queueing a refund for its card payment. Returns the deleted registration''s id.';
 
 
 --
@@ -1112,8 +1019,7 @@ CREATE TABLE app_public.registrations (
     created_by uuid,
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    price_cents integer
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1182,13 +1088,6 @@ COMMENT ON COLUMN app_public.registrations.is_finished IS 'True if the registrat
 
 
 --
--- Name: COLUMN registrations.price_cents; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.price_cents IS 'Ticket price in cents at the time of registering (a snapshot of the quota price). Null when no payment applies.';
-
-
---
 -- Name: registration_payment_status(app_public.registrations); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -1208,15 +1107,12 @@ CREATE FUNCTION app_private.registration_payment_status(registration app_public.
         where p.registration_id = registration.id and p.status = 'PAID'
       )
         then 'PAID'::app_public.registration_payment_status
-      when exists(
-        select 1 from app_public.payments as p
-        where p.registration_id = registration.id and p.status = 'REFUNDED'
+      when registration.is_finished is true and exists(
+        select 1 from app_public.quotas as q
+        where q.id = registration.quota_id and q.price_cents > 0
       )
-        then 'REFUNDED'::app_public.registration_payment_status
-      when coalesce(registration.price_cents, 0) = 0
-        or (select e.payment_mode from app_public.events as e where e.id = registration.event_id) = 'NONE'
-        then 'NOT_REQUIRED'::app_public.registration_payment_status
-      else 'UNPAID'::app_public.registration_payment_status
+        then 'UNPAID'::app_public.registration_payment_status
+      else 'NOT_REQUIRED'::app_public.registration_payment_status
     end;
 $$;
 
@@ -1598,77 +1494,25 @@ COMMENT ON FUNCTION app_private.tg__timestamps() IS 'This trigger should be call
 
 
 --
--- Name: tg_registrations__queue_payment_refund(); Type: FUNCTION; Schema: app_private; Owner: -
+-- Name: tg_events__reset_unpaid_close_email(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
-CREATE FUNCTION app_private.tg_registrations__queue_payment_refund() RETURNS trigger
-    LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
-    AS $$
-declare
-  v_payment_id uuid;
-begin
-  if coalesce(current_setting('ilmo.refund_deleted_registrations', true), '') = 'off' then
-    return OLD;
-  end if;
-
-  for v_payment_id in
-    select p.id
-    from app_public.payments as p
-    where
-      p.registration_id = OLD.id
-      and p.status = 'PAID'
-      and p.method = 'STRIPE'
-  loop
-    perform graphile_worker.add_job(
-      'payment__refund',
-      json_build_object('paymentId', v_payment_id)
-    );
-  end loop;
-
-  return OLD;
-end;
-$$;
-
-
---
--- Name: FUNCTION tg_registrations__queue_payment_refund(); Type: COMMENT; Schema: app_private; Owner: -
---
-
-COMMENT ON FUNCTION app_private.tg_registrations__queue_payment_refund() IS 'Queues payment__refund for the paid Stripe payment of a registration being deleted, unless ilmo.refund_deleted_registrations is ''off'' in this transaction. Manual payments are never refunded by Ilmo.';
-
-
---
--- Name: tg_registrations__snapshot_price(); Type: FUNCTION; Schema: app_private; Owner: -
---
-
-CREATE FUNCTION app_private.tg_registrations__snapshot_price() RETURNS trigger
-    LANGUAGE plpgsql SECURITY DEFINER
+CREATE FUNCTION app_private.tg_events__reset_unpaid_close_email() RETURNS trigger
+    LANGUAGE plpgsql
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 begin
-  if NEW.is_finished is true and (TG_OP = 'INSERT' or OLD.is_finished is not true)
-    and app_public.feature_enabled('payments')
-  then
-    select q.price_cents into NEW.price_cents
-      from app_public.quotas as q
-      join app_public.events as e on e.id = q.event_id
-      where
-        q.id = NEW.quota_id
-        and e.id = NEW.event_id
-        and e.payment_mode <> 'NONE'
-        and q.price_cents > 0;
-  end if;
+  NEW.unpaid_close_email_sent_at := null;
   return NEW;
 end;
 $$;
 
 
 --
--- Name: FUNCTION tg_registrations__snapshot_price(); Type: COMMENT; Schema: app_private; Owner: -
+-- Name: FUNCTION tg_events__reset_unpaid_close_email(); Type: COMMENT; Schema: app_private; Owner: -
 --
 
-COMMENT ON FUNCTION app_private.tg_registrations__snapshot_price() IS 'Sets registrations.price_cents from the quota price when a registration of a paid event is finished while payments are on.';
+COMMENT ON FUNCTION app_private.tg_events__reset_unpaid_close_email() IS 'Clears events.unpaid_close_email_sent_at when registration_end_time moves later.';
 
 
 --
@@ -1745,10 +1589,10 @@ $$;
 
 
 --
--- Name: admin_delete_registration(uuid, boolean); Type: FUNCTION; Schema: app_public; Owner: -
+-- Name: admin_delete_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
-CREATE FUNCTION app_public.admin_delete_registration(id uuid, refund boolean DEFAULT true) RETURNS boolean
+CREATE FUNCTION app_public.admin_delete_registration(id uuid) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
@@ -1758,13 +1602,8 @@ begin
   -- Check permissions
   call app_public.check_is_admin();
 
-  -- Delete registration and associated secrets (foreign key has on delete).
-  if coalesce(refund, true) then
-    -- The _200_queue_payment_refund trigger refunds the ticket price of a card payment
-    delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
-  else
-    v_registration_id := app_private.delete_registration_without_refund(admin_delete_registration.id);
-  end if;
+  -- Delete registration and associated secrets (foreign key has on delete)
+  delete from app_public.registrations r where r.id = admin_delete_registration.id returning r.id into v_registration_id;
 
   if v_registration_id is null then
     raise exception 'Registration was not found.' using errcode = 'NTFND';
@@ -1776,10 +1615,10 @@ $$;
 
 
 --
--- Name: FUNCTION admin_delete_registration(id uuid, refund boolean); Type: COMMENT; Schema: app_public; Owner: -
+-- Name: FUNCTION admin_delete_registration(id uuid); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid, refund boolean) IS 'Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed. If the registration was paid by card and refund is true (the default), the ticket price is refunded; the service fee is not.';
+COMMENT ON FUNCTION app_public.admin_delete_registration(id uuid) IS 'Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed.';
 
 
 --
@@ -1864,17 +1703,13 @@ CREATE TABLE app_public.payments (
     status app_public.payment_status DEFAULT 'PENDING'::app_public.payment_status NOT NULL,
     ticket_amount_cents integer NOT NULL,
     service_fee_cents integer DEFAULT 0 NOT NULL,
-    refunded_amount_cents integer DEFAULT 0 NOT NULL,
     currency text DEFAULT 'eur'::text NOT NULL,
     stripe_checkout_session_id text,
     stripe_payment_intent_id text,
-    stripe_refund_id text,
     paid_at timestamp with time zone,
-    refunded_at timestamp with time zone,
     created_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT payments_refunded_amount_cents_check CHECK ((refunded_amount_cents >= 0)),
     CONSTRAINT payments_service_fee_cents_check CHECK ((service_fee_cents >= 0)),
     CONSTRAINT payments_ticket_amount_cents_check CHECK ((ticket_amount_cents >= 0))
 );
@@ -1885,14 +1720,14 @@ CREATE TABLE app_public.payments (
 --
 
 COMMENT ON TABLE app_public.payments IS '@omit create,update,delete
-Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data.';
+Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data. Ilmo never refunds: a card payment without a registration is refunded by hand in Stripe, if at all.';
 
 
 --
 -- Name: COLUMN payments.registration_id; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.payments.registration_id IS 'The registration paid for. Null once the registration has been deleted.';
+COMMENT ON COLUMN app_public.payments.registration_id IS 'The registration paid for. Null once the registration has been deleted, and for a card payment that could not be applied to it (a second payment, or an amount that did not match).';
 
 
 --
@@ -1927,7 +1762,7 @@ COMMENT ON COLUMN app_public.payments.quota_title IS 'Snapshot of the quota titl
 -- Name: COLUMN payments.ticket_amount_cents; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.payments.ticket_amount_cents IS 'Ticket price paid, in cents.';
+COMMENT ON COLUMN app_public.payments.ticket_amount_cents IS 'Ticket price paid, in cents: the quota price when the payment was started.';
 
 
 --
@@ -1935,13 +1770,6 @@ COMMENT ON COLUMN app_public.payments.ticket_amount_cents IS 'Ticket price paid,
 --
 
 COMMENT ON COLUMN app_public.payments.service_fee_cents IS 'Service fee paid on top of the ticket, in cents. 0 for manual payments.';
-
-
---
--- Name: COLUMN payments.refunded_amount_cents; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.payments.refunded_amount_cents IS 'Amount refunded, in cents.';
 
 
 --
@@ -1982,11 +1810,9 @@ begin
   end if;
 
   select * into v_event from app_public.events where id = v_registration.event_id;
+  select * into v_quota from app_public.quotas where id = v_registration.quota_id;
 
-  if v_registration.is_finished is not true
-    or coalesce(v_registration.price_cents, 0) = 0
-    or v_event.payment_mode = 'NONE'
-  then
+  if v_registration.is_finished is not true or v_quota.price_cents = 0 then
     raise exception 'This registration does not require payment.' using errcode = 'DNIED';
   end if;
 
@@ -2004,8 +1830,6 @@ begin
   ) then
     raise exception 'This registration is in the queue.' using errcode = 'DNIED';
   end if;
-
-  select * into v_quota from app_public.quotas where id = v_registration.quota_id;
 
   insert into app_public.payments (
     registration_id,
@@ -2028,7 +1852,7 @@ begin
     v_quota.title,
     'MANUAL',
     'PAID',
-    v_registration.price_cents,
+    v_quota.price_cents,
     0,
     now(),
     app_public.current_user_id()
@@ -2049,7 +1873,7 @@ $$;
 -- Name: FUNCTION admin_mark_registration_paid(registration_id uuid); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) IS 'Records a manual payment (cash, bank transfer) for a registration and emails the participant a payment confirmation.';
+COMMENT ON FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) IS 'Records a manual payment (cash, bank transfer) of the current quota price for a registration and emails the participant a payment confirmation.';
 
 
 --
@@ -2468,13 +2292,10 @@ CREATE TABLE app_public.events (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     highlight_text app_public.translated_field,
-    payment_mode app_public.payment_mode DEFAULT 'NONE'::app_public.payment_mode NOT NULL,
-    send_unpaid_email_on_close boolean DEFAULT false NOT NULL,
     unpaid_close_email_sent_at timestamp with time zone,
     last_payment_reminder_sent_at timestamp with time zone,
     CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
     CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
-    CONSTRAINT _cnstr_check_events_after_registration_sends_unpaid_email CHECK (((payment_mode <> 'AFTER_REGISTRATION'::app_public.payment_mode) OR send_unpaid_email_on_close)),
     CONSTRAINT _cnstr_check_events_open_quota_size CHECK ((open_quota_size >= 0)),
     CONSTRAINT _cnstr_check_registration_end_before_event_start CHECK ((registration_end_time < event_start_time))
 );
@@ -2601,24 +2422,10 @@ COMMENT ON COLUMN app_public.events.highlight_text IS 'Text shown on the ribbon 
 
 
 --
--- Name: COLUMN events.payment_mode; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.payment_mode IS 'When payment is collected for this event. NONE means the event has no payments.';
-
-
---
--- Name: COLUMN events.send_unpaid_email_on_close; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.events.send_unpaid_email_on_close IS 'Email the payment link to unpaid participants holding a spot when registration closes. Always true in AFTER_REGISTRATION mode.';
-
-
---
 -- Name: COLUMN events.unpaid_close_email_sent_at; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.events.unpaid_close_email_sent_at IS 'When the close-of-registration payment email was sent. Set once by the worker.';
+COMMENT ON COLUMN app_public.events.unpaid_close_email_sent_at IS 'When the close-of-registration payment email was sent. Set by the worker; cleared when registration_end_time moves later, so that the email goes out again at the new close.';
 
 
 --
@@ -2683,26 +2490,6 @@ begin
   -- Create quotas and questions
   perform * from app_public.create_event_quotas(v_event.id, quotas);
   perform * from app_public.create_event_questions(v_event.id, questions);
-
-  -- Payment settings. Set after the insert above, which is kept as it was so
-  -- that events without payment settings are created exactly as before.
-  if event.payment_mode is not null or event.send_unpaid_email_on_close is not null then
-    -- A paid payment mode can be chosen only while payments are on
-    if coalesce(event.payment_mode, 'NONE') <> 'NONE' and not app_public.feature_enabled('payments') then
-      raise exception 'Payments are not available.' using errcode = 'FTOFF';
-    end if;
-
-    update app_public.events as e
-      set
-        payment_mode = coalesce(event.payment_mode, e.payment_mode),
-        -- The close email is how participants get the payment link in
-        -- AFTER_REGISTRATION mode, so it is always on there.
-        send_unpaid_email_on_close =
-          coalesce(event.payment_mode, e.payment_mode) = 'AFTER_REGISTRATION'
-          or coalesce(event.send_unpaid_email_on_close, e.send_unpaid_email_on_close)
-      where e.id = v_event.id
-    returning * into v_event;
-  end if;
 
   return v_event;
 end;
@@ -2943,7 +2730,7 @@ COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
 -- Name: COLUMN quotas.price_cents; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON COLUMN app_public.quotas.price_cents IS 'Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe''s minimum, and at most 1 000 000 cents (10 000 €).';
+COMMENT ON COLUMN app_public.quotas.price_cents IS 'Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe''s minimum, and at most 1 000 000 cents (10 000 €). Registrants pay the price in effect when they pay.';
 
 
 --
@@ -3464,22 +3251,16 @@ begin
   if v_registration_id is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
   end if;
-  -- Lock the registration: a concurrent call with the same token waits here and then finds it gone
-  select * into v_registration from app_public.registrations where id = v_registration_id for update;
+
+  select * into v_registration from app_public.registrations where id = v_registration_id;
   select * into v_event from app_public.events where id = v_registration.event_id;
-  if v_registration.id is null then raise exception 'Registration matching token was not found.' using errcode = 'NTFND'; end if;
+
   if (v_event is null) or not (select app_public.events_signup_open(v_event)) then
     raise exception 'Deleting a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
-  -- Delete registration and associated secrets (foreign key has on delete).
-  -- A card payment is always refunded (ticket price only), by the
-  -- _200_queue_payment_refund trigger.
+  -- Delete registration and associated secrets (foreign key has on delete)
   delete from app_public.registrations where id = v_registration_id;
-
-  if not found then
-    raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
-  end if;
 
   return true;
 end;
@@ -3608,7 +3389,7 @@ CREATE FUNCTION app_public.events_payment_summary(e app_public.events) RETURNS a
       and s.status in ('IN_QUOTA', 'IN_OPEN_QUOTA')
   ),
   paid as (
-    select p.method, p.ticket_amount_cents
+    select p.method, p.ticket_amount_cents, p.registration_id
     from app_public.payments as p
     where p.event_id = e.id and p.status = 'PAID'
   )
@@ -3628,7 +3409,8 @@ CREATE FUNCTION app_public.events_payment_summary(e app_public.events) RETURNS a
             -- In numeric, so large amounts can't overflow integer maths
             else floor((1000 * ticket_amount_cents::numeric - 15 * (ticket_amount_cents::numeric + 25)) / 1000 + 0.5)
           end
-        ), 0) from paid)::integer
+        ), 0) from paid)::integer,
+        (select count(*) from paid where method = 'STRIPE' and registration_id is null)::integer
       )::app_public.event_payment_summary
     end;
 $$;
@@ -3638,7 +3420,7 @@ $$;
 -- Name: FUNCTION events_payment_summary(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.events_payment_summary(e app_public.events) IS 'Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid and the estimated amount the guild receives. Null unless the current user may manage the event''s payments.';
+COMMENT ON FUNCTION app_public.events_payment_summary(e app_public.events) IS 'Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid, the estimated amount the guild receives and the number of card payments not linked to a registration (deleted registrations, second payments), which organizers may refund by hand in Stripe. Null unless the current user may manage the event''s payments.';
 
 
 --
@@ -5010,36 +4792,6 @@ begin
   perform * from app_public.update_event_quotas(id, quotas);
   perform * from app_public.update_event_questions(id, questions);
 
-  -- Payment settings. Updated after the statements above, which are kept as
-  -- they were so that events without payment settings are updated exactly
-  -- as before.
-  if event.payment_mode is not null or event.send_unpaid_email_on_close is not null then
-    -- A paid payment mode can be chosen only while payments are on
-    if coalesce(event.payment_mode, 'NONE') <> 'NONE' and not app_public.feature_enabled('payments') then
-      raise exception 'Payments are not available.' using errcode = 'FTOFF';
-    end if;
-
-    declare
-      v_old_payment_mode app_public.payment_mode := v_event.payment_mode;
-    begin
-      update app_public.events as e
-        set
-          payment_mode = coalesce(event.payment_mode, e.payment_mode),
-          -- Always on in AFTER_REGISTRATION mode, see create_event
-          send_unpaid_email_on_close =
-            coalesce(event.payment_mode, e.payment_mode) = 'AFTER_REGISTRATION'
-            or coalesce(event.send_unpaid_email_on_close, e.send_unpaid_email_on_close)
-        where e.id = update_event.id
-      returning * into v_event;
-
-      -- Switching from no payments to a paid mode makes existing
-      -- registrations in paid quotas unpaid at the (just saved) quota price.
-      if v_old_payment_mode = 'NONE' and v_event.payment_mode <> 'NONE' then
-        perform app_hidden.backfill_registration_prices(v_event.id);
-      end if;
-    end;
-  end if;
-
   return v_event;
 end;
 $$;
@@ -5049,7 +4801,7 @@ $$;
 -- Name: FUNCTION update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given. A paid `paymentMode`, and a non-zero quota `priceCents`, are refused while payments are off.';
+COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.';
 
 
 --
@@ -5498,26 +5250,6 @@ COMMENT ON TABLE app_private.registration_secrets IS 'The contents of this table
 
 
 --
--- Name: stripe_early_refunds; Type: TABLE; Schema: app_private; Owner: -
---
-
-CREATE TABLE app_private.stripe_early_refunds (
-    stripe_payment_intent_id text NOT NULL,
-    amount_refunded_cents integer NOT NULL,
-    stripe_refund_id text,
-    received_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT stripe_early_refunds_amount_refunded_cents_check CHECK ((amount_refunded_cents >= 0))
-);
-
-
---
--- Name: TABLE stripe_early_refunds; Type: COMMENT; Schema: app_private; Owner: -
---
-
-COMMENT ON TABLE app_private.stripe_early_refunds IS 'Stripe refunds that arrived before their payment was recorded; applied when checkout.session.completed arrives.';
-
-
---
 -- Name: stripe_events; Type: TABLE; Schema: app_private; Owner: -
 --
 
@@ -5880,14 +5612,6 @@ ALTER TABLE ONLY app_private.registration_secrets
 
 ALTER TABLE ONLY app_private.sessions
     ADD CONSTRAINT sessions_pkey PRIMARY KEY (uuid);
-
-
---
--- Name: stripe_early_refunds stripe_early_refunds_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
---
-
-ALTER TABLE ONLY app_private.stripe_early_refunds
-    ADD CONSTRAINT stripe_early_refunds_pkey PRIMARY KEY (stripe_payment_intent_id);
 
 
 --
@@ -6721,17 +6445,10 @@ CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registr
 
 
 --
--- Name: registrations _200_queue_payment_refund; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: events _250_reset_unpaid_close_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _200_queue_payment_refund BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg_registrations__queue_payment_refund();
-
-
---
--- Name: registrations _250_snapshot_price; Type: TRIGGER; Schema: app_public; Owner: -
---
-
-CREATE TRIGGER _250_snapshot_price BEFORE INSERT OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg_registrations__snapshot_price();
+CREATE TRIGGER _250_reset_unpaid_close_email BEFORE UPDATE OF registration_end_time ON app_public.events FOR EACH ROW WHEN ((new.registration_end_time > old.registration_end_time)) EXECUTE FUNCTION app_private.tg_events__reset_unpaid_close_email();
 
 
 --
@@ -7279,12 +6996,6 @@ ALTER TABLE app_private.registration_secrets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_private.sessions ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: stripe_early_refunds; Type: ROW SECURITY; Schema: app_private; Owner: -
---
-
-ALTER TABLE app_private.stripe_early_refunds ENABLE ROW LEVEL SECURITY;
-
---
 -- Name: stripe_events; Type: ROW SECURITY; Schema: app_private; Owner: -
 --
 
@@ -7695,14 +7406,6 @@ GRANT ALL ON FUNCTION app_public.check_language(_column jsonb) TO ilmo_visitor;
 
 
 --
--- Name: FUNCTION backfill_registration_prices(event_id uuid); Type: ACL; Schema: app_hidden; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_hidden.backfill_registration_prices(event_id uuid) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_hidden.backfill_registration_prices(event_id uuid) TO ilmo_visitor;
-
-
---
 -- Name: FUNCTION assert_valid_password(new_password text); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -7721,13 +7424,6 @@ REVOKE ALL ON FUNCTION app_private.connect_telegram(token text, chat_id bigint, 
 --
 
 REVOKE ALL ON FUNCTION app_private.current_user_can_manage_event_payments(event_id uuid) FROM PUBLIC;
-
-
---
--- Name: FUNCTION delete_registration_without_refund(registration_id uuid); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.delete_registration_without_refund(registration_id uuid) FROM PUBLIC;
 
 
 --
@@ -7941,17 +7637,10 @@ REVOKE ALL ON FUNCTION app_private.tg__timestamps() FROM PUBLIC;
 
 
 --
--- Name: FUNCTION tg_registrations__queue_payment_refund(); Type: ACL; Schema: app_private; Owner: -
+-- Name: FUNCTION tg_events__reset_unpaid_close_email(); Type: ACL; Schema: app_private; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_private.tg_registrations__queue_payment_refund() FROM PUBLIC;
-
-
---
--- Name: FUNCTION tg_registrations__snapshot_price(); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.tg_registrations__snapshot_price() FROM PUBLIC;
+REVOKE ALL ON FUNCTION app_private.tg_events__reset_unpaid_close_email() FROM PUBLIC;
 
 
 --
@@ -7977,11 +7666,11 @@ GRANT ALL ON FUNCTION app_public.accept_invitation_to_organization(invitation_id
 
 
 --
--- Name: FUNCTION admin_delete_registration(id uuid, refund boolean); Type: ACL; Schema: app_public; Owner: -
+-- Name: FUNCTION admin_delete_registration(id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_public.admin_delete_registration(id uuid, refund boolean) FROM PUBLIC;
-GRANT ALL ON FUNCTION app_public.admin_delete_registration(id uuid, refund boolean) TO ilmo_visitor;
+REVOKE ALL ON FUNCTION app_public.admin_delete_registration(id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_delete_registration(id uuid) TO ilmo_visitor;
 
 
 --
@@ -8205,20 +7894,6 @@ GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo
 --
 
 GRANT INSERT(highlight_text),UPDATE(highlight_text) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.payment_mode; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(payment_mode),UPDATE(payment_mode) ON TABLE app_public.events TO ilmo_visitor;
-
-
---
--- Name: COLUMN events.send_unpaid_email_on_close; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(send_unpaid_email_on_close),UPDATE(send_unpaid_email_on_close) ON TABLE app_public.events TO ilmo_visitor;
 
 
 --

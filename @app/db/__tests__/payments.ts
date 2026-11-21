@@ -13,10 +13,7 @@ import {
  * caller's transaction (which the with*Db helpers roll back).
  */
 
-export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
-
 interface PaidEventOptions {
-  paymentMode?: PaymentMode
   priceCents?: number
   quotaSize?: number
   openQuotaSize?: number
@@ -25,12 +22,11 @@ interface PaidEventOptions {
 /**
  * Creates an organization (the current session's user, if any, becomes its
  * owner member), a category, an event with an open signup and one quota, and sets
- * the event's payment mode and the quota's price.
+ * the quota's price.
  */
 export async function createPaidEventData(
   client: PoolClient,
   {
-    paymentMode = "DURING_REGISTRATION",
     priceCents = 1800,
     quotaSize = 10,
     openQuotaSize = 0,
@@ -72,22 +68,12 @@ export async function createPaidEventData(
       quotaSize
     )
     const {
-      rows: [event],
-    } = await client.query(
-      `update app_public.events
-        set
-          payment_mode = $2::app_public.payment_mode,
-          send_unpaid_email_on_close = $2::app_public.payment_mode = 'AFTER_REGISTRATION'
-        where id = $1 returning *`,
-      [createdEvent.id, paymentMode]
-    )
-    const {
       rows: [quota],
     } = await client.query(
       `update app_public.quotas set price_cents = $2 where id = $1 returning *`,
       [createdQuota.id, priceCents]
     )
-    return { organization, eventCategory, event, quota }
+    return { organization, eventCategory, event: createdEvent, quota }
   })
 }
 
@@ -129,7 +115,7 @@ export async function register(
 
 interface PaymentOptions {
   method?: "STRIPE" | "MANUAL"
-  status?: "PENDING" | "PAID" | "EXPIRED" | "REFUNDED"
+  status?: "PENDING" | "PAID" | "EXPIRED"
   ticketAmountCents?: number
   serviceFeeCents?: number
 }

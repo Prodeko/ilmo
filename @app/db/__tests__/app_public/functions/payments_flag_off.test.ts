@@ -3,17 +3,16 @@ import { PoolClient } from "pg"
 import {
   asRoot,
   becomeUser,
-  getJobs,
   upsertFeatureFlag,
   withAdminUserDb,
 } from "../../helpers"
 import { createPaidEventData, insertPayment, register } from "../../payments"
 
 /*
- * While the `payments` flag is off nobody can start a payment: paid settings
- * are refused (errcode FTOFF), registrations get no price and the organizer
- * payment actions refuse to run. What is already in flight still settles:
- * stored settings are kept and refunds are still queued.
+ * While the `payments` flag is off nobody can start a payment: quota prices
+ * are refused (errcode FTOFF) and the organizer payment actions refuse to
+ * run. What is already there stays: stored prices are kept, paid
+ * registrations stay paid.
  */
 
 const day = 24 * 60 * 60 * 1000
@@ -103,26 +102,6 @@ async function paidEventWithFlagOff(client: PoolClient, userId: string) {
 
 describe("while the payments flag is off", () => {
   describe("create_event", () => {
-    it.each(["DURING_REGISTRATION", "AFTER_REGISTRATION"])(
-      "refuses payment mode %s",
-      (paymentMode) =>
-        withAdminUserDb(async (client, admin) => {
-          const { organization, eventCategory } = await paidEventWithFlagOff(
-            client,
-            admin.id
-          )
-          await expect(
-            createEvent(
-              client,
-              eventInput(organization.id, eventCategory.id, {
-                payment_mode: paymentMode,
-              }),
-              [newQuota()]
-            )
-          ).rejects.toMatchObject({ code: "FTOFF" })
-        })
-    )
-
     it("refuses a quota price", () =>
       withAdminUserDb(async (client, admin) => {
         const { organization, eventCategory } = await paidEventWithFlagOff(
@@ -136,7 +115,7 @@ describe("while the payments flag is off", () => {
         ).rejects.toMatchObject({ code: "FTOFF" })
       }))
 
-    it("accepts no payments and free quotas", () =>
+    it("accepts free quotas", () =>
       withAdminUserDb(async (client, admin) => {
         const { organization, eventCategory } = await paidEventWithFlagOff(
           client,
@@ -146,29 +125,18 @@ describe("while the payments flag is off", () => {
           rows: [event],
         } = await createEvent(
           client,
-          eventInput(organization.id, eventCategory.id, {
-            payment_mode: "NONE",
-          }),
+          eventInput(organization.id, eventCategory.id),
           [newQuota({ price_cents: 0 }), newQuota({ position: 1 })]
         )
-        expect(event.payment_mode).toBe("NONE")
+        const { rows } = await client.query(
+          "select price_cents from app_public.quotas where event_id = $1",
+          [event.id]
+        )
+        expect(rows).toEqual([{ price_cents: 0 }, { price_cents: 0 }])
       }))
   })
 
   describe("update_event", () => {
-    it("refuses a paid payment mode", () =>
-      withAdminUserDb(async (client, admin) => {
-        const { event, quota } = await paidEventWithFlagOff(client, admin.id)
-        await expect(
-          updateEvent(
-            client,
-            event.id,
-            { payment_mode: "AFTER_REGISTRATION" },
-            [quotaInput(quota)]
-          )
-        ).rejects.toMatchObject({ code: "FTOFF" })
-      }))
-
     it("refuses a non-zero quota price, also the stored one", () =>
       withAdminUserDb(async (client, admin) => {
         const { event, quota } = await paidEventWithFlagOff(client, admin.id)
@@ -179,7 +147,7 @@ describe("while the payments flag is off", () => {
         ).rejects.toMatchObject({ code: "FTOFF" })
       }))
 
-    it("keeps the stored settings and prices when they are left out", () =>
+    it("keeps the stored prices when they are left out", () =>
       withAdminUserDb(async (client, admin) => {
         const { event, quota } = await paidEventWithFlagOff(client, admin.id)
         const {
@@ -187,10 +155,7 @@ describe("while the payments flag is off", () => {
         } = await updateEvent(client, event.id, { location: "Espoo" }, [
           quotaInput(quota),
         ])
-        expect(updated).toMatchObject({
-          location: "Espoo",
-          payment_mode: "DURING_REGISTRATION",
-        })
+        expect(updated).toMatchObject({ location: "Espoo" })
         const {
           rows: [stored],
         } = await client.query(
@@ -200,24 +165,19 @@ describe("while the payments flag is off", () => {
         expect(stored.price_cents).toBe(1800)
       }))
 
-    it("lets an organizer switch a paid event to no payments", () =>
+    it("lets an organizer make a paid quota free", () =>
       withAdminUserDb(async (client, admin) => {
         const { event, quota } = await paidEventWithFlagOff(client, admin.id)
-        const {
-          rows: [updated],
-        } = await updateEvent(client, event.id, { payment_mode: "NONE" }, [
+        await updateEvent(client, event.id, {}, [
           quotaInput(quota, { price_cents: 0 }),
         ])
-        expect(updated.payment_mode).toBe("NONE")
+        const { rows } = await client.query(
+          "select price_cents from app_public.quotas where id = $1",
+          [quota.id]
+        )
+        expect(rows).toEqual([{ price_cents: 0 }])
       }))
   })
-
-  it("does not snapshot a price for new registrations", () =>
-    withAdminUserDb(async (client, admin) => {
-      const { event, quota } = await paidEventWithFlagOff(client, admin.id)
-      const { registration } = await register(client, event.id, quota.id)
-      expect(registration.price_cents).toBeNull()
-    }))
 
   describe("organizer payment actions", () => {
     it("refuses admin_mark_registration_paid and admin_unmark_registration_paid", () =>
@@ -249,23 +209,38 @@ describe("while the payments flag is off", () => {
       }))
   })
 
-  it("still queues the refund of a card payment when its registration is deleted", () =>
+  it("keeps showing a card payment as paid, also after its registration is deleted", () =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
       const { registration } = await register(client, event.id, quota.id)
-      const payment = await insertPayment(client, registration)
+      const { registration: deleted } = await register(
+        client,
+        event.id,
+        quota.id
+      )
+      await insertPayment(client, registration)
+      const detached = await insertPayment(client, deleted)
       await upsertFeatureFlag(client, "payments", "off")
       await becomeUser(client, admin.id)
 
-      await client.query("select app_public.admin_delete_registration($1)", [
-        registration.id,
-      ])
-
-      const jobs = await asRoot(client, () =>
-        getJobs(client, "payment__refund")
+      const {
+        rows: [{ status }],
+      } = await client.query(
+        `select app_public.registrations_payment_status(r) as status
+          from app_public.registrations r where r.id = $1`,
+        [registration.id]
       )
-      expect(jobs.map((job) => job.payload)).toContainEqual({
-        paymentId: payment.id,
-      })
+      expect(status).toBe("PAID")
+
+      await client.query("select app_public.admin_delete_registration($1)", [
+        deleted.id,
+      ])
+      const { rows } = await asRoot(client, () =>
+        client.query(
+          "select registration_id, status from app_public.payments where id = $1",
+          [detached.id]
+        )
+      )
+      expect(rows).toEqual([{ registration_id: null, status: "PAID" }])
     }))
 })

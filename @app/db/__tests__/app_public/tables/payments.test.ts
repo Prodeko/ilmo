@@ -97,7 +97,7 @@ describe("app_public.payments", () => {
 
         await expect(
           client.query(
-            "update app_public.payments set status = 'REFUNDED' where id = $1",
+            "update app_public.payments set status = 'EXPIRED' where id = $1",
             [payment.id]
           )
         ).rejects.toThrow("permission denied")
@@ -120,13 +120,12 @@ describe("app_public.payments", () => {
         await insertPayment(client, registration, { status: "PAID" })
         await insertPayment(client, registration, { status: "EXPIRED" })
         await insertPayment(client, registration, { status: "PENDING" })
-        await insertPayment(client, registration, { status: "REFUNDED" })
 
         const { rows } = await client.query(
           "select count(*)::int as count from app_public.payments where registration_id = $1",
           [registration.id]
         )
-        expect(rows[0].count).toBe(4)
+        expect(rows[0].count).toBe(3)
 
         await expect(
           insertPayment(client, registration, { status: "PAID" })
@@ -164,21 +163,4 @@ describe("payment check constraints", () => {
         expect(rows[0].price_cents).toBe(price)
       })
   )
-
-  it("requires the close email in AFTER_REGISTRATION mode", () =>
-    withRootDb(async (client) => {
-      const { event } = await createPaidEventData(client, {
-        paymentMode: "NONE",
-      })
-      await expect(
-        client.query(
-          `update app_public.events
-            set payment_mode = 'AFTER_REGISTRATION', send_unpaid_email_on_close = false
-            where id = $1`,
-          [event.id]
-        )
-      ).rejects.toThrow(
-        "_cnstr_check_events_after_registration_sends_unpaid_email"
-      )
-    }))
 })
