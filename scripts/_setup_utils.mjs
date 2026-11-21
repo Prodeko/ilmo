@@ -147,10 +147,10 @@ export function updateDotenv(add, answers) {
 #
 #   Webhook endpoint:           ${rootUrl}/api/stripe/webhook
 #   Events to send:             checkout.session.completed,
-#                               checkout.session.expired, charge.refunded
+#                               checkout.session.expired
 #
 # Use test-mode keys (sk_test_...) outside production. Locally, run
-# \`stripe listen --events checkout.session.completed,checkout.session.expired,charge.refunded --forward-to ${rootUrl}/api/stripe/webhook\`
+# \`stripe listen --events checkout.session.completed,checkout.session.expired --forward-to ${rootUrl}/api/stripe/webhook\`
 # and use the whsec_... secret it prints. Step by step: docs/payments.md
 #
 # Stripe secret API key (sk_test_... or sk_live_...):`

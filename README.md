@@ -143,7 +143,8 @@ Paid events use Stripe. They need `STRIPE_SECRET_KEY` and
 which reads as off while either secret is missing. See
 [docs/payments.md](docs/payments.md) for testing locally with your own Stripe
 test-mode keys and the Stripe CLI, the Stripe dashboard setup for staging and
-production, and how to turn payments off.
+production, refunds (made by hand in Stripe; Ilmo never refunds) and how to turn
+payments off.
 
 ### Useful commands
 
