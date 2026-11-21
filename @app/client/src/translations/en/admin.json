@@ -164,17 +164,17 @@
       "payments": {
         "name": "Payments",
         "turnOn": [
-          "Admins can price quotas and choose when registrants pay.",
+          "Admins can price quotas. Registrants of paid quotas pay after registration closes.",
           "Registrants of paid quotas pay through Stripe Checkout, and payment emails and reminders are sent.",
           "Admins get the payment tools for their events."
         ],
         "stops": [
-          "Prices and payment settings are hidden and cannot be set, and paying is blocked.",
+          "Prices are hidden and cannot be set, and paying is blocked.",
           "No new payment emails or reminders are sent."
         ],
         "keeps": [
           "Payments already made stay recorded and are shown to registrants.",
-          "Refunds and Stripe payment notifications keep working."
+          "Stripe payment notifications keep working."
         ]
       },
       "prefill_answers": {

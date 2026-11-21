@@ -164,17 +164,17 @@
       "payments": {
         "name": "Maksut",
         "turnOn": [
-          "Ylläpitäjät voivat hinnoitella kiintiöitä ja valita, milloin ilmoittautujat maksavat.",
+          "Ylläpitäjät voivat hinnoitella kiintiöitä. Maksullisten kiintiöiden ilmoittautujat maksavat ilmoittautumisen sulkeuduttua.",
           "Maksullisten kiintiöiden ilmoittautujat maksavat Stripe Checkoutissa, ja maksusähköpostit ja -muistutukset lähetetään.",
           "Ylläpitäjät saavat tapahtumiensa maksutyökalut."
         ],
         "stops": [
-          "Hinnat ja maksuasetukset piilotetaan eikä niitä voi asettaa, ja maksaminen estetään.",
+          "Hinnat piilotetaan eikä niitä voi asettaa, ja maksaminen estetään.",
           "Uusia maksusähköposteja tai -muistutuksia ei lähetetä."
         ],
         "keeps": [
           "Jo tehdyt maksut pysyvät kirjattuina ja näkyvät ilmoittautujille.",
-          "Hyvitykset ja Stripen maksuilmoitukset toimivat edelleen."
+          "Stripen maksuilmoitukset toimivat edelleen."
         ]
       },
       "prefill_answers": {

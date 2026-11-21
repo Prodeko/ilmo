@@ -164,17 +164,17 @@
       "payments": {
         "name": "Betalningar",
         "turnOn": [
-          "Administratörer kan prissätta kvoter och välja när de som registrerar sig betalar.",
+          "Administratörer kan prissätta kvoter. De som registrerar sig i betalda kvoter betalar efter att anmälan har stängt.",
           "De som registrerar sig i betalda kvoter betalar via Stripe Checkout, och betalningsmejl och påminnelser skickas.",
           "Administratörer får betalningsverktygen för sina evenemang."
         ],
         "stops": [
-          "Priser och betalningsinställningar döljs och kan inte anges, och betalning blockeras.",
+          "Priser döljs och kan inte anges, och betalning blockeras.",
           "Inga nya betalningsmejl eller påminnelser skickas."
         ],
         "keeps": [
           "Redan gjorda betalningar förblir registrerade och visas för de som registrerat sig.",
-          "Återbetalningar och Stripes betalningsaviseringar fortsätter att fungera."
+          "Stripes betalningsaviseringar fortsätter att fungera."
         ]
       },
       "prefill_answers": {
