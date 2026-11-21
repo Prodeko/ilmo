@@ -3,12 +3,12 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   DragOutlined,
-  MinusCircleTwoTone,
+  MinusCircleOutlined,
   MinusOutlined,
-  PlusCircleTwoTone,
+  PlusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
-import { QuestionType } from "@app/graphql"
+import { QuestionPrefill, QuestionType } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
@@ -21,13 +21,22 @@ import {
   Row,
   Select,
   Space,
+  theme,
   Tooltip,
+  Typography,
 } from "antd"
+import Trans from "next-translate/Trans"
 
-import { useTranslation } from "../."
+import { Feature, useTranslation } from "../."
 import { Draggable } from "../Draggable"
 import { useIsMobile } from "../hooks"
 import { H5 } from "../Text"
+
+import {
+  KeepQuestionPrefill,
+  QuestionPrefillSelect,
+} from "./fields/QuestionPrefillSelect"
+import { QuestionTemplateFields } from "./fields/QuestionTemplateFields"
 
 import type { SelectValue } from "antd/lib/select"
 
@@ -40,11 +49,15 @@ type QuestionData = {
   label: string
   isRequired: boolean
   data: string[]
+  prefill?: QuestionPrefill | null
 }
 
 interface QuestionsTabProps {
   form: FormInstance
   selectedLanguages: string[]
+  // Only compared by memo: without it a language switch doesn't re-render
+  // the tab, which leaves its texts and field messages in the old language
+  lang: string
 }
 
 const colSpan = { md: { span: 6 }, sm: { span: 12 }, xs: { span: 24 } }
@@ -57,6 +70,7 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
      */
 
     const { t } = useTranslation("events")
+    const { token } = theme.useToken()
     const isMobile = useIsMobile()
     const [, forceUpdate] = useReducer((x) => x + 1, 0)
     const { getFieldValue, setFieldsValue } = form
@@ -77,10 +91,12 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
         if (!hasData) {
           questions[index].data = [""]
-          setFieldsValue({
-            questions,
-          })
         }
+        // Only TEXT answers can be prefilled
+        questions[index].prefill = null
+        setFieldsValue({
+          questions,
+        })
       }
       forceUpdate()
     }
@@ -139,9 +155,9 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
     function renderQuestionDataField(index: number, i: number) {
       const addDataOption = (
         <Tooltip title={t("addOption")}>
-          <PlusCircleTwoTone
+          <PlusCircleOutlined
             data-cy={`eventform-questions-${index}-add-option`}
-            twoToneColor="lightgreen"
+            style={{ color: token.colorSuccess }}
             onClick={() => handleAddOption(index)}
           />
         </Tooltip>
@@ -160,31 +176,42 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
       const firstLanguage = selectedLanguages?.[0]
 
       return selectedLanguages.map((l) => {
+        const icon =
+          l !== firstLanguage
+            ? null
+            : i === 0
+              ? addDataOption
+              : removeDataOption(index, i)
         return (
-          <Form.Item
+          <div
             key={l}
-            name={[index, "data", i, l.toLowerCase()]}
-            rules={[
-              {
-                required: true,
-                message: t("forms.rules.questions.provideQuestionData"),
-              },
-            ]}
-            noStyle
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
           >
-            <Input
-              data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
-              placeholder={`${t("common:option")} ${i} ${t(
-                `common:lang.in.${l}`
-              )}`}
-              suffix={
-                <>
-                  {i === 0 && l === firstLanguage && addDataOption}
-                  {i > 0 && l === firstLanguage && removeDataOption(index, i)}
-                </>
-              }
-            />
-          </Form.Item>
+            <Form.Item
+              name={[index, "data", i, l.toLowerCase()]}
+              rules={[
+                {
+                  required: true,
+                  message: t("forms.rules.questions.provideQuestionData"),
+                },
+              ]}
+              noStyle
+            >
+              <Input.TextArea
+                data-cy={`eventform-input-questions-${index}-data-${i}-${l}`}
+                placeholder={`${t("common:option")} ${i} ${t(
+                  `common:lang.in.${l}`
+                )}`}
+                style={{ flex: 1 }}
+                // Grow taller instead of cutting off long option texts
+                autoSize
+                // An option is a single line of text, so Enter adds no newline
+                onPressEnter={(e) => e.preventDefault()}
+              />
+            </Form.Item>
+            {/* Reserve the icon's width on every row so the fields line up */}
+            <span style={{ flex: "none", width: 14 }}>{icon}</span>
+          </div>
         )
       })
     }
@@ -195,8 +222,18 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
         <>
           <Col {...colSpan}>{questionLabel}</Col>
           <Col {...colSpan}>
-            {/* TEXT questions don't have any data associated with them.
-              This Col is included for layout. */}
+            {/* TEXT questions have no options. An answer can be prefilled
+              from the registrant's registration profile. */}
+            <Feature
+              fallback={<KeepQuestionPrefill name={index} />}
+              name="prefill_answers"
+            >
+              <QuestionPrefillSelect
+                name={index}
+                selectedLanguages={selectedLanguages}
+                onChange={forceUpdate}
+              />
+            </Feature>
           </Col>
         </>
       )
@@ -279,6 +316,18 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
 
     return (
       <>
+        <Feature name="event_templates">
+          <QuestionTemplateFields
+            selectedLanguages={selectedLanguages}
+            onChange={forceUpdate}
+          />
+        </Feature>
+        <Typography.Paragraph>
+          <Trans
+            components={{ b: <strong /> }}
+            i18nKey="events:questionsAutomaticallyCollected"
+          />
+        </Typography.Paragraph>
         <DndProvider backend={HTML5Backend}>
           <Form.List name="questions">
             {(fields, { add, remove, move }) => (
@@ -303,7 +352,11 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                       key={key}
                       id={key}
                       index={index}
-                      move={move}
+                      move={(from, to) => {
+                        move(from, to)
+                        // Re-read questions so type and options follow the moved row
+                        forceUpdate()
+                      }}
                     >
                       <Row gutter={[8, 8]} style={{ marginBottom: "12px" }}>
                         <Form.Item name={[name, "id"]} required={false} noStyle>
@@ -312,6 +365,10 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         <Form.Item name={[name, "position"]} noStyle required>
                           <Input type="hidden" />
                         </Form.Item>
+                        {questions?.[index]?.type?.toUpperCase() !==
+                          QuestionType.Text && (
+                          <KeepQuestionPrefill name={name} />
+                        )}
                         <Col
                           md={{ span: 4 }}
                           sm={{ span: 12 }}
@@ -367,10 +424,13 @@ export const QuestionsTab: React.FC<QuestionsTabProps> = memo(
                         </Col>
                         <Col span="1">
                           <Tooltip title={t("removeQuestion")}>
-                            <MinusCircleTwoTone
+                            <MinusCircleOutlined
                               data-cy="eventform-questions-remove-question"
-                              twoToneColor="red"
-                              onClick={() => remove(name)}
+                              style={{ color: token.colorError }}
+                              onClick={() => {
+                                remove(name)
+                                forceUpdate()
+                              }}
                             />
                           </Tooltip>
                         </Col>

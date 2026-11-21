@@ -3,24 +3,44 @@ import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import {
   DragOutlined,
-  MinusCircleTwoTone,
+  MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
 import { arePropsEqual } from "@app/lib"
-import { Button, Form, Input, InputNumber, Space, Switch, Tooltip } from "antd"
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Space,
+  Switch,
+  theme,
+  Tooltip,
+  Typography,
+} from "antd"
 
-import { useTranslation } from "../."
+import { Feature, useFeature, useTranslation } from "../."
 import { Draggable } from "../Draggable"
+
+import { QuotaPriceField, QuotaPriceWarning } from "./fields/QuotaPriceField"
+import { QuotaTemplateFields } from "./fields/QuotaTemplateFields"
 
 interface QuotasTabProps {
   initialValues?: any
   selectedLanguages: string[]
+  // Only compared by memo: without it a language switch doesn't re-render
+  // the tab, which leaves its texts and field messages in the old language
+  lang: string
 }
 
 export const QuotasTab: React.FC<QuotasTabProps> = memo(
   ({ initialValues, selectedLanguages }) => {
     const [hasOpenQuota, setHasOpenQuota] = useState(false)
     const { t } = useTranslation("events")
+    const { token } = theme.useToken()
+    const form = Form.useFormInstance()
+    // Prices only mean something while payments are enabled
+    const showPrices = useFeature("payments")
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)
@@ -28,15 +48,20 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
 
     return (
       <DndProvider backend={HTML5Backend}>
+        <Feature name="event_templates">
+          <QuotaTemplateFields selectedLanguages={selectedLanguages} />
+        </Feature>
         <Form.List
           name="quotas"
           rules={[
             {
+              // An event always needs a quota; an open quota alone isn't enough.
+              // The message is set on the rule, not in the rejection, so it's
+              // in the current language like the other fields' messages
+              message: t("errors.mustProvideEventQuota"),
               validator: async (_, quotas) => {
-                if ((!quotas || quotas?.length < 1) && !hasOpenQuota) {
-                  return Promise.reject(
-                    new Error(t("errors.mustProvideEventQuota"))
-                  )
+                if (!quotas || quotas?.length < 1) {
+                  return Promise.reject()
                 }
               },
             },
@@ -105,11 +130,14 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                           placeholder={t("forms.placeholders.quota.size")}
                         />
                       </Form.Item>
+                      {showPrices && (
+                        <QuotaPriceField index={index} name={name} />
+                      )}
                       {numRegistrations === 0 ? (
                         <Tooltip title={t("removeQuota")}>
-                          <MinusCircleTwoTone
+                          <MinusCircleOutlined
                             data-cy="eventform-quotas-remove-quota"
-                            twoToneColor="red"
+                            style={{ color: token.colorError }}
                             onClick={() => remove(name)}
                           />
                         </Tooltip>
@@ -119,6 +147,12 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
                         </div>
                       )}
                     </Space>
+                    {showPrices && (
+                      <QuotaPriceWarning
+                        initialValues={initialValues}
+                        name={name}
+                      />
+                    )}
                   </Draggable>
                 )
               })}
@@ -141,13 +175,24 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
           <Switch
             checked={hasOpenQuota}
             data-cy="eventform-quotas-switch-is-open-quota"
-            onChange={(val) => setHasOpenQuota(val)}
+            onChange={(val) => {
+              setHasOpenQuota(val)
+              // A switched off open quota shouldn't keep its size, or the
+              // event would still get one when saved. A switched on one
+              // starts empty, so it has to be given a size before saving
+              if (!val) form.setFieldValue("openQuotaSize", 0)
+              else if (!form.getFieldValue("openQuotaSize")) {
+                form.setFieldValue("openQuotaSize", null)
+              }
+            }}
           />
           <Form.Item
             name="openQuotaSize"
             rules={[
               {
                 required: hasOpenQuota,
+                type: "number",
+                min: hasOpenQuota ? 1 : 0,
                 message: t("forms.rules.quota.provideQuotaSize"),
               },
             ]}
@@ -161,6 +206,29 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
             />
           </Form.Item>
         </Space>
+        <Typography.Paragraph style={{ marginTop: 8 }} type="secondary">
+          {t("overflowQuotaInfo")}
+          <Feature name="event_templates">
+            {` ${t("templates.quotas.openQuotaHint")}`}
+          </Feature>
+        </Typography.Paragraph>
+        {showPrices && (
+          <Space
+            direction="vertical"
+            size={2}
+            style={{ display: "flex", marginTop: 16 }}
+          >
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteFree")}
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteFees")}
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              {t("admin:payments.quotas.noteOpenQuota")}
+            </Typography.Text>
+          </Space>
+        )}
       </DndProvider>
     )
   },

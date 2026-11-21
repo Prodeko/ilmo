@@ -1,0 +1,18 @@
+fragment AdminFeatures_FeatureFlag on FeatureFlag {
+  key
+  state
+  available
+  description
+  updatedAt
+  retiredAt
+  __typename
+}
+mutation SetFeatureFlag($input: SetFeatureFlagInput!) {
+  setFeatureFlag(input: $input) {
+    featureFlag {
+      ...AdminFeatures_FeatureFlag
+      __typename
+    }
+    __typename
+  }
+}

@@ -4,10 +4,13 @@ import {
   EventDescription,
   EventQuotasCard,
   EventRegistrationsTables,
+  Feature,
+  LoadingPadded,
   PageHeader,
   Redirect,
   SharedLayout,
   SignupState,
+  useFeature,
   useIsMobile,
   useLoading,
   useQuerySlug,
@@ -17,13 +20,16 @@ import {
   EventPage_EventFragment,
   SharedLayout_UserFragment,
   useCurrentTimeSubscription,
-  useEventPageSubscription,
+  useEventPageQuery,
   useSharedQuery,
 } from "@app/graphql"
 import { Col, Divider, message, notification, Row } from "antd"
 import dayjs from "dayjs"
 import * as NextImage from "next/image"
 import { useRouter } from "next/router"
+
+import { EventReminder } from "../../../components/EventReminder"
+import { RegistrationCalendar } from "../../../components/RegistrationCalendar"
 
 import type { NextPage } from "next"
 
@@ -35,10 +41,15 @@ const EventPage: NextPage = () => {
   const slug = useQuerySlug()
   const { t, lang } = useTranslation("events")
   const [query] = useSharedQuery()
-  const [subscription] = useEventPageSubscription({ variables: { slug } })
-  const loadingElement = useLoading(subscription, "eventBySlug")
-  const event = subscription?.data?.eventBySlug
-  const { fetching, stale } = subscription
+  // Registrations stay fresh through the eventRegistrations subscription.
+  // Everything else is fetched again whenever the page is opened.
+  const [eventPage] = useEventPageQuery({
+    variables: { slug },
+    requestPolicy: "cache-and-network",
+  })
+  const loadingElement = useLoading(eventPage, "eventBySlug")
+  const event = eventPage?.data?.eventBySlug
+  const { fetching, stale } = eventPage
   const name = event?.name[lang]
   const title =
     fetching || stale
@@ -49,9 +60,14 @@ const EventPage: NextPage = () => {
 
   return (
     <SharedLayout query={query} title={title}>
-      {loadingElement || (
-        <EventPageInner currentUser={query.data.currentUser} event={event} />
-      )}
+      {/* The page also needs the shared query (the viewer and the feature
+          flags), which can finish after the event query */}
+      {loadingElement ||
+        (query.data ? (
+          <EventPageInner currentUser={query.data.currentUser} event={event} />
+        ) : (
+          <LoadingPadded size="huge" />
+        ))}
     </SharedLayout>
   )
 }
@@ -69,6 +85,8 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
   currentUser,
 }) => {
   const router = useRouter()
+  const paymentsEnabled = useFeature("payments")
+  const registrationReminders = useFeature("registration_reminders")
   const isMobile = useIsMobile()
   const { t, lang } = useTranslation("events")
   const [pauseServerTime, setPauseServerTime] = useState(false)
@@ -98,14 +116,10 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
   }, [router, event])
 
   const handleSignupState = useCallback((time, startTime, endTime) => {
-    // This page uses Postgraphile live queries (https://www.graphile.org/postgraphile/live-queries/)
-    // to automaticaly update information (registrations, quota sizes, description etc.).
-    // We cannot rely on event.signup* since those fields are exposed to the API
-    // using Postgraphile computed columns (https://www.graphile.org/postgraphile/computed-columns/).
-    // Computed columns are a known limitation of the @graphile/subscriptions-lds plugin
-    // which uses wal2json to detect updates in the database. It cannot detect updates on
-    // computed column fields. This is why we replicate the signup* fields on the frontend
-    // based on a timestamp fetched from the server.
+    // The EventPage query fetches the event once per page load, so
+    // event.signup* (computed columns, https://www.graphile.org/postgraphile/computed-columns/)
+    // would not change while the page is open. This is why we replicate the
+    // signup* fields on the frontend based on a timestamp fetched from the server.
     if (time.isBefore(startTime)) {
       setSignupState({ upcoming: true, open: false, closed: false })
     } else if (time.isAfter(startTime) && time.isBefore(endTime)) {
@@ -216,6 +230,11 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         onBack={() => router.push("/")}
       />
       <Row>
+        <Feature name="calendar_invites">
+          <Col span={24}>
+            <RegistrationCalendar event={event} />
+          </Col>
+        </Feature>
         <Col
           sm={{ span: 16 }}
           style={{ display: "inline-block" }}
@@ -249,6 +268,18 @@ const EventPageInner: React.FC<EventPageInnerProps> = ({
         >
           <EventQuotasCard
             event={event}
+            footer={
+              registrationReminders &&
+              !event.isDraft &&
+              dayjs(event.registrationStartTime).isAfter(dayjs()) ? (
+                <EventReminder
+                  currentUser={currentUser}
+                  eventId={event.id}
+                  slug={event.slug}
+                />
+              ) : null
+            }
+            paymentsEnabled={paymentsEnabled}
             registrations={registrations.nodes}
             signupState={signupState}
           />

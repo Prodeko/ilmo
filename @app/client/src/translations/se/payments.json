@@ -1,0 +1,63 @@
+{
+  "cancel": {
+    "noRefundNote": "Din betalning återbetalas inte automatiskt. Kontakta arrangörerna om återbetalning."
+  },
+  "cancelledNotice": "Betalningen slutfördes inte. Din plats är fortfarande reserverad, och du kan försöka igen nedan eller senare via ditt bekräftelsemejl.",
+  "confirmTimeoutNotice": "Vi har inte fått någon bekräftelse på din betalning ännu. Om du betalade får du snart ett bekräftelsemejl. Du kan också ladda om sidan senare.",
+  "confirmingNotice": "Vi bekräftar din betalning med Stripe. Sidan uppdateras automatiskt om några sekunder.",
+  "disabled": {
+    "body": "Onlinebetalningar är inte tillgängliga just nu. Kontakta arrangörerna om du har frågor om betalningen.",
+    "title": "Betalningar är inte tillgängliga"
+  },
+  "editRegistration": "Ändra eller avboka din anmälan",
+  "errors": {
+    "checkoutFailed": "Det gick inte att öppna betalningssidan"
+  },
+  "event": "Evenemang",
+  "name": "Namn",
+  "notFound": {
+    "body": "Kontrollera betalningslänken i ditt mejl.",
+    "title": "Anmälan hittades inte"
+  },
+  "paidBanner": "Betalat {{amount}} {{date}}",
+  "pay": "Betala {{total}}",
+  "payNow": "Betala nu",
+  "quota": "Kvot",
+  "serviceFee": "Serviceavgift",
+  "states": {
+    "free": {
+      "body": "Din kvot är gratis. Allt är klart.",
+      "title": "Ingen betalning behövs"
+    },
+    "opensLater": {
+      "body": "Betalningen öppnar när anmälan stänger {{date}} kl. {{time}}. Betalningslänken mejlas till dig.",
+      "title": "Betalningen öppnar senare"
+    },
+    "paid": {
+      "body": "Du betalade {{amount}} {{date}} kl. {{time}}. En bekräftelse har skickats till din e-post.",
+      "detail": "Stripe mejlar dig också sitt eget kvitto.",
+      "title": "Betalning mottagen"
+    },
+    "paidManually": {
+      "body": "Arrangörerna har markerat din anmälan som betald.",
+      "title": "Betalning mottagen"
+    },
+    "queued": {
+      "body": "Du är nummer {{position}} i kön. Du betalar bara om du får en plats, och då mejlar vi dig en betalningslänk.",
+      "title": "Du står i kön"
+    }
+  },
+  "tags": {
+    "free": "Gratis",
+    "inQueue": "I kön",
+    "notOpen": "Inte öppen än",
+    "paid": "Betald",
+    "processing": "Behandlas",
+    "unpaid": "Obetald"
+  },
+  "ticket": "Biljett",
+  "time": "Tid",
+  "title": "Betalning",
+  "total": "Totalt",
+  "unpaidBanner": "Din anmälan har inte betalats ännu."
+}

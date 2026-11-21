@@ -1,6 +1,5 @@
+import { GraphQLError } from "graphql"
 import { camelCase } from "lodash"
-
-import type { GraphQLError } from "graphql"
 
 const isDev = process.env.NODE_ENV === "development"
 const isTest = process.env.NODE_ENV === "test"
@@ -89,11 +88,41 @@ function conflictFieldsFromError(err: any) {
   return undefined
 }
 
+/*
+ * PostGraphile's error for an update or delete mutation that matched no row
+ * the user may change.
+ */
+const NO_ROWS_MATCHED_MESSAGE =
+  /^No values were (updated|deleted) in collection/
+
+/*
+ * Errors that carry a code (SQLSTATE or one of ours) are expected and meant for
+ * the user, as are errors of the GraphQL request itself, which have no
+ * original error, and mutations that matched no row. Anything else, such as a
+ * pg-pool connection timeout, is unexpected and is logged so that it shows up
+ * in the server logs too.
+ */
+function isUnexpected(originalError: Error | null | undefined): boolean {
+  return (
+    originalError != null &&
+    !(originalError instanceof GraphQLError) &&
+    originalError["code"] == null &&
+    originalError["errcode"] == null &&
+    !NO_ROWS_MATCHED_MESSAGE.test(originalError.message)
+  )
+}
+
 export default function handleErrors(
   errors: readonly GraphQLError[]
 ): Array<any> {
   return errors.map((error) => {
     const { message: rawMessage, locations, path, originalError } = error
+    if (isUnexpected(originalError)) {
+      console.error(
+        `Unexpected error in GraphQL operation at ${JSON.stringify(path)}:`,
+        originalError
+      )
+    }
     const code = originalError ? originalError["code"] : null
     const localPluck = ERROR_MESSAGE_OVERRIDES[code] || pluck
     const exception = localPluck(originalError || error)

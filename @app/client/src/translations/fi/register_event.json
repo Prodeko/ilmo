@@ -1,26 +1,41 @@
 {
+  "calendar": {
+    "addAnother": "Lisää tapahtuma kalenteriin",
+    "apple": "Apple Calendar / lataa .ics",
+    "emailConfirmation": "Tarkista ilmoittautumisvahvistus sähköpostistasi.",
+    "emailSent": "Lähetimme vahvistuksen ja kalenterikutsun sähköpostiisi. Viestin saapumisessa voi kestää hetki.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "Olet tällä hetkellä jonossa. Lähetämme sinulle vahvistusviestin, kun saat paikan tapahtumaan."
+  },
   "confirmGoBack": "Haluatko varmasti mennä takaisin? Menetät paikkasi jonossa.",
   "deleteRegistration": "Poista ilmoittautuminen",
   "deleteRegistrationConfirmText": "Haluatko varmasti poistaa ilmoittautumisesi?",
   "deleteRegistrationFailed": "Ilmoittautumisen poistaminen epäonnistui",
   "errors": {
     "registrationFailed": "Tapahtumaan ilmoittautuminen epäonnistui",
-    "registrationUpdateFailed": "Tietojen päivittäminen epäonnistui"
+    "registrationUpdateFailed": "Tietojen päivittäminen epäonnistui",
+    "rememberAnswersFailed": "Ilmoittautumisesi tallentui, mutta vastaustesi muistaminen epäonnistui"
   },
   "eventSignupComplete": "Ilmoittautuminen tallennettu",
   "forms": {
     "email": "Sähköposti",
     "firstName": "Etunimi",
     "lastName": "Sukunimi",
+    "rememberAnswers": "Muista nämä vastaukset seuraavia ilmoittautumisiani varten",
     "rules": {
       "emailEmpty": "Sähköpostiosoite ei voi olla tyhjä",
       "emailValid": "Tarkista sähköpostiosoite",
-      "nameContainsSpace": "Nimi ei saa sisältää välilyöntejä",
       "provideAnswer": "Vastaus vaaditaan",
       "provideFirstName": "Anna etunimi",
       "provideLastName": "Anna sukunimi"
     }
   },
+  "payment": {
+    "info": "Lippu {{price}} + {{fee}} palvelumaksu. Et maksa nyt. Lähetämme sinulle maksulinkin sähköpostitse, kun ilmoittautuminen sulkeutuu {{date}} klo {{time}}.",
+    "register": "Ilmoittaudu",
+    "title": "Maksu"
+  },
+  "previewNotSubmitted": "Esikatselu: ilmoittautumista ei lähetetty",
   "recentlyRegisteredHeader": "Äskettäin ilmoittautuneet:",
   "recentlyRegisteredListItem": "ilmoittautui juuri kiintiöön",
   "registrationDeleteComplete": "Ilmoittautuminen poistettu onnistuneesti",
@@ -30,6 +45,7 @@
   },
   "title": "Ilmoittaudu tapahtumaan:",
   "updateRegistration": {
+    "closed": "Ilmoittautuminen tähän tapahtumaan on päättynyt, joten ilmoittautumistasi ei voi enää muuttaa. Ota yhteyttä tapahtuman järjestäjiin.",
     "title": "Päivitä rekisteröitymistiedot"
   },
   "you": "Sinä!"

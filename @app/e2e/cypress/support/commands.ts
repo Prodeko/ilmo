@@ -31,8 +31,12 @@ type User = {
   username: string
   name: string
   is_admin: boolean
+  is_developer: boolean
   is_verified: boolean
 }
+
+/** States by flag key; the keys are those of @app/lib/src/featureFlags.ts. */
+type FeatureFlagStates = Record<string, "off" | "admins_only" | "on">
 
 function getCy(cyName: string): Chainable<JQuery<HTMLElement>> {
   return cy.get(`[data-cy=${cyName}]`)
@@ -53,9 +57,46 @@ function serverCommand(command: "clearTestOrganizations"): Chainable<{
 }>
 
 /**
- * Deletes all event data generated for e2e tests.
+ * Deletes all event data generated for e2e tests and switches every feature
+ * flag off.
  */
 function serverCommand(command: "clearTestEventData"): Chainable<{
+  success: true
+}>
+
+/**
+ * Sets feature flag states, e.g. `{ payments: "on" }`. Every key must have a
+ * row in app_public.feature_flags. The server's flag cache is cleared, so the
+ * change applies to the next request.
+ */
+function serverCommand(
+  command: "setFeatureFlags",
+  payload: FeatureFlagStates
+): Chainable<{
+  success: true
+}>
+
+/**
+ * Creates or resets a flag row that no feature uses, for tests of the
+ * Features page, and clears its change history. The key must start with
+ * `test_e2e_`. Defaults: state `off`, available.
+ */
+function serverCommand(
+  command: "createTestFeatureFlag",
+  payload: {
+    key: `test_e2e_${string}`
+    state?: "off" | "admins_only" | "on"
+    available?: boolean
+    description?: string
+  }
+): Chainable<{
+  success: true
+}>
+
+/**
+ * Deletes every flag row created by createTestFeatureFlag, with its history.
+ */
+function serverCommand(command: "deleteTestFeatureFlags"): Chainable<{
   success: true
 }>
 
@@ -90,6 +131,8 @@ function serverCommand(
  * - verified: false
  * - name: `${username}`
  * - password: `TestUserPassword`
+ * - isAdmin: false
+ * - isDeveloper: false (feature flag management; needs isAdmin as well)
  * - next: `/`
  */
 function serverCommand(
@@ -100,6 +143,8 @@ function serverCommand(
     verified?: boolean
     name?: string
     password?: string
+    isAdmin?: boolean
+    isDeveloper?: boolean
     next?: string
   }
 ): Chainable<{
@@ -120,6 +165,29 @@ function serverCommand(
   verification_token: string | null
 }>
 
+/**
+ * Ends the registration of the event a moment ago, as if it had closed.
+ */
+function serverCommand(
+  command: "closeEventRegistration",
+  payload: { eventId: string }
+): Chainable<{
+  success: true
+}>
+
+/**
+ * Pays for the registration behind `updateToken` as if Stripe Checkout had
+ * completed: posts a signed `checkout.session.completed` event to the
+ * webhook. Requires Stripe to be configured.
+ */
+function serverCommand(
+  command: "completeStripeCheckout",
+  payload: { updateToken: string }
+): Chainable<{
+  paymentId: string
+  sessionId: string
+}>
+
 // The actual implementation of the 'serverCommand' function.
 function serverCommand(command: string, payload?: any): any {
   const url = `${Cypress.env(
@@ -137,6 +205,8 @@ function login(payload?: {
   name?: string
   verified?: boolean
   isAdmin?: boolean
+  /** Feature flag management; needs isAdmin as well. */
+  isDeveloper?: boolean
   password?: string
   orgs?: [[string, string] | [string, string, boolean]]
   existingUser?: true

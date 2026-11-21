@@ -7,6 +7,7 @@ context("Update event", () => {
 
   it("admin can update an existing event", () => {
     // Setup
+    cy.serverCommand("setFeatureFlags", { ribbon_text: "on" })
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
       "createEventDataResult"
     )
@@ -97,6 +98,7 @@ context("Update event", () => {
           .clear()
           .type("Päivitetty testitapahtuma")
         cy.getCy("eventform-switch-highlight").click()
+        cy.getCy("eventform-input-highlight-text-fi").type("Pian täynnä")
         cy.getCy("eventform-header-image-upload").attachFile("kitten.jpg")
         cy.get(".img-crop-modal button").contains("OK").click()
 
@@ -113,6 +115,7 @@ context("Update event", () => {
           "contain",
           "Päivitetty testitapahtuma"
         )
+        cy.getCy("homepage-signup-open-events").should("contain", "Pian täynnä")
       }
     )
   })

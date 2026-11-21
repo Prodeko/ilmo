@@ -73,6 +73,97 @@ type AdminDeleteUserPayload {
   success: Boolean
 }
 
+"""All input for the `adminMarkRegistrationPaid` mutation."""
+input AdminMarkRegistrationPaidInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  registrationId: UUID!
+}
+
+"""The output of our `adminMarkRegistrationPaid` mutation."""
+type AdminMarkRegistrationPaidPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """Reads a single `Event` that is related to this `Payment`."""
+  event: Event
+  payment: Payment
+
+  """An edge for our `Payment`. May be used by Relay 1."""
+  paymentEdge(
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Quota` that is related to this `Payment`."""
+  quota: Quota
+
+  """Reads a single `Registration` that is related to this `Payment`."""
+  registration: Registration
+}
+
+"""All input for the `adminSendPaymentReminders` mutation."""
+input AdminSendPaymentRemindersInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+}
+
+"""The output of our `adminSendPaymentReminders` mutation."""
+type AdminSendPaymentRemindersPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  integer: Int
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
+"""All input for the `adminUnmarkRegistrationPaid` mutation."""
+input AdminUnmarkRegistrationPaidInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  registrationId: UUID!
+}
+
+"""The output of our `adminUnmarkRegistrationPaid` mutation."""
+type AdminUnmarkRegistrationPaidPayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 """All input for the `adminUpdateRegistration` mutation."""
 input AdminUpdateRegistrationInput {
   """
@@ -223,8 +314,13 @@ type ConfirmAccountDeletionPayload {
   success: Boolean
 }
 
-"""A field which must not contain spaces"""
+"""A name field which must not be empty or contain only whitespace"""
 scalar ConstrainedName
+
+type CreateCheckoutSessionPayload {
+  """The Stripe Checkout page to redirect to."""
+  url: String!
+}
 
 """All input for the create `EventCategory` mutation."""
 input CreateEventCategoryInput {
@@ -309,12 +405,14 @@ input CreateEventQuestionInput {
   isRequired: Boolean
   label: TranslatedField
   position: Int
+  prefill: QuestionPrefill
   type: QuestionType
 }
 
 """An input for mutations affecting `CreateEventQuota`"""
 input CreateEventQuotaInput {
   position: Int
+  priceCents: Int
   size: Int
   title: JSON
 }
@@ -569,6 +667,50 @@ type DeleteEventPayload {
   query: Query
 }
 
+"""All input for the `deleteEventRegistrationReminder` mutation."""
+input DeleteEventRegistrationReminderInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  id: UUID!
+}
+
+"""The output of our delete `EventRegistrationReminder` mutation."""
+type DeleteEventRegistrationReminderPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  deletedEventRegistrationReminderNodeId: ID
+
+  """
+  Reads a single `Event` that is related to this `EventRegistrationReminder`.
+  """
+  event: Event
+
+  """The `EventRegistrationReminder` that was deleted by this mutation."""
+  eventRegistrationReminder: EventRegistrationReminder
+
+  """An edge for our `EventRegistrationReminder`. May be used by Relay 1."""
+  eventRegistrationReminderEdge(
+    """The method to use when ordering `EventRegistrationReminder`."""
+    orderBy: [EventRegistrationRemindersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventRegistrationRemindersEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `User` that is related to this `EventRegistrationReminder`.
+  """
+  user: User
+}
+
 """All input for the `deleteOrganization` mutation."""
 input DeleteOrganizationInput {
   """
@@ -616,6 +758,31 @@ type DeleteRegistrationPayload {
   """
   query: Query
   success: Boolean
+}
+
+"""All input for the `deleteRegistrationProfile` mutation."""
+input DeleteRegistrationProfileInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our `deleteRegistrationProfile` mutation."""
+type DeleteRegistrationProfilePayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """All input for the `deleteUserAuthentication` mutation."""
@@ -686,6 +853,31 @@ type DeleteUserEmailPayload {
   ): UserEmailsEdge
 }
 
+"""All input for the `disconnectTelegram` mutation."""
+input DisconnectTelegramInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our `disconnectTelegram` mutation."""
+type DisconnectTelegramPayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
 scalar Email
 
 """The output of our `renderEmailTemplate` query."""
@@ -698,17 +890,40 @@ type EmailTemplate {
 
 input EmailTemplateVariables {
   actionDescription: String
+
+  """The reminder is the email sent when registration closes."""
+  closed: Boolean
   deleteAccountLink: String
   eventLocation: String
   eventName: TranslatedInputField
   eventRegistrationUpdateLink: String
   eventSlug: String
   eventTime: String
+  firstName: String
+  isQueued: Boolean
   link: String
   organizationName: String
+  paidAt: String
+
+  """
+  The payment link relative to the language root, e.g. `pay/<update token>`.
+  """
+  payLink: String
+  paymentMethod: PaymentMethod
+
+  """Ticket price in cents (payment emails)."""
+  price: Int
+  registrationEndDate: String
+  registrationEndTime: String
   registrationName: String
   registrationQuota: TranslatedInputField
+
+  """Service fee in cents (payment emails)."""
+  serviceFee: Int
   token: String
+
+  """Ticket price plus service fee, in cents (payment emails)."""
+  total: Int
   url: String
   verifyLink: String
 }
@@ -716,6 +931,33 @@ input EmailTemplateVariables {
 """Reads through a set of `EmailTemplate`."""
 type EmailTemplatesConnection {
   templates: [EmailTemplate!]!
+}
+
+"""All input for the `enableEventReminder` mutation."""
+input EnableEventReminderInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  eventId: UUID!
+  language: String
+}
+
+"""The output of our `enableEventReminder` mutation."""
+type EnableEventReminderPayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
 }
 
 """Main table for events."""
@@ -768,11 +1010,50 @@ type Event {
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection!
 
+  """
+  Reads and enables pagination through a set of `EventRegistrationReminder`.
+  """
+  eventRegistrationReminders(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventRegistrationReminderCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventRegistrationReminderFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventRegistrationReminder`."""
+    orderBy: [EventRegistrationRemindersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventRegistrationRemindersConnection!
+
   """Starting time of the event."""
   eventStartTime: Datetime!
 
   """Header image for the event"""
   headerImageFile: String
+
+  """Text shown on the ribbon of a highlighted event."""
+  highlightText: TranslatedField
 
   """Unique identifier for the event."""
   id: UUID!
@@ -782,6 +1063,11 @@ type Event {
 
   """A highlighted event."""
   isHighlighted: Boolean!
+
+  """
+  When an organizer last sent payment reminders to all unpaid participants.
+  """
+  lastPaymentReminderSentAt: Datetime
 
   """Event location."""
   location: String!
@@ -797,6 +1083,45 @@ type Event {
 
   """Identifier of the event organizer"""
   ownerOrganizationId: UUID!
+
+  """
+  Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid, the estimated amount the guild receives and the number of card payments not linked to a registration (deleted registrations, second payments), which organizers may refund by hand in Stripe. Null unless the current user may manage the event's payments.
+  """
+  paymentSummary: EventPaymentSummary
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
 
   """Reads and enables pagination through a set of `Quota`."""
   quotas(
@@ -883,6 +1208,11 @@ type Event {
 
   """Slug for the event."""
   slug: String!
+
+  """
+  When the close-of-registration payment email was sent. Set by the worker; cleared when registration_end_time moves later, so that the email goes out again at the new close.
+  """
+  unpaidCloseEmailSentAt: Datetime
   updatedAt: Datetime!
   updatedBy: UUID
 }
@@ -1184,6 +1514,7 @@ input EventInputRecordInput {
   eventEndTime: Datetime
   eventStartTime: Datetime
   headerImageFile: Upload
+  highlightText: TranslatedField
   isDraft: Boolean
   isHighlighted: Boolean
   location: String
@@ -1193,6 +1524,16 @@ input EventInputRecordInput {
   registrationEndTime: Datetime
   registrationStartTime: Datetime
   slug: String
+}
+
+"""Payment totals for an event, for organizers."""
+type EventPaymentSummary {
+  dueCount: Int
+  guildReceivesCents: Int
+  paidCount: Int
+  ticketsPaidCents: Int
+  unlinkedCardPaymentCount: Int
+  unpaidCount: Int
 }
 
 """Main table for event questions."""
@@ -1220,6 +1561,11 @@ type EventQuestion {
 
   """Question position. Used to order question."""
   position: Int!
+
+  """
+  Which registration profile field prefills the answer to this question, if any.
+  """
+  prefill: QuestionPrefill
 
   """Question type (e.g. radio button, text, checkbox)."""
   type: QuestionType!
@@ -1320,6 +1666,111 @@ enum EventQuestionsOrderBy {
   UPDATED_BY_DESC
 }
 
+"""
+Registration reminders requested by the current user, before registration opens.
+"""
+type EventRegistrationReminder {
+  createdAt: Datetime!
+  deliveryMethod: String!
+  emailSentAt: Datetime
+
+  """
+  Reads a single `Event` that is related to this `EventRegistrationReminder`.
+  """
+  event: Event
+  eventId: UUID!
+  id: UUID!
+  language: String!
+  minutesBefore: Int!
+  sentAt: Datetime
+  telegramSentAt: Datetime
+
+  """
+  Reads a single `User` that is related to this `EventRegistrationReminder`.
+  """
+  user: User
+  userId: UUID!
+}
+
+"""
+A condition to be used against `EventRegistrationReminder` object types. All
+fields are tested for equality and combined with a logical ‘and.’
+"""
+input EventRegistrationReminderCondition {
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `userId` field."""
+  userId: UUID
+}
+
+"""
+A filter to be used against `EventRegistrationReminder` object types. All fields are combined with a logical ‘and.’
+"""
+input EventRegistrationReminderFilter {
+  """Checks for all expressions in this list."""
+  and: [EventRegistrationReminderFilter!]
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: EventRegistrationReminderFilter
+
+  """Checks for any expressions in this list."""
+  or: [EventRegistrationReminderFilter!]
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
+}
+
+"""A connection to a list of `EventRegistrationReminder` values."""
+type EventRegistrationRemindersConnection {
+  """
+  A list of edges which contains the `EventRegistrationReminder` and cursor to aid in pagination.
+  """
+  edges: [EventRegistrationRemindersEdge!]!
+
+  """A list of `EventRegistrationReminder` objects."""
+  nodes: [EventRegistrationReminder!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `EventRegistrationReminder` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `EventRegistrationReminder` edge in the connection."""
+type EventRegistrationRemindersEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `EventRegistrationReminder` at the end of the edge."""
+  node: EventRegistrationReminder!
+}
+
+"""Methods to use when ordering `EventRegistrationReminder`."""
+enum EventRegistrationRemindersOrderBy {
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
+}
+
 type EventRegistrationsSubscriptionPayload {
   event: String
   registrations(after: Datetime): [Registration]
@@ -1382,6 +1833,206 @@ enum EventsOrderBy {
   SLUG_DESC
   UPDATED_BY_ASC
   UPDATED_BY_DESC
+}
+
+"""
+A feature that can be switched on or off at runtime. Rows are created by migrations.
+"""
+type FeatureFlag {
+  """
+  False when the server lacks the configuration the feature needs; the feature then reads as off whatever its state.
+  """
+  available: Boolean!
+
+  """What the flag gates."""
+  description: String!
+
+  """Identifier of the feature, as used in code."""
+  key: String!
+
+  """
+  Set when the gates have been removed from code. A retired flag reads as on.
+  """
+  retiredAt: Datetime
+
+  """Who the feature is enabled for."""
+  state: FeatureState!
+
+  """When the state was last changed."""
+  updatedAt: Datetime!
+
+  """Who last changed the state."""
+  updatedBy: UUID
+}
+
+"""
+A condition to be used against `FeatureFlag` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input FeatureFlagCondition {
+  """Checks for equality with the object’s `key` field."""
+  key: String
+
+  """Checks for equality with the object’s `updatedBy` field."""
+  updatedBy: UUID
+}
+
+"""The return type of our `featureFlagEvents` query."""
+type FeatureFlagEventsRecord {
+  actorId: UUID
+  actorName: String
+  actorUsername: String
+  createdAt: Datetime
+  id: UUID
+  key: String
+  newState: FeatureState
+  oldState: FeatureState
+}
+
+"""
+A filter to be used against `FeatureFlagEventsRecord` object types. All fields are combined with a logical ‘and.’
+"""
+input FeatureFlagEventsRecordFilter {
+  """Filter by the object’s `actorId` field."""
+  actorId: UUIDFilter
+
+  """Filter by the object’s `actorName` field."""
+  actorName: StringFilter
+
+  """Filter by the object’s `actorUsername` field."""
+  actorUsername: StringFilter
+
+  """Checks for all expressions in this list."""
+  and: [FeatureFlagEventsRecordFilter!]
+
+  """Filter by the object’s `createdAt` field."""
+  createdAt: DatetimeFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Filter by the object’s `key` field."""
+  key: StringFilter
+
+  """Filter by the object’s `newState` field."""
+  newState: FeatureStateFilter
+
+  """Negates the expression."""
+  not: FeatureFlagEventsRecordFilter
+
+  """Filter by the object’s `oldState` field."""
+  oldState: FeatureStateFilter
+
+  """Checks for any expressions in this list."""
+  or: [FeatureFlagEventsRecordFilter!]
+}
+
+"""
+A filter to be used against `FeatureFlag` object types. All fields are combined with a logical ‘and.’
+"""
+input FeatureFlagFilter {
+  """Checks for all expressions in this list."""
+  and: [FeatureFlagFilter!]
+
+  """Filter by the object’s `key` field."""
+  key: StringFilter
+
+  """Negates the expression."""
+  not: FeatureFlagFilter
+
+  """Checks for any expressions in this list."""
+  or: [FeatureFlagFilter!]
+
+  """Filter by the object’s `updatedBy` field."""
+  updatedBy: UUIDFilter
+}
+
+"""A connection to a list of `FeatureFlag` values."""
+type FeatureFlagsConnection {
+  """
+  A list of edges which contains the `FeatureFlag` and cursor to aid in pagination.
+  """
+  edges: [FeatureFlagsEdge!]!
+
+  """A list of `FeatureFlag` objects."""
+  nodes: [FeatureFlag!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `FeatureFlag` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `FeatureFlag` edge in the connection."""
+type FeatureFlagsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `FeatureFlag` at the end of the edge."""
+  node: FeatureFlag!
+}
+
+"""Methods to use when ordering `FeatureFlag`."""
+enum FeatureFlagsOrderBy {
+  KEY_ASC
+  KEY_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  UPDATED_BY_ASC
+  UPDATED_BY_DESC
+}
+
+"""
+State of a feature flag: off for everyone, on for signed-in admins only, or on for everyone.
+"""
+enum FeatureState {
+  ADMINS_ONLY
+  OFF
+  ON
+}
+
+"""
+A filter to be used against FeatureState fields. All fields are combined with a logical ‘and.’
+"""
+input FeatureStateFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: FeatureState
+
+  """Equal to the specified value."""
+  equalTo: FeatureState
+
+  """Greater than the specified value."""
+  greaterThan: FeatureState
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: FeatureState
+
+  """Included in the specified list."""
+  in: [FeatureState!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: FeatureState
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: FeatureState
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: FeatureState
+
+  """Not equal to the specified value."""
+  notEqualTo: FeatureState
+
+  """Not included in the specified list."""
+  notIn: [FeatureState!]
 }
 
 """All input for the `forgotPassword` mutation."""
@@ -1569,6 +2220,36 @@ type Mutation {
   ): AdminDeleteUserPayload
 
   """
+  Records a manual payment (cash, bank transfer) of the current quota price for a registration and emails the participant a payment confirmation.
+  """
+  adminMarkRegistrationPaid(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminMarkRegistrationPaidInput!
+  ): AdminMarkRegistrationPaidPayload
+
+  """
+  Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued. Refused for 10 minutes after the last reminders were sent.
+  """
+  adminSendPaymentReminders(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminSendPaymentRemindersInput!
+  ): AdminSendPaymentRemindersPayload
+
+  """
+  Removes a manual payment recorded with adminMarkRegistrationPaid. Card payments cannot be undone this way.
+  """
+  adminUnmarkRegistrationPaid(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: AdminUnmarkRegistrationPaidInput!
+  ): AdminUnmarkRegistrationPaidPayload
+
+  """
   Mutation only accessible to admin users. Allows updating a registration via the admin panel.
   """
   adminUpdateRegistration(
@@ -1606,6 +2287,15 @@ type Mutation {
     """
     input: ConfirmAccountDeletionInput!
   ): ConfirmAccountDeletionPayload
+
+  """
+  Starts Stripe Checkout for the registration with this update token and
+  returns the Checkout URL. Expires the registration's other open
+  Checkout Sessions. Fails with a PaymentErrorCode as the error code when
+  the registration can't be paid now. language (fi, en or se, default
+  fi) sets the Checkout language and the /pay page Stripe returns to.
+  """
+  createCheckoutSession(language: String, updateToken: String!): CreateCheckoutSessionPayload
 
   """
   Create an event as well as any related quotas and questions with one mutation.
@@ -1669,6 +2359,14 @@ type Mutation {
     input: DeleteEventCategoryInput!
   ): DeleteEventCategoryPayload
 
+  """Deletes a single `EventRegistrationReminder` using a unique key."""
+  deleteEventRegistrationReminder(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteEventRegistrationReminderInput!
+  ): DeleteEventRegistrationReminderPayload
+
   """
   Only the 'owner' may delete an organization. This operation cannot be undone, so be sure that it is what you intend.
   """
@@ -1687,6 +2385,14 @@ type Mutation {
     input: DeleteRegistrationInput!
   ): DeleteRegistrationPayload
 
+  """Delete the values saved to prefill your event registrations."""
+  deleteRegistrationProfile(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteRegistrationProfileInput!
+  ): DeleteRegistrationProfilePayload
+
   """Deletes a single `UserAuthentication` using a unique key."""
   deleteUserAuthentication(
     """
@@ -1702,6 +2408,18 @@ type Mutation {
     """
     input: DeleteUserEmailInput!
   ): DeleteUserEmailPayload
+  disconnectTelegram(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DisconnectTelegramInput!
+  ): DisconnectTelegramPayload
+  enableEventReminder(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: EnableEventReminderInput!
+  ): EnableEventReminderPayload
 
   """
   If you've forgotten your password, give us one of your email addresses and we'll send you a reset token. Note this only works if you have added an email address!
@@ -1767,6 +2485,12 @@ type Mutation {
     """
     input: RequestAccountDeletionInput!
   ): RequestAccountDeletionPayload
+  requestTelegramLink(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: RequestTelegramLinkInput!
+  ): RequestTelegramLinkPayload
 
   """
   If you didn't receive the verification code for this email, we can resend it. We silently cap the rate of resends on the backend, so calls to this function may not result in another email being sent if it has been called recently.
@@ -1787,6 +2511,12 @@ type Mutation {
     """
     input: ResetPasswordInput!
   ): ResetPasswordPayload
+  saveReminderPreferences(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SaveReminderPreferencesInput!
+  ): SaveReminderPreferencesPayload
 
   """Make an existing user admin. Only accessible to admin users."""
   setAdminStatus(
@@ -1795,6 +2525,32 @@ type Mutation {
     """
     input: SetAdminStatusInput!
   ): SetAdminStatusPayload
+  setEventRegistrationReminder(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetEventRegistrationReminderInput!
+  ): SetEventRegistrationReminderPayload
+
+  """
+  Changes the state of an existing feature flag. Only accessible to developers.
+  """
+  setFeatureFlag(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetFeatureFlagInput!
+  ): SetFeatureFlagPayload
+
+  """
+  Set the values used to prefill your event registrations. A null value keeps the saved one and an empty value clears it.
+  """
+  setRegistrationProfile(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: SetRegistrationProfileInput!
+  ): SetRegistrationProfilePayload
 
   """
   The owner of an `Organization` may use this mutation to transfer ownership to a different organization member. Take care, if you assign ownership to someone who cannot or will not access their account then you may need to contact support to have ownership reassigned.
@@ -1808,7 +2564,7 @@ type Mutation {
   translateText(fromLanguage: SupportedLanguages!, text: String!, toLanguage: SupportedLanguages!): TranslateTextPayload!
 
   """
-  Updates an event as well as any related quotas and questions with one mutation.
+  Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.
   """
   updateEvent(
     """
@@ -2219,6 +2975,207 @@ type PasswordStrengthPayload {
   score: Int!
 }
 
+"""
+Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data. Ilmo never refunds: a card payment without a registration is refunded by hand in Stripe, if at all.
+"""
+type Payment {
+  createdAt: Datetime!
+
+  """The organizer who recorded a manual payment."""
+  createdBy: UUID
+  currency: String!
+
+  """Reads a single `Event` that is related to this `Payment`."""
+  event: Event
+
+  """The event paid for. Null once the event has been deleted."""
+  eventId: UUID
+
+  """Snapshot of the event name when the payment was created."""
+  eventName: JSON!
+  id: UUID!
+  method: PaymentMethod!
+  paidAt: Datetime
+
+  """Reads a single `Quota` that is related to this `Payment`."""
+  quota: Quota
+
+  """The quota paid for. Null once the quota has been deleted."""
+  quotaId: UUID
+
+  """Snapshot of the quota title when the payment was created."""
+  quotaTitle: JSON!
+
+  """Reads a single `Registration` that is related to this `Payment`."""
+  registration: Registration
+
+  """
+  The registration paid for. Null once the registration has been deleted, and for a card payment that could not be applied to it (a second payment, or an amount that did not match).
+  """
+  registrationId: UUID
+
+  """
+  Service fee paid on top of the ticket, in cents. 0 for manual payments.
+  """
+  serviceFeeCents: Int!
+  status: PaymentStatus!
+  stripeCheckoutSessionId: String
+  stripePaymentIntentId: String
+
+  """
+  Ticket price paid, in cents: the quota price when the payment was started.
+  """
+  ticketAmountCents: Int!
+  updatedAt: Datetime!
+}
+
+"""
+A condition to be used against `Payment` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input PaymentCondition {
+  """Checks for equality with the object’s `createdBy` field."""
+  createdBy: UUID
+
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: UUID
+
+  """Checks for equality with the object’s `id` field."""
+  id: UUID
+
+  """Checks for equality with the object’s `quotaId` field."""
+  quotaId: UUID
+
+  """Checks for equality with the object’s `registrationId` field."""
+  registrationId: UUID
+
+  """Checks for equality with the object’s `stripeCheckoutSessionId` field."""
+  stripeCheckoutSessionId: String
+
+  """Checks for equality with the object’s `stripePaymentIntentId` field."""
+  stripePaymentIntentId: String
+}
+
+"""
+Why a registration can't be paid right now. The error code of
+createCheckoutSession, and blockedReason of paymentByUpdateToken.
+"""
+enum PaymentErrorCode {
+  """The registration has been paid (by card or marked paid by hand)."""
+  ALREADY_PAID
+
+  """The registration is in the queue; it is paid once it gets a spot."""
+  IN_QUEUE
+
+  """Payments are switched off, or Stripe is not configured on this server."""
+  PAYMENTS_DISABLED
+
+  """Payment opens when registration closes; registration is open (again)."""
+  PAYMENT_NOT_OPEN
+
+  """The quota is free, or the event has no payments."""
+  PAYMENT_NOT_REQUIRED
+
+  """No finished registration has this update token."""
+  REGISTRATION_NOT_FOUND
+}
+
+"""
+A filter to be used against `Payment` object types. All fields are combined with a logical ‘and.’
+"""
+input PaymentFilter {
+  """Checks for all expressions in this list."""
+  and: [PaymentFilter!]
+
+  """Filter by the object’s `createdBy` field."""
+  createdBy: UUIDFilter
+
+  """Filter by the object’s `eventId` field."""
+  eventId: UUIDFilter
+
+  """Filter by the object’s `id` field."""
+  id: UUIDFilter
+
+  """Negates the expression."""
+  not: PaymentFilter
+
+  """Checks for any expressions in this list."""
+  or: [PaymentFilter!]
+
+  """Filter by the object’s `quotaId` field."""
+  quotaId: UUIDFilter
+
+  """Filter by the object’s `registrationId` field."""
+  registrationId: UUIDFilter
+
+  """Filter by the object’s `stripeCheckoutSessionId` field."""
+  stripeCheckoutSessionId: StringFilter
+
+  """Filter by the object’s `stripePaymentIntentId` field."""
+  stripePaymentIntentId: StringFilter
+}
+
+"""
+How a payment was made: by card through Stripe Checkout, or marked paid by an organizer (cash, bank transfer).
+"""
+enum PaymentMethod {
+  MANUAL
+  STRIPE
+}
+
+"""State of a single payment attempt."""
+enum PaymentStatus {
+  EXPIRED
+  PAID
+  PENDING
+}
+
+"""A connection to a list of `Payment` values."""
+type PaymentsConnection {
+  """
+  A list of edges which contains the `Payment` and cursor to aid in pagination.
+  """
+  edges: [PaymentsEdge!]!
+
+  """A list of `Payment` objects."""
+  nodes: [Payment!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Payment` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Payment` edge in the connection."""
+type PaymentsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Payment` at the end of the edge."""
+  node: Payment!
+}
+
+"""Methods to use when ordering `Payment`."""
+enum PaymentsOrderBy {
+  CREATED_BY_ASC
+  CREATED_BY_DESC
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  ID_ASC
+  ID_DESC
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  QUOTA_ID_ASC
+  QUOTA_ID_DESC
+  REGISTRATION_ID_ASC
+  REGISTRATION_ID_DESC
+  STRIPE_CHECKOUT_SESSION_ID_ASC
+  STRIPE_CHECKOUT_SESSION_ID_DESC
+  STRIPE_PAYMENT_INTENT_ID_ASC
+  STRIPE_PAYMENT_INTENT_ID_DESC
+}
+
 """The root query type which gives access points into the data universe."""
 type Query {
   """List all users. Only accessible to admin users."""
@@ -2255,8 +3212,45 @@ type Query {
     orderBy: [UsersOrderBy!]
   ): UsersConnection
 
+  """
+  Keys of the features enabled for the current user only because they are in admins_only. Empty unless the current user is an admin.
+  """
+  adminPreviewFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
+  currentReminderPreferences: ReminderPreference
+  currentTelegramAccount: TelegramAccount
+
   """The currently logged in user (or null if not logged in)."""
   currentUser: User
+
+  """
+  Returns true if the current user is both an admin and a developer, false otherwise.
+  """
+  currentUserIsDeveloper: Boolean
+
+  """Keys of the features enabled for the current user."""
+  enabledFeaturesList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: StringFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [String]
   event(id: UUID!): Event
   eventBySlug(slug: String!): Event
 
@@ -2329,6 +3323,44 @@ type Query {
     """The method to use when ordering `EventQuestion`."""
     orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventQuestionsConnection
+  eventRegistrationReminder(id: UUID!): EventRegistrationReminder
+  eventRegistrationReminderByUserIdAndEventId(eventId: UUID!, userId: UUID!): EventRegistrationReminder
+
+  """
+  Reads and enables pagination through a set of `EventRegistrationReminder`.
+  """
+  eventRegistrationReminders(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventRegistrationReminderCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventRegistrationReminderFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventRegistrationReminder`."""
+    orderBy: [EventRegistrationRemindersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventRegistrationRemindersConnection
 
   """Reads and enables pagination through a set of `Event`."""
   events(
@@ -2363,6 +3395,58 @@ type Query {
     """The method to use when ordering `Event`."""
     orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
   ): EventsConnection
+  featureFlag(key: String!): FeatureFlag
+
+  """
+  Feature flag state changes, newest first, optionally for one key. Only accessible to developers.
+  """
+  featureFlagEventsList(
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagEventsRecordFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+    flagKey: String
+
+    """Skip the first `n` values."""
+    offset: Int
+  ): [FeatureFlagEventsRecord]
+
+  """Reads and enables pagination through a set of `FeatureFlag`."""
+  featureFlags(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: FeatureFlagCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: FeatureFlagFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `FeatureFlag`."""
+    orderBy: [FeatureFlagsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): FeatureFlagsConnection
   organization(id: UUID!): Organization
   organizationBySlug(slug: String!): Organization
 
@@ -2404,6 +3488,50 @@ type Query {
     """The method to use when ordering `Organization`."""
     orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): OrganizationsConnection
+  payment(id: UUID!): Payment
+  paymentByStripeCheckoutSessionId(stripeCheckoutSessionId: String!): Payment
+
+  """
+  The payment state of the registration with this update token, for the
+  /pay page. Null when Stripe is not configured on this server or the
+  token is unknown. Answers while the payments feature is off too, so
+  that a payment already made stays visible; Pay is then blocked.
+  """
+  paymentByUpdateToken(updateToken: String!): RegistrationPayment
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection
   quota(id: UUID!): Quota
 
   """Reads and enables pagination through a set of `Quota`."""
@@ -2443,6 +3571,7 @@ type Query {
 
   """Get registration by update token."""
   registrationByUpdateToken(updateToken: String!): Registration
+  registrationProfile(userId: UUID!): RegistrationProfile
 
   """Reads and enables pagination through a set of `Registration`."""
   registrations(
@@ -2477,6 +3606,41 @@ type Query {
     """The method to use when ordering `Registration`."""
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection
+  reminderPreference(userId: UUID!): ReminderPreference
+
+  """Reads and enables pagination through a set of `ReminderPreference`."""
+  reminderPreferences(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReminderPreferenceCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: ReminderPreferenceFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `ReminderPreference`."""
+    orderBy: [ReminderPreferencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReminderPreferencesConnection
 
   """Use this query to render server-side mjml templates to html and text."""
   renderEmailTemplate(input: RenderEmailInput!): EmailTemplate
@@ -2491,9 +3655,54 @@ type Query {
 
   """Supported languages of the app."""
   supportedLanguages: [SupportedLanguages]
+  telegramAccount(userId: UUID!): TelegramAccount
+
+  """Reads and enables pagination through a set of `TelegramAccount`."""
+  telegramAccounts(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: TelegramAccountCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: TelegramAccountFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `TelegramAccount`."""
+    orderBy: [TelegramAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): TelegramAccountsConnection
+  telegramBotUsername: String
   user(id: UUID!): User
   userAuthentication(id: UUID!): UserAuthentication
   userEmail(id: UUID!): UserEmail
+}
+
+"""
+Which registration profile field prefills the answer to a question. NONE is only an input value: it clears the prefill of a question in `updateEvent`, where an omitted prefill keeps the stored one.
+"""
+enum QuestionPrefill {
+  DIETARY_RESTRICTIONS
+  NONE
+  TELEGRAM
 }
 
 enum QuestionType {
@@ -2514,8 +3723,47 @@ type Quota {
   eventId: UUID!
   id: UUID!
 
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
+
   """Quota position. Used to order quotas."""
   position: Int!
+
+  """
+  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum, and at most 1 000 000 cents (10 000 €). Registrants pay the price in effect when they pay.
+  """
+  priceCents: Int!
 
   """Reads and enables pagination through a set of `Registration`."""
   registrations(
@@ -2683,6 +3931,45 @@ type Registration {
   """Last name of the person registered to an event."""
   lastName: ConstrainedName
 
+  """
+  Payment status of the registration. Null unless the current user may manage the event's payments, because registrations are publicly readable.
+  """
+  paymentStatus: RegistrationPaymentStatus
+
+  """Reads and enables pagination through a set of `Payment`."""
+  payments(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: PaymentCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: PaymentFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `Payment`."""
+    orderBy: [PaymentsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): PaymentsConnection!
+
   """Returns the position of the registration."""
   position: Int
 
@@ -2714,6 +4001,9 @@ input RegistrationCondition {
 
   """Checks for equality with the object’s `id` field."""
   id: UUID
+
+  """Checks for equality with the object’s `paymentStatus` field."""
+  paymentStatus: RegistrationPaymentStatus
 
   """Checks for equality with the object’s `position` field."""
   position: Int
@@ -2759,6 +4049,9 @@ input RegistrationFilter {
   """Checks for any expressions in this list."""
   or: [RegistrationFilter!]
 
+  """Filter by the object’s `paymentStatus` field."""
+  paymentStatus: RegistrationPaymentStatusFilter
+
   """Filter by the object’s `position` field."""
   position: IntFilter
 
@@ -2770,6 +4063,128 @@ input RegistrationFilter {
 
   """Filter by the object’s `updatedBy` field."""
   updatedBy: UUIDFilter
+}
+
+"""What the /pay page shows for a registration. Amounts are in cents."""
+type RegistrationPayment {
+  """Why Pay is not available right now; null when it is."""
+  blockedReason: PaymentErrorCode
+  eventEndTime: Datetime!
+  eventId: UUID!
+  eventName: JSON!
+  eventSlug: String!
+  eventStartTime: Datetime!
+  firstName: String
+  lastName: String
+  paidAt: Datetime
+
+  """True when the paid payment was recorded by an organizer by hand."""
+  paidManually: Boolean!
+
+  """What was paid, fee included (paid registrations only)."""
+  paidTotalCents: Int
+
+  """The quota's current ticket price, which Pay charges. 0 when free."""
+  priceCents: Int!
+  queuePosition: Int
+
+  """Queue status; null while the registration is not yet placed."""
+  queueStatus: RegistrationStatus
+  quotaTitle: JSON!
+  registrationEndTime: Datetime!
+
+  """The service fee charged on top of a paid ticket. 0 when free."""
+  serviceFeeCents: Int!
+  status: RegistrationPaymentStatus!
+  totalCents: Int!
+}
+
+"""Payment state of a registration as shown to organizers."""
+enum RegistrationPaymentStatus {
+  NOT_REQUIRED
+  PAID
+  PAID_MANUALLY
+  UNPAID
+}
+
+"""
+A filter to be used against RegistrationPaymentStatus fields. All fields are combined with a logical ‘and.’
+"""
+input RegistrationPaymentStatusFilter {
+  """
+  Not equal to the specified value, treating null like an ordinary value.
+  """
+  distinctFrom: RegistrationPaymentStatus
+
+  """Equal to the specified value."""
+  equalTo: RegistrationPaymentStatus
+
+  """Greater than the specified value."""
+  greaterThan: RegistrationPaymentStatus
+
+  """Greater than or equal to the specified value."""
+  greaterThanOrEqualTo: RegistrationPaymentStatus
+
+  """Included in the specified list."""
+  in: [RegistrationPaymentStatus!]
+
+  """
+  Is null (if `true` is specified) or is not null (if `false` is specified).
+  """
+  isNull: Boolean
+
+  """Less than the specified value."""
+  lessThan: RegistrationPaymentStatus
+
+  """Less than or equal to the specified value."""
+  lessThanOrEqualTo: RegistrationPaymentStatus
+
+  """Equal to the specified value, treating null like an ordinary value."""
+  notDistinctFrom: RegistrationPaymentStatus
+
+  """Not equal to the specified value."""
+  notEqualTo: RegistrationPaymentStatus
+
+  """Not included in the specified list."""
+  notIn: [RegistrationPaymentStatus!]
+}
+
+"""
+Values used to prefill event registration answers. Only visible to the user themselves.
+"""
+type RegistrationProfile {
+  createdAt: Datetime!
+
+  """Dietary restrictions and allergies."""
+  dietaryRestrictions: String
+
+  """Telegram handle."""
+  telegram: String
+  updatedAt: Datetime!
+
+  """Reads a single `User` that is related to this `RegistrationProfile`."""
+  user: User
+
+  """The user this registration profile belongs to."""
+  userId: UUID!
+}
+
+"""A `RegistrationProfile` edge in the connection."""
+type RegistrationProfilesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `RegistrationProfile` at the end of the edge."""
+  node: RegistrationProfile!
+}
+
+"""Methods to use when ordering `RegistrationProfile`."""
+enum RegistrationProfilesOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
 }
 
 enum RegistrationStatus {
@@ -2857,6 +4272,8 @@ enum RegistrationsOrderBy {
   ID_ASC
   ID_DESC
   NATURAL
+  PAYMENT_STATUS_ASC
+  PAYMENT_STATUS_DESC
   POSITION_ASC
   POSITION_DESC
   PRIMARY_KEY_ASC
@@ -2867,6 +4284,79 @@ enum RegistrationsOrderBy {
   STATUS_DESC
   UPDATED_BY_ASC
   UPDATED_BY_DESC
+}
+
+"""Delivery and timing preferences for upcoming registration reminders."""
+type ReminderPreference {
+  deliveryMethod: String!
+  minutesBefore: Int!
+
+  """Reads a single `User` that is related to this `ReminderPreference`."""
+  user: User
+  userId: UUID!
+}
+
+"""
+A condition to be used against `ReminderPreference` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input ReminderPreferenceCondition {
+  """Checks for equality with the object’s `userId` field."""
+  userId: UUID
+}
+
+"""
+A filter to be used against `ReminderPreference` object types. All fields are combined with a logical ‘and.’
+"""
+input ReminderPreferenceFilter {
+  """Checks for all expressions in this list."""
+  and: [ReminderPreferenceFilter!]
+
+  """Negates the expression."""
+  not: ReminderPreferenceFilter
+
+  """Checks for any expressions in this list."""
+  or: [ReminderPreferenceFilter!]
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
+}
+
+"""A connection to a list of `ReminderPreference` values."""
+type ReminderPreferencesConnection {
+  """
+  A list of edges which contains the `ReminderPreference` and cursor to aid in pagination.
+  """
+  edges: [ReminderPreferencesEdge!]!
+
+  """A list of `ReminderPreference` objects."""
+  nodes: [ReminderPreference!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `ReminderPreference` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `ReminderPreference` edge in the connection."""
+type ReminderPreferencesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `ReminderPreference` at the end of the edge."""
+  node: ReminderPreference!
+}
+
+"""Methods to use when ordering `ReminderPreference`."""
+enum ReminderPreferencesOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
 }
 
 """All input for the `removeFromOrganization` mutation."""
@@ -2924,6 +4414,30 @@ type RequestAccountDeletionPayload {
   success: Boolean
 }
 
+"""All input for the `requestTelegramLink` mutation."""
+input RequestTelegramLinkInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+}
+
+"""The output of our `requestTelegramLink` mutation."""
+type RequestTelegramLinkPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  string: String
+}
+
 """All input for the `resendEmailVerificationCode` mutation."""
 input ResendEmailVerificationCodeInput {
   """
@@ -2976,6 +4490,41 @@ type ResetPasswordPayload {
   success: Boolean
 }
 
+"""All input for the `saveReminderPreferences` mutation."""
+input SaveReminderPreferencesInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  deliveryMethod: String!
+  minutesBefore: Int!
+}
+
+"""The output of our `saveReminderPreferences` mutation."""
+type SaveReminderPreferencesPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  reminderPreference: ReminderPreference
+
+  """An edge for our `ReminderPreference`. May be used by Relay 1."""
+  reminderPreferenceEdge(
+    """The method to use when ordering `ReminderPreference`."""
+    orderBy: [ReminderPreferencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReminderPreferencesEdge
+
+  """Reads a single `User` that is related to this `ReminderPreference`."""
+  user: User
+}
+
 """All input for the `setAdminStatus` mutation."""
 input SetAdminStatusInput {
   """
@@ -3000,6 +4549,103 @@ type SetAdminStatusPayload {
   """
   query: Query
   success: Boolean
+}
+
+"""All input for the `setEventRegistrationReminder` mutation."""
+input SetEventRegistrationReminderInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  deliveryMethod: String
+  enabled: Boolean!
+  eventId: UUID!
+  language: String
+  minutesBefore: Int
+}
+
+"""The output of our `setEventRegistrationReminder` mutation."""
+type SetEventRegistrationReminderPayload {
+  boolean: Boolean
+
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
+"""All input for the `setFeatureFlag` mutation."""
+input SetFeatureFlagInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  key: String!
+  state: FeatureState!
+}
+
+"""The output of our `setFeatureFlag` mutation."""
+type SetFeatureFlagPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+  featureFlag: FeatureFlag
+
+  """An edge for our `FeatureFlag`. May be used by Relay 1."""
+  featureFlagEdge(
+    """The method to use when ordering `FeatureFlag`."""
+    orderBy: [FeatureFlagsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): FeatureFlagsEdge
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+}
+
+"""All input for the `setRegistrationProfile` mutation."""
+input SetRegistrationProfileInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  dietaryRestrictions: String
+  telegram: String
+}
+
+"""The output of our `setRegistrationProfile` mutation."""
+type SetRegistrationProfilePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+  registrationProfile: RegistrationProfile
+
+  """An edge for our `RegistrationProfile`. May be used by Relay 1."""
+  registrationProfileEdge(
+    """The method to use when ordering `RegistrationProfile`."""
+    orderBy: [RegistrationProfilesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): RegistrationProfilesEdge
+
+  """Reads a single `User` that is related to this `RegistrationProfile`."""
+  user: User
 }
 
 """
@@ -3135,341 +4781,97 @@ input StringFilter {
 }
 
 """
-The root subscription type: contains events and live queries you can subscribe to with the `subscription` operation.
-
-#### Live Queries
-
-Live query fields are differentiated by containing `(live)` at the end of their
-description, they are added for each field in the `Query` type. When you
-subscribe to a live query field, the selection set will be evaluated and sent to
-the client, and then most things\* that would cause the output of the selection
-set to change will trigger the selection set to be re-evaluated and the results
-to be re-sent to the client.
-
-_(\* Not everything: typically only changes to persisted data referenced by the query are detected, not computed fields.)_
-
-Live queries can be very expensive, so try and keep them small and focussed.
-
-#### Events
-
-Event fields will run their selection set when, and only when, the specified
-server-side event occurs. This makes them a lot more efficient than Live
-Queries, but it is still recommended that you keep payloads fairly small.
+The root subscription type: contains realtime events you can subscribe to with the `subscription` operation.
 """
 type Subscription {
-  """List all users. Only accessible to admin users. (live)"""
-  adminListUsers(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: UserCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: UserFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `User`."""
-    orderBy: [UsersOrderBy!]
-  ): UsersConnection
-
   """Returns the server time every second."""
   currentTime: Date!
 
-  """The currently logged in user (or null if not logged in). (live)"""
-  currentUser: User
-
   """Triggered when the logged in user's record is updated in some way."""
   currentUserUpdated: UserSubscriptionPayload!
-
-  """ (live)"""
-  event(id: UUID!): Event
-
-  """ (live)"""
-  eventBySlug(slug: String!): Event
-
-  """Reads and enables pagination through a set of `EventCategory`. (live)"""
-  eventCategories(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventCategoryCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: EventCategoryFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `EventCategory`."""
-    orderBy: [EventCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventCategoriesConnection
-
-  """ (live)"""
-  eventCategory(id: UUID!): EventCategory
-
-  """ (live)"""
-  eventQuestion(id: UUID!): EventQuestion
-
-  """Reads and enables pagination through a set of `EventQuestion`. (live)"""
-  eventQuestions(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventQuestionCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: EventQuestionFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `EventQuestion`."""
-    orderBy: [EventQuestionsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventQuestionsConnection
 
   """
   Triggered when new event registrations are created or updated. Each event has its own subscription topic.
   """
   eventRegistrations(eventId: UUID!): EventRegistrationsSubscriptionPayload!
-
-  """Reads and enables pagination through a set of `Event`. (live)"""
-  events(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: EventCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: EventFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Event`."""
-    orderBy: [EventsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): EventsConnection
-
-  """ (live)"""
-  organization(id: UUID!): Organization
-
-  """ (live)"""
-  organizationBySlug(slug: String!): Organization
-
-  """
-  Given an invitation UUID (and, if required, the code that was emailed to you), retrieves the `Organization` that you were invited to. (live)
-  """
-  organizationForInvitation(code: String, invitationId: UUID!): Organization
-
-  """Reads and enables pagination through a set of `Organization`. (live)"""
-  organizations(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: OrganizationCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: OrganizationFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Organization`."""
-    orderBy: [OrganizationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): OrganizationsConnection
-
-  """ (live)"""
-  quota(id: UUID!): Quota
-
-  """Reads and enables pagination through a set of `Quota`. (live)"""
-  quotas(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: QuotaCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: QuotaFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Quota`."""
-    orderBy: [QuotasOrderBy!] = [PRIMARY_KEY_ASC]
-  ): QuotasConnection
-
-  """ (live)"""
-  registration(id: UUID!): Registration
-
-  """Get registration by update token. (live)"""
-  registrationByUpdateToken(updateToken: String!): Registration
-
-  """Reads and enables pagination through a set of `Registration`. (live)"""
-  registrations(
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: RegistrationCondition
-
-    """
-    A filter to be used in determining which values should be returned by the collection.
-    """
-    filter: RegistrationFilter
-
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """The method to use when ordering `Registration`."""
-    orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): RegistrationsConnection
-
-  """
-  Use this query to render server-side mjml templates to html and text. (live)
-  """
-  renderEmailTemplate(input: RenderEmailInput!): EmailTemplate
-
-  """
-  Use this query to render all server-side email templates to html and text. (live)
-  """
-  renderEmailTemplates: EmailTemplatesConnection
-
-  """True when Keycloak SSO login is configured on this server. (live)"""
-  ssoLoginEnabled: Boolean!
-
-  """Supported languages of the app. (live)"""
-  supportedLanguages: [SupportedLanguages]
-
-  """ (live)"""
-  user(id: UUID!): User
-
-  """ (live)"""
-  userAuthentication(id: UUID!): UserAuthentication
-
-  """ (live)"""
-  userEmail(id: UUID!): UserEmail
 }
 
 enum SupportedLanguages {
   EN
   FI
+}
+
+"""Telegram accounts linked by their owners."""
+type TelegramAccount {
+  createdAt: Datetime!
+
+  """Reads a single `User` that is related to this `TelegramAccount`."""
+  user: User
+  userId: UUID!
+  username: String
+}
+
+"""
+A condition to be used against `TelegramAccount` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input TelegramAccountCondition {
+  """Checks for equality with the object’s `userId` field."""
+  userId: UUID
+}
+
+"""
+A filter to be used against `TelegramAccount` object types. All fields are combined with a logical ‘and.’
+"""
+input TelegramAccountFilter {
+  """Checks for all expressions in this list."""
+  and: [TelegramAccountFilter!]
+
+  """Negates the expression."""
+  not: TelegramAccountFilter
+
+  """Checks for any expressions in this list."""
+  or: [TelegramAccountFilter!]
+
+  """Filter by the object’s `userId` field."""
+  userId: UUIDFilter
+}
+
+"""A connection to a list of `TelegramAccount` values."""
+type TelegramAccountsConnection {
+  """
+  A list of edges which contains the `TelegramAccount` and cursor to aid in pagination.
+  """
+  edges: [TelegramAccountsEdge!]!
+
+  """A list of `TelegramAccount` objects."""
+  nodes: [TelegramAccount!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `TelegramAccount` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""A `TelegramAccount` edge in the connection."""
+type TelegramAccountsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `TelegramAccount` at the end of the edge."""
+  node: TelegramAccount!
+}
+
+"""Methods to use when ordering `TelegramAccount`."""
+enum TelegramAccountsOrderBy {
+  NATURAL
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+  USER_ID_ASC
+  USER_ID_DESC
 }
 
 """All input for the `transferOrganizationOwnership` mutation."""
@@ -3712,6 +5114,7 @@ input UpdateEventQuestionInput {
   isRequired: Boolean
   label: TranslatedField
   position: Int
+  prefill: QuestionPrefill
   type: QuestionType
 }
 
@@ -3719,6 +5122,7 @@ input UpdateEventQuestionInput {
 input UpdateEventQuotaInput {
   id: UUID
   position: Int
+  priceCents: Int
   size: Int
   title: JSON
 }
@@ -3852,6 +5256,47 @@ type User {
   """Optional avatar URL."""
   avatarUrl: String
   createdAt: Datetime!
+
+  """
+  Reads and enables pagination through a set of `EventRegistrationReminder`.
+  """
+  eventRegistrationReminders(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: EventRegistrationReminderCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: EventRegistrationReminderFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `EventRegistrationReminder`."""
+    orderBy: [EventRegistrationRemindersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): EventRegistrationRemindersConnection!
+
+  """
+  The user's first name(s), from the Keycloak `given_name` claim. Null for users that have not logged in with Keycloak.
+  """
+  firstName: String
   hasPassword: Boolean
 
   """Unique identifier for the user."""
@@ -3859,7 +5304,17 @@ type User {
 
   """If true, the user has elevated privileges."""
   isAdmin: Boolean!
+
+  """
+  If true and the user is also an admin, the user can manage feature flags.
+  """
+  isDeveloper: Boolean!
   isVerified: Boolean!
+
+  """
+  The user's last name, from the Keycloak `family_name` claim. Null for users that have not logged in with Keycloak.
+  """
+  lastName: String
 
   """Public-facing name (or pseudonym) of the user."""
   name: String
@@ -3902,6 +5357,83 @@ type User {
 
   """Users primary email."""
   primaryEmail: String
+
+  """Reads a single `RegistrationProfile` that is related to this `User`."""
+  registrationProfile: RegistrationProfile
+
+  """Reads a single `ReminderPreference` that is related to this `User`."""
+  reminderPreference: ReminderPreference
+
+  """Reads and enables pagination through a set of `ReminderPreference`."""
+  reminderPreferences(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReminderPreferenceCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: ReminderPreferenceFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `ReminderPreference`."""
+    orderBy: [ReminderPreferencesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReminderPreferencesConnection! @deprecated(reason: "Please use reminderPreference instead")
+
+  """Reads a single `TelegramAccount` that is related to this `User`."""
+  telegramAccount: TelegramAccount
+
+  """Reads and enables pagination through a set of `TelegramAccount`."""
+  telegramAccounts(
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: TelegramAccountCondition
+
+    """
+    A filter to be used in determining which values should be returned by the collection.
+    """
+    filter: TelegramAccountFilter
+
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """The method to use when ordering `TelegramAccount`."""
+    orderBy: [TelegramAccountsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): TelegramAccountsConnection! @deprecated(reason: "Please use telegramAccount instead")
   updatedAt: Datetime!
 
   """Reads and enables pagination through a set of `UserAuthentication`."""

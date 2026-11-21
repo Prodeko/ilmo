@@ -1,47 +1,36 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CreateEventDocument,
   CreateEventPageQuery,
-  EventQuestion,
-  Quota,
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
-import { filterObjectByKeys, formItemLayout, lowercased } from "@app/lib"
-import { Badge, Col, Form, Row, Tabs } from "antd"
-import dayjs from "dayjs"
-import debounce from "lodash/debounce"
+import { formItemLayout, lowercased } from "@app/lib"
+import { Badge, Col, Form, Row, Skeleton, Tabs } from "antd"
+import isEqual from "lodash/isEqual"
 import uniq from "lodash/uniq"
 import { useRouter } from "next/router"
-import slugify from "slugify"
 import { CombinedError, useMutation } from "urql"
 
-import { ButtonLink, useTranslation } from "../."
+import {
+  ButtonLink,
+  useFeature,
+  useFeatureFlagsLoaded,
+  useTranslation,
+} from "../."
+import { useCelebrate } from "../celebrate"
 
 import { EmailTab } from "./EmailTab"
+import { EventFormFooter } from "./EventFormFooter"
 import { MainTab } from "./MainTab"
+import { PreviewTab } from "./PreviewTab"
 import { QuestionsTab } from "./QuestionsTab"
 import { QuotasTab } from "./QuotasTab"
 import { RegistrationsTab } from "./RegistrationsTab"
+import { RequiredMark } from "./RequiredMark"
+import { FormValues, SubmittedFormValues, toEventInput } from "./values"
 
-import type { Scalars } from "@app/graphql"
-import type { JsonValue } from "type-fest"
-
-export type FormValues = {
-  languages?: string[]
-  ownerOrganizationId?: string
-  categoryId?: string
-  name?: Scalars["TranslatedField"]["input"]
-  description?: JsonValue
-  location?: string
-  eventTime?: dayjs.Dayjs[]
-  registrationTime?: dayjs.Dayjs[]
-  isHighlighted?: boolean
-  headerImageFile?: string
-  isDraft?: boolean
-  quotas?: Quota[]
-  Questions?: EventQuestion[]
-}
+export * from "./values"
 
 interface EventFormProps {
   type: "update" | "create"
@@ -53,37 +42,31 @@ interface EventFormProps {
   initialValues?: any
 }
 
-export function getEventSlug(
-  name?: Scalars["TranslatedField"]["input"],
-  dates?: dayjs.Dayjs[]
-) {
-  const eventStartTime = dates?.[0].toISOString()
-
-  const nameFi = name?.fi
-  const nameSlug = nameFi
-    ? nameFi
-    : Object.values(name || {})?.[0] || ("" as string)
-
-  const daySlug = dayjs(eventStartTime).format("YYYY-M-D")
-  const slug = slugify(`${daySlug}-${nameSlug}`, {
-    lower: true,
-  })
-
-  return slug
-}
+// Tab label with the same red asterisk antd shows next to required fields
+const RequiredTabLabel: React.FC<{ label: string }> = ({ label }) => (
+  <span>
+    <RequiredMark />
+    {label}
+  </span>
+)
 
 enum TAB {
   General = "general",
   Quotas = "quotas",
   Questions = "questions",
+  Preview = "preview",
   Registrations = "registrations",
   Email = "email",
 }
 
-export const EventForm: React.FC<EventFormProps> = (props) => {
+// Tabs holding the event's form fields, which the footer moves between
+const FORM_TABS = [TAB.General, TAB.Quotas, TAB.Questions]
+
+const EventFormContent: React.FC<EventFormProps> = (props) => {
   const { formRedirect, data, initialValues, type, eventId } = props
   const { languages, slug, isDraft: initialIsDraft } = initialValues || {}
   const { supportedLanguages } = data || {}
+  const paymentsEnabled = useFeature("payments")
   const languagesLower = useMemo(
     () => lowercased(supportedLanguages),
     [supportedLanguages]
@@ -94,8 +77,9 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   )
 
   // Translations, router, urql
-  const { t } = useTranslation("events")
+  const { t, lang } = useTranslation("events")
   const router = useRouter()
+  const celebrate = useCelebrate()
 
   // Handling form values, errors and submission
   const [form] = Form.useForm()
@@ -104,18 +88,76 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   const [activeTab, setActiveTab] = useState<TAB>(TAB.General)
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [formError, setFormError] = useState<Error | CombinedError | null>(null)
-  const [tabErrors, setTabErrors] = useState<any[] | null>(null)
   const [isDraft, setIsDraft] = useState(type === "create" || initialIsDraft)
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(
     initialSelectedLanguages || []
   )
+  // Errors that keep the form from being saved, null until first checked
+  const [missingFields, setMissingFields] = useState<string[] | null>(null)
+  // Field errors found when saving, shown in the footer since the fields
+  // they belong to can be on another tab
+  const [submitErrors, setSubmitErrors] = useState<string[] | null>(null)
+  const tabsRef = useRef<HTMLDivElement>(null)
+
+  // Saving stays disabled until every field passes validation. useWatch also
+  // fires on setFieldsValue, which onValuesChange doesn't. The check also
+  // runs again on a language switch, which keeps the form's values, so the
+  // reasons are given in the new language
+  const watchedValues = Form.useWatch([], form)
+  const [recheck, setRecheck] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => !cancelled && setMissingFields([]))
+      .catch(({ errorFields, outOfDate }) => {
+        if (cancelled) return
+        // Another validation (e.g. a field validating itself on change)
+        // started after this one, which rejects this one without errors
+        // whatever the fields hold. Check again once it has started
+        if (outOfDate) {
+          setTimeout(() => !cancelled && setRecheck((n) => n + 1))
+          return
+        }
+        setMissingFields(
+          uniq(errorFields.flatMap(({ errors }) => errors as string[]))
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [form, watchedValues, recheck, lang])
+
+  // The save errors were given in the previous language
+  useEffect(() => {
+    setSubmitErrors(null)
+    setFormError(null)
+  }, [lang])
+
+  const changeTab = useCallback((tab: string) => {
+    setActiveTab(tab as TAB)
+    // Bring the top of the new tab into view when the footer was used
+    // further down the page
+    const top = tabsRef.current?.getBoundingClientRect().top
+    if (top !== undefined && top < 0) {
+      tabsRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [])
 
   // Mutations
   const eventMutation =
     type === "update" ? UpdateEventDocument : CreateEventDocument
   const [, mutation] = useMutation(eventMutation)
 
+  // The initial values last put into the form. The page's query hands in a
+  // new object whenever the cached event is written again (e.g. by another
+  // query that loads the same event), which must not discard the user's edits.
+  const appliedInitialValues = useRef<unknown>(null)
   useEffect(() => {
+    const next = [initialValues, initialSelectedLanguages]
+    if (isEqual(appliedInitialValues.current, next)) return
+    appliedInitialValues.current = next
+
     // Set form initialValues if they have changed after the initial rendering
     setFieldsValue(initialValues)
 
@@ -127,79 +169,17 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
   }, [setFieldsValue, initialValues, initialSelectedLanguages])
 
   const handleSubmit = useCallback(
-    async (values) => {
+    async (values: SubmittedFormValues) => {
       setFormSubmitting(true)
       setFormError(null)
-      setTabErrors(null)
       try {
-        const {
-          name,
-          eventTime,
-          registrationTime,
-          openQuotaSize,
-          quotas: formQuotas,
-          questions: formQuestions,
-          headerImageFile: headerFile,
-        } = values
-
-        if (!formQuotas && (openQuotaSize < 1 || !openQuotaSize)) {
+        if (!values.quotas?.length) {
           throw new Error(t("errors.mustProvideEventQuota"))
         }
 
-        const eventStartTime = eventTime[0].toISOString()
-        const eventEndTime = eventTime[1].toISOString()
-
-        const registrationStartTime = registrationTime[0].toISOString()
-        const registrationEndTime = registrationTime[1].toISOString()
-
-        const slug = getEventSlug(name, eventTime)
-        const headerImageFile = headerFile?.originFileObj
-
-        const event = {
-          ...filterObjectByKeys(values, [
-            "ownerOrganizationId",
-            "categoryId",
-            "name",
-            "description",
-            "location",
-            "isHighlighted",
-            "isDraft",
-          ]),
-          slug,
-          eventStartTime,
-          eventEndTime,
-          registrationStartTime,
-          registrationEndTime,
-          headerImageFile,
-          openQuotaSize,
-        }
-
-        // FormQuotas can be empty if only the open quota is specified
-        const quotas =
-          formQuotas?.map((q: Quota, index: number) => {
-            // Set quota position
-            q.position = index
-            return filterObjectByKeys(q, ["id", "position", "title", "size"])
-          }) || []
-
-        // Questions may be empty
-        const questions = formQuestions?.map(
-          (q: EventQuestion, index: number) => {
-            // Set question position and isRequired
-            q.position = index
-            q.isRequired = q.isRequired ?? false
-            return filterObjectByKeys(q, [
-              "id",
-              "position",
-              "type",
-              "label",
-              "isRequired",
-              "data",
-            ])
-          }
-        )
-
-        const commonInput = { event, quotas, questions }
+        const commonInput = toEventInput(values, {
+          payments: paymentsEnabled,
+        })
         const input =
           type === "update"
             ? {
@@ -212,6 +192,8 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         const { error } = await mutation({ input })
         if (error) throw error
 
+        if (type === "create") celebrate()
+
         setFormError(null)
         router.push(formRedirect, formRedirect)
       } catch (e) {
@@ -219,44 +201,31 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
       }
       setFormSubmitting(false)
     },
-    [mutation, formRedirect, router, t, type, eventId]
+    [
+      mutation,
+      formRedirect,
+      router,
+      t,
+      type,
+      eventId,
+      celebrate,
+      paymentsEnabled,
+    ]
   )
 
-  const debounceTabErrors = useMemo(
-    () =>
-      debounce(() => {
-        let tabErrors = form
-          .getFieldsError()
-          .filter(
-            ({ name, errors }) =>
-              ["quotas", "questions"].includes(name[0] as string) &&
-              errors.length > 0
-          )
-          .map(({ errors }) => errors[0])
-          .filter((e) => !!e)
+  const tabLabels: Record<string, string> = {
+    [TAB.General]: t("admin:events.tabs.generalInfo"),
+    [TAB.Quotas]: t("admin:events.tabs.quotas"),
+    [TAB.Questions]: t("admin:events.tabs.questions"),
+  }
 
-        if (tabErrors.length > 0) {
-          setTabErrors(uniq(tabErrors))
-        }
-      }, 500),
-    [form]
-  )
-
-  const handleFieldsChange = useCallback(async () => {
-    // Filters form errors that relate to quotas or questions
-    // in order to display them on the general tab
-    debounceTabErrors()
-  }, [debounceTabErrors])
+  // Registration form preview tab
+  const showPreviewTab = useFeature("form_preview")
 
   const mainTabProps = {
     type,
     data,
-    isDraft,
     formValues,
-    setIsDraft,
-    formError,
-    tabErrors,
-    formSubmitting,
     selectedLanguages,
     setSelectedLanguages,
     supportedLanguages: languagesLower,
@@ -273,38 +242,66 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         openQuotaSize: 0,
         ...initialValues,
       }}
-      onFieldsChange={handleFieldsChange}
       onFinish={handleSubmit}
-      onValuesChange={(_, values) => setFormValues(values)}
+      onFinishFailed={({ errorFields }) =>
+        setSubmitErrors(uniq(errorFields.flatMap(({ errors }) => errors)))
+      }
+      onValuesChange={(_, values) => {
+        setFormValues(values)
+        setSubmitErrors(null)
+      }}
     >
+      <div ref={tabsRef} />
       <Tabs
-        defaultActiveKey="general"
+        activeKey={activeTab}
         items={[
           {
             key: TAB.General,
-            label: t("admin:events.tabs.generalInfo"),
+            label: <RequiredTabLabel label={tabLabels[TAB.General]} />,
             forceRender: true,
             children: <MainTab {...mainTabProps} />,
           },
           {
             key: TAB.Quotas,
-            label: t("admin:events.tabs.quotas"),
+            label: <RequiredTabLabel label={tabLabels[TAB.Quotas]} />,
             forceRender: true,
             children: (
               <QuotasTab
                 initialValues={initialValues}
+                lang={lang}
                 selectedLanguages={selectedLanguages}
               />
             ),
           },
           {
             key: TAB.Questions,
-            label: t("admin:events.tabs.questions"),
+            label: tabLabels[TAB.Questions],
             forceRender: true,
             children: (
-              <QuestionsTab form={form} selectedLanguages={selectedLanguages} />
+              <QuestionsTab
+                form={form}
+                lang={lang}
+                selectedLanguages={selectedLanguages}
+              />
             ),
           },
+          ...(showPreviewTab
+            ? [
+                {
+                  key: TAB.Preview,
+                  label: t("admin:events.tabs.preview"),
+                  // Only render when active so the preview uses the current
+                  // questions
+                  children:
+                    activeTab === TAB.Preview ? (
+                      <PreviewTab
+                        form={form}
+                        selectedLanguages={selectedLanguages}
+                      />
+                    ) : null,
+                },
+              ]
+            : []),
           ...(type === "update"
             ? [
                 {
@@ -313,9 +310,11 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                   forceRender: true,
                   children: (
                     <RegistrationsTab
+                      eventId={eventId as string}
                       eventSlug={
                         (data as UpdateEventPageQuery)?.event?.slug as string
                       }
+                      paymentsEnabled={paymentsEnabled}
                       questions={
                         (data as UpdateEventPageQuery)?.event?.eventQuestions
                           ?.nodes
@@ -325,16 +324,21 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
                 },
               ]
             : []),
-          {
-            key: TAB.Email,
-            label: t("admin:events.tabs.email"),
-            // Only render the email tab body when it is the active tab to
-            // avoid spamming renderEmailTemplate queries on every form change.
-            children:
-              activeTab === TAB.Email ? (
-                <EmailTab formValues={formValues} />
-              ) : null,
-          },
+          // The email preview tab is only available in development
+          ...(process.env.NODE_ENV !== "production"
+            ? [
+                {
+                  key: TAB.Email,
+                  label: t("admin:events.tabs.email"),
+                  // Only render the email tab body when it is the active tab to
+                  // avoid spamming renderEmailTemplate queries on every form change.
+                  children:
+                    activeTab === TAB.Email ? (
+                      <EmailTab formValues={formValues} />
+                    ) : null,
+                },
+              ]
+            : []),
         ]}
         tabBarExtraContent={{
           right: (
@@ -364,6 +368,32 @@ export const EventForm: React.FC<EventFormProps> = (props) => {
         }}
         onChange={(tab) => setActiveTab(tab as TAB)}
       />
+      <EventFormFooter
+        activeTab={activeTab}
+        canSubmit={missingFields?.length === 0 && selectedLanguages.length > 0}
+        formError={formError}
+        formSubmitting={formSubmitting}
+        hidden={!FORM_TABS.includes(activeTab)}
+        isDraft={isDraft}
+        missingFields={missingFields}
+        setActiveTab={changeTab}
+        setIsDraft={setIsDraft}
+        submitErrors={submitErrors}
+        tabs={FORM_TABS.map((key) => ({ key, label: tabLabels[key] }))}
+        type={type}
+      />
     </Form>
   )
 }
+
+/**
+ * The event create and update form. Several of its fields and tabs depend on
+ * feature flags, so it waits for them rather than rendering with every
+ * feature off and then swapping controls in.
+ */
+export const EventForm: React.FC<EventFormProps> = (props) =>
+  useFeatureFlagsLoaded() ? (
+    <EventFormContent {...props} />
+  ) : (
+    <Skeleton active />
+  )

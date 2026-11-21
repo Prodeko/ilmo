@@ -586,6 +586,40 @@ describe("GET /auth/keycloak/callback", () => {
     expect(user.is_admin).toBe(false)
   })
 
+  it("stores given and family names on the user and refreshes them on every login", async () => {
+    const selectNames = () =>
+      pool.query(
+        `select u.first_name, u.last_name from app_public.users u
+           join app_public.user_authentications ua on ua.user_id = u.id
+          where ua.identifier = 'kc-sub-1'`
+      )
+    let res = await doCallback({
+      name: "Anna Maria von Wright",
+      given_name: "Anna Maria",
+      family_name: "von Wright",
+    })
+    expect(res.statusCode).toBe(302)
+    let {
+      rows: [user],
+    } = await selectNames()
+    expect(user).toEqual({ first_name: "Anna Maria", last_name: "von Wright" })
+
+    res = await doCallback({ given_name: "Anna", family_name: "Wright" })
+    expect(res.statusCode).toBe(302)
+    ;({
+      rows: [user],
+    } = await selectNames())
+    expect(user).toEqual({ first_name: "Anna", last_name: "Wright" })
+
+    // A token without both claims leaves the stored names alone
+    res = await doCallback({ given_name: "Anna" })
+    expect(res.statusCode).toBe(302)
+    ;({
+      rows: [user],
+    } = await selectNames())
+    expect(user).toEqual({ first_name: "Anna", last_name: "Wright" })
+  })
+
   it("leaves is_admin untouched when the id token has no realm_access claim", async () => {
     // A dropped realm-roles mapper makes the roles unknown, which must not
     // read as "not an admin": stamping false here would demote every admin
@@ -605,6 +639,50 @@ describe("GET /auth/keycloak/callback", () => {
         where ua.identifier = 'kc-sub-1'`
     )
     expect(user.is_admin).toBe(true)
+  })
+
+  describe("ilmo-developer role", () => {
+    const readRoles = async () => {
+      const {
+        rows: [user],
+      } = await pool.query(
+        `select u.is_admin, u.is_developer from app_public.users u
+           join app_public.user_authentications ua on ua.user_id = u.id
+          where ua.identifier = 'kc-sub-1'`
+      )
+      return user
+    }
+
+    it("stamps is_developer true when the role is present", async () => {
+      const res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: true })
+    })
+
+    it("revokes is_developer at the next login once the role is gone", async () => {
+      let res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin"] },
+      })
+      expect(res.statusCode).toBe(302)
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: false })
+    })
+
+    it("leaves is_developer untouched when the id token has no realm_access claim", async () => {
+      let res = await doCallback({
+        realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+      })
+      expect(res.statusCode).toBe(302)
+      res = await doCallback({ realm_access: undefined })
+      expect(res.statusCode).toBe(302)
+      expect(res.headers.location).toBe("/event/foo")
+      expect(await readRoles()).toEqual({ is_admin: true, is_developer: true })
+    })
   })
 
   it("sends a cancelled sign-in home without an error", async () => {

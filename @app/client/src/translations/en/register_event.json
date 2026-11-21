@@ -1,26 +1,41 @@
 {
+  "calendar": {
+    "addAnother": "Add event to calendar",
+    "apple": "Apple Calendar / download .ics",
+    "emailConfirmation": "Check your email for your registration confirmation.",
+    "emailSent": "We’ve emailed your confirmation and calendar invitation. It may take a moment to arrive.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "You’re currently on the waiting list. We’ll send you a confirmation email when a place becomes available for you."
+  },
   "confirmGoBack": "Are you sure? You will lose your registration spot.",
   "deleteRegistration": "Delete registration",
   "deleteRegistrationConfirmText": "Are you sure you want to delete your registration?",
   "deleteRegistrationFailed": "Deleting event registration failed",
   "errors": {
     "registrationFailed": "Registering to the event failed",
-    "registrationUpdateFailed": "Failed to update registration information"
+    "registrationUpdateFailed": "Failed to update registration information",
+    "rememberAnswersFailed": "Your registration was saved, but remembering your answers failed"
   },
   "eventSignupComplete": "Event signup saved",
   "forms": {
     "email": "E-mail",
     "firstName": "First name",
     "lastName": "Last name",
+    "rememberAnswers": "Remember these answers for my next registrations",
     "rules": {
       "emailEmpty": "Please input your E-mail",
       "emailValid": "The input is not valid E-mail",
-      "nameContainsSpace": "Name cannot contain spaces",
       "provideAnswer": "Please answer the question",
       "provideFirstName": "Please enter your first name",
       "provideLastName": "Please enter your last name"
     }
   },
+  "payment": {
+    "info": "Ticket {{price}} + {{fee}} service fee. You don't pay now. We'll email you a payment link when registration closes on {{date}} at {{time}}.",
+    "register": "Register",
+    "title": "Payment"
+  },
+  "previewNotSubmitted": "Preview: no registration was submitted",
   "recentlyRegisteredHeader": "Recently registered:",
   "recentlyRegisteredListItem": "recently registered to the quota",
   "registrationDeleteComplete": "Deleted registration",
@@ -30,6 +45,7 @@
   },
   "title": "Register to event:",
   "updateRegistration": {
+    "closed": "Registration for this event has closed, so your registration can no longer be changed. Please contact the event organizers.",
     "title": "Update event registration information"
   },
   "you": "You!"

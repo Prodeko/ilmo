@@ -17,11 +17,23 @@ import { getSessionAndCSRFToken } from "."
 
 import type { Event, GraphCacheConfig } from "@app/graphql"
 import type { SSRExchange } from "@urql/core"
+import type { Cache } from "@urql/exchange-graphcache"
 import type { IntrospectionQuery, OperationDefinitionNode } from "graphql"
 import type { Client } from "graphql-ws"
 
 const isDev = process.env.NODE_ENV === "development"
 const isSSR = typeof window === "undefined"
+
+/**
+ * Invalidates one field of the signed-in user, so that queries selecting it
+ * refetch. Does nothing when no user is cached.
+ */
+function invalidateCurrentUserField(cache: Cache, fieldName: string) {
+  const userKey = cache.resolve("Query", "currentUser")
+  if (typeof userKey === "string") {
+    cache.invalidate(userKey, fieldName)
+  }
+}
 
 let wsClient: Client | null = null
 let rootURL: string | null = null
@@ -76,8 +88,42 @@ export const withUrql = withUrqlClient(
         isDev && devtoolsExchange,
         cacheExchange<GraphCacheConfig>({
           schema: minifiedSchema as unknown as IntrospectionQuery,
+          keys: {
+            // Feature flags are identified by their key, not an id.
+            FeatureFlag: (data) => (data.key as string | undefined) ?? null,
+            // A computed composite with no id; embed it in its event
+            EventPaymentSummary: () => null,
+            // Payment state of a registration, read by update token. It has
+            // no id of its own, so it is embedded in its parent query.
+            RegistrationPayment: () => null,
+            CreateCheckoutSessionPayload: () => null,
+            // A user has at most one registration profile.
+            RegistrationProfile: (data) =>
+              (data.userId as string | undefined) ?? null,
+          },
           updates: {
             Mutation: {
+              setFeatureFlag(_result, _args, cache, _info) {
+                // Refetch what depends on flag states: the layout's enabled
+                // and preview lists and the change history.
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) =>
+                    [
+                      "enabledFeaturesList",
+                      "adminPreviewFeaturesList",
+                      "featureFlagEventsList",
+                    ].includes(field.fieldName)
+                  )
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              setRegistrationProfile(_result, _args, cache, _info) {
+                invalidateCurrentUserField(cache, "registrationProfile")
+              },
+              deleteRegistrationProfile(_result, _args, cache, _info) {
+                invalidateCurrentUserField(cache, "registrationProfile")
+              },
               logout(result, _args, cache, _info) {
                 // Invalidate currentUser on logout. This refetches queries that
                 // depend on the currentUser field.
@@ -168,6 +214,26 @@ export const withUrql = withUrqlClient(
                   __typename: "Registration",
                   id: args.input.id,
                 })
+              },
+              // Marking a registration paid or unpaid moves it between the
+              // registrations tab's All / Unpaid / Paid lists, so refetch them.
+              adminMarkRegistrationPaid(_result, _args, cache, _info) {
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "registrations")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
+              },
+              adminUnmarkRegistrationPaid(_result, args, cache, _info) {
+                cache.invalidate({
+                  __typename: "Registration",
+                  id: args.input.registrationId,
+                })
+                const key = "Query"
+                cache
+                  .inspectFields(key)
+                  .filter((field) => field.fieldName === "registrations")
+                  .forEach((field) => cache.invalidate(key, field.fieldKey))
               },
             },
           },

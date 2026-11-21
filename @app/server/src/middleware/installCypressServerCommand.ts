@@ -1,3 +1,4 @@
+import { randomBytes } from "crypto"
 import { IncomingMessage, Server, ServerResponse } from "http"
 import { ParsedUrlQuery } from "querystring"
 
@@ -10,10 +11,17 @@ import {
   Registration,
   User,
 } from "@app/graphql"
-import { RegistrationSecret, Session } from "@app/lib"
+import {
+  FEATURE_FLAG_STATES,
+  FeatureFlagState,
+  RegistrationSecret,
+  SERVICE_FEE_CENTS,
+  Session,
+} from "@app/lib"
 import { faker } from "@faker-js/faker"
 import dayjs from "dayjs"
 import {
+  FastifyInstance,
   FastifyPluginAsync,
   FastifyReply,
   FastifyRequest,
@@ -22,6 +30,10 @@ import {
 import fp from "fastify-plugin"
 import { Pool, PoolClient } from "pg"
 import slugify from "slugify"
+
+import { STRIPE_WEBHOOK_PATH } from "../stripeWebhook"
+import { invalidateFeatureFlags } from "../utils/featureFlags"
+import { getStripe, paymentsConfigured } from "../utils/stripe"
 
 import type { RouteGenericInterface } from "fastify/types/route"
 import type { SnakeCasedProperties } from "type-fest"
@@ -85,7 +97,14 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
       const payload = rawPayload ? JSON.parse(String(rawPayload)) : {}
 
       // Now run the actual command:
-      const result = await runCommand(req, res, rootPgPool, command, payload)
+      const result = await runCommand(
+        app,
+        req,
+        res,
+        rootPgPool,
+        command,
+        payload
+      )
 
       if (result === null || command === "login") {
         /*
@@ -122,6 +141,7 @@ const CypressServerCommands: FastifyPluginAsync = async (app) => {
 }
 
 async function runCommand(
+  app: FastifyInstance,
   req: FastifyRequest,
   res: FastifyReply,
   rootPgPool: Pool,
@@ -150,9 +170,18 @@ async function runCommand(
       delete from app_public.organizations;
 
       -- Delete graphile worker jobs (storage moved to _private_jobs in 0.16)
-      delete from graphile_worker._private_jobs;`
+      delete from graphile_worker._private_jobs;
+
+      update app_public.feature_flags set state = 'off' where state <> 'off';`
     )
+    invalidateFeatureFlags()
     return { success: true }
+  } else if (command === "setFeatureFlags") {
+    return setFeatureFlags(rootPgPool, payload)
+  } else if (command === "createTestFeatureFlag") {
+    return createTestFeatureFlag(rootPgPool, payload)
+  } else if (command === "deleteTestFeatureFlags") {
+    return deleteTestFeatureFlags(rootPgPool)
   } else if (command === "createUser") {
     if (!payload) {
       throw new Error("Payload required")
@@ -166,6 +195,7 @@ async function runCommand(
       password = "TestUserPassword",
       verified = false,
       isAdmin = false,
+      isDeveloper = false,
     } = payload
 
     if (!username.startsWith("testuser")) {
@@ -180,6 +210,7 @@ async function runCommand(
       password,
       verified,
       isAdmin,
+      isDeveloper,
     })
 
     let verificationToken: string | null = null
@@ -201,17 +232,16 @@ async function runCommand(
       orgs = [],
       verified = false,
       isAdmin = false,
+      isDeveloper = false,
       existingUser = false,
     } = payload
-    const client = await rootPgPool.connect()
-
     let user: SnakeCasedProperties<User>,
       otherUser: SnakeCasedProperties<User>,
       session: any,
       otherSession: any
 
     if (existingUser) {
-      const { rows } = await client.query(
+      const { rows } = await rootPgPool.query(
         "select * from app_private.login($1, $2)",
         [username, password]
       )
@@ -225,6 +255,7 @@ async function runCommand(
         password,
         verified,
         isAdmin,
+        isDeveloper,
       })
       otherUser = await reallyCreateUser(rootPgPool, {
         username: "testuser_other",
@@ -238,6 +269,7 @@ async function runCommand(
       otherSession = await createSession(rootPgPool, otherUser.id)
     }
 
+    const client = await rootPgPool.connect()
     try {
       await client.query("begin")
       try {
@@ -289,14 +321,23 @@ async function runCommand(
   } else if (command === "createRegistrations") {
     const { eventId, quotaId, count = 1 } = payload
     const client = await rootPgPool.connect()
-    const registrations = await createRegistrations(
-      client,
-      count,
-      eventId,
-      quotaId,
-      []
+    try {
+      return await createRegistrations(client, count, eventId, quotaId, [])
+    } finally {
+      client.release()
+    }
+  } else if (command === "closeEventRegistration") {
+    // Ends the event's registration a moment ago, as if it had closed
+    const { eventId } = payload
+    await rootPgPool.query(
+      `update app_public.events
+        set registration_end_time = now() - interval '1 second'
+        where id = $1`,
+      [eventId]
     )
-    return registrations
+    return { success: true }
+  } else if (command === "completeStripeCheckout") {
+    return completeStripeCheckout(app, rootPgPool, payload)
   } else {
     throw new Error(`Command '${command}' not understood.`)
   }
@@ -318,6 +359,7 @@ async function reallyCreateUser(
     password,
     verified,
     isAdmin,
+    isDeveloper = false,
   }: {
     username?: string
     email?: string
@@ -326,6 +368,7 @@ async function reallyCreateUser(
     password?: string
     verified?: boolean
     isAdmin?: boolean
+    isDeveloper?: boolean
   }
 ): Promise<SnakeCasedProperties<User>> {
   const {
@@ -342,7 +385,128 @@ async function reallyCreateUser(
     )`,
     [username, email, name, avatarUrl, password, verified, isAdmin]
   )
+  if (isDeveloper) {
+    // Developer rights come from Keycloak or a direct update only.
+    const {
+      rows: [developer],
+    } = await rootPgPool.query(
+      "update app_public.users set is_developer = true where id = $1 returning *",
+      [user.id]
+    )
+    return developer
+  }
   return user
+}
+
+/**
+ * Sets feature flag states, `{ key: state }`, bypassing the developer check
+ * and the audit log. Every key must have a row; clearTestEventData switches
+ * all flags back off.
+ */
+/** Keys of flag rows that e2e tests may create and delete. */
+const TEST_FEATURE_FLAG_PREFIX = "test_e2e_"
+
+/**
+ * Creates (or resets) a flag row that no feature uses, for tests of the
+ * Features page. Its change history is cleared. deleteTestFeatureFlags
+ * removes it again.
+ */
+async function createTestFeatureFlag(
+  rootPgPool: Pool,
+  payload: { [key: string]: unknown } | undefined
+) {
+  const {
+    key,
+    state = "off",
+    available = true,
+    description = "Feature flag created by an e2e test",
+  } = (payload ?? {}) as {
+    key?: unknown
+    state?: unknown
+    available?: unknown
+    description?: unknown
+  }
+  if (typeof key !== "string" || !key.startsWith(TEST_FEATURE_FLAG_PREFIX)) {
+    throw new Error(
+      `Test feature flag keys must start with "${TEST_FEATURE_FLAG_PREFIX}"`
+    )
+  }
+  if (!FEATURE_FLAG_STATES.includes(state as FeatureFlagState)) {
+    throw new Error(
+      `Invalid state ${JSON.stringify(state)} for feature flag "${key}"`
+    )
+  }
+  await rootPgPool.query(
+    `with deleted_events as (
+       delete from app_private.feature_flag_events where key = $1
+     )
+     insert into app_public.feature_flags (key, state, available, description)
+     values ($1, $2, $3, $4)
+     on conflict (key) do update
+     set
+       state = excluded.state,
+       available = excluded.available,
+       description = excluded.description,
+       updated_at = now(),
+       updated_by = null,
+       retired_at = null`,
+    [key, state, Boolean(available), String(description)]
+  )
+  invalidateFeatureFlags()
+  return { success: true }
+}
+
+/** Deletes the flag rows and history created by createTestFeatureFlag. */
+async function deleteTestFeatureFlags(rootPgPool: Pool) {
+  const pattern = `${TEST_FEATURE_FLAG_PREFIX.replace(/_/g, "\\_")}%`
+  await rootPgPool.query(
+    `with deleted_events as (
+       delete from app_private.feature_flag_events where key like $1
+     )
+     delete from app_public.feature_flags where key like $1`,
+    [pattern]
+  )
+  invalidateFeatureFlags()
+  return { success: true }
+}
+
+async function setFeatureFlags(
+  rootPgPool: Pool,
+  payload: { [key: string]: unknown }
+) {
+  const entries = Object.entries(payload)
+  for (const [key, state] of entries) {
+    if (!FEATURE_FLAG_STATES.includes(state as FeatureFlagState)) {
+      throw new Error(
+        `Invalid state ${JSON.stringify(state)} for feature flag "${key}"`
+      )
+    }
+  }
+  const client = await rootPgPool.connect()
+  try {
+    await client.query("begin")
+    try {
+      for (const [key, state] of entries) {
+        const { rowCount } = await client.query(
+          "update app_public.feature_flags set state = $2 where key = $1",
+          [key, state]
+        )
+        if (!rowCount) {
+          throw new Error(
+            `Feature flag "${key}" has no row in app_public.feature_flags`
+          )
+        }
+      }
+      await client.query("commit")
+    } catch (e) {
+      await client.query("rollback")
+      throw e
+    }
+  } finally {
+    client.release()
+  }
+  invalidateFeatureFlags()
+  return { success: true }
 }
 
 async function createEventData(
@@ -356,6 +520,8 @@ async function createEventData(
     userIsAdmin = false,
     openQuotaSize = 0,
     quotaSize = 5,
+    // Payments: the quota's ticket price
+    priceCents = 0,
   } = payload
 
   try {
@@ -388,7 +554,15 @@ async function createEventData(
       eventSignupClosed,
       openQuotaSize
     )
-    const [quota] = await createQuotas(client, 1, event.id, quotaSize)
+    let [quota] = await createQuotas(client, 1, event.id, quotaSize)
+    if (priceCents) {
+      ;({
+        rows: [quota],
+      } = await client.query(
+        "update app_public.quotas set price_cents = $2 where id = $1 returning *",
+        [quota.id, priceCents]
+      ))
+    }
     const [question] = await createQuestions(client, 1, event.id, false)
     let registration, registrationSecret
     if (!eventSignupClosed && !eventSignupUpcoming) {
@@ -792,6 +966,161 @@ async function getUserEmailSecrets(rootPgPool: Pool, email: string) {
     [email]
   )
   return userEmailSecrets
+}
+
+/******************************************************************************/
+// Payments
+
+const randomId = () => randomBytes(12).toString("hex")
+
+/**
+ * Pays for the registration behind `updateToken` as if the participant had
+ * completed Stripe Checkout: makes sure the registration has a PENDING card
+ * payment with a Checkout Session id (the e2e tests stub the real
+ * createCheckoutSession, so there usually is none yet) and then posts a
+ * `checkout.session.completed` event, signed with STRIPE_WEBHOOK_SECRET, to
+ * the real webhook route. Stripe itself is never contacted.
+ */
+async function completeStripeCheckout(
+  app: FastifyInstance,
+  rootPgPool: Pool,
+  payload: { [key: string]: any }
+) {
+  if (!paymentsConfigured()) {
+    throw new Error("completeStripeCheckout requires Stripe to be configured")
+  }
+  if (!/^(sk|rk)_test_/.test(process.env.STRIPE_SECRET_KEY || "")) {
+    throw new Error("completeStripeCheckout requires a Stripe test-mode key")
+  }
+  const { updateToken } = payload
+  if (!updateToken) {
+    throw new Error("updateToken required")
+  }
+
+  const client = await rootPgPool.connect()
+  let payment: {
+    id: string
+    registration_id: string
+    event_id: string
+    quota_id: string
+    stripe_checkout_session_id: string
+    total_cents: number
+  }
+  try {
+    await client.query("begin")
+    const {
+      rows: [registration],
+    } = await client.query(
+      `select r.id, q.price_cents
+        from app_private.registration_secrets as rs
+        join app_public.registrations as r on r.id = rs.registration_id
+        join app_public.quotas as q on q.id = r.quota_id
+        where rs.update_token = $1
+        for update of r`,
+      [updateToken]
+    )
+    if (!registration?.price_cents) {
+      throw new Error("No paid registration found for the update token")
+    }
+
+    const sessionId = `cs_test_cypress_${randomId()}`
+    const {
+      rows: [pending],
+    } = await client.query(
+      `update app_public.payments
+        set stripe_checkout_session_id = coalesce(stripe_checkout_session_id, $2)
+        where id = (
+          select id from app_public.payments
+          where registration_id = $1 and method = 'STRIPE' and status = 'PENDING'
+          order by created_at desc
+          limit 1
+        )
+        returning id, registration_id, event_id, quota_id,
+          stripe_checkout_session_id,
+          ticket_amount_cents + service_fee_cents as total_cents`,
+      [registration.id, sessionId]
+    )
+    if (pending) {
+      payment = pending
+    } else {
+      const {
+        rows: [inserted],
+      } = await client.query(
+        `insert into app_public.payments(
+            registration_id, event_id, quota_id, event_name, quota_title,
+            method, status, ticket_amount_cents, service_fee_cents, currency,
+            stripe_checkout_session_id
+          )
+          select r.id, r.event_id, r.quota_id, e.name, q.title,
+            'STRIPE', 'PENDING', q.price_cents, $2, 'eur', $3
+          from app_public.registrations as r
+          join app_public.events as e on e.id = r.event_id
+          join app_public.quotas as q on q.id = r.quota_id
+          where r.id = $1
+          returning id, registration_id, event_id, quota_id,
+            stripe_checkout_session_id,
+            ticket_amount_cents + service_fee_cents as total_cents`,
+        [registration.id, SERVICE_FEE_CENTS, sessionId]
+      )
+      payment = inserted
+    }
+    await client.query("commit")
+  } catch (e) {
+    await client.query("rollback")
+    throw e
+  } finally {
+    client.release()
+  }
+
+  const metadata = {
+    registration_id: payment.registration_id,
+    event_id: payment.event_id,
+    quota_id: payment.quota_id,
+    payment_id: payment.id,
+  }
+  const event = {
+    id: `evt_test_cypress_${randomId()}`,
+    object: "event",
+    type: "checkout.session.completed",
+    created: Math.floor(Date.now() / 1000),
+    livemode: false,
+    data: {
+      object: {
+        id: payment.stripe_checkout_session_id,
+        object: "checkout.session",
+        mode: "payment",
+        status: "complete",
+        payment_status: "paid",
+        payment_intent: `pi_test_cypress_${randomId()}`,
+        amount_total: payment.total_cents,
+        currency: "eur",
+        metadata,
+      },
+    },
+  }
+  const body = JSON.stringify(event)
+  const signature = getStripe().webhooks.generateTestHeaderString({
+    payload: body,
+    secret: process.env.STRIPE_WEBHOOK_SECRET!,
+  })
+  const response = await app.inject({
+    method: "POST",
+    url: STRIPE_WEBHOOK_PATH,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "stripe-signature": signature,
+    },
+    payload: body,
+  })
+  if (response.statusCode !== 200) {
+    throw new Error(
+      `Stripe webhook answered ${response.statusCode}: ${response.body}`
+    )
+  }
+  return {
+    paymentId: payment.id,
+    sessionId: payment.stripe_checkout_session_id,
+  }
 }
 
 export default fp(CypressServerCommands)

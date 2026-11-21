@@ -1,0 +1,28 @@
+fragment PayPage_RegistrationPayment on RegistrationPayment {
+  eventId
+  eventSlug
+  eventName
+  eventStartTime
+  eventEndTime
+  registrationEndTime
+  quotaTitle
+  firstName
+  lastName
+  queueStatus
+  queuePosition
+  status
+  priceCents
+  serviceFeeCents
+  totalCents
+  paidManually
+  paidTotalCents
+  paidAt
+  blockedReason
+}
+
+query PayPage($updateToken: String!) {
+  ...SharedLayout_Query
+  paymentByUpdateToken(updateToken: $updateToken) {
+    ...PayPage_RegistrationPayment
+  }
+}

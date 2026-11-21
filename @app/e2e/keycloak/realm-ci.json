@@ -17,6 +17,10 @@
       {
         "name": "ilmo-admin",
         "description": "Maps to app_public.users.is_admin; the name is ILMO_ADMIN_ROLE in @app/server/src/utils/keycloak.ts"
+      },
+      {
+        "name": "ilmo-developer",
+        "description": "Maps to app_public.users.is_developer (feature flag management, together with ilmo-admin); the name is ILMO_DEVELOPER_ROLE in @app/server/src/utils/keycloak.ts"
       }
     ]
   },
@@ -106,6 +110,24 @@
         {
           "type": "password",
           "value": "ci-admin-password",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "ci-developer",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "ci-developer@example.com",
+      "firstName": "CI",
+      "lastName": "Developer",
+      "attributes": { "locale": ["en"] },
+      "requiredActions": [],
+      "realmRoles": ["ilmo-admin", "ilmo-developer"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ci-developer-password",
           "temporary": false
         }
       ]

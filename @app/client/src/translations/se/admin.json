@@ -27,6 +27,7 @@
     "tabs": {
       "email": "E-post",
       "generalInfo": "Allmänt",
+      "preview": "Förhandsvisning",
       "questions": "Frågor",
       "quotas": "Kvoter"
     },
@@ -34,6 +35,269 @@
       "showAnswers": "Visa svar",
       "showEvent": "Visa händelse"
     }
+  },
+  "features": {
+    "adminsOnlyInfo": "Med Bara administratörer kan du prova en funktion innan den publiceras. Inloggade administratörer ser den med en förhandsvisningsetikett. Andra ser den inte, och e-post och påminnelser behandlar den som avslagen.",
+    "cancel": "Avbryt",
+    "changeHistory": "Ändringshistorik",
+    "changedOutside": "Ändrad utanför den här sidan",
+    "columns": {
+      "actions": "Åtgärder",
+      "feature": "Funktion",
+      "lastChanged": "Senast ändrad",
+      "state": "Läge"
+    },
+    "confirmOff": {
+      "genericKeeps": "Data som redan har sparats förblir som den är, och det som redan har påbörjats slutförs.",
+      "genericStops": "Ingen kan börja använda {{name}}.",
+      "intro": {
+        "admins_only": "Alla utom inloggade administratörer slutar se den, och e-post och påminnelser behandlar den som avslagen. Det som redan har påbörjats fortsätter att fungera.",
+        "off": "Att slå av döljer vägarna in. Det som redan har påbörjats fortsätter att fungera."
+      },
+      "keeps": "Fortsätter att fungera",
+      "ok": {
+        "admins_only": "Begränsa till administratörer",
+        "off": "Slå av {{name}}"
+      },
+      "stops": "Upphör nu",
+      "title": {
+        "admins_only": "Begränsa {{name}} till administratörer?",
+        "off": "Slå av {{name}}?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "Ändringen gäller direkt. Du kan slå av den igen på den här sidan.",
+      "generic": "Allt som {{name}} lägger till, på varje sida och i e-post och påminnelser.",
+      "neverPreviewed": "Ingen har förhandsvisat detta ännu. Prova Bara administratörer först: du ser funktionen på riktiga sidor, ingen annan gör det och ingen e-post ändras.",
+      "ok": "Slå på för alla",
+      "preview": "Förhandsvisa för administratörer först",
+      "previewedSince": "Administratörer har förhandsvisat detta sedan {{date}}. {{actor}} ställde in Bara administratörer.",
+      "previewing": "Administratörer förhandsvisar detta just nu.",
+      "title": "Slå på {{name}} för alla?",
+      "willSee": "Alla börjar se:"
+    },
+    "counts": {
+      "admins_only": "{{count}} bara administratörer",
+      "off": "{{count}} av",
+      "on": "{{count}} på"
+    },
+    "defaultOff": "Standard: Av",
+    "deletedUser": "Raderad användare",
+    "dismiss": "Stäng",
+    "empty": "Inga funktioner ännu. Funktioner visas här när de läggs till i appen, och var och en är först avslagen.",
+    "flags": {
+      "calendar_invites": {
+        "name": "Kalenderinbjudningar",
+        "turnOn": [
+          "Registreringens bekräftelsemejl innehåller en kalenderinbjudan.",
+          "Evenemangssidan visar kalenderlänkar efter registreringen."
+        ],
+        "stops": [
+          "Nya bekräftelsemejl har ingen kalenderinbjudan och kalenderlänkarna döljs."
+        ],
+        "keeps": [
+          "Redan skickade inbjudningar finns kvar i mottagarnas kalendrar."
+        ]
+      },
+      "confetti": {
+        "name": "Konfetti",
+        "turnOn": [
+          "Konfetti visas efter att ett evenemang eller en registrering har skapats, utom för användare som föredrar mindre rörelse."
+        ],
+        "stops": [
+          "Ingen mer konfetti."
+        ],
+        "keeps": [
+          "Att skapa evenemang och registreringar fungerar som förut."
+        ]
+      },
+      "event_templates": {
+        "name": "Evenemangsmallar",
+        "turnOn": [
+          "Evenemangsformulärets flikar för kvoter och frågor erbjuder mallar och färdiga kvoter och frågor."
+        ],
+        "stops": [
+          "Mallvalen döljs och flikarna visar bara listorna."
+        ],
+        "keeps": [
+          "Kvoter och frågor som lagts till från en mall finns kvar i sina evenemang."
+        ]
+      },
+      "form_preview": {
+        "name": "Förhandsvisning av registreringsformuläret",
+        "turnOn": [
+          "Evenemangsformuläret får fliken Förhandsvisning som visar registreringsformuläret så som de som registrerar sig ser det."
+        ],
+        "stops": [
+          "Fliken Förhandsvisning döljs."
+        ],
+        "keeps": [
+          "Ingenting skickas någonsin från förhandsvisningen, så inga uppgifter ändras."
+        ]
+      },
+      "keycloak_names": {
+        "name": "Namn från Keycloak",
+        "turnOn": [
+          "Registreringsformuläret fyller i för- och efternamnet som sparats från Keycloak.",
+          "Utan dem fyller formuläret i visningsnamnet bara om det har högst två ord."
+        ],
+        "stops": [
+          "Registreringsformuläret delar åter visningsnamnet i för- och efternamn."
+        ],
+        "keeps": [
+          "För- och efternamn sparas fortfarande vid varje Keycloak-inloggning.",
+          "Redan gjorda registreringar behåller sina namn."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP-server",
+        "turnOn": [
+          "MCP-servern svarar på /mcp: AI-assistenter som loggat in via Keycloak kan bläddra bland evenemang och registrera sig, och administratörer kan skapa utkast till evenemang."
+        ],
+        "stops": [
+          "/mcp och dess OAuth-sökvägar svarar 404."
+        ],
+        "keeps": [
+          "Evenemang och registreringar som gjorts via MCP behålls."
+        ]
+      },
+      "payments": {
+        "name": "Betalningar",
+        "turnOn": [
+          "Administratörer kan prissätta kvoter. De som registrerar sig i betalda kvoter betalar efter att anmälan har stängt.",
+          "De som registrerar sig i betalda kvoter betalar via Stripe Checkout, och betalningsmejl och påminnelser skickas.",
+          "Administratörer får betalningsverktygen för sina evenemang."
+        ],
+        "stops": [
+          "Priser döljs och kan inte anges, och betalning blockeras.",
+          "Inga nya betalningsmejl eller påminnelser skickas."
+        ],
+        "keeps": [
+          "Redan gjorda betalningar förblir registrerade och visas för de som registrerat sig.",
+          "Stripes betalningsaviseringar fortsätter att fungera."
+        ]
+      },
+      "prefill_answers": {
+        "name": "Sparade anmälningssvar",
+        "turnOn": [
+          "Administratörer kan markera en textfråga som frågar efter deltagarens Telegram-användarnamn eller specialdieter.",
+          "Anmälningsformuläret fyller i dessa svar från användarens sparade anmälningsuppgifter och erbjuder att komma ihåg nya svar.",
+          "Profilinställningarna visar anmälningsuppgifterna för redigering."
+        ],
+        "stops": [
+          "Svaren fylls inte längre i och anmälningsformuläret erbjuder inte längre att komma ihåg dem.",
+          "Anmälningsuppgifterna kan inte längre sparas eller redigeras."
+        ],
+        "keeps": [
+          "Frågorna behåller sin Telegram- eller specialdietmarkering och fungerar som vanliga textfrågor.",
+          "Användare kan fortfarande radera de anmälningsuppgifter de har sparat."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Registreringspåminnelser",
+        "turnOn": [
+          "Evenemangssidan erbjuder en påminnelse innan registreringen öppnar.",
+          "Inställningarna får en sida med användarens påminnelser och påminnelseinställningar.",
+          "Påminnelsemejl skickas innan registreringen öppnar."
+        ],
+        "stops": [
+          "Påminnelseknappen, påminnelsesidan och dess menylänkar döljs.",
+          "Inga påminnelser skickas. En påminnelse som infaller medan funktionen är av skickas inte senare."
+        ],
+        "keeps": [
+          "Sparade påminnelser och påminnelseinställningar behålls."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Bandtext",
+        "turnOn": [
+          "Evenemangsformuläret visar fält för bandtext för framhävda evenemang.",
+          "Evenemangskorten visar den egna bandtexten."
+        ],
+        "stops": [
+          "Evenemangskorten visar standardtexten och evenemangsformuläret döljer fälten."
+        ],
+        "keeps": [
+          "Sparade bandtexter behålls, även när ett evenemang sparas."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram-påminnelser",
+        "turnOn": [
+          "Användare kan koppla ett Telegram-konto och välja Telegram för sina påminnelser.",
+          "Påminnelser skickas också via Telegram-boten."
+        ],
+        "stops": [
+          "Telegram kan inte längre kopplas eller väljas, och inga påminnelser skickas via Telegram."
+        ],
+        "keeps": [
+          "Kopplade konton förblir kopplade."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Inskrivna tider",
+        "turnOn": [
+          "Evenemangsformuläret använder fält för timmar, minuter och sekunder för evenemangets och registreringens tider.",
+          "Ett klick på en dag i kalendern fyller i standardtider."
+        ],
+        "stops": [
+          "Evenemangsformuläret går tillbaka till rullande tidskolumner."
+        ],
+        "keeps": [
+          "Sparade evenemangs- och registreringstider förblir oförändrade."
+        ]
+      }
+    },
+    "footer": "Nya funktioner kommer med uppdateringar av appen och är först avslagna.",
+    "history": "Historik",
+    "historyDrawer": {
+      "allFeatures": "Alla funktioner",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Funktion",
+      "footerAll": "Visar alla {{count}} ändringar. Ändringar kan inte redigeras eller raderas.",
+      "footerOne": "Före {{date}} var {{name}} av, standardläget för nya funktioner.",
+      "none": "Inga ändringar ännu. Nya funktioner är först avslagna.",
+      "title": "Ändringshistorik",
+      "titleFor": "Ändringshistorik: {{name}}"
+    },
+    "historyLabel": "Ändringshistorik för {{name}}",
+    "intro": "Slå på och av funktioner på den här webbplatsen. Ändringarna gäller direkt.",
+    "introDevelopers": "Bara utvecklare ser den här sidan. Alla administratörer ser funktioner som är inställda på Bara administratörer.",
+    "loadError": {
+      "description": "Ingenting har ändrats. Varje funktion behåller sitt nuvarande läge för användarna. Försök igen om en stund.",
+      "title": "Det gick inte att läsa in funktionerna",
+      "tryAgain": "Försök igen"
+    },
+    "neverChanged": "Aldrig ändrad",
+    "noAdminPreview": "Dold för alla. Bara administratörer erbjuds inte: administratörer har inget att förhandsgranska här, så den skulle fungera som Av.",
+    "retired": "Pensionerad: funktionen är permanent och alltid på.",
+    "retry": "Försök igen",
+    "saveFailed": {
+      "admins_only": "Det gick inte att ställa in {{name}} på Bara administratörer. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen.",
+      "off": "Det gick inte att slå av {{name}}. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen.",
+      "on": "Det gick inte att slå på {{name}}. Läget är fortfarande {{state}}. Kontrollera din anslutning och försök igen."
+    },
+    "saved": {
+      "admins_only": "{{name}} syns nu bara för administratörer.",
+      "off": "{{name}} är nu av.",
+      "on": "{{name}} är nu på för alla."
+    },
+    "saving": "Sparar…",
+    "savingNote": "Sparar. Ändringen gäller när det är klart.",
+    "sees": {
+      "admins_only": "Syns bara för administratörer. E-post och påminnelser behandlar den som avslagen.",
+      "off": "Dold för alla",
+      "on": "Syns för alla"
+    },
+    "stateGroupLabel": "Läge för {{name}}",
+    "states": {
+      "admins_only": "Bara administratörer",
+      "off": "Av",
+      "on": "På"
+    },
+    "title": "Funktioner",
+    "unavailable": "Inte konfigurerad: servern saknar inställningar som funktionen behöver. En utvecklare måste lägga till dem innan den kan slås på.",
+    "you": "{{name}} (du)"
   },
   "notifications": {
     "deleteFailed": "Det gick inte att ta bort",
@@ -93,6 +357,68 @@
     "updateEvent": "Uppdatera händelse",
     "updateEventCategory": "Uppdatera händelsekategori"
   },
+  "payments": {
+    "actions": {
+      "failed": "Det gick inte att uppdatera betalningen",
+      "markPaid": "Markera som betald",
+      "markPaidHelp": "För kontant- eller banköverföring. Skickar e-postbekräftelsen om mottagen betalning.",
+      "markPaidSuccess": "Markerad som betald",
+      "more": "Fler åtgärder",
+      "undoManual": "Ångra manuell betalning",
+      "undoManualSuccess": "Manuell betalning borttagen"
+    },
+    "cancel": "Avbryt",
+    "delete": {
+      "body": "Platsen går till nästa person i kön. Detta kan inte ångras.",
+      "confirm": "Radera",
+      "noRefundWarning": "Denna anmälan har betalats. Inget återbetalas automatiskt: sköt en eventuell återbetalning själv (kortbetalningar i Stripe Dashboard).",
+      "title": "Radera anmälan för {{name}}?"
+    },
+    "filter": {
+      "all": "Alla ({{count}})",
+      "paid": "Betalda ({{count}})",
+      "unpaid": "Obetalda ({{count}})"
+    },
+    "lastReminderSent": "Senaste påminnelse skickad {{date}} kl. {{time}}",
+    "paymentColumn": "Betalning",
+    "quotas": {
+      "free": "Gratis",
+      "guildReceives": "Gillet får",
+      "invalidPrice": "Priset måste vara 0 € eller mellan 0,25 € och 10 000 €",
+      "noteFees": "Gillet får = pris − 1,5 % × (pris + 0,25 €). Kunden betalar priset plus en serviceavgift på 0,25 €, och Stripe tar 0,25 € + 1,5 %. Detta är en uppskattning för europeiska kort; kort från länder utanför EES kostar lite mer.",
+      "noteFree": "0 € gör kvoten gratis. Annars är minimipriset 0,25 €.",
+      "noteOpenQuota": "Platser i den öppna kvoten betalar priset för den kvot personen anmälde sig via.",
+      "priceChangedWarning": "Denna kvot har {{count}} anmälningar. De som redan har betalat förblir betalda. Obetalda betalar det nya priset.",
+      "ticketPrice": "Biljettpris"
+    },
+    "reminder": {
+      "body": "Alla med en plats som inte har betalat får ett e-postmeddelande med sin egen betalningslänk. Personer i kön och i gratiskvoter får inget meddelande.",
+      "confirm_one": "Skicka {{count}} påminnelse",
+      "confirm_other": "Skicka {{count}} påminnelser",
+      "failed": "Det gick inte att skicka påminnelserna",
+      "lastSent": "Senaste påminnelse skickad {{date}} kl. {{time}}.",
+      "sent_one": "{{count}} påminnelse skickad",
+      "sent_other": "{{count}} påminnelser skickade",
+      "title_one": "Skicka en betalningspåminnelse till {{count}} person?",
+      "title_other": "Skicka en betalningspåminnelse till {{count}} personer?"
+    },
+    "sendReminder": "Skicka påminnelse till {{count}} obetalda",
+    "status": {
+      "NOT_REQUIRED": "Gratis",
+      "PAID": "Betald",
+      "PAID_MANUALLY": "Betald manuellt",
+      "UNPAID": "Obetald"
+    },
+    "summary": {
+      "guildReceives": "Gillet får",
+      "paid": "Betalda",
+      "paidOf": "av {{count}}",
+      "ticketsPaid": "Betalda biljetter",
+      "unlinkedCardPayments_one": "{{count}} kortbetalning är inte kopplad till någon anmälan (till exempel en dubbelbetalning eller en betalning för en raderad anmälan). Återbetala den manuellt i Stripe Dashboard vid behov.",
+      "unlinkedCardPayments_other": "{{count}} kortbetalningar är inte kopplade till någon anmälan (till exempel dubbelbetalningar eller betalningar för raderade anmälningar). Återbetala dem manuellt i Stripe Dashboard vid behov.",
+      "unpaid": "Obetalda"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Är du säker på att du vill ta bort denna registrering?",
@@ -110,6 +436,7 @@
       "emails": "E-postmeddelanden",
       "eventCategories": "Händelsekategorier",
       "events": "Händelser",
+      "features": "Funktioner",
       "listEventCategories": "Lista händelsekategorier",
       "listEvents": "Lista händelser",
       "main": "Dashboard",

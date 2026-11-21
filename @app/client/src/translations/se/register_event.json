@@ -1,26 +1,41 @@
 {
+  "calendar": {
+    "addAnother": "Lägg till evenemanget i kalendern",
+    "apple": "Apple Calendar / ladda ner .ics",
+    "emailConfirmation": "Kontrollera din e-post för bekräftelsen på din anmälan.",
+    "emailSent": "Vi har mejlat din bekräftelse och kalenderinbjudan. Det kan ta en stund innan den kommer fram.",
+    "google": "Google Calendar",
+    "waitlistEmailSent": "Du står för närvarande på väntelistan. Vi skickar en bekräftelse via e-post när en plats blir ledig för dig."
+  },
   "confirmGoBack": "Är du säker? Du kommer att förlora din registreringsplats.",
   "deleteRegistration": "Ta bort registrering",
   "deleteRegistrationConfirmText": "Är du säker på att du vill ta bort din registrering?",
   "deleteRegistrationFailed": "Det gick inte att ta bort händelseregistreringen",
   "errors": {
     "registrationFailed": "Registrering till evenemanget misslyckades",
-    "registrationUpdateFailed": "Det gick inte att uppdatera registreringsinformationen"
+    "registrationUpdateFailed": "Det gick inte att uppdatera registreringsinformationen",
+    "rememberAnswersFailed": "Din anmälan sparades, men det gick inte att komma ihåg dina svar"
   },
   "eventSignupComplete": "Händelseregistrering sparad",
   "forms": {
     "email": "E-post",
     "firstName": "Förnamn",
     "lastName": "Efternamn",
+    "rememberAnswers": "Kom ihåg dessa svar till mina följande anmälningar",
     "rules": {
       "emailEmpty": "Ange din e-post",
       "emailValid": "Inmatningen är inte giltig e-post",
-      "nameContainsSpace": "Namnet kan inte innehålla mellanslag",
       "provideAnswer": "Snälla svara på frågan",
       "provideFirstName": "Ange ditt förnamn",
       "provideLastName": "Ange ditt efternamn"
     }
   },
+  "payment": {
+    "info": "Biljett {{price}} + {{fee}} serviceavgift. Du betalar inte nu. Vi mejlar dig en betalningslänk när anmälan stänger {{date}} kl. {{time}}.",
+    "register": "Anmäl dig",
+    "title": "Betalning"
+  },
+  "previewNotSubmitted": "Förhandsvisning: ingen anmälan skickades",
   "recentlyRegisteredHeader": "Nyligen registrerad:",
   "recentlyRegisteredListItem": "nyligen registrerad till kvoten",
   "registrationDeleteComplete": "Raderad registrering",
@@ -30,6 +45,7 @@
   },
   "title": "Registrera dig till event:",
   "updateRegistration": {
+    "closed": "Registreringen till detta evenemang har stängt, så din registrering kan inte längre ändras. Kontakta evenemangets arrangörer.",
     "title": "Uppdatera information om händelseregistrering"
   },
   "you": "du!"

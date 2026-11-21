@@ -1,0 +1,6 @@
+mutation RequestTelegramLink {
+  requestTelegramLink(input: {}) {
+    string
+    __typename
+  }
+}

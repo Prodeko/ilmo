@@ -1,0 +1,4 @@
+{
+  "transport": "sendgrid",
+  "allowedRecipients": ["your-test-address@example.com"]
+}

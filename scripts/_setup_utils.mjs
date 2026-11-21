@@ -1,17 +1,17 @@
 import { promises as fsp } from "fs"
 import { platform } from "os"
-import { URL } from "url"
+import { fileURLToPath, URL } from "url"
 
-import { safeRandomHexString,safeRandomString } from "./lib/random.mjs"
+import { safeRandomHexString, safeRandomString } from "./lib/random.mjs"
 
 if (parseInt(process.version.slice(1).split(".")[0], 10) < 20) {
   throw new Error("This project requires Node.js >= 20.0.0")
 }
-export { readDotenv,withDotenvUpdater } from "./lib/dotenv.mjs"
+export { readDotenv, withDotenvUpdater } from "./lib/dotenv.mjs"
 export { runSync } from "./lib/run.mjs"
 
 export function dirname(meta) {
-  return new URL(".", meta.url).pathname
+  return fileURLToPath(new URL(".", meta.url))
 }
 
 const __dirname = dirname(import.meta)
@@ -138,6 +138,32 @@ export function updateDotenv(add, answers) {
   )
 
   add(
+    "STRIPE_SECRET_KEY",
+    null,
+    `\
+# Stripe payments. Leave these blank to keep payments unavailable. With both
+# secrets set, developers switch payments on and off with the \`payments\`
+# feature flag; without them the flag cannot be switched on.
+#
+#   Webhook endpoint:           ${rootUrl}/api/stripe/webhook
+#   Events to send:             checkout.session.completed,
+#                               checkout.session.expired
+#
+# Use test-mode keys (sk_test_...) outside production. Locally, run
+# \`stripe listen --events checkout.session.completed,checkout.session.expired --forward-to ${rootUrl}/api/stripe/webhook\`
+# and use the whsec_... secret it prints. Step by step: docs/payments.md
+#
+# Stripe secret API key (sk_test_... or sk_live_...):`
+  )
+
+  add(
+    "STRIPE_WEBHOOK_SECRET",
+    null,
+    `\
+# Signing secret of the webhook endpoint above (whsec_...):`
+  )
+
+  add(
     "GRAPHILE_TURBO",
     "1",
     `\
@@ -145,10 +171,27 @@ export function updateDotenv(add, answers) {
   )
 
   add(
-    "LD_TABLE_PATTERN",
-    "app_public.*",
+    "DATABASE_POOL_MAX_ROOT",
+    "2",
     `\
-# Allows us to ignore changes in tables you don't care about. Used in conjunction with @graphile/subscriptions-lds`
+# Postgres connection budget. The server's owner pool (DATABASE_POOL_MAX_ROOT),
+# its PostGraphile pool (DATABASE_POOL_MAX_AUTH, one connection of which is held
+# for LISTEN) and the worker (WORKER_POOL_MAX) together must fit in the
+# connections the database server has free. A request that cannot get a
+# connection within DATABASE_POOL_ACQUIRE_TIMEOUT_MS fails.`
+  )
+
+  add("DATABASE_POOL_MAX_AUTH", "5")
+
+  add("DATABASE_POOL_ACQUIRE_TIMEOUT_MS", "5000")
+
+  add(
+    "WORKER_POOL_MAX",
+    "2",
+    `\
+# The worker's start scripts expand WORKER_POOL_MAX in the shell before this
+# file is loaded, so it takes effect only when set in the process environment
+# (for example through the env_file of the worker's docker compose service).`
   )
 
   add(

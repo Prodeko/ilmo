@@ -40,7 +40,8 @@ export const createUsers = async (
   client: PoolClient,
   count: number = 1,
   verified: boolean = true,
-  isAdmin: boolean = false
+  isAdmin: boolean = false,
+  isDeveloper: boolean = false
 ): Promise<SnakeCasedProperties<User>[]> => {
   const users = []
   if (userCreationCounter > 25) {
@@ -73,6 +74,17 @@ export const createUsers = async (
         ]
       )
     ).rows[0]
+    if (isDeveloper) {
+      // Not settable through really_create_user: developer rights come from
+      // Keycloak or a direct update only.
+      const {
+        rows: [developer],
+      } = await client.query(
+        "update app_public.users set is_developer = true where id = $1 returning *",
+        [user.id]
+      )
+      Object.assign(user, developer)
+    }
     user._email = email
     user._password = password
     users.push(user)

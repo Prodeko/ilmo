@@ -1,0 +1,61 @@
+{#
+  Building blocks for the payment sections of the emails (boards 12–15).
+  Not an email itself: the admin Emails page lists only *.mjml.njk files.
+
+  Amounts are integer cents; the `euro` filter formats them (18,25 €).
+  Everything here is plain HTML inside an <mj-text>, built from tables so it
+  holds up in email clients.
+#}
+
+{# A bordered box. `tone` is "info" (blue, pay) or "success" (green, paid). #}
+{% macro paymentBox(tone="info") %}
+<mj-text>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid {% if tone == 'success' %}#9fd3b0{% else %}#d9e3f2{% endif %};background-color:{% if tone == 'success' %}#eaf6ee{% else %}#f5faff{% endif %};">
+    <tr>
+      <td style="padding:14px 16px;">
+        {{ caller() }}
+      </td>
+    </tr>
+  </table>
+</mj-text>
+{% endmacro %}
+
+{# The "Pay 18,25 €" button, linking to the /pay page. #}
+{% macro payButton(href, label) %}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
+  <tr>
+    <td bgcolor="#002e7d" style="background-color:#002e7d;padding:10px 18px;">
+      <a href="{{ href }}" target="_blank" style="color:#ffffff;font-weight:600;text-decoration:none;">{{ label }}</a>
+    </td>
+  </tr>
+</table>
+{% endmacro %}
+
+{#
+  A table of label / amount rows, filled with amountRow. The "amounts" class
+  makes the plain text version lay it out as a table too.
+#}
+{% macro amountTable() %}
+<table class="amounts" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+  {{ caller() }}
+</table>
+{% endmacro %}
+
+{% macro amountRow(label, value, strong=false, muted=false) %}
+<tr>
+  <td style="padding:2px 0;{% if muted %}color:#3d4a5c;{% endif %}">{% if strong %}<strong>{{ label }}</strong>{% else %}{{ label }}{% endif %}</td>
+  <td align="right" style="padding:2px 0;white-space:nowrap;{% if muted %}color:#3d4a5c;{% endif %}">{% if strong %}<strong>{{ value }}</strong>{% else %}{{ value }}{% endif %}</td>
+</tr>
+{% endmacro %}
+
+{# A small grey note under a box. #}
+{% macro note() %}
+<mj-text color="#3d4a5c" font-size="13px">{{ caller() }}</mj-text>
+{% endmacro %}
+
+{# The event name in the blue band at the top. #}
+{% macro eventHeader(eventName) %}
+<mj-column width="100%">
+  <mj-text align="center" color="#ffffff" font-size="18px" font-weight="600">{{ eventName.fi or eventName.en }}</mj-text>
+</mj-column>
+{% endmacro %}

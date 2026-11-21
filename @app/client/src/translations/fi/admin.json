@@ -27,6 +27,7 @@
     "tabs": {
       "email": "Sähköposti",
       "generalInfo": "Yleistä",
+      "preview": "Esikatselu",
       "questions": "Kysymykset",
       "quotas": "Kiintiöt"
     },
@@ -34,6 +35,269 @@
       "showAnswers": "Näytä vastaukset",
       "showEvent": "Tapahtumasivulle"
     }
+  },
+  "features": {
+    "adminsOnlyInfo": "Vain ylläpitäjät -tilassa voit kokeilla ominaisuutta ennen julkaisua. Kirjautuneet ylläpitäjät näkevät sen Esikatselu-merkinnällä. Muut eivät näe sitä, ja sähköpostit ja muistutukset toimivat kuin se olisi pois päältä.",
+    "cancel": "Peruuta",
+    "changeHistory": "Muutoshistoria",
+    "changedOutside": "Muutettu tämän sivun ulkopuolella",
+    "columns": {
+      "actions": "Toiminnot",
+      "feature": "Ominaisuus",
+      "lastChanged": "Viimeksi muutettu",
+      "state": "Tila"
+    },
+    "confirmOff": {
+      "genericKeeps": "Jo tallennetut tiedot säilyvät ennallaan, ja jo aloitettu viedään loppuun.",
+      "genericStops": "Kukaan ei voi aloittaa ominaisuuden {{name}} käyttöä.",
+      "intro": {
+        "admins_only": "Muut kuin kirjautuneet ylläpitäjät lakkaavat näkemästä sen, ja sähköpostit ja muistutukset toimivat kuin se olisi pois päältä. Jo aloitettu jatkuu normaalisti.",
+        "off": "Pois kytkeminen piilottaa tavat aloittaa käyttö. Jo aloitettu jatkuu normaalisti."
+      },
+      "keeps": "Toimii edelleen",
+      "ok": {
+        "admins_only": "Rajaa vain ylläpitäjille",
+        "off": "Kytke {{name}} pois"
+      },
+      "stops": "Loppuu heti",
+      "title": {
+        "admins_only": "Rajataanko {{name}} vain ylläpitäjille?",
+        "off": "Kytketäänkö {{name}} pois päältä?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "Muutos tulee voimaan heti. Voit kytkeä sen takaisin pois tältä sivulta.",
+      "generic": "Kaiken, mitä {{name}} lisää, jokaisella sivulla sekä sähköposteissa ja muistutuksissa.",
+      "neverPreviewed": "Kukaan ei ole vielä esikatsellut tätä. Kokeile ensin tilaa Vain ylläpitäjät: näet ominaisuuden oikeilla sivuilla, muut eivät näe sitä, eivätkä sähköpostit muutu.",
+      "ok": "Kytke päälle kaikille",
+      "preview": "Esikatsele ensin ylläpitäjänä",
+      "previewedSince": "Ylläpitäjät ovat esikatselleet tätä {{date}} alkaen. {{actor}} asetti tilaksi Vain ylläpitäjät.",
+      "previewing": "Ylläpitäjät esikatselevat tätä parhaillaan.",
+      "title": "Kytketäänkö {{name}} päälle kaikille?",
+      "willSee": "Kaikki alkavat nähdä:"
+    },
+    "counts": {
+      "admins_only": "{{count}} vain ylläpitäjille",
+      "off": "{{count}} pois päältä",
+      "on": "{{count}} päällä"
+    },
+    "defaultOff": "Oletus: Pois",
+    "deletedUser": "Poistettu käyttäjä",
+    "dismiss": "Sulje",
+    "empty": "Ominaisuuksia ei vielä ole. Ne ilmestyvät tänne, kun niitä lisätään sovellukseen, ja jokainen on aluksi pois päältä.",
+    "flags": {
+      "calendar_invites": {
+        "name": "Kalenterikutsut",
+        "turnOn": [
+          "Ilmoittautumisen vahvistussähköpostissa on kalenterikutsu.",
+          "Tapahtumasivu näyttää kalenterilinkit ilmoittautumisen jälkeen."
+        ],
+        "stops": [
+          "Uusissa vahvistussähköposteissa ei ole kalenterikutsua ja kalenterilinkit piilotetaan."
+        ],
+        "keeps": [
+          "Jo lähetetyt kutsut pysyvät vastaanottajien kalentereissa."
+        ]
+      },
+      "confetti": {
+        "name": "Konfetti",
+        "turnOn": [
+          "Tapahtuman tai ilmoittautumisen luomisen jälkeen näytetään konfettia, paitsi käyttäjille, jotka haluavat vähemmän liikettä."
+        ],
+        "stops": [
+          "Konfettia ei enää näytetä."
+        ],
+        "keeps": [
+          "Tapahtumien ja ilmoittautumisten luominen toimii kuten ennenkin."
+        ]
+      },
+      "event_templates": {
+        "name": "Tapahtumapohjat",
+        "turnOn": [
+          "Tapahtumalomakkeen kiintiö- ja kysymysvälilehdet tarjoavat pohjia sekä valmiita kiintiöitä ja kysymyksiä."
+        ],
+        "stops": [
+          "Pohjien valinnat piilotetaan ja välilehdillä näkyvät pelkät listat."
+        ],
+        "keeps": [
+          "Pohjasta lisätyt kiintiöt ja kysymykset säilyvät tapahtumissaan."
+        ]
+      },
+      "form_preview": {
+        "name": "Ilmoittautumislomakkeen esikatselu",
+        "turnOn": [
+          "Tapahtumalomakkeeseen tulee Esikatselu-välilehti, joka näyttää ilmoittautumislomakkeen niin kuin ilmoittautujat sen näkevät."
+        ],
+        "stops": [
+          "Esikatselu-välilehti piilotetaan."
+        ],
+        "keeps": [
+          "Esikatselusta ei koskaan lähetetä mitään, joten tiedot eivät muutu."
+        ]
+      },
+      "keycloak_names": {
+        "name": "Nimet Keycloakista",
+        "turnOn": [
+          "Ilmoittautumislomake täyttää Keycloakista tallennetun etu- ja sukunimen.",
+          "Ilman niitä lomake täyttää näyttönimen vain, jos siinä on enintään kaksi sanaa."
+        ],
+        "stops": [
+          "Ilmoittautumislomake jakaa taas näyttönimen etu- ja sukunimeksi."
+        ],
+        "keeps": [
+          "Etu- ja sukunimet tallennetaan edelleen jokaisella Keycloak-kirjautumisella.",
+          "Jo tehdyt ilmoittautumiset säilyttävät nimensä."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP-palvelin",
+        "turnOn": [
+          "MCP-palvelin vastaa osoitteessa /mcp: Keycloakin kautta kirjautuneet tekoälyavustajat voivat selata tapahtumia ja ilmoittautua, ja ylläpitäjät voivat luoda tapahtumaluonnoksia."
+        ],
+        "stops": [
+          "/mcp ja sen OAuth-tunnistuspolut vastaavat 404."
+        ],
+        "keeps": [
+          "MCP:n kautta tehdyt tapahtumat ja ilmoittautumiset säilyvät."
+        ]
+      },
+      "payments": {
+        "name": "Maksut",
+        "turnOn": [
+          "Ylläpitäjät voivat hinnoitella kiintiöitä. Maksullisten kiintiöiden ilmoittautujat maksavat ilmoittautumisen sulkeuduttua.",
+          "Maksullisten kiintiöiden ilmoittautujat maksavat Stripe Checkoutissa, ja maksusähköpostit ja -muistutukset lähetetään.",
+          "Ylläpitäjät saavat tapahtumiensa maksutyökalut."
+        ],
+        "stops": [
+          "Hinnat piilotetaan eikä niitä voi asettaa, ja maksaminen estetään.",
+          "Uusia maksusähköposteja tai -muistutuksia ei lähetetä."
+        ],
+        "keeps": [
+          "Jo tehdyt maksut pysyvät kirjattuina ja näkyvät ilmoittautujille.",
+          "Stripen maksuilmoitukset toimivat edelleen."
+        ]
+      },
+      "prefill_answers": {
+        "name": "Muistetut ilmoittautumisvastaukset",
+        "turnOn": [
+          "Ylläpitäjät voivat merkitä tekstikysymyksen kysymään ilmoittautujan Telegram-käyttäjänimeä tai erityisruokavalioita.",
+          "Ilmoittautumislomake esitäyttää nämä vastaukset käyttäjän tallentamista ilmoittautumistiedoista ja tarjoaa uusien vastausten muistamista.",
+          "Profiilin asetussivulla ilmoittautumistietoja voi muokata."
+        ],
+        "stops": [
+          "Vastauksia ei enää esitäytetä, eikä ilmoittautumislomake tarjoa niiden muistamista.",
+          "Ilmoittautumistietoja ei voi enää tallentaa tai muokata."
+        ],
+        "keeps": [
+          "Kysymykset säilyttävät Telegram- tai erityisruokavaliomerkintänsä ja toimivat tavallisina tekstikysymyksinä.",
+          "Käyttäjät voivat edelleen poistaa tallentamansa ilmoittautumistiedot."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Ilmoittautumismuistutukset",
+        "turnOn": [
+          "Tapahtumasivu tarjoaa muistutusta ennen ilmoittautumisen alkua.",
+          "Asetuksiin tulee muistutussivu käyttäjän muistutuksille ja muistutusasetuksille.",
+          "Muistutussähköpostit lähetetään ennen ilmoittautumisen alkua."
+        ],
+        "stops": [
+          "Muistutuspainike, muistutussivu ja sen valikkolinkit piilotetaan.",
+          "Muistutuksia ei lähetetä. Muistutusta, jonka aika tulee kun ominaisuus on pois päältä, ei lähetetä myöhemmin."
+        ],
+        "keeps": [
+          "Tallennetut muistutukset ja muistutusasetukset säilyvät."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Nauhan teksti",
+        "turnOn": [
+          "Tapahtumalomake näyttää nauhan tekstikentät korostetuille tapahtumille.",
+          "Tapahtumakorteissa näkyy oma nauhan teksti."
+        ],
+        "stops": [
+          "Tapahtumakorteissa näkyy oletusteksti ja tapahtumalomake piilottaa kentät."
+        ],
+        "keeps": [
+          "Tallennetut nauhan tekstit säilyvät, myös kun tapahtuma tallennetaan."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram-muistutukset",
+        "turnOn": [
+          "Käyttäjät voivat yhdistää Telegram-tilin ja valita Telegramin muistutuksilleen.",
+          "Muistutukset lähetetään myös Telegram-botin kautta."
+        ],
+        "stops": [
+          "Telegramia ei voi enää yhdistää tai valita, eikä muistutuksia lähetetä Telegramin kautta."
+        ],
+        "keeps": [
+          "Yhdistetyt tilit pysyvät yhdistettyinä."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Kirjoitettavat ajat",
+        "turnOn": [
+          "Tapahtumalomakkeessa tapahtuman ja ilmoittautumisen ajat kirjoitetaan tunti-, minuutti- ja sekuntikenttiin.",
+          "Päivän valitseminen kalenterista täyttää oletusajat."
+        ],
+        "stops": [
+          "Tapahtumalomake palaa vieritettäviin aikasarakkeisiin."
+        ],
+        "keeps": [
+          "Tallennetut tapahtuman ja ilmoittautumisen ajat pysyvät ennallaan."
+        ]
+      }
+    },
+    "footer": "Uudet ominaisuudet tulevat sovelluksen päivitysten mukana ja ovat aluksi pois päältä.",
+    "history": "Historia",
+    "historyDrawer": {
+      "allFeatures": "Kaikki ominaisuudet",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Ominaisuus",
+      "footerAll": "Näytetään kaikki {{count}} muutosta. Muutoksia ei voi muokata eikä poistaa.",
+      "footerOne": "Ennen {{date}} {{name}} oli pois päältä, mikä on uusien ominaisuuksien oletus.",
+      "none": "Ei vielä muutoksia. Uudet ominaisuudet ovat aluksi pois päältä.",
+      "title": "Muutoshistoria",
+      "titleFor": "Muutoshistoria: {{name}}"
+    },
+    "historyLabel": "Ominaisuuden {{name}} muutoshistoria",
+    "intro": "Kytke sivuston ominaisuuksia päälle ja pois. Muutokset tulevat voimaan heti.",
+    "introDevelopers": "Vain kehittäjät näkevät tämän sivun. Kaikki ylläpitäjät näkevät ominaisuudet, joiden tila on Vain ylläpitäjät.",
+    "loadError": {
+      "description": "Mikään ei muuttunut. Jokainen ominaisuus pysyy käyttäjille nykyisessä tilassaan. Yritä hetken päästä uudelleen.",
+      "title": "Ominaisuuksia ei voitu ladata",
+      "tryAgain": "Yritä uudelleen"
+    },
+    "neverChanged": "Ei koskaan muutettu",
+    "noAdminPreview": "Piilossa kaikilta. Vain ylläpitäjät -tilaa ei tarjota: ylläpitäjillä ei ole tässä mitään esikatseltavaa, joten se toimisi kuin Pois.",
+    "retired": "Vakiintunut: tämä ominaisuus on pysyvä ja aina päällä.",
+    "retry": "Yritä uudelleen",
+    "saveFailed": {
+      "admins_only": "Ominaisuutta {{name}} ei voitu asettaa tilaan Vain ylläpitäjät. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen.",
+      "off": "Ominaisuutta {{name}} ei voitu kytkeä pois. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen.",
+      "on": "Ominaisuutta {{name}} ei voitu kytkeä päälle. Sen tila on edelleen {{state}}. Tarkista yhteytesi ja yritä uudelleen."
+    },
+    "saved": {
+      "admins_only": "{{name}} näkyy nyt vain ylläpitäjille.",
+      "off": "{{name}} on nyt pois päältä.",
+      "on": "{{name}} on nyt päällä kaikille."
+    },
+    "saving": "Tallennetaan…",
+    "savingNote": "Tallennetaan. Muutos tulee voimaan, kun tallennus valmistuu.",
+    "sees": {
+      "admins_only": "Näkyy vain ylläpitäjille. Sähköpostit ja muistutukset toimivat kuin se olisi pois päältä.",
+      "off": "Piilossa kaikilta",
+      "on": "Näkyy kaikille"
+    },
+    "stateGroupLabel": "Ominaisuuden {{name}} tila",
+    "states": {
+      "admins_only": "Vain ylläpitäjät",
+      "off": "Pois",
+      "on": "Päällä"
+    },
+    "title": "Ominaisuudet",
+    "unavailable": "Ei määritetty: palvelimelta puuttuvat tämän ominaisuuden tarvitsemat asetukset. Kehittäjän täytyy lisätä ne, ennen kuin ominaisuuden voi kytkeä päälle.",
+    "you": "{{name}} (sinä)"
   },
   "notifications": {
     "deleteFailed": "Poisto epäonnistui",
@@ -93,6 +357,70 @@
     "updateEvent": "Päivitä tapahtuma",
     "updateEventCategory": "Päivitä tapahtumakategoria"
   },
+  "payments": {
+    "actions": {
+      "failed": "Maksun päivittäminen epäonnistui",
+      "markPaid": "Merkitse maksetuksi",
+      "markPaidHelp": "Käteis- tai tilisiirtomaksuille. Lähettää maksuvahvistuksen sähköpostilla.",
+      "markPaidSuccess": "Merkitty maksetuksi",
+      "more": "Lisää toimintoja",
+      "undoManual": "Peru käsin merkitty maksu",
+      "undoManualConfirm": "Poistetaanko käsin merkitty maksu? Ilmoittautuminen muuttuu maksamattomaksi.",
+      "undoManualSuccess": "Käsin merkitty maksu poistettu"
+    },
+    "cancel": "Peruuta",
+    "delete": {
+      "body": "Paikka siirtyy jonossa seuraavalle. Poistoa ei voi perua.",
+      "confirm": "Poista",
+      "noRefundWarning": "Tämä ilmoittautuminen on maksettu. Mitään ei palauteta automaattisesti: hoida mahdollinen palautus itse (korttimaksut Stripen hallintapaneelissa).",
+      "title": "Poistetaanko käyttäjän {{name}} ilmoittautuminen?"
+    },
+    "filter": {
+      "all": "Kaikki ({{count}})",
+      "paid": "Maksettu ({{count}})",
+      "unpaid": "Maksamatta ({{count}})"
+    },
+    "lastReminderSent": "Viimeisin muistutus lähetetty {{date}} klo {{time}}",
+    "paymentColumn": "Maksu",
+    "quotas": {
+      "free": "Ilmainen",
+      "guildReceives": "Kilta saa",
+      "invalidPrice": "Hinnan on oltava 0 € tai 0,25 € – 10 000 €",
+      "noteFees": "Kilta saa = hinta − 1,5 % × (hinta + 0,25 €). Asiakas maksaa hinnan sekä 0,25 €:n palvelumaksun, ja Stripe perii 0,25 € + 1,5 %. Arvio koskee eurooppalaisia kortteja; ETA-alueen ulkopuoliset kortit maksavat hieman enemmän.",
+      "noteFree": "0 € tekee kiintiöstä ilmaisen. Muuten vähimmäishinta on 0,25 €.",
+      "noteOpenQuota": "Avoimen kiintiön paikoista maksetaan sen kiintiön hinta, jonka kautta henkilö ilmoittautui.",
+      "priceChangedWarning": "Tässä kiintiössä on {{count}} ilmoittautumista. Jo maksetut pysyvät maksettuina. Maksamattomat maksavat uuden hinnan.",
+      "priceChangedWarning_one": "Tässä kiintiössä on {{count}} ilmoittautuminen. Jos se on jo maksettu, se pysyy maksettuna. Muuten se maksaa uuden hinnan.",
+      "ticketPrice": "Lipun hinta"
+    },
+    "reminder": {
+      "body": "Jokainen paikan saanut, joka ei ole maksanut, saa sähköpostin omalla maksulinkillään. Jonossa oleville ja ilmaisten kiintiöiden ilmoittautujille ei lähetetä viestiä.",
+      "confirm_one": "Lähetä {{count}} muistutus",
+      "confirm_other": "Lähetä {{count}} muistutusta",
+      "failed": "Muistutusten lähettäminen epäonnistui",
+      "lastSent": "Viimeisin muistutus lähetetty {{date}} klo {{time}}.",
+      "sent_one": "{{count}} muistutus lähetetty",
+      "sent_other": "{{count}} muistutusta lähetetty",
+      "title_one": "Lähetetäänkö maksumuistutus {{count}} henkilölle?",
+      "title_other": "Lähetetäänkö maksumuistutus {{count}} henkilölle?"
+    },
+    "sendReminder": "Lähetä muistutus {{count}} maksamattomalle",
+    "status": {
+      "NOT_REQUIRED": "Ilmainen",
+      "PAID": "Maksettu",
+      "PAID_MANUALLY": "Maksettu käsin",
+      "UNPAID": "Maksamatta"
+    },
+    "summary": {
+      "guildReceives": "Kilta saa",
+      "paid": "Maksettu",
+      "paidOf": "/ {{count}}",
+      "ticketsPaid": "Lippuja maksettu",
+      "unlinkedCardPayments_one": "{{count}} korttimaksu ei liity mihinkään ilmoittautumiseen (esimerkiksi tuplamaksu tai poistetun ilmoittautumisen maksu). Palauta se tarvittaessa käsin Stripen hallintapaneelissa.",
+      "unlinkedCardPayments_other": "{{count}} korttimaksua ei liity mihinkään ilmoittautumiseen (esimerkiksi tuplamaksuja tai poistettujen ilmoittautumisten maksuja). Palauta ne tarvittaessa käsin Stripen hallintapaneelissa.",
+      "unpaid": "Maksamatta"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Haluatko varmasti poistaa tämän ilmoittautumisen?",
@@ -110,6 +438,7 @@
       "emails": "Sähköpostit",
       "eventCategories": "Tapahtumakategoriat",
       "events": "Tapahtumat",
+      "features": "Ominaisuudet",
       "listEventCategories": "Näytä tapahtumakategoriat",
       "listEvents": "Näytä tapahtumat",
       "main": "Dashboard",

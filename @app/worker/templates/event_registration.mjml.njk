@@ -2,7 +2,14 @@
 
 {% block content %}
 <mj-column width="100%">
+  {% if isWaitlisted %}
+  <mj-text>
+    Olet tällä hetkellä tapahtuman jonossa. Lähetämme sinulle vahvistusviestin,
+    kun saat paikan tapahtumaan.
+  </mj-text>
+  {% else %}
   <mj-text>Ilmoittautuminen tapahtumaan onnistui:</mj-text>
+  {% endif %}
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Nimi: {{ registrationName }} <br />
     - Kiintiö: {{ registrationQuota.fi }} <br />
@@ -12,13 +19,32 @@
     - Linkki tapahtumaan: <a href="{{ url }}/fi/event/{{ eventSlug }}" target="_blank">{{ url }}/fi/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and not isQueued %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>{% if payLink %}Maksu: odottaa maksua{% else %}Maksu: maksulinkki tulee myöhemmin{% endif %}</strong><br />
+    Lippu {{ price | euro }} + palvelumaksu {{ serviceFee | euro }} = {{ total | euro }}
+    {% if payLink %}
+      {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
+    {% else %}
+      <br />Lähetämme maksulinkin sähköpostiisi, kun ilmoittautuminen sulkeutuu{% if registrationEndDate %} {{ registrationEndDate }} klo {{ registrationEndTime }}{% endif %}.
+    {% endif %}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     Voit muokata tietojasi tai poistaa ilmoittautumisesi tämän linkin takaa:
     <a href="{{ url }}/fi/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/fi/{{ eventRegistrationUpdateLink }}</a>
   </mj-text
   >
   <mj-divider border-color="#002851" border-width="1px"></mj-divider>
+  {% if isWaitlisted %}
+  <mj-text>
+    You're currently on the waiting list. We'll send you a confirmation email
+    when a place becomes available for you.
+  </mj-text>
+  {% else %}
   <mj-text>Successfully registered to the event:</mj-text>
+  {% endif %}
   <mj-text padding-left="40px" padding-top="0" padding-bottom="0">
     - Name: {{ registrationName }} <br />
     - Quota: {{ registrationQuota.en }} <br />
@@ -28,6 +54,18 @@
     - Link to the event: <a href="{{ url }}/en/event/{{ eventSlug }}" target="_blank">{{ url }}/en/event/{{ eventSlug }}</a>
     <br />
   </mj-text>
+  {%- if price and not isQueued %}
+  {%- from "payment_macros.njk" import paymentBox, payButton %}
+  {% call paymentBox() %}
+    <strong>{% if payLink %}Payment: pending{% else %}Payment: link coming later{% endif %}</strong><br />
+    Ticket {{ price | euro }} + service fee {{ serviceFee | euro }} = {{ total | euro }}
+    {% if payLink %}
+      {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
+    {% else %}
+      <br />We'll email you a payment link when registration closes{% if registrationEndDate %} on {{ registrationEndDate }} at {{ registrationEndTime }}{% endif %}.
+    {% endif %}
+  {% endcall %}
+  {%- endif %}
   <mj-text>
     You can update or delete your registration via this link:
     <a href="{{ url }}/en/{{ eventRegistrationUpdateLink }}" target="_blank">{{ url }}/en/{{ eventRegistrationUpdateLink }}</a>

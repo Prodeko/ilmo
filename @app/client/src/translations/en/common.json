@@ -15,6 +15,12 @@
   "email": "Email",
   "emailSwitchLabel": "Show html version",
   "error": "Error",
+  "featurePreview": {
+    "adminHint": "Not released yet. Ask a developer to release it.",
+    "developerHint": "Other users do not see this yet.",
+    "manage": "Manage on the Features page",
+    "tag": "Preview: visible to admins only"
+  },
   "head": {
     "description": "Prodeko event registration",
     "title": "Prodeko event registration"
@@ -52,6 +58,7 @@
   "registrationUpcoming": "Signup upcoming",
   "registrations": "Registrations",
   "registrationsPerQuota": "Registrations by quota",
+  "reminders": "My reminders",
   "remove": "Remove",
   "required": "Required",
   "settings": "Settings",

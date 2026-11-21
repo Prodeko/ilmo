@@ -1,0 +1,27 @@
+fragment EventPaymentSummary_Event on Event {
+  id
+  lastPaymentReminderSentAt
+  quotas {
+    nodes {
+      id
+      priceCents
+    }
+  }
+  registrations {
+    totalCount
+  }
+  paymentSummary {
+    paidCount
+    unpaidCount
+    dueCount
+    ticketsPaidCents
+    guildReceivesCents
+    unlinkedCardPaymentCount
+  }
+}
+
+query EventPaymentSummary($id: UUID!) {
+  event(id: $id) {
+    ...EventPaymentSummary_Event
+  }
+}

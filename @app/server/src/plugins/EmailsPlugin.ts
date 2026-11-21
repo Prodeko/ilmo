@@ -5,9 +5,32 @@ import path from "node:path"
 
 import { OurGraphQLContext } from "../middleware/installPostGraphile"
 import { loadTemplate } from "../utils/emailUtils"
+import { isFeatureEnabledForSession } from "../utils/featureFlags"
 import { ERROR_MESSAGE_OVERRIDES } from "../utils/handleErrors"
 
 const EMAIL_SEND_TEMPLATE_ALLOWLIST = ["event_registration.mjml.njk"]
+
+/** Emails that exist only for payments; listed only while payments are on. */
+const PAYMENT_TEMPLATE_PREFIX = "payment_"
+
+/**
+ * Example payment variables for the email previews. Amounts are cents, as in
+ * the worker. Used only while payments are on, so that with payments off
+ * every preview renders exactly as before.
+ */
+const PREVIEW_PAYMENT_VARIABLES = {
+  closed: false,
+  firstName: "Teppo",
+  isQueued: false,
+  paidAt: "1.1.2021 12:00",
+  payLink: "pay/12345",
+  paymentMethod: "STRIPE",
+  price: 1800,
+  registrationEndDate: "1.1.2021",
+  registrationEndTime: "12:00",
+  serviceFee: 25,
+  total: 1825,
+}
 
 const EmailsPlugin = makeExtendSchemaPlugin(() => ({
   typeDefs: gql`
@@ -34,6 +57,32 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       token: String
       url: String
       verifyLink: String
+      """
+      Ticket price in cents (payment emails).
+      """
+      price: Int
+      """
+      Service fee in cents (payment emails).
+      """
+      serviceFee: Int
+      """
+      Ticket price plus service fee, in cents (payment emails).
+      """
+      total: Int
+      paymentMethod: PaymentMethod
+      isQueued: Boolean
+      """
+      The payment link relative to the language root, e.g. \`pay/<update token>\`.
+      """
+      payLink: String
+      paidAt: String
+      registrationEndDate: String
+      registrationEndTime: String
+      firstName: String
+      """
+      The reminder is the email sent when registration closes.
+      """
+      closed: Boolean
     }
 
     """
@@ -99,6 +148,8 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
           const text = html2text.fromString(html2textableHtml, {
             wordwrap: 120,
             tags: { img: { format: "skip" } },
+            // Amount tables of the payment emails (payment_macros.njk)
+            tables: [".amounts"],
           })
           // All templates end in .mjml.njk, remove the file extension
           const name = template.slice(0, -9).replace(/_/g, " ")
@@ -131,7 +182,7 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       async renderEmailTemplates(
         _mutation,
         _args,
-        _context: OurGraphQLContext,
+        context: OurGraphQLContext,
         _resolveInfo
       ) {
         try {
@@ -140,7 +191,18 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
             "../../../worker/templates/"
           )
 
-          const templateFiles = fs.readdirSync(templatesFolder)
+          const withPayments = await isFeatureEnabledForSession(
+            "payments",
+            context.pgClient
+          )
+          // Only emails: the folder also holds partials (payment_macros.njk)
+          const templateFiles = fs
+            .readdirSync(templatesFolder)
+            .filter((filename) => filename.endsWith(".mjml.njk"))
+            .filter(
+              (filename) =>
+                withPayments || !filename.startsWith(PAYMENT_TEMPLATE_PREFIX)
+            )
           const ret = templateFiles.map(async (filename) => {
             // Dummy variables for mjml templates
             const variables = {
@@ -158,14 +220,30 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
               token: "12345",
               url: process.env.ROOT_URL,
               verifyLink: "",
+              ...(withPayments ? PREVIEW_PAYMENT_VARIABLES : {}),
             }
             const templateFn = await loadTemplate(filename)
-            const html = await templateFn(variables)
+            const html = await templateFn(
+              filename === "registration_reminder.mjml.njk"
+                ? {
+                    ...variables,
+                    language: "en",
+                    eventName: variables.eventName.en,
+                    openingTime: "1 January 2021 at 12:00",
+                    eventUrl: new URL(
+                      `/en/event/${variables.eventSlug}`,
+                      process.env.ROOT_URL
+                    ).href,
+                  }
+                : variables
+            )
             const html2textableHtml = html.replace(/(<\/?)div/g, "$1p")
             const text = html2text
               .fromString(html2textableHtml, {
                 wordwrap: 120,
                 tags: { img: { format: "skip" } },
+                // Amount tables of the payment emails (payment_macros.njk)
+                tables: [".amounts"],
               })
               .replace(/\n\s+\n/g, "\n\n")
 

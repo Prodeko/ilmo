@@ -95,6 +95,7 @@ export async function makeApp({
   await app.register(middleware.installHealth)
 
   await app.register(middleware.installDatabasePools)
+  await app.register(middleware.installFeatureFlags)
   await app.register(middleware.installRedis)
   await app.register(middleware.installWorkerUtils)
   await app.register(middleware.installHelmet)
@@ -103,6 +104,10 @@ export async function makeApp({
   await app.register(middleware.installCSRFProtection)
   await app.register(middleware.installPassport)
   await app.register(middleware.installKeycloak)
+  // Webhooks and other routes called from outside; see externalRoutes.ts
+  await app.register(middleware.installExternalRoutes)
+  // Telegram bot updates by polling; webhook mode is an external route
+  await app.register(middleware.installTelegramPolling)
   await app.register(middleware.installStaticUploads)
   if (isTest || isDev) {
     // Loaded dynamically so the production bundle never imports

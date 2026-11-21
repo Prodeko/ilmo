@@ -27,6 +27,7 @@
     "tabs": {
       "email": "Email",
       "generalInfo": "General",
+      "preview": "Preview",
       "questions": "Questions",
       "quotas": "Quotas"
     },
@@ -34,6 +35,269 @@
       "showAnswers": "Show answers",
       "showEvent": "Show event"
     }
+  },
+  "features": {
+    "adminsOnlyInfo": "Admins only lets you try a feature before release. Signed-in admins see it with a Preview tag. Everyone else does not, and emails and reminders treat it as off.",
+    "cancel": "Cancel",
+    "changeHistory": "Change history",
+    "changedOutside": "Changed outside this page",
+    "columns": {
+      "actions": "Actions",
+      "feature": "Feature",
+      "lastChanged": "Last changed",
+      "state": "State"
+    },
+    "confirmOff": {
+      "genericKeeps": "Data already saved stays as it is, and anything already started completes.",
+      "genericStops": "Nobody can start using {{name}}.",
+      "intro": {
+        "admins_only": "Everyone except signed-in admins stops seeing it, and emails and reminders treat it as off. Anything already started keeps working.",
+        "off": "Turning off hides the ways in. Anything already started keeps working."
+      },
+      "keeps": "Keeps working",
+      "ok": {
+        "admins_only": "Limit to admins only",
+        "off": "Turn off {{name}}"
+      },
+      "stops": "Stops now",
+      "title": {
+        "admins_only": "Limit {{name}} to admins?",
+        "off": "Turn off {{name}}?"
+      }
+    },
+    "confirmOn": {
+      "appliesNow": "The change applies right away. You can turn it off again on this page.",
+      "generic": "Everything {{name}} adds, on every page and in emails and reminders.",
+      "neverPreviewed": "Nobody has previewed this yet. Try Admins only first: you see it on real pages, nobody else does, and no emails change.",
+      "ok": "Turn on for everyone",
+      "preview": "Preview for admins first",
+      "previewedSince": "Admins have previewed this since {{date}}. {{actor}} set it to Admins only.",
+      "previewing": "Admins are previewing this now.",
+      "title": "Turn on {{name}} for everyone?",
+      "willSee": "Everyone will start seeing:"
+    },
+    "counts": {
+      "admins_only": "{{count}} admins only",
+      "off": "{{count}} off",
+      "on": "{{count}} on"
+    },
+    "defaultOff": "Default: Off",
+    "deletedUser": "Deleted user",
+    "dismiss": "Dismiss",
+    "empty": "No features yet. Features appear here as they are added to the app, and each one starts as Off.",
+    "flags": {
+      "calendar_invites": {
+        "name": "Calendar invitations",
+        "turnOn": [
+          "Registration confirmation emails carry a calendar invitation.",
+          "The event page shows calendar links after signing up."
+        ],
+        "stops": [
+          "New confirmation emails have no calendar invitation and the calendar links are hidden."
+        ],
+        "keeps": [
+          "Invitations already sent stay in recipients' calendars."
+        ]
+      },
+      "confetti": {
+        "name": "Confetti",
+        "turnOn": [
+          "Confetti is shown after an event or a registration has been created, except to users who prefer reduced motion."
+        ],
+        "stops": [
+          "No more confetti."
+        ],
+        "keeps": [
+          "Creating events and registrations works as before."
+        ]
+      },
+      "event_templates": {
+        "name": "Event templates",
+        "turnOn": [
+          "The quotas and questions tabs of the event form offer templates and ready-made quotas and questions."
+        ],
+        "stops": [
+          "The template selectors are hidden and the tabs show the plain lists."
+        ],
+        "keeps": [
+          "Quotas and questions added from a template stay on their events."
+        ]
+      },
+      "form_preview": {
+        "name": "Registration form preview",
+        "turnOn": [
+          "The event form gets a Preview tab that shows the registration form as registrants see it."
+        ],
+        "stops": [
+          "The Preview tab is hidden."
+        ],
+        "keeps": [
+          "Nothing is ever submitted from the preview, so no data changes."
+        ]
+      },
+      "keycloak_names": {
+        "name": "Names from Keycloak",
+        "turnOn": [
+          "The registration form fills in the first and last name stored from Keycloak.",
+          "Without them, it fills in a display name only when it has at most two words."
+        ],
+        "stops": [
+          "The registration form goes back to splitting the display name into first and last name."
+        ],
+        "keeps": [
+          "First and last names are still stored at every Keycloak login.",
+          "Registrations already made keep their names."
+        ]
+      },
+      "mcp_server": {
+        "name": "MCP server",
+        "turnOn": [
+          "The MCP server answers at /mcp: AI assistants signed in through Keycloak can browse events and register, and admins can create draft events."
+        ],
+        "stops": [
+          "/mcp and its OAuth discovery paths answer 404."
+        ],
+        "keeps": [
+          "Events and registrations made through MCP are kept."
+        ]
+      },
+      "payments": {
+        "name": "Payments",
+        "turnOn": [
+          "Admins can price quotas. Registrants of paid quotas pay after registration closes.",
+          "Registrants of paid quotas pay through Stripe Checkout, and payment emails and reminders are sent.",
+          "Admins get the payment tools for their events."
+        ],
+        "stops": [
+          "Prices are hidden and cannot be set, and paying is blocked.",
+          "No new payment emails or reminders are sent."
+        ],
+        "keeps": [
+          "Payments already made stay recorded and are shown to registrants.",
+          "Stripe payment notifications keep working."
+        ]
+      },
+      "prefill_answers": {
+        "name": "Remembered registration answers",
+        "turnOn": [
+          "Admins can mark a text question as asking for the registrant's Telegram handle or dietary restrictions.",
+          "The registration form prefills those answers from the user's saved registration details, and offers to remember new answers.",
+          "The profile settings page shows the registration details for editing."
+        ],
+        "stops": [
+          "Answers are no longer prefilled and the registration form no longer offers to remember them.",
+          "Registration details can no longer be saved or edited."
+        ],
+        "keeps": [
+          "Questions keep their Telegram or dietary restriction marking and work as ordinary text questions.",
+          "Users can still delete the registration details they saved."
+        ]
+      },
+      "registration_reminders": {
+        "name": "Registration reminders",
+        "turnOn": [
+          "The event page offers a reminder before registration opens.",
+          "The settings get a reminders page with the user's reminders and reminder settings.",
+          "Reminder emails are sent before registration opens."
+        ],
+        "stops": [
+          "The reminder button, the reminders page and its menu links are hidden.",
+          "No reminders are sent. A reminder that falls due while the flag is off is not sent later."
+        ],
+        "keeps": [
+          "Saved reminders and reminder settings are kept."
+        ]
+      },
+      "ribbon_text": {
+        "name": "Ribbon text",
+        "turnOn": [
+          "The event form shows ribbon text inputs for highlighted events.",
+          "Event cards show the custom ribbon text."
+        ],
+        "stops": [
+          "Event cards show the default ribbon text and the event form hides the inputs."
+        ],
+        "keeps": [
+          "Stored ribbon texts are kept, also when an event is saved."
+        ]
+      },
+      "telegram_reminders": {
+        "name": "Telegram reminders",
+        "turnOn": [
+          "Users can link a Telegram account and choose Telegram for their reminders.",
+          "Reminders also go out through the Telegram bot."
+        ],
+        "stops": [
+          "Telegram can no longer be linked or chosen, and no reminders go out through Telegram."
+        ],
+        "keeps": [
+          "Linked accounts stay linked."
+        ]
+      },
+      "typed_time_input": {
+        "name": "Typed times",
+        "turnOn": [
+          "The event form uses typed hour, minute and second boxes for the event and registration times.",
+          "Clicking a day in the calendar fills in default times."
+        ],
+        "stops": [
+          "The event form goes back to the time scroll columns."
+        ],
+        "keeps": [
+          "Saved event and registration times stay as they are."
+        ]
+      }
+    },
+    "footer": "New features arrive with app updates and start as Off.",
+    "history": "History",
+    "historyDrawer": {
+      "allFeatures": "All features",
+      "by": "{{actor}} · {{date}}",
+      "feature": "Feature",
+      "footerAll": "Showing all {{count}} changes. Changes cannot be edited or deleted.",
+      "footerOne": "Before {{date}} {{name}} was Off, the default for new features.",
+      "none": "No changes yet. New features start as Off.",
+      "title": "Change history",
+      "titleFor": "Change history: {{name}}"
+    },
+    "historyLabel": "Change history of {{name}}",
+    "intro": "Switch features on and off for this site. Changes apply right away.",
+    "introDevelopers": "Only developers see this page; all admins see features set to Admins only.",
+    "loadError": {
+      "description": "Nothing has changed. Every feature keeps its current state for users. Try again in a moment.",
+      "title": "Could not load features",
+      "tryAgain": "Try again"
+    },
+    "neverChanged": "Never changed",
+    "noAdminPreview": "Hidden from everyone. Admins only is not offered: admins have nothing to preview here, so it would behave as Off.",
+    "retired": "Retired: this feature is permanent and always on.",
+    "retry": "Retry",
+    "saveFailed": {
+      "admins_only": "Could not set {{name}} to Admins only. It is still {{state}}. Check your connection and try again.",
+      "off": "Could not turn off {{name}}. It is still {{state}}. Check your connection and try again.",
+      "on": "Could not turn on {{name}}. It is still {{state}}. Check your connection and try again."
+    },
+    "saved": {
+      "admins_only": "{{name}} is now visible to admins only.",
+      "off": "{{name}} is now off.",
+      "on": "{{name}} is now on for everyone."
+    },
+    "saving": "Saving…",
+    "savingNote": "Saving. The change applies when this finishes.",
+    "sees": {
+      "admins_only": "Visible to admins only. Emails and reminders treat it as off.",
+      "off": "Hidden from everyone",
+      "on": "Visible to everyone"
+    },
+    "stateGroupLabel": "State of {{name}}",
+    "states": {
+      "admins_only": "Admins only",
+      "off": "Off",
+      "on": "On"
+    },
+    "title": "Features",
+    "unavailable": "Not configured: the server lacks the settings this feature needs. A developer needs to add them before this can be switched on.",
+    "you": "{{name}} (you)"
   },
   "notifications": {
     "deleteFailed": "Failed to delete",
@@ -93,6 +357,70 @@
     "updateEvent": "Update event",
     "updateEventCategory": "Update event category"
   },
+  "payments": {
+    "actions": {
+      "failed": "Updating the payment failed",
+      "markPaid": "Mark as paid",
+      "markPaidHelp": "For cash or bank transfer. Sends the payment received email.",
+      "markPaidSuccess": "Marked as paid",
+      "more": "More actions",
+      "undoManual": "Undo manual payment",
+      "undoManualConfirm": "Remove the manual payment? The registration becomes unpaid.",
+      "undoManualSuccess": "Manual payment removed"
+    },
+    "cancel": "Cancel",
+    "delete": {
+      "body": "The spot goes to the next person in the queue. This can't be undone.",
+      "confirm": "Delete",
+      "noRefundWarning": "This registration has been paid. Nothing is refunded automatically: if a refund is due, settle it yourself (card payments in the Stripe Dashboard).",
+      "title": "Delete registration of {{name}}?"
+    },
+    "filter": {
+      "all": "All ({{count}})",
+      "paid": "Paid ({{count}})",
+      "unpaid": "Unpaid ({{count}})"
+    },
+    "lastReminderSent": "Last reminder sent {{date}} at {{time}}",
+    "paymentColumn": "Payment",
+    "quotas": {
+      "free": "Free",
+      "guildReceives": "Guild receives",
+      "invalidPrice": "Price must be 0 € or between 0,25 € and 10 000 €",
+      "noteFees": "Guild receives = price − 1,5 % × (price + 0,25 €). The customer pays the price plus a 0,25 € service fee, and Stripe takes 0,25 € + 1,5 %. This is an estimate for European cards; cards from outside the EEA cost a little more.",
+      "noteFree": "0 € makes the quota free. Otherwise the minimum price is 0,25 €.",
+      "noteOpenQuota": "Open quota spots pay the price of the quota the person registered through.",
+      "priceChangedWarning": "This quota has {{count}} registrations. Those already paid stay paid. Unpaid ones pay the new price.",
+      "priceChangedWarning_one": "This quota has {{count}} registration. If it is already paid, it stays paid. Otherwise it pays the new price.",
+      "ticketPrice": "Ticket price"
+    },
+    "reminder": {
+      "body": "Everyone with a spot who hasn't paid gets an email with their own payment link. People in the queue and people in free quotas aren't emailed.",
+      "confirm_one": "Send {{count}} reminder",
+      "confirm_other": "Send {{count}} reminders",
+      "failed": "Sending reminders failed",
+      "lastSent": "Last reminder sent {{date}} at {{time}}.",
+      "sent_one": "{{count}} reminder sent",
+      "sent_other": "{{count}} reminders sent",
+      "title_one": "Send a payment reminder to {{count}} person?",
+      "title_other": "Send a payment reminder to {{count}} people?"
+    },
+    "sendReminder": "Send reminder to {{count}} unpaid",
+    "status": {
+      "NOT_REQUIRED": "Free",
+      "PAID": "Paid",
+      "PAID_MANUALLY": "Paid manually",
+      "UNPAID": "Unpaid"
+    },
+    "summary": {
+      "guildReceives": "Guild receives",
+      "paid": "Paid",
+      "paidOf": "of {{count}}",
+      "ticketsPaid": "Tickets paid",
+      "unlinkedCardPayments_one": "{{count}} card payment is not linked to any registration (for example a duplicate payment or a payment for a deleted registration). Refund it by hand in the Stripe Dashboard if needed.",
+      "unlinkedCardPayments_other": "{{count}} card payments are not linked to any registration (for example duplicate payments or payments for deleted registrations). Refund them by hand in the Stripe Dashboard if needed.",
+      "unpaid": "Unpaid"
+    }
+  },
   "registrations": {
     "delete": {
       "confirmText": "Are you sure you want to delete this registration?",
@@ -110,6 +438,7 @@
       "emails": "Emails",
       "eventCategories": "Event categories",
       "events": "Events",
+      "features": "Features",
       "listEventCategories": "List event categories",
       "listEvents": "List events",
       "main": "Dashboard",

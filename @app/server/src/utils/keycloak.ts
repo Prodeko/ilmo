@@ -14,6 +14,10 @@ export { keycloakEnabled, sanitizeNext }
 export type RequestLogger = Pick<FastifyBaseLogger, "debug" | "warn" | "error">
 
 export const ILMO_ADMIN_ROLE = "ilmo-admin"
+// Lets an admin switch feature flags. There is no in-app way to grant it: it
+// comes from this realm role only (or a direct SQL update for accounts that
+// never log in through SSO).
+export const ILMO_DEVELOPER_ROLE = "ilmo-developer"
 
 // Local accounts kept for break-glass access; an SSO login must never link
 // onto (or flip is_admin on) these rows. Compared lowercase (username is citext),
@@ -27,6 +31,13 @@ export interface KeycloakProfile {
   readonly email: string
   readonly emailVerified: boolean
   readonly name: string
+  /**
+   * The standard OIDC `given_name` / `family_name` claims, `null` when the
+   * token doesn't carry them. Unlike `name` they keep multi-word first and
+   * last names apart ("Anna Maria" / "von Wright").
+   */
+  readonly givenName: string | null
+  readonly familyName: string | null
   /**
    * The raw email localpart. It is *not* a valid app username: register_user
    * strips and slugifies it and appends a counter to break ties, so only the
@@ -42,6 +53,8 @@ export interface KeycloakProfile {
    * quietly demotes every admin on their next login.
    */
   readonly isAdmin: boolean | null
+  /** Same three-valued semantics as `isAdmin`, for ILMO_DEVELOPER_ROLE. */
+  readonly isDeveloper: boolean | null
 }
 
 export function mapKeycloakClaims(
@@ -64,10 +77,10 @@ export function mapKeycloakClaims(
     : null
   if (roles === null) {
     // "No roles claim" and "no roles" are indistinguishable in the payload,
-    // so the missing claim maps to isAdmin: null rather than false.
+    // so the missing claim maps to isAdmin/isDeveloper: null rather than false.
     logger?.warn(
       { sub },
-      "keycloak id token has no usable realm_access.roles claim; admin status is unknown — check the client's realm-roles mapper"
+      "keycloak id token has no usable realm_access.roles claim; admin and developer status are unknown — check the client's realm-roles mapper"
     )
   }
   if (claims.email_verified === undefined) {
@@ -79,11 +92,15 @@ export function mapKeycloakClaims(
     )
   }
   const rawLocale = typeof claims.locale === "string" ? claims.locale : null
+  const nameClaim = (claim: unknown) =>
+    typeof claim === "string" && claim.trim() ? claim.trim() : null
   return {
     sub,
     email,
     emailVerified: claims.email_verified === true,
     name: typeof claims.name === "string" ? claims.name : localpart,
+    givenName: nameClaim(claims.given_name),
+    familyName: nameClaim(claims.family_name),
     usernameSuggestion: localpart,
     // The app ships fi/en/se; anything else has no translations to fall back
     // on, so the user keeps whatever locale the browser negotiated.
@@ -92,5 +109,6 @@ export function mapKeycloakClaims(
         ? rawLocale
         : null,
     isAdmin: roles === null ? null : roles.includes(ILMO_ADMIN_ROLE),
+    isDeveloper: roles === null ? null : roles.includes(ILMO_DEVELOPER_ROLE),
   }
 }

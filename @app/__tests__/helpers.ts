@@ -3,6 +3,8 @@ import { readdirSync } from "node:fs"
 import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 
+import type { FeatureFlagState, FeatureKey } from "@app/lib"
+
 export {
   constructAnswersFromQuestions,
   createEventCategories,
@@ -63,6 +65,8 @@ export const deleteTestEventData = (pool: Pool) => {
   // We're not using withRootDb because we don't want the transaction rolled back
   return pool.query(
     `BEGIN;
+      delete from app_public.payments;
+      delete from app_private.stripe_events;
       delete from app_private.registration_secrets;
       delete from app_public.registrations;
       delete from app_public.quotas;
@@ -79,10 +83,26 @@ export const deleteTestEventData = (pool: Pool) => {
   )
 }
 
+/**
+ * The flag state every test starts from: off, or on when the suite runs with
+ * TEST_FEATURE_FLAGS=on, see scripts/test.mjs.
+ */
+export const featureFlagBaseline = (): FeatureFlagState =>
+  process.env.TEST_FEATURE_FLAGS === "on" ? "on" : "off"
+
+// Also marks every flag available again: a server booted by a test records
+// the availability of integration-backed flags from its own environment.
+export const resetFeatureFlags = (pool: Pool) =>
+  pool.query(
+    "update app_public.feature_flags set state = $1, available = true where state <> $1 or not available",
+    [featureFlagBaseline()]
+  )
+
 export const deleteTestData = async () => {
   const pool = poolFromUrl(TEST_DATABASE_URL)
   await deleteTestUsers(pool)
   await deleteTestEventData(pool)
+  await resetFeatureFlags(pool)
 }
 
 /* Quickly becomes root, does the thing, and then reverts back to previous role */
@@ -102,6 +122,35 @@ export const asRoot = async <T>(
     } catch (e) {
       // Transaction was probably aborted, don't clobber the error
     }
+  }
+}
+
+/******************************************************************************/
+// Feature flags
+
+/**
+ * Sets the state of a feature flag directly, bypassing the developer check
+ * and the audit log. With a pool the change is committed; with a client it
+ * belongs to the client's transaction. deleteTestData switches every flag
+ * back off. Fails for a key without a row, which means the migration that
+ * adds the feature has not run.
+ */
+export const setFeatureFlag = async (
+  client: Pool | PoolClient,
+  key: FeatureKey,
+  state: FeatureFlagState
+) => {
+  const update = (c: Pool | PoolClient) =>
+    c.query(
+      "update app_public.feature_flags set state = $2 where key = $1 returning key",
+      [key, state]
+    )
+  const { rowCount } =
+    client instanceof Pool ? await update(client) : await asRoot(client, update)
+  if (!rowCount) {
+    throw new Error(
+      `Feature flag "${key}" has no row in app_public.feature_flags`
+    )
   }
 }
 
@@ -193,14 +242,6 @@ export async function claimRegistrationToken(eventId: string, quotaId: string) {
     registrationToken: row.registration_token,
     updateToken: row.update_token,
   }
-}
-
-export const refreshMaterializedView = async (client: PoolClient) => {
-  // Become root
-  await client.query("reset role")
-  client.query(
-    "refresh materialized view app_hidden.registrations_status_and_position"
-  )
 }
 
 export const getEmails = () => global["TEST_EMAILS"]

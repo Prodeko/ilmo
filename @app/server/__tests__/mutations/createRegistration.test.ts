@@ -112,9 +112,8 @@ describe("CreateRegistration", () => {
 
         expect(rateLimitjobs).toHaveLength(1)
         const [rateLimitJob] = rateLimitjobs
-        expect(rateLimitJob.payload).toMatchObject({
-          eventId: eventId,
-          ipAddress: req.ip,
+        expect(rateLimitJob.payload).toEqual({
+          key: `rate-limit:claimRegistrationToken:${eventId}:${quotaId}:ip:${req.ip}`,
         })
 
         const confirmationEmailJobs = await getJobs(
@@ -153,7 +152,7 @@ describe("CreateRegistration", () => {
         // Redis should not contain a rate limiting key after
         // successful registration
         const rateLimitId = `${eventId}:${quotaId}`
-        const key = `rate-limit:claimRegistrationToken:${rateLimitId}:127.1.1.1`
+        const key = `rate-limit:claimRegistrationToken:${rateLimitId}:ip:127.1.1.1`
         const value = await redisClient.get(key)
         expect(value).toEqual(null)
         // TODO: Figure out a way to test gdpr__delete_event_registrations
@@ -373,7 +372,7 @@ describe("CreateRegistration", () => {
     )
   })
 
-  it("can't create a registration if first or last name contains spaces", async () => {
+  it("can't create a registration if first or last name is blank", async () => {
     const { quotas, events } = await createEventDataAndLogin({
       questionOptions: { create: false },
       registrationOptions: { create: false },
@@ -426,7 +425,7 @@ describe("CreateRegistration", () => {
           quotaId,
           registrationToken,
           firstName: "Testname",
-          lastName: "Last name",
+          lastName: "   ",
           email: "testuser@example.com",
         },
       },
@@ -444,6 +443,44 @@ describe("CreateRegistration", () => {
           'value for domain app_public.constrained_name violates check constraint "constrained_name_check"'
         )
         expect(code).toEqual("23514")
+      }
+    )
+  })
+
+  it("can create a registration with spaces in first and last name", async () => {
+    const { quotas, events } = await createEventDataAndLogin({
+      questionOptions: { create: false },
+      registrationOptions: { create: false },
+    })
+    const eventId = events[0].id
+    const quotaId = quotas[0].id
+
+    const { registrationToken } = await claimRegistrationToken(eventId, quotaId)
+
+    await runGraphQLQuery(
+      CreateEventRegistrationDocument,
+
+      // GraphQL variables:
+      {
+        input: {
+          eventId,
+          quotaId,
+          registrationToken,
+          firstName: "Anna Maria",
+          lastName: "von Wright",
+          email: "testuser@example.com",
+        },
+      },
+
+      // Additional props to add to `req` (e.g. `user: {sessionId: '...'}`)
+      {},
+
+      // This function runs all your test assertions:
+      async (json) => {
+        expect(json.errors).toBeFalsy()
+
+        const registration = json.data!.createRegistration.registration
+        expect(registration.fullName).toEqual("Anna Maria von Wright")
       }
     )
   })

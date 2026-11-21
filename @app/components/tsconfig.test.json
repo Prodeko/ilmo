@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.test.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    // Transpile only: `tsc -b` type-checks the components, and a type-checking
+    // ts-jest program for them (antd's types) costs the shared in-band jest
+    // process about 250 MB of heap.
+    "isolatedModules": true
+  }
+}

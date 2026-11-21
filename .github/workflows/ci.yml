@@ -14,6 +14,35 @@ jobs:
           docker run --rm -v "$PWD:/repo" -w /repo \
             rhysd/actionlint:1.7.7 -color
 
+  migrations:
+    name: Migration files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check current/ prefixes are unique
+        run: node scripts/check-migrations.mjs current
+
+      # Maintainers commit migrations. Their own migration-commit PRs carry the
+      # `migration-commit` label; the label is read from the API, not the event
+      # payload, so re-running the job after labelling picks it up.
+      - name: Check the PR leaves committed/ unchanged
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          labels=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.labels[].name')
+          if grep -qxF migration-commit <<< "$labels"; then
+            echo "::notice::Label migration-commit is set; committed/ changes are allowed."
+            exit 0
+          fi
+          node scripts/check-migrations.mjs committed "$BASE_SHA"
+
   lint:
     name: Lint & depcheck
     runs-on: ubuntu-latest
@@ -114,8 +143,9 @@ jobs:
         run: pnpm build
 
       - name: Test
-        # --runInBand: debezium/postgres has a single replication slot,
-        # so parallel jest workers race on it.
+        # One test file at a time: debezium/postgres has a single replication
+        # slot, so parallel jest workers race on it. scripts/test.mjs runs the
+        # files in one worker that jest restarts to bound its memory.
         run: pnpm test --ci --runInBand
 
   docker:

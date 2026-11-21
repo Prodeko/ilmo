@@ -2,16 +2,20 @@
   "buttons": {
     "addEmail": "Lägg till e-post",
     "changePassphrase": "Ändra lösenfras",
+    "deleteRegistrationProfile": "Radera anmälningsuppgifter",
     "permanentDelete": "RADERA MITT KONTO PERMANENT",
     "resetPassphrase": "Återställ lösenfras",
     "returnHome": "Återgå till hemsidan",
     "updateProfile": "Uppdatera profil",
+    "updateRegistrationProfile": "Uppdatera anmälningsuppgifter",
     "wantToDeleteAccount": "Jag vill ta bort mitt konto"
   },
   "errors": {
     "accountDeleteFailedOrgOwner1": "Du kan inte ta bort ditt konto medan du är ägare till en organisation.",
     "accountDeleteFailedOrgOwner2": "För varje organisation du är ägare till, tilldela antingen ditt ägande till en annan användare eller ta bort organisationen för att fortsätta.",
     "deleteFailed": "Begäran om borttagning misslyckades",
+    "errorDeletingRegistrationProfile": "Det gick inte att radera anmälningsuppgifterna",
+    "errorUpdatingRegistrationProfile": "Det gick inte att uppdatera anmälningsuppgifterna",
     "errorUpdatingUsername": "Fel vid uppdatering av användarnamn",
     "incorrectOldPassword": "Felaktig gammal lösenordsfras",
     "usernameTaken": "Detta användarnamn används redan, välj ett annat namn"
@@ -22,18 +26,24 @@
       "emailAddFailed": "Fel vid tillägg av e-post",
       "passwordChangeFailed": "Det gick inte att ändra lösenordsfras",
       "passwordChanged": "Lösenordet ändrat!",
-      "profileUpdated": "Profil uppdaterad"
+      "profileUpdated": "Profil uppdaterad",
+      "registrationProfileDeleted": "Anmälningsuppgifterna har raderats",
+      "registrationProfileUpdated": "Anmälningsuppgifterna har uppdaterats"
     },
     "label": {
+      "dietaryRestrictions": "Specialdieter",
       "newEmail": "Ny e-post",
       "newPassphrase": "Ny lösenordsfras",
-      "oldPassphrase": "Gammal lösenfras"
+      "oldPassphrase": "Gammal lösenfras",
+      "telegram": "Telegram"
     },
     "messages": {
+      "dietaryRestrictionsTooLong": "Specialdieter får vara högst 1000 tecken",
       "email": "Ange en e-postadress",
       "name": "Ange ditt namn",
       "newPassword": "Bekräfta din lösenfras",
       "oldPassword": "Ange din lösenfras",
+      "telegramTooLong": "Telegram får vara högst 64 tecken",
       "username": "Välj ett användarnamn"
     }
   },
@@ -84,11 +94,18 @@
       "socialLoginNoPassword": "Du registrerade ditt konto genom social inloggning, så du har för närvarande ingen lösenfras. Om du vill ha en lösenfras, tryck på knappen nedan för att begära ett e-postmeddelande för återställning av lösenfras till '{{email}}' (du kan välj en annan e-postadress genom att göra den till primär i)"
     }
   },
+  "registrationProfile": {
+    "deleteConfirm": "Radera dina sparade anmälningsuppgifter?",
+    "description": "Dessa uppgifter fyller i Telegram- och specialdietfrågorna i anmälningsformulär. Endast du kan se dem. De sparas här, eller när du kryssar i \"Kom ihåg dessa svar\" vid anmälan.",
+    "offDescription": "Förifyllning av anmälningssvar är för tillfället avstängd. Du kan fortfarande radera de anmälningsuppgifter du har sparat."
+  },
   "titles": {
     "accounts": "Länkade konton",
     "delete": "Radera konto",
     "emails": "E-postadresser",
     "index": "Redigera profil",
+    "registrationProfile": "Anmälningsuppgifter",
+    "reminders": "Mina påminnelser",
     "security": "Ändra lösenfras"
   }
 }

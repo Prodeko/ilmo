@@ -9,6 +9,8 @@ const baseClaims = {
   email: "matti.meikalainen@example.com",
   email_verified: true,
   name: "Matti Meikäläinen",
+  given_name: "Matti",
+  family_name: "Meikäläinen",
   locale: "fi",
   realm_access: { roles: ["membership", "ilmo-admin"] },
 }
@@ -20,9 +22,36 @@ describe("mapKeycloakClaims", () => {
       email: "matti.meikalainen@example.com",
       emailVerified: true,
       name: "Matti Meikäläinen",
+      givenName: "Matti",
+      familyName: "Meikäläinen",
       usernameSuggestion: "matti.meikalainen",
       locale: "fi",
       isAdmin: true,
+      isDeveloper: false,
+    })
+  })
+
+  it("is a developer with the ilmo-developer role", () => {
+    const claims = {
+      ...baseClaims,
+      realm_access: { roles: ["membership", "ilmo-admin", "ilmo-developer"] },
+    }
+    expect(mapKeycloakClaims(claims)).toMatchObject({
+      isAdmin: true,
+      isDeveloper: true,
+    })
+  })
+
+  it("maps the developer role independently of the admin role", () => {
+    // The database requires both for developer rights; the mapping reports
+    // each role as the token states it.
+    const claims = {
+      ...baseClaims,
+      realm_access: { roles: ["membership", "ilmo-developer"] },
+    }
+    expect(mapKeycloakClaims(claims)).toMatchObject({
+      isAdmin: false,
+      isDeveloper: true,
     })
   })
 
@@ -36,6 +65,7 @@ describe("mapKeycloakClaims", () => {
     // null is what lets the callback skip the re-stamp instead of demoting.
     const { realm_access: _dropped, ...claims } = baseClaims
     expect(mapKeycloakClaims(claims).isAdmin).toBeNull()
+    expect(mapKeycloakClaims(claims).isDeveloper).toBeNull()
   })
 
   it("maps admin status to unknown when roles is not an array", () => {
@@ -47,6 +77,9 @@ describe("mapKeycloakClaims", () => {
         ...baseClaims,
         realm_access: { roles: "ilmo-admin" },
       }).isAdmin
+    ).toBeNull()
+    expect(
+      mapKeycloakClaims({ ...baseClaims, realm_access: {} }).isDeveloper
     ).toBeNull()
   })
 
@@ -106,6 +139,25 @@ describe("mapKeycloakClaims", () => {
   it("falls back to email localpart when name is missing", () => {
     const { name: _dropped, ...claims } = baseClaims
     expect(mapKeycloakClaims(claims).name).toBe("matti.meikalainen")
+  })
+
+  it("keeps multi-word given and family names intact", () => {
+    const claims = {
+      ...baseClaims,
+      name: "Anna Maria von Wright",
+      given_name: " Anna Maria ",
+      family_name: "von Wright",
+    }
+    const profile = mapKeycloakClaims(claims)
+    expect(profile.givenName).toBe("Anna Maria")
+    expect(profile.familyName).toBe("von Wright")
+  })
+
+  it("maps missing or blank given and family names to null", () => {
+    const { given_name: _dropped, ...claims } = baseClaims
+    const profile = mapKeycloakClaims({ ...claims, family_name: "  " })
+    expect(profile.givenName).toBeNull()
+    expect(profile.familyName).toBeNull()
   })
 
   it("throws KCCLM naming the missing claims", () => {

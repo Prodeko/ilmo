@@ -1,0 +1,6 @@
+mutation DeleteRegistrationProfile {
+  deleteRegistrationProfile(input: {}) {
+    boolean
+    __typename
+  }
+}

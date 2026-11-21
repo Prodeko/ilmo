@@ -9,6 +9,7 @@ fragment UpdateEventPage_Event on Event {
   quotas(orderBy: POSITION_ASC) {
     nodes {
       ...EventPage_Quota
+      priceCents
       registrations {
         totalCount
       }

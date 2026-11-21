@@ -7,6 +7,7 @@ import { Badge, Card, Typography } from "antd"
 import dayjs from "dayjs"
 import * as NextImage from "next/image"
 
+import { useFeature } from "./Feature"
 import { H5 } from "./Text"
 import { ButtonLink, EventQuotaPopover, Link, useTranslation } from "."
 
@@ -39,8 +40,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     headerImageFile,
     signupOpen,
     isHighlighted,
+    highlightText,
   } = event
   const { t, lang } = useTranslation("home")
+  const customRibbonText = useFeature("ribbon_text")
 
   const title = isHighlighted ? `🔥 ${name[lang]} 🔥 ` : name[lang]
 
@@ -108,7 +111,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
     <Ribbon
       color={randomElementFromArray(rainbowColors)}
       data-cy="eventcard-is-highlighted"
-      text={t("highlightText")}
+      text={(customRibbonText && highlightText?.[lang]) || t("highlightText")}
     >
       {card}
     </Ribbon>

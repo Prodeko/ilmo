@@ -117,14 +117,32 @@ CREATE TYPE app_public.claim_registration_token_output AS (
 --
 
 CREATE DOMAIN app_public.constrained_name AS text
-	CONSTRAINT constrained_name_check CHECK ((VALUE !~ '\s'::text));
+	CONSTRAINT constrained_name_check CHECK ((VALUE ~ '\S'::text));
 
 
 --
 -- Name: DOMAIN constrained_name; Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON DOMAIN app_public.constrained_name IS 'A field which must not contain spaces';
+COMMENT ON DOMAIN app_public.constrained_name IS 'A name field which must not be empty or contain only whitespace';
+
+
+--
+-- Name: question_prefill; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.question_prefill AS ENUM (
+    'TELEGRAM',
+    'DIETARY_RESTRICTIONS',
+    'NONE'
+);
+
+
+--
+-- Name: TYPE question_prefill; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.question_prefill IS 'Which registration profile field prefills the answer to a question. NONE is only an input value: it clears the prefill of a question in `updateEvent`, where an omitted prefill keeps the stored one.';
 
 
 --
@@ -185,7 +203,8 @@ CREATE TYPE app_public.create_event_questions AS (
 	type app_public.question_type,
 	label app_public.translated_field,
 	is_required boolean,
-	data app_public.translated_field[]
+	data app_public.translated_field[],
+	prefill app_public.question_prefill
 );
 
 
@@ -196,7 +215,8 @@ CREATE TYPE app_public.create_event_questions AS (
 CREATE TYPE app_public.create_event_quotas AS (
 	"position" smallint,
 	title jsonb,
-	size smallint
+	size smallint,
+	price_cents integer
 );
 
 
@@ -226,8 +246,48 @@ CREATE TYPE app_public.event_input AS (
 	header_image_file text,
 	open_quota_size smallint,
 	owner_organization_id uuid,
-	category_id uuid
+	category_id uuid,
+	highlight_text app_public.translated_field
 );
+
+
+--
+-- Name: event_payment_summary; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.event_payment_summary AS (
+	paid_count integer,
+	unpaid_count integer,
+	due_count integer,
+	tickets_paid_cents integer,
+	guild_receives_cents integer,
+	unlinked_card_payment_count integer
+);
+
+
+--
+-- Name: TYPE event_payment_summary; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.event_payment_summary IS 'Payment totals for an event, for organizers.';
+
+
+--
+-- Name: feature_state; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.feature_state AS ENUM (
+    'off',
+    'admins_only',
+    'on'
+);
+
+
+--
+-- Name: TYPE feature_state; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.feature_state IS 'State of a feature flag: off for everyone, on for signed-in admins only, or on for everyone.';
 
 
 --
@@ -236,6 +296,60 @@ CREATE TYPE app_public.event_input AS (
 
 CREATE DOMAIN app_public.hex_color AS text
 	CONSTRAINT hex_color_check CHECK ((VALUE ~* '^#[a-f0-9]{6}$'::text));
+
+
+--
+-- Name: payment_method; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.payment_method AS ENUM (
+    'STRIPE',
+    'MANUAL'
+);
+
+
+--
+-- Name: TYPE payment_method; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.payment_method IS 'How a payment was made: by card through Stripe Checkout, or marked paid by an organizer (cash, bank transfer).';
+
+
+--
+-- Name: payment_status; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.payment_status AS ENUM (
+    'PENDING',
+    'PAID',
+    'EXPIRED'
+);
+
+
+--
+-- Name: TYPE payment_status; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.payment_status IS 'State of a single payment attempt.';
+
+
+--
+-- Name: registration_payment_status; Type: TYPE; Schema: app_public; Owner: -
+--
+
+CREATE TYPE app_public.registration_payment_status AS ENUM (
+    'NOT_REQUIRED',
+    'UNPAID',
+    'PAID',
+    'PAID_MANUALLY'
+);
+
+
+--
+-- Name: TYPE registration_payment_status; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TYPE app_public.registration_payment_status IS 'Payment state of a registration as shown to organizers.';
 
 
 --
@@ -259,7 +373,8 @@ CREATE TYPE app_public.update_event_questions AS (
 	type app_public.question_type,
 	label app_public.translated_field,
 	is_required boolean,
-	data app_public.translated_field[]
+	data app_public.translated_field[],
+	prefill app_public.question_prefill
 );
 
 
@@ -271,7 +386,8 @@ CREATE TYPE app_public.update_event_quotas AS (
 	id uuid,
 	"position" smallint,
 	title jsonb,
-	size smallint
+	size smallint,
+	price_cents integer
 );
 
 
@@ -287,6 +403,73 @@ begin
   if length(new_password) < 8 then
     raise exception 'Password is too weak' using errcode = 'WEAKP';
   end if;
+end;
+$$;
+
+
+--
+-- Name: connect_telegram(text, bigint, text); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid;
+begin
+  if chat_id is null or chat_id <= 0 then return false; end if;
+  delete from app_private.telegram_link_tokens t
+    where t.token_hash = public.digest(token, 'sha256') and t.expires_at > clock_timestamp()
+    returning t.user_id into v_user;
+  if v_user is null then return false; end if;
+  -- Do not silently move somebody else's Telegram chat to another account.
+  if exists(select 1 from app_public.telegram_accounts a where a.chat_id = chat_id and a.user_id <> v_user) then
+    return false;
+  end if;
+  insert into app_public.telegram_accounts(user_id, chat_id, username)
+    values(v_user, chat_id, username)
+    on conflict (user_id) do update set chat_id = excluded.chat_id, username = excluded.username;
+  return true;
+end;
+$$;
+
+
+--
+-- Name: current_user_can_manage_event_payments(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.current_user_can_manage_event_payments(event_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select app_public.current_user_is_admin()
+    or app_public.current_user_has_event_permissions(event_id);
+$$;
+
+
+--
+-- Name: FUNCTION current_user_can_manage_event_payments(event_id uuid); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.current_user_can_manage_event_payments(event_id uuid) IS 'True if the current user may see and manage payments of the event: admins and members of the event''s owner organization.';
+
+
+--
+-- Name: disconnect_telegram(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.disconnect_telegram(target_user uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  delete from app_public.event_registration_reminders where user_id = target_user and delivery_method = 'telegram' and sent_at is null;
+  update app_public.event_registration_reminders set delivery_method = 'email', sent_at = email_sent_at
+    where user_id = target_user and delivery_method = 'both' and sent_at is null;
+  delete from app_private.telegram_link_tokens where user_id = target_user;
+  delete from app_public.telegram_accounts where user_id = target_user;
 end;
 $$;
 
@@ -308,6 +491,9 @@ CREATE TABLE app_public.users (
     is_verified boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    is_developer boolean DEFAULT false NOT NULL,
+    first_name text,
+    last_name text,
     CONSTRAINT users_avatar_url_check CHECK ((avatar_url ~ '^https?://[^/]+'::text)),
     CONSTRAINT users_username_check CHECK (((length((username)::text) >= 2) AND (length((username)::text) <= 24) AND (username OPERATOR(public.~) '^[a-zA-Z]([_]?[a-zA-Z0-9])+$'::public.citext)))
 );
@@ -353,6 +539,27 @@ COMMENT ON COLUMN app_public.users.avatar_url IS 'Optional avatar URL.';
 --
 
 COMMENT ON COLUMN app_public.users.is_admin IS 'If true, the user has elevated privileges.';
+
+
+--
+-- Name: COLUMN users.is_developer; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.is_developer IS 'If true and the user is also an admin, the user can manage feature flags.';
+
+
+--
+-- Name: COLUMN users.first_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.first_name IS 'The user''s first name(s), from the Keycloak `given_name` claim. Null for users that have not logged in with Keycloak.';
+
+
+--
+-- Name: COLUMN users.last_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.users.last_name IS 'The user''s last name, from the Keycloak `family_name` claim. Null for users that have not logged in with Keycloak.';
 
 
 --
@@ -471,8 +678,26 @@ CREATE TABLE app_private.sessions (
     uuid uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    last_active timestamp with time zone DEFAULT now() NOT NULL
+    last_active timestamp with time zone DEFAULT now() NOT NULL,
+    kind text DEFAULT 'web'::text NOT NULL,
+    oauth_sid text,
+    CONSTRAINT sessions_kind_check CHECK ((kind = ANY (ARRAY['web'::text, 'mcp'::text]))),
+    CONSTRAINT sessions_oauth_sid_check CHECK (((kind = 'mcp'::text) = (oauth_sid IS NOT NULL)))
 );
+
+
+--
+-- Name: COLUMN sessions.kind; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.kind IS 'How the session was established: web (session cookie) or mcp (Keycloak access token on /mcp).';
+
+
+--
+-- Name: COLUMN sessions.oauth_sid; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON COLUMN app_private.sessions.oauth_sid IS 'Keycloak session id (the access token sid claim) of an mcp session.';
 
 
 --
@@ -608,6 +833,101 @@ COMMENT ON FUNCTION app_private.really_create_user(username public.citext, email
 
 
 --
+-- Name: refresh_registration_positions(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.refresh_registration_positions(p_event_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_queued uuid[];
+begin
+  perform pg_advisory_xact_lock(hashtext('registration_positions:' || p_event_id::text));
+
+  select coalesce(array_agg(id), '{}')
+    into v_queued
+    from app_hidden.registrations_status_and_position
+    where event_id = p_event_id and status = 'IN_QUEUE'::app_public.registration_status;
+
+  delete from app_hidden.registrations_status_and_position
+    where event_id = p_event_id;
+
+  insert into app_hidden.registrations_status_and_position(id, event_id, quota_id, status, position)
+    with cte1 as (
+      select
+        r.id,
+        size,
+        r.event_id,
+        r.quota_id,
+        e.open_quota_size,
+        r.created_at,
+        row_number() over (partition by r.quota_id order by r.created_at asc) as tmp_pos_quota
+      from app_public.registrations r
+      left join app_public.quotas q
+        on r.quota_id = q.id
+      left join app_public.events e
+        on r.event_id = e.id
+      where r.event_id = p_event_id
+    ), cte2 as (
+      select
+        tmp.*,
+        row_number() over (partition by event_id, tmp_status order by created_at asc) as tmp_pos_status
+      from (
+        select
+          *,
+          case
+            when tmp_pos_quota <= size then 'IN_QUOTA'::text
+            else 'OPEN_OR_QUEUE'::text
+          end as tmp_status
+        from cte1
+      ) as tmp
+    ), cte3 as (
+      select
+        *,
+        case
+          when tmp_status = 'OPEN_OR_QUEUE'::text and tmp_pos_status <= open_quota_size then 'IN_OPEN_QUOTA'::app_public.registration_status
+          when tmp_status = 'OPEN_OR_QUEUE'::text then 'IN_QUEUE'::app_public.registration_status
+          else 'IN_QUOTA'::app_public.registration_status
+        end as status
+      from cte2
+    ) select
+        id,
+        event_id,
+        quota_id,
+        status,
+        case
+          -- row_number() returns bigint but we cast it to integer to avoid
+          -- introducing another type to our GraphQL API. Besides, we are not
+          -- expecting to have that many registrations in the system.
+          when status = 'IN_QUOTA'::app_public.registration_status then cast(row_number() over (partition by quota_id, status order by created_at asc) as integer)
+          else cast(row_number() over (partition by event_id, status order by created_at asc) as integer)
+        end as position
+      from cte3;
+
+  perform graphile_worker.add_job(
+    'registration__process_queue',
+    json_build_object('receivedSpot', received_spot)
+  )
+  from app_hidden.registrations_status_and_position received_spot
+  join app_public.registrations r on r.id = received_spot.id
+  where
+    received_spot.event_id = p_event_id and
+    received_spot.id = any(v_queued) and
+    received_spot.status <> 'IN_QUEUE'::app_public.registration_status and
+    r.is_finished;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION refresh_registration_positions(p_event_id uuid); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.refresh_registration_positions(p_event_id uuid) IS 'Recomputes app_hidden.registrations_status_and_position for the registrations of one event.';
+
+
+--
 -- Name: register_user(character varying, character varying, json, json, boolean); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -684,6 +1004,127 @@ COMMENT ON FUNCTION app_private.register_user(f_service character varying, f_ide
 
 
 --
+-- Name: registrations; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.registrations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    event_id uuid NOT NULL,
+    quota_id uuid NOT NULL,
+    first_name app_public.constrained_name,
+    last_name app_public.constrained_name,
+    email app_public.email,
+    answers jsonb,
+    is_finished boolean DEFAULT false NOT NULL,
+    created_by uuid,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE registrations; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.registrations IS 'Main table for registrations.';
+
+
+--
+-- Name: COLUMN registrations.id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.id IS 'Unique identifier for the registration.';
+
+
+--
+-- Name: COLUMN registrations.event_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.event_id IS 'Identifier of a related event.';
+
+
+--
+-- Name: COLUMN registrations.quota_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.quota_id IS 'Identifier of a related quota.';
+
+
+--
+-- Name: COLUMN registrations.first_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.first_name IS 'First name of the person registered to an event.';
+
+
+--
+-- Name: COLUMN registrations.last_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person registered to an event.';
+
+
+--
+-- Name: COLUMN registrations.email; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.email IS '@omit
+Email address of the person registered to an event.';
+
+
+--
+-- Name: COLUMN registrations.answers; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.answers IS 'Answers to event questions.';
+
+
+--
+-- Name: COLUMN registrations.is_finished; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registrations.is_finished IS 'True if the registration is completed succesfully.';
+
+
+--
+-- Name: registration_payment_status(app_public.registrations); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.registration_payment_status(registration app_public.registrations) RETURNS app_public.registration_payment_status
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select
+    case
+      when exists(
+        select 1 from app_public.payments as p
+        where p.registration_id = registration.id and p.status = 'PAID' and p.method = 'MANUAL'
+      )
+        then 'PAID_MANUALLY'::app_public.registration_payment_status
+      when exists(
+        select 1 from app_public.payments as p
+        where p.registration_id = registration.id and p.status = 'PAID'
+      )
+        then 'PAID'::app_public.registration_payment_status
+      when registration.is_finished is true and exists(
+        select 1 from app_public.quotas as q
+        where q.id = registration.quota_id and q.price_cents > 0
+      )
+        then 'UNPAID'::app_public.registration_payment_status
+      else 'NOT_REQUIRED'::app_public.registration_payment_status
+    end;
+$$;
+
+
+--
+-- Name: FUNCTION registration_payment_status(registration app_public.registrations); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.registration_payment_status(registration app_public.registrations) IS 'Payment status of the registration, without a permission check.';
+
+
+--
 -- Name: reset_password(uuid, text, text); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -753,6 +1194,64 @@ begin
   end if;
 end;
 $$;
+
+
+--
+-- Name: schedule_registration_reminder(uuid); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.schedule_registration_reminder(reminder_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_due timestamptz;
+  v_reminder app_public.event_registration_reminders;
+  v_key text := 'registration-reminder:' || reminder_id::text;
+begin
+  select * into v_reminder from app_public.event_registration_reminders where id = reminder_id;
+  select e.registration_start_time - make_interval(mins => v_reminder.minutes_before) into v_due
+    from app_public.events e where e.id = v_reminder.event_id
+      and v_reminder.sent_at is null and not e.is_draft and e.registration_start_time > now();
+  if v_due is not null and v_reminder.delivery_method in ('email', 'both') and v_reminder.email_sent_at is null then
+    perform graphile_worker.add_job('reminder__send_registration', json_build_object('id', reminder_id),
+      run_at := greatest(now(), v_due), job_key := v_key);
+  else
+    perform graphile_worker.remove_job(v_key);
+  end if;
+  if v_due is not null and v_reminder.delivery_method in ('telegram', 'both') and v_reminder.telegram_sent_at is null then
+    perform graphile_worker.add_job('reminder__send_telegram', json_build_object('id', reminder_id),
+      run_at := greatest(now(), v_due), job_key := v_key || ':telegram', queue_name := 'telegram-reminders');
+  else
+    perform graphile_worker.remove_job(v_key || ':telegram');
+  end if;
+end;
+$$;
+
+
+--
+-- Name: set_feature_available(text, boolean); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.set_feature_available(key text, available boolean) RETURNS boolean
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  with updated as (
+    update app_public.feature_flags as f
+    set available = set_feature_available.available
+    where f.key = set_feature_available.key
+    returning 1
+  )
+  select exists (select 1 from updated);
+$$;
+
+
+--
+-- Name: FUNCTION set_feature_available(key text, available boolean); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.set_feature_available(key text, available boolean) IS 'Records whether the server has the configuration a feature needs. Returns false for an unknown key. Does not change `updated_at`, which tracks state changes.';
 
 
 --
@@ -871,71 +1370,25 @@ COMMENT ON FUNCTION app_private.tg__ownership_info() IS 'This trigger should be 
 
 
 --
--- Name: tg__process_queue(); Type: FUNCTION; Schema: app_private; Owner: -
+-- Name: tg__refresh_registration_positions(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
-CREATE FUNCTION app_private.tg__process_queue() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-declare
-  v_old_registration_status app_hidden.registrations_status_and_position;
-  v_received_spot app_hidden.registrations_status_and_position;
-begin
-  select *
-    into v_old_registration_status
-    from app_hidden.registrations_status_and_position
-    where
-      id = OLD.id;
-
-  if v_old_registration_status.status = 'IN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        event_id = v_old_registration_status.event_id and
-        quota_id = v_old_registration_status.quota_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position desc;
-  elsif v_old_registration_status.status = 'IN_OPEN_QUOTA' then
-    select *
-      into v_received_spot
-      from app_hidden.registrations_status_and_position
-      where
-        -- Almost the same where condition as above, only quota_id is
-        -- missing since open quota spots can be populated by any quota
-        event_id = v_old_registration_status.event_id and
-        status = 'IN_QUEUE'::app_public.registration_status and
-        position = 1
-      order by position desc;
-  else
-    -- The deleted registration was in queue, nobody will get a spot so return.
-    return OLD;
-  end if;
-
-  if v_received_spot is not null then
-    perform graphile_worker.add_job(
-      'registration__process_queue',
-      json_build_object('receivedSpot', v_received_spot)
-    );
-  end if;
-
-  return OLD;
-end;
-$$;
-
-
---
--- Name: tg__refresh_materialized_view(); Type: FUNCTION; Schema: app_private; Owner: -
---
-
-CREATE FUNCTION app_private.tg__refresh_materialized_view() RETURNS trigger
+CREATE FUNCTION app_private.tg__refresh_registration_positions() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'pg_catalog', 'public', 'pg_temp'
     AS $$
 begin
-  -- Docs on CONCURRENTLY option: https://www.postgresql.org/docs/12/sql-refreshmaterializedview.html
-  refresh materialized view concurrently app_hidden.registrations_status_and_position;
+  if TG_TABLE_NAME = 'events' then
+    perform app_private.refresh_registration_positions(coalesce(NEW.id, OLD.id));
+    return null;
+  end if;
+
+  if TG_OP in ('UPDATE', 'DELETE') then
+    perform app_private.refresh_registration_positions(OLD.event_id);
+  end if;
+  if TG_OP = 'INSERT' or (TG_OP = 'UPDATE' and NEW.event_id is distinct from OLD.event_id) then
+    perform app_private.refresh_registration_positions(NEW.event_id);
+  end if;
   return null;
 end;
 $$;
@@ -977,6 +1430,47 @@ COMMENT ON FUNCTION app_private.tg__registration_is_valid() IS 'This trigger val
 
 
 --
+-- Name: tg__reschedule_registration_reminders(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__reschedule_registration_reminders() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_id uuid;
+begin
+  for v_id in select id from app_public.event_registration_reminders
+    where event_id = NEW.id and sent_at is null
+  loop
+    perform app_private.schedule_registration_reminder(v_id);
+  end loop;
+  return NEW;
+end;
+$$;
+
+
+--
+-- Name: tg__schedule_registration_reminder(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg__schedule_registration_reminder() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if TG_OP = 'DELETE' then
+    perform graphile_worker.remove_job('registration-reminder:' || OLD.id::text);
+    perform graphile_worker.remove_job('registration-reminder:' || OLD.id::text || ':telegram');
+    return OLD;
+  end if;
+  perform app_private.schedule_registration_reminder(NEW.id);
+  return NEW;
+end;
+$$;
+
+
+--
 -- Name: tg__timestamps(); Type: FUNCTION; Schema: app_private; Owner: -
 --
 
@@ -997,6 +1491,28 @@ $$;
 --
 
 COMMENT ON FUNCTION app_private.tg__timestamps() IS 'This trigger should be called on all tables with created_at, updated_at - it ensures that they cannot be manipulated and that updated_at will always be larger than the previous updated_at.';
+
+
+--
+-- Name: tg_events__reset_unpaid_close_email(); Type: FUNCTION; Schema: app_private; Owner: -
+--
+
+CREATE FUNCTION app_private.tg_events__reset_unpaid_close_email() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  NEW.unpaid_close_email_sent_at := null;
+  return NEW;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION tg_events__reset_unpaid_close_email(); Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON FUNCTION app_private.tg_events__reset_unpaid_close_email() IS 'Clears events.unpaid_close_email_sent_at when registration_end_time moves later.';
 
 
 --
@@ -1173,6 +1689,344 @@ List all users. Only accessible to admin users.';
 
 
 --
+-- Name: payments; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.payments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    registration_id uuid,
+    event_id uuid,
+    quota_id uuid,
+    event_name jsonb NOT NULL,
+    quota_title jsonb NOT NULL,
+    method app_public.payment_method NOT NULL,
+    status app_public.payment_status DEFAULT 'PENDING'::app_public.payment_status NOT NULL,
+    ticket_amount_cents integer NOT NULL,
+    service_fee_cents integer DEFAULT 0 NOT NULL,
+    currency text DEFAULT 'eur'::text NOT NULL,
+    stripe_checkout_session_id text,
+    stripe_payment_intent_id text,
+    paid_at timestamp with time zone,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT payments_service_fee_cents_check CHECK ((service_fee_cents >= 0)),
+    CONSTRAINT payments_ticket_amount_cents_check CHECK ((ticket_amount_cents >= 0))
+);
+
+
+--
+-- Name: TABLE payments; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.payments IS '@omit create,update,delete
+Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data. Ilmo never refunds: a card payment without a registration is refunded by hand in Stripe, if at all.';
+
+
+--
+-- Name: COLUMN payments.registration_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.registration_id IS 'The registration paid for. Null once the registration has been deleted, and for a card payment that could not be applied to it (a second payment, or an amount that did not match).';
+
+
+--
+-- Name: COLUMN payments.event_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.event_id IS 'The event paid for. Null once the event has been deleted.';
+
+
+--
+-- Name: COLUMN payments.quota_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.quota_id IS 'The quota paid for. Null once the quota has been deleted.';
+
+
+--
+-- Name: COLUMN payments.event_name; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.event_name IS 'Snapshot of the event name when the payment was created.';
+
+
+--
+-- Name: COLUMN payments.quota_title; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.quota_title IS 'Snapshot of the quota title when the payment was created.';
+
+
+--
+-- Name: COLUMN payments.ticket_amount_cents; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.ticket_amount_cents IS 'Ticket price paid, in cents: the quota price when the payment was started.';
+
+
+--
+-- Name: COLUMN payments.service_fee_cents; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.service_fee_cents IS 'Service fee paid on top of the ticket, in cents. 0 for manual payments.';
+
+
+--
+-- Name: COLUMN payments.created_by; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.payments.created_by IS 'The organizer who recorded a manual payment.';
+
+
+--
+-- Name: admin_mark_registration_paid(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) RETURNS app_public.payments
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration app_public.registrations;
+  v_event app_public.events;
+  v_quota app_public.quotas;
+  v_payment app_public.payments;
+begin
+  select * into v_registration
+    from app_public.registrations as r
+    where r.id = admin_mark_registration_paid.registration_id;
+
+  if v_registration.id is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  if not app_private.current_user_can_manage_event_payments(v_registration.event_id) then
+    raise exception 'Access denied.' using errcode = 'DNIED';
+  end if;
+
+  if not app_public.feature_enabled('payments') then
+    raise exception 'Payments are not available.' using errcode = 'FTOFF';
+  end if;
+
+  select * into v_event from app_public.events where id = v_registration.event_id;
+  select * into v_quota from app_public.quotas where id = v_registration.quota_id;
+
+  if v_registration.is_finished is not true or v_quota.price_cents = 0 then
+    raise exception 'This registration does not require payment.' using errcode = 'DNIED';
+  end if;
+
+  if exists(
+    select 1 from app_public.payments as p
+    where p.registration_id = v_registration.id and p.status = 'PAID'
+  ) then
+    raise exception 'This registration has already been paid.' using errcode = 'DNIED';
+  end if;
+
+  -- Queued registrations pay once they get a spot, like on the /pay page
+  if exists(
+    select 1 from app_hidden.registrations_status_and_position as s
+    where s.id = v_registration.id and s.status = 'IN_QUEUE'
+  ) then
+    raise exception 'This registration is in the queue.' using errcode = 'DNIED';
+  end if;
+
+  insert into app_public.payments (
+    registration_id,
+    event_id,
+    quota_id,
+    event_name,
+    quota_title,
+    method,
+    status,
+    ticket_amount_cents,
+    service_fee_cents,
+    paid_at,
+    created_by
+  )
+  values (
+    v_registration.id,
+    v_registration.event_id,
+    v_registration.quota_id,
+    v_event.name,
+    v_quota.title,
+    'MANUAL',
+    'PAID',
+    v_quota.price_cents,
+    0,
+    now(),
+    app_public.current_user_id()
+  )
+  returning * into v_payment;
+
+  perform graphile_worker.add_job(
+    'payment__send_received_email',
+    json_build_object('paymentId', v_payment.id)
+  );
+
+  return v_payment;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_mark_registration_paid(registration_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) IS 'Records a manual payment (cash, bank transfer) of the current quota price for a registration and emails the participant a payment confirmation.';
+
+
+--
+-- Name: admin_preview_features(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_preview_features() RETURNS SETOF text
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select f.key
+  from app_public.feature_flags as f
+  where
+    app_public.current_user_is_admin()
+    and f.retired_at is null
+    and f.available
+    and f.state = 'admins_only'
+  order by f.key;
+$$;
+
+
+--
+-- Name: FUNCTION admin_preview_features(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_preview_features() IS '@simpleCollections only
+Keys of the features enabled for the current user only because they are in admins_only. Empty unless the current user is an admin.';
+
+
+--
+-- Name: admin_send_payment_reminders(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_send_payment_reminders(event_id uuid) RETURNS integer
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration_id uuid;
+  v_count integer := 0;
+  v_last_sent_at timestamptz;
+begin
+  if not exists(select 1 from app_public.events as e where e.id = admin_send_payment_reminders.event_id) then
+    raise exception 'Event was not found.' using errcode = 'NTFND';
+  end if;
+
+  if not app_private.current_user_can_manage_event_payments(admin_send_payment_reminders.event_id) then
+    raise exception 'Access denied.' using errcode = 'DNIED';
+  end if;
+
+  if not app_public.feature_enabled('payments') then
+    raise exception 'Payments are not available.' using errcode = 'FTOFF';
+  end if;
+
+  -- A short cooldown, so a double click or a script can't email everyone
+  -- many times over. The event row lock makes concurrent calls wait here
+  -- and then see the first call's timestamp.
+  select e.last_payment_reminder_sent_at into v_last_sent_at
+    from app_public.events as e
+    where e.id = admin_send_payment_reminders.event_id
+    for update;
+  if v_last_sent_at > now() - interval '10 minutes' then
+    raise exception 'Payment reminders were sent less than 10 minutes ago. Try again later.' using errcode = 'DNIED';
+  end if;
+
+  for v_registration_id in
+    select r.id
+    from app_public.registrations as r
+    join app_hidden.registrations_status_and_position as s on s.id = r.id
+    where
+      r.event_id = admin_send_payment_reminders.event_id
+      and r.is_finished is true
+      and s.status in ('IN_QUOTA', 'IN_OPEN_QUOTA')
+      and app_public.registrations_payment_status(r) = 'UNPAID'
+    order by r.created_at, r.id
+  loop
+    perform graphile_worker.add_job(
+      'payment__send_reminder',
+      json_build_object('registrationId', v_registration_id)
+    );
+    v_count := v_count + 1;
+  end loop;
+
+  if v_count > 0 then
+    update app_public.events as e
+      set last_payment_reminder_sent_at = now()
+      where e.id = admin_send_payment_reminders.event_id;
+  end if;
+
+  return v_count;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_send_payment_reminders(event_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_send_payment_reminders(event_id uuid) IS 'Emails a payment reminder to every finished, unpaid registration holding a spot in the event. Returns the number of reminders queued. Refused for 10 minutes after the last reminders were sent.';
+
+
+--
+-- Name: admin_unmark_registration_paid(uuid); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.admin_unmark_registration_paid(registration_id uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_registration app_public.registrations;
+  v_deleted_count integer;
+begin
+  select * into v_registration
+    from app_public.registrations as r
+    where r.id = admin_unmark_registration_paid.registration_id;
+
+  if v_registration.id is null then
+    raise exception 'Registration was not found.' using errcode = 'NTFND';
+  end if;
+
+  if not app_private.current_user_can_manage_event_payments(v_registration.event_id) then
+    raise exception 'Access denied.' using errcode = 'DNIED';
+  end if;
+
+  if not app_public.feature_enabled('payments') then
+    raise exception 'Payments are not available.' using errcode = 'FTOFF';
+  end if;
+
+  delete from app_public.payments as p
+    where
+      p.registration_id = v_registration.id
+      and p.method = 'MANUAL'
+      and p.status = 'PAID';
+
+  get diagnostics v_deleted_count = row_count;
+  if v_deleted_count = 0 then
+    raise exception 'This registration has no manual payment.' using errcode = 'NTFND';
+  end if;
+
+  return true;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION admin_unmark_registration_paid(registration_id uuid); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.admin_unmark_registration_paid(registration_id uuid) IS 'Removes a manual payment recorded with adminMarkRegistrationPaid. Card payments cannot be undone this way.';
+
+
+--
 -- Name: admin_update_registration(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1270,6 +2124,21 @@ CREATE PROCEDURE app_public.check_is_admin()
 begin
   if not app_public.current_user_is_admin() then
     raise exception 'Acces denied. Only admins are allowed to use this mutation.' using errcode = 'DNIED';
+  end if;
+end;
+$$;
+
+
+--
+-- Name: check_is_developer(); Type: PROCEDURE; Schema: app_public; Owner: -
+--
+
+CREATE PROCEDURE app_public.check_is_developer()
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if not app_public.current_user_is_developer() then
+    raise exception 'Access denied. Only developers are allowed to use this mutation.' using errcode = 'DNIED';
   end if;
 end;
 $$;
@@ -1422,6 +2291,9 @@ CREATE TABLE app_public.events (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    highlight_text app_public.translated_field,
+    unpaid_close_email_sent_at timestamp with time zone,
+    last_payment_reminder_sent_at timestamp with time zone,
     CONSTRAINT _cnstr_check_event_registration_time CHECK ((registration_start_time < registration_end_time)),
     CONSTRAINT _cnstr_check_event_time CHECK ((event_start_time < event_end_time)),
     CONSTRAINT _cnstr_check_events_open_quota_size CHECK ((open_quota_size >= 0)),
@@ -1543,6 +2415,27 @@ COMMENT ON COLUMN app_public.events.category_id IS 'Identifier of a related even
 
 
 --
+-- Name: COLUMN events.highlight_text; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.highlight_text IS 'Text shown on the ribbon of a highlighted event.';
+
+
+--
+-- Name: COLUMN events.unpaid_close_email_sent_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.unpaid_close_email_sent_at IS 'When the close-of-registration payment email was sent. Set by the worker; cleared when registration_end_time moves later, so that the email goes out again at the new close.';
+
+
+--
+-- Name: COLUMN events.last_payment_reminder_sent_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.events.last_payment_reminder_sent_at IS 'When an organizer last sent payment reminders to all unpaid participants.';
+
+
+--
 -- Name: create_event(app_public.event_input, app_public.create_event_quotas[], app_public.create_event_questions[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1568,6 +2461,7 @@ begin
     registration_start_time,
     registration_end_time,
     is_highlighted,
+    highlight_text,
     is_draft,
     header_image_file,
     open_quota_size,
@@ -1584,6 +2478,7 @@ begin
     event.registration_start_time,
     event.registration_end_time,
     event.is_highlighted,
+    event.highlight_text,
     event.is_draft,
     event.header_image_file,
     event.open_quota_size,
@@ -1663,6 +2558,9 @@ CREATE TABLE app_public.event_questions (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    prefill app_public.question_prefill,
+    CONSTRAINT _cnstr_prefill_not_none CHECK ((prefill <> 'NONE'::app_public.question_prefill)),
+    CONSTRAINT _cnstr_prefill_text_only CHECK (((prefill IS NULL) OR (type = 'TEXT'::app_public.question_type))),
     CONSTRAINT _cnstr_validate_question_data CHECK (app_public.validate_question_data(type, data))
 );
 
@@ -1724,6 +2622,13 @@ COMMENT ON COLUMN app_public.event_questions.data IS 'Question data.';
 
 
 --
+-- Name: COLUMN event_questions.prefill; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.event_questions.prefill IS 'Which registration profile field prefills the answer to this question, if any.';
+
+
+--
 -- Name: create_event_questions(uuid, app_public.create_event_questions[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1745,8 +2650,8 @@ begin
 
   -- Create questions
   foreach v_input in array questions loop
-    insert into app_public.event_questions(event_id, position, type, label, is_required, data)
-      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
+    insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
+      values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
 
     v_ret := array_append(v_ret, v_question);
@@ -1779,7 +2684,9 @@ CREATE TABLE app_public.quotas (
     updated_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    price_cents integer DEFAULT 0 NOT NULL,
     CONSTRAINT quotas_position_check CHECK (("position" >= 0)),
+    CONSTRAINT quotas_price_cents_check CHECK (((price_cents = 0) OR ((price_cents >= 25) AND (price_cents <= 1000000)))),
     CONSTRAINT quotas_size_check CHECK ((size > 0))
 );
 
@@ -1820,6 +2727,13 @@ COMMENT ON COLUMN app_public.quotas.size IS 'Size of the quota.';
 
 
 --
+-- Name: COLUMN quotas.price_cents; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.quotas.price_cents IS 'Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe''s minimum, and at most 1 000 000 cents (10 000 €). Registrants pay the price in effect when they pay.';
+
+
+--
 -- Name: create_event_quotas(uuid, app_public.create_event_quotas[]); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -1840,10 +2754,17 @@ begin
     raise exception 'You must specify at least one quota' using errcode = 'DNIED';
   end if;
 
+  -- A price can be set only while payments are on
+  if not app_public.feature_enabled('payments')
+    and exists(select 1 from unnest(quotas) as q where coalesce(q.price_cents, 0) <> 0)
+  then
+    raise exception 'Payments are not available.' using errcode = 'FTOFF';
+  end if;
+
   -- Create quotas
   foreach v_input in array quotas loop
-    insert into app_public.quotas(event_id, position, title, size)
-      values (event_id, v_input.position, v_input.title, v_input.size)
+    insert into app_public.quotas(event_id, position, title, size, price_cents)
+      values (event_id, v_input.position, v_input.title, v_input.size, coalesce(v_input.price_cents, 0))
       returning * into v_quota;
 
     v_ret := array_append(v_ret, v_quota);
@@ -1933,90 +2854,6 @@ begin
   return v_org;
 end;
 $$;
-
-
---
--- Name: registrations; Type: TABLE; Schema: app_public; Owner: -
---
-
-CREATE TABLE app_public.registrations (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    event_id uuid NOT NULL,
-    quota_id uuid NOT NULL,
-    first_name app_public.constrained_name,
-    last_name app_public.constrained_name,
-    email app_public.email,
-    answers jsonb,
-    is_finished boolean DEFAULT false NOT NULL,
-    created_by uuid,
-    updated_by uuid,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: TABLE registrations; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON TABLE app_public.registrations IS 'Main table for registrations.';
-
-
---
--- Name: COLUMN registrations.id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.id IS 'Unique identifier for the registration.';
-
-
---
--- Name: COLUMN registrations.event_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.event_id IS 'Identifier of a related event.';
-
-
---
--- Name: COLUMN registrations.quota_id; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.quota_id IS 'Identifier of a related quota.';
-
-
---
--- Name: COLUMN registrations.first_name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.first_name IS 'First name of the person registered to an event.';
-
-
---
--- Name: COLUMN registrations.last_name; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.last_name IS 'Last name of the person registered to an event.';
-
-
---
--- Name: COLUMN registrations.email; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.email IS '@omit
-Email address of the person registered to an event.';
-
-
---
--- Name: COLUMN registrations.answers; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.answers IS 'Answers to event questions.';
-
-
---
--- Name: COLUMN registrations.is_finished; Type: COMMENT; Schema: app_public; Owner: -
---
-
-COMMENT ON COLUMN app_public.registrations.is_finished IS 'True if the registration is completed succesfully.';
 
 
 --
@@ -2122,6 +2959,38 @@ COMMENT ON FUNCTION app_public.create_registration("registrationToken" text, "ev
 
 
 --
+-- Name: reminder_preferences; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.reminder_preferences (
+    user_id uuid NOT NULL,
+    minutes_before integer NOT NULL,
+    delivery_method text NOT NULL,
+    CONSTRAINT reminder_preferences_delivery_method_check CHECK ((delivery_method = ANY (ARRAY['email'::text, 'telegram'::text, 'both'::text]))),
+    CONSTRAINT reminder_preferences_minutes_before_check CHECK (((minutes_before >= 1) AND (minutes_before <= 10080)))
+);
+
+
+--
+-- Name: TABLE reminder_preferences; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.reminder_preferences IS '@omit create,update,delete
+Delivery and timing preferences for upcoming registration reminders.';
+
+
+--
+-- Name: current_reminder_preferences(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_reminder_preferences() RETURNS app_public.reminder_preferences
+    LANGUAGE sql STABLE
+    AS $$
+  select * from app_public.reminder_preferences where user_id = app_public.current_user_id();
+$$;
+
+
+--
 -- Name: current_session_id(); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2137,6 +3006,45 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.current_session_id() IS 'Handy method to get the current session ID.';
+
+
+--
+-- Name: telegram_accounts; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.telegram_accounts (
+    user_id uuid NOT NULL,
+    chat_id bigint NOT NULL,
+    username text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT telegram_accounts_chat_id_check CHECK ((chat_id > 0))
+);
+
+
+--
+-- Name: TABLE telegram_accounts; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.telegram_accounts IS '@omit create,update,delete
+Telegram accounts linked by their owners.';
+
+
+--
+-- Name: COLUMN telegram_accounts.chat_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.telegram_accounts.chat_id IS '@omit';
+
+
+--
+-- Name: current_telegram_account(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_telegram_account() RETURNS app_public.telegram_accounts
+    LANGUAGE sql STABLE
+    AS $$
+  select * from app_public.telegram_accounts where user_id = app_public.current_user_id();
+$$;
 
 
 --
@@ -2243,6 +3151,31 @@ COMMENT ON FUNCTION app_public.current_user_is_admin() IS 'Returns true if the c
 
 
 --
+-- Name: current_user_is_developer(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.current_user_is_developer() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (
+    select 1
+    from app_public.users
+    where
+      id = app_public.current_user_id()
+      and is_admin = true
+      and is_developer = true)
+$$;
+
+
+--
+-- Name: FUNCTION current_user_is_developer(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.current_user_is_developer() IS 'Returns true if the current user is both an admin and a developer, false otherwise.';
+
+
+--
 -- Name: current_user_is_owner_organization_member(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2342,6 +3275,155 @@ COMMENT ON FUNCTION app_public.delete_registration("updateToken" text) IS 'Delet
 
 
 --
+-- Name: delete_registration_profile(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.delete_registration_profile() RETURNS boolean
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user_id uuid := app_public.current_user_id();
+begin
+  if v_user_id is null then
+    raise exception 'You must log in to delete your registration profile' using errcode = 'LOGIN';
+  end if;
+
+  delete from app_public.registration_profiles where user_id = v_user_id;
+  return found;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION delete_registration_profile(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.delete_registration_profile() IS 'Delete the values saved to prefill your event registrations.';
+
+
+--
+-- Name: disconnect_telegram(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.disconnect_telegram() RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  if app_public.current_user_id() is null then
+    raise exception 'Sign in to disconnect Telegram.' using errcode = 'LOGIN';
+  end if;
+  perform app_private.disconnect_telegram(app_public.current_user_id());
+  return true;
+end;
+$$;
+
+
+--
+-- Name: enable_event_reminder(uuid, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.enable_event_reminder(event_id uuid, language text DEFAULT 'fi'::text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_preferences app_public.reminder_preferences;
+begin
+  if app_public.current_user_id() is null then
+    raise exception 'Sign in to enable reminders.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  select * into v_preferences from app_public.reminder_preferences where user_id = app_public.current_user_id();
+  if not found then
+    raise exception 'Set up reminder preferences first.' using errcode = 'CHECK';
+  end if;
+  return app_public.set_event_registration_reminder(event_id, true, language, v_preferences.minutes_before, v_preferences.delivery_method);
+end;
+$$;
+
+
+--
+-- Name: enabled_features(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.enabled_features() RETURNS SETOF text
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select f.key
+  from app_public.feature_flags as f
+  where app_public.feature_enabled(f.key)
+  order by f.key;
+$$;
+
+
+--
+-- Name: FUNCTION enabled_features(); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.enabled_features() IS '@simpleCollections only
+Keys of the features enabled for the current user.';
+
+
+--
+-- Name: events_payment_summary(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.events_payment_summary(e app_public.events) RETURNS app_public.event_payment_summary
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  with in_spot as (
+    select
+      r.id,
+      app_public.registrations_payment_status(r) as payment_status
+    from app_public.registrations as r
+    join app_hidden.registrations_status_and_position as s on s.id = r.id
+    where
+      r.event_id = e.id
+      and r.is_finished is true
+      and s.status in ('IN_QUOTA', 'IN_OPEN_QUOTA')
+  ),
+  paid as (
+    select p.method, p.ticket_amount_cents, p.registration_id
+    from app_public.payments as p
+    where p.event_id = e.id and p.status = 'PAID'
+  )
+  select
+    case when not app_private.current_user_can_manage_event_payments(e.id) then null else
+      row(
+        (select count(*) from in_spot where payment_status in ('PAID', 'PAID_MANUALLY'))::integer,
+        (select count(*) from in_spot where payment_status = 'UNPAID')::integer,
+        (select count(*) from in_spot where payment_status in ('PAID', 'PAID_MANUALLY', 'UNPAID'))::integer,
+        (select coalesce(sum(ticket_amount_cents), 0) from paid)::integer,
+        -- Same formula as guildReceivesCents in @app/lib: Stripe keeps the
+        -- service fee and 1,5 % of the total, rounded to the cent (halves up).
+        -- Manual payments reach the guild in full.
+        (select coalesce(sum(
+          case
+            when method = 'MANUAL' or ticket_amount_cents = 0 then ticket_amount_cents
+            -- In numeric, so large amounts can't overflow integer maths
+            else floor((1000 * ticket_amount_cents::numeric - 15 * (ticket_amount_cents::numeric + 25)) / 1000 + 0.5)
+          end
+        ), 0) from paid)::integer,
+        (select count(*) from paid where method = 'STRIPE' and registration_id is null)::integer
+      )::app_public.event_payment_summary
+    end;
+$$;
+
+
+--
+-- Name: FUNCTION events_payment_summary(e app_public.events); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.events_payment_summary(e app_public.events) IS 'Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid, the estimated amount the guild receives and the number of card payments not linked to a registration (deleted registrations, second payments), which organizers may refund by hand in Stripe. Null unless the current user may manage the event''s payments.';
+
+
+--
 -- Name: events_signup_closed(app_public.events); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2393,6 +3475,72 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.events_signup_upcoming(e app_public.events) IS 'Designates whether event signup is upcoming or not.';
+
+
+--
+-- Name: feature_enabled(text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.feature_enabled(key text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select exists (
+    select 1
+    from app_public.feature_flags as f
+    where
+      f.key = feature_enabled.key
+      and (
+        f.retired_at is not null
+        or (
+          f.available
+          and (
+            f.state = 'on'
+            or (f.state = 'admins_only' and app_public.current_user_is_admin())
+          )
+        )
+      ))
+$$;
+
+
+--
+-- Name: FUNCTION feature_enabled(key text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.feature_enabled(key text) IS '@omit
+True when the feature is enabled for the current user. Unknown keys read as off.';
+
+
+--
+-- Name: feature_flag_events(text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.feature_flag_events(flag_key text DEFAULT NULL::text) RETURNS TABLE(id uuid, key text, old_state app_public.feature_state, new_state app_public.feature_state, actor_id uuid, actor_username text, actor_name text, created_at timestamp with time zone)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+begin
+  -- Cannot use call app_public.check_is_developer(); in a non volatile function
+  if not app_public.current_user_is_developer() then
+    raise exception 'Access denied. Only developers are allowed to use this query.' using errcode = 'DNIED';
+  end if;
+
+  return query
+    select e.id, e.key, e.old_state, e.new_state, e.actor, u.username::text, u.name, e.created_at
+    from app_private.feature_flag_events as e
+    left join app_public.users as u on u.id = e.actor
+    where flag_key is null or e.key = flag_key
+    order by e.created_at desc, e.id;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION feature_flag_events(flag_key text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.feature_flag_events(flag_key text) IS '@simpleCollections only
+Feature flag state changes, newest first, optionally for one key. Only accessible to developers.';
 
 
 --
@@ -2785,6 +3933,32 @@ COMMENT ON FUNCTION app_public.registrations_full_name(registration app_public.r
 
 
 --
+-- Name: registrations_payment_status(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.registrations_payment_status(registration app_public.registrations) RETURNS app_public.registration_payment_status
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+  select
+    case
+      when not app_private.current_user_can_manage_event_payments(registration.event_id)
+        then null
+      else app_private.registration_payment_status(registration)
+    end;
+$$;
+
+
+--
+-- Name: FUNCTION registrations_payment_status(registration app_public.registrations); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.registrations_payment_status(registration app_public.registrations) IS '@sortable
+@filterable
+Payment status of the registration. Null unless the current user may manage the event''s payments, because registrations are publicly readable.';
+
+
+--
 -- Name: registrations_position(app_public.registrations); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2922,6 +4096,32 @@ COMMENT ON FUNCTION app_public.request_account_deletion() IS 'Begin the account 
 
 
 --
+-- Name: request_telegram_link(); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.request_telegram_link() RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+declare
+  v_user uuid := app_public.current_user_id();
+  v_token text := encode(public.gen_random_bytes(24), 'hex');
+begin
+  if v_user is null then
+    raise exception 'Sign in to connect Telegram.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  insert into app_private.telegram_link_tokens(user_id, token_hash, expires_at)
+    values(v_user, public.digest(v_token, 'sha256'), now() + interval '15 minutes')
+    on conflict (user_id) do update set token_hash = excluded.token_hash, expires_at = excluded.expires_at;
+  return v_token;
+end;
+$$;
+
+
+--
 -- Name: resend_email_verification_code(uuid); Type: FUNCTION; Schema: app_public; Owner: -
 --
 
@@ -2950,6 +4150,64 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.resend_email_verification_code(email_id uuid) IS 'If you didn''t receive the verification code for this email, we can resend it. We silently cap the rate of resends on the backend, so calls to this function may not result in another email being sent if it has been called recently.';
+
+
+--
+-- Name: save_reminder_preferences(integer, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) RETURNS app_public.reminder_preferences
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid := app_public.current_user_id();
+  v_preferences app_public.reminder_preferences;
+begin
+  if v_user is null then
+    raise exception 'Sign in to manage reminder preferences.' using errcode = 'LOGIN';
+  end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  if minutes_before is null or minutes_before not between 1 and 10080
+    or delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
+    raise exception 'Choose a delivery method and a lead time between 1 minute and 7 days.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
+    raise exception 'Connect Telegram before saving Telegram reminders.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('email', 'both') and not exists(select 1 from app_public.user_emails where user_id = v_user and is_primary and is_verified) then
+    raise exception 'Verify your primary email before saving reminders.' using errcode = 'EMAIL';
+  end if;
+  insert into app_public.reminder_preferences as p(user_id, minutes_before, delivery_method)
+    values(v_user, minutes_before, delivery_method)
+    on conflict(user_id) do update set minutes_before = excluded.minutes_before, delivery_method = excluded.delivery_method
+    returning * into v_preferences;
+  -- Lock reminders in a stable order before rescheduling them.
+  perform 1 from app_public.event_registration_reminders r
+    join app_public.events e on e.id = r.event_id
+    where r.user_id = v_user and r.sent_at is null and e.registration_start_time > now()
+    order by r.id for update of r;
+  update app_public.event_registration_reminders r
+    set minutes_before = v_preferences.minutes_before,
+      delivery_method = v_preferences.delivery_method,
+      sent_at = case
+        when v_preferences.delivery_method = 'email' then r.email_sent_at
+        when v_preferences.delivery_method = 'telegram' then r.telegram_sent_at
+        when r.email_sent_at is not null and r.telegram_sent_at is not null
+          then greatest(r.email_sent_at, r.telegram_sent_at)
+        else null end
+    from app_public.events e
+    where r.user_id = v_user and r.event_id = e.id
+      and r.sent_at is null and e.registration_start_time > now();
+  return v_preferences;
+end;
+$$;
 
 
 --
@@ -2986,6 +4244,292 @@ $$;
 --
 
 COMMENT ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) IS 'Make an existing user admin. Only accessible to admin users.';
+
+
+--
+-- Name: set_event_registration_reminder(uuid, boolean, text, integer, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text DEFAULT 'fi'::text, minutes_before integer DEFAULT 30, delivery_method text DEFAULT 'email'::text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user uuid := app_public.current_user_id();
+begin
+  if v_user is null then
+    raise exception 'Please sign in to manage reminders.' using errcode = 'LOGIN';
+  end if;
+  if not enabled then
+    delete from app_public.event_registration_reminders r
+      where r.user_id = v_user and r.event_id = event_id;
+    return false;
+  end if;
+  if not app_public.feature_enabled('registration_reminders') then
+    raise exception 'Registration reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  if minutes_before is null or minutes_before < 1 or minutes_before > 10080 then
+    raise exception 'Choose a reminder between 1 minute and 7 days before opening.' using errcode = 'CHECK';
+  end if;
+  if language not in ('fi', 'en') or language is null then
+    raise exception 'Unsupported reminder language.' using errcode = 'CHECK';
+  end if;
+  if delivery_method is null or delivery_method not in ('email', 'telegram', 'both') then
+    raise exception 'Unsupported delivery method.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('telegram', 'both') and not app_public.feature_enabled('telegram_reminders') then
+    raise exception 'Telegram reminders are not available.' using errcode = 'FTOFF';
+  end if;
+  if delivery_method in ('telegram', 'both') and not exists(select 1 from app_public.telegram_accounts where user_id = v_user) then
+    raise exception 'Connect Telegram before enabling Telegram reminders.' using errcode = 'CHECK';
+  end if;
+  if delivery_method in ('email', 'both') and not exists(select 1 from app_public.user_emails
+    where user_id = v_user and is_primary and is_verified) then
+    raise exception 'Verify your primary email before enabling reminders.' using errcode = 'EMAIL';
+  end if;
+  perform 1 from app_public.events e where e.id = event_id
+    and not e.is_draft and e.registration_start_time > now() for share;
+  if not found then
+    raise exception 'Reminders are only available before registration opens.' using errcode = 'CLOSD';
+  end if;
+  insert into app_public.event_registration_reminders(user_id, event_id, language, minutes_before, delivery_method)
+    values (v_user, event_id, language, minutes_before, delivery_method)
+    on conflict on constraint event_registration_reminders_user_id_event_id_key do update
+      set minutes_before = excluded.minutes_before, language = excluded.language, delivery_method = excluded.delivery_method,
+        sent_at = case
+          when excluded.delivery_method = 'email' then event_registration_reminders.email_sent_at
+          when excluded.delivery_method = 'telegram' then event_registration_reminders.telegram_sent_at
+          when event_registration_reminders.email_sent_at is not null and event_registration_reminders.telegram_sent_at is not null
+            then greatest(event_registration_reminders.email_sent_at, event_registration_reminders.telegram_sent_at)
+          else null end
+      where event_registration_reminders.sent_at is null;
+  return true;
+end;
+$$;
+
+
+--
+-- Name: feature_flags; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.feature_flags (
+    key text NOT NULL,
+    state app_public.feature_state DEFAULT 'off'::app_public.feature_state NOT NULL,
+    available boolean DEFAULT true NOT NULL,
+    description text NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_by uuid,
+    retired_at timestamp with time zone,
+    CONSTRAINT feature_flags_key_check CHECK ((key ~ '^[a-z][a-z0-9_]*$'::text))
+);
+
+
+--
+-- Name: TABLE feature_flags; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.feature_flags IS 'A feature that can be switched on or off at runtime. Rows are created by migrations.';
+
+
+--
+-- Name: COLUMN feature_flags.key; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.key IS 'Identifier of the feature, as used in code.';
+
+
+--
+-- Name: COLUMN feature_flags.state; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.state IS 'Who the feature is enabled for.';
+
+
+--
+-- Name: COLUMN feature_flags.available; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.available IS 'False when the server lacks the configuration the feature needs; the feature then reads as off whatever its state.';
+
+
+--
+-- Name: COLUMN feature_flags.description; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.description IS 'What the flag gates.';
+
+
+--
+-- Name: COLUMN feature_flags.updated_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.updated_at IS 'When the state was last changed.';
+
+
+--
+-- Name: COLUMN feature_flags.updated_by; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.updated_by IS 'Who last changed the state.';
+
+
+--
+-- Name: COLUMN feature_flags.retired_at; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.feature_flags.retired_at IS 'Set when the gates have been removed from code. A retired flag reads as on.';
+
+
+--
+-- Name: set_feature_flag(text, app_public.feature_state); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) RETURNS app_public.feature_flags
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_flag app_public.feature_flags;
+  v_old_state app_public.feature_state;
+begin
+  call app_public.check_is_developer();
+
+  select * into v_flag
+  from app_public.feature_flags as f
+  where f.key = key
+  for update;
+
+  if v_flag.key is null then
+    raise exception 'Unknown feature flag "%".', key using errcode = 'NTFND';
+  end if;
+
+  if v_flag.retired_at is not null then
+    raise exception 'Feature flag "%" is retired and cannot be changed.', key using errcode = 'DNIED';
+  end if;
+
+  if state <> 'off' and not v_flag.available then
+    raise exception 'Feature flag "%" is not available: the server lacks the configuration it needs.', key using errcode = 'FTUNA';
+  end if;
+
+  if v_flag.state = state then
+    return v_flag;
+  end if;
+
+  v_old_state = v_flag.state;
+
+  update app_public.feature_flags as f
+  set
+    state = state,
+    updated_at = now(),
+    updated_by = app_public.current_user_id()
+  where f.key = key
+  returning * into v_flag;
+
+  insert into app_private.feature_flag_events (key, old_state, new_state, actor)
+  values (key, v_old_state, state, app_public.current_user_id());
+
+  return v_flag;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION set_feature_flag(key text, state app_public.feature_state); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) IS 'Changes the state of an existing feature flag. Only accessible to developers.';
+
+
+--
+-- Name: registration_profiles; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.registration_profiles (
+    user_id uuid NOT NULL,
+    telegram text,
+    dietary_restrictions text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT registration_profiles_dietary_restrictions_check CHECK ((length(dietary_restrictions) <= 1000)),
+    CONSTRAINT registration_profiles_telegram_check CHECK ((length(telegram) <= 64))
+);
+
+
+--
+-- Name: TABLE registration_profiles; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.registration_profiles IS 'Values used to prefill event registration answers. Only visible to the user themselves.';
+
+
+--
+-- Name: COLUMN registration_profiles.user_id; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.user_id IS 'The user this registration profile belongs to.';
+
+
+--
+-- Name: COLUMN registration_profiles.telegram; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.telegram IS 'Telegram handle.';
+
+
+--
+-- Name: COLUMN registration_profiles.dietary_restrictions; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON COLUMN app_public.registration_profiles.dietary_restrictions IS 'Dietary restrictions and allergies.';
+
+
+--
+-- Name: set_registration_profile(text, text); Type: FUNCTION; Schema: app_public; Owner: -
+--
+
+CREATE FUNCTION app_public.set_registration_profile(telegram text DEFAULT NULL::text, dietary_restrictions text DEFAULT NULL::text) RETURNS app_public.registration_profiles
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+    AS $$
+#variable_conflict use_variable
+declare
+  v_user_id uuid := app_public.current_user_id();
+  v_profile app_public.registration_profiles;
+begin
+  if v_user_id is null then
+    raise exception 'You must log in to update your registration profile' using errcode = 'LOGIN';
+  end if;
+
+  if not app_public.feature_enabled('prefill_answers') then
+    raise exception 'Saving registration answers is not enabled' using errcode = 'FTOFF';
+  end if;
+
+  insert into app_public.registration_profiles(user_id, telegram, dietary_restrictions)
+    values (v_user_id, nullif(trim(telegram), ''), nullif(trim(dietary_restrictions), ''))
+  on conflict (user_id) do update
+    set
+      telegram = case
+        when telegram is null then registration_profiles.telegram
+        else excluded.telegram
+      end,
+      dietary_restrictions = case
+        when dietary_restrictions is null then registration_profiles.dietary_restrictions
+        else excluded.dietary_restrictions
+      end
+  returning * into v_profile;
+
+  return v_profile;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION set_registration_profile(telegram text, dietary_restrictions text); Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) IS 'Set the values used to prefill your event registrations. A null value keeps the saved one and an empty value clears it.';
 
 
 --
@@ -3232,6 +4776,10 @@ begin
       registration_start_time = coalesce(event.registration_start_time, registration_start_time),
       registration_end_time = coalesce(event.registration_end_time, registration_end_time),
       is_highlighted = coalesce(event.is_highlighted, is_highlighted),
+      highlight_text = case
+        when event.is_highlighted is null then highlight_text
+        else event.highlight_text
+      end,
       is_draft = coalesce(event.is_draft, is_draft),
       header_image_file = coalesce(event.header_image_file, header_image_file),
       open_quota_size = coalesce(event.open_quota_size, open_quota_size),
@@ -3253,7 +4801,7 @@ $$;
 -- Name: FUNCTION update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]); Type: COMMENT; Schema: app_public; Owner: -
 --
 
-COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation.';
+COMMENT ON FUNCTION app_public.update_event(id uuid, event app_public.event_input, quotas app_public.update_event_quotas[], questions app_public.update_event_questions[]) IS 'Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.';
 
 
 --
@@ -3277,7 +4825,7 @@ begin
   select array(
     select id from app_public.event_questions as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(questions))
+    and q.id not in (select id from unnest(questions) where id is not null)
   )
   into v_question_ids_to_delete;
 
@@ -3290,13 +4838,17 @@ begin
     if exists(select 1 from app_public.event_questions where id = v_input.id) then
       -- Update existing event questions by id
       update app_public.event_questions
-        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data
+        set position = v_input.position, type = v_input.type, label = v_input.label, is_required = v_input.is_required, data = v_input.data,
+          prefill = case
+            when v_input.type <> 'TEXT' or v_input.prefill = 'NONE' then null
+            else coalesce(v_input.prefill, prefill)
+          end
         where id = v_input.id
       returning * into v_question;
     else
       -- Create new questions that didn't exist before
-      insert into app_public.event_questions(event_id, position, type, label, is_required, data)
-        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data)
+      insert into app_public.event_questions(event_id, position, type, label, is_required, data, prefill)
+        values (event_id, v_input.position, v_input.type, v_input.label, v_input.is_required, v_input.data, nullif(v_input.prefill, 'NONE'))
       returning * into v_question;
     end if;
 
@@ -3339,10 +4891,17 @@ begin
     raise exception 'You must specify at least one quota' using errcode = 'DNIED';
   end if;
 
+  -- A price can be set only while payments are on
+  if not app_public.feature_enabled('payments')
+    and exists(select 1 from unnest(quotas) as q where coalesce(q.price_cents, 0) <> 0)
+  then
+    raise exception 'Payments are not available.' using errcode = 'FTOFF';
+  end if;
+
   select array(
     select id from app_public.quotas as q
     where q.event_id = event_id
-    and q.id not in (select id from unnest(quotas))
+    and q.id not in (select id from unnest(quotas) where id is not null)
   )
   into v_quota_ids_to_delete;
 
@@ -3354,14 +4913,18 @@ begin
   foreach v_input in array quotas loop
     if exists(select 1 from app_public.quotas where id = v_input.id) then
       -- Update existing event quotas by id
-      update app_public.quotas
-        set position = v_input.position, title = v_input.title, size = v_input.size
-        where id = v_input.id
+      update app_public.quotas as q
+        set
+          position = v_input.position,
+          title = v_input.title,
+          size = v_input.size,
+          price_cents = coalesce(v_input.price_cents, q.price_cents)
+        where q.id = v_input.id
       returning * into v_quota;
     else
       -- Create new quotas that didn't exist before
-      insert into app_public.quotas(event_id, position, title, size)
-        values (event_id, v_input.position, v_input.title, v_input.size)
+      insert into app_public.quotas(event_id, position, title, size, price_cents)
+        values (event_id, v_input.position, v_input.title, v_input.size, coalesce(v_input.price_cents, 0))
       returning * into v_quota;
     end if;
 
@@ -3392,6 +4955,7 @@ CREATE FUNCTION app_public.update_registration("updateToken" text, "firstName" t
 declare
   v_registration_secret app_private.registration_secrets;
   v_registration app_public.registrations;
+  v_event app_public.events;
   v_required_question_ids uuid[];
 begin
   select * into v_registration_secret
@@ -3400,6 +4964,13 @@ begin
 
   if v_registration_secret is null then
     raise exception 'Registration matching token was not found.' using errcode = 'NTFND';
+  end if;
+
+  select * into v_event from app_public.events where id = v_registration_secret.event_id;
+
+  if not app_public.current_user_is_admin()
+    and ((v_event is null) or not (select app_public.events_signup_open(v_event))) then
+    raise exception 'Updating a registration after event signup has closed is not allowed. Please contact the event organizers.' using errcode = 'DNIED';
   end if;
 
   -- If the registration doesn't provide answers to all of the required questions it is invalid.
@@ -3613,77 +5184,44 @@ COMMENT ON FUNCTION app_public.verify_email(user_email_id uuid, token text) IS '
 
 
 --
--- Name: registrations_status_and_position; Type: MATERIALIZED VIEW; Schema: app_hidden; Owner: -
+-- Name: registrations_status_and_position; Type: TABLE; Schema: app_hidden; Owner: -
 --
 
-CREATE MATERIALIZED VIEW app_hidden.registrations_status_and_position AS
- WITH cte1 AS (
-         SELECT r.id,
-            q.size,
-            e.id AS event_id,
-            q.id AS quota_id,
-            e.open_quota_size,
-            r.created_at,
-            row_number() OVER (PARTITION BY r.quota_id ORDER BY r.created_at) AS tmp_pos_quota
-           FROM ((app_public.registrations r
-             LEFT JOIN app_public.quotas q ON ((r.quota_id = q.id)))
-             LEFT JOIN app_public.events e ON ((r.event_id = e.id)))
-        ), cte2 AS (
-         SELECT tmp.id,
-            tmp.size,
-            tmp.event_id,
-            tmp.quota_id,
-            tmp.open_quota_size,
-            tmp.created_at,
-            tmp.tmp_pos_quota,
-            tmp.tmp_status,
-            row_number() OVER (PARTITION BY tmp.event_id, tmp.tmp_status ORDER BY tmp.created_at) AS tmp_pos_status
-           FROM ( SELECT cte1.id,
-                    cte1.size,
-                    cte1.event_id,
-                    cte1.quota_id,
-                    cte1.open_quota_size,
-                    cte1.created_at,
-                    cte1.tmp_pos_quota,
-                        CASE
-                            WHEN (cte1.tmp_pos_quota <= cte1.size) THEN 'IN_QUOTA'::text
-                            ELSE 'OPEN_OR_QUEUE'::text
-                        END AS tmp_status
-                   FROM cte1) tmp
-        ), cte3 AS (
-         SELECT cte2.id,
-            cte2.size,
-            cte2.event_id,
-            cte2.quota_id,
-            cte2.open_quota_size,
-            cte2.created_at,
-            cte2.tmp_pos_quota,
-            cte2.tmp_status,
-            cte2.tmp_pos_status,
-                CASE
-                    WHEN ((cte2.tmp_status = 'OPEN_OR_QUEUE'::text) AND (cte2.tmp_pos_status <= cte2.open_quota_size)) THEN 'IN_OPEN_QUOTA'::app_public.registration_status
-                    WHEN (cte2.tmp_status = 'OPEN_OR_QUEUE'::text) THEN 'IN_QUEUE'::app_public.registration_status
-                    ELSE 'IN_QUOTA'::app_public.registration_status
-                END AS status
-           FROM cte2
-        )
- SELECT cte3.id,
-    cte3.event_id,
-    cte3.quota_id,
-    cte3.status,
-        CASE
-            WHEN (cte3.status = 'IN_QUOTA'::app_public.registration_status) THEN (row_number() OVER (PARTITION BY cte3.quota_id, cte3.status ORDER BY cte3.created_at))::integer
-            ELSE (row_number() OVER (PARTITION BY cte3.event_id, cte3.status ORDER BY cte3.created_at))::integer
-        END AS "position"
-   FROM cte3
-  WITH NO DATA;
+CREATE TABLE app_hidden.registrations_status_and_position (
+    id uuid NOT NULL,
+    event_id uuid,
+    quota_id uuid,
+    status app_public.registration_status,
+    "position" integer
+);
 
 
 --
--- Name: MATERIALIZED VIEW registrations_status_and_position; Type: COMMENT; Schema: app_hidden; Owner: -
+-- Name: TABLE registrations_status_and_position; Type: COMMENT; Schema: app_hidden; Owner: -
 --
 
-COMMENT ON MATERIALIZED VIEW app_hidden.registrations_status_and_position IS 'Rank and position of registrations.';
+COMMENT ON TABLE app_hidden.registrations_status_and_position IS 'Rank and position of registrations, maintained per event by app_private.refresh_registration_positions.';
+
+
+--
+-- Name: feature_flag_events; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.feature_flag_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    key text NOT NULL,
+    old_state app_public.feature_state NOT NULL,
+    new_state app_public.feature_state NOT NULL,
+    actor uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE feature_flag_events; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TABLE app_private.feature_flag_events IS 'One row per feature flag state change.';
 
 
 --
@@ -3709,6 +5247,70 @@ CREATE TABLE app_private.registration_secrets (
 --
 
 COMMENT ON TABLE app_private.registration_secrets IS 'The contents of this table should never be visible to the user. Contains private data related to event registrations.';
+
+
+--
+-- Name: stripe_events; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.stripe_events (
+    id text NOT NULL,
+    type text NOT NULL,
+    processed_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE stripe_events; Type: COMMENT; Schema: app_private; Owner: -
+--
+
+COMMENT ON TABLE app_private.stripe_events IS 'Ids of Stripe webhook events already handled, so that redelivered events are ignored.';
+
+
+--
+-- Name: telegram_link_tokens; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_link_tokens (
+    user_id uuid NOT NULL,
+    token_hash bytea NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: telegram_poll_state; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_poll_state (
+    id boolean DEFAULT true NOT NULL,
+    next_offset bigint DEFAULT 0 NOT NULL,
+    CONSTRAINT telegram_poll_state_id_check CHECK (id)
+);
+
+
+--
+-- Name: telegram_preferences; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_preferences (
+    chat_id bigint NOT NULL,
+    language text DEFAULT 'auto'::text NOT NULL,
+    detected_language text DEFAULT 'en'::text NOT NULL,
+    CONSTRAINT telegram_preferences_chat_id_check CHECK ((chat_id > 0)),
+    CONSTRAINT telegram_preferences_detected_language_check CHECK ((detected_language = ANY (ARRAY['fi'::text, 'en'::text]))),
+    CONSTRAINT telegram_preferences_language_check CHECK ((language = ANY (ARRAY['auto'::text, 'fi'::text, 'en'::text])))
+);
+
+
+--
+-- Name: telegram_updates; Type: TABLE; Schema: app_private; Owner: -
+--
+
+CREATE TABLE app_private.telegram_updates (
+    update_id bigint NOT NULL,
+    processed_at timestamp with time zone DEFAULT now() NOT NULL
+);
 
 
 --
@@ -3865,6 +5467,35 @@ COMMENT ON COLUMN app_public.event_categories.color IS 'Color color the event ca
 
 
 --
+-- Name: event_registration_reminders; Type: TABLE; Schema: app_public; Owner: -
+--
+
+CREATE TABLE app_public.event_registration_reminders (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    event_id uuid NOT NULL,
+    language text DEFAULT 'fi'::text NOT NULL,
+    minutes_before integer DEFAULT 30 NOT NULL,
+    delivery_method text DEFAULT 'email'::text NOT NULL,
+    email_sent_at timestamp with time zone,
+    telegram_sent_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    sent_at timestamp with time zone,
+    CONSTRAINT event_registration_reminders_delivery_method_check CHECK ((delivery_method = ANY (ARRAY['email'::text, 'telegram'::text, 'both'::text]))),
+    CONSTRAINT event_registration_reminders_language_check CHECK ((language = ANY (ARRAY['fi'::text, 'en'::text]))),
+    CONSTRAINT event_registration_reminders_minutes_before_check CHECK (((minutes_before >= 1) AND (minutes_before <= 10080)))
+);
+
+
+--
+-- Name: TABLE event_registration_reminders; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON TABLE app_public.event_registration_reminders IS '@omit create,update
+Registration reminders requested by the current user, before registration opens.';
+
+
+--
 -- Name: organization_invitations; Type: TABLE; Schema: app_public; Owner: -
 --
 
@@ -3936,6 +5567,22 @@ COMMENT ON COLUMN app_public.user_authentications.details IS 'Additional profile
 
 
 --
+-- Name: registrations_status_and_position registrations_status_and_position_pkey; Type: CONSTRAINT; Schema: app_hidden; Owner: -
+--
+
+ALTER TABLE ONLY app_hidden.registrations_status_and_position
+    ADD CONSTRAINT registrations_status_and_position_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: feature_flag_events feature_flag_events_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.feature_flag_events
+    ADD CONSTRAINT feature_flag_events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: registration_secrets registration_secrets_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
 --
 
@@ -3965,6 +5612,54 @@ ALTER TABLE ONLY app_private.registration_secrets
 
 ALTER TABLE ONLY app_private.sessions
     ADD CONSTRAINT sessions_pkey PRIMARY KEY (uuid);
+
+
+--
+-- Name: stripe_events stripe_events_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.stripe_events
+    ADD CONSTRAINT stripe_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_token_hash_key; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: telegram_poll_state telegram_poll_state_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_poll_state
+    ADD CONSTRAINT telegram_poll_state_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: telegram_preferences telegram_preferences_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_preferences
+    ADD CONSTRAINT telegram_preferences_pkey PRIMARY KEY (chat_id);
+
+
+--
+-- Name: telegram_updates telegram_updates_pkey; Type: CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_updates
+    ADD CONSTRAINT telegram_updates_pkey PRIMARY KEY (update_id);
 
 
 --
@@ -4024,6 +5719,22 @@ ALTER TABLE ONLY app_public.event_questions
 
 
 --
+-- Name: event_registration_reminders event_registration_reminders_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_user_id_event_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_user_id_event_id_key UNIQUE (user_id, event_id);
+
+
+--
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4037,6 +5748,14 @@ ALTER TABLE ONLY app_public.events
 
 ALTER TABLE ONLY app_public.events
     ADD CONSTRAINT events_slug_key UNIQUE (slug);
+
+
+--
+-- Name: feature_flags feature_flags_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.feature_flags
+    ADD CONSTRAINT feature_flags_pkey PRIMARY KEY (key);
 
 
 --
@@ -4096,11 +5815,35 @@ ALTER TABLE ONLY app_public.organizations
 
 
 --
+-- Name: payments payments_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payments payments_stripe_checkout_session_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_stripe_checkout_session_id_key UNIQUE (stripe_checkout_session_id);
+
+
+--
 -- Name: quotas quotas_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
 --
 
 ALTER TABLE ONLY app_public.quotas
     ADD CONSTRAINT quotas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: registration_profiles registration_profiles_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_profiles
+    ADD CONSTRAINT registration_profiles_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -4117,6 +5860,30 @@ ALTER TABLE ONLY app_public.registrations
 
 ALTER TABLE ONLY app_public.registrations
     ADD CONSTRAINT registrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reminder_preferences reminder_preferences_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.reminder_preferences
+    ADD CONSTRAINT reminder_preferences_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_chat_id_key; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_chat_id_key UNIQUE (chat_id);
+
+
+--
+-- Name: telegram_accounts telegram_accounts_pkey; Type: CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -4167,17 +5934,24 @@ CREATE INDEX registrations_status_and_position_event_id_idx ON app_hidden.regist
 
 
 --
--- Name: registrations_status_and_position_id_idx; Type: INDEX; Schema: app_hidden; Owner: -
---
-
-CREATE UNIQUE INDEX registrations_status_and_position_id_idx ON app_hidden.registrations_status_and_position USING btree (id);
-
-
---
 -- Name: registrations_status_and_position_quota_id_idx; Type: INDEX; Schema: app_hidden; Owner: -
 --
 
 CREATE INDEX registrations_status_and_position_quota_id_idx ON app_hidden.registrations_status_and_position USING btree (quota_id);
+
+
+--
+-- Name: feature_flag_events_actor_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX feature_flag_events_actor_idx ON app_private.feature_flag_events USING btree (actor);
+
+
+--
+-- Name: feature_flag_events_key_created_at_idx; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE INDEX feature_flag_events_key_created_at_idx ON app_private.feature_flag_events USING btree (key, created_at);
 
 
 --
@@ -4199,6 +5973,13 @@ CREATE INDEX registration_secrets_quota_id_idx ON app_private.registration_secre
 --
 
 CREATE INDEX registration_secrets_registration_id_idx ON app_private.registration_secrets USING btree (registration_id);
+
+
+--
+-- Name: sessions_mcp_oauth_sid_key; Type: INDEX; Schema: app_private; Owner: -
+--
+
+CREATE UNIQUE INDEX sessions_mcp_oauth_sid_key ON app_private.sessions USING btree (oauth_sid) WHERE (kind = 'mcp'::text);
 
 
 --
@@ -4262,6 +6043,13 @@ CREATE INDEX event_questions_position_idx ON app_public.event_questions USING bt
 --
 
 CREATE INDEX event_questions_updated_by_idx ON app_public.event_questions USING btree (updated_by);
+
+
+--
+-- Name: event_registration_reminders_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX event_registration_reminders_event_id_idx ON app_public.event_registration_reminders USING btree (event_id);
 
 
 --
@@ -4342,6 +6130,13 @@ CREATE INDEX events_updated_by_idx ON app_public.events USING btree (updated_by)
 
 
 --
+-- Name: feature_flags_updated_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX feature_flags_updated_by_idx ON app_public.feature_flags USING btree (updated_by);
+
+
+--
 -- Name: idx_user_emails_primary; Type: INDEX; Schema: app_public; Owner: -
 --
 
@@ -4381,6 +6176,48 @@ CREATE INDEX organizations_created_by_idx ON app_public.organizations USING btre
 --
 
 CREATE INDEX organizations_updated_by_idx ON app_public.organizations USING btree (updated_by);
+
+
+--
+-- Name: payments_created_by_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX payments_created_by_idx ON app_public.payments USING btree (created_by);
+
+
+--
+-- Name: payments_event_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX payments_event_id_idx ON app_public.payments USING btree (event_id);
+
+
+--
+-- Name: payments_one_paid_per_registration_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE UNIQUE INDEX payments_one_paid_per_registration_idx ON app_public.payments USING btree (registration_id) WHERE ((status = 'PAID'::app_public.payment_status) AND (registration_id IS NOT NULL));
+
+
+--
+-- Name: payments_quota_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX payments_quota_id_idx ON app_public.payments USING btree (quota_id);
+
+
+--
+-- Name: payments_registration_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX payments_registration_id_idx ON app_public.payments USING btree (registration_id);
+
+
+--
+-- Name: payments_stripe_payment_intent_id_idx; Type: INDEX; Schema: app_public; Owner: -
+--
+
+CREATE INDEX payments_stripe_payment_intent_id_idx ON app_public.payments USING btree (stripe_payment_intent_id);
 
 
 --
@@ -4510,10 +6347,24 @@ CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.organizatio
 
 
 --
+-- Name: payments _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.payments FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+
+
+--
 -- Name: quotas _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
 CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
+
+
+--
+-- Name: registration_profiles _100_timestamps; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _100_timestamps BEFORE INSERT OR UPDATE ON app_public.registration_profiles FOR EACH ROW EXECUTE FUNCTION app_private.tg__timestamps();
 
 
 --
@@ -4594,17 +6445,24 @@ CREATE TRIGGER _200_ownership_info BEFORE INSERT OR UPDATE ON app_public.registr
 
 
 --
--- Name: events _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: events _250_reset_unpaid_close_email; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _250_reset_unpaid_close_email BEFORE UPDATE OF registration_end_time ON app_public.events FOR EACH ROW WHEN ((new.registration_end_time > old.registration_end_time)) EXECUTE FUNCTION app_private.tg_events__reset_unpaid_close_email();
 
 
 --
--- Name: quotas _300_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: events _300_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _300_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
+
+
+--
+-- Name: quotas _300_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _300_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.quotas FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4612,6 +6470,20 @@ CREATE TRIGGER _300_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_pub
 --
 
 CREATE TRIGGER _300_registration_is_valid BEFORE INSERT ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__registration_is_valid();
+
+
+--
+-- Name: events _301_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _301_refresh_registration_positions AFTER UPDATE ON app_public.events FOR EACH ROW WHEN ((old.open_quota_size IS DISTINCT FROM new.open_quota_size)) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
+
+
+--
+-- Name: quotas _301_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER _301_refresh_registration_positions AFTER UPDATE ON app_public.quotas FOR EACH ROW WHEN (((old.size IS DISTINCT FROM new.size) OR (old.event_id IS DISTINCT FROM new.event_id))) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4699,17 +6571,17 @@ CREATE TRIGGER _500_verify_account_on_verified AFTER INSERT OR UPDATE OF is_veri
 
 
 --
--- Name: registrations _700_refresh_mat_view; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _700_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _700_refresh_mat_view AFTER INSERT OR DELETE OR UPDATE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_materialized_view();
+CREATE TRIGGER _700_refresh_registration_positions AFTER INSERT OR DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
--- Name: registrations _800_process_registration_queue; Type: TRIGGER; Schema: app_public; Owner: -
+-- Name: registrations _701_refresh_registration_positions; Type: TRIGGER; Schema: app_public; Owner: -
 --
 
-CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.registrations FOR EACH ROW EXECUTE FUNCTION app_private.tg__process_queue();
+CREATE TRIGGER _701_refresh_registration_positions AFTER UPDATE ON app_public.registrations FOR EACH ROW WHEN (((old.created_at IS DISTINCT FROM new.created_at) OR (old.quota_id IS DISTINCT FROM new.quota_id) OR (old.event_id IS DISTINCT FROM new.event_id))) EXECUTE FUNCTION app_private.tg__refresh_registration_positions();
 
 
 --
@@ -4717,6 +6589,28 @@ CREATE TRIGGER _800_process_registration_queue BEFORE DELETE ON app_public.regis
 --
 
 CREATE TRIGGER _900_send_verification_email AFTER INSERT ON app_public.user_emails FOR EACH ROW WHEN ((new.is_verified IS FALSE)) EXECUTE FUNCTION app_private.tg__add_job('user_emails__send_verification');
+
+
+--
+-- Name: events reschedule_registration_reminders; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER reschedule_registration_reminders AFTER UPDATE OF registration_start_time, is_draft ON app_public.events FOR EACH ROW EXECUTE FUNCTION app_private.tg__reschedule_registration_reminders();
+
+
+--
+-- Name: event_registration_reminders schedule_registration_reminder; Type: TRIGGER; Schema: app_public; Owner: -
+--
+
+CREATE TRIGGER schedule_registration_reminder AFTER INSERT OR DELETE OR UPDATE OF minutes_before, delivery_method ON app_public.event_registration_reminders FOR EACH ROW EXECUTE FUNCTION app_private.tg__schedule_registration_reminder();
+
+
+--
+-- Name: feature_flag_events feature_flag_events_actor_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.feature_flag_events
+    ADD CONSTRAINT feature_flag_events_actor_fkey FOREIGN KEY (actor) REFERENCES app_public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -4749,6 +6643,14 @@ ALTER TABLE ONLY app_private.registration_secrets
 
 ALTER TABLE ONLY app_private.sessions
     ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: telegram_link_tokens telegram_link_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: app_private; Owner: -
+--
+
+ALTER TABLE ONLY app_private.telegram_link_tokens
+    ADD CONSTRAINT telegram_link_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4824,6 +6726,22 @@ ALTER TABLE ONLY app_public.event_questions
 
 
 --
+-- Name: event_registration_reminders event_registration_reminders_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE CASCADE;
+
+
+--
+-- Name: event_registration_reminders event_registration_reminders_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.event_registration_reminders
+    ADD CONSTRAINT event_registration_reminders_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: events events_category_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4853,6 +6771,21 @@ ALTER TABLE ONLY app_public.events
 
 ALTER TABLE ONLY app_public.events
     ADD CONSTRAINT events_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: feature_flags feature_flags_updated_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.feature_flags
+    ADD CONSTRAINT feature_flags_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: CONSTRAINT feature_flags_updated_by_fkey ON feature_flags; Type: COMMENT; Schema: app_public; Owner: -
+--
+
+COMMENT ON CONSTRAINT feature_flags_updated_by_fkey ON app_public.feature_flags IS '@omit many';
 
 
 --
@@ -4904,6 +6837,38 @@ ALTER TABLE ONLY app_public.organizations
 
 
 --
+-- Name: payments payments_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_created_by_fkey FOREIGN KEY (created_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: payments payments_event_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_event_id_fkey FOREIGN KEY (event_id) REFERENCES app_public.events(id) ON DELETE SET NULL;
+
+
+--
+-- Name: payments payments_quota_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_quota_id_fkey FOREIGN KEY (quota_id) REFERENCES app_public.quotas(id) ON DELETE SET NULL;
+
+
+--
+-- Name: payments payments_registration_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.payments
+    ADD CONSTRAINT payments_registration_id_fkey FOREIGN KEY (registration_id) REFERENCES app_public.registrations(id) ON DELETE SET NULL;
+
+
+--
 -- Name: quotas quotas_created_by_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4925,6 +6890,14 @@ ALTER TABLE ONLY app_public.quotas
 
 ALTER TABLE ONLY app_public.quotas
     ADD CONSTRAINT quotas_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES app_public.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: registration_profiles registration_profiles_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.registration_profiles
+    ADD CONSTRAINT registration_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4960,6 +6933,22 @@ ALTER TABLE ONLY app_public.registrations
 
 
 --
+-- Name: reminder_preferences reminder_preferences_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.reminder_preferences
+    ADD CONSTRAINT reminder_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: telegram_accounts telegram_accounts_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
+--
+
+ALTER TABLE ONLY app_public.telegram_accounts
+    ADD CONSTRAINT telegram_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES app_public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_authentications user_authentications_user_id_fkey; Type: FK CONSTRAINT; Schema: app_public; Owner: -
 --
 
@@ -4976,6 +6965,25 @@ ALTER TABLE ONLY app_public.user_emails
 
 
 --
+-- Name: registrations_status_and_position; Type: ROW SECURITY; Schema: app_hidden; Owner: -
+--
+
+ALTER TABLE app_hidden.registrations_status_and_position ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registrations_status_and_position select_all; Type: POLICY; Schema: app_hidden; Owner: -
+--
+
+CREATE POLICY select_all ON app_hidden.registrations_status_and_position FOR SELECT USING (true);
+
+
+--
+-- Name: feature_flag_events; Type: ROW SECURITY; Schema: app_private; Owner: -
+--
+
+ALTER TABLE app_private.feature_flag_events ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registration_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
 --
 
@@ -4986,6 +6994,12 @@ ALTER TABLE app_private.registration_secrets ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_private.sessions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: stripe_events; Type: ROW SECURITY; Schema: app_private; Owner: -
+--
+
+ALTER TABLE app_private.stripe_events ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: user_authentication_secrets; Type: ROW SECURITY; Schema: app_private; Owner: -
@@ -5004,6 +7018,13 @@ ALTER TABLE app_private.user_email_secrets ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE app_private.user_secrets ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registration_profiles delete_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY delete_own ON app_public.registration_profiles FOR DELETE USING ((user_id = app_public.current_user_id()));
+
 
 --
 -- Name: user_authentications delete_own; Type: POLICY; Schema: app_public; Owner: -
@@ -5032,10 +7053,29 @@ ALTER TABLE app_public.event_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.event_questions ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: event_registration_reminders; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.event_registration_reminders ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: events; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
 ALTER TABLE app_public.events ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: feature_flags; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.feature_flags ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: registration_profiles insert_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY insert_own ON app_public.registration_profiles FOR INSERT WITH CHECK ((user_id = app_public.current_user_id()));
+
 
 --
 -- Name: user_emails insert_own; Type: POLICY; Schema: app_public; Owner: -
@@ -5063,6 +7103,13 @@ CREATE POLICY manage_admin ON app_public.event_questions USING (app_public.curre
 --
 
 CREATE POLICY manage_admin ON app_public.events USING (app_public.current_user_is_admin());
+
+
+--
+-- Name: organizations manage_admin; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY manage_admin ON app_public.organizations USING (app_public.current_user_is_admin());
 
 
 --
@@ -5126,16 +7173,55 @@ ALTER TABLE app_public.organization_memberships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_public.organizations ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: reminder_preferences own_reminder_preferences; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_reminder_preferences ON app_public.reminder_preferences USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: event_registration_reminders own_reminders; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_reminders ON app_public.event_registration_reminders USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: telegram_accounts own_telegram_account; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY own_telegram_account ON app_public.telegram_accounts USING ((user_id = app_public.current_user_id()));
+
+
+--
+-- Name: payments; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.payments ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: quotas; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
 ALTER TABLE app_public.quotas ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: registration_profiles; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.registration_profiles ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registrations; Type: ROW SECURITY; Schema: app_public; Owner: -
 --
 
 ALTER TABLE app_public.registrations ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: reminder_preferences; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.reminder_preferences ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: event_categories select_all; Type: POLICY; Schema: app_public; Owner: -
@@ -5187,6 +7273,20 @@ CREATE POLICY select_all ON app_public.users FOR SELECT USING (true);
 
 
 --
+-- Name: feature_flags select_developer; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_developer ON app_public.feature_flags FOR SELECT USING (app_public.current_user_is_developer());
+
+
+--
+-- Name: payments select_event_permissions; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_event_permissions ON app_public.payments FOR SELECT USING ((app_public.current_user_is_admin() OR app_public.current_user_has_event_permissions(event_id)));
+
+
+--
 -- Name: organization_memberships select_invited; Type: POLICY; Schema: app_public; Owner: -
 --
 
@@ -5198,6 +7298,13 @@ CREATE POLICY select_invited ON app_public.organization_memberships FOR SELECT U
 --
 
 CREATE POLICY select_member ON app_public.organization_memberships FOR SELECT USING ((organization_id IN ( SELECT app_public.current_user_member_organization_ids() AS current_user_member_organization_ids)));
+
+
+--
+-- Name: registration_profiles select_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY select_own ON app_public.registration_profiles FOR SELECT USING ((user_id = app_public.current_user_id()));
 
 
 --
@@ -5215,10 +7322,23 @@ CREATE POLICY select_own ON app_public.user_emails FOR SELECT USING ((user_id = 
 
 
 --
+-- Name: telegram_accounts; Type: ROW SECURITY; Schema: app_public; Owner: -
+--
+
+ALTER TABLE app_public.telegram_accounts ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: registrations update_all; Type: POLICY; Schema: app_public; Owner: -
 --
 
 CREATE POLICY update_all ON app_public.registrations FOR UPDATE USING (true);
+
+
+--
+-- Name: registration_profiles update_own; Type: POLICY; Schema: app_public; Owner: -
+--
+
+CREATE POLICY update_own ON app_public.registration_profiles FOR UPDATE USING ((user_id = app_public.current_user_id()));
 
 
 --
@@ -5293,6 +7413,27 @@ REVOKE ALL ON FUNCTION app_private.assert_valid_password(new_password text) FROM
 
 
 --
+-- Name: FUNCTION connect_telegram(token text, chat_id bigint, username text); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.connect_telegram(token text, chat_id bigint, username text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION current_user_can_manage_event_payments(event_id uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.current_user_can_manage_event_payments(event_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(target_user uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.disconnect_telegram(target_user uuid) FROM PUBLIC;
+
+
+--
 -- Name: TABLE users; Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5342,6 +7483,13 @@ REVOKE ALL ON FUNCTION app_private.really_create_user(username public.citext, em
 
 
 --
+-- Name: FUNCTION refresh_registration_positions(p_event_id uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.refresh_registration_positions(p_event_id uuid) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION register_user(f_service character varying, f_identifier character varying, f_profile json, f_auth_details json, f_email_is_verified boolean); Type: ACL; Schema: app_private; Owner: -
 --
 
@@ -5349,10 +7497,87 @@ REVOKE ALL ON FUNCTION app_private.register_user(f_service character varying, f_
 
 
 --
+-- Name: TABLE registrations; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.event_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(event_id) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.quota_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(quota_id) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.first_name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(first_name),UPDATE(first_name) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.last_name; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(last_name),UPDATE(last_name) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.email; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(email) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.answers; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(answers),UPDATE(answers) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registrations.is_finished; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(is_finished) ON TABLE app_public.registrations TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION registration_payment_status(registration app_public.registrations); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.registration_payment_status(registration app_public.registrations) FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION reset_password(user_id uuid, reset_token text, new_password text); Type: ACL; Schema: app_private; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_private.reset_password(user_id uuid, reset_token text, new_password text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION schedule_registration_reminder(reminder_id uuid); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.schedule_registration_reminder(reminder_id uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION set_feature_available(key text, available boolean); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.set_feature_available(key text, available boolean) FROM PUBLIC;
 
 
 --
@@ -5377,17 +7602,10 @@ REVOKE ALL ON FUNCTION app_private.tg__ownership_info() FROM PUBLIC;
 
 
 --
--- Name: FUNCTION tg__process_queue(); Type: ACL; Schema: app_private; Owner: -
+-- Name: FUNCTION tg__refresh_registration_positions(); Type: ACL; Schema: app_private; Owner: -
 --
 
-REVOKE ALL ON FUNCTION app_private.tg__process_queue() FROM PUBLIC;
-
-
---
--- Name: FUNCTION tg__refresh_materialized_view(); Type: ACL; Schema: app_private; Owner: -
---
-
-REVOKE ALL ON FUNCTION app_private.tg__refresh_materialized_view() FROM PUBLIC;
+REVOKE ALL ON FUNCTION app_private.tg__refresh_registration_positions() FROM PUBLIC;
 
 
 --
@@ -5398,10 +7616,31 @@ REVOKE ALL ON FUNCTION app_private.tg__registration_is_valid() FROM PUBLIC;
 
 
 --
+-- Name: FUNCTION tg__reschedule_registration_reminders(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__reschedule_registration_reminders() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION tg__schedule_registration_reminder(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg__schedule_registration_reminder() FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION tg__timestamps(); Type: ACL; Schema: app_private; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_private.tg__timestamps() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION tg_events__reset_unpaid_close_email(); Type: ACL; Schema: app_private; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_private.tg_events__reset_unpaid_close_email() FROM PUBLIC;
 
 
 --
@@ -5451,6 +7690,45 @@ GRANT ALL ON FUNCTION app_public.admin_list_users() TO ilmo_visitor;
 
 
 --
+-- Name: TABLE payments; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.payments TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_mark_registration_paid(registration_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_mark_registration_paid(registration_id uuid) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_preview_features(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_preview_features() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_preview_features() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_send_payment_reminders(event_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_send_payment_reminders(event_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_send_payment_reminders(event_id uuid) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION admin_unmark_registration_paid(registration_id uuid); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.admin_unmark_registration_paid(registration_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.admin_unmark_registration_paid(registration_id uuid) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION admin_update_registration(id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5472,6 +7750,14 @@ GRANT ALL ON FUNCTION app_public.change_password(old_password text, new_password
 
 REVOKE ALL ON PROCEDURE app_public.check_is_admin() FROM PUBLIC;
 GRANT ALL ON PROCEDURE app_public.check_is_admin() TO ilmo_visitor;
+
+
+--
+-- Name: PROCEDURE check_is_developer(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON PROCEDURE app_public.check_is_developer() FROM PUBLIC;
+GRANT ALL ON PROCEDURE app_public.check_is_developer() TO ilmo_visitor;
 
 
 --
@@ -5604,6 +7890,13 @@ GRANT INSERT(category_id),UPDATE(category_id) ON TABLE app_public.events TO ilmo
 
 
 --
+-- Name: COLUMN events.highlight_text; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(highlight_text),UPDATE(highlight_text) ON TABLE app_public.events TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION create_event(event app_public.event_input, quotas app_public.create_event_quotas[], questions app_public.create_event_questions[]); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5669,6 +7962,13 @@ GRANT INSERT(data),UPDATE(data) ON TABLE app_public.event_questions TO ilmo_visi
 
 
 --
+-- Name: COLUMN event_questions.prefill; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(prefill),UPDATE(prefill) ON TABLE app_public.event_questions TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION create_event_questions(event_id uuid, questions app_public.create_event_questions[]); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5709,6 +8009,13 @@ GRANT INSERT(title),UPDATE(title) ON TABLE app_public.quotas TO ilmo_visitor;
 --
 
 GRANT INSERT(size),UPDATE(size) ON TABLE app_public.quotas TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN quotas.price_cents; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(price_cents),UPDATE(price_cents) ON TABLE app_public.quotas TO ilmo_visitor;
 
 
 --
@@ -5756,62 +8063,6 @@ GRANT ALL ON FUNCTION app_public.create_organization(slug public.citext, name te
 
 
 --
--- Name: TABLE registrations; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT SELECT,DELETE ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.event_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(event_id) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.quota_id; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(quota_id) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.first_name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(first_name),UPDATE(first_name) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.last_name; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(last_name),UPDATE(last_name) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.email; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(email) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.answers; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(answers),UPDATE(answers) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
--- Name: COLUMN registrations.is_finished; Type: ACL; Schema: app_public; Owner: -
---
-
-GRANT INSERT(is_finished) ON TABLE app_public.registrations TO ilmo_visitor;
-
-
---
 -- Name: FUNCTION create_registration("registrationToken" text, "eventId" uuid, "quotaId" uuid, "firstName" text, "lastName" text, email public.citext, answers jsonb); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5820,11 +8071,41 @@ GRANT ALL ON FUNCTION app_public.create_registration("registrationToken" text, "
 
 
 --
+-- Name: TABLE reminder_preferences; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.reminder_preferences TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_reminder_preferences(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_reminder_preferences() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_reminder_preferences() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION current_session_id(); Type: ACL; Schema: app_public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_public.current_session_id() FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.current_session_id() TO ilmo_visitor;
+
+
+--
+-- Name: TABLE telegram_accounts; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.telegram_accounts TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION current_telegram_account(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_telegram_account() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_telegram_account() TO ilmo_visitor;
 
 
 --
@@ -5868,6 +8149,14 @@ GRANT ALL ON FUNCTION app_public.current_user_is_admin() TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION current_user_is_developer(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.current_user_is_developer() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.current_user_is_developer() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION current_user_is_owner_organization_member(owner_organization_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5900,6 +8189,46 @@ GRANT ALL ON FUNCTION app_public.delete_registration("updateToken" text) TO ilmo
 
 
 --
+-- Name: FUNCTION delete_registration_profile(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.delete_registration_profile() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.delete_registration_profile() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION disconnect_telegram(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.disconnect_telegram() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.disconnect_telegram() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION enable_event_reminder(event_id uuid, language text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.enable_event_reminder(event_id uuid, language text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.enable_event_reminder(event_id uuid, language text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION enabled_features(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.enabled_features() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.enabled_features() TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION events_payment_summary(e app_public.events); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.events_payment_summary(e app_public.events) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.events_payment_summary(e app_public.events) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION events_signup_closed(e app_public.events); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -5921,6 +8250,22 @@ GRANT ALL ON FUNCTION app_public.events_signup_open(e app_public.events) TO ilmo
 
 REVOKE ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.events_signup_upcoming(e app_public.events) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION feature_enabled(key text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.feature_enabled(key text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.feature_enabled(key text) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION feature_flag_events(flag_key text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.feature_flag_events(flag_key text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.feature_flag_events(flag_key text) TO ilmo_visitor;
 
 
 --
@@ -6010,6 +8355,14 @@ GRANT ALL ON FUNCTION app_public.registrations_full_name(registration app_public
 
 
 --
+-- Name: FUNCTION registrations_payment_status(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.registrations_payment_status(registration app_public.registrations) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.registrations_payment_status(registration app_public.registrations) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION registrations_position(registration app_public.registrations); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -6042,6 +8395,14 @@ GRANT ALL ON FUNCTION app_public.request_account_deletion() TO ilmo_visitor;
 
 
 --
+-- Name: FUNCTION request_telegram_link(); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.request_telegram_link() FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.request_telegram_link() TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION resend_email_verification_code(email_id uuid); Type: ACL; Schema: app_public; Owner: -
 --
 
@@ -6050,11 +8411,78 @@ GRANT ALL ON FUNCTION app_public.resend_email_verification_code(email_id uuid) T
 
 
 --
+-- Name: FUNCTION save_reminder_preferences(minutes_before integer, delivery_method text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.save_reminder_preferences(minutes_before integer, delivery_method text) TO ilmo_visitor;
+
+
+--
 -- Name: FUNCTION set_admin_status(id uuid, is_admin boolean); Type: ACL; Schema: app_public; Owner: -
 --
 
 REVOKE ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) FROM PUBLIC;
 GRANT ALL ON FUNCTION app_public.set_admin_status(id uuid, is_admin boolean) TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_event_registration_reminder(event_id uuid, enabled boolean, language text, minutes_before integer, delivery_method text) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE feature_flags; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT ON TABLE app_public.feature_flags TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_feature_flag(key text, state app_public.feature_state); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_feature_flag(key text, state app_public.feature_state) TO ilmo_visitor;
+
+
+--
+-- Name: TABLE registration_profiles; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.user_id; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(user_id) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.telegram; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(telegram),UPDATE(telegram) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: COLUMN registration_profiles.dietary_restrictions; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT INSERT(dietary_restrictions),UPDATE(dietary_restrictions) ON TABLE app_public.registration_profiles TO ilmo_visitor;
+
+
+--
+-- Name: FUNCTION set_registration_profile(telegram text, dietary_restrictions text); Type: ACL; Schema: app_public; Owner: -
+--
+
+REVOKE ALL ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) FROM PUBLIC;
+GRANT ALL ON FUNCTION app_public.set_registration_profile(telegram text, dietary_restrictions text) TO ilmo_visitor;
 
 
 --
@@ -6225,6 +8653,13 @@ GRANT INSERT(owner_organization_id),UPDATE(owner_organization_id) ON TABLE app_p
 --
 
 GRANT INSERT(color),UPDATE(color) ON TABLE app_public.event_categories TO ilmo_visitor;
+
+
+--
+-- Name: TABLE event_registration_reminders; Type: ACL; Schema: app_public; Owner: -
+--
+
+GRANT SELECT,DELETE ON TABLE app_public.event_registration_reminders TO ilmo_visitor;
 
 
 --

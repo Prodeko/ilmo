@@ -29,8 +29,8 @@ describe("Test app_public.update_event_quotas function", () => {
         `select app_public.update_event_quotas(
           $1,
           array[
-            row($2::uuid, 0::smallint, $3::jsonb, 5::smallint),
-            row(null, 1::smallint, $4::jsonb, 10::smallint)
+            row($2::uuid, 0::smallint, $3::jsonb, 5::smallint, 0),
+            row(null, 1::smallint, $4::jsonb, 10::smallint, 0)
           ]::app_public.update_event_quotas[]
         )`,
         [

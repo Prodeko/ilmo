@@ -29,26 +29,47 @@ import {
   createRegistrationSecrets,
   createSession,
   createUsers,
+  deleteTestData as deleteSharedTestData,
   poolFromUrl,
-  refreshMaterializedView,
+  setFeatureFlag as setSharedFeatureFlag,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
 import { getPostGraphileOptions } from "../src/middleware/installPostGraphile"
+import {
+  configureFeatureFlags,
+  invalidateFeatureFlags,
+} from "../src/utils/featureFlags"
 
 export * from "../../__tests__/helpers"
 
 const MockReq = require("mock-req")
 
+/*
+ * The server caches flag states for a few seconds. These two shadow the
+ * shared helpers of the same name and drop that cache, so a test sees its own
+ * flag changes immediately.
+ */
+export const setFeatureFlag: typeof setSharedFeatureFlag = async (...args) => {
+  await setSharedFeatureFlag(...args)
+  invalidateFeatureFlags()
+}
+
+export const deleteTestData: typeof deleteSharedTestData = async () => {
+  await deleteSharedTestData()
+  invalidateFeatureFlags()
+}
+
 interface CreateUserAndLogInArgs {
   isAdmin?: boolean
+  isDeveloper?: boolean
 }
 
 export async function createUserAndLogIn(args?: CreateUserAndLogInArgs) {
-  const { isAdmin = false } = args || {}
+  const { isAdmin = false, isDeveloper = false } = args || {}
   const pool = poolFromUrl(TEST_DATABASE_URL!)
   const client = await pool.connect()
   try {
-    const [user] = await createUsers(client, 1, true, isAdmin)
+    const [user] = await createUsers(client, 1, true, isAdmin, isDeveloper)
     const session = await createSession(client, user.id)
 
     return { user, session }
@@ -63,6 +84,7 @@ interface CreateEventDataAndLogin {
     amount?: number
     isVerified?: boolean
     isAdmin?: boolean
+    isDeveloper?: boolean
   }
   organizationOptions?: {
     create: boolean
@@ -131,7 +153,8 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         client,
         userOptions.amount,
         userOptions.isVerified,
-        userOptions.isAdmin
+        userOptions.isAdmin,
+        userOptions.isDeveloper
       )
     }
     const primaryUser = users[0]
@@ -226,8 +249,6 @@ export async function createEventDataAndLogin(args?: CreateEventDataAndLogin) {
         quotas[0].id
       )
     }
-
-    await refreshMaterializedView(client)
 
     await client.query("commit")
     return {
@@ -345,55 +366,81 @@ interface ICtx {
   schema: GraphQLSchema
 }
 let ctx: ICtx | null = null
+// Every resource setup() has created so far, whether or not setup() finished.
+// teardown() must release these even when setup() threw (e.g. the test DB was
+// dropped by a concurrent `pnpm setup:db` / `pnpm test`) or is still running
+// (beforeAll timed out); otherwise the open redis socket / pg pools keep the
+// event loop alive and jest never exits.
+let pending: Partial<ICtx> = {}
+let settingUp: Promise<void> | null = null
 
-export const setup = async () => {
-  const rootPgPool = new Pool({
-    connectionString: TEST_DATABASE_URL,
-  })
-  const redisClient = new Redis(
-    process.env.TEST_REDIS_URL
-  ) as unknown as FastifyRedis
-  const workerUtils = await makeWorkerUtils({
-    connectionString: TEST_DATABASE_URL,
-  })
-  const options = getPostGraphileOptions({
-    rootPgPool,
-    redisClient,
-    workerUtils,
-  })
-  const schema = await createPostGraphileSchema(
-    rootPgPool,
-    "app_public",
-    options
-  )
+export const setup = () => {
+  settingUp = (async () => {
+    const rootPgPool = new Pool({
+      connectionString: TEST_DATABASE_URL,
+    })
+    pending.rootPgPool = rootPgPool
+    const redisClient = new Redis(
+      process.env.TEST_REDIS_URL
+    ) as unknown as FastifyRedis
+    pending.redisClient = redisClient
+    const workerUtils = await makeWorkerUtils({
+      connectionString: TEST_DATABASE_URL,
+    })
+    pending.workerUtils = workerUtils
+    const options = getPostGraphileOptions({
+      rootPgPool,
+      redisClient,
+      workerUtils,
+    })
+    const schema = await createPostGraphileSchema(
+      rootPgPool,
+      "app_public",
+      options
+    )
+    // As installFeatureFlags does at boot
+    configureFeatureFlags(rootPgPool)
 
-  // Store the context
-  ctx = {
-    rootPgPool,
-    redisClient,
-    workerUtils,
-    options,
-    schema,
-  }
+    // Store the context
+    ctx = {
+      rootPgPool,
+      redisClient,
+      workerUtils,
+      options,
+      schema,
+    }
+  })()
+  return settingUp
 }
 
 export const teardown = async () => {
-  try {
-    if (!ctx) {
-      return null
+  // Let an in-flight setup() settle first so nothing it creates afterwards
+  // escapes cleanup.
+  await settingUp?.catch(() => {})
+  settingUp = null
+  const { rootPgPool, redisClient, workerUtils } = pending
+  pending = {}
+  ctx = null
+  const attempt = async (fn: () => unknown) => {
+    try {
+      await fn()
+    } catch (e) {
+      console.error(e)
     }
-    const { rootPgPool, redisClient, workerUtils } = ctx
-    ctx = null
-    rootPgPool.end()
-    workerUtils.release()
-    // Flush redis after tests have run
-    await redisClient.flushdb()
-    await redisClient.quit()
-    return null
-  } catch (e) {
-    console.error(e)
-    return null
   }
+  if (redisClient) {
+    if ((redisClient as unknown as Redis).status === "ready") {
+      // Flush redis after tests have run
+      await attempt(() => redisClient.flushdb())
+      await attempt(() => redisClient.quit())
+    }
+    // Also stops ioredis reconnecting forever if it never got (or lost) a
+    // connection
+    redisClient.disconnect()
+  }
+  if (workerUtils) await attempt(() => workerUtils.release())
+  if (rootPgPool) await attempt(() => rootPgPool.end())
+  return null
 }
 
 export const runGraphQLQuery = async (

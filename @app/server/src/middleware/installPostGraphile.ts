@@ -3,7 +3,6 @@ import { IncomingMessage } from "http"
 import { FastifyRedis } from "@fastify/redis"
 import PersistedOperationsPlugin from "@graphile/persisted-operations"
 import PgPubsub from "@graphile/pg-pubsub"
-import PgSubscriptionsLds from "@graphile/subscriptions-lds"
 import PgSimplifyInflectorPlugin from "@graphile-contrib/pg-simplify-inflector"
 import { parse } from "cookie"
 import { FastifyInstance, FastifyPluginAsync, FastifyRequest } from "fastify"
@@ -14,6 +13,7 @@ import { resolve } from "node:path"
 import { Pool, PoolClient } from "pg"
 import {
   enhanceHttpServerWithSubscriptions,
+  HttpRequestHandler,
   makePluginHook,
   Middleware,
   postgraphile,
@@ -26,14 +26,17 @@ import { convertHandler } from "../app"
 import {
   EmailsPlugin,
   EventRegistrationPlugin,
+  FeatureFlagsPlugin,
   OrdersPlugin,
   PassportLoginPlugin,
   PasswordStrengthPlugin,
+  PaymentsPlugin,
   PrimaryKeyMutationsOnlyPlugin,
   RateLimitPlugin,
   RemoveOwnershipInfoForeignKeyConnections,
   RemoveQueryQueryPlugin,
   SubscriptionsPlugin,
+  TelegramSettingsPlugin,
   TranslatePlugin,
   UploadsPlugin,
   ValidateRichTextFields,
@@ -44,6 +47,12 @@ import handleErrors from "../utils/handleErrors"
 import { RequestLogger } from "./installKeycloak"
 
 const PostGraphileUploadFieldPlugin = require("postgraphile-plugin-upload-field")
+
+declare module "fastify" {
+  export interface FastifyInstance {
+    postgraphile: HttpRequestHandler
+  }
+}
 
 export interface OurGraphQLContext {
   pgClient: PoolClient
@@ -127,8 +136,8 @@ export function getPostGraphileOptions({
     // This is for PostGraphile server plugins: https://www.graphile.org/postgraphile/plugins/
     pluginHook,
 
-    // This is so that PostGraphile installs the watch fixtures, it's also needed to enable live queries
-    ownerConnectionString: process.env.DATABASE_URL,
+    // This is so that PostGraphile installs the watch fixtures in watch mode
+    ownerConnectionString: isDev ? process.env.DATABASE_URL : undefined,
 
     // On production we still want to start even if the database isn't available.
     // On development, we want to deal nicely with issues in the database.
@@ -140,8 +149,10 @@ export function getPostGraphileOptions({
     websockets: ["v1"],
     websocketMiddlewares,
 
-    // Support for Postgraphile live queries @graphile/subscriptions-lds
-    live: !isJestTest,
+    // No live queries: Query fields are not exposed on the Subscription type.
+    // Clients stay fresh through the custom subscriptions in
+    // SubscriptionsPlugin or by refetching.
+    live: false,
 
     // We don't enable query batching since urql doesn't support it, and we don't really need it
     enableQueryBatching: false,
@@ -242,6 +253,9 @@ export function getPostGraphileOptions({
       // Wrap createRegistration mutation
       EventRegistrationPlugin,
 
+      // Clear the server's feature flag cache when a flag is switched
+      FeatureFlagsPlugin,
+
       // Render email templates
       EmailsPlugin,
 
@@ -254,6 +268,8 @@ export function getPostGraphileOptions({
 
       // Adds support for our `postgraphile.tags.json5` file
       TagsFilePlugin,
+
+      TelegramSettingsPlugin,
 
       // Translate text with Azure Translator API
       TranslatePlugin,
@@ -276,6 +292,9 @@ export function getPostGraphileOptions({
       // Calculate password strength with zxcvbn-ts on the server side
       PasswordStrengthPlugin,
 
+      // Stripe payments: the pay page query and Checkout
+      PaymentsPlugin,
+
       // Remove connections based on ownership information from the schema.
       // For example: eventCategoriesByCreatedBy, eventCategoriesByUpdatedBy etc.
       RemoveOwnershipInfoForeignKeyConnections,
@@ -285,11 +304,6 @@ export function getPostGraphileOptions({
 
       // Adds realtime features to our GraphQL schema
       SubscriptionsPlugin,
-
-      // Support for live queries https://www.graphile.org/postgraphile/live-queries/
-      // PgSubscriptionsLds pjolls for changes every 500ms, so in order for jest tests
-      // to cleanly exit we have to exclude this plugin when running tests.
-      !isJestTest ? PgSubscriptionsLds : null,
 
       // Adds custom orders to our GraphQL schema
       OrdersPlugin,
@@ -435,6 +449,8 @@ const Postgraphphile: FastifyPluginAsync = async (app) => {
       workerUtils,
     })
   )
+
+  app.decorate("postgraphile", middleware)
 
   app.options(
     middleware.graphqlRoute,

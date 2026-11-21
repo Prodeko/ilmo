@@ -1,0 +1,33 @@
+fragment AdminFeatures_FeatureFlag on FeatureFlag {
+  key
+  state
+  available
+  description
+  updatedAt
+  retiredAt
+  __typename
+}
+fragment AdminFeatures_FeatureFlagEvent on FeatureFlagEventsRecord {
+  id
+  key
+  oldState
+  newState
+  actorId
+  actorName
+  actorUsername
+  createdAt
+  __typename
+}
+query AdminFeatures {
+  featureFlags(orderBy: KEY_ASC) {
+    nodes {
+      ...AdminFeatures_FeatureFlag
+      __typename
+    }
+    __typename
+  }
+  featureFlagEventsList {
+    ...AdminFeatures_FeatureFlagEvent
+    __typename
+  }
+}

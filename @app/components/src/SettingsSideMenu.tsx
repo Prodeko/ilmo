@@ -1,7 +1,7 @@
 import { Menu, Typography } from "antd"
 
 import { pages } from "./SettingsLayout"
-import { Link, Warn } from "."
+import { Link, useFeatureFlags, Warn } from "."
 
 import type { User } from "@app/graphql"
 import type { MenuProps } from "antd"
@@ -19,7 +19,12 @@ export const SettingsSideMenu: React.FC<SettingsSideMenuProps> = ({
   items,
   initialKey,
 }) => {
-  const menuItems: MenuProps["items"] = Object.keys(items).map((pageHref) => {
+  const { enabled } = useFeatureFlags()
+  const visible = Object.keys(items).filter((pageHref) => {
+    const { feature } = items[pageHref]
+    return !feature || enabled.includes(feature)
+  })
+  const menuItems: MenuProps["items"] = visible.map((pageHref) => {
     const { cy, icon, warnIfUnverified, titleProps, title } = items[pageHref]
     return {
       key: pageHref,

@@ -1,5 +1,13 @@
 fragment CreateEventRegistrationPage_Query on Query {
   ...SharedLayout_Query
+  currentUser {
+    id
+    firstName
+    lastName
+    registrationProfile {
+      ...RegistrationProfile
+    }
+  }
   eventBySlug(slug: $slug) {
     ...EventPage_Event
   }

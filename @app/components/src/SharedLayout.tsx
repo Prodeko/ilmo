@@ -27,6 +27,11 @@ import { CombinedError, UseQueryState } from "urql"
 import headerLogo from "../assets/header-logo.png"
 
 import {
+  featureEnabledIn,
+  FeatureFlagsProvider,
+  isDeveloperUser,
+} from "./Feature"
+import {
   ErrorResult,
   H3,
   LocaleSelect,
@@ -66,6 +71,8 @@ export enum AuthRestrict {
   LOGGED_OUT = 1 << 0,
   LOGGED_IN = 1 << 1,
   NOT_ADMIN = 1 << 2,
+  /** Not an admin with the developer role (feature flag management). */
+  NOT_DEVELOPER = 1 << 3,
 }
 
 export interface SharedLayoutProps {
@@ -116,6 +123,7 @@ export function SharedLayout({
   const forbidsLoggedIn = forbidWhen & AuthRestrict.LOGGED_IN
   const forbidsLoggedOut = forbidWhen & AuthRestrict.LOGGED_OUT
   const forbidsNotAdmin = forbidWhen & AuthRestrict.NOT_ADMIN
+  const forbidsNotDeveloper = forbidWhen & AuthRestrict.NOT_DEVELOPER
 
   const isSSR = typeof window === "undefined"
 
@@ -163,7 +171,9 @@ export function SharedLayout({
     if (
       data &&
       data.currentUser &&
-      (forbidsLoggedIn || (forbidsNotAdmin && !data.currentUser.isAdmin))
+      (forbidsLoggedIn ||
+        (forbidsNotAdmin && !data.currentUser.isAdmin) ||
+        (forbidsNotDeveloper && !isDeveloperUser(data.currentUser)))
     ) {
       if (!isSSR && !noHandleErrors) {
         // Antd messages don't work with SSR
@@ -188,6 +198,9 @@ export function SharedLayout({
   }
 
   const { data, fetching, error, stale } = query
+  // This layout provides the flags to its children, so it reads its own
+  // from the same query instead of useFeature
+  const registrationReminders = featureEnabledIn(data, "registration_reminders")
 
   /*
    * This will set up a GraphQL subscription monitoring for changes to the
@@ -203,164 +216,189 @@ export function SharedLayout({
   })
 
   return (
-    <Layout>
-      <Header
-        style={{
-          boxShadow: "0 2px 8px #f0f1f2",
-          zIndex: 1,
-          overflow: "hidden",
-        }}
-      >
-        <Head>
-          <title>{title ? `${title} — ${projectName}` : projectName}</title>
-        </Head>
-        <Row wrap={false}>
-          <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
-            <Link href="/">
-              <Image
-                alt="Prodeko"
-                height={50}
-                placeholder="blur"
-                src={headerLogo}
-                width={50}
-                priority
-              />
-            </Link>
-          </Col>
-          {!isMobile ? (
-            <Col span={8}>
-              <H3
-                data-cy="layout-header-title"
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  textAlign: "center",
-                  lineHeight: "64px",
-                }}
-              >
-                {titleHref ? (
-                  <Link
-                    as={titleHrefAs}
-                    data-cy="layout-header-titlelink"
-                    href={titleHref}
-                  >
-                    {title}
-                  </Link>
-                ) : (
-                  title
-                )}
-              </H3>
+    <FeatureFlagsProvider data={data}>
+      <Layout>
+        <Header
+          style={{
+            boxShadow: "0 2px 8px #f0f1f2",
+            zIndex: 1,
+            overflow: "hidden",
+          }}
+        >
+          <Head>
+            <title>{title ? `${title} — ${projectName}` : projectName}</title>
+          </Head>
+          <Row wrap={false}>
+            <Col sm={8} style={{ padding: "5px 0" }} xs={12}>
+              <Link href="/">
+                <Image
+                  alt="Prodeko"
+                  height={50}
+                  placeholder="blur"
+                  src={headerLogo}
+                  width={50}
+                  priority
+                />
+              </Link>
             </Col>
-          ) : null}
-          <Col sm={8} style={{ textAlign: "right" }} xs={12}>
-            <Space size="large">
-              <LocaleSelect />
-              {data && data.currentUser ? (
-                <Dropdown
-                  menu={{
-                    items: [
-                      ...(data.currentUser.isAdmin
-                        ? [
-                            {
-                              key: "admin",
-                              label: (
-                                <Link
-                                  data-cy="layout-link-admin"
-                                  href="/admin/event/list"
-                                >
-                                  {t("admin")}
-                                </Link>
-                              ),
-                            },
-                          ]
-                        : []),
-                      {
-                        key: "settings",
-                        label: (
-                          <Link
-                            data-cy="layout-link-settings"
-                            href="/settings/profile"
-                          >
-                            <Warn okay={data.currentUser.isVerified}>
-                              {t("settings")}
-                            </Warn>
-                          </Link>
-                        ),
-                      },
-                      {
-                        key: "logout",
-                        label: <a onClick={handleLogout}>{t("logout")}</a>,
-                      },
-                    ],
+            {!isMobile ? (
+              <Col span={8}>
+                <H3
+                  data-cy="layout-header-title"
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    textAlign: "center",
+                    lineHeight: "64px",
                   }}
-                  trigger={["click"]}
                 >
-                  <span
-                    data-cy="layout-dropdown-user"
-                    style={{ whiteSpace: "nowrap", marginRight: 12 }}
-                  >
-                    <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
-                    <Warn okay={data.currentUser.isVerified}>
-                      <span style={{ marginLeft: 8, marginRight: 8 }}>
-                        {data.currentUser.name}
-                      </span>
-                      <DownOutlined
-                        style={{ fontSize: 10, verticalAlign: "baseline" }}
-                      />
-                    </Warn>
-                  </span>
-                </Dropdown>
-              ) : forbidsLoggedIn ? null : (
-                <Link
-                  data-cy="header-login-button"
-                  href={`/login?next=${encodeURIComponent(currentUrl)}`}
-                >
-                  {t("signin")}
-                </Link>
-              )}
-            </Space>
-          </Col>
-        </Row>
-      </Header>
-      <Layout hasSider={!!sider}>
-        {sider ? sider : null}
-        <Content style={{ minHeight: contentMinHeight }}>
-          {renderChildren({
-            error,
-            stale,
-            fetching,
-            currentUser: data?.currentUser,
-          })}
-        </Content>
-      </Layout>
-
-      {displayFooter && (
-        <Footer>
-          <StandardWidth>
-            <Row justify="space-between">
-              <Col span={12}>
-                <Text>
-                  &copy; {new Date().getFullYear()} {orgName}{" "}
-                </Text>
+                  {titleHref ? (
+                    <Link
+                      as={titleHrefAs}
+                      data-cy="layout-header-titlelink"
+                      href={titleHref}
+                    >
+                      {title}
+                    </Link>
+                  ) : (
+                    title
+                  )}
+                </H3>
               </Col>
-              {process.env.PRIVACY_URL && (
-                <Col span={12} style={{ textAlign: "right" }}>
-                  <Text>
-                    <span>
-                      <a
-                        href={process.env.PRIVACY_URL}
-                        style={{ textDecoration: "underline" }}
-                      >
-                        {t("privacyPolicy")}
-                      </a>
+            ) : null}
+            <Col sm={8} style={{ textAlign: "right" }} xs={12}>
+              <Space size="large">
+                <LocaleSelect />
+                {data && data.currentUser ? (
+                  <Dropdown
+                    menu={{
+                      items: [
+                        ...(data.currentUser.isAdmin
+                          ? [
+                              {
+                                key: "admin",
+                                label: (
+                                  <Link
+                                    data-cy="layout-link-admin"
+                                    href="/admin/event/list"
+                                  >
+                                    {t("admin")}
+                                  </Link>
+                                ),
+                              },
+                            ]
+                          : []),
+                        {
+                          key: "settings",
+                          label: (
+                            <Link
+                              data-cy="layout-link-settings"
+                              href="/settings/profile"
+                            >
+                              <Warn okay={data.currentUser.isVerified}>
+                                {t("settings")}
+                              </Warn>
+                            </Link>
+                          ),
+                        },
+                        ...(registrationReminders
+                          ? [
+                              {
+                                key: "reminders",
+                                label: (
+                                  <Link
+                                    data-cy="layout-link-reminders"
+                                    href="/settings/reminders"
+                                  >
+                                    {t("reminders")}
+                                  </Link>
+                                ),
+                              },
+                            ]
+                          : []),
+                        {
+                          key: "logout",
+                          label: <a onClick={handleLogout}>{t("logout")}</a>,
+                        },
+                      ],
+                    }}
+                    trigger={["click"]}
+                  >
+                    <span
+                      data-cy="layout-dropdown-user"
+                      style={{ whiteSpace: "nowrap", marginRight: 12 }}
+                    >
+                      <Avatar>{data?.currentUser?.name?.[0] || "?"}</Avatar>
+                      <Warn okay={data.currentUser.isVerified}>
+                        <span style={{ marginLeft: 8, marginRight: 8 }}>
+                          {data.currentUser.name}
+                        </span>
+                        <DownOutlined
+                          style={{ fontSize: 10, verticalAlign: "baseline" }}
+                        />
+                      </Warn>
                     </span>
+                  </Dropdown>
+                ) : forbidsLoggedIn ? null : (
+                  <Link
+                    data-cy="header-login-button"
+                    href={`/login?next=${encodeURIComponent(currentUrl)}`}
+                  >
+                    {t("signin")}
+                  </Link>
+                )}
+              </Space>
+            </Col>
+          </Row>
+        </Header>
+        <Layout hasSider={!!sider}>
+          {sider ? sider : null}
+          {/* Without the footer the content fills the rest of the window, so
+              the light body background doesn't show below short pages */}
+          <Content
+            style={{
+              minHeight: displayFooter
+                ? contentMinHeight
+                : "calc(100vh - 64px)",
+            }}
+          >
+            {renderChildren({
+              error,
+              stale,
+              fetching,
+              currentUser: data?.currentUser,
+            })}
+          </Content>
+        </Layout>
+
+        {displayFooter && (
+          <Footer>
+            <StandardWidth>
+              <Row justify="space-between">
+                <Col span={12}>
+                  <Text>
+                    &copy; {new Date().getFullYear()} {orgName}{" "}
                   </Text>
                 </Col>
-              )}
-            </Row>
-          </StandardWidth>
-        </Footer>
-      )}
-    </Layout>
+                {process.env.PRIVACY_URL && (
+                  <Col span={12} style={{ textAlign: "right" }}>
+                    <Text>
+                      <span>
+                        <a
+                          href={process.env.PRIVACY_URL}
+                          style={{ textDecoration: "underline" }}
+                        >
+                          {t("privacyPolicy")}
+                        </a>
+                      </span>
+                    </Text>
+                  </Col>
+                )}
+              </Row>
+            </StandardWidth>
+          </Footer>
+        )}
+      </Layout>
+    </FeatureFlagsProvider>
   )
 }

@@ -1,6 +1,6 @@
 import qs from "querystring"
 
-import { PlusCircleTwoTone } from "@ant-design/icons"
+import { ControlOutlined, PlusCircleTwoTone } from "@ant-design/icons"
 import { css } from "@emotion/css"
 import { AiOutlineMail, AiOutlineTag } from "@hacknug/react-icons/ai"
 import { FiUsers } from "@hacknug/react-icons/fi"
@@ -11,6 +11,7 @@ import { useRouter } from "next/router"
 import { UseQueryState } from "urql"
 
 import { AdminSideMenu, MenuItem } from "./AdminSideMenu"
+import { isDeveloperUser } from "./Feature"
 import { Redirect } from "./Redirect"
 import {
   AuthRestrict,
@@ -42,24 +43,39 @@ interface AdminLayoutProps {
   query: UseQueryState<SharedLayout_QueryFragment>
   href: string
   children: React.ReactNode
+  /** Defaults to AuthRestrict.NOT_ADMIN; may only add restrictions. */
+  forbidWhen?: AuthRestrict
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   query,
   href: inHref,
   children,
+  forbidWhen = AuthRestrict.NOT_ADMIN,
 }) => {
   const router = useRouter()
   const { t } = useTranslation("admin")
   const { data, fetching } = query
 
-  const basicMenuItems = [
+  const basicMenuItems: MenuItem[] = [
     {
       key: "/admin/emails",
       title: t("sider.titles.emails"),
       icon: <AiOutlineMail />,
       target: "/admin/emails",
     },
+    // Only developers can open the page; other admins do not see the entry.
+    ...(isDeveloperUser(data?.currentUser)
+      ? [
+          {
+            key: "/admin/features",
+            title: t("sider.titles.features"),
+            icon: <ControlOutlined />,
+            target: "/admin/features",
+            cy: "admin-sider-features",
+          },
+        ]
+      : []),
   ]
 
   // Every organization, not just the ones the user is a member of: this menu
@@ -165,6 +181,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         }
       `}
       collapsedWidth={40}
+      // Wide enough for the longest menu label ("Evenemangskategorier")
+      // next to its icon and submenu arrow; antd's default is 200
+      width={240}
     >
       <AdminSideMenu items={items} />
     </Sider>
@@ -173,7 +192,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   return (
     <SharedLayout
       displayFooter={false}
-      forbidWhen={AuthRestrict.NOT_ADMIN}
+      forbidWhen={forbidWhen | AuthRestrict.NOT_ADMIN}
       query={query}
       sider={layoutSider}
       title={`${t("common:admin")}`}
