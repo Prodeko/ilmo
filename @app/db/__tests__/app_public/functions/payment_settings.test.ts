@@ -237,11 +237,18 @@ describe("unpaid_close_email_sent_at", () => {
   }
 
   const hour = 60 * 60 * 1000
+  // The fake event starts a random time after registration closes, so moving
+  // the close later goes only halfway to the start to keep it before it
+  const halfwayToStart = (end: number, start: number) => (start - end) / 2
   it.each([
-    ["is cleared when registration_end_time moves later", 24 * hour, false],
-    ["is kept when registration_end_time moves earlier", -hour, true],
-    ["is kept when registration_end_time is unchanged", 0, true],
-  ])("%s", (_case, shiftMs, kept) =>
+    [
+      "is cleared when registration_end_time moves later",
+      halfwayToStart,
+      false,
+    ],
+    ["is kept when registration_end_time moves earlier", () => -hour, true],
+    ["is kept when registration_end_time is unchanged", () => 0, true],
+  ])("%s", (_case, shift, kept) =>
     withAdminUserDb(async (client, admin) => {
       const { event, quota } = await createPaidEventData(client)
       await asRoot(client, () =>
@@ -250,9 +257,9 @@ describe("unpaid_close_email_sent_at", () => {
           [event.id]
         )
       )
-      const newEnd = new Date(
-        new Date(event.registration_end_time).getTime() + shiftMs
-      )
+      const end = new Date(event.registration_end_time).getTime()
+      const start = new Date(event.event_start_time).getTime()
+      const newEnd = new Date(end + shift(end, start))
       await becomeUser(client, admin.id)
       await updateEvent(
         client,
