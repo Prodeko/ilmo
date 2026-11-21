@@ -1,19 +1,14 @@
 import deleteOldRegistrations from "../../src/tasks/gdpr__delete_event_registrations"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   insertPayment,
-  jobsOf,
   paymentById,
   runTask,
   testPool,
 } from "../helpers"
 
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
 // Never gated: this runs with the `payments` flag off, as it must.
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 
@@ -39,7 +34,7 @@ async function registrationExists(id: string) {
 }
 
 describe("gdpr__delete_event_registrations", () => {
-  it("deletes old registrations without refunding their card payments", async () => {
+  it("deletes old registrations and keeps their payments", async () => {
     const old = await createPaidEvent()
     const recent = await createPaidEvent()
     await moveEventEnd(old.event.id, 61)
@@ -50,25 +45,10 @@ describe("gdpr__delete_event_registrations", () => {
 
     expect(await registrationExists(old.registrations[0].id)).toBe(false)
     expect(await registrationExists(recent.registrations[0].id)).toBe(true)
-    expect(await jobsOf("payment__refund")).toEqual([])
     // The payment is kept for bookkeeping
     expect(await paymentById(payment.id)).toMatchObject({
       status: "PAID",
       registration_id: null,
     })
-  })
-
-  it("still refunds registrations deleted afterwards", async () => {
-    const old = await createPaidEvent()
-    await moveEventEnd(old.event.id, 61)
-    await runTask(deleteOldRegistrations, {})
-
-    const { registrations } = await createPaidEvent()
-    const payment = await insertPayment(registrations[0])
-    await testPool().query(
-      "delete from app_public.registrations where id = $1",
-      [registrations[0].id]
-    )
-    expect(await jobsOf("payment__refund")).toEqual([{ paymentId: payment.id }])
   })
 })

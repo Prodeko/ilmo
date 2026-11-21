@@ -5,14 +5,16 @@ import type { Task } from "graphile-worker"
 
 /**
  * Close-of-registration payment email, run every minute from the
- * crontab. Finds events that collect payments, have the close email on, whose
- * registration has ended and whose close email hasn't been sent, and queues a
- * payment reminder (with `closed: true`) for every finished, unpaid
- * registration holding a spot.
+ * crontab. Finds paid events (a quota has a price) whose registration has
+ * ended and whose close email hasn't been sent, and queues a payment reminder
+ * (with `closed: true`) for every finished, unpaid registration holding a
+ * spot. This email is how participants get their payment link.
  *
- * Runs once per event: `unpaid_close_email_sent_at` is set in the same
+ * Runs once per close: `unpaid_close_email_sent_at` is set in the same
  * transaction that queues the reminders, and `for update skip locked` keeps
- * two overlapping runs from picking the same event.
+ * two overlapping runs from picking the same event. Moving
+ * `registration_end_time` later clears it (a database trigger), so a
+ * reopened registration gets the email again when it closes.
  *
  * Does nothing while the `payments` flag is off. A send missed while it was
  * off stays missed: only events whose registration closed after the flag was
@@ -29,8 +31,10 @@ const task: Task = withFeature(
           `select e.id
           from app_public.events as e
           where
-            e.payment_mode <> 'NONE'
-            and e.send_unpaid_email_on_close is true
+            exists(
+              select 1 from app_public.quotas as q
+              where q.event_id = e.id and q.price_cents > 0
+            )
             and e.registration_end_time < now()
             and e.unpaid_close_email_sent_at is null
             and e.registration_end_time > (

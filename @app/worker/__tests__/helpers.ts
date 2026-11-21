@@ -9,7 +9,6 @@ import {
   poolFromUrl,
   TEST_DATABASE_URL,
 } from "../../__tests__/helpers"
-import { getStripe, resetStripeClient } from "../src/payments"
 
 import type { JobHelpers, Task } from "graphile-worker"
 
@@ -22,59 +21,11 @@ export {
 /*
  * Shared setup for the worker task tests. Tasks are called directly with job
  * helpers backed by the test database, so their queries and queued jobs are
- * real; test files mock the `stripe` package with `mockStripeModule`.
+ * real.
  */
 
 export function testPool(): Pool {
   return poolFromUrl(TEST_DATABASE_URL)
-}
-
-/******************************************************************************/
-// Stripe configuration
-
-const STRIPE_ENV_KEYS = ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"] as const
-
-/**
- * Gives each test of the file a Stripe configuration (test keys; the
- * `stripe` package is mocked) and restores the environment afterwards (jest
- * shares the process between test files). Whether payments are on is the
- * `payments` feature flag: switch it with `setFeatureFlag`.
- */
-export function configureStripeForEachTest() {
-  const saved: Record<string, string | undefined> = {}
-  beforeEach(() => {
-    for (const key of STRIPE_ENV_KEYS) {
-      saved[key] = process.env[key]
-    }
-    process.env.STRIPE_SECRET_KEY = "sk_test_123"
-    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret"
-    resetStripeClient()
-  })
-  afterEach(() => {
-    for (const key of STRIPE_ENV_KEYS) {
-      if (saved[key] === undefined) delete process.env[key]
-      else process.env[key] = saved[key]
-    }
-    resetStripeClient()
-  })
-}
-
-/** Removes the Stripe configuration for the rest of the current test. */
-export function unconfigureStripe() {
-  for (const key of STRIPE_ENV_KEYS) {
-    delete process.env[key]
-  }
-  resetStripeClient()
-}
-
-export interface StripeMock {
-  checkout: { sessions: { retrieve: jest.Mock } }
-  refunds: { create: jest.Mock }
-}
-
-/** The fake client behind getStripe(); Stripe must be configured. */
-export function stripeMock(): StripeMock {
-  return getStripe() as unknown as StripeMock
 }
 
 /******************************************************************************/
@@ -149,33 +100,25 @@ export async function jobsOf(taskIdentifier: string, pool: Pool = testPool()) {
 /******************************************************************************/
 // Data
 
-export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
-
 interface PaidEventOptions {
-  paymentMode?: PaymentMode
   priceCents?: number
   quotaSize?: number
   registrationCount?: number
   /** Move registration end into the past (signup closed). */
   signupClosed?: boolean
-  /** Defaults to true in AFTER_REGISTRATION mode, false otherwise. */
-  sendUnpaidEmailOnClose?: boolean
 }
 
 /**
  * Commits an organization, a category, an event with one quota and some
- * finished registrations (with secrets), then sets the payment mode and the
- * quota price. Registrations are inserted one statement at a time, so their
+ * finished registrations (with secrets), then sets the quota price. Registrations are inserted one statement at a time, so their
  * created_at differ and, with `quotaSize` smaller than `registrationCount`,
  * the last ones are queued. Clears the jobs the inserts queued.
  */
 export async function createPaidEvent({
-  paymentMode = "DURING_REGISTRATION",
   priceCents = 1800,
   quotaSize = 10,
   registrationCount = 1,
   signupClosed = false,
-  sendUnpaidEmailOnClose = paymentMode === "AFTER_REGISTRATION",
 }: PaidEventOptions = {}) {
   const pool = testPool()
   const client = await pool.connect()
@@ -200,14 +143,6 @@ export async function createPaidEvent({
       1,
       createdEvent.id,
       quotaSize
-    )
-    await client.query(
-      `update app_public.events
-        set
-          payment_mode = $2::app_public.payment_mode,
-          send_unpaid_email_on_close = $3
-        where id = $1`,
-      [createdEvent.id, paymentMode, sendUnpaidEmailOnClose]
     )
     await client.query(
       "update app_public.quotas set price_cents = $2 where id = $1",
@@ -264,15 +199,11 @@ export async function createPaidEvent({
 
 interface PaymentOptions {
   method?: "STRIPE" | "MANUAL"
-  status?: "PENDING" | "PAID" | "EXPIRED" | "REFUNDED"
+  status?: "PENDING" | "PAID" | "EXPIRED"
   ticketAmountCents?: number
-  sessionId?: string | null
-  paymentIntentId?: string | null
   /** Insert without a registration (deleted, or a detached duplicate). */
   detached?: boolean
 }
-
-let paymentCounter = 0
 
 /** Inserts a payment row, as the server would. */
 export async function insertPayment(
@@ -281,26 +212,20 @@ export async function insertPayment(
     method = "STRIPE",
     status = "PAID",
     ticketAmountCents = 1800,
-    sessionId,
-    paymentIntentId,
     detached = false,
   }: PaymentOptions = {}
 ) {
-  paymentCounter++
-  const stripe = method === "STRIPE"
   const {
     rows: [payment],
   } = await testPool().query(
     `insert into app_public.payments(
       registration_id, event_id, quota_id, event_name, quota_title,
-      method, status, ticket_amount_cents, service_fee_cents, paid_at,
-      stripe_checkout_session_id, stripe_payment_intent_id
+      method, status, ticket_amount_cents, service_fee_cents, paid_at
     )
     values ($1, $2, $3, '{"fi": "Syyssitsit", "en": "Autumn sitsit"}', '{"fi": "Jäsenet", "en": "Members"}',
       $4::app_public.payment_method, $5::app_public.payment_status, $6,
       case when $4::app_public.payment_method = 'STRIPE' then 25 else 0 end,
-      case when $5::app_public.payment_status in ('PAID', 'REFUNDED') then '2026-10-17 14:32:00'::timestamptz end,
-      $7, $8)
+      case when $5::app_public.payment_status = 'PAID' then '2026-10-17 14:32:00'::timestamptz end)
     returning *`,
     [
       detached ? null : registration.id,
@@ -309,16 +234,6 @@ export async function insertPayment(
       method,
       status,
       ticketAmountCents,
-      sessionId !== undefined
-        ? sessionId
-        : stripe
-          ? `cs_test_${paymentCounter}`
-          : null,
-      paymentIntentId !== undefined
-        ? paymentIntentId
-        : stripe
-          ? `pi_test_${paymentCounter}`
-          : null,
     ]
   )
   return payment

@@ -2,7 +2,6 @@ import { withFeature } from "../featureFlags"
 import {
   loadRegistrationPaymentState,
   payLink,
-  paymentApplies,
   subjectEventName,
   ticketAmounts,
 } from "../payments"
@@ -21,8 +20,9 @@ const { ROOT_URL } = process.env
 /**
  * Payment reminder, queued by the organizers' bulk reminder
  * (admin_send_payment_reminders) and by event__send_unpaid_on_close. Checks
- * again when it runs, so a registration paid, refunded, moved or deleted in
- * the meantime gets nothing. Does nothing while the `payments` flag is off.
+ * again when it runs, so a registration paid, made free, moved or deleted in
+ * the meantime gets nothing. The amounts are the quota's current price. Does
+ * nothing while the `payments` flag is off.
  */
 const task: Task = withFeature<PaymentReminderPayload>(
   "payments",
@@ -60,13 +60,6 @@ const task: Task = withFeature<PaymentReminderPayload>(
       )
       return
     }
-    if (!paymentApplies(event, registration)) {
-      logger.info(
-        `Registration ${registrationId} needs no payment; not reminding`
-      )
-      return
-    }
-
     const state = await loadRegistrationPaymentState(query, registrationId)
     if (state?.payment_status !== "UNPAID") {
       logger.info(
@@ -99,7 +92,7 @@ const task: Task = withFeature<PaymentReminderPayload>(
         eventName: event.name,
         firstName: first_name,
         registrationQuota: quota.title,
-        ...ticketAmounts(registration.price_cents),
+        ...ticketAmounts(quota.price_cents),
         payLink: payLink(registrationSecret.update_token),
         closed,
       },

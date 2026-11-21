@@ -771,9 +771,6 @@ importers:
       nunjucks:
         specifier: ^3.2.3
         version: 3.2.4(chokidar@3.6.0)
-      stripe:
-        specifier: ^23.0.0
-        version: 23.2.0(@types/node@22.19.17)
       tslib:
         specifier: ^2.6.0
         version: 2.8.1
@@ -20112,10 +20109,6 @@ snapshots:
   stripe@23.2.0(@types/node@18.19.130):
     optionalDependencies:
       '@types/node': 18.19.130
-
-  stripe@23.2.0(@types/node@22.19.17):
-    optionalDependencies:
-      '@types/node': 22.19.17
 
   strnum@2.2.3: {}
 

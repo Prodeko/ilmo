@@ -1,7 +1,6 @@
 import processQueue from "../../src/tasks/registration__process_queue"
 import sendEmail from "../../src/tasks/send_email"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   getEmails,
@@ -11,10 +10,6 @@ import {
   setFeatureFlag,
   testPool,
 } from "../helpers"
-
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 beforeEach(() => setFeatureFlag(testPool(), "payments", "on"))
@@ -59,15 +54,14 @@ const NON_PAID_VARIABLE_KEYS = [
 ]
 
 describe("registration__process_queue", () => {
-  it("adds the payment link in DURING_REGISTRATION mode", async () => {
-    const { payload, token } = await moveUpFromQueue()
+  it("adds the payment link once registration has closed", async () => {
+    const { payload, token } = await moveUpFromQueue({ signupClosed: true })
 
     expect(payload.template).toEqual("spot_from_queue.mjml.njk")
     expect(payload.variables).toMatchObject({
       price: 1800,
       serviceFee: 25,
       total: 1825,
-      paymentMode: "DURING_REGISTRATION",
       payLink: `pay/${token}`,
     })
     await sendQueuedEmails(sendEmail)
@@ -75,24 +69,10 @@ describe("registration__process_queue", () => {
     expect(text).toContain("Maksa 18,25 €")
   })
 
-  it("adds the payment link after close in AFTER_REGISTRATION mode", async () => {
-    const { payload, token } = await moveUpFromQueue({
-      paymentMode: "AFTER_REGISTRATION",
-      signupClosed: true,
-    })
-
-    expect(payload.variables).toMatchObject({ payLink: `pay/${token}` })
-  })
-
   it.each([
-    [
-      "before close in AFTER_REGISTRATION mode",
-      { paymentMode: "AFTER_REGISTRATION" },
-      false,
-    ],
-    ["for an event without payments", { paymentMode: "NONE" }, false],
-    ["for a free quota", { priceCents: 0 }, false],
-    ["while the payments flag is off", {}, true],
+    ["while registration is open", {}, false],
+    ["for a free quota", { priceCents: 0, signupClosed: true }, false],
+    ["while the payments flag is off", { signupClosed: true }, true],
   ])("sends the normal email %s", async (_name, options, disable) => {
     if (disable) await setFeatureFlag(testPool(), "payments", "off")
     const { payload } = await moveUpFromQueue(options)

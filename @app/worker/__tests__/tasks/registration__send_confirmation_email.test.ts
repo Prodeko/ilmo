@@ -1,7 +1,6 @@
 import sendConfirmationEmail from "../../src/tasks/registration__send_confirmation_email"
 import sendEmail, { loadTemplate } from "../../src/tasks/send_email"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   getEmails,
@@ -12,10 +11,6 @@ import {
   setFeatureFlag,
   testPool,
 } from "../helpers"
-
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 beforeEach(() => setFeatureFlag(testPool(), "payments", "on"))
@@ -40,8 +35,8 @@ async function confirmationPayload(registrationId: string) {
 }
 
 describe("registration__send_confirmation_email", () => {
-  it("asks for payment in DURING_REGISTRATION mode", async () => {
-    const { registrations, tokens } = await createPaidEvent()
+  it("promises the payment link at the close of registration", async () => {
+    const { event, registrations } = await createPaidEvent()
 
     const payload = await confirmationPayload(registrations[0].id)
 
@@ -49,37 +44,13 @@ describe("registration__send_confirmation_email", () => {
       price: 1800,
       serviceFee: 25,
       total: 1825,
-      paymentMode: "DURING_REGISTRATION",
-      isQueued: false,
-      isPaid: false,
-      payLink: `pay/${tokens[0]}`,
-    })
-    await sendQueuedEmails(sendEmail)
-    const { text } = JSON.parse(getEmails()[0].message)
-    expect(text).toContain("Maksu: odottaa maksua")
-    expect(text).toContain("Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €")
-    expect(text).toContain(
-      `Maksa 18,25 € [${process.env.ROOT_URL}/fi/pay/${tokens[0]}]`
-    )
-    expect(text).toContain("Payment: pending")
-  })
-
-  it("promises the link at close in AFTER_REGISTRATION mode", async () => {
-    const { event, registrations } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
-    })
-
-    const payload = await confirmationPayload(registrations[0].id)
-
-    expect(payload.variables).toMatchObject({
-      price: 1800,
-      paymentMode: "AFTER_REGISTRATION",
       isQueued: false,
     })
     expect(payload.variables.payLink).toBeUndefined()
     await sendQueuedEmails(sendEmail)
     const { text } = JSON.parse(getEmails()[0].message)
     expect(text).toContain("Maksu: maksulinkki tulee myöhemmin")
+    expect(text).toContain("Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €")
     expect(text).toContain("Payment: link coming later")
     expect(text).toContain(
       `kun ilmoittautuminen sulkeutuu ${payload.variables.registrationEndDate} klo ${payload.variables.registrationEndTime}.`
@@ -91,18 +62,30 @@ describe("registration__send_confirmation_email", () => {
     expect(text).not.toContain("/pay/")
   })
 
-  it("says paid when the registration is already paid", async () => {
-    const { registrations } = await createPaidEvent()
+  it("asks for payment when sent after registration has closed", async () => {
+    const { registrations, tokens } = await createPaidEvent({
+      signupClosed: true,
+    })
+
+    const payload = await confirmationPayload(registrations[0].id)
+
+    expect(payload.variables).toMatchObject({ payLink: `pay/${tokens[0]}` })
+    await sendQueuedEmails(sendEmail)
+    const { text } = JSON.parse(getEmails()[0].message)
+    expect(text).toContain("Maksu: odottaa maksua")
+    expect(text).toContain(
+      `Maksa 18,25 € [${process.env.ROOT_URL}/fi/pay/${tokens[0]}]`
+    )
+    expect(text).toContain("Payment: pending")
+  })
+
+  it("has no payment link once the registration is paid", async () => {
+    const { registrations } = await createPaidEvent({ signupClosed: true })
     await insertPayment(registrations[0])
 
     const payload = await confirmationPayload(registrations[0].id)
 
-    expect(payload.variables).toMatchObject({ isPaid: true })
     expect(payload.variables.payLink).toBeUndefined()
-    await sendQueuedEmails(sendEmail)
-    const { text } = JSON.parse(getEmails()[0].message)
-    expect(text).toContain("Maksu: maksettu")
-    expect(text).not.toContain("/pay/")
   })
 
   it("has no payment section for a queued registration", async () => {
@@ -131,7 +114,6 @@ describe("registration__send_confirmation_email", () => {
   })
 
   it.each([
-    ["an event without payments", { paymentMode: "NONE" as const }, false],
     ["a free quota", { priceCents: 0 }, false],
     ["a paid event while the payments flag is off", {}, true],
   ])(

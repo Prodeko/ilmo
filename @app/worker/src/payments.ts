@@ -1,11 +1,5 @@
-import {
-  formatEuro,
-  paymentsConfigured,
-  SERVICE_FEE_CENTS,
-  totalChargeCents,
-} from "@app/lib"
+import { SERVICE_FEE_CENTS, totalChargeCents } from "@app/lib"
 import dayjs from "dayjs"
-import Stripe from "stripe"
 
 import type { JobHelpers } from "graphile-worker"
 
@@ -15,41 +9,9 @@ import type { JobHelpers } from "graphile-worker"
  *
  * Whether payments are on is the `payments` feature flag: tasks that start
  * something new (reminders, the close email) run under `withFeature`, the
- * registration email block checks it itself. Refunds and the emails about
- * payments already made are never gated; they need only Stripe's
- * configuration (`paymentsConfigured`) when they call Stripe.
+ * registration email block checks it itself. The emails about payments
+ * already made are never gated. The worker never calls Stripe.
  */
-
-export { formatEuro, paymentsConfigured }
-
-let client: Stripe | null = null
-
-/**
- * The worker's Stripe client, constructed on first use from
- * `STRIPE_SECRET_KEY` (the server has its own, in @app/server). Throws while
- * Stripe is not configured: tasks check `paymentsConfigured()` first.
- */
-export function getStripe(): Stripe {
-  if (!paymentsConfigured()) {
-    throw new Error(
-      "Stripe client requested while Stripe is not configured (STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET)"
-    )
-  }
-  if (!client) {
-    client = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      appInfo: { name: "Ilmo", url: "https://github.com/Prodeko/ilmo" },
-      maxNetworkRetries: 2,
-    })
-  }
-  return client
-}
-
-/** Forget the cached client, so tests can change the environment. */
-export function resetStripeClient(): void {
-  client = null
-}
-
-export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
 
 export type TranslatedField = { fi?: string; en?: string }
 
@@ -84,27 +46,10 @@ export function formatDateTime(date: Date | string): string {
   return dayjs(date).format("D.M.YYYY HH:mm")
 }
 
-/**
- * Whether a registration of this event has to pay: the event collects
- * payments and the registration's snapshot price is above 0. Does not read
- * the `payments` flag; callers that start something new check it.
- */
-export function paymentApplies(
-  event: { payment_mode?: PaymentMode } & Record<string, any>,
-  registration: { price_cents?: number | null } & Record<string, any>
-): boolean {
-  return event.payment_mode !== "NONE" && (registration.price_cents ?? 0) > 0
-}
-
 export interface RegistrationPaymentState {
   /** IN_QUOTA, IN_OPEN_QUOTA or IN_QUEUE; null if the view has no row. */
   queue_status: "IN_QUOTA" | "IN_OPEN_QUOTA" | "IN_QUEUE" | null
-  payment_status:
-    | "NOT_REQUIRED"
-    | "UNPAID"
-    | "PAID"
-    | "PAID_MANUALLY"
-    | "REFUNDED"
+  payment_status: "NOT_REQUIRED" | "UNPAID" | "PAID" | "PAID_MANUALLY"
   signup_closed: boolean
 }
 
@@ -137,13 +82,10 @@ export interface PaymentRow {
   event_name: TranslatedField
   quota_title: TranslatedField
   method: "STRIPE" | "MANUAL"
-  status: "PENDING" | "PAID" | "EXPIRED" | "REFUNDED"
+  status: "PENDING" | "PAID" | "EXPIRED"
   ticket_amount_cents: number
   service_fee_cents: number
-  refunded_amount_cents: number
   stripe_checkout_session_id: string | null
   stripe_payment_intent_id: string | null
-  stripe_refund_id: string | null
   paid_at: Date | null
-  refunded_at: Date | null
 }

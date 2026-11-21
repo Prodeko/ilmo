@@ -31,7 +31,7 @@ const task: Task = async (inPayload, { addJob, query, logger }) => {
     logger.error(`Payment ${paymentId} not found; aborting`)
     return
   }
-  // Undone (manual) or refunded in the meantime
+  // Undone (manual) in the meantime
   if (payment.status !== "PAID") {
     logger.info(`Payment ${paymentId} is ${payment.status}; not sending`)
     return

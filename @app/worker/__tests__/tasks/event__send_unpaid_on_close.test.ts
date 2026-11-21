@@ -1,6 +1,5 @@
 import sendUnpaidOnClose from "../../src/tasks/event__send_unpaid_on_close"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   insertPayment,
@@ -9,10 +8,6 @@ import {
   setFeatureFlag,
   testPool,
 } from "../helpers"
-
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 beforeEach(async () => {
@@ -42,7 +37,6 @@ describe("event__send_unpaid_on_close", () => {
   it("reminds every unpaid registration holding a spot, once", async () => {
     // Four registrations, three spots: [paid, unpaid, unpaid, queued]
     const { event, registrations } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
       quotaSize: 3,
       registrationCount: 4,
       signupClosed: true,
@@ -63,35 +57,45 @@ describe("event__send_unpaid_on_close", () => {
     expect(await jobsOf("payment__send_reminder")).toHaveLength(2)
   })
 
-  it("runs in DURING_REGISTRATION mode when the close email is on", async () => {
+  it("sends again when registration is reopened and closes again", async () => {
     const { event, registrations } = await createPaidEvent({
-      paymentMode: "DURING_REGISTRATION",
-      sendUnpaidEmailOnClose: true,
+      quotaSize: 3,
+      registrationCount: 2,
       signupClosed: true,
     })
-
     await runTask(sendUnpaidOnClose, {})
+    await insertPayment(registrations[0])
 
+    // Reopened: moving the end later clears the timestamp
+    await testPool().query(
+      `update app_public.events
+        set registration_end_time = now() + interval '1 day'
+        where id = $1`,
+      [event.id]
+    )
+    expect(await closeEmailSentAt(event.id)).toBeNull()
+    await runTask(sendUnpaidOnClose, {})
+    expect(await jobsOf("payment__send_reminder")).toHaveLength(2)
+
+    // Closed again: only the still unpaid registration is reminded
+    await testPool().query(
+      `update app_public.events
+        set registration_end_time = now() - interval '1 second'
+        where id = $1`,
+      [event.id]
+    )
+    await runTask(sendUnpaidOnClose, {})
     expect(await jobsOf("payment__send_reminder")).toEqual([
       { registrationId: registrations[0].id, closed: true },
+      { registrationId: registrations[1].id, closed: true },
+      { registrationId: registrations[1].id, closed: true },
     ])
     expect(await closeEmailSentAt(event.id)).toBeTruthy()
   })
 
   it.each([
-    ["registration is still open", { paymentMode: "AFTER_REGISTRATION" }],
-    [
-      "the close email is off",
-      { paymentMode: "DURING_REGISTRATION", signupClosed: true },
-    ],
-    [
-      "the event has no payments",
-      {
-        paymentMode: "NONE",
-        sendUnpaidEmailOnClose: true,
-        signupClosed: true,
-      },
-    ],
+    ["registration is still open", {}],
+    ["the event is free", { priceCents: 0, signupClosed: true }],
   ] as const)("skips an event when %s", async (_name, options) => {
     const { event } = await createPaidEvent(options)
 
@@ -103,7 +107,6 @@ describe("event__send_unpaid_on_close", () => {
 
   it("skips an event another run is handling", async () => {
     const { event } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
       signupClosed: true,
     })
     // Another run holds the event's row lock (for update skip locked)
@@ -128,7 +131,6 @@ describe("event__send_unpaid_on_close", () => {
 
   it("skips events that closed before the payments flag was switched on", async () => {
     const { event } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
       signupClosed: true,
     })
     // Registration closed a minute ago, the flag was switched on just now
@@ -142,7 +144,6 @@ describe("event__send_unpaid_on_close", () => {
 
   it("does nothing while the payments flag is off", async () => {
     const { event } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
       signupClosed: true,
     })
     await setFeatureFlag(testPool(), "payments", "off")

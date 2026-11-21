@@ -3,7 +3,6 @@ import dayjs from "dayjs"
 import sendReceivedEmail from "../../src/tasks/payment__send_received_email"
 import sendEmail from "../../src/tasks/send_email"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   getEmails,
@@ -14,10 +13,7 @@ import {
   testPool,
 } from "../helpers"
 
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
 // Never gated: this runs with the `payments` flag off, as it must.
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 
@@ -89,10 +85,6 @@ describe("payment__send_received_email", () => {
         )
         return payment
       },
-    ],
-    [
-      "that was refunded",
-      (registration) => insertPayment(registration, { status: "REFUNDED" }),
     ],
     [
       "without a registration",

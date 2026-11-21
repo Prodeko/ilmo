@@ -22,14 +22,12 @@
   {%- if price and not isQueued %}
   {%- from "payment_macros.njk" import paymentBox, payButton %}
   {% call paymentBox() %}
-    <strong>{% if isPaid %}Maksu: maksettu{% elif payLink %}Maksu: odottaa maksua{% else %}Maksu: maksulinkki tulee myöhemmin{% endif %}</strong><br />
+    <strong>{% if payLink %}Maksu: odottaa maksua{% else %}Maksu: maksulinkki tulee myöhemmin{% endif %}</strong><br />
     Lippu {{ price | euro }} + palvelumaksu {{ serviceFee | euro }} = {{ total | euro }}
-    {% if not isPaid %}
-      {% if payLink %}
-        {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
-      {% else %}
-        <br />Lähetämme maksulinkin sähköpostiisi, kun ilmoittautuminen sulkeutuu{% if registrationEndDate %} {{ registrationEndDate }} klo {{ registrationEndTime }}{% endif %}.
-      {% endif %}
+    {% if payLink %}
+      {{ payButton(url + "/fi/" + payLink, "Maksa " + (total | euro)) }}
+    {% else %}
+      <br />Lähetämme maksulinkin sähköpostiisi, kun ilmoittautuminen sulkeutuu{% if registrationEndDate %} {{ registrationEndDate }} klo {{ registrationEndTime }}{% endif %}.
     {% endif %}
   {% endcall %}
   {%- endif %}
@@ -59,14 +57,12 @@
   {%- if price and not isQueued %}
   {%- from "payment_macros.njk" import paymentBox, payButton %}
   {% call paymentBox() %}
-    <strong>{% if isPaid %}Payment: paid{% elif payLink %}Payment: pending{% else %}Payment: link coming later{% endif %}</strong><br />
+    <strong>{% if payLink %}Payment: pending{% else %}Payment: link coming later{% endif %}</strong><br />
     Ticket {{ price | euro }} + service fee {{ serviceFee | euro }} = {{ total | euro }}
-    {% if not isPaid %}
-      {% if payLink %}
-        {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
-      {% else %}
-        <br />We'll email you a payment link when registration closes{% if registrationEndDate %} on {{ registrationEndDate }} at {{ registrationEndTime }}{% endif %}.
-      {% endif %}
+    {% if payLink %}
+      {{ payButton(url + "/en/" + payLink, "Pay " + (total | euro)) }}
+    {% else %}
+      <br />We'll email you a payment link when registration closes{% if registrationEndDate %} on {{ registrationEndDate }} at {{ registrationEndTime }}{% endif %}.
     {% endif %}
   {% endcall %}
   {%- endif %}

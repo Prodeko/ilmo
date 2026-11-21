@@ -1,9 +1,7 @@
 import sendReceivedEmail from "../../src/tasks/payment__send_received_email"
-import sendRefundEmail from "../../src/tasks/payment__send_refund_email"
 import sendReminder from "../../src/tasks/payment__send_reminder"
 import sendEmail from "../../src/tasks/send_email"
 import {
-  configureStripeForEachTest,
   createPaidEvent,
   deleteTestData,
   getEmails,
@@ -14,10 +12,6 @@ import {
   setFeatureFlag,
   testPool,
 } from "../helpers"
-
-jest.mock("stripe", () => require("../stripeMock").mockStripeModule())
-
-configureStripeForEachTest()
 
 beforeEach(deleteTestData)
 beforeEach(() => setFeatureFlag(testPool(), "payments", "on"))
@@ -70,11 +64,21 @@ describe("payment__send_reminder", () => {
     expect(text).not.toContain("Ilmoittautuminen on päättynyt")
   })
 
+  it("charges the quota's current price", async () => {
+    const { quota, registrations } = await createPaidEvent()
+    await testPool().query(
+      "update app_public.quotas set price_cents = 2200 where id = $1",
+      [quota.id]
+    )
+
+    await runTask(sendReminder, { registrationId: registrations[0].id })
+
+    const [payload] = await jobsOf("send_email")
+    expect(payload.variables).toMatchObject({ price: 2200, total: 2225 })
+  })
+
   it("says that registration has closed in the close email", async () => {
-    const { registrations } = await createPaidEvent({
-      paymentMode: "AFTER_REGISTRATION",
-      signupClosed: true,
-    })
+    const { registrations } = await createPaidEvent({ signupClosed: true })
 
     await runTask(sendReminder, {
       registrationId: registrations[0].id,
@@ -92,7 +96,6 @@ describe("payment__send_reminder", () => {
   it.each([
     ["paid by card", { method: "STRIPE" as const }, 0],
     ["paid by hand", { method: "MANUAL" as const }, 0],
-    ["paid and refunded", { status: "REFUNDED" as const }, 0],
     ["whose payment attempt expired", { status: "EXPIRED" as const }, 1],
   ])(
     "a registration %s in the meantime gets %i reminders",
@@ -123,8 +126,15 @@ describe("payment__send_reminder", () => {
       async () => (await firstRegistration({ priceCents: 0 })).id,
     ],
     [
-      "an event without payments",
-      async () => (await firstRegistration({ paymentMode: "NONE" })).id,
+      "a quota made free in the meantime",
+      async () => {
+        const { quota, registrations } = await createPaidEvent()
+        await testPool().query(
+          "update app_public.quotas set price_cents = 0 where id = $1",
+          [quota.id]
+        )
+        return registrations[0].id
+      },
     ],
     [
       "a deleted registration",
@@ -149,31 +159,11 @@ describe("payment emails while the payments flag is off", () => {
     expect(await jobsOf("send_email")).toEqual([])
   })
 
-  it.each([
-    [
-      "payment__send_received_email",
-      sendReceivedEmail,
-      async () => ({
-        paymentId: (await insertPayment(await firstRegistration())).id,
-      }),
-    ],
-    [
-      "payment__send_refund_email",
-      sendRefundEmail,
-      async () => ({
-        paymentId: (
-          await insertPayment(await firstRegistration(), {
-            status: "REFUNDED",
-          })
-        ).id,
-        amountCents: 1800,
-      }),
-    ],
-  ])("%s still sends", async (_name, task, createPayload) => {
-    const payload = await createPayload()
+  it("payment__send_received_email still sends", async () => {
+    const payment = await insertPayment(await firstRegistration())
     await setFeatureFlag(testPool(), "payments", "off")
 
-    await runTask(task, payload)
+    await runTask(sendReceivedEmail, { paymentId: payment.id })
 
     expect(await jobsOf("send_email")).toHaveLength(1)
   })
