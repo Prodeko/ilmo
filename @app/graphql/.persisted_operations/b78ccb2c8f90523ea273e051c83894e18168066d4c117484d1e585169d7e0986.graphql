@@ -56,7 +56,6 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
-  paymentMode
   signupOpen
   signupUpcoming
   signupClosed

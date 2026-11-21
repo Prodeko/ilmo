@@ -1,6 +1,5 @@
 fragment EventPaymentSummary_Event on Event {
   id
-  paymentMode
   lastPaymentReminderSentAt
   registrations {
     totalCount
@@ -11,6 +10,7 @@ fragment EventPaymentSummary_Event on Event {
     dueCount
     ticketsPaidCents
     guildReceivesCents
+    unlinkedCardPaymentCount
   }
 }
 

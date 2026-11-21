@@ -70,7 +70,6 @@ fragment PayPage_RegistrationPayment on RegistrationPayment {
   eventStartTime
   eventEndTime
   registrationEndTime
-  paymentMode
   quotaTitle
   firstName
   lastName
@@ -82,10 +81,7 @@ fragment PayPage_RegistrationPayment on RegistrationPayment {
   totalCents
   paidManually
   paidTotalCents
-  paidTicketCents
   paidAt
-  refundedAmountCents
-  refundedAt
   blockedReason
   __typename
 }

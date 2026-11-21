@@ -1,7 +1,0 @@
-query ClaimedRegistrationStatus($updateToken: String!) {
-  registrationByUpdateToken(updateToken: $updateToken) {
-    id
-    status
-    __typename
-  }
-}

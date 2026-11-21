@@ -13,7 +13,6 @@ fragment EventFields on Event {
   isDraft
   headerImageFile
   openQuotaSize
-  paymentMode
   signupOpen
   signupUpcoming
   signupClosed
@@ -23,8 +22,8 @@ fragment EventFields on Event {
   updatedAt
   __typename
 }
-mutation CreateEvent($input: CreateEventInput!) {
-  createEvent(input: $input) {
+mutation UpdateEvent($input: UpdateEventInput!) {
+  updateEvent(input: $input) {
     event {
       ...EventFields
       __typename

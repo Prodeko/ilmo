@@ -22,7 +22,6 @@ fragment ListEventRegistrations_Registration on Registration {
   isFinished
   status
   position
-  priceCents
   paymentStatus
   createdAt
   updatedAt
