@@ -58,7 +58,6 @@ export interface StripeMock {
       retrieve: jest.Mock
     }
   }
-  refunds: { create: jest.Mock }
   webhooks: {
     generateTestHeaderString(opts: { payload: string; secret: string }): string
   }
@@ -69,30 +68,29 @@ export function stripeMock(): StripeMock {
   return getStripe() as unknown as StripeMock
 }
 
-export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
-
 interface PaidEventOptions {
-  paymentMode?: PaymentMode
   priceCents?: number
   quotaSize?: number
   registrationCount?: number
-  /** Move registration end into the past (signup closed). */
+  /**
+   * Move registration end into the past (default), so that the registrations
+   * can be paid. False leaves registration open.
+   */
   signupClosed?: boolean
 }
 
 /**
  * Commits an event with one quota and some registrations (with secrets), as
- * createEventDataAndLogin does, then makes it paid: sets the payment mode,
- * the quota price and the registrations' price snapshot. Registrations are
+ * createEventDataAndLogin does, then makes it paid by setting the quota
+ * price. Registrations are
  * in creation order, so with `quotaSize` smaller than `registrationCount`
  * the last ones are queued.
  */
 export async function createPaidEvent({
-  paymentMode = "DURING_REGISTRATION",
   priceCents = 1800,
   quotaSize = 10,
   registrationCount = 1,
-  signupClosed = false,
+  signupClosed = true,
 }: PaidEventOptions = {}) {
   const data = await createEventDataAndLogin({
     quotaOptions: { create: true, amount: 1, size: quotaSize },
@@ -100,33 +98,24 @@ export async function createPaidEvent({
     registrationOptions: { create: true, amount: registrationCount },
   })
   const pool = poolFromUrl(TEST_DATABASE_URL)
-  const [event] = data.events
+  let [event] = data.events
   const [quota] = data.quotas
   if (signupClosed) {
-    await pool.query(
+    ;({
+      rows: [event],
+    } = await pool.query(
       `update app_public.events
         set
           registration_start_time = now() - interval '2 days',
           registration_end_time = now() - interval '1 minute'
-        where id = $1`,
+        where id = $1
+        returning *`,
       [event.id]
-    )
+    ))
   }
-  await pool.query(
-    `update app_public.events
-      set
-        payment_mode = $2::app_public.payment_mode,
-        send_unpaid_email_on_close = $2::app_public.payment_mode = 'AFTER_REGISTRATION'
-      where id = $1`,
-    [event.id, paymentMode]
-  )
   await pool.query(
     "update app_public.quotas set price_cents = $2 where id = $1",
     [quota.id, priceCents]
-  )
-  await pool.query(
-    "update app_public.registrations set price_cents = $2 where event_id = $1",
-    [event.id, paymentMode === "NONE" || priceCents === 0 ? null : priceCents]
   )
 
   const registrations = data.registrations
@@ -140,7 +129,7 @@ export async function createPaidEvent({
 
 interface PaymentOptions {
   method?: "STRIPE" | "MANUAL"
-  status?: "PENDING" | "PAID" | "EXPIRED" | "REFUNDED"
+  status?: "PENDING" | "PAID" | "EXPIRED"
   ticketAmountCents?: number
   sessionId?: string | null
   paymentIntentId?: string | null
@@ -194,14 +183,18 @@ export async function paymentsOfEvent(pool: Pool, eventId: string) {
   return rows
 }
 
-export async function jobsOf(pool: Pool, taskIdentifier: string) {
+/**
+ * Payloads of the queued jobs of a task, or of every payment task
+ * (`payment__*`) when omitted.
+ */
+export async function jobsOf(pool: Pool, taskIdentifier?: string) {
   const { rows } = await pool.query(
     `select jobs.payload
       from graphile_worker._private_jobs as jobs
       join graphile_worker._private_tasks as tasks on tasks.id = jobs.task_id
-      where tasks.identifier = $1
+      where coalesce(tasks.identifier = $1::text, tasks.identifier like 'payment\\_%')
       order by jobs.id`,
-    [taskIdentifier]
+    [taskIdentifier ?? null]
   )
   return rows.map((row) => row.payload)
 }

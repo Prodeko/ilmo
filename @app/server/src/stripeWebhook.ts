@@ -70,8 +70,7 @@ const StripeWebhook: FastifyPluginAsync = async (app) => {
  * The Stripe webhook as an external route. The Stripe signature is the
  * authentication, so the route is exempt from the CSRF check and needs no
  * session. It keeps answering while the `payments` flag is off
- * (`gateWhenOff: false`): payments started before the switch still settle
- * and refunds are still recorded.
+ * (`gateWhenOff: false`): payments started before the switch still settle.
  */
 export const stripeWebhook: ExternalRouteModule = {
   name: "stripe",

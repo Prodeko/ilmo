@@ -68,7 +68,6 @@ describe("with the payments flag on", () => {
             "event registration",
             "spot from queue",
             "payment received",
-            "payment refund",
             "payment reminder",
           ])
         )
@@ -84,7 +83,7 @@ describe("with the payments flag on", () => {
           "Lippu 18,00 € + palvelumaksu 0,25 € = 18,25 €"
         )
         expect(textOf("payment received")).toContain("18,25 €")
-        expect(textOf("payment refund")).toContain("18,00 €")
+        expect(names).not.toContain("payment refund")
       },
       true,
       false

@@ -7,8 +7,8 @@ import { createCheckoutSession } from "../payments/checkout"
 import {
   checkoutBlockedReason,
   CheckoutFailedError,
+  loadPaidPayment,
   loadRegistrationForPayment,
-  loadSettledPayment,
   normalizeLanguage,
   PaymentError,
   PaymentLookupFailedError,
@@ -75,8 +75,8 @@ async function loadPaymentByUpdateToken(
   if (!registration || !registration.is_finished) {
     return null
   }
-  const settled = await loadSettledPayment(rootPgPool, registration.id)
-  const priceCents = registration.price_cents ?? 0
+  const paid = await loadPaidPayment(rootPgPool, registration.id)
+  const priceCents = registration.price_cents
   const required = registration.payment_status !== "NOT_REQUIRED"
   return {
     eventId: registration.event_id,
@@ -85,7 +85,6 @@ async function loadPaymentByUpdateToken(
     eventStartTime: registration.event_start_time.toISOString(),
     eventEndTime: registration.event_end_time.toISOString(),
     registrationEndTime: registration.registration_end_time.toISOString(),
-    paymentMode: registration.payment_mode,
     quotaTitle: registration.quota_title,
     firstName: registration.first_name,
     lastName: registration.last_name,
@@ -95,14 +94,11 @@ async function loadPaymentByUpdateToken(
     priceCents: required ? priceCents : 0,
     serviceFeeCents: required ? SERVICE_FEE_CENTS : 0,
     totalCents: required ? totalChargeCents(priceCents) : 0,
-    paidManually: settled?.method === "MANUAL",
-    paidTotalCents: settled
-      ? settled.ticket_amount_cents + settled.service_fee_cents
+    paidManually: paid?.method === "MANUAL",
+    paidTotalCents: paid
+      ? paid.ticket_amount_cents + paid.service_fee_cents
       : null,
-    paidTicketCents: settled ? settled.ticket_amount_cents : null,
-    paidAt: settled?.paid_at?.toISOString() ?? null,
-    refundedAmountCents: settled ? settled.refunded_amount_cents : null,
-    refundedAt: settled?.refunded_at?.toISOString() ?? null,
+    paidAt: paid?.paid_at?.toISOString() ?? null,
     blockedReason: paymentsOn
       ? checkoutBlockedReason(registration)
       : "PAYMENTS_DISABLED",
@@ -124,11 +120,9 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
       PAYMENT_NOT_REQUIRED
       "The registration has been paid (by card or marked paid by hand)."
       ALREADY_PAID
-      "The registration's payment has been refunded."
-      PAYMENT_REFUNDED
       "The registration is in the queue; it is paid once it gets a spot."
       IN_QUEUE
-      "The event collects payment after registration closes, which it has not yet."
+      "Payment opens when registration closes; registration is open (again)."
       PAYMENT_NOT_OPEN
     }
 
@@ -147,7 +141,6 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
       eventStartTime: Datetime!
       eventEndTime: Datetime!
       registrationEndTime: Datetime!
-      paymentMode: PaymentMode!
       quotaTitle: JSON!
       firstName: String
       lastName: String
@@ -155,23 +148,16 @@ const PaymentsPlugin = makeExtendSchemaPlugin(() => ({
       queueStatus: RegistrationStatus
       queuePosition: Int
       status: RegistrationPaymentStatus!
-      "The ticket price the registration was made at. 0 when free."
+      "The quota's current ticket price, which Pay charges. 0 when free."
       priceCents: Int!
       "The service fee charged on top of a paid ticket. 0 when free."
       serviceFeeCents: Int!
       totalCents: Int!
       "True when the paid payment was recorded by an organizer by hand."
       paidManually: Boolean!
-      "What was paid, fee included (paid or refunded payments only)."
+      "What was paid, fee included (paid registrations only)."
       paidTotalCents: Int
-      """
-      The ticket part of the paid payment, without the service fee: what
-      cancelling refunds (paid or refunded payments only).
-      """
-      paidTicketCents: Int
       paidAt: Datetime
-      refundedAmountCents: Int
-      refundedAt: Datetime
       "Why Pay is not available right now; null when it is."
       blockedReason: PaymentErrorCode
     }

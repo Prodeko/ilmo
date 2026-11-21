@@ -12,7 +12,6 @@ import {
   configureStripeForEachTest,
   createPaidEvent,
   insertPayment,
-  PaymentMode,
   paymentsOfEvent,
   stripeMock,
 } from "../payments"
@@ -335,11 +334,8 @@ describe("createCheckoutSession", () => {
       await expectRefusal(token, "REGISTRATION_NOT_FOUND")
     })
 
-    it.each<[string, { paymentMode?: PaymentMode; priceCents?: number }]>([
-      ["an event without payments", { paymentMode: "NONE" }],
-      ["a free quota", { priceCents: 0 }],
-    ])("PAYMENT_NOT_REQUIRED for %s", async (_name, options) => {
-      const { tokens } = await createPaidEvent(options)
+    it("PAYMENT_NOT_REQUIRED for a free quota", async () => {
+      const { tokens } = await createPaidEvent({ priceCents: 0 })
       await expectRefusal(tokens[0], "PAYMENT_NOT_REQUIRED")
     })
 
@@ -351,12 +347,6 @@ describe("createCheckoutSession", () => {
         await expectRefusal(tokens[0], "ALREADY_PAID")
       }
     )
-
-    it("PAYMENT_REFUNDED for a refunded registration", async () => {
-      const { registrations, tokens } = await createPaidEvent()
-      await insertPayment(pool(), registrations[0], { status: "REFUNDED" })
-      await expectRefusal(tokens[0], "PAYMENT_REFUNDED")
-    })
 
     it("IN_QUEUE for a queued registration", async () => {
       const { registrations, tokens } = await createPaidEvent({
@@ -378,21 +368,39 @@ describe("createCheckoutSession", () => {
       expect(result.errors).toBeFalsy()
     })
 
-    it("PAYMENT_NOT_OPEN in after-registration mode while signup is open", async () => {
-      const { tokens } = await createPaidEvent({
-        paymentMode: "AFTER_REGISTRATION",
-      })
+    it("PAYMENT_NOT_OPEN while signup is open", async () => {
+      const { tokens } = await createPaidEvent({ signupClosed: false })
       await expectRefusal(tokens[0], "PAYMENT_NOT_OPEN")
     })
 
-    it("allows after-registration payment once signup has closed", async () => {
-      const { tokens } = await createPaidEvent({
-        paymentMode: "AFTER_REGISTRATION",
-        signupClosed: true,
-      })
+    it("PAYMENT_NOT_OPEN again when registration is reopened", async () => {
+      const { event, tokens } = await createPaidEvent()
+      await pool().query(
+        `update app_public.events
+          set registration_end_time = now() + interval '1 day'
+          where id = $1`,
+        [event.id]
+      )
+      await expectRefusal(tokens[0], "PAYMENT_NOT_OPEN")
+    })
+
+    it("charges the quota price in effect at checkout", async () => {
+      const { quota, tokens } = await createPaidEvent({ priceCents: 1800 })
+      await pool().query(
+        "update app_public.quotas set price_cents = 2200 where id = $1",
+        [quota.id]
+      )
       const result = await createCheckoutSession(tokens[0])
       expect(result.errors).toBeFalsy()
-      expect(result.data!.createCheckoutSession.url).toBeTruthy()
+      const [params] = stripeMock().checkout.sessions.create.mock.calls.at(-1)!
+      expect(params.line_items[0].price_data.unit_amount).toBe(2200)
+      const {
+        rows: [payment],
+      } = await pool().query(
+        "select ticket_amount_cents from app_public.payments where quota_id = $1",
+        [quota.id]
+      )
+      expect(payment.ticket_amount_cents).toBe(2200)
     })
   })
 })

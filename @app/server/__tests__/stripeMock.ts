@@ -20,7 +20,6 @@ export function mockStripeModule() {
         retrieve: jest.fn(),
       },
     },
-    refunds: { create: jest.fn() },
     webhooks: real.webhooks,
   }
   return {

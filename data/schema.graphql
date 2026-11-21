@@ -31,7 +31,6 @@ input AdminDeleteRegistrationInput {
   """
   clientMutationId: String
   id: UUID!
-  refund: Boolean
 }
 
 """The output of our `adminDeleteRegistration` mutation."""
@@ -901,16 +900,9 @@ input EmailTemplateVariables {
   eventSlug: String
   eventTime: String
   firstName: String
-
-  """A duplicate payment was refunded in full (refund email)."""
-  full: Boolean
-  isPaid: Boolean
   isQueued: Boolean
   link: String
   organizationName: String
-
-  """The amount paid (refund email), in cents."""
-  paid: Int
   paidAt: String
 
   """
@@ -918,13 +910,9 @@ input EmailTemplateVariables {
   """
   payLink: String
   paymentMethod: PaymentMethod
-  paymentMode: PaymentMode
 
   """Ticket price in cents (payment emails)."""
   price: Int
-
-  """The amount refunded (refund email), in cents."""
-  refund: Int
   registrationEndDate: String
   registrationEndTime: String
   registrationName: String
@@ -1097,12 +1085,7 @@ type Event {
   ownerOrganizationId: UUID!
 
   """
-  When payment is collected for this event. NONE means the event has no payments.
-  """
-  paymentMode: PaymentMode!
-
-  """
-  Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid and the estimated amount the guild receives. Null unless the current user may manage the event's payments.
+  Payment totals for organizers: counts of registrations holding a spot (in quota or open quota) that are paid, unpaid and due, the ticket amount paid, the estimated amount the guild receives and the number of card payments not linked to a registration (deleted registrations, second payments), which organizers may refund by hand in Stripe. Null unless the current user may manage the event's payments.
   """
   paymentSummary: EventPaymentSummary
 
@@ -1214,11 +1197,6 @@ type Event {
     orderBy: [RegistrationsOrderBy!] = [PRIMARY_KEY_ASC]
   ): RegistrationsConnection!
 
-  """
-  Email the payment link to unpaid participants holding a spot when registration closes. Always true in AFTER_REGISTRATION mode.
-  """
-  sendUnpaidEmailOnClose: Boolean!
-
   """Designates whether event signup is closed or not."""
   signupClosed: Boolean
 
@@ -1232,7 +1210,7 @@ type Event {
   slug: String!
 
   """
-  When the close-of-registration payment email was sent. Set once by the worker.
+  When the close-of-registration payment email was sent. Set by the worker; cleared when registration_end_time moves later, so that the email goes out again at the new close.
   """
   unpaidCloseEmailSentAt: Datetime
   updatedAt: Datetime!
@@ -1543,10 +1521,8 @@ input EventInputRecordInput {
   name: TranslatedField
   openQuotaSize: Int
   ownerOrganizationId: UUID
-  paymentMode: PaymentMode
   registrationEndTime: Datetime
   registrationStartTime: Datetime
-  sendUnpaidEmailOnClose: Boolean
   slug: String
 }
 
@@ -1556,6 +1532,7 @@ type EventPaymentSummary {
   guildReceivesCents: Int
   paidCount: Int
   ticketsPaidCents: Int
+  unlinkedCardPaymentCount: Int
   unpaidCount: Int
 }
 
@@ -2225,7 +2202,7 @@ type Mutation {
   ): AcceptInvitationToOrganizationPayload
 
   """
-  Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed. If the registration was paid by card and refund is true (the default), the ticket price is refunded; the service fee is not.
+  Mutation only accessible to admin users. Allows deleting a registration via the admin panel. In contrast to deleteRegistration, adminDeleteRegistration also allows deleting a registrations once the event signup has closed.
   """
   adminDeleteRegistration(
     """
@@ -2243,7 +2220,7 @@ type Mutation {
   ): AdminDeleteUserPayload
 
   """
-  Records a manual payment (cash, bank transfer) for a registration and emails the participant a payment confirmation.
+  Records a manual payment (cash, bank transfer) of the current quota price for a registration and emails the participant a payment confirmation.
   """
   adminMarkRegistrationPaid(
     """
@@ -2587,7 +2564,7 @@ type Mutation {
   translateText(fromLanguage: SupportedLanguages!, text: String!, toLanguage: SupportedLanguages!): TranslateTextPayload!
 
   """
-  Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given. A paid `paymentMode`, and a non-zero quota `priceCents`, are refused while payments are off.
+  Updates an event as well as any related quotas and questions with one mutation. An omitted event attribute keeps its value, except `highlightText`, which is replaced (null clears it) whenever `isHighlighted` is given.
   """
   updateEvent(
     """
@@ -2999,7 +2976,7 @@ type PasswordStrengthPayload {
 }
 
 """
-Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data.
+Payments for registrations. Rows outlive their registration (and event and quota) so they can be reconciled with Stripe payouts; they hold no personal data. Ilmo never refunds: a card payment without a registration is refunded by hand in Stripe, if at all.
 """
 type Payment {
   createdAt: Datetime!
@@ -3029,15 +3006,11 @@ type Payment {
   """Snapshot of the quota title when the payment was created."""
   quotaTitle: JSON!
 
-  """Amount refunded, in cents."""
-  refundedAmountCents: Int!
-  refundedAt: Datetime
-
   """Reads a single `Registration` that is related to this `Payment`."""
   registration: Registration
 
   """
-  The registration paid for. Null once the registration has been deleted.
+  The registration paid for. Null once the registration has been deleted, and for a card payment that could not be applied to it (a second payment, or an amount that did not match).
   """
   registrationId: UUID
 
@@ -3048,9 +3021,10 @@ type Payment {
   status: PaymentStatus!
   stripeCheckoutSessionId: String
   stripePaymentIntentId: String
-  stripeRefundId: String
 
-  """Ticket price paid, in cents."""
+  """
+  Ticket price paid, in cents: the quota price when the payment was started.
+  """
   ticketAmountCents: Int!
   updatedAt: Datetime!
 }
@@ -3095,16 +3069,11 @@ enum PaymentErrorCode {
   """Payments are switched off, or Stripe is not configured on this server."""
   PAYMENTS_DISABLED
 
-  """
-  The event collects payment after registration closes, which it has not yet.
-  """
+  """Payment opens when registration closes; registration is open (again)."""
   PAYMENT_NOT_OPEN
 
   """The quota is free, or the event has no payments."""
   PAYMENT_NOT_REQUIRED
-
-  """The registration's payment has been refunded."""
-  PAYMENT_REFUNDED
 
   """No finished registration has this update token."""
   REGISTRATION_NOT_FOUND
@@ -3153,21 +3122,11 @@ enum PaymentMethod {
   STRIPE
 }
 
-"""
-When an event collects payment: not at all, right after registering, or once registration has closed.
-"""
-enum PaymentMode {
-  AFTER_REGISTRATION
-  DURING_REGISTRATION
-  NONE
-}
-
 """State of a single payment attempt."""
 enum PaymentStatus {
   EXPIRED
   PAID
   PENDING
-  REFUNDED
 }
 
 """A connection to a list of `Payment` values."""
@@ -3802,7 +3761,7 @@ type Quota {
   position: Int!
 
   """
-  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum, and at most 1 000 000 cents (10 000 €).
+  Ticket price in cents. 0 means the quota is free; a paid price is at least 25 cents so that the total charge with the service fee reaches Stripe's minimum, and at most 1 000 000 cents (10 000 €). Registrants pay the price in effect when they pay.
   """
   priceCents: Int!
 
@@ -4014,11 +3973,6 @@ type Registration {
   """Returns the position of the registration."""
   position: Int
 
-  """
-  Ticket price in cents at the time of registering (a snapshot of the quota price). Null when no payment applies.
-  """
-  priceCents: Int
-
   """Reads a single `Quota` that is related to this `Registration`."""
   quota: Quota
 
@@ -4127,25 +4081,16 @@ type RegistrationPayment {
   """True when the paid payment was recorded by an organizer by hand."""
   paidManually: Boolean!
 
-  """
-  The ticket part of the paid payment, without the service fee: what
-  cancelling refunds (paid or refunded payments only).
-  """
-  paidTicketCents: Int
-
-  """What was paid, fee included (paid or refunded payments only)."""
+  """What was paid, fee included (paid registrations only)."""
   paidTotalCents: Int
-  paymentMode: PaymentMode!
 
-  """The ticket price the registration was made at. 0 when free."""
+  """The quota's current ticket price, which Pay charges. 0 when free."""
   priceCents: Int!
   queuePosition: Int
 
   """Queue status; null while the registration is not yet placed."""
   queueStatus: RegistrationStatus
   quotaTitle: JSON!
-  refundedAmountCents: Int
-  refundedAt: Datetime
   registrationEndTime: Datetime!
 
   """The service fee charged on top of a paid ticket. 0 when free."""
@@ -4159,7 +4104,6 @@ enum RegistrationPaymentStatus {
   NOT_REQUIRED
   PAID
   PAID_MANUALLY
-  REFUNDED
   UNPAID
 }
 

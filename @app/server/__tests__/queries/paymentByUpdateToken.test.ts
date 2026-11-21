@@ -38,7 +38,6 @@ const PaymentByUpdateTokenQuery = `
       eventStartTime
       eventEndTime
       registrationEndTime
-      paymentMode
       quotaTitle
       firstName
       lastName
@@ -50,10 +49,7 @@ const PaymentByUpdateTokenQuery = `
       totalCents
       paidManually
       paidTotalCents
-      paidTicketCents
       paidAt
-      refundedAmountCents
-      refundedAt
       blockedReason
     }
   }
@@ -84,7 +80,6 @@ describe("paymentByUpdateToken", () => {
       eventStartTime: new Date(event.event_start_time).toISOString(),
       eventEndTime: new Date(event.event_end_time).toISOString(),
       registrationEndTime: new Date(event.registration_end_time).toISOString(),
-      paymentMode: "DURING_REGISTRATION",
       quotaTitle: { fi: "Kiintiö 0", en: "Quota 0" },
       firstName: registration.first_name,
       lastName: registration.last_name,
@@ -96,10 +91,7 @@ describe("paymentByUpdateToken", () => {
       totalCents: 1825,
       paidManually: false,
       paidTotalCents: null,
-      paidTicketCents: null,
       paidAt: null,
-      refundedAmountCents: null,
-      refundedAt: null,
       blockedReason: null,
     })
   })
@@ -136,7 +128,6 @@ describe("paymentByUpdateToken", () => {
             status: "PAID",
             paidManually: false,
             paidTotalCents: 1825,
-            paidTicketCents: 1800,
             paidAt: payment.paid_at.toISOString(),
             blockedReason: "ALREADY_PAID",
           },
@@ -160,23 +151,21 @@ describe("paymentByUpdateToken", () => {
       },
     ],
     [
-      "a refund",
+      "a card payment as paid after the price has changed",
       {},
-      async ({ registrations, tokens }) => {
-        const payment = await insertPayment(pool(), registrations[0])
+      async ({ quota, registrations, tokens }) => {
+        await insertPayment(pool(), registrations[0])
         await pool().query(
-          `update app_public.payments
-            set status = 'REFUNDED', refunded_amount_cents = 1800, refunded_at = now()
-            where id = $1`,
-          [payment.id]
+          "update app_public.quotas set price_cents = 2200 where id = $1",
+          [quota.id]
         )
         return {
           token: tokens[0],
           expected: {
-            status: "REFUNDED",
-            refundedAmountCents: 1800,
-            refundedAt: expect.any(String),
-            blockedReason: "PAYMENT_REFUNDED",
+            status: "PAID",
+            priceCents: 2200,
+            paidTotalCents: 1825,
+            blockedReason: "ALREADY_PAID",
           },
         }
       },
@@ -197,11 +186,10 @@ describe("paymentByUpdateToken", () => {
     ],
     [
       "that payment opens when registration closes",
-      { paymentMode: "AFTER_REGISTRATION" },
+      { signupClosed: false },
       async ({ tokens }) => ({
         token: tokens[0],
         expected: {
-          paymentMode: "AFTER_REGISTRATION",
           status: "UNPAID",
           blockedReason: "PAYMENT_NOT_OPEN",
         },
@@ -236,7 +224,7 @@ describe("paymentByUpdateToken", () => {
   it("hides database error text behind PAYMENT_LOOKUP_FAILED", async () => {
     const { tokens } = await createPaidEvent()
     const spy = jest
-      .spyOn(registrationPayment, "loadSettledPayment")
+      .spyOn(registrationPayment, "loadPaidPayment")
       .mockRejectedValueOnce(
         new Error('relation "app_private.secret_table" does not exist')
       )

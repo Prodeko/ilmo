@@ -326,6 +326,16 @@ async function runCommand(
     } finally {
       client.release()
     }
+  } else if (command === "closeEventRegistration") {
+    // Ends the event's registration a moment ago, as if it had closed
+    const { eventId } = payload
+    await rootPgPool.query(
+      `update app_public.events
+        set registration_end_time = now() - interval '1 second'
+        where id = $1`,
+      [eventId]
+    )
+    return { success: true }
   } else if (command === "completeStripeCheckout") {
     return completeStripeCheckout(app, rootPgPool, payload)
   } else {
@@ -510,8 +520,7 @@ async function createEventData(
     userIsAdmin = false,
     openQuotaSize = 0,
     quotaSize = 5,
-    // Payments: the event's payment mode and the quota's ticket price
-    paymentMode = "NONE",
+    // Payments: the quota's ticket price
     priceCents = 0,
   } = payload
 
@@ -536,7 +545,7 @@ async function createEventData(
       1,
       organization.id
     )
-    let [event] = await createEvents(
+    const [event] = await createEvents(
       client,
       1,
       organization.id,
@@ -546,15 +555,7 @@ async function createEventData(
       openQuotaSize
     )
     let [quota] = await createQuotas(client, 1, event.id, quotaSize)
-    if (paymentMode !== "NONE" || priceCents) {
-      ;({
-        rows: [event],
-      } = await client.query(
-        `update app_public.events
-          set payment_mode = $2, send_unpaid_email_on_close = $3
-          where id = $1 returning *`,
-        [event.id, paymentMode, paymentMode === "AFTER_REGISTRATION"]
-      ))
+    if (priceCents) {
       ;({
         rows: [quota],
       } = await client.query(
@@ -1010,9 +1011,10 @@ async function completeStripeCheckout(
     const {
       rows: [registration],
     } = await client.query(
-      `select r.id, r.price_cents
+      `select r.id, q.price_cents
         from app_private.registration_secrets as rs
         join app_public.registrations as r on r.id = rs.registration_id
+        join app_public.quotas as q on q.id = r.quota_id
         where rs.update_token = $1
         for update of r`,
       [updateToken]
@@ -1050,7 +1052,7 @@ async function completeStripeCheckout(
             stripe_checkout_session_id
           )
           select r.id, r.event_id, r.quota_id, e.name, q.title,
-            'STRIPE', 'PENDING', r.price_cents, $2, 'eur', $3
+            'STRIPE', 'PENDING', q.price_cents, $2, 'eur', $3
           from app_public.registrations as r
           join app_public.events as e on e.id = r.event_id
           join app_public.quotas as q on q.id = r.quota_id

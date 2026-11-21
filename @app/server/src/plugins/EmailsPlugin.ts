@@ -21,16 +21,11 @@ const PAYMENT_TEMPLATE_PREFIX = "payment_"
 const PREVIEW_PAYMENT_VARIABLES = {
   closed: false,
   firstName: "Teppo",
-  full: false,
-  isPaid: false,
   isQueued: false,
-  paid: 1825,
   paidAt: "1.1.2021 12:00",
   payLink: "pay/12345",
   paymentMethod: "STRIPE",
-  paymentMode: "DURING_REGISTRATION",
   price: 1800,
-  refund: 1800,
   registrationEndDate: "1.1.2021",
   registrationEndTime: "12:00",
   serviceFee: 25,
@@ -74,22 +69,8 @@ const EmailsPlugin = makeExtendSchemaPlugin(() => ({
       Ticket price plus service fee, in cents (payment emails).
       """
       total: Int
-      """
-      The amount paid (refund email), in cents.
-      """
-      paid: Int
-      """
-      The amount refunded (refund email), in cents.
-      """
-      refund: Int
-      """
-      A duplicate payment was refunded in full (refund email).
-      """
-      full: Boolean
-      paymentMode: PaymentMode
       paymentMethod: PaymentMethod
       isQueued: Boolean
-      isPaid: Boolean
       """
       The payment link relative to the language root, e.g. \`pay/<update token>\`.
       """

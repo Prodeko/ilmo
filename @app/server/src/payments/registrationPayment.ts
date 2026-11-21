@@ -11,7 +11,6 @@ export const PAYMENT_ERROR_CODES = [
   "REGISTRATION_NOT_FOUND",
   "PAYMENT_NOT_REQUIRED",
   "ALREADY_PAID",
-  "PAYMENT_REFUNDED",
   "IN_QUEUE",
   "PAYMENT_NOT_OPEN",
 ] as const
@@ -23,7 +22,6 @@ const PAYMENT_ERROR_MESSAGES: Record<PaymentErrorCode, string> = {
   REGISTRATION_NOT_FOUND: "Registration matching token was not found.",
   PAYMENT_NOT_REQUIRED: "This registration does not require payment.",
   ALREADY_PAID: "This registration has already been paid.",
-  PAYMENT_REFUNDED: "The payment for this registration has been refunded.",
   IN_QUEUE: "Registrations in the queue are not paid until they get a spot.",
   PAYMENT_NOT_OPEN: "Payment opens when registration closes.",
 }
@@ -69,14 +67,11 @@ export class PaymentLookupFailedError extends Error {
   }
 }
 
-export type PaymentMode = "NONE" | "DURING_REGISTRATION" | "AFTER_REGISTRATION"
-
 export type RegistrationPaymentStatus =
   | "NOT_REQUIRED"
   | "UNPAID"
   | "PAID"
   | "PAID_MANUALLY"
-  | "REFUNDED"
 
 export type TranslatedField = Record<string, string | undefined>
 
@@ -88,14 +83,14 @@ export interface RegistrationForPayment {
   first_name: string | null
   last_name: string | null
   email: string | null
-  price_cents: number | null
+  /** The quota's current price: what Checkout charges. */
+  price_cents: number
   is_finished: boolean
   event_name: TranslatedField
   event_slug: string
   event_start_time: Date
   event_end_time: Date
   registration_end_time: Date
-  payment_mode: PaymentMode
   quota_title: TranslatedField
   queue_status: "IN_QUOTA" | "IN_OPEN_QUOTA" | "IN_QUEUE" | null
   queue_position: number | null
@@ -125,14 +120,13 @@ export async function loadRegistrationForPayment(
         r.first_name,
         r.last_name,
         r.email,
-        r.price_cents,
+        q.price_cents,
         r.is_finished,
         e.name as event_name,
         e.slug as event_slug,
         e.event_start_time,
         e.event_end_time,
         e.registration_end_time,
-        e.payment_mode,
         q.title as quota_title,
         s.status as queue_status,
         s.position as queue_position,
@@ -166,8 +160,6 @@ export function checkoutBlockedReason(
     case "PAID":
     case "PAID_MANUALLY":
       return "ALREADY_PAID"
-    case "REFUNDED":
-      return "PAYMENT_REFUNDED"
   }
   // Queued registrations never pay; they get the link when they get a spot
   if (
@@ -176,39 +168,32 @@ export function checkoutBlockedReason(
   ) {
     return "IN_QUEUE"
   }
-  if (
-    registration.payment_mode === "AFTER_REGISTRATION" &&
-    !registration.signup_closed
-  ) {
+  // Payment opens when registration closes, and closes again while
+  // registration is reopened
+  if (!registration.signup_closed) {
     return "PAYMENT_NOT_OPEN"
   }
   return null
 }
 
-/** The paid (or else refunded) payment of a registration, for the /pay page. */
-export interface SettledPayment {
+/** The paid payment of a registration, for the /pay page. */
+export interface PaidPayment {
   method: "STRIPE" | "MANUAL"
-  status: "PAID" | "REFUNDED"
   ticket_amount_cents: number
   service_fee_cents: number
-  refunded_amount_cents: number
   paid_at: Date | null
-  refunded_at: Date | null
 }
 
-export async function loadSettledPayment(
+export async function loadPaidPayment(
   client: Pool | PoolClient,
   registrationId: string
-): Promise<SettledPayment | null> {
+): Promise<PaidPayment | null> {
   const {
     rows: [payment],
-  } = await client.query<SettledPayment>(
-    `select method, status, ticket_amount_cents, service_fee_cents,
-        refunded_amount_cents, paid_at, refunded_at
+  } = await client.query<PaidPayment>(
+    `select method, ticket_amount_cents, service_fee_cents, paid_at
       from app_public.payments
-      where registration_id = $1 and status in ('PAID', 'REFUNDED')
-      order by status = 'PAID' desc, coalesce(refunded_at, paid_at, created_at) desc
-      limit 1`,
+      where registration_id = $1 and status = 'PAID'`,
     [registrationId]
   )
   return payment ?? null

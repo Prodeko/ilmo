@@ -115,7 +115,7 @@ export function checkoutSessionParams({
         quantity: 1,
         price_data: {
           currency: "eur",
-          unit_amount: registration.price_cents!,
+          unit_amount: registration.price_cents,
           product_data: {
             name: `${translate(registration.event_name, language)} – ${translate(
               registration.quota_title,
@@ -270,13 +270,14 @@ async function reservePayment(
           method, status, ticket_amount_cents, service_fee_cents, currency
         )
         select r.id, r.event_id, r.quota_id, e.name, q.title,
-          'STRIPE', 'PENDING', r.price_cents, $2, 'eur'
+          'STRIPE', 'PENDING', $3, $2, 'eur'
         from app_public.registrations as r
         join app_public.events as e on e.id = r.event_id
         join app_public.quotas as q on q.id = r.quota_id
         where r.id = $1
         returning id`,
-      [registration!.id, SERVICE_FEE_CENTS]
+      // The price the session is created with
+      [registration!.id, SERVICE_FEE_CENTS, registration!.price_cents]
     )
     await client.query("commit")
     return { registration: registration!, paymentId: payment.id, pending }
