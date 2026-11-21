@@ -48,7 +48,7 @@ const registrationColsToDownload = [
 interface DownloadRegistrationsOptions {
   /**
    * Adds the payment status and ticket price columns. Only set when payments
-   * are on for the site and the event, so the CSV is unchanged otherwise.
+   * are on and the event has a paid quota, so the CSV is unchanged otherwise.
    */
   includePayments?: boolean
   /**
@@ -74,10 +74,9 @@ function withPaymentColumns(
     [columnName("paymentStatus")]: registration.paymentStatus
       ? paymentStatusLabel(registration.paymentStatus)
       : "",
-    [columnName("price")]:
-      registration.priceCents != null
-        ? formatEuro(registration.priceCents)
-        : "",
+    [columnName("price")]: registration.quota?.priceCents
+      ? formatEuro(registration.quota.priceCents)
+      : "",
   }
   return Object.keys(row).reduce(
     (acc, key) =>

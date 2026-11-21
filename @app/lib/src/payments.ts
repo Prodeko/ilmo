@@ -13,7 +13,7 @@ import { featureConfigured, FEATURES } from "./featureFlags"
  * This says whether Stripe can be called, not whether payments are on: that
  * is the `payments` feature flag, which the server marks unavailable when
  * this is false. Code that needs Stripe for payments already in flight (the
- * webhook, refunds) checks only this.
+ * webhook) checks only this.
  */
 export function paymentsConfigured(
   env: Record<string, string | undefined> = process.env
@@ -23,7 +23,7 @@ export function paymentsConfigured(
 
 /**
  * Stripe's fixed per-payment fee, charged to the customer as a separate
- * "service fee" line item at Checkout. Never refunded.
+ * "service fee" line item at Checkout.
  */
 export const SERVICE_FEE_CENTS = 25
 

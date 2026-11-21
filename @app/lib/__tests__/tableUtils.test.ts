@@ -20,11 +20,16 @@ function registration(
     isFinished: true,
     status: "IN_QUOTA",
     position: 1,
-    priceCents: 1800,
     paymentStatus: "PAID",
     createdAt: "2026-10-17T12:00:00Z",
     updatedAt: "2026-10-17T12:00:00Z",
-    quota: { id: "quota1", position: 0, title: { fi: "Jäsenet" }, size: 10 },
+    quota: {
+      id: "quota1",
+      position: 0,
+      title: { fi: "Jäsenet" },
+      size: 10,
+      priceCents: 1800,
+    },
     ...overrides,
   } as unknown as ListEventRegistrations_RegistrationFragment
 }
@@ -70,9 +75,10 @@ describe("downloadRegistrations", () => {
     expect(labelled).toMatchObject({ paymentStatus: "label:PAID" })
   })
 
-  test("writes empty payment cells when there is no price or status", () => {
+  test("writes empty payment cells for a free quota without a status", () => {
+    const free = registration({ paymentStatus: null })
     const [row] = downloadRegistrations(questions, { includePayments: true })([
-      registration({ priceCents: null, paymentStatus: null }),
+      { ...free, quota: { ...free.quota!, priceCents: 0 } },
     ])
     expect(row).toMatchObject({ paymentStatus: "", price: "" })
   })
