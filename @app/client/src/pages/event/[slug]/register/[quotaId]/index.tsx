@@ -11,15 +11,12 @@ import {
 } from "@app/components"
 import {
   CreateEventRegistrationPageQuery,
-  RegistrationStatus,
-  useClaimedRegistrationStatusQuery,
   useCreateEventRegistrationPageQuery,
   useDeleteEventRegistrationMutation,
 } from "@app/graphql"
 import {
   buildRegistrationInitialValues,
   quotaRequiresPayment,
-  registrationFormPaymentVariant,
   RegistrationPrefillUser,
 } from "@app/lib"
 import { Col, Popconfirm, Row } from "antd"
@@ -30,17 +27,15 @@ import type { NextPage } from "next"
 interface PrefilledRegistrationFormProps
   extends Omit<
     ComponentProps<typeof EventRegistrationForm>,
-    "initialValues" | "payment" | "paymentLoading"
+    "initialValues" | "payment"
   > {
   currentUser: RegistrationPrefillUser | null | undefined
   event: CreateEventRegistrationPageQuery["eventBySlug"]
   quota: CreateEventRegistrationPageQuery["quota"]
-  // The token of the spot claimed when the form opened
-  updateToken: string | undefined
 }
 
 /**
- * The create form with its initial values and payment block. Rendered inside
+ * The create form with its initial values and payment notice. Rendered inside
  * SharedLayout so that useFeature reads the flags the layout provides.
  */
 const PrefilledRegistrationForm = ({
@@ -48,48 +43,21 @@ const PrefilledRegistrationForm = ({
   questions,
   event,
   quota,
-  updateToken,
   ...formProps
 }: PrefilledRegistrationFormProps) => {
-  const { lang } = useTranslation("register_event")
-  // Payments: the form shows a payment block for paid quotas, and a queue
-  // notice instead when the spot claimed on opening the form is in the queue
+  // Paid quotas: the form says that the payment link comes by email when
+  // registration closes
   const paymentsEnabled = useFeature("payments")
-  const requiresPayment = quotaRequiresPayment(
-    paymentsEnabled,
-    event?.paymentMode,
-    quota?.priceCents
+  const payment = useMemo(
+    () =>
+      quotaRequiresPayment(paymentsEnabled, quota?.priceCents)
+        ? {
+            priceCents: quota?.priceCents ?? 0,
+            registrationEndTime: event?.registrationEndTime,
+          }
+        : null,
+    [paymentsEnabled, event, quota]
   )
-  const [claimedStatusQuery] = useClaimedRegistrationStatusQuery({
-    variables: { updateToken: updateToken as string },
-    pause: !updateToken || !requiresPayment,
-    requestPolicy: "network-only",
-  })
-  // Until the claimed spot's status is known, the submit button waits
-  const paymentLoading =
-    requiresPayment &&
-    !!updateToken &&
-    !claimedStatusQuery.data?.registrationByUpdateToken &&
-    !claimedStatusQuery.error
-  const isQueued =
-    claimedStatusQuery.data?.registrationByUpdateToken?.status ===
-    RegistrationStatus.InQueue
-  const payment = useMemo(() => {
-    const variant = registrationFormPaymentVariant(
-      paymentsEnabled,
-      event?.paymentMode,
-      quota?.priceCents,
-      isQueued
-    )
-    return variant
-      ? {
-          variant,
-          quotaTitle: quota?.title?.[lang] ?? "",
-          priceCents: quota?.priceCents ?? 0,
-          registrationEndTime: event?.registrationEndTime,
-        }
-      : null
-  }, [paymentsEnabled, event, quota, isQueued, lang])
   const keycloakNames = useFeature("keycloak_names")
   const prefillAnswers = useFeature("prefill_answers")
   const initialValues = useMemo(
@@ -111,7 +79,6 @@ const PrefilledRegistrationForm = ({
       canRememberAnswers={!!currentUser && prefillAnswers}
       initialValues={initialValues}
       payment={payment}
-      paymentLoading={paymentLoading}
       questions={questions}
     />
   )
@@ -216,7 +183,6 @@ const EventRegistrationPage: NextPage = () => {
               }
             }}
             type="create"
-            updateToken={updateToken}
           />
           <RecentRegistrationsList eventId={event.id} />
         </>

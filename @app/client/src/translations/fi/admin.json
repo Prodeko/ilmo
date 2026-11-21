@@ -372,9 +372,7 @@
     "delete": {
       "body": "Paikka siirtyy jonossa seuraavalle. Poistoa ei voi perua.",
       "confirm": "Poista",
-      "confirmRefund": "Poista ja palauta",
-      "manualWarning": "Tämä ilmoittautuminen on merkitty maksetuksi käsin ({{price}}). Ilmo ei voi palauttaa maksua, joten hoida mahdollinen palautus itse.",
-      "refund": "Palauta lipun hinta, {{price}}, kortille",
+      "noRefundWarning": "Tämä ilmoittautuminen on maksettu. Mitään ei palauteta automaattisesti: hoida mahdollinen palautus itse (korttimaksut Stripen hallintapaneelissa).",
       "title": "Poistetaanko käyttäjän {{name}} ilmoittautuminen?"
     },
     "filter": {
@@ -391,8 +389,8 @@
       "noteFees": "Kilta saa = hinta − 1,5 % × (hinta + 0,25 €). Asiakas maksaa hinnan sekä 0,25 €:n palvelumaksun, ja Stripe perii 0,25 € + 1,5 %. Arvio koskee eurooppalaisia kortteja; ETA-alueen ulkopuoliset kortit maksavat hieman enemmän.",
       "noteFree": "0 € tekee kiintiöstä ilmaisen. Muuten vähimmäishinta on 0,25 €.",
       "noteOpenQuota": "Avoimen kiintiön paikoista maksetaan sen kiintiön hinta, jonka kautta henkilö ilmoittautui.",
-      "priceChangedWarning": "Tässä kiintiössä on {{count}} ilmoittautumista. Ne säilyttävät hinnan {{price}}. Uusi hinta koskee vain uusia ilmoittautumisia.",
-      "priceChangedWarning_one": "Tässä kiintiössä on {{count}} ilmoittautuminen. Se säilyttää hinnan {{price}}. Uusi hinta koskee vain uusia ilmoittautumisia.",
+      "priceChangedWarning": "Tässä kiintiössä on {{count}} ilmoittautumista. Jo maksetut pysyvät maksettuina. Maksamattomat maksavat uuden hinnan.",
+      "priceChangedWarning_one": "Tässä kiintiössä on {{count}} ilmoittautuminen. Jos se on jo maksettu, se pysyy maksettuna. Muuten se maksaa uuden hinnan.",
       "ticketPrice": "Lipun hinta"
     },
     "reminder": {
@@ -407,27 +405,10 @@
       "title_other": "Lähetetäänkö maksumuistutus {{count}} henkilölle?"
     },
     "sendReminder": "Lähetä muistutus {{count}} maksamattomalle",
-    "settings": {
-      "emailOnClose": "Lähetä maksamattomille sähköposti, kun ilmoittautuminen sulkeutuu",
-      "emailOnCloseHelp": "Lähettää maksumuistutuksen kerran sulkeutumishetkellä kaikille paikan saaneille, jotka eivät ole vielä maksaneet.",
-      "emailOnCloseLockedHelp": "Aina päällä tässä tilassa: ilmoittautujat saavat maksulinkkinsä tällä sähköpostilla.",
-      "modeAfter": "Maksu ilmoittautumisen sulkeuduttua",
-      "modeAfterHelp": "Kukaan ei maksa ilmoittautumisen ollessa auki. Kaikki paikan saaneet saavat maksulinkin sähköpostiin, kun ilmoittautuminen sulkeutuu.",
-      "modeDuring": "Maksu ilmoittautumisen yhteydessä",
-      "modeDuringHelp": "Ilmoittautuja ohjataan maksusivulle heti ilmoittautumisen jälkeen. Maksamaton ilmoittautuminen säilyttää silti paikkansa.",
-      "modeLabel": "Milloin maksu kerätään?",
-      "modeNone": "Ei maksuja",
-      "modeNoneHelp": "Kaikki kiintiöt ovat ilmaisia tai maksut kerätään muuten.",
-      "subtitle": "Hinnat asetetaan kiintiökohtaisesti Kiintiöt-välilehdellä.",
-      "switchToNoneWarning": "Jo tehdyt maksut säilyvät ja näkyvät edelleen. Mitään ei palauteta automaattisesti.",
-      "switchToPaidWarning": "Tapahtumassa on jo ilmoittautumisia. Maksullisten kiintiöiden ilmoittautumiset muuttuvat maksamattomiksi kiintiön nykyisellä hinnalla, ja ne on maksettava.",
-      "title": "Maksut"
-    },
     "status": {
       "NOT_REQUIRED": "Ilmainen",
       "PAID": "Maksettu",
       "PAID_MANUALLY": "Maksettu käsin",
-      "REFUNDED": "Palautettu",
       "UNPAID": "Maksamatta"
     },
     "summary": {
@@ -435,6 +416,8 @@
       "paid": "Maksettu",
       "paidOf": "/ {{count}}",
       "ticketsPaid": "Lippuja maksettu",
+      "unlinkedCardPayments_one": "{{count}} korttimaksu ei liity mihinkään ilmoittautumiseen (esimerkiksi tuplamaksu tai poistetun ilmoittautumisen maksu). Palauta se tarvittaessa käsin Stripen hallintapaneelissa.",
+      "unlinkedCardPayments_other": "{{count}} korttimaksua ei liity mihinkään ilmoittautumiseen (esimerkiksi tuplamaksuja tai poistettujen ilmoittautumisten maksuja). Palauta ne tarvittaessa käsin Stripen hallintapaneelissa.",
       "unpaid": "Maksamatta"
     }
   },

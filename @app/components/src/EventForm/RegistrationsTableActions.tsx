@@ -9,11 +9,9 @@ import {
   useAdminUnmarkRegistrationPaidMutation,
   useAdminUpdateRegistrationMutation,
 } from "@app/graphql"
-import { formatEuro } from "@app/lib"
 import {
   Alert,
   Button,
-  Checkbox,
   Col,
   Dropdown,
   message,
@@ -34,7 +32,7 @@ const { Paragraph, Text } = Typography
 interface RegistrationsTableActionsProps {
   registration: Registration
   questions: EventPage_QuestionFragment[] | undefined
-  // Show the payment actions: the "⋯" menu and the refund-aware delete dialog
+  // Show the payment actions: the "⋯" menu and the paid delete dialog
   showPayments?: boolean
   // Called after a payment changed, so the payment summary can be refetched
   onPaymentChange?: () => void
@@ -47,7 +45,6 @@ export const RegistrationsTableActions: React.FC<
   const { t } = useTranslation("admin")
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [refund, setRefund] = useState(true)
   const [updateToken, setUpdateToken] = useState<string | undefined>(undefined)
   const [error, setError] = useState<Error | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -61,38 +58,31 @@ export const RegistrationsTableActions: React.FC<
   const [confirmUndo, setConfirmUndo] = useState(false)
   const paymentRequestRunning = markingPaid || unmarkingPaid
 
-  const { paymentStatus, priceCents } = registration
+  const { paymentStatus } = registration
   // Paid rows always get the delete dialog, even before the payment summary
-  // has loaded, so a card refund is never queued without the organizer
-  // seeing the refund choice.
-  const isPaidByCard = paymentStatus === RegistrationPaymentStatus.Paid
-  const isPaidManually =
+  // has loaded, so that a paid registration is never deleted without the
+  // organizer seeing that nothing is refunded.
+  const isPaid =
+    paymentStatus === RegistrationPaymentStatus.Paid ||
     paymentStatus === RegistrationPaymentStatus.PaidManually
-  const price = formatEuro(priceCents ?? 0)
 
-  const doDelete = useCallback(
-    async (refund?: boolean) => {
-      try {
-        const { data, error } = await deleteRegistration({
-          input: {
-            id: registration.id,
-            ...(refund !== undefined ? { refund } : {}),
-          },
-        })
-        if (error) throw error
-        if (!data?.adminDeleteRegistration?.success) {
-          throw new Error(t("register_event:deleteRegistrationFailed"))
-        }
-        message.info(t("notifications.deleteSuccess"))
-        setShowDeleteModal(false)
-        if (showPayments) onPaymentChange?.()
-      } catch (e) {
-        setErrorMessage(null)
-        setError(e)
+  const doDelete = useCallback(async () => {
+    try {
+      const { data, error } = await deleteRegistration({
+        input: { id: registration.id },
+      })
+      if (error) throw error
+      if (!data?.adminDeleteRegistration?.success) {
+        throw new Error(t("register_event:deleteRegistrationFailed"))
       }
-    },
-    [registration, deleteRegistration, t, showPayments, onPaymentChange]
-  )
+      message.info(t("notifications.deleteSuccess"))
+      setShowDeleteModal(false)
+      if (showPayments) onPaymentChange?.()
+    } catch (e) {
+      setErrorMessage(null)
+      setError(e)
+    }
+  }, [registration, deleteRegistration, t, showPayments, onPaymentChange])
 
   const doUpdate = useCallback(async () => {
     try {
@@ -177,14 +167,7 @@ export const RegistrationsTableActions: React.FC<
       size="small"
       style={{ minWidth: "65px" }}
       danger
-      onClick={
-        isPaidByCard || isPaidManually
-          ? () => {
-              setRefund(true)
-              setShowDeleteModal(true)
-            }
-          : undefined
-      }
+      onClick={isPaid ? () => setShowDeleteModal(true) : undefined}
     >
       {t("common:delete")}
     </Button>
@@ -205,7 +188,7 @@ export const RegistrationsTableActions: React.FC<
           </Button>
         </Col>
         <Col flex={showPayments ? "none" : "1 1 50%"}>
-          {isPaidByCard || isPaidManually ? (
+          {isPaid ? (
             deleteButton
           ) : (
             <Popconfirm
@@ -266,35 +249,20 @@ export const RegistrationsTableActions: React.FC<
           confirmLoading={deleting}
           data-cy="admin-table-delete-modal"
           okButtonProps={{ danger: true }}
-          okText={
-            isPaidByCard && refund
-              ? t("payments.delete.confirmRefund")
-              : t("payments.delete.confirm")
-          }
+          okText={t("payments.delete.confirm")}
           open={showDeleteModal}
           title={t("payments.delete.title", { name: registration.fullName })}
           destroyOnClose
           onCancel={() => setShowDeleteModal(false)}
-          // Manual payments are never refunded by Ilmo, so refund is only
-          // passed for card payments.
-          onOk={() => doDelete(isPaidByCard ? refund : undefined)}
+          onOk={() => doDelete()}
         >
           <Paragraph>{t("payments.delete.body")}</Paragraph>
-          {isPaidByCard && (
-            <Checkbox
-              checked={refund}
-              data-cy="admin-table-delete-refund-checkbox"
-              onChange={(e) => setRefund(e.target.checked)}
-            >
-              <Text strong>{t("payments.delete.refund", { price })}</Text>
-            </Checkbox>
-          )}
-          {isPaidManually && (
-            <Alert
-              message={t("payments.delete.manualWarning", { price })}
-              type="warning"
-            />
-          )}
+          <Alert
+            data-cy="admin-table-delete-no-refund-warning"
+            message={t("payments.delete.noRefundWarning")}
+            type="warning"
+            showIcon
+          />
         </Modal>
       ) : null}
       {showModal ? (

@@ -1,14 +1,6 @@
 {
   "cancel": {
-    "body": "Paikkasi siirtyy jonossa seuraavalle. Tätä ei voi perua.",
-    "deleteAndRefund": "Poista ja palauta {{amount}}",
-    "feeNotRefunded": "Palvelumaksu (ei palauteta)",
-    "keep": "Säilytä ilmoittautuminen",
-    "manualNote": "Järjestäjät ovat merkinneet maksusi, joten sitä ei palauteta automaattisesti. Ota yhteyttä järjestäjiin palautuksesta.",
-    "refundTiming": "Palautus näkyy tililläsi yleensä 5–10 arkipäivän kuluessa.",
-    "refundToCard": "Palautus kortillesi",
-    "title": "Poistetaanko ilmoittautumisesi?",
-    "youPaid": "Maksoit"
+    "noRefundNote": "Maksuasi ei palauteta automaattisesti. Ota yhteyttä järjestäjiin palautuksesta."
   },
   "cancelledNotice": "Maksu jäi kesken. Paikkasi on edelleen varattu, ja voit yrittää uudelleen alta tai myöhemmin vahvistussähköpostin linkistä.",
   "confirmTimeoutNotice": "Emme ole vielä saaneet vahvistusta maksustasi. Jos maksoit, saat pian vahvistuksen sähköpostiisi. Voit myös ladata tämän sivun myöhemmin uudelleen.",
@@ -53,12 +45,6 @@
     "queued": {
       "body": "Olet jonossa sijalla {{position}}. Maksat vain, jos saat paikan, ja lähetämme sinulle silloin maksulinkin.",
       "title": "Olet jonossa"
-    },
-    "refunded": {
-      "body": "{{amount}} palautettiin kortillesi {{date}}.",
-      "detail": "Korttipalautus näkyy yleensä 5–10 arkipäivän kuluessa.",
-      "feeNote": "Palvelumaksua {{fee}} ei palauteta.",
-      "title": "Maksu palautettu"
     }
   },
   "tags": {
@@ -67,7 +53,6 @@
     "notOpen": "Ei vielä auki",
     "paid": "Maksettu",
     "processing": "Käsitellään",
-    "refunded": "Palautettu",
     "unpaid": "Maksamatta"
   },
   "ticket": "Lippu",

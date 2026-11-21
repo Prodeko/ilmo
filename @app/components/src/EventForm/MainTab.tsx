@@ -4,10 +4,9 @@ import { range } from "@app/lib"
 import { DatePicker, Form, Input, Select, Switch } from "antd"
 import dayjs, { Dayjs } from "dayjs"
 
-import { Editor, Feature, FileUpload, useFeature, useTranslation } from "../."
+import { Editor, FileUpload, useFeature, useTranslation } from "../."
 
 import { HighlightTextField } from "./fields/HighlightTextField"
-import { PaymentSettingsFields } from "./fields/PaymentSettingsFields"
 import { TimeRangePicker, TimeRangePickerProps } from "./TimeRangePicker"
 import { FormValues } from "."
 
@@ -295,21 +294,6 @@ export const MainTab: React.FC<MainTabProps> = (props) => {
           maxCount={1}
         />
       </Form.Item>
-      <Feature name="payments">
-        <PaymentSettingsFields
-          hasRegistrations={
-            type === "update" &&
-            !!(data as UpdateEventPageQuery)?.event?.quotas?.nodes?.some(
-              (q) => (q?.registrations?.totalCount ?? 0) > 0
-            )
-          }
-          savedPaymentMode={
-            type === "update"
-              ? (data as UpdateEventPageQuery)?.event?.paymentMode
-              : undefined
-          }
-        />
-      </Feature>
     </>
   )
 }

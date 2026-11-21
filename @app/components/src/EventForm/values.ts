@@ -1,7 +1,7 @@
 // Mapping between an event and the event form's values. An event field is
 // added to the form in three places here: FormValues, toFormValues and
 // toEventInput.
-import { PaymentMode, QuestionPrefill } from "@app/graphql"
+import { QuestionPrefill } from "@app/graphql"
 import {
   filterObjectByKeys,
   ticketPriceCentsToEuros,
@@ -43,15 +43,13 @@ export type FormValues = {
   openQuotaSize?: number
   quotas?: FormQuota[]
   questions?: EventQuestion[]
-  paymentMode?: PaymentMode
-  sendUnpaidEmailOnClose?: boolean
 }
 
 // Features that change what the form sends
 export type EventInputOptions = {
-  // Payment settings and quota prices are sent only while payments are on,
-  // so that events are saved exactly as before otherwise (and the database
-  // keeps stored settings: it refuses paid settings while payments are off)
+  // Quota prices are sent only while payments are on, so that events are
+  // saved exactly as before otherwise (and the database keeps stored prices:
+  // it refuses a non-zero price while payments are off)
   payments?: boolean
 }
 
@@ -121,8 +119,6 @@ export function toFormValues(event: UpdateEventPageQuery["event"]) {
     "quotas",
     "eventQuestions",
     "openQuotaSize",
-    "paymentMode",
-    "sendUnpaidEmailOnClose",
   ]) as Partial<UpdateFormEvent> | null | undefined
 
   const {
@@ -212,15 +208,6 @@ export function toEventInput(
     headerImageFile:
       typeof headerFile === "object" ? headerFile?.originFileObj : undefined,
     openQuotaSize,
-    ...(payments
-      ? {
-          paymentMode: values.paymentMode ?? PaymentMode.None,
-          // The close email is always on in AFTER_REGISTRATION mode
-          sendUnpaidEmailOnClose:
-            values.paymentMode === PaymentMode.AfterRegistration ||
-            !!values.sendUnpaidEmailOnClose,
-        }
-      : {}),
   }
 
   // The list order sets the positions

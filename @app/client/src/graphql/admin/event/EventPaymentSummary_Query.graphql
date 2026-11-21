@@ -1,6 +1,12 @@
 fragment EventPaymentSummary_Event on Event {
   id
   lastPaymentReminderSentAt
+  quotas {
+    nodes {
+      id
+      priceCents
+    }
+  }
   registrations {
     totalCount
   }

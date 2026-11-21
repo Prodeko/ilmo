@@ -2,7 +2,6 @@ import { memo, useCallback, useMemo, useState } from "react"
 import {
   EventPage_QuestionFragment,
   ListEventRegistrationsDocument,
-  PaymentMode,
   Registration,
   RegistrationPaymentStatus,
   RegistrationStatus,
@@ -62,14 +61,13 @@ const PAYMENT_SORT_ORDER: Record<RegistrationPaymentStatus, number> = {
   [RegistrationPaymentStatus.Unpaid]: 0,
   [RegistrationPaymentStatus.Paid]: 1,
   [RegistrationPaymentStatus.PaidManually]: 2,
-  [RegistrationPaymentStatus.Refunded]: 3,
-  [RegistrationPaymentStatus.NotRequired]: 4,
+  [RegistrationPaymentStatus.NotRequired]: 3,
 }
 
 // The table's sorters get the column values (see ServerPaginatedTable)
 const paymentSorter = (a: string | null, b: string | null) =>
-  (PAYMENT_SORT_ORDER[a as RegistrationPaymentStatus] ?? 5) -
-  (PAYMENT_SORT_ORDER[b as RegistrationPaymentStatus] ?? 5)
+  (PAYMENT_SORT_ORDER[a as RegistrationPaymentStatus] ?? 4) -
+  (PAYMENT_SORT_ORDER[b as RegistrationPaymentStatus] ?? 4)
 
 export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
   ({ eventId, eventSlug, questions, paymentsEnabled = false }) => {
@@ -86,13 +84,18 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
     )
     const paymentEvent = summaryData?.event
     const summary = paymentEvent?.paymentSummary
-    const paymentMode = paymentEvent?.paymentMode ?? PaymentMode.None
-    // Payments made before the event was switched to no payments are still
-    // shown, so organizers can see who paid.
+    // An event is paid when one of its quotas has a price
+    const hasPaidQuota = !!paymentEvent?.quotas.nodes.some(
+      (quota) => quota.priceCents > 0
+    )
+    // Payments made before every quota was made free are still shown, so
+    // organizers can see who paid.
     const showPayments =
       paymentsEnabled &&
       !!summary &&
-      (paymentMode !== PaymentMode.None || (summary.paidCount ?? 0) > 0)
+      (hasPaidQuota ||
+        (summary.paidCount ?? 0) > 0 ||
+        (summary.unlinkedCardPaymentCount ?? 0) > 0)
 
     const onPaymentChange = useCallback(() => {
       refetchSummary({ requestPolicy: "network-only" })
@@ -236,8 +239,8 @@ export const RegistrationsTab: React.FC<RegistrationsTabProps> = memo(
             <PaymentToolbar
               eventId={eventId}
               filter={paymentFilter}
+              hasPaidQuota={hasPaidQuota}
               lastReminderSentAt={paymentEvent?.lastPaymentReminderSentAt}
-              paymentMode={paymentMode}
               summary={summary}
               totalCount={paymentEvent?.registrations?.totalCount ?? 0}
               onFilterChange={setPaymentFilter}

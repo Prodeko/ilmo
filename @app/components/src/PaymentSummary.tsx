@@ -1,4 +1,4 @@
-import { CancelRefund, formatEuro } from "@app/lib"
+import { formatEuro } from "@app/lib"
 import { Typography } from "antd"
 
 import type { CSSProperties, ReactNode } from "react"
@@ -26,7 +26,6 @@ interface AmountRowProps {
   cents: number
   lang?: string
   strong?: boolean
-  negative?: boolean
   "data-cy"?: string
 }
 
@@ -36,7 +35,6 @@ export const AmountRow: React.FC<AmountRowProps> = ({
   cents,
   lang,
   strong = false,
-  negative = false,
   "data-cy": dataCy,
 }) => (
   <div
@@ -48,10 +46,7 @@ export const AmountRow: React.FC<AmountRowProps> = ({
     }}
   >
     <span>{label}</span>
-    <span data-cy={dataCy}>
-      {negative ? "−" : ""}
-      {formatEuro(cents, lang)}
-    </span>
+    <span data-cy={dataCy}>{formatEuro(cents, lang)}</span>
   </div>
 )
 
@@ -86,40 +81,6 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
       strong
     />
   </>
-)
-
-interface CancelRefundBreakdownProps {
-  refund: CancelRefund
-  paidLabel: ReactNode
-  feeLabel: ReactNode
-  refundLabel: ReactNode
-  lang?: string
-}
-
-/** What a cancelling participant paid and gets back. */
-export const CancelRefundBreakdown: React.FC<CancelRefundBreakdownProps> = ({
-  refund,
-  paidLabel,
-  feeLabel,
-  refundLabel,
-  lang,
-}) => (
-  <div data-cy="cancel-refund-breakdown" style={paymentBoxStyle}>
-    <AmountRow cents={refund.paidCents} label={paidLabel} lang={lang} />
-    <AmountRow
-      cents={refund.serviceFeeCents}
-      label={feeLabel}
-      lang={lang}
-      negative
-    />
-    <AmountRow
-      cents={refund.refundCents}
-      data-cy="cancel-refund-amount"
-      label={refundLabel}
-      lang={lang}
-      strong
-    />
-  </div>
 )
 
 export const PaymentNote: React.FC<{ children: ReactNode }> = ({

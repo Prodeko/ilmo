@@ -6,7 +6,6 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
-import { PaymentMode } from "@app/graphql"
 import { arePropsEqual } from "@app/lib"
 import {
   Button,
@@ -40,11 +39,8 @@ export const QuotasTab: React.FC<QuotasTabProps> = memo(
     const { t } = useTranslation("events")
     const { token } = theme.useToken()
     const form = Form.useFormInstance()
-    const paymentMode = Form.useWatch("paymentMode", form)
-    // Prices only mean something when the event collects payments
-    const paymentsEnabled = useFeature("payments")
-    const showPrices =
-      paymentsEnabled && !!paymentMode && paymentMode !== PaymentMode.None
+    // Prices only mean something while payments are enabled
+    const showPrices = useFeature("payments")
 
     useEffect(() => {
       if (initialValues?.openQuotaSize > 0) setHasOpenQuota(true)

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CreateEventDocument,
   CreateEventPageQuery,
-  PaymentMode,
   UpdateEventDocument,
   UpdateEventPageQuery,
 } from "@app/graphql"
@@ -241,9 +240,6 @@ const EventFormContent: React.FC<EventFormProps> = (props) => {
         isDraft,
         isHighlighted: false,
         openQuotaSize: 0,
-        ...(paymentsEnabled
-          ? { paymentMode: PaymentMode.None, sendUnpaidEmailOnClose: false }
-          : {}),
         ...initialValues,
       }}
       onFinish={handleSubmit}

@@ -1,4 +1,3 @@
-import { PaymentMode } from "@app/graphql"
 import {
   formatEuro,
   guildReceivesCents,
@@ -91,8 +90,8 @@ interface QuotaPriceWarningProps {
 }
 
 /**
- * Registrations keep the price they registered at, so changing the price of a
- * quota that already has registrations only affects new ones.
+ * Changing the price of a quota that already has registrations: paid
+ * registrations stay paid, unpaid ones pay the new price.
  */
 export const QuotaPriceWarning: React.FC<QuotaPriceWarningProps> = ({
   name,
@@ -118,16 +117,7 @@ export const QuotaPriceWarning: React.FC<QuotaPriceWarningProps> = ({
         const cents = ticketPriceEurosToCents(
           getFieldValue(["quotas", name, "price"])
         )
-        // Registrations of an event without payments have no price yet, so
-        // there is nothing for them to keep.
-        const savedModeIsPaid =
-          !!initialValues?.paymentMode &&
-          initialValues.paymentMode !== PaymentMode.None
-        if (
-          !savedModeIsPaid ||
-          numRegistrations === 0 ||
-          cents === savedCents
-        ) {
+        if (numRegistrations === 0 || cents === savedCents) {
           return null
         }
         return (
@@ -135,7 +125,6 @@ export const QuotaPriceWarning: React.FC<QuotaPriceWarningProps> = ({
             data-cy="eventform-quotas-price-changed-warning"
             message={t("payments.quotas.priceChangedWarning", {
               count: numRegistrations,
-              price: formatEuro(savedCents),
             })}
             style={{ marginBottom: 8, marginLeft: 22 }}
             type="warning"

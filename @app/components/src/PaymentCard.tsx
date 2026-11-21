@@ -24,7 +24,6 @@ const TAGS: Record<CardState, { key: string; color?: string }> = {
   confirming: { key: "processing", color: "blue" },
   paid: { key: "paid", color: "green" },
   paidManually: { key: "paid", color: "green" },
-  refunded: { key: "refunded" },
   queued: { key: "inQueue", color: "blue" },
   opensLater: { key: "notOpen", color: "blue" },
   free: { key: "free" },
@@ -80,8 +79,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
     totalCents,
     paidTotalCents,
     paidAt,
-    refundedAmountCents,
-    refundedAt,
     queuePosition,
   } = payment
   const euro = (cents: number | null | undefined) =>
@@ -108,25 +105,6 @@ export const PaymentCard: React.FC<PaymentCardProps> = ({
     case "paidManually":
       body = t("states.paidManually.body")
       break
-    case "refunded": {
-      const feeKept =
-        paidTotalCents != null && (refundedAmountCents ?? 0) < paidTotalCents
-      body = [
-        t("states.refunded.body", {
-          amount: euro(refundedAmountCents),
-          date: date(refundedAt),
-        }),
-        feeKept
-          ? t("states.refunded.feeNote", {
-              fee: euro(paidTotalCents - (refundedAmountCents ?? 0)),
-            })
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" ")
-      detail = t("states.refunded.detail")
-      break
-    }
     case "queued":
       body = t("states.queued.body", { position: queuePosition ?? "" })
       break

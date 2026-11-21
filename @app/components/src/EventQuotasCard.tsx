@@ -18,7 +18,7 @@ interface EventQuotasCardProps {
   signupState: SignupState
   footer?: ReactNode
   // Whether the payments feature is on. Prices are shown only when it is
-  // and the event has a payment mode.
+  // and a quota of the event has a price.
   paymentsEnabled?: boolean
 }
 
@@ -26,15 +26,11 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
   ({ event, registrations, signupState, footer, paymentsEnabled }) => {
     const { t, lang } = useTranslation("events")
     const isMobile = useIsMobile()
-    const { slug, quotas, paymentMode } = event
+    const { slug, quotas } = event
     const { upcoming, open, closed } = signupState
-    const showPrices =
-      !!paymentsEnabled && !!paymentMode && paymentMode !== "NONE"
-    const hasPaidQuotas =
-      showPrices &&
-      !!quotas?.nodes.some((quota) =>
-        quotaRequiresPayment(paymentsEnabled, paymentMode, quota.priceCents)
-      )
+    const showPrices = !!quotas?.nodes.some((quota) =>
+      quotaRequiresPayment(!!paymentsEnabled, quota.priceCents)
+    )
 
     return (
       <Card
@@ -131,7 +127,7 @@ export const EventQuotasCard: React.FC<EventQuotasCardProps> = memo(
             </div>
           )
         })}
-        {hasPaidQuotas && (
+        {showPrices && (
           <Typography.Text
             data-cy="eventpage-quotas-payment-methods"
             style={{ display: "block", fontSize: 13 }}

@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react"
 import {
   EventPaymentSummary,
-  PaymentMode,
   RegistrationPaymentStatus,
   useAdminSendPaymentRemindersMutation,
 } from "@app/graphql"
 import { formatEuro } from "@app/lib"
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -31,7 +31,6 @@ const STATUS_TAG_COLORS: Record<RegistrationPaymentStatus, string> = {
   [RegistrationPaymentStatus.Paid]: "success",
   [RegistrationPaymentStatus.PaidManually]: "success",
   [RegistrationPaymentStatus.Unpaid]: "warning",
-  [RegistrationPaymentStatus.Refunded]: "default",
   [RegistrationPaymentStatus.NotRequired]: "default",
 }
 
@@ -48,11 +47,10 @@ export const PaymentStatusTag: React.FC<PaymentStatusTagProps> = ({
   const { t } = useTranslation("admin")
   // People in the queue don't pay until they get a spot, unless they have
   // somehow paid already.
-  const isPaidOrRefunded =
+  const isPaid =
     paymentStatus === RegistrationPaymentStatus.Paid ||
-    paymentStatus === RegistrationPaymentStatus.PaidManually ||
-    paymentStatus === RegistrationPaymentStatus.Refunded
-  if (!paymentStatus || (queued && !isPaidOrRefunded)) {
+    paymentStatus === RegistrationPaymentStatus.PaidManually
+  if (!paymentStatus || (queued && !isPaid)) {
     return <Text type="secondary">—</Text>
   }
   return (
@@ -69,9 +67,13 @@ interface PaymentSummaryProps {
   summary: EventPaymentSummary | null | undefined
 }
 
-/** Summary tiles above the registrations table. */
+/**
+ * Summary tiles above the registrations table, and a hint about card
+ * payments not linked to a registration, which Ilmo never refunds.
+ */
 export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ summary }) => {
   const { t } = useTranslation("admin")
+  const unlinkedCount = summary?.unlinkedCardPaymentCount ?? 0
   const tiles = [
     {
       key: "paid",
@@ -112,6 +114,18 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ summary }) => {
           </Card>
         </Col>
       ))}
+      {unlinkedCount > 0 && (
+        <Col span={24}>
+          <Alert
+            data-cy="registrations-payment-summary-unlinked"
+            message={t("payments.summary.unlinkedCardPayments", {
+              count: unlinkedCount,
+            })}
+            type="warning"
+            showIcon
+          />
+        </Col>
+      )}
     </Row>
   )
 }
@@ -127,7 +141,7 @@ interface PaymentToolbarProps {
   onFilterChange: (filter: PaymentFilter) => void
   summary: EventPaymentSummary | null | undefined
   totalCount: number
-  paymentMode: PaymentMode
+  hasPaidQuota: boolean
   lastReminderSentAt: string | null | undefined
   onRemindersSent: () => void
 }
@@ -142,7 +156,7 @@ export const PaymentToolbar: React.FC<PaymentToolbarProps> = ({
   onFilterChange,
   summary,
   totalCount,
-  paymentMode,
+  hasPaidQuota,
   lastReminderSentAt,
   onRemindersSent,
 }) => {
@@ -196,7 +210,7 @@ export const PaymentToolbar: React.FC<PaymentToolbarProps> = ({
           onChange={onFilterChange}
         />
       </Col>
-      {paymentMode !== PaymentMode.None && (
+      {hasPaidQuota && (
         <Col>
           <Space wrap>
             {lastReminderSentAt && (

@@ -372,9 +372,7 @@
     "delete": {
       "body": "The spot goes to the next person in the queue. This can't be undone.",
       "confirm": "Delete",
-      "confirmRefund": "Delete and refund",
-      "manualWarning": "This registration was marked as paid by hand ({{price}}). Ilmo can't refund it, so settle any refund yourself.",
-      "refund": "Refund the ticket price, {{price}}, to their card",
+      "noRefundWarning": "This registration has been paid. Nothing is refunded automatically: if a refund is due, settle it yourself (card payments in the Stripe Dashboard).",
       "title": "Delete registration of {{name}}?"
     },
     "filter": {
@@ -391,8 +389,8 @@
       "noteFees": "Guild receives = price − 1,5 % × (price + 0,25 €). The customer pays the price plus a 0,25 € service fee, and Stripe takes 0,25 € + 1,5 %. This is an estimate for European cards; cards from outside the EEA cost a little more.",
       "noteFree": "0 € makes the quota free. Otherwise the minimum price is 0,25 €.",
       "noteOpenQuota": "Open quota spots pay the price of the quota the person registered through.",
-      "priceChangedWarning": "This quota has {{count}} registrations. They keep the price of {{price}}. The new price applies to new registrations only.",
-      "priceChangedWarning_one": "This quota has {{count}} registration. It keeps the price of {{price}}. The new price applies to new registrations only.",
+      "priceChangedWarning": "This quota has {{count}} registrations. Those already paid stay paid. Unpaid ones pay the new price.",
+      "priceChangedWarning_one": "This quota has {{count}} registration. If it is already paid, it stays paid. Otherwise it pays the new price.",
       "ticketPrice": "Ticket price"
     },
     "reminder": {
@@ -407,27 +405,10 @@
       "title_other": "Send a payment reminder to {{count}} people?"
     },
     "sendReminder": "Send reminder to {{count}} unpaid",
-    "settings": {
-      "emailOnClose": "Email unpaid participants when registration closes",
-      "emailOnCloseHelp": "Sends the payment reminder to everyone with a spot who has not paid yet, once, at the closing time.",
-      "emailOnCloseLockedHelp": "Always on for this mode: this email is how people get their payment link.",
-      "modeAfter": "Pay after registration closes",
-      "modeAfterHelp": "Nobody pays while registration is open. Everyone with a spot gets a payment link by email when it closes.",
-      "modeDuring": "Pay during registration",
-      "modeDuringHelp": "People go to the payment page right after registering. Unpaid registrations still keep their spot.",
-      "modeLabel": "When is payment collected?",
-      "modeNone": "No payments",
-      "modeNoneHelp": "All quotas are free or payments are collected manually.",
-      "subtitle": "Prices are set per quota in the Quotas tab.",
-      "switchToNoneWarning": "Payments already made are kept and still shown. Nobody is refunded automatically.",
-      "switchToPaidWarning": "This event already has registrations. Those in paid quotas become unpaid at the quota's current price and must pay.",
-      "title": "Payments"
-    },
     "status": {
       "NOT_REQUIRED": "Free",
       "PAID": "Paid",
       "PAID_MANUALLY": "Paid manually",
-      "REFUNDED": "Refunded",
       "UNPAID": "Unpaid"
     },
     "summary": {
@@ -435,6 +416,8 @@
       "paid": "Paid",
       "paidOf": "of {{count}}",
       "ticketsPaid": "Tickets paid",
+      "unlinkedCardPayments_one": "{{count}} card payment is not linked to any registration (for example a duplicate payment or a payment for a deleted registration). Refund it by hand in the Stripe Dashboard if needed.",
+      "unlinkedCardPayments_other": "{{count}} card payments are not linked to any registration (for example duplicate payments or payments for deleted registrations). Refund them by hand in the Stripe Dashboard if needed.",
       "unpaid": "Unpaid"
     }
   },

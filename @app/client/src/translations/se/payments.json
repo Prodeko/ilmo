@@ -1,14 +1,6 @@
 {
   "cancel": {
-    "body": "Din plats går till nästa person i kön. Detta kan inte ångras.",
-    "deleteAndRefund": "Ta bort och återbetala {{amount}}",
-    "feeNotRefunded": "Serviceavgift (återbetalas inte)",
-    "keep": "Behåll anmälan",
-    "manualNote": "Din betalning registrerades av arrangörerna, så den återbetalas inte automatiskt. Kontakta arrangörerna om återbetalning.",
-    "refundTiming": "Återbetalningar syns vanligtvis inom 5–10 bankdagar.",
-    "refundToCard": "Återbetalas till ditt kort",
-    "title": "Ta bort din anmälan?",
-    "youPaid": "Du betalade"
+    "noRefundNote": "Din betalning återbetalas inte automatiskt. Kontakta arrangörerna om återbetalning."
   },
   "cancelledNotice": "Betalningen slutfördes inte. Din plats är fortfarande reserverad, och du kan försöka igen nedan eller senare via ditt bekräftelsemejl.",
   "confirmTimeoutNotice": "Vi har inte fått någon bekräftelse på din betalning ännu. Om du betalade får du snart ett bekräftelsemejl. Du kan också ladda om sidan senare.",
@@ -53,12 +45,6 @@
     "queued": {
       "body": "Du är nummer {{position}} i kön. Du betalar bara om du får en plats, och då mejlar vi dig en betalningslänk.",
       "title": "Du står i kön"
-    },
-    "refunded": {
-      "body": "{{amount}} återbetalades till ditt kort {{date}}.",
-      "detail": "Kortåterbetalningar syns vanligtvis inom 5–10 bankdagar.",
-      "feeNote": "Serviceavgiften på {{fee}} återbetalas inte.",
-      "title": "Betalningen återbetald"
     }
   },
   "tags": {
@@ -67,7 +53,6 @@
     "notOpen": "Inte öppen än",
     "paid": "Betald",
     "processing": "Behandlas",
-    "refunded": "Återbetald",
     "unpaid": "Obetald"
   },
   "ticket": "Biljett",

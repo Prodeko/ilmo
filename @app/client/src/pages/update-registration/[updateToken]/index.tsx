@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import {
   EventRegistrationForm,
   Link,
@@ -11,12 +10,7 @@ import {
   RegistrationPaymentStatus,
   useUpdateEventRegistrationPageQuery,
 } from "@app/graphql"
-import {
-  cancelRefund,
-  filterObjectByKeys,
-  formatEuro,
-  payPageState,
-} from "@app/lib"
+import { filterObjectByKeys, formatEuro, payPageState } from "@app/lib"
 import { Alert, Col, Row } from "antd"
 import dayjs from "dayjs"
 import { useRouter } from "next/router"
@@ -57,15 +51,10 @@ const UpdateEventRegistrationPage: NextPage = () => {
   // configured; while the payments flag is off it still describes a payment
   // already made (blockedReason PAYMENTS_DISABLED).
   const payment = data?.paymentByUpdateToken
-  const paymentOnDelete = useMemo(() => {
-    if (!payment) return undefined
-    const paidManually =
-      payment.status === RegistrationPaymentStatus.PaidManually ||
-      (payment.status === RegistrationPaymentStatus.Paid &&
-        payment.paidManually)
-    const refund = cancelRefund(payment)
-    return refund || paidManually ? { refund, paidManually } : undefined
-  }, [payment])
+  // Deleting a paid registration refunds nothing automatically
+  const paidOnDelete =
+    payment?.status === RegistrationPaymentStatus.Paid ||
+    payment?.status === RegistrationPaymentStatus.PaidManually
   const payState = payment ? payPageState(true, payment) : null
 
   // If registration is not found redirect to index
@@ -145,7 +134,7 @@ const UpdateEventRegistrationPage: NextPage = () => {
             query: { slug: event?.slug },
           }}
           initialValues={constructInitialValues(registration)}
-          paymentOnDelete={paymentOnDelete}
+          paidOnDelete={paidOnDelete}
           questions={event?.eventQuestions?.nodes}
           type="update"
           updateToken={updateToken as string}
