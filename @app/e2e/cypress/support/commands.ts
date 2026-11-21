@@ -166,6 +166,16 @@ function serverCommand(
 }>
 
 /**
+ * Ends the registration of the event a moment ago, as if it had closed.
+ */
+function serverCommand(
+  command: "closeEventRegistration",
+  payload: { eventId: string }
+): Chainable<{
+  success: true
+}>
+
+/**
  * Pays for the registration behind `updateToken` as if Stripe Checkout had
  * completed: posts a signed `checkout.session.completed` event to the
  * webhook. Requires Stripe to be configured.

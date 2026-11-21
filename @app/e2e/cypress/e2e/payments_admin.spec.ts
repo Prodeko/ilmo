@@ -1,7 +1,6 @@
 /// <reference types="Cypress" />
 
-// Stripe payments from the organizer's side: payment settings and prices in
-// the event form, and the payment tools of the registrations tab. Stripe is
+// Stripe payments from the organizer's side: quota prices in the event form, and the payment tools of the registrations tab. Stripe is
 // never contacted; card payments are completed with the
 // completeStripeCheckout server command (a signed fake webhook event).
 //
@@ -27,7 +26,7 @@ context("Payments: admin", () => {
   beforeEach(() => cy.serverCommand("clearTestOrganizations"))
   beforeEach(() => cy.serverCommand("setFeatureFlags", { payments: "on" }))
 
-  it("sets the payment mode and quota prices", () => {
+  it("sets quota prices", () => {
     // Setup: a free event with one registration
     cy.serverCommand("createTestEventData", { userIsAdmin: true }).as(
       "createEventDataResult"
@@ -36,21 +35,16 @@ context("Payments: admin", () => {
     cy.get("@createEventDataResult").then(({ event }: any) => {
       loginAndOpenEvent(event.id)
 
-      // Action: payments are collected during registration
-      cy.getCy("eventform-radio-payment-mode-NONE").should("be.checked")
-      cy.getCy("eventform-radio-payment-mode-DURING_REGISTRATION")
-        .closest("label")
-        .click()
-      // The event already has registrations, which become unpaid
-      cy.getCy("eventform-alert-switch-to-paid").should("exist")
-
-      // Quota price
+      // Action: a price makes the event paid; there is no separate setting
       cy.get(".ant-tabs-tab").eq(1).click()
+      cy.getCy("eventform-quotas-price-changed-warning").should("not.exist")
       cy.getCy("eventform-input-quotas-price-0").clear().type("12")
       cy.getCy("eventform-quotas-guild-receives-0").should(
         "contain",
         "≈ 11,82 €"
       )
+      // The quota already has a registration, which pays the new price
+      cy.getCy("eventform-quotas-price-changed-warning").should("exist")
 
       cy.get(".ant-tabs-tab").eq(0).click()
       cy.getCy("eventform-button-submit").click()
@@ -62,9 +56,6 @@ context("Payments: admin", () => {
 
       // The existing registration now has to pay
       loginAndOpenEvent(event.id)
-      cy.getCy("eventform-radio-payment-mode-DURING_REGISTRATION").should(
-        "be.checked"
-      )
       openRegistrationsTab()
       cy.getCy("registrations-payment-summary-unpaid").should("contain", "1")
       cy.getCy("registrations-payment-status-UNPAID").should("have.length", 1)
@@ -75,7 +66,6 @@ context("Payments: admin", () => {
     // Setup
     cy.serverCommand("createTestEventData", {
       userIsAdmin: true,
-      paymentMode: "DURING_REGISTRATION",
       priceCents: 1500,
     }).as("createEventDataResult")
 
@@ -115,7 +105,6 @@ context("Payments: admin", () => {
     // Setup: three unpaid registrations and one paid by card
     cy.serverCommand("createTestEventData", {
       userIsAdmin: true,
-      paymentMode: "DURING_REGISTRATION",
       priceCents: 1500,
     }).as("createEventDataResult")
 
@@ -153,11 +142,10 @@ context("Payments: admin", () => {
     )
   })
 
-  it("offers a refund when deleting a registration paid by card", () => {
+  it("warns that nothing is refunded when deleting a registration paid by card", () => {
     // Setup
     cy.serverCommand("createTestEventData", {
       userIsAdmin: true,
-      paymentMode: "DURING_REGISTRATION",
       priceCents: 1500,
     }).as("createEventDataResult")
 
@@ -174,18 +162,22 @@ context("Payments: admin", () => {
         // Action
         cy.getCy("admin-table-delete-button").click()
 
-        // Assertion: the refund is offered and ticked by default
+        // Assertion: the dialog warns, and deleting is still allowed
+        cy.getCy("registrations-payment-summary-unlinked").should("not.exist")
         cy.get(".ant-modal-content")
           .filter(":visible")
           .within(() => {
-            cy.getCy("admin-table-delete-refund-checkbox")
-              .should("be.checked")
-              .closest("label")
-              .should("contain", "15,00 €")
+            cy.getCy("admin-table-delete-no-refund-warning").should("exist")
             cy.get(".ant-btn-dangerous").click()
           })
         cy.getCy("registrations-payment-status-PAID").should("not.exist")
         cy.getCy("registrations-payment-summary-paid").should("contain", "0")
+        // The card payment is kept, no longer linked to a registration, with
+        // a hint to refund it in Stripe
+        cy.getCy("registrations-payment-summary-unlinked").should(
+          "contain",
+          "1"
+        )
       }
     )
   })
